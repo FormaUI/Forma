@@ -172,7 +172,6 @@ $results = foreach ($case in $cases) {
 # The step that builds the task programs once reported success on an empty folder, which is the failure a
 # gate exists to prevent rather than one it may contain, so it is asserted here against a folder with
 # nothing in it rather than left to be noticed again.
-Import-Module (Join-Path $PSScriptRoot 'Forma.Build.psd1') -Force
 $empty = Join-Path ([System.IO.Path]::GetTempPath()) ("forma-gate-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $empty | Out-Null
 
@@ -460,13 +459,6 @@ finally {
     Remove-Item -LiteralPath $progressFolder -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-$mark = if ($progress.Passed) { 'ok  ' } else { 'FAIL' }
-Write-Host ("  {0} {1}" -f $mark, $progress.Name)
-
-foreach ($problem in $progress.Problems) {
-    Write-Host ("        {0}" -f $problem)
-}
-
 # The packages' files are compared with the list the repository keeps of them, so it runs for real here on packages
 # made for the purpose: one as the list names it, with a fingerprinted stylesheet bundle, one holding a file the list
 # doesn't name and lacking one it does, one the list doesn't name, and a package the list names that the pack didn't
@@ -594,49 +586,19 @@ finally {
     Remove-Item -LiteralPath $exampleFolder -Recurse -Force -ErrorAction SilentlyContinue
 }
 
-$mark = if ($checkRates.Passed) { 'ok  ' } else { 'FAIL' }
-Write-Host ("  {0} {1}" -f $mark, $checkRates.Name)
+# The checks run for real, beside the described cases above.
+$realRuns = @($guard, $cleaning, $waitLog, $progress, $packageFiles, $examplePackages, $checkRates)
 
-foreach ($problem in $checkRates.Problems) {
-    Write-Host ("        {0}" -f $problem)
+foreach ($check in $realRuns) {
+    $mark = if ($check.Passed) { 'ok  ' } else { 'FAIL' }
+    Write-Host ("  {0} {1}" -f $mark, $check.Name)
+
+    foreach ($problem in $check.Problems) {
+        Write-Host ("        {0}" -f $problem)
+    }
 }
 
-$mark = if ($examplePackages.Passed) { 'ok  ' } else { 'FAIL' }
-Write-Host ("  {0} {1}" -f $mark, $examplePackages.Name)
-
-foreach ($problem in $examplePackages.Problems) {
-    Write-Host ("        {0}" -f $problem)
-}
-
-$mark = if ($packageFiles.Passed) { 'ok  ' } else { 'FAIL' }
-Write-Host ("  {0} {1}" -f $mark, $packageFiles.Name)
-
-foreach ($problem in $packageFiles.Problems) {
-    Write-Host ("        {0}" -f $problem)
-}
-
-$mark = if ($waitLog.Passed) { 'ok  ' } else { 'FAIL' }
-Write-Host ("  {0} {1}" -f $mark, $waitLog.Name)
-
-foreach ($problem in $waitLog.Problems) {
-    Write-Host ("        {0}" -f $problem)
-}
-
-$mark = if ($cleaning.Passed) { 'ok  ' } else { 'FAIL' }
-Write-Host ("  {0} {1}" -f $mark, $cleaning.Name)
-
-foreach ($problem in $cleaning.Problems) {
-    Write-Host ("        {0}" -f $problem)
-}
-
-$mark = if ($guard.Passed) { 'ok  ' } else { 'FAIL' }
-Write-Host ("  {0} {1}" -f $mark, $guard.Name)
-
-foreach ($problem in $guard.Problems) {
-    Write-Host ("        {0}" -f $problem)
-}
-
-$all = @($results) + $guard + $cleaning + $waitLog + $progress + $packageFiles + $examplePackages + $checkRates
+$all = @($results) + $realRuns
 $failed = @($all | Where-Object { -not $_.Passed })
 
 Write-Host ''
