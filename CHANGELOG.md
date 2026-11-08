@@ -34,6 +34,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   picture's address. It went on with what had arrived, so the image dialog asked for an address already entered.
 - A field that leaves its form while its text can't follow the reader's edits takes its message with it. The message
   stayed in the form, which then never validated.
+- A `FormaComposer` whose editor's text can't follow the reader's edits says so on its field, as the text inputs do,
+  and takes it off once it can. Its commands and its form's actions stopped without a word.
+- `IComposerInteraction` takes `ReportTextFault`, through which an editor shows on the composer's field that its
+  text can't follow the reader's edits.
 
 ## `1.0.0-preview.4`
 

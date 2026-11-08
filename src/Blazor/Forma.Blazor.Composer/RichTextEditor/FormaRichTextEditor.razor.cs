@@ -162,20 +162,28 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         await Interaction.ExecuteCommandAsync(action);
     }
 
-    // Each commit the canvas sends becomes the composer's document.
+    // Each commit the canvas sends becomes the composer's document, and a text that can't follow the reader's edits is shown on the composer's
+    // field once the change is handled, so a render the report causes finds the document as the change left it.
     private async Task HandleContentChangedAsync(TextChange change)
     {
         _canvasText = change.Text;
 
-        if (Composer is null || Interaction is null || change.IsFaulted)
+        try
         {
-            return;
+            if (Composer is null || Interaction is null || change.IsFaulted)
+            {
+                return;
+            }
+
+            var sanitized = Composer.Sanitizer.Sanitize(change.Text);
+            _committedContent = sanitized;
+
+            await Interaction.ChangeDocumentAsync(Composer.Document with { Content = sanitized });
         }
-
-        var sanitized = Composer.Sanitizer.Sanitize(change.Text);
-        _committedContent = sanitized;
-
-        await Interaction.ChangeDocumentAsync(Composer.Document with { Content = sanitized });
+        finally
+        {
+            Interaction?.ReportTextFault(change.IsFaulted);
+        }
     }
 
     // What reads the document reads every edit the reader made in the canvas, its pause cut short.

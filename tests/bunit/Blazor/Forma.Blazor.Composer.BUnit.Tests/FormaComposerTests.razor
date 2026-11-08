@@ -960,6 +960,30 @@
         }
 
         [Fact]
+        public async Task Should_say_on_its_field_that_its_text_did_not_arrive_and_take_it_off_once_it_does()
+        {
+            // Arrange — the form's messages as each change of its validation state leaves them
+            using var ctx = new FormaComposerTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new TestModel();
+            var form = new EditContext(model);
+            var states = new List<IReadOnlyList<string>>();
+            form.OnValidationStateChanged += (_, _) => states.Add([.. form.GetValidationMessages()]);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+                <FormaComposer @bind-Value="model.Body" />
+            </FakeFormHost>);
+
+            // Act — a long paste whose stream breaks, and the whole text the browser sends in its place too, then the reader's next edit
+            await fields.CommitBrokenAsync(cut.Find("textarea"), "A paste too long for one message");
+            await fields.ChangeAsync(cut.Find("textarea"), "A paste, typed on");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([["Your text didn't arrive in full. Edit it to try again."], []], states),
+                () => Assert.Equal("A paste, typed on", model.Body.Content));
+        }
+
+        [Fact]
         public async Task Should_enable_undo_from_typing_alone()
         {
             // Arrange

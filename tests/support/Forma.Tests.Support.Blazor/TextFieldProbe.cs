@@ -89,9 +89,29 @@ public sealed class TextFieldProbe
         return new HeldEdit(stream, delivery);
     }
 
+    /// <summary>Leaves <paramref name="text"/> in <paramref name="field"/> and commits it as the browser sends a text too long for one message, its stream breaking on its way, and the whole text the browser then sends in its place breaking too, so the field's edits can't follow it until the reader's next edit.</summary>
+    /// <returns>A task that completes once the field's edits have lost the replacement.</returns>
+    public Task CommitBrokenAsync(IElement field, string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+
+        var edits = GetField(field);
+        edits.Value = text;
+        var (start, removed, inserted) = Diff(edits.Sent, edits.Value);
+        edits.Sent = edits.Value;
+        var revision = ++edits.Revision;
+        edits.BreaksNextReplacement = true;
+
+        return _context.Renderer.Dispatcher.InvokeAsync(() => edits.Receiver.EditAsync(edits.Token, revision, start, removed, CreateBrokenTransfer(inserted), isCommit: true));
+    }
+
     /// <summary>The text <paramref name="field"/> holds.</summary>
     public string GetText(IElement field)
         => GetField(field).Value;
+
+    // A text's stream that breaks as it is read.
+    private static JSTransfer CreateBrokenTransfer(string text)
+        => new() { Stream = new FakeJSStreamReference(Encoding.UTF8.GetBytes(text), new IOException("The stream broke on its way.")), IsText = true };
 
     private static BunitJSModuleInterop SetupEngine(BunitContext context)
     {
@@ -249,6 +269,8 @@ public sealed class TextFieldProbe
         public string Sent { get; set; } = string.Empty;
 
         public int Revision { get; set; }
+
+        public bool BreaksNextReplacement { get; set; }
     }
 
     /// <summary>Attaches a field's edits, which go on from where its previous attach left them.</summary>
@@ -308,7 +330,9 @@ public sealed class TextFieldProbe
                 return false;
             }
 
-            await field.Receiver.ReplaceAsync(field.Token, field.Revision, InlineTransfer.Of(field.Sent)).ConfigureAwait(false);
+            var text = field.BreaksNextReplacement ? CreateBrokenTransfer(field.Sent) : InlineTransfer.Of(field.Sent);
+            field.BreaksNextReplacement = false;
+            await field.Receiver.ReplaceAsync(field.Token, field.Revision, text).ConfigureAwait(false);
 
             return true;
         }

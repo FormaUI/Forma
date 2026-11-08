@@ -244,6 +244,31 @@
         }
 
         [Fact]
+        public async Task Should_say_on_the_composer_s_field_that_its_canvas_text_did_not_arrive_and_take_it_off_once_it_does()
+        {
+            // Arrange — the form's messages as each change of its validation state leaves them
+            using var ctx = new FormaRichTextEditorTests();
+            var fields = new TextFieldProbe(ctx);
+            ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var form = new EditContext(model);
+            var states = new List<IReadOnlyList<string>>();
+            form.OnValidationStateChanged += (_, _) => states.Add([.. form.GetValidationMessages()]);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+                <FormaComposer @bind-Value="model.Body" Plugins="RichText" />
+            </FakeFormHost>);
+
+            // Act — a long paste whose stream breaks, and the whole text the browser sends in its place too, then the reader's next edit
+            await fields.CommitBrokenAsync(GetCanvas(cut), "<p>A paste too long for one message</p>");
+            await fields.ChangeAsync(GetCanvas(cut), "<p>A paste, typed on</p>");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([["Your text didn't arrive in full. Edit it to try again."], []], states),
+                () => Assert.Equal("<p>A paste, typed on</p>", model.Body.Content));
+        }
+
+        [Fact]
         public void Should_write_the_document_into_its_canvas_once_the_canvas_attaches()
         {
             // Arrange

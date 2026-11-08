@@ -39,6 +39,8 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     private bool _isSubscribedToCultureState;
     private Func<Task<bool>>? _settleEditsAsync;
     private ValidationMessageStore? _textFaults;
+    private bool _isTextFaulted;
+    private string? _textFaultMessage;
 
     /// <summary>Whether the component has been disposed.</summary>
     public bool IsDisposed { get; private set; }
@@ -156,7 +158,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         }
 
         // A field that leaves takes its fault's message with it, which would otherwise keep its form from validating.
-        if (_textFaults is { } textFaults && EditContext is { } faultedForm)
+        if (_isTextFaulted && _textFaults is { } textFaults && EditContext is { } faultedForm)
         {
             textFaults.Clear();
             faultedForm.NotifyValidationStateChanged();
@@ -210,13 +212,16 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     }
 
     /// <summary>Shows on the field, with <paramref name="message"/>, that its text can't follow the reader's edits while <paramref name="isFaulted"/>, and takes it off once it can.</summary>
+    /// <remarks>The form is told only as the fault comes or goes, or its message changes, as a switch of culture changes it, so a field reporting with every edit renders it no more often.</remarks>
     protected void ReportTextFault(bool isFaulted, string message)
     {
-        if (EditContext is not { } form || (!isFaulted && _textFaults is null))
+        if (EditContext is not { } form || (isFaulted == _isTextFaulted && (!isFaulted || message == _textFaultMessage)))
         {
             return;
         }
 
+        _isTextFaulted = isFaulted;
+        _textFaultMessage = isFaulted ? message : null;
         _textFaults ??= new ValidationMessageStore(form);
         _textFaults.Clear(FieldIdentifier);
 

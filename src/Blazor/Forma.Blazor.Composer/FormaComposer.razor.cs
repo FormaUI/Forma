@@ -471,6 +471,9 @@ public sealed partial class FormaComposer(
         return new EditsRegistration(this, settleEditsAsync);
     }
 
+    void IComposerInteraction.ReportTextFault(bool isFaulted)
+        => ReportTextFault(isFaulted, L["Your text didn't arrive in full. Edit it to try again."]);
+
     ValueTask<bool> IComposerInteraction.TryInsertAsync(ComposerInsertion insertion)
     {
         ArgumentNullException.ThrowIfNull(insertion);

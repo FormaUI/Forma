@@ -154,8 +154,24 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     }
 
     // Typing commits after a pause, and the textarea's commit at once with the selection it leaves, since updating on change no keystroke
-    // reports either.
+    // reports either; a text that can't follow the reader's edits commits nothing, and is shown on the composer's field once the change is
+    // handled, so a render the report causes finds the document as the change left it.
     private async Task HandleTextChangedAsync(TextChange change)
+    {
+        try
+        {
+            if (!change.IsFaulted)
+            {
+                await TakeTextChangeAsync(change);
+            }
+        }
+        finally
+        {
+            Interaction?.ReportTextFault(change.IsFaulted);
+        }
+    }
+
+    private async Task TakeTextChangeAsync(TextChange change)
     {
         _typedContent = change.Text;
 

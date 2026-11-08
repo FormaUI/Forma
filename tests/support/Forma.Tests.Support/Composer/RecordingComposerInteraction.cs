@@ -31,6 +31,13 @@ public sealed class RecordingComposerInteraction : IComposerInteraction
     /// <summary>The settling of the edits joined through <see cref="JoinEdits"/>, while joined.</summary>
     public Func<Task<bool>>? JoinedEdits { get; private set; }
 
+    /// <summary>Whether each report the editor made said its text can't follow the reader's edits, in order.</summary>
+    public List<bool> TextFaults { get; } = [];
+
+    /// <inheritdoc />
+    public void ReportTextFault(bool isFaulted)
+        => TextFaults.Add(isFaulted);
+
     /// <inheritdoc />
     public Task ChangeDocumentAsync(ComposerDocument document)
     {

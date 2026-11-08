@@ -27,4 +27,7 @@ public interface IComposerInteraction
     /// <summary>Takes the edits of the editor in the surface, which <paramref name="settleEditsAsync"/> settles, answering whether the document holds every edit the reader made there, so the composer settles them before anything reads the document.</summary>
     /// <returns>The registration, which takes the edits out as it is disposed.</returns>
     IDisposable JoinEdits(Func<Task<bool>> settleEditsAsync);
+
+    /// <summary>Shows on the composer's field that the text of the editor in the surface can't follow the reader's edits while <paramref name="isFaulted"/>, and takes it off once it can.</summary>
+    void ReportTextFault(bool isFaulted);
 }
