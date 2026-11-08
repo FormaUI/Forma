@@ -30,7 +30,8 @@ runs:
         "$ANDROID_HOME/emulator/emulator" -list-avds | grep -x forma
         "$ANDROID_HOME/emulator/emulator" -accel-check
         df -h "$ANDROID_AVD_HOME"
-        nohup "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -no-metrics -gpu swiftshader_indirect -no-snapshot -partition-size 4096 -cores 2 -memory 4096 > "$RUNNER_TEMP/emulator.log" 2>&1 &
+        # The emulator's exit status closes its log, so an emulator that drops mid-run says how, a signal among them.
+        nohup bash -c '"$@"; echo "The emulator exited with status $?."' emulator "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -no-metrics -gpu swiftshader_indirect -no-snapshot -partition-size 4096 -cores 2 -memory 4096 > "$RUNNER_TEMP/emulator.log" 2>&1 &
         booted() { [ "$("$adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; }
         timeout 300 "$adb" wait-for-device || true
         for attempt in $(seq 1 120); do booted && break; sleep 5; done
