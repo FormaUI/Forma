@@ -5,13 +5,18 @@ using Forma.Framework.Browser.Interop.Operations;
 /// <summary>A host's native operations that take or decline what they're handed, as a test names, recording each file and address.</summary>
 /// <param name="takes">Whether the host takes each file and address.</param>
 /// <param name="canShare">Whether the host shares through its own share surface.</param>
-public sealed class FakeNativeOperations(bool takes = true, bool canShare = true) : INativeOperations
+/// <param name="canSave">Whether the host keeps a file through its own surface.</param>
+public sealed class FakeNativeOperations(bool takes = true, bool canShare = true, bool canSave = true) : INativeOperations
 {
     /// <summary>The files the host was handed, in order.</summary>
     public List<(string Name, string Content, string Type)> Saved { get; } = [];
 
     /// <summary>The addresses the host was handed, in order.</summary>
     public List<(string Title, string Address)> Shared { get; } = [];
+
+    /// <inheritdoc />
+    public bool CanSave
+        => canSave;
 
     /// <inheritdoc />
     public bool CanShare

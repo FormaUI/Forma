@@ -13,7 +13,7 @@ public sealed class Download(IJSEnvironment js, INativeOperations? native = null
 
     /// <summary>Saves text as a file of the given name and media type.</summary>
     public async ValueTask<bool> SaveAsync(string name, string content, string type)
-        => (native is not null && await native.TrySaveAsync(name, content, type))
+        => (native is { CanSave: true } && await native.TrySaveAsync(name, content, type))
             || await _module.TryInvokeVoidAsync("save", name, content, type);
 
     /// <inheritdoc />

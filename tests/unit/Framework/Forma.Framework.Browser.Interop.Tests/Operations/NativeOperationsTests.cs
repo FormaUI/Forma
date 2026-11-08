@@ -41,6 +41,23 @@ public sealed class NativeOperationsTests
         }
 
         [Fact]
+        public async Task Should_save_in_the_web_view_where_the_host_keeps_no_file()
+        {
+            // Arrange
+            var (environment, module) = CreateBrowser();
+            var native = new FakeNativeOperations(canSave: false);
+            await using var download = new Download(environment, native);
+
+            // Act
+            await download.SaveAsync("notes.html", "<p>Notes</p>", "text/html");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(native.Saved),
+                () => Assert.Single(module.Recorder.GetCalls("save")));
+        }
+
+        [Fact]
         public async Task Should_save_in_the_web_view_a_file_the_host_declines()
         {
             // Arrange
@@ -86,6 +103,27 @@ public sealed class NativeOperationsTests
 
             // Assert
             Assert.Single(module.Recorder.GetCalls("print"));
+        }
+
+        [Fact]
+        public async Task Should_print_in_the_web_view_with_nothing_composed_where_the_host_keeps_no_file()
+        {
+            // Arrange
+            var (environment, module) = CreateBrowser((identifier, _) => identifier is "compose" or "composePage" ? InlineTransfer.Of("<!DOCTYPE html><html></html>") : null);
+            var native = new FakeNativeOperations(canSave: false);
+            await using var print = new Print(environment, native);
+
+            // Act
+            await print.PrintAsync("<p>Report</p>", "Report", "prose");
+            await print.PrintPageAsync("Report");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(module.Recorder.GetCalls("compose")),
+                () => Assert.Empty(module.Recorder.GetCalls("composePage")),
+                () => Assert.Single(module.Recorder.GetCalls("print")),
+                () => Assert.Single(module.Recorder.GetCalls("page")),
+                () => Assert.Empty(native.Saved));
         }
 
         [Fact]

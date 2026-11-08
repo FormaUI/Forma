@@ -54,6 +54,7 @@ public sealed class MauiOperationsTests : IDisposable
         Assert.Multiple(
             () => Assert.False(isSaved),
             () => Assert.False(isShared),
+            () => Assert.False(operations.CanSave),
             () => Assert.False(operations.CanShare),
             () => Assert.Empty(share.Requests));
     }

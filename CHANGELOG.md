@@ -80,6 +80,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   a subscriber waiting on another native window's thread stopped that window's web view from starting or switching.
 - [`Forma.AddOns.Operations.Maui`](src/AddOns/Forma.AddOns.Operations.Maui/README.md#what-the-reader-gets) keeps
   the file it saved last alone in the application's cache. Each print and download left its document there.
+- [`INativeOperations`](src/Framework/Forma.Framework.Browser.Interop/README.md#operations) takes `CanSave`, whether
+  the host keeps a file through its own surface, and `Print` composes the document it hands the host, as `Download`
+  hands it a file, only where the host does. An implementation of its own adds `CanSave`, true where its
+  `TrySaveAsync` keeps a file.
 
 ## `1.0.0-preview.4`
 

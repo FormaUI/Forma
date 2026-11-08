@@ -15,6 +15,10 @@ public sealed class MauiOperations(IShare share, IFileSystem fileSystem, IDevice
         => deviceInfo.Platform != DevicePlatform.WinUI;
 
     /// <inheritdoc />
+    public bool CanSave
+        => IsNative;
+
+    /// <inheritdoc />
     public bool CanShare
         => IsNative;
 

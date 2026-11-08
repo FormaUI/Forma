@@ -188,8 +188,9 @@ wrapper.
 | `TextEntry` | Reads or writes a text entry's selected range. |
 
 `INativeOperations` is a host's own way to save a file and share an address, for a web view that does
-neither. `Download`, `Print` and `Share` take it where the host registers one, and take the browser's path
-where the host hasn't registered one or declines.
+neither. `CanSave` and `CanShare` tell whether the host does each. `Download`, `Print` and `Share` take it
+where the host registers one that does, and take the browser's path where the host hasn't registered one,
+does neither, or declines.
 
 `Pointer.js`, a pointer captured to one element for the rest of its gesture, is composed by
 `DragGesture.js` alone, without a wrapper.

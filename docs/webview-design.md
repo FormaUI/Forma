@@ -89,9 +89,10 @@ naming a file to download, the browser's printing and its share surface. Android
 take none of them without native help, so the host does each natively where its web view can't:
 
 - **One contract, `INativeOperations`,** in the browser interop assembly beside the operations it stands in
-  for, saves a file and shares an address, answering whether the host took each; a component that saves,
-  prints or shares takes it where the host registers one and goes to the browser's path where none is
-  registered or the host declines.
+  for, saves a file and shares an address, telling whether the host does each and answering whether it took
+  each; a component that saves, prints or shares takes it where the host registers one that does, and goes
+  to the browser's path where none is registered, the host does neither, or it declines. A document is
+  composed to print only for a host that saves it.
 - **Printing hands the reader the document as a file.** No mobile web view prints a document from script, so
   where the host takes files, the document to print, or the page as it stands, is written as a document of
   its own carrying the page's styles and handed to the host as an HTML file, from which the reader prints it

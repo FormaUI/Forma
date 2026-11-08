@@ -3,6 +3,9 @@ namespace Forma.Framework.Browser.Interop.Operations;
 /// <summary>Saves a file and shares an address natively, for a host whose web view does neither.</summary>
 public interface INativeOperations
 {
+    /// <summary>Whether the host keeps a file through its own surface.</summary>
+    bool CanSave { get; }
+
     /// <summary>Whether the host shares an address through its own share surface.</summary>
     bool CanShare { get; }
 

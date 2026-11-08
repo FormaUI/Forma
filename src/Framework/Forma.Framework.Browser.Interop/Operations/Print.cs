@@ -18,7 +18,7 @@ public sealed class Print(IJSEnvironment js, INativeOperations? native = null) :
     {
         ArgumentNullException.ThrowIfNull(title);
 
-        return (native is not null && await _module.TryInvokeTextAsync("compose", js.TransferOptions.MaximumLength, html, title, className) is { } document && await native.TrySaveAsync(GetFileName(title), document, DocumentType))
+        return (native is { CanSave: true } && await _module.TryInvokeTextAsync("compose", js.TransferOptions.MaximumLength, html, title, className) is { } document && await native.TrySaveAsync(GetFileName(title), document, DocumentType))
             || await _module.TryInvokeVoidAsync("print", html, title, className);
     }
 
@@ -28,7 +28,7 @@ public sealed class Print(IJSEnvironment js, INativeOperations? native = null) :
     {
         ArgumentNullException.ThrowIfNull(title);
 
-        return (native is not null && await _module.TryInvokeTextAsync("composePage", js.TransferOptions.MaximumLength, title) is { } document && await native.TrySaveAsync(GetFileName(title), document, DocumentType))
+        return (native is { CanSave: true } && await _module.TryInvokeTextAsync("composePage", js.TransferOptions.MaximumLength, title) is { } document && await native.TrySaveAsync(GetFileName(title), document, DocumentType))
             || await _module.TryInvokeVoidAsync("page");
     }
 
