@@ -85,7 +85,7 @@ public sealed class FrameworkDownloads
         }
     }
 
-    /// <summary>Waits until the page has downloaded the framework, as <see cref="WaitAsync"/> does, and given the page a frame and a task to record that it did, which Auto reads on the next visit, then stops tracking.</summary>
+    /// <summary>Waits until the page has downloaded the framework, as <see cref="WaitAsync"/> does, and recorded the resources it loaded, which Auto reads on the next visit to render in WebAssembly, then stops tracking.</summary>
     /// <returns>A task that completes once tracking stopped.</returns>
     /// <remarks>A request that failed fails the check there, naming it, since Auto stays on the Server without what it failed to download.</remarks>
     public async Task StopOnceDownloadedAsync()
@@ -95,7 +95,8 @@ public sealed class FrameworkDownloads
         var failed = Failed;
         Assert.True(failed.Count == 0, $"The page's framework didn't download: {string.Join(", ", failed)}.");
 
-        await _page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)))").ConfigureAwait(false);
+        // Blazor records the resources under its own key once WebAssembly has loaded, and Auto stays on the Server where it finds none.
+        await _page.WaitForFunctionAsync("() => localStorage.getItem('blazor-resource-hash') !== null").ConfigureAwait(false);
         Stop();
     }
 
