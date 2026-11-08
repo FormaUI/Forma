@@ -11,7 +11,8 @@ using Microsoft.AspNetCore.Components;
 /// The field numbers its edits by revision across every registration of it, and .NET applies them in that order: an edit arriving ahead of its
 /// predecessor waits for it, and one whose revision the text has already passed is dropped. An edit that cannot be applied, its inserted text
 /// refused or broken on its way or its range outside the text, has the field send its whole text in its place. A text of .NET's own is written
-/// through the field, which answers the revision it then stands at; the edits arriving meanwhile wait, and those it supersedes are dropped. A
+/// through the field, which answers the revision it then stands at; the edits arriving meanwhile wait, and those it supersedes are dropped,
+/// one lost or still being read among them, with what they committed. A
 /// write the field has not taken is made once it is attached, and again as the connection comes back. Each change is handed to the
 /// handler in turn, the next edit applied once the handler has finished with the last, so a change's work is done before the next arrives.
 /// The browser sends a field's edits in the order they happen and ahead of any action raised after them, so an action that settles the edits
@@ -235,6 +236,12 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
 
         if (IsDisposed || isPassed || (!arrival.IsReplacement && !_arrivals.TryAdd(arrival.Revision, arrival)))
         {
+            // A replacement the text has passed answers the request for it, as one taken does.
+            if (arrival.IsReplacement)
+            {
+                _isReplacementRequested = false;
+            }
+
             await arrival.Transfer.DiscardAsync();
             return;
         }
@@ -285,6 +292,10 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
                 }
 
                 await AdoptAsync(text, written);
+
+                // The field holds .NET's text in place of every edit made before the write, those lost and what they committed among them.
+                _needsReplacement = false;
+                _hasLostCommit = false;
             }
         }
         finally
@@ -381,7 +392,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
 
     private async Task ApplyEditAsync(Arrival edit)
     {
-        string inserted;
+        string? inserted;
 
         try
         {
@@ -390,6 +401,17 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
         catch (JSTransferException ex)
         {
             DomLog.EditLost(_session.Logger, ex, _registration.Token, edit.Revision, _session.RuntimeId);
+            inserted = null;
+        }
+
+        // A write of .NET's own that landed while the edit was read took its place.
+        if (edit.Revision <= _revision)
+        {
+            return;
+        }
+
+        if (inserted is null)
+        {
             MarkLost(edit);
             return;
         }
@@ -416,7 +438,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
             return;
         }
 
-        string text;
+        string? text;
 
         try
         {
@@ -425,7 +447,19 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
         catch (JSTransferException ex)
         {
             DomLog.EditLost(_session.Logger, ex, _registration.Token, replacement.Revision, _session.RuntimeId);
-            _needsReplacement = true;
+            text = null;
+        }
+
+        // A text lost at a revision .NET holds, as a write of its own that landed while the text was read leaves it, needs no replacing.
+        if (text is null)
+        {
+            _needsReplacement |= replacement.Revision > _revision;
+            return;
+        }
+
+        // A write of .NET's own that landed while the text was read took its place.
+        if (replacement.Revision < _revision)
+        {
             return;
         }
 

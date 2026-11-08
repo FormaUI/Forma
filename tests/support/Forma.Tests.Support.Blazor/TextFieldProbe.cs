@@ -82,7 +82,7 @@ public sealed class TextFieldProbe
         var (start, removed, inserted) = Diff(edits.Sent, edits.Value);
         edits.Sent = edits.Value;
         var revision = ++edits.Revision;
-        var stream = new HeldStreamReference(Encoding.UTF8.GetBytes(inserted));
+        var stream = new HeldJSStreamReference(Encoding.UTF8.GetBytes(inserted));
         var transfer = new JSTransfer { Stream = stream, IsText = true };
         var delivery = _context.Renderer.Dispatcher.InvokeAsync(() => edits.Receiver.EditAsync(edits.Token, revision, start, removed, transfer, isCommit: true));
 
@@ -207,10 +207,10 @@ public sealed class TextFieldProbe
     /// <summary>An edit whose text is streamed and held on its way.</summary>
     public sealed class HeldEdit
     {
-        private readonly HeldStreamReference _stream;
+        private readonly HeldJSStreamReference _stream;
         private readonly Task _delivery;
 
-        internal HeldEdit(HeldStreamReference stream, Task delivery)
+        internal HeldEdit(HeldJSStreamReference stream, Task delivery)
         {
             _stream = stream;
             _delivery = delivery;
@@ -224,29 +224,6 @@ public sealed class TextFieldProbe
 
             return _delivery;
         }
-    }
-
-    // A text's stream whose reading waits until it is released, as a long paste's chunks are still on their way.
-    internal sealed class HeldStreamReference(byte[] bytes) : IJSStreamReference
-    {
-        // Plain, so the reader's continuation runs where the test releases it.
-        private readonly TaskCompletionSource _released = new();
-
-        public long Length
-            => bytes.Length;
-
-        public void Release()
-            => _released.TrySetResult();
-
-        public async ValueTask<Stream> OpenReadStreamAsync(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
-        {
-            await _released.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
-
-            return new MemoryStream(bytes, writable: false);
-        }
-
-        public ValueTask DisposeAsync()
-            => ValueTask.CompletedTask;
     }
 
     /// <summary>A field's edits as the browser keeps them: the text it holds, the text it last sent and the revision it stands at.</summary>

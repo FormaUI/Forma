@@ -382,6 +382,29 @@ public sealed class DomTextEditsTests
         }
 
         [Fact]
+        public async Task Should_ask_for_nothing_in_place_of_a_whole_text_lost_at_a_revision_it_holds()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser((command, _) => command == "resend");
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            await using var edits = await FollowAsync(engine, "Ada", Live, _ => Task.CompletedTask);
+            await EditAsync(browser, 1, 3, 0, "!");
+            var (receiver, token) = GetReceiver(browser);
+            var broken = new JSTransfer { Stream = new FakeJSStreamReference(Encoding.UTF8.GetBytes("Ada!"), new IOException("The stream broke on its way.")), IsText = true };
+
+            // Act
+            await receiver.ReplaceAsync(token, 1, broken);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(GetCommands(browser, "resend")),
+                () => Assert.False(edits.IsFaulted),
+                () => Assert.Equal("Ada!", edits.Text));
+        }
+
+        [Fact]
         public async Task Should_ask_again_with_the_next_edit_while_the_field_cannot_be_reached_rather_than_in_a_loop()
         {
             // Arrange
@@ -501,6 +524,103 @@ public sealed class DomTextEditsTests
 
             // Assert
             Assert.Empty(GetCommands(browser, "write"));
+        }
+
+        [Fact]
+        public async Task Should_follow_the_field_once_a_write_of_its_own_takes_the_place_of_an_edit_lost()
+        {
+            // Arrange — an edit the text refused, and a write of .NET's own made while the field's whole text is asked for
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            List<TextChange> changes = [];
+            await using var edits = await FollowAsync(engine, "Ada", Live with { MaxLength = 2 }, change =>
+            {
+                changes.Add(change);
+                return Task.CompletedTask;
+            });
+            browser.Engine.Recorder.Hold("invoke");
+            var editing = EditAsync(browser, 1, 3, 0, " Lovelace");
+            var resend = await WaitForCommandAsync(browser, "resend");
+            var writing = edits.SyncAsync(Field, "Grace", Live with { MaxLength = 2 });
+            var write = await WaitForCommandAsync(browser, "write");
+            await ReplaceAsync(browser, 1, "Ada!");
+
+            // Act
+            resend.Complete(true);
+            await editing;
+            write.Complete(2);
+            await writing;
+            var isSettled = await edits.SettleAsync();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isSettled),
+                () => Assert.False(edits.IsFaulted),
+                () => Assert.Equal("Grace", edits.Text),
+                () => Assert.DoesNotContain(changes, change => change.IsFaulted || change.IsCommit));
+        }
+
+        [Fact]
+        public async Task Should_drop_an_edit_a_write_of_its_own_took_the_place_of_while_the_edit_was_read()
+        {
+            // Arrange — an edit whose streamed text is still on its way as a write of .NET's own lands
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser((command, _) => command == "write" ? 2 : null);
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            List<string> texts = [];
+            await using var edits = await FollowAsync(engine, "Ada", Live, change =>
+            {
+                texts.Add(change.Text);
+                return Task.CompletedTask;
+            });
+            var inserted = new HeldJSStreamReference(Encoding.UTF8.GetBytes(" Lovelace"));
+            var (receiver, token) = GetReceiver(browser);
+            var editing = receiver.EditAsync(token, 1, 3, 0, new JSTransfer { Stream = inserted, IsText = true }, isCommit: false);
+
+            // Act
+            await edits.SyncAsync(Field, "Grace", Live);
+            inserted.Release();
+            await editing;
+            var isSettled = await edits.SettleAsync();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isSettled),
+                () => Assert.Equal("Grace", edits.Text),
+                () => Assert.Empty(texts));
+        }
+
+        [Fact]
+        public async Task Should_ask_for_the_field_s_whole_text_again_once_a_write_of_its_own_passed_the_one_asked_for()
+        {
+            // Arrange — the whole text asked for in place of a lost edit, arriving after a write of .NET's own took its place, and a field
+            // that can't be reached once asked again
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser((command, _) => command == "resend" ? false : null);
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            await using var edits = await FollowAsync(engine, "Ada", Live with { MaxLength = 2 }, _ => Task.CompletedTask);
+            browser.Engine.Recorder.Hold("invoke");
+            var editing = EditAsync(browser, 1, 3, 0, " Lovelace");
+            (await WaitForCommandAsync(browser, "resend")).Complete(true);
+            await editing;
+            var writing = edits.SyncAsync(Field, "Al", Live with { MaxLength = 2 });
+            (await WaitForCommandAsync(browser, "write")).Complete(2);
+            await writing;
+            await ReplaceAsync(browser, 1, "Ada Lovelace");
+            browser.Engine.Recorder.Release("invoke");
+
+            // Act
+            await EditAsync(browser, 3, 2, 0, " Turing");
+
+            // Assert
+            var resends = GetCommands(browser, "resend");
+            Assert.Multiple(
+                () => Assert.Equal(2, resends.Count),
+                () => Assert.Equal(2, resends[^1].Arguments[4]));
         }
 
         [Fact]

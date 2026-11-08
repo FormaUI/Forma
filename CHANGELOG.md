@@ -43,6 +43,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A form's actions wait for the time a `FormaTimePicker` or a `FormaDateTimePicker` is still receiving, and the picker
   says on its field when its text can't follow the reader's edits, as the text inputs do. The form went on with the
   time that had arrived, and the picker stopped without a word.
+- A text field whose edit was lost on its way follows the reader again once the application writes a text of its own
+  into it, and an edit still arriving as the write lands gives way to it. The field kept saying its text couldn't
+  follow the reader's edits, and its form refused its actions, until the reader edited it again. The late edit was
+  applied over the text written.
 
 ## `1.0.0-preview.4`
 
