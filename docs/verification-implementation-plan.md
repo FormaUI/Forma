@@ -38,7 +38,7 @@ commit. And the push that publishes a release stopped at a manual step.
    and failed on one SHA is labeled `flaky`. One that failed every run on a SHA where it had passed before is
    labeled a regression. An unreachable device gets one infrastructure issue, its interrupted checks listed as not
    run. Gate: the report's cases on results made for them, and the dispatched run of step 3.
-5. **The known intermittent failures are fixed at their cause.** Each is reproduced on the SHA it failed on, and
+5. ✅ **The known intermittent failures are fixed at their cause.** Each is reproduced on the SHA it failed on, and
    again on the fix:
    - ✅ `WindowsTests+RestArea.Should_restore_a_minimized_window_from_its_handle`, on WebAssembly in the Linux gate,
      which failed once before in Android's web view under Auto with WebAssembly. The activation a window's opening
@@ -50,15 +50,20 @@ commit. And the push that publishes a release stopped at a manual step.
      superseded that follow with the traversal, a navigation the check didn't expect. A follow held until the
      traversal began failed it every run. The check now navigates within one culture, and the culture check that
      traverses after a switch waits for the switch's follow to land first;
-   - the Android emulator going offline in the MAUI example's job, investigated in that job with step 2's report.
+   - ✅ the Android emulator going offline in the MAUI example's job. Stopping the share sheet's package while its
+     window showed crashed the emulator, which exited on a segmentation fault: repeating the share checks with that
+     stop failed 8 of 10 jobs, 7 of them on the crash, and dismissing the sheet with Back before the stop failed
+     none. The harness now dismisses it with Back first, and 160 runs of the share checks over 10 jobs then kept the
+     emulator up. The same runs showed a refused connection to the web view's forwarded port, which the harness
+     chose and adb then bound, so adb now chooses the port itself.
 6. ✅ **The local gate follows the change.** Once steps 1 to 5 have been exercised, the design states when each
    gate runs: before a commit, the fast gate, the format check where C# changed, and the browser checks for what
    the change touches; the full gate in CI, nightly on `dev` and on every push to `candidate`; and locally for a
    change to shared interop, the component bases, the hosts or the build, and to reproduce a CI failure. The
    verifying skill, the working rules and the repository guide point to the design rather than restating it.
-   It landed once the nightly hunt, steps 1 to 4, had run on `dev`, the condition the maintainer set; step 5's
-   Android item waits for an emulator to drop, which step 2's report then describes. The contributing guide points
-   to the design too, and the full workflow's header no longer calls the full gate the one before a commit.
+   It landed once the nightly hunt, steps 1 to 4, had run on `dev`, the condition the maintainer set. The contributing
+   guide points to the design too, and the full workflow's header no longer calls the full gate the one before a
+   commit.
 7. ✅ **The release command.** Versioning ships one command a maintainer runs after asking for a release. It checks
    the repository, the promotion pull request and the passing runs for the candidate's exact SHA, and holds the
    release to the release check before anything is pushed. It signs the tag locally and verifies the signature,
