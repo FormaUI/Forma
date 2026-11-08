@@ -55,7 +55,7 @@ function Add-Result {
 # A build script is named for its action in lowercase, since it is a command someone types; a task script
 # takes Verb-Noun with an approved verb, as PowerShell asks of anything it offers.
 $files = @(
-    # The root holds the commands typed most, the gate and the release, named like build actions.
+    # The root holds the command typed most, the gate, named like the build actions.
     Get-ChildItem -LiteralPath $repositoryRoot -Filter '*.ps1' -File | ForEach-Object { [pscustomobject]@{ File = $_; Kind = 'build' } }
     Get-ChildItem -LiteralPath $scripts -Filter '*.ps1' -File | ForEach-Object { [pscustomobject]@{ File = $_; Kind = 'task' } }
     Get-ChildItem -LiteralPath $scripts -Filter '*.psm1' -File | ForEach-Object { [pscustomobject]@{ File = $_; Kind = 'module' } }
