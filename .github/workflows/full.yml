@@ -263,8 +263,9 @@ jobs:
       - name: Start an Android emulator
         uses: ./.github/actions/android-emulator
 
+      # The gate's jobs check the components in every other runtime, so this one checks them on Android alone.
       - name: Check the components on Android
-        run: pwsh ./scripts/build/browser.ps1 -Android
+        run: pwsh ./scripts/build/browser.ps1 -Android -Filter 'Runtime=android'
 
       # A device that went unreachable is described where it happened: its process, the runner's memory and its log.
       - name: Describe the Android emulator
