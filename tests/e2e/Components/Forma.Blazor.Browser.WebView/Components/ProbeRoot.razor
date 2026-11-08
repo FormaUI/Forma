@@ -1,7 +1,9 @@
-@* The root every web view renders: its name and the runtime rendering it, which a check finds it by, and the interactive router over the
-   check host's pages and every component's check page, within the culture route scope, with the web view's name cascaded to them. *@
+@* The root every web view renders: its name and the runtime rendering it, which a check finds it by, the round trip a check makes through
+   that runtime, and the interactive router over the check host's pages and every component's check page, within the culture route scope,
+   with the web view's name cascaded to them. *@
 <output id="web-view">@WebView</output>
 <output id="runtime">@RendererInfo.Name @RendererInfo.IsInteractive</output>
+<CheckRoundTrip />
 <CascadingValue Value="WebView" Name="WebView">
     <CultureRouteScope>
         <Router AppAssembly="typeof(ProbeRoot).Assembly" AdditionalAssemblies="CheckPages">

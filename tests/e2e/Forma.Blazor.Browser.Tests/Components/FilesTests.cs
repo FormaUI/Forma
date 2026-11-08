@@ -164,6 +164,7 @@ public sealed partial class FilesTests
             await page.Keyboard.DownAsync("Control");
             await page.Mouse.WheelAsync(0, -100);
             await page.Keyboard.UpAsync("Control");
+            await MakeRoundTripAsync(page);
 
             // Assert
             await Assertions.Expect(page.Locator("#image .forma-file-viewer-zoom-level")).ToHaveTextAsync("100%");

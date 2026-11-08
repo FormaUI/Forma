@@ -106,10 +106,13 @@ public sealed class TransferTests
             await code.EvaluateAsync("code => { code.focus(); code.value = 'x'.repeat(100); code.dispatchEvent(new Event('input', { bubbles: true })); code.dispatchEvent(new Event('change', { bubbles: true })); }");
             await Assertions.Expect(message).ToHaveTextAsync("Your text didn't arrive in full. Edit it to try again.");
 
-            // Act — Save pressed while the text can't follow, and again once the box holds a text it accepts
+            // Act — Save pressed while the text can't follow, and again once the box holds a text it accepts; the message leaves as the
+            // text arrives, which the page sent after the first press, and a round trip after it, so the first press has been answered
             await page.Locator("#forma-save").ClickAsync();
             await code.FillAsync("abc");
             await Assertions.Expect(message).ToHaveCountAsync(0);
+            await MakeRoundTripAsync(page);
+            await Assertions.Expect(page.Locator("#saves")).ToHaveTextAsync("0");
             await page.Locator("#forma-save").ClickAsync();
 
             // Assert

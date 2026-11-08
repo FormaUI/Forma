@@ -1,5 +1,8 @@
-@* The interactive router over every check page, with the runtime that renders it, which a check waits for before it acts. *@
+@inherits ComponentBase
+
+@* The interactive router over every check page, with the runtime that renders it, which a check waits for before it acts, and the round trip a check makes through that runtime. *@
 <output id="runtime">@RendererInfo.Name @RendererInfo.IsInteractive</output>
+<CheckRoundTrip />
 <Router AppAssembly="typeof(Routes).Assembly">
     <Found Context="routeData">
         <RouteView RouteData="routeData" />

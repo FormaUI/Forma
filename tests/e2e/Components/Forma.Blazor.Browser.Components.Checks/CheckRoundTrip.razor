@@ -1,0 +1,10 @@
+@inherits ComponentBase
+
+@* A round trip a check makes through the runtime rendering the page, out of sight and the check pages' scaffolding: a press the runtime
+   handles after every event the page sent before it, and the count it renders in answer. *@
+<button id="round-trip" type="button" hidden data-check-scaffold @onclick="() => _roundTrips++">Round Trip</button>
+<output id="round-trips" hidden>@_roundTrips</output>
+
+@code {
+    private int _roundTrips;
+}

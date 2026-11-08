@@ -464,6 +464,7 @@ public sealed class ComposerTests
             await using var _ = context;
             var editor = page.Locator("#committed textarea");
             await editor.PressSequentiallyAsync("abc");
+            await MakeRoundTripAsync(page);
             await Assertions.Expect(page.Locator("#committed-result")).ToHaveTextAsync(string.Empty);
 
             // Act

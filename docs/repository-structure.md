@@ -462,6 +462,8 @@ They also run against the full client, served as a standalone app.
 
 **Check pages.** The checks' Razor class library holds a check page per component, with the services the checked
 components need. The components host and its client render the pages, and the WebView check host renders them too.
+Beside every page, the router renders a round trip a check makes through the runtime before it reads that something
+didn't happen.
 A page's address names the runtime:
 
 - `server`, `webassembly`, `auto`, `webview` or `android`, which the host's `App` renders the interactive router in;

@@ -2,7 +2,7 @@ namespace Forma.Blazor.Browser.Tests;
 
 using Forma.Tests.Shared;
 
-/// <summary>What a component's check does in each runtime: opens the component's check page on the components host, waits until the page's runtime is interactive, and waits for the signals a component gives once its script answers input.</summary>
+/// <summary>What a component's check does in each runtime: opens the component's check page on the components host, waits until the page's runtime is interactive, waits for the signals a component gives once its script answers input, and makes a round trip through the runtime before it reads that something didn't happen.</summary>
 public static partial class ComponentChecks
 {
     /// <summary>The runtimes every component is checked in: the Server, WebAssembly, Auto on a first visit, which runs on the Server, and once WebAssembly has downloaded, which runs there, and Blazor Hybrid's web view, WebView2's and Android's.</summary>
@@ -108,6 +108,20 @@ public static partial class ComponentChecks
     /// <remarks>It waits as long as a page's own waits, as every wait on a script's answer here does, since a busy machine can hold a script's first call past an assertion's.</remarks>
     public static Task WaitForLayerAsync(ILocator scope)
         => Assertions.Expect(scope).ToHaveAttributeAsync("data-forma-layer", LayerPattern(), new() { Timeout = 30000 });
+
+    /// <summary>Makes a round trip through the runtime rendering the page: a press on the page's round trip, which the runtime handles after every event the page sent before it, and the count it renders in answer.</summary>
+    /// <param name="page">The page.</param>
+    /// <returns>A task that completes once the runtime has rendered its answer.</returns>
+    /// <remarks>The runtime handles the page's events in the order the page sent them, and renders what each handler changed before it takes the next, so once the answer renders, whatever an earlier event did at once has rendered too; a check reads that something did not happen after one. The press is dispatched to the round trip itself, out of sight, so it moves no focus and leaves the page's selection alone.</remarks>
+    public static async Task MakeRoundTripAsync(IPage page)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        var roundTrips = page.Locator("#round-trips");
+        var made = int.Parse(await roundTrips.TextContentAsync().ConfigureAwait(false) ?? "0", System.Globalization.CultureInfo.InvariantCulture);
+        await page.Locator("#round-trip").DispatchEventAsync("click").ConfigureAwait(false);
+        await Assertions.Expect(roundTrips).ToHaveTextAsync((made + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)).ConfigureAwait(false);
+    }
 
     /// <summary>Waits until Blazor's file input listens on the element <paramref name="selector"/> names.</summary>
     /// <param name="page">The page read.</param>

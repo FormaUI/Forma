@@ -35,9 +35,12 @@ public sealed class ExampleHostTests(BrowserHost host)
         await using var _ = context;
         var served = await GetDocumentAsync(page);
 
-        // Act
+        // Act — the server's island turns its page once the client's switch is done, a round trip on its circuit, which a switch reaching
+        // the server or the document from the client would have come through ahead of
         await page.Locator("#webassembly .switch").ClickAsync();
         await ExpectHebrewAsync(page, "webassembly", PaginationLabel);
+        await GetNextPage(page, "server").ClickAsync();
+        await Assertions.Expect(GetNextPage(page, "server")).ToBeDisabledAsync();
         var afterClient = await GetDocumentAsync(page);
         var serverAfterClient = await page.Locator("#server .welcome").TextContentAsync();
         await page.Locator("#server .switch").ClickAsync();
@@ -68,4 +71,8 @@ public sealed class ExampleHostTests(BrowserHost host)
         await Assertions.Expect(page.Locator($"#{island} .welcome")).ToHaveTextAsync(Welcome);
         await Assertions.Expect(page.Locator($"#{island} nav")).ToHaveAttributeAsync("aria-label", paginationLabel);
     }
+
+    // The island's step to the next of its pagination's two pages that its width shows, the steps' own or the input row's.
+    private static ILocator GetNextPage(IPage page, string island)
+        => page.Locator($"#{island} .forma-pagination-navigation-button-next:visible");
 }

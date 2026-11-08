@@ -99,6 +99,7 @@ public sealed partial class InputsTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-box");
             await using var _ = context;
             await page.Locator("#committed").PressSequentiallyAsync("Quarterly");
+            await ComponentChecks.MakeRoundTripAsync(page);
             await Assertions.Expect(page.Locator("#title")).ToHaveTextAsync(string.Empty);
 
             // Act
@@ -154,6 +155,7 @@ public sealed partial class InputsTests
             var textArea = page.Locator("#committed");
             await textArea.PressSequentiallyAsync("Draft");
             await Assertions.Expect(page.Locator("#committed-count-value")).ToHaveTextAsync("5 / 100");
+            await ComponentChecks.MakeRoundTripAsync(page);
             await Assertions.Expect(page.Locator("#body")).ToHaveTextAsync(string.Empty);
 
             // Act

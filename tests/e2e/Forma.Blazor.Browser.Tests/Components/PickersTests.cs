@@ -251,6 +251,7 @@ public sealed class PickersTests
             var message = page.GetByText("The Start field needs a time.", new() { Exact = true });
             await page.Locator("#check-time").FillAsync(string.Empty);
             await page.Locator("#check-date").FocusAsync();
+            await ComponentChecks.MakeRoundTripAsync(page);
             await Assertions.Expect(message).ToHaveCountAsync(0);
 
             // Act — the field's focus watch attaches in its own time, so the reader leaves and comes back until it answers
