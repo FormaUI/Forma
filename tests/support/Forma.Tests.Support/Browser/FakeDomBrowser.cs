@@ -64,26 +64,45 @@ public sealed class FakeDomBrowser
     {
         ArgumentNullException.ThrowIfNull(attach);
 
-        var request = attach.Arguments[^1]!;
+        return GetRequestField(attach.Arguments, field);
+    }
 
-        return InteropPayload.GetValue(request, field);
+    /// <summary>Reads a field of what an attach, made with <paramref name="attachArguments"/>, asked the browser for: <c>token</c>, <c>generation</c>, <c>capability</c>, <c>target</c> or <c>options</c>.</summary>
+    /// <remarks>The attach's arguments are the owner's runtime key, its receiver and its request, whichever fake took the call.</remarks>
+    public static object? GetRequestField(IReadOnlyList<object?> attachArguments, string field)
+    {
+        ArgumentNullException.ThrowIfNull(attachArguments);
+
+        return InteropPayload.GetValue(attachArguments[^1]!, field);
     }
 
     /// <summary>Reads an option of what an attach asked the browser for.</summary>
     public static object? GetOption(RecordedCall attach, string option)
     {
-        var options = GetRequestField(attach, "options")!;
+        ArgumentNullException.ThrowIfNull(attach);
 
-        return InteropPayload.GetValue(options, option);
+        return GetOption(attach.Arguments, option);
     }
+
+    /// <summary>Reads an option of what an attach, made with <paramref name="attachArguments"/>, asked the browser for.</summary>
+    public static object? GetOption(IReadOnlyList<object?> attachArguments, string option)
+        => InteropPayload.GetValue(GetRequestField(attachArguments, "options")!, option);
 
     /// <summary>Delivers <paramref name="state"/> through the receiver the observation's <paramref name="attach"/> carried, under its token and generation, as the browser does.</summary>
     public static Task DeliverAsync(RecordedCall attach, object state)
     {
         ArgumentNullException.ThrowIfNull(attach);
 
-        var receiver = ((DotNetObjectReference<DomReceiver>)attach.Arguments[1]!).Value;
+        return DeliverAsync(attach.Arguments, state);
+    }
 
-        return receiver.NotifyAsync((string)GetRequestField(attach, "token")!, (int)GetRequestField(attach, "generation")!, new JSTransfer { Value = JsonSerializer.SerializeToElement(state, JsonSerializerOptions.Web) });
+    /// <summary>Delivers <paramref name="state"/> through the receiver an observation's attach, made with <paramref name="attachArguments"/>, carried, under its token and generation, as the browser does.</summary>
+    public static Task DeliverAsync(IReadOnlyList<object?> attachArguments, object state)
+    {
+        ArgumentNullException.ThrowIfNull(attachArguments);
+
+        var receiver = ((DotNetObjectReference<DomReceiver>)attachArguments[1]!).Value;
+
+        return receiver.NotifyAsync((string)GetRequestField(attachArguments, "token")!, (int)GetRequestField(attachArguments, "generation")!, new JSTransfer { Value = JsonSerializer.SerializeToElement(state, JsonSerializerOptions.Web) });
     }
 }

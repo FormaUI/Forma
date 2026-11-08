@@ -8,6 +8,7 @@ using Bunit;
 
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.JavaScript.Interop;
+using Forma.Tests.Browser;
 using Forma.Tests.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -16,9 +17,6 @@ using Microsoft.JSInterop;
 /// <summary>A stand-in for the text fields' edits script under a bUnit context: it takes each field's attach, sends the edits the reader's typing makes through the owner's receiver as the browser does, and answers the owner's writes and its requests for a field's whole text.</summary>
 public sealed class TextFieldProbe
 {
-    /// <summary>The engine's entry module.</summary>
-    public const string EnginePath = "./_content/forma/browser/scripts/DomEngine.js";
-
     // The attribute bUnit writes an element's reference into.
     private const string ElementReferenceAttribute = "blazor:elementReference";
 
@@ -117,7 +115,7 @@ public sealed class TextFieldProbe
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        var engine = context.JSInterop.SetupModule(EnginePath);
+        var engine = context.JSInterop.SetupModule(FakeDomBrowser.EnginePath);
         engine.Mode = JSRuntimeMode.Loose;
         engine.Setup<bool>("attach", _ => true).SetResult(true);
 
@@ -252,28 +250,28 @@ public sealed class TextFieldProbe
 
     /// <summary>Attaches a field's edits, which go on from where its previous attach left them.</summary>
     private sealed class AttachHandler(TextFieldProbe probe)
-        : JSRuntimeInvocationHandlerBase<bool>(invocation => invocation.Identifier == "attach" && DomProbe<object>.GetRequestField(invocation, "capability") is "edits", isCatchAllHandler: false)
+        : JSRuntimeInvocationHandlerBase<bool>(invocation => invocation.Identifier == "attach" && FakeDomBrowser.GetRequestField(invocation.Arguments, "capability") is "edits", isCatchAllHandler: false)
     {
         protected override Task<bool> HandleAsync(JSRuntimeInvocation invocation)
         {
             var runtimeKey = (string)invocation.Arguments[0]!;
-            var token = (string)DomProbe<object>.GetRequestField(invocation, "token")!;
+            var token = (string)FakeDomBrowser.GetRequestField(invocation.Arguments, "token")!;
             var field = probe.FindField(runtimeKey, token);
 
             if (field is null)
             {
-                var text = (string)DomProbe<object>.GetOption(invocation, "text")!;
+                var text = (string)FakeDomBrowser.GetOption(invocation.Arguments, "text")!;
                 field = new Field(runtimeKey, token, ((DotNetObjectReference<DomReceiver>)invocation.Arguments[1]!).Value)
                 {
                     Value = text,
                     Sent = text,
-                    Revision = (int)DomProbe<object>.GetOption(invocation, "revision")!,
+                    Revision = (int)FakeDomBrowser.GetOption(invocation.Arguments, "revision")!,
                 };
                 probe._fields.Add(field);
             }
 
-            field.ElementId = ((ElementReference)DomProbe<object>.GetRequestField(invocation, "target")!).Id;
-            field.SendsOnInput = (bool)DomProbe<object>.GetOption(invocation, "sendsOnInput")!;
+            field.ElementId = ((ElementReference)FakeDomBrowser.GetRequestField(invocation.Arguments, "target")!).Id;
+            field.SendsOnInput = (bool)FakeDomBrowser.GetOption(invocation.Arguments, "sendsOnInput")!;
 
             return Task.FromResult(true);
         }

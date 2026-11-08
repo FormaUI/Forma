@@ -1,29 +1,18 @@
 namespace Forma.Tests.Blazor;
 
-using System.Text.Json;
-
 using AngleSharp.Dom;
 
 using Bunit;
 
-using Forma.Framework.Browser.Interop;
-using Forma.Framework.JavaScript.Interop;
-using Forma.Tests.Interop;
+using Forma.Tests.Browser;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A stand-in for the DOM watcher's and engine's scripts under a bUnit context: it holds each observation's attach until the test reports the state the browser measured, then delivers later states through the owner's receiver, and attaches every interaction.</summary>
 /// <typeparam name="TState">The state the observations measure.</typeparam>
 public sealed class DomProbe<TState>
     where TState : class
 {
-    /// <summary>The watcher's entry module.</summary>
-    public const string WatcherPath = "./_content/forma/browser/scripts/DomWatcher.js";
-
-    /// <summary>The engine's entry module.</summary>
-    public const string EnginePath = "./_content/forma/browser/scripts/DomEngine.js";
-
     private readonly BunitContext _context;
     private readonly HeldAttach _heldAttach = new();
 
@@ -33,10 +22,10 @@ public sealed class DomProbe<TState>
         ArgumentNullException.ThrowIfNull(context);
 
         _context = context;
-        Watcher = context.JSInterop.SetupModule(WatcherPath);
+        Watcher = context.JSInterop.SetupModule(FakeDomBrowser.WatcherPath);
         Watcher.Mode = JSRuntimeMode.Loose;
         Watcher.AddInvocationHandler(_heldAttach);
-        Engine = context.JSInterop.SetupModule(EnginePath);
+        Engine = context.JSInterop.SetupModule(FakeDomBrowser.EnginePath);
         Engine.Mode = JSRuntimeMode.Loose;
         Engine.Setup<bool>("attach", _ => true).SetResult(true);
     }
@@ -57,19 +46,11 @@ public sealed class DomProbe<TState>
 
     /// <summary>Reads a field of what an attach asked the browser for: <c>token</c>, <c>generation</c>, <c>capability</c>, <c>target</c> or <c>options</c>.</summary>
     public static object? GetRequestField(JSRuntimeInvocation attach, string field)
-    {
-        var request = attach.Arguments[^1]!;
-
-        return InteropPayload.GetValue(request, field);
-    }
+        => FakeDomBrowser.GetRequestField(attach.Arguments, field);
 
     /// <summary>Reads an option of what an attach asked the browser for.</summary>
     public static object? GetOption(JSRuntimeInvocation attach, string option)
-    {
-        var options = GetRequestField(attach, "options")!;
-
-        return InteropPayload.GetValue(options, option);
-    }
+        => FakeDomBrowser.GetOption(attach.Arguments, option);
 
     /// <summary>Reports <paramref name="state"/> as the browser measured it for the last observation attached, on the renderer.</summary>
     public Task ReportAsync(TState state)
@@ -91,17 +72,7 @@ public sealed class DomProbe<TState>
 
     // The state answers the attach where it still waits, and otherwise is the next the browser delivers.
     private Task ReportAsync(JSRuntimeInvocation attach, TState state)
-        => _context.Renderer.Dispatcher.InvokeAsync(() =>
-        {
-            if (_heldAttach.TryAnswer(attach, state))
-            {
-                return Task.CompletedTask;
-            }
-
-            var receiver = ((DotNetObjectReference<DomReceiver>)attach.Arguments[1]!).Value;
-
-            return receiver.NotifyAsync((string)GetRequestField(attach, "token")!, (int)GetRequestField(attach, "generation")!, new JSTransfer { Value = JsonSerializer.SerializeToElement(state, JsonSerializerOptions.Web) });
-        });
+        => _context.Renderer.Dispatcher.InvokeAsync(() => _heldAttach.TryAnswer(attach, state) ? Task.CompletedTask : FakeDomBrowser.DeliverAsync(attach.Arguments, state));
 
     /// <summary>Holds each observation's attach until the test answers it.</summary>
     private sealed class HeldAttach()
