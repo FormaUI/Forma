@@ -70,6 +70,9 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     /// <summary>Raised with the suggested time the reader chose.</summary>
     [Parameter] public EventCallback<TimeOnly> OnChoose { get; set; }
 
+    /// <summary>Raised with whether the field's text can't follow the reader's edits, as that changes.</summary>
+    [Parameter] public EventCallback<bool> OnTextFaultChanged { get; set; }
+
     /// <summary>The placeholder text shown when the field is empty.</summary>
     [Parameter] public string? Placeholder { get; set; }
 
@@ -105,6 +108,7 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     private DomTextEdits _edits = default!;
     private DomObservation<FocusWatchOptions, FocusState>? _focusState;
     private bool _isWithin;
+    private bool _isTextFaulted;
     private ElementReference _anchorElement;
     private IReadOnlyList<TimeOnly>? _optionsSource;
     private TimeOption[] _options = [];
@@ -184,6 +188,11 @@ public sealed partial class FormaTimeBox : FormaComponentBase
         await _inputRegistration.SyncAsync(InputElement, IsOpen ? OpenProfile : ClosedProfile);
     }
 
+    /// <summary>Waits until the field's text holds every edit the reader made before the call.</summary>
+    /// <returns>Whether the text holds them.</returns>
+    internal Task<bool> SettleEditsAsync()
+        => _edits.SettleAsync();
+
     private string GetOptionId(int index)
         => $"{ElementId}-option-{index}";
 
@@ -210,6 +219,12 @@ public sealed partial class FormaTimeBox : FormaComponentBase
         if (change.IsCommit)
         {
             await OnChange.InvokeAsync(change.Text);
+        }
+
+        if (change.IsFaulted != _isTextFaulted)
+        {
+            _isTextFaulted = change.IsFaulted;
+            await OnTextFaultChanged.InvokeAsync(change.IsFaulted);
         }
     }
 

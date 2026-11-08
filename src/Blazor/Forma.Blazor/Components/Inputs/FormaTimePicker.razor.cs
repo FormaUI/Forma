@@ -84,6 +84,8 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
             throw new InvalidOperationException($"{nameof(FormaTimePicker<TValue>)} binds a {nameof(TimeOnly)} or a nullable one, not a {typeof(TValue).Name}.");
         }
 
+        JoinForm(SettleEditsAsync);
+
         base.OnInitialized();
     }
 
@@ -140,6 +142,13 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
 
     private string FormatTime(TimeOnly time)
         => time.ToString(HasSeconds ? "T" : "t", Context.CultureState.Culture);
+
+    // The box is there once the picker has rendered; before that it holds no edits to wait for.
+    private Task<bool> SettleEditsAsync()
+        => Box?.SettleEditsAsync() ?? Task.FromResult(true);
+
+    private void HandleTextFaultChanged(bool isFaulted)
+        => ReportTextFault(isFaulted, L["Your text didn't arrive in full. Edit it to try again."]);
 
     // Takes the text the reader typed into the edit in progress, which begins over the value bound to the field.
     private void Draft(string? text)

@@ -75,6 +75,8 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
 
     private FormaField? FieldContainer { get; set; }
 
+    private FormaTimeBox? TimeBox { get; set; }
+
     /// <inheritdoc />
     public override ElementReference RootElement
     {
@@ -178,6 +180,7 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
         }
 
         EditContext?.OnValidationRequested += HandleValidationRequested;
+        JoinForm(SettleEditsAsync);
 
         base.OnInitialized();
     }
@@ -326,6 +329,13 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
         _date = null;
         Enter();
     }
+
+    // The time box is there once the picker has rendered; before that it holds no edits to wait for.
+    private Task<bool> SettleEditsAsync()
+        => TimeBox?.SettleEditsAsync() ?? Task.FromResult(true);
+
+    private void HandleTextFaultChanged(bool isFaulted)
+        => ReportTextFault(isFaulted, L["Your text didn't arrive in full. Edit it to try again."]);
 
     private void HandleInputTime(string? text)
         => _timeDraft.Edit(text, Context.CultureState.Culture);

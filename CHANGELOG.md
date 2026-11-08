@@ -40,6 +40,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   text can't follow the reader's edits.
 - A `FormaNumberInput`'s arrow keys step from the number the reader typed, and a `FormaSearchBox`'s Enter searches
   the text typed, where that text is still on its way as the key is pressed. They read the text that had arrived.
+- A form's actions wait for the time a `FormaTimePicker` or a `FormaDateTimePicker` is still receiving, and the picker
+  says on its field when its text can't follow the reader's edits, as the text inputs do. The form went on with the
+  time that had arrived, and the picker stopped without a word.
 
 ## `1.0.0-preview.4`
 

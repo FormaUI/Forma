@@ -162,6 +162,59 @@
         }
 
         [Fact]
+        public async Task Should_run_its_form_s_actions_with_the_time_typed_once_it_arrives()
+        {
+            // Arrange — the typed time still on its way as the reader presses the form's button
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var fields = new TextFieldProbe(ctx);
+            var model = new Shift { End = new TimeOnly(17, 0) };
+            var saved = new List<TimeOnly?>();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+                <FormaButton OnClick="@(() => saved.Add(model.End))">Save</FormaButton>
+            </FakeFormHost>);
+            var typing = fields.CommitHeld(cut.Find("input"), "4:45 PM");
+
+            // Act
+            var saving = cut.FindAll("button").Single(button => button.TextContent.Trim() == "Save").ClickAsync(new());
+            var savedEarly = saved.ToList();
+            await typing.ReleaseAsync();
+            await saving;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(savedEarly),
+                () => Assert.Equal<TimeOnly?>([new TimeOnly(16, 45)], saved));
+        }
+
+        [Fact]
+        public async Task Should_say_on_its_field_that_its_text_did_not_arrive_and_take_it_off_once_it_does()
+        {
+            // Arrange — the form's messages as each change of its validation state leaves them
+            using var ctx = new FormaTimePickerTests();
+            using var culture = new CultureFixture("en-US");
+            var fields = new TextFieldProbe(ctx);
+            var model = new Shift { End = new TimeOnly(17, 0) };
+            var form = new EditContext(model);
+            var states = new List<IReadOnlyList<string>>();
+            form.OnValidationStateChanged += (_, _) => states.Add([.. form.GetValidationMessages()]);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act — a long text whose stream breaks, and the whole text the browser sends in its place too, then the reader's next edit
+            await fields.CommitBrokenAsync(cut.Find("input"), "4:45 PM");
+            await fields.ChangeAsync(cut.Find("input"), "5:15 PM");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([["Your text didn't arrive in full. Edit it to try again."], []], states),
+                () => Assert.Empty(cut.FindAll(".forma-field-message")),
+                () => Assert.Equal(new TimeOnly(17, 15), model.End));
+        }
+
+        [Fact]
         public async Task Should_describe_the_time_by_the_message_it_reports()
         {
             // Arrange

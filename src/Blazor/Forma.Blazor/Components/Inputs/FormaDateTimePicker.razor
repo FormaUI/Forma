@@ -31,7 +31,8 @@
                           TriggerClass="@ControlClass"
                           TriggerAttributes="DateAttributes"
                           TriggerDescribedBy="@DescribedBy" />
-            <FormaTimeBox ElementId="@TimeId"
+            <FormaTimeBox @ref="TimeBox"
+                          ElementId="@TimeId"
                           OwnerRuntimeId="@Context.RuntimeId"
                           Text="@TimeText"
                           Time="@_time"
@@ -41,6 +42,7 @@
                           OnInput="HandleInputTime"
                           OnChange="HandleChangeTime"
                           OnChoose="HandleChooseTime"
+                          OnTextFaultChanged="HandleTextFaultChanged"
                           Required="@IsRequired"
                           Disabled="@Disabled"
                           ReadOnly="@ReadOnly"
