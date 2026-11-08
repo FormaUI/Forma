@@ -142,7 +142,7 @@ public sealed class RichContentMarkupPolicyTests
         [Theory]
         [InlineData("https://example.com/photo.jpg")]
         [InlineData("http://example.com")]
-        [InlineData("mailto:editor@epica.cc")]
+        [InlineData("mailto:editor@example.com")]
         [InlineData("tel:+573001234567")]
         [InlineData("/media/podium.png")]
         [InlineData("./relative.png")]

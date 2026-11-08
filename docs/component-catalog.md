@@ -206,7 +206,7 @@ An authoring surface for rich text, Markdown, code and page composition, every c
 | | |
 |---|---|
 | **Old pattern** | Two legacy surfaces: CKEditor 4 in three presets with custom plugins for images, video, emoji, line height and forms, and the drag-and-drop page designer over `admin/pops/template.aspx` |
-| **Used in** | page editor, product description, product and category templates, popups, custom menus — and in Épica, the News article body |
+| **Used in** | page editor, product description, product and category templates, popups, custom menus, and a news article's body |
 
 ### `FormaConfirmDialog`
 
@@ -611,7 +611,7 @@ A multi-line text input in a field, resizable downward.
 | | |
 |---|---|
 | **Old pattern** | `<asp:TextBox TextMode="MultiLine">` styled as a single-line field and resizable downward |
-| **Used in** | SEO head, meta description, store details — and in Épica, article excerpts and summaries |
+| **Used in** | SEO head, meta description, store details, and an article's excerpt and summary |
 
 ### `FormaTextBox`
 

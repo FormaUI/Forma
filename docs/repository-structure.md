@@ -800,5 +800,5 @@ fidelity: the real states, vocabulary, edge cases and required behavior survive;
 
 ## Consumers
 
-The current consumers are the admin application Forma first served and **Épica Deportiva**, brought in by project
-reference or local NuGet. Épica's own documentation lists the subset it requires and tracks its status.
+The current consumers are the admin application Forma first served and a sports news site, brought in by project
+reference or local NuGet. Each consumer's own documentation lists the subset it requires and tracks its status.

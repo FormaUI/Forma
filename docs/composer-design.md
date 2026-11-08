@@ -258,7 +258,7 @@ The rich text editor ships two views. **Preview** lays the document out as a rea
 
 The designer is an editor plugin like the others, so it costs the engine nothing: it appears in the switcher when registered, and a host that only wants a rich text field never sees it.
 
-What it adds is a second extension point, because a palette that only Forma can fill is useless — the legacy application's palette was half host-domain (product price, buy button, page summary) and Épica's would be too (race results, rider cards, stage profiles).
+What it adds is a second extension point, because a palette that only Forma can fill is useless — the legacy application's palette was half host-domain (product price, buy button, page summary) and a sports publisher's would be too (race results, rider cards, stage profiles).
 
 ```csharp
 public interface IComposerDesignerPlugin : IComposerPlugin
@@ -286,7 +286,7 @@ public sealed record ComposerWidget
 }
 ```
 
-Built-in widgets cover the legacy application's generic palette — text, image, gallery, video, button, row, column, spacer, divider, form, map, embed, code. Everything domain-specific is the host's, registered the same way Forma's own are, so Épica adds a race-results widget without forking anything.
+Built-in widgets cover the legacy application's generic palette — text, image, gallery, video, button, row, column, spacer, divider, form, map, embed, code. Everything domain-specific is the host's, registered the same way Forma's own are, so a sports publisher adds a race-results widget without forking anything.
 
 #### The saved document is a widget tree
 
@@ -355,7 +355,7 @@ Those token widgets carry no content and barely any settings, because *what* the
 
 This is why the tree wins over the legacy application's saved HTML. The legacy application froze rendering decisions at save time — `<img src="/media/8842.jpg">`, `style="width:60%"` — so a new image format, a CDN move or a theme change could not reach an already-saved page, and a widget dropped from the palette left stale markup rendering silently instead of a visible "no longer available". Storing `mediaId: 8842` and `raceId: 42` keeps the author's *intent* and decides the markup at render time. The legacy application's approach also never escaped the tree: recovering a widget's identity and settings from HTML requires `data-widget` and `data-settings` attributes, which is the same JSON in a worse container, read back with an HTML parser the tree does not need.
 
-**Document metadata is the host's, not Forma's.** Identity, author, timestamps, revision, title, tags, publish state, visibility and access all belong on the host's row, which Épica's own conventions already mandate. Keeping them out of the tree avoids two sources of truth, keeps a publishing workflow out of a component library, and — decisively — keeps authorization out of a client-authored blob: the document round-trips through the browser, so anything inside it is attacker-controlled, and an editor that can write its own `Access` value is broken access control. A host that wants metadata traveling alongside wraps the tree in its own record.
+**Document metadata is the host's, not Forma's.** Identity, author, timestamps, revision, title, tags, publish state, visibility and access all belong on the host's row. Keeping them out of the tree avoids two sources of truth, keeps a publishing workflow out of a component library, and — decisively — keeps authorization out of a client-authored blob: the document round-trips through the browser, so anything inside it is attacker-controlled, and an editor that can write its own `Access` value is broken access control. A host that wants metadata traveling alongside wraps the tree in its own record.
 
 One shape considered and rejected: **HTML authoritative for rendering with a sidecar tree for editing.** It appears to offer both and is the worst available option — two persisted representations of one document, free to disagree, with no rule for which wins after a hand-edit.
 
