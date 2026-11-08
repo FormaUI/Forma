@@ -19,7 +19,8 @@ gives each check its rate on the commit checked for each machine: how many of th
 
 Each check has one open issue, found by the check's name it carries. The first failure opens it, and each later night's
 failure comments on it with the commit, the machine, the runtime, the rate, the first error and the run. Every issue
-the script opens carries the nightly label, and a described run reads no issue and changes none.
+the script opens carries the nightly label, and a described run reads no issue and changes none, unless it is given
+the open issues to describe its run against.
 
 .PARAMETER Results
 The folder holding each job's run's results, one folder for each, named checks-<job>-<os>-<attempt>.
@@ -33,6 +34,10 @@ The run's address.
 .PARAMETER Repository
 The repository whose issues are opened and updated, as owner/name.
 
+.PARAMETER OpenIssues
+A file holding the repository's open nightly issues, as gh issue list writes them with --json number,body,labels,
+read in place of the repository's own.
+
 .EXAMPLE
 ./scripts/Update-CheckIssue.ps1 -Results results -Commit $sha -Run $url -Repository FormaUI/Forma
 #>
@@ -41,7 +46,8 @@ param(
     [Parameter(Mandatory)] [string] $Results,
     [Parameter(Mandatory)] [ValidatePattern('^[0-9a-f]{40}$')] [string] $Commit,
     [Parameter(Mandatory)] [string] $Run,
-    [Parameter(Mandatory)] [ValidatePattern('^[\w.-]+/[\w.-]+$')] [string] $Repository
+    [Parameter(Mandatory)] [ValidatePattern('^[\w.-]+/[\w.-]+$')] [string] $Repository,
+    [string] $OpenIssues
 )
 
 Set-StrictMode -Version Latest
@@ -114,7 +120,7 @@ $shortCommit = $Commit.Substring(0, 12)
 $commitLink = "[$shortCommit](https://github.com/$Repository/commit/$Commit)"
 Write-Host ("On {0}: failing checks {1}, checks interrupted {2}, jobs failed outside their checks {3}" -f $shortCommit, @($findings | Select-Object -ExpandProperty Name -Unique).Count, $interruptedChecks.Count, $failedJobs.Count)
 
-# Issues are read only for a run that changes them, so a described run needs no token.
+# Issues are read only for a run that changes them, so a described run needs no token, unless it is given them.
 $openIssueList = @()
 $isDescribed = $WhatIfPreference
 
@@ -123,7 +129,13 @@ if (-not $isDescribed -and ($findings.Count -gt 0 -or $interruptedChecks.Count -
         $null = Invoke-GitHub @('label', 'create', $name, '--repo', $Repository, '--color', $labels[$name].Color, '--description', $labels[$name].Description, '--force')
     }
 
-    $openIssueList = @((Invoke-GitHub @('issue', 'list', '--repo', $Repository, '--label', $nightly, '--state', 'open', '--limit', '1000', '--json', 'number,body,labels')) -join "`n" | ConvertFrom-Json)
+    if (-not $OpenIssues) {
+        $openIssueList = @((Invoke-GitHub @('issue', 'list', '--repo', $Repository, '--label', $nightly, '--state', 'open', '--limit', '1000', '--json', 'number,body,labels')) -join "`n" | ConvertFrom-Json)
+    }
+}
+
+if ($OpenIssues) {
+    $openIssueList = @(Get-Content -LiteralPath $OpenIssues -Raw | ConvertFrom-Json)
 }
 
 function Find-Issue {

@@ -119,6 +119,7 @@ function Test-Case {
         [Parameter(Mandatory)] [string] $Script,
         [Parameter(Mandatory)] [AllowEmptyCollection()] [string[]] $Arguments,
         [string[]] $Expect = @(),
+        [string[]] $Reject = @(),
         [switch] $Fails
     )
 
@@ -128,6 +129,7 @@ function Test-Case {
         if ($Fails -and $run.Succeeded) { 'the run succeeded where it should have been refused' }
         if (-not $Fails -and -not $run.Succeeded) { 'the run failed' }
         foreach ($text in $Expect) { if ($run.Output -notmatch [regex]::Escape($text)) { "nothing said '$text'" } }
+        foreach ($text in $Reject) { if ($run.Output -match [regex]::Escape($text)) { "something said '$text'" } }
     )
 
     Add-Result -Name $Name -Problem $problems -Output $run.Output
@@ -231,6 +233,34 @@ try {
             'Check failing: WebViewProbeTests.Navigation''" on target "FormaUI/Forma, labeled nightly, regression"'
             'An Android device the checks ran on went unreachable''" on target "FormaUI/Forma, labeled nightly, infrastructure"'
             'The nightly job mobile on linux failed outside its checks''" on target "FormaUI/Forma, labeled nightly, infrastructure"'
+        )
+
+    # The same night against issues already open: the check found intermittent was filed as a regression, the one
+    # failing every run as flaky on an earlier night, and the unreachable device has its issue.
+    $openIssues = Join-Path $nightly 'open-issues.json'
+    Set-Content -LiteralPath $openIssues -Value @'
+[
+  { "number": 12, "body": "<!-- forma-check: Forma.Blazor.Browser.Tests.Windows.Restore(runtime: \"webassembly\") -->", "labels": [ { "name": "nightly" }, { "name": "regression" } ] },
+  { "number": 13, "body": "<!-- forma-check: Forma.Blazor.Browser.Tests.WebViewProbeTests.Navigation -->", "labels": [ { "name": "nightly" }, { "name": "flaky" } ] },
+  { "number": 14, "body": "<!-- forma-device-unreachable -->", "labels": [ { "name": "nightly" }, { "name": "infrastructure" } ] }
+]
+'@
+
+    Test-Case -Name 'the nightly report comments on the issues already open, relabeling a check found intermittent' -Script 'Update-CheckIssue.ps1' `
+        -Arguments @('-Results', $nightly, '-Commit', $commit, '-Run', 'https://example.test/run', '-Repository', 'FormaUI/Forma', '-OpenIssues', $openIssues, '-WhatIf') `
+        -Expect @(
+            'Performing the operation "Comment" on target "#12 in FormaUI/Forma"'
+            'Performing the operation "Label it flaky and take off regression" on target "#12 in FormaUI/Forma"'
+            'Performing the operation "Comment" on target "#13 in FormaUI/Forma"'
+            'Performing the operation "Comment" on target "#14 in FormaUI/Forma"'
+            'Open the issue ''The nightly job mobile on linux failed outside its checks'''
+        ) `
+        -Reject @(
+            'Open the issue ''Check failing:'
+            'Open the issue ''An Android device'
+            # #13 was flaky already and fails every run tonight, so it keeps its labels as they are.
+            'take off " on target "#13 in FormaUI/Forma"'
+            'take off regression" on target "#13 in FormaUI/Forma"'
         )
 
     Test-Case -Name 'a commit that is not a full SHA is refused' -Script 'Update-CheckIssue.ps1' `
