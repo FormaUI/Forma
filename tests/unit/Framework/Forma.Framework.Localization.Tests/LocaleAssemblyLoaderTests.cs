@@ -5,7 +5,7 @@ using System.Reflection.Emit;
 
 using Microsoft.Extensions.Logging;
 
-public sealed class LocalePackLoaderTests
+public sealed class LocaleAssemblyLoaderTests
 {
     public sealed class Loading
     {
@@ -17,7 +17,7 @@ public sealed class LocalePackLoaderTests
             var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute("Contoso.Hebrew") } };
 
             // Act
-            var applications = LocalePackLoader.GetApplicationAssemblies(entry, [entry, library]);
+            var applications = LocaleAssemblyLoader.GetApplicationAssemblies(entry, [entry, library]);
 
             // Assert
             Assert.Equal([entry], applications);
@@ -35,7 +35,7 @@ public sealed class LocalePackLoaderTests
             var dynamic = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("Contoso.Dynamic"), AssemblyBuilderAccess.Run);
 
             // Act
-            var applications = LocalePackLoader.GetApplicationAssemblies(null, [framework, application, dynamic, server, library]);
+            var applications = LocaleAssemblyLoader.GetApplicationAssemblies(null, [framework, application, dynamic, server, library]);
 
             // Assert
             Assert.Equal([application, server, library], applications);
@@ -51,7 +51,7 @@ public sealed class LocalePackLoaderTests
             };
 
             // Act
-            var names = LocalePackLoader.GetNames(assembly);
+            var names = LocaleAssemblyLoader.GetNames(assembly);
 
             // Assert
             Assert.Equal(["Contoso.Hebrew", "Contoso.Spanish"], names);
@@ -65,7 +65,7 @@ public sealed class LocalePackLoaderTests
             var assembly = new FakeAssembly("Contoso.App") { Attributes = { new LocalePackAttribute("Forma.Framework.Localization") } };
 
             // Act
-            var packs = LocalePackLoader.Load(assembly, loggerFactory.CreateLogger("packs"));
+            var packs = LocaleAssemblyLoader.LoadPacks(assembly, loggerFactory.CreateLogger("packs"));
 
             // Assert
             Assert.Equal("Forma.Framework.Localization", Assert.Single(packs).GetName().Name);
@@ -79,7 +79,7 @@ public sealed class LocalePackLoaderTests
             var assembly = new FakeAssembly("Contoso.App") { Attributes = { new LocalePackAttribute("Contoso.Missing"), new LocalePackAttribute("Forma.Framework.Localization") } };
 
             // Act
-            var packs = LocalePackLoader.Load(assembly, loggerFactory.CreateLogger("packs"));
+            var packs = LocaleAssemblyLoader.LoadPacks(assembly, loggerFactory.CreateLogger("packs"));
 
             // Assert
             Assert.Multiple(

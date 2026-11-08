@@ -202,7 +202,7 @@ public sealed class LocalePackTests
         private static IStringLocale CreateDiscoveredLocale(LocalizationOptions options, params Assembly[] loaded)
         {
             var logger = Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance;
-            var configured = LocalePackLoader.GetApplicationAssemblies(null, loaded).Aggregate(options, (recorded, application) => recorded.WithRecordedLocales(application, logger));
+            var configured = LocaleAssemblyLoader.GetApplicationAssemblies(null, loaded).Aggregate(options, (recorded, application) => recorded.WithRecordedLocales(application, logger));
 
             return new JsonStringLocaleFactory(configured).Create(typeof(LocalizationOptions));
         }

@@ -11,7 +11,7 @@ public sealed class LocalePackTests
         var assembly = typeof(LocalePackTests).Assembly;
 
         // Act
-        var names = LocalePackLoader.GetNames(assembly);
+        var names = LocaleAssemblyLoader.GetNames(assembly);
 
         // Assert
         Assert.Equal(["Forma.Blazor.Locales.Hebrew", "Forma.Blazor.Locales.Spanish"], names);
@@ -24,7 +24,7 @@ public sealed class LocalePackTests
         var assembly = typeof(LocalePackTests).Assembly;
 
         // Act
-        var packs = LocalePackLoader.Load(assembly, NullLogger.Instance);
+        var packs = LocaleAssemblyLoader.LoadPacks(assembly, NullLogger.Instance);
 
         // Assert
         Assert.Equal(["Forma.Blazor.Locales.Hebrew", "Forma.Blazor.Locales.Spanish"], packs.Select(pack => pack.GetName().Name));

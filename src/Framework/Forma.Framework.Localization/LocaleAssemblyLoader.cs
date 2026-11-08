@@ -7,7 +7,7 @@ using Forma.Framework.Localization.Files;
 using Microsoft.Extensions.Logging;
 
 /// <summary>Reads what an application's build recorded of its locales: the locale packs it was built against, from the <see cref="LocalePackAttribute"/>s its build wrote into it, and the assemblies carrying a host's files, its own where its build embedded them and each one a <see cref="LocaleReferenceAttribute"/> names.</summary>
-public static class LocalePackLoader
+public static class LocaleAssemblyLoader
 {
     /// <summary>The name of every pack the assembly was built against, in the order the attributes were written, each named once.</summary>
     /// <param name="assembly">The assembly whose build stamped the names.</param>
@@ -73,7 +73,7 @@ public static class LocalePackLoader
     /// <summary>The packs the assembly was built against, loaded by name.</summary>
     /// <param name="assembly">The assembly whose build stamped the names.</param>
     /// <param name="logger">Where a pack that cannot be loaded is reported.</param>
-    public static IReadOnlyList<Assembly> Load(Assembly assembly, ILogger logger)
+    public static IReadOnlyList<Assembly> LoadPacks(Assembly assembly, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(assembly);
         ArgumentNullException.ThrowIfNull(logger);

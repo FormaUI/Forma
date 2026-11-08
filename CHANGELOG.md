@@ -9,6 +9,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- `LocalePackLoader` is [`LocaleAssemblyLoader`](src/Framework/Forma.Framework.Localization/README.md#locale-packs),
+  for the packs and the assemblies carrying a host's files it loads, and its `Load` is `LoadPacks`. A test or a host
+  that read a pack's assembly through it calls `LocaleAssemblyLoader.LoadPacks`, and a host filtering its log by the
+  loader's category names `Forma.Framework.Localization.LocaleAssemblyLoader`.
 - A [`FormaWindow`](docs/component-catalog.md#formawindow) minimized as it opens, or right after a press or focus
   inside it, stays minimized. The activation that opening, the press or the focus asked for applied after the
   minimize and restored the window.
