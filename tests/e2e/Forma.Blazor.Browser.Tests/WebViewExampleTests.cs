@@ -2,7 +2,7 @@ namespace Forma.Blazor.Browser.Tests;
 
 using static Forma.Blazor.Browser.Tests.CulturePages;
 
-/// <summary>The Blazor Hybrid example hosts, built from Forma's packages as the library's README sets an application up: each starting from its publish, switching every web view and every native window's title, releasing a closed native window's web view and keeping its culture from one run to the next.</summary>
+/// <summary>The Blazor Hybrid example hosts, built from Forma's packages as the library's README sets an application up: each starting from its publish, switching every web view and every native window's title, running on and switching what is left once one native window closes, and keeping its culture from one run to the next.</summary>
 /// <remarks>The WPF and MAUI examples register the platform's web view first and Forma second, the Windows Forms one Forma first, so the examples hold both orders.</remarks>
 [Collection(WebViewChecks.Name)]
 public sealed class WebViewExampleTests(BrowserHost host)
@@ -39,7 +39,7 @@ public sealed class WebViewExampleTests(BrowserHost host)
 
     [Theory]
     [MemberData(nameof(Examples))]
-    public async Task Should_release_a_closed_native_window_s_web_view_and_keep_switching_the_others(string example)
+    public async Task Should_keep_switching_the_native_window_left_and_its_web_view_once_another_closes(string example)
     {
         // Arrange
         await using var application = await StartAsync(example);

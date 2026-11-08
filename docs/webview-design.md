@@ -123,8 +123,8 @@ it marks as an application.
 - **Each host's integration.** An example host for WPF, Windows Forms and MAUI on Windows, each set up from
   Forma's packages as the README sets it up, is published and started, and checked for its registration in
   either order, its startup, its published assets, a switch across two web views and the native windows'
-  titles the host refreshes, the release of a web view whose native window closed, and the culture the
-  application keeps from one run to the next.
+  titles the host refreshes, a switch reaching the native window left once another closes, and the culture
+  the application keeps from one run to the next.
 - **Android, iOS and Mac Catalyst.** The MAUI example host builds from Forma's packages for each, in Release,
   trimmed as the platform's own build trims it, on the platform's own machine, Android's in CI, and the native operations are
   checked against MAUI's share and file system contracts. On Android the build is installed on an emulator and
