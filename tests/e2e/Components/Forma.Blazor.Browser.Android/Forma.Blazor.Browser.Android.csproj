@@ -25,9 +25,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Forma.Blazor.Browser.Components.Checks\Forma.Blazor.Browser.Components.Checks.csproj" />
-        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.WebView\Forma.Blazor.WebView.csproj" />
-        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
     </ItemGroup>
 

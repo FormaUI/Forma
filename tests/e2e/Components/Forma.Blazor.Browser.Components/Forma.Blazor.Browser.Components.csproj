@@ -15,11 +15,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Forma.Blazor.Browser.Components.Client\Forma.Blazor.Browser.Components.Client.csproj" />
         <ProjectReference Include="..\Forma.Blazor.Browser.Components.Checks\Forma.Blazor.Browser.Components.Checks.csproj" />
-        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Server\Forma.Blazor.Server.csproj" />
-        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
-        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
-        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
     </ItemGroup>
 
 </Project>

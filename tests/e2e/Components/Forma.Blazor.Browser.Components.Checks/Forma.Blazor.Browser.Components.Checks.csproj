@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
 
-    <!-- The component checks' pages: every component in a check page, its router and the services the checked components need, which the components host's client and the WebView check host both render. -->
+    <!-- The component checks' pages: every component in a check page, its router and the services the checked components need, which the components host and its client, the WebView check host and the Android check host render. -->
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Forms" />
@@ -15,6 +15,7 @@
         <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
         <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Catalog\Forma.Framework.Catalog.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
