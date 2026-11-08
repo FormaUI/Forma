@@ -178,7 +178,7 @@ export function resolve(event) { … }
 - Do import through the content root of the assembly that ships the script, with the script's area or kind folder in the path, so the wrapper names the assembly that ships the script.
 - Do suppress CA1812 on a private record that exists only to receive a JS return shape, since nothing constructs it in C#.
 - Don't make a wrapper static; `IJSRuntime` is scoped per circuit and the module reference has to be disposed with it.
-- Don't let a disposal wait for a call into script it started earlier, an import or a registration in flight among them; leave the call to finish and release what it produced then, since a runtime whose document is gone may never answer it.
+- Don't let a disposal wait for a call into script it started earlier, an import or a registration in flight among them, or for anything such a call holds, as a lock an operation keeps across one; leave the call to finish and release what it produced then, and end the wait on it before the disposal waits on what it holds, since a runtime whose document is gone may never answer it.
 - Don't import a module by hand with `JS.InvokeAsync<IJSObjectReference>("import", …)`.
 - Don't repeat a module path across components; the wrapper owns it.
 

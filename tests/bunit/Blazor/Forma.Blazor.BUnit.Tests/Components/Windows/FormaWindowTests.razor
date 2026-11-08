@@ -579,6 +579,26 @@
         }
 
         [Fact]
+        public async Task Should_finish_its_teardown_while_its_activation_waits_on_a_focus_that_never_answers()
+        {
+            // Arrange — the first window's activation holds the workspace on a focus that never answers, as a reloaded Blazor Hybrid page leaves one
+            using var ctx = new FormaWindowTests();
+            var manager = GetWindowManager(ctx);
+            ctx.Render(@<FormaWindow Title="Second" />);
+            ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/components/Window.js").SetupModule("attach", _ => true).SetupVoid("focus");
+            var cut = ctx.Render(@<FormaWindow Title="First" />);
+            var activating = manager.ActivateAsync(new WindowSelector { Title = "First" }).AsTask();
+            var window = cut.FindComponent<FormaWindow>();
+
+            // Act — the manager resumes off the renderer, so the teardown's own task is what the test awaits
+            await window.InvokeAsync(() => window.Instance.DisposeAsync().AsTask()).WaitAsync(TestContext.Current.CancellationToken);
+
+            // Assert
+            await activating.WaitAsync(TestContext.Current.CancellationToken);
+            Assert.Equal(["Second"], manager.StackedWindows.Select(stacked => stacked.Title));
+        }
+
+        [Fact]
         public void Should_hide_its_children_when_minimized()
         {
             // Arrange

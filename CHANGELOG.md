@@ -13,6 +13,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   that opening, the press or the focus asked for applied after the minimize and restored the window.
 - `WindowManager.ActivateVisibleAsync` makes a window current while it is visible and leaves a hidden one as it is,
   as a window's own press and focus do.
+- A Blazor Hybrid page reloaded while a `FormaWindow` was being activated starts again. The window's teardown waited
+  for the activation, which waited on a script call the old page would never answer.
 - A call on a `JSInterop` wrapper's attached instance still in flight as the wrapper detaches or is disposed reports
   that it didn't run.
 

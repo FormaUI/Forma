@@ -570,6 +570,9 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
+        // Releasing the script first ends the window's calls in flight, which a workspace operation the unregister waits for may await.
+        await _window.DisposeAsync();
+
         if (_declaration is not null)
         {
             await Manager.UnregisterAsync(this);
@@ -581,7 +584,6 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         }
 
         await _inputRegistration.DisposeAsync();
-        await _window.DisposeAsync();
         _selfReference?.Dispose();
         await base.DisposeAsyncCore();
     }
