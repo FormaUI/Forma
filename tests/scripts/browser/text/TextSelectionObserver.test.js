@@ -32,6 +32,14 @@ describe('TextSelectionObserver', () => {
         target.dispatchEvent(new Event('select'));
     };
 
+    // A caret the reader moves fires no select, where setting the range does, so the move holds that event back.
+    const moveCaret = (start, end) => {
+        const holdSelect = event => event.stopImmediatePropagation();
+        window.addEventListener('select', holdSelect, { capture: true });
+        field.setSelectionRange(start, end);
+        window.removeEventListener('select', holdSelect, { capture: true });
+    };
+
     it('reads the range its selection spans', () => {
         field.setSelectionRange(4, 12);
 
@@ -46,11 +54,22 @@ describe('TextSelectionObserver', () => {
         expect(publish).toHaveBeenCalledExactlyOnceWith({ start: 0, end: 3 });
     });
 
+    it('publishes a caret moved within the field, as the field reports it', () => {
+        watch();
+
+        moveCaret(5, 5);
+        expect(publish).not.toHaveBeenCalled();
+        field.dispatchEvent(new Event('selectionchange'));
+
+        expect(publish).toHaveBeenCalledExactlyOnceWith({ start: 5, end: 5 });
+    });
+
     it('publishes a caret moved within the field it holds the focus of, as the document reports it', () => {
         field.focus();
         watch();
 
-        field.setSelectionRange(5, 5);
+        moveCaret(5, 5);
+        expect(publish).not.toHaveBeenCalled();
         document.dispatchEvent(new Event('selectionchange'));
 
         expect(publish).toHaveBeenCalledExactlyOnceWith({ start: 5, end: 5 });
@@ -61,6 +80,7 @@ describe('TextSelectionObserver', () => {
         other.focus();
         watch();
 
+        moveCaret(5, 5);
         other.setSelectionRange(1, 2);
         document.dispatchEvent(new Event('selectionchange'));
 
