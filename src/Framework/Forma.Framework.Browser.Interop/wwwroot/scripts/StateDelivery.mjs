@@ -7,17 +7,17 @@ export class StateDelivery {
     #report;
     #deliversEveryState;
     /** The samples waiting to be sent, in the order they were measured. */
-    #waiting = [];
+    #waitingStates = [];
     /** The sample measured last, which a failed send leaves waiting. */
-    #latest = null;
+    #latestState = null;
     #isInFlight = false;
     #isOpen = false;
     #isSuspended = false;
     #isClosed = false;
-    #opening = null;
-    #sending = 0;
-    /** The resumes so far; a send made before the last of them is given up on. */
-    #resumes = 0;
+    #openTimeout = null;
+    #latestSendNumber = 0;
+    /** The number of resumes so far; a send made before the last of them is given up on. */
+    #resumeCount = 0;
 
     /**
      * @param {(state: unknown) => Promise<unknown>} send Sends a sample to the owner.
@@ -38,12 +38,12 @@ export class StateDelivery {
 
     /** Starts delivery. */
     open() {
-        if (this.#isOpen || this.#opening !== null || this.#isClosed) {
+        if (this.#isOpen || this.#openTimeout !== null || this.#isClosed) {
             return;
         }
 
-        this.#opening = setTimeout(() => {
-            this.#opening = null;
+        this.#openTimeout = setTimeout(() => {
+            this.#openTimeout = null;
             this.#isOpen = true;
             this.#flush();
         }, 0);
@@ -55,12 +55,12 @@ export class StateDelivery {
             return;
         }
 
-        this.#latest = state;
+        this.#latestState = state;
 
         if (this.#deliversEveryState && !this.#isSuspended) {
-            this.#waiting.push(state);
+            this.#waitingStates.push(state);
         } else {
-            this.#waiting = [state];
+            this.#waitingStates = [state];
         }
 
         this.#flush();
@@ -70,37 +70,37 @@ export class StateDelivery {
     resume() {
         this.#isSuspended = false;
         this.#isInFlight = false;
-        this.#sending++;
-        this.#resumes++;
+        this.#latestSendNumber++;
+        this.#resumeCount++;
         this.#flush();
     }
 
     /** Stops delivery. */
     close() {
         this.#isClosed = true;
-        this.#waiting = [];
+        this.#waitingStates = [];
 
-        if (this.#opening !== null) {
-            clearTimeout(this.#opening);
-            this.#opening = null;
+        if (this.#openTimeout !== null) {
+            clearTimeout(this.#openTimeout);
+            this.#openTimeout = null;
         }
     }
 
     #flush() {
-        while (this.#isOpen && !this.#isSuspended && !this.#isClosed && this.#waiting.length > 0 && (this.#deliversEveryState || !this.#isInFlight)) {
+        while (this.#isOpen && !this.#isSuspended && !this.#isClosed && this.#waitingStates.length > 0 && (this.#deliversEveryState || !this.#isInFlight)) {
             this.#sendNext();
         }
     }
 
     #sendNext() {
-        const state = this.#waiting.shift();
-        const sending = ++this.#sending;
-        const resumes = this.#resumes;
+        const state = this.#waitingStates.shift();
+        const sendNumber = ++this.#latestSendNumber;
+        const resumeCount = this.#resumeCount;
         this.#isInFlight = true;
 
         this.#send(state).then(
             () => {
-                if (sending !== this.#sending) {
+                if (sendNumber !== this.#latestSendNumber) {
                     return;
                 }
 
@@ -108,14 +108,14 @@ export class StateDelivery {
                 this.#flush();
             },
             error => {
-                if (this.#isClosed || resumes !== this.#resumes) {
+                if (this.#isClosed || resumeCount !== this.#resumeCount) {
                     this.#report(error);
                     return;
                 }
 
                 // The latest sample waits for the resume, the one that failed or one measured after it.
                 this.#isInFlight = false;
-                this.#waiting = [this.#latest];
+                this.#waitingStates = [this.#latestState];
                 this.#isSuspended = true;
                 this.#report(error);
             });

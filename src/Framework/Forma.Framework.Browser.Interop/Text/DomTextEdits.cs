@@ -40,7 +40,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
     private bool _hasLostCommit;
     private bool _isFaultReported;
     private Task _sync = Task.CompletedTask;
-    private TaskCompletionSource? _changed;
+    private TaskCompletionSource? _changeSignal;
 
     /// <summary>Creates the edits of a text field holding <paramref name="text"/>, made through <paramref name="engine"/> and handing each change they make to <paramref name="handler"/>, which follow the field once synced with its element.</summary>
     public DomTextEdits(DomEngine engine, string? text, Func<TextChange, Task> handler)
@@ -136,9 +136,9 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
         var target = _revision;
 
         // What the reader typed before the edits listened went unsent, so the field commits it, ahead of answering the revision it stands at.
-        if (!wasAttached && await _registration.TryInvokeAsync<int?>("invoke", createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation, "flush") is { } flushed)
+        if (!wasAttached && await _registration.TryInvokeAsync<int?>("invoke", createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation, "flush") is { } flushedRevision)
         {
-            target = flushed;
+            target = flushedRevision;
         }
 
         while (!IsDisposed)
@@ -171,7 +171,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
                 continue;
             }
 
-            await (_changed ??= new TaskCompletionSource()).Task;
+            await (_changeSignal ??= new TaskCompletionSource()).Task;
         }
 
         return !IsFaulted;
@@ -252,9 +252,9 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
 
         if (arrival.IsReplacement)
         {
-            if (_replacement is { } replaced)
+            if (_replacement is { } earlierReplacement)
             {
-                await replaced.Transfer.DiscardAsync();
+                await earlierReplacement.Transfer.DiscardAsync();
             }
 
             _replacement = arrival;
@@ -285,7 +285,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
             {
                 var revision = await _registration.TryInvokeAsync<int?>("invoke", createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation, "write", text);
 
-                if (revision is not { } written)
+                if (revision is not { } writtenRevision)
                 {
                     break;
                 }
@@ -295,7 +295,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
                     _pendingText = null;
                 }
 
-                await AdoptAsync(text, written);
+                await AdoptAsync(text, writtenRevision);
 
                 // The field holds .NET's text in place of every edit made before the write, those lost and what they committed among them.
                 _needsReplacement = false;
@@ -389,23 +389,23 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
 
     private void SignalChange()
     {
-        var changed = _changed;
-        _changed = null;
-        changed?.TrySetResult();
+        var changeSignal = _changeSignal;
+        _changeSignal = null;
+        changeSignal?.TrySetResult();
     }
 
     private async Task ApplyEditAsync(Arrival edit)
     {
-        string? inserted;
+        string? insertedText;
 
         try
         {
-            inserted = await edit.Transfer.ReadTextAsync(AcceptedLength) ?? string.Empty;
+            insertedText = await edit.Transfer.ReadTextAsync(AcceptedLength) ?? string.Empty;
         }
         catch (JSTransferException ex)
         {
             DomLog.EditLost(_session.Logger, ex, _registration.Token, edit.Revision, _session.RuntimeId);
-            inserted = null;
+            insertedText = null;
         }
 
         // A write of .NET's own that landed while the edit was read took its place.
@@ -414,7 +414,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
             return;
         }
 
-        if (inserted is null)
+        if (insertedText is null)
         {
             MarkLost(edit);
             return;
@@ -427,7 +427,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
             return;
         }
 
-        _text = string.Concat(_text.AsSpan(0, edit.Start), inserted, _text.AsSpan(edit.Start + edit.Removed));
+        _text = string.Concat(_text.AsSpan(0, edit.Start), insertedText, _text.AsSpan(edit.Start + edit.Removed));
         _revision = edit.Revision;
         await NotifyAsync(edit.IsCommit);
     }
@@ -483,10 +483,10 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
 
         while (_arrivals.Count > 0 && _arrivals.Keys[0] <= _revision)
         {
-            var superseded = _arrivals.Values[0];
+            var supersededArrival = _arrivals.Values[0];
             _arrivals.RemoveAt(0);
-            _hasLostCommit |= superseded.IsCommit;
-            await superseded.Transfer.DiscardAsync();
+            _hasLostCommit |= supersededArrival.IsCommit;
+            await supersededArrival.Transfer.DiscardAsync();
         }
     }
 

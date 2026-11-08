@@ -10,7 +10,7 @@
  */
 
 /** @type {Set<HeldEdits>} */
-const tracked = new Set();
+const trackedEdits = new Set();
 
 /** @type {AbortController | null} */
 let controller = null;
@@ -21,7 +21,7 @@ export class SubmissionHold {
      * @param {HeldEdits} edits
      */
     static track(edits) {
-        tracked.add(edits);
+        trackedEdits.add(edits);
 
         // Heard on the window as the submission is captured, ahead of every listener on the document, Blazor's among them.
         if (controller === null) {
@@ -31,9 +31,9 @@ export class SubmissionHold {
 
         return {
             dispose() {
-                tracked.delete(edits);
+                trackedEdits.delete(edits);
 
-                if (tracked.size === 0 && controller !== null) {
+                if (trackedEdits.size === 0 && controller !== null) {
                     controller.abort();
                     controller = null;
                 }
@@ -50,9 +50,9 @@ export class SubmissionHold {
             return;
         }
 
-        const delivering = [...tracked].filter(edits => edits.isDelivering && SubmissionHold.#isWithin(edits.element, form));
+        const deliveringEdits = [...trackedEdits].filter(edits => edits.isDelivering && SubmissionHold.#isWithin(edits.element, form));
 
-        if (delivering.length === 0) {
+        if (deliveringEdits.length === 0) {
             return;
         }
 
@@ -61,7 +61,7 @@ export class SubmissionHold {
 
         const submitter = event.submitter ?? null;
 
-        Promise.allSettled(delivering.map(edits => edits.delivered)).then(() => {
+        Promise.allSettled(deliveringEdits.map(edits => edits.delivered)).then(() => {
             if (form.isConnected) {
                 form.requestSubmit(submitter?.isConnected && submitter.form === form ? submitter : null);
             }
