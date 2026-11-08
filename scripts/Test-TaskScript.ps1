@@ -224,7 +224,14 @@ try {
 
     Test-Case -Name 'the nightly report describes the issues it would file' -Script 'Update-CheckIssue.ps1' `
         -Arguments @('-Results', $nightly, '-Commit', $commit, '-Run', 'https://example.test/run', '-Repository', 'FormaUI/Forma', '-WhatIf') `
-        -Expect @('failing checks 2, checks interrupted 1, jobs failed outside their checks 1', 'Windows.Restore(runtime: "webassembly")', 'labeled nightly, flaky', 'WebViewProbeTests.Navigation', 'labeled nightly, regression', 'An Android device the checks ran on went unreachable', 'The nightly job mobile on linux failed outside its checks')
+        -Expect @(
+            'failing checks 2, checks interrupted 1, jobs failed outside their checks 1'
+            # Each issue's title and its labels on one line, so a check is held to its own label.
+            'Check failing: Windows.Restore(runtime: "webassembly")''" on target "FormaUI/Forma, labeled nightly, flaky"'
+            'Check failing: WebViewProbeTests.Navigation''" on target "FormaUI/Forma, labeled nightly, regression"'
+            'An Android device the checks ran on went unreachable''" on target "FormaUI/Forma, labeled nightly, infrastructure"'
+            'The nightly job mobile on linux failed outside its checks''" on target "FormaUI/Forma, labeled nightly, infrastructure"'
+        )
 
     Test-Case -Name 'a commit that is not a full SHA is refused' -Script 'Update-CheckIssue.ps1' `
         -Arguments @('-Results', $nightly, '-Commit', 'abc1234', '-Run', 'https://example.test/run', '-Repository', 'FormaUI/Forma', '-WhatIf') -Fails
