@@ -148,18 +148,13 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     }
 
     /// <summary>Runs the composer command named by the action the router matched inside the canvas.</summary>
+    /// <remarks>The composer settles the canvas's edits, which it joined, before the command reads the document.</remarks>
     [JSInvokable]
-    public async Task HandleInputActionAsync(string action, InputInfo input)
+    public Task HandleInputActionAsync(string action, InputInfo input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        // The router commits the canvas ahead of the action, so the command reads the document once its edits are applied.
-        if (Interaction is null || !await _edits.SettleAsync())
-        {
-            return;
-        }
-
-        await Interaction.ExecuteCommandAsync(action);
+        return Interaction?.ExecuteCommandAsync(action) ?? Task.CompletedTask;
     }
 
     // Each commit the canvas sends becomes the composer's document, and a text that can't follow the reader's edits is shown on the composer's

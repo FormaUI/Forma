@@ -105,17 +105,13 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     }
 
     /// <summary>Runs the composer command named by the action the router matched inside the textarea.</summary>
+    /// <remarks>The composer settles the textarea's edits, which it joined, before the command reads the document.</remarks>
     [JSInvokable]
-    public async Task HandleInputActionAsync(string action, InputInfo input)
+    public Task HandleInputActionAsync(string action, InputInfo input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
-        if (Interaction is null || !await SettleAsync())
-        {
-            return;
-        }
-
-        await Interaction.ExecuteCommandAsync(action);
+        return Interaction?.ExecuteCommandAsync(action) ?? Task.CompletedTask;
     }
 
     // What reads the document reads the reader's edits made before it, applied and committed, and the selection as it stands.
