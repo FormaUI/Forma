@@ -101,10 +101,17 @@ failed, so a fix to a host's startup reaches both.
   a few minutes: two where practical, five or six acceptable, and a routine push rarely tens. A selected suite
   that needs another platform than Linux runs in a job that can run it.
 - **Full,** `./build.ps1`: everything, packaging, integration, smoke, the browsers, WebView2 and Android's E2E
-  among it. It is the local gate before every commit, and runs every check the machine it runs on can execute,
-  naming each platform check it couldn't, as WebView2's away from Windows or Android's without a device. A full
-  run in CI passes only once every required platform job has passed for the same SHA: Linux's, Windows' with
-  WebView2, and Android's E2E. The nightly run on `dev` holds the same coverage as a candidate's.
+  among it. It runs every check the machine it runs on can execute, naming each platform check it couldn't, as
+  WebView2's away from Windows or Android's without a device. A full run in CI passes only once every required
+  platform job has passed for the same SHA: Linux's, Windows' with WebView2, and Android's E2E. The nightly run on
+  `dev` holds the same coverage as a candidate's.
+
+**A change runs the gates its reach calls for.** Before a commit, it runs the fast gate, the format check where C#
+changed, and the browser checks for what it touches, `scripts/build/browser.ps1 -Filter`. It runs the full gate
+locally where it changes what every component rests on, shared interop, the component bases, the hosts or the
+build, and where a failure CI found is being reproduced. Everything else the full gate covers runs in CI, nightly on
+`dev` and on every push to `candidate`, and the nightly run files what fails, so an intermittent failure or a
+regression a narrower run missed comes back as an issue before a candidate is selected.
 
 ## Branches and promotion
 

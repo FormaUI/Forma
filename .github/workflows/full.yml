@@ -1,4 +1,4 @@
-# Runs the full gate a person runs before a commit, on every platform a release is held to: Linux's and Windows' gates,
+# Runs the full gate on every platform a release is held to: Linux's and Windows' gates,
 # WebView2 among Windows', and Android's checks on an emulator, the components in its web view and the MAUI example.
 # A push to candidate runs it on the candidate, whose run a promotion to main and a release require to have passed for
 # the exact commit, and whose Linux gate keeps the packages it packed and checked, which the release publishes as they

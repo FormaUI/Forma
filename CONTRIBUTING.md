@@ -4,7 +4,8 @@ Forma takes fix and feature pull requests against `dev`, from a branch named `fi
 that's wrong and `feature/<name>` for every other change.
 
 1. Branch from `dev`: `git switch --create feature/my-change origin/dev`.
-2. Run `./build.ps1 Fast` while you work, and `./build.ps1`, the full gate, before you open the pull request.
+2. Run `./build.ps1 Fast` while you work, and before you open the pull request the gates
+   [the verification design](docs/verification-design.md#gates) sets for your change.
 3. Open the pull request [against `dev`](https://github.com/FormaUI/Forma/compare/dev...). The fast gate is its
    required check. It lands by fast-forward: the branch is rebased onto `dev` and `dev` advances to it, so every
    commit keeps its signature and `dev`'s history stays linear.

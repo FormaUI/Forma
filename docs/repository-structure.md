@@ -567,6 +567,9 @@ npm test --prefix tests/scripts
 dotnet run --project src/Blazor/Forma.Blazor.Showcase
 ```
 
+[The verification design](verification-design.md#gates) sets out which gates a change runs before its commit, and
+what it leaves to the full runs in CI.
+
 **The fast gate** builds the unit and bUnit suites and what they reference once, through a solution filter it writes
 under `artifacts/fast/`, and runs them from that build. It also runs the script tests and the task programs' tests,
 for feedback within minutes.

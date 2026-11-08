@@ -30,11 +30,11 @@ No project generates a documentation file, so nothing reports an undocumented pu
 The build is entered through `build.ps1` at the repository root. Its module and the wrapper scripts for
 the narrower loops live under `scripts/build/`.
 
-- Do run `./build.ps1 Fast` for feedback while working, the unit and bUnit suites built once and run, the
-  script tests and the task programs' tests, and `./build.ps1` for the full gate before a commit, which runs
-  every platform check the machine can and names each one it couldn't; a wrapper beside the module runs one
-  part of it: `compile.ps1`, `test.ps1`, `format.ps1`, `tasks.ps1`, `browser.ps1`, `mobile.ps1`,
-  `clean.ps1`.
+- Do run before each commit the gates the repository's verification design sets for the change's reach:
+  `./build.ps1 Fast` for the fast gate, the unit and bUnit suites built once and run, the script tests and the
+  task programs' tests, and `./build.ps1` for the full gate, which runs every platform check the machine can and
+  names each one it couldn't; a wrapper beside the module runs one part of it: `compile.ps1`, `test.ps1`,
+  `format.ps1`, `tasks.ps1`, `browser.ps1`, `mobile.ps1`, `clean.ps1`.
 - Do narrow a test run with `test.ps1 -Project`, `-Filter` and `-NoBuild`, and hunt a test that fails
   sometimes with `-Times`, which continues past a failure so the failure shows as a rate; add `-LoadWith`
   to run other test projects beside it, so a race a busy machine exposes shows here too, and `-WaitLog`

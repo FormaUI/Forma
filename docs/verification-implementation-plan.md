@@ -51,11 +51,14 @@ commit. And the push that publishes a release stopped at a manual step.
      traversal began failed it every run. The check now navigates within one culture, and the culture check that
      traverses after a switch waits for the switch's follow to land first;
    - the Android emulator going offline in the MAUI example's job, investigated in that job with step 2's report.
-6. **The local gate follows the change.** Once steps 1 to 5 have been exercised, the design states when each
+6. ✅ **The local gate follows the change.** Once steps 1 to 5 have been exercised, the design states when each
    gate runs: before a commit, the fast gate, the format check where C# changed, and the browser checks for what
    the change touches; the full gate in CI, nightly on `dev` and on every push to `candidate`; and locally for a
    change to shared interop, the component bases, the hosts or the build, and to reproduce a CI failure. The
    verifying skill, the working rules and the repository guide point to the design rather than restating it.
+   It landed once the nightly hunt, steps 1 to 4, had run on `dev`, the condition the maintainer set; step 5's
+   Android item waits for an emulator to drop, which step 2's report then describes. The contributing guide points
+   to the design too, and the full workflow's header no longer calls the full gate the one before a commit.
 7. ✅ **The release command.** Versioning ships one command a maintainer runs after asking for a release. It checks
    the repository, the promotion pull request and the passing runs for the candidate's exact SHA, and holds the
    release to the release check before anything is pushed. It signs the tag locally and verifies the signature,
