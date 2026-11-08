@@ -10,8 +10,6 @@
 @code {
     private FramePlacement? _placement = new(4000, 96, 320, 192);
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private string FormatPlacement()
         => _placement is { } placement
             ? string.Create(CultureInfo.InvariantCulture, $"{placement.Left},{placement.Top},{placement.Width},{placement.Height}")

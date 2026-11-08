@@ -13,7 +13,5 @@
 @code {
     private static readonly IQueryable<Row> Rows = new Row[] { new("Alpha"), new("Beta"), new("Gamma"), new("Delta"), new("Epsilon") }.AsQueryable();
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     internal sealed record Row(string Name);
 }

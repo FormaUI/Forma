@@ -51,8 +51,6 @@
     private bool _isModalOpen;
     private string? _current;
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private static string FormatPlacement(FramePlacement? placement)
         => placement is { } shown
             ? string.Create(CultureInfo.InvariantCulture, $"{shown.Left},{shown.Top},{shown.Width},{shown.Height}")

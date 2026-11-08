@@ -11,8 +11,6 @@
 
     private readonly IReadOnlyList<SelectOption<string>> _colors = [new("red", "Red"), new("green", "Green"), new("blue", "Blue")];
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private sealed class Entry
     {
         public List<string> Colors { get; set; } = [];

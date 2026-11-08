@@ -19,7 +19,5 @@
         new("Beta", "The second of the rows, whose notes run long enough to need the room of a wide page", 2),
     }.AsQueryable();
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     internal sealed record Row(string Name, string Notes, int Count);
 }

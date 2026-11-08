@@ -16,7 +16,5 @@
         new("price", "Price", DataViewSort<Product>.ByAscending(product => product.Price)) { InitialDirection = DataViewSortDirection.Descending },
     ];
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     internal sealed record Product(string Name, int Price);
 }

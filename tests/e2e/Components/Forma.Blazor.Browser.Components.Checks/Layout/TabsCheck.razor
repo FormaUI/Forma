@@ -12,8 +12,6 @@
     private readonly List<string> _selections = [];
     private string _active = "general";
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private void Select(string tabId)
     {
         _active = tabId;

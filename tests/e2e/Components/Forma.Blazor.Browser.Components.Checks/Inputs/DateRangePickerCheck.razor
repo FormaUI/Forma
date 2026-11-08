@@ -10,8 +10,6 @@
 @code {
     private readonly Entry _model = new();
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     // The range as an ISO 8601 interval, the same in every culture.
     private string Result
         => _model.Stay is { } stay

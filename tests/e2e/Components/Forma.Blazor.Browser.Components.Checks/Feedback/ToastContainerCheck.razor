@@ -10,8 +10,6 @@
 </div>
 
 @code {
-    [Parameter] public string Runtime { get; set; } = default!;
-
     // Long enough that the toast leaves only when the check dismisses it.
     private Task SaveAsync()
         => ToastService.ShowAsync("Draft saved.", ToastType.Success, TimeSpan.FromMinutes(5));

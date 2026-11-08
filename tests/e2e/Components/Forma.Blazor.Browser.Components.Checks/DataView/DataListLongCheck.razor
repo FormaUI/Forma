@@ -24,8 +24,6 @@
     private FormaDataView<Row>? _dataView;
     private IReadOnlyList<Row> _selectedRows = [];
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     // The switch names the view it switches, which is known once rendered.
     protected override void OnAfterRender(bool firstRender)
     {

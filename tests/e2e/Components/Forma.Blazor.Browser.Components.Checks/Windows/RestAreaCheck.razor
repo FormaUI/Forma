@@ -21,8 +21,6 @@
     private bool _isOpen;
     private string? _state;
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private void Track(bool minimized)
         => _state = minimized ? "minimized" : "restored";
 }

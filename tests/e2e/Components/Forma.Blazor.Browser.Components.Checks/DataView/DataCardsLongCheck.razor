@@ -11,7 +11,5 @@
 @code {
     private static readonly IQueryable<Row> Rows = Enumerable.Range(0, 40).Select(index => new Row($"Card {index}")).ToArray().AsQueryable();
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     internal sealed record Row(string Name);
 }

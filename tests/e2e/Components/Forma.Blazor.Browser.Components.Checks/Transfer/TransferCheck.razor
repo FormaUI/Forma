@@ -36,8 +36,6 @@
     private string? _hostSaved;
     private int _saves;
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     // A value as the check compares it: its length and the start of its SHA-256.
     private static string Describe(string? value)
         => value is null ? string.Empty : $"{value.Length}:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)))[..16]}";

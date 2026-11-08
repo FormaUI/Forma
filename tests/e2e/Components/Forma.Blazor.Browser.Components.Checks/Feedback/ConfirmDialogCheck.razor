@@ -10,8 +10,6 @@
 @code {
     private string? _answer;
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private async Task AskAsync()
         => _answer = await ConfirmService.ConfirmAsync("Delete the draft?", "Delete", "Keep") ? "Confirmed" : "Canceled";
 }

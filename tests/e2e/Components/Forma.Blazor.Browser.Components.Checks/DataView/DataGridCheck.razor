@@ -17,7 +17,5 @@
 
     private IReadOnlyList<Row> _selectedRows = [];
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     internal sealed record Row(string Name, int Count);
 }

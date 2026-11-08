@@ -26,8 +26,6 @@
     private ICatalogFolderItem? _currentFolder;
     private string? _dropped;
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private void OpenFolder(ICatalogFolderItem? folder)
     {
         _currentFolder = folder;

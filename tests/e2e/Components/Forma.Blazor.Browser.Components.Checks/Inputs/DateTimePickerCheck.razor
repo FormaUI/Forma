@@ -10,8 +10,6 @@
 @code {
     private readonly Entry _model = new();
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private sealed class Entry
     {
         public DateTime Start { get; set; } = new(2026, 3, 14, 9, 30, 0);

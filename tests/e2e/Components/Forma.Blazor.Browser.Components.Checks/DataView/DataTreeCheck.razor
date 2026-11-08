@@ -18,7 +18,5 @@
 
     private string? _activated;
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     internal sealed record Node(int Id, int? ParentId, string Name, bool IsFolder);
 }

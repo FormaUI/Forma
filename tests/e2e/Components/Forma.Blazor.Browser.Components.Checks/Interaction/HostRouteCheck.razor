@@ -12,8 +12,6 @@
 <output id="result">@Actions.LastAction</output>
 
 @code {
-    [Parameter] public string Runtime { get; set; } = default!;
-
     protected override void OnInitialized()
         => Actions.Performed += Refresh;
 

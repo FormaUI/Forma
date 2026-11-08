@@ -18,8 +18,6 @@
     private double _width = 12;
     private double _height = 8;
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     // One unit of the splitter's value spans its default sixteen pixels.
     private string PaneStyle
         => string.Create(CultureInfo.InvariantCulture, $"flex: none; inline-size: {_width * 16}px;");

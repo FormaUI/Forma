@@ -26,8 +26,6 @@
     private readonly Entry _model = new();
     private string? _saved;
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private void Save()
         => _saved = _model.Body;
 

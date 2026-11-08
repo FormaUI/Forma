@@ -9,8 +9,6 @@
 @code {
     private bool _isPublished;
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private string StatusText
         => _isPublished ? "Published" : "Draft";
 

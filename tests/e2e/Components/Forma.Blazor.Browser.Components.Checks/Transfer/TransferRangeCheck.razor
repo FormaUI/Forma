@@ -15,7 +15,5 @@
 
     private IReadOnlyList<Row> _selectedRows = [];
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     internal sealed record Row(int Index, string Name);
 }

@@ -9,6 +9,4 @@
     private readonly ShareItem _shareItem = new() { Name = "Quarterly Report", Address = "https://example.com/reports/quarterly" };
     private readonly IReadOnlyList<ShareAction> _shareActions = [new() { Id = "archive", Title = "Archive", Command = "archive" }];
     private string? _lastCommand;
-
-    [Parameter] public string Runtime { get; set; } = default!;
 }

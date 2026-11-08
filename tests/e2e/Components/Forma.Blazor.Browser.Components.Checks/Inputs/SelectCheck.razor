@@ -11,8 +11,6 @@
 
     private readonly IReadOnlyList<SelectOption<int>> _statuses = [new(1, "Open"), new(2, "Closed")];
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private sealed class Entry
     {
         public int Status { get; set; } = 1;

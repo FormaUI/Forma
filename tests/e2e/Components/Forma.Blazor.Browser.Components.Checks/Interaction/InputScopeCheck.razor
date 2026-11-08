@@ -23,8 +23,6 @@
 
     private readonly List<string> _actions = [];
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private void Record(InputAction action)
         => _actions.Add(action.Action);
 }

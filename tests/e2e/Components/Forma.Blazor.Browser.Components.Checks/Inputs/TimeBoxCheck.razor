@@ -15,8 +15,6 @@
 
     private string? _text = "09:30";
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private static string FormatTime(TimeOnly time)
         => time.ToString("HH:mm", CultureInfo.InvariantCulture);
 }

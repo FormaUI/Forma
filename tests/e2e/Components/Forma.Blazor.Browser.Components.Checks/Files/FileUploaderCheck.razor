@@ -10,8 +10,6 @@
     private IReadOnlyList<IBrowserFile>? _pickedFiles;
     private IReadOnlyList<ResourceInfo> _storedResources = [];
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private static string FormatResource(ResourceInfo resource)
         => $"{resource.Name} ({resource.Size?.ToString(CultureInfo.InvariantCulture)} bytes)";
 }

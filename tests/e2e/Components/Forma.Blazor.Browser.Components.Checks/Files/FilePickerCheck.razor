@@ -7,8 +7,6 @@
 @code {
     private IReadOnlyList<IBrowserFile> _pickedFiles = [];
 
-    [Parameter] public string Runtime { get; set; } = default!;
-
     private static string FormatFile(IBrowserFile file)
         => $"{file.Name} ({file.Size.ToString(CultureInfo.InvariantCulture)} bytes)";
 }
