@@ -305,7 +305,7 @@ public sealed class LocaleExpressionParserTests
     }
 
     [Fact]
-    public void Should_report_a_category_the_expression_does_not_recognise()
+    public void Should_report_a_category_the_expression_does_not_recognize()
     {
         // Act
         var result = LocaleExpressionParser.Parse("[$ [count] plural; single: # file; $]", Keywords);

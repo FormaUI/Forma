@@ -776,7 +776,7 @@ describe('SelectionInteraction', () => {
                 pointer(target, 'pointerdown', { button: 2 });
                 pointer(target, 'pointerup', { button: 2 });
             }],
-            ['a cancelled press', () => {
+            ['a canceled press', () => {
                 const target = elsewhere();
                 pointer(target, 'pointerdown', { button: 0, pointerType: 'touch' });
                 pointer(target, 'pointercancel', { button: 0, pointerType: 'touch' });

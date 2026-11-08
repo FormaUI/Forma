@@ -2,7 +2,7 @@
 @inject NavigationRecorder Recorder
 @inject NavigationManager Navigation
 
-@* An interactive router over the navigation pages that records what its runtime observes of each navigation: a location change and whether the browser or the app made it, the router starting, a newer navigation cancelling it, and the router accepting the destination it then renders. *@
+@* An interactive router over the navigation pages that records what its runtime observes of each navigation: a location change and whether the browser or the app made it, the router starting, a newer navigation canceling it, and the router accepting the destination it then renders. *@
 <Router AppAssembly="typeof(RecordingRoutes).Assembly" OnNavigateAsync="HandleNavigateAsync">
     <Found Context="routeData">
         <RouteView RouteData="routeData" />
@@ -30,11 +30,11 @@
             }
             catch (TaskCanceledException)
             {
-                Recorder.Record($"cancelled {sequence}");
+                Recorder.Record($"canceled {sequence}");
             }
         }
 
-        // The router renders the destination once this completes, unless a newer navigation cancelled it.
+        // The router renders the destination once this completes, unless a newer navigation canceled it.
         if (!context.CancellationToken.IsCancellationRequested)
         {
             Recorder.Record($"accepted {sequence}");

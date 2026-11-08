@@ -273,7 +273,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         }
     }
 
-    // A module whose import faulted or was cancelled is replaced, so the next registration imports it again.
+    // A module whose import faulted or was canceled is replaced, so the next registration imports it again.
     private JSModule GetModule()
     {
         if (_module.ImportAsync() is { IsFaulted: true } or { IsCanceled: true })

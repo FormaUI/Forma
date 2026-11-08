@@ -19,7 +19,7 @@
     flex-direction: column;
 }
 
-/* The image's own auto margins centre it, and give way where a zoomed image overflows, so the scroll reaches all of it. */
+/* The image's own auto margins center it, and give way where a zoomed image overflows, so the scroll reaches all of it. */
 .forma-file-viewer-image-frame {
     position: relative;
     flex: 1;

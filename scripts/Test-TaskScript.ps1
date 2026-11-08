@@ -177,7 +177,7 @@ Test-Case -Name 'a port outside the range is refused' -Script 'Start-Showcase.ps
     -Arguments @('-Port', '70000', '-WhatIf') -Fails
 
 # Held rather than described, because what is being checked is that something else on the port is
-# recognised as something else, which only a real listener can show.
+# recognized as something else, which only a real listener can show.
 $stranger = New-BoundPort
 $taken = $stranger.LocalEndpoint.Port
 

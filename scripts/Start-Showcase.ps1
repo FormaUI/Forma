@@ -24,7 +24,7 @@ Where to listen. The default is where the browser checks expect to find it.
 Stops a Showcase already listening on that port and starts again. Without it, a taken port is reported
 rather than fought over. Anything on the port that is not this repository's Showcase is reported either
 way and never stopped, since it belongs to something else. A Showcase an editor started counts as
-something else here, because it carries no address to recognise it by.
+something else here, because it carries no address to recognize it by.
 
 .EXAMPLE
 ./scripts/Start-Showcase.ps1
@@ -100,7 +100,7 @@ function Get-RunningShowcase {
 # and the executable it starts carry. Asking the operating system who holds the port would name only the
 # executable, and only where the platform offers such a question at all, so the answer would be narrower
 # and would hold in fewer places. The cost is that a Showcase started without an address, as an editor
-# starts it, is not recognised here and is reported as something else holding the port.
+# starts it, is not recognized here and is reported as something else holding the port.
 function Select-PortHolder {
     param(
         [Parameter(Mandatory)] [AllowEmptyCollection()] [object[]] $Process,

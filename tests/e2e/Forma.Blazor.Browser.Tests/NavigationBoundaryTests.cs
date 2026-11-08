@@ -37,7 +37,7 @@ public sealed class NavigationBoundaryTests(BrowserHost host)
         await page.Locator("#go-slow-then-b").ClickAsync();
 
         // Assert
-        var log = await WaitForLogAsync(page, entries => entries.Contains("cancelled 2") && entries.Contains("accepted 3"));
+        var log = await WaitForLogAsync(page, entries => entries.Contains("canceled 2") && entries.Contains("accepted 3"));
         Assert.Multiple(
             () => Assert.Contains("start 2 /nav/slow", log),
             () => Assert.Contains("start 3 /nav/b", log),

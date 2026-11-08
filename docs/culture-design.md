@@ -230,12 +230,12 @@ record by one of two paths, according to how it lands:
   to, and the navigation's identity is its place among the reports its runtime sends, in the order the
   runtime renders them. The coordinator resolves its pair through the culture-route mapping the page
   publishes, which the browser and the server read by the same rules. A navigation a newer one
-  cancelled never renders its page, so it reports nothing; neither a location change, which a
+  canceled never renders its page, so it reports nothing; neither a location change, which a
   navigation announces before its router starts and a superseded one announces too, nor a render of
   the router, which a parent's render causes as well, marks a landing. The previous landing's marker is
   never read for it, and interactive routing without culture routes records nothing.
 
-A navigation that is cancelled, fails or is replaced by another records nothing, and a record from a
+A navigation that is canceled, fails or is replaced by another records nothing, and a record from a
 navigation another replaced is obsolete and accepts nothing.
 
 ### What awaiting a switch guarantees
@@ -260,7 +260,7 @@ A switch that can't be accepted fails and changes nothing:
   the location as they were.
 - **Persistence that fails.** A cookie the coordinator can't read back fails the switch before it is
   accepted.
-- **A navigation that doesn't land.** An address switch whose navigation is cancelled, fails or is
+- **A navigation that doesn't land.** An address switch whose navigation is canceled, fails or is
   replaced by another is never accepted, and its task completes as canceled; the accepted pair stays the
   one the address that remained active names.
 - **In a static render** there is no page to coordinate, so a switch throws `InvalidOperationException`;
@@ -298,7 +298,7 @@ landing, with the culture-route cookie's settings.
 A switch requested while a navigation is in flight waits for the navigation to land or end, so a landing
 never undoes it:
 
-- a navigation that is cancelled or fails ends the wait without accepting its destination's pair;
+- a navigation that is canceled or fails ends the wait without accepting its destination's pair;
 - a landing is accepted only from its own record, naming what the browser landed at rather than what was
   requested, and an obsolete record accepts nothing;
 - a switch that waited is then accepted against the address that landed, so an address switch navigates
@@ -534,7 +534,7 @@ The state follows the address at the event that settles each kind of navigation:
 
 A navigation resolves by the address it leaves behind:
 
-- one cancelled before the address changes leaves the state and the cookie as they were;
+- one canceled before the address changes leaves the state and the cookie as they were;
 - one that lands sets the state from its final address, a redirect's included;
 - an older navigation's late completion never overwrites a newer one, since its pair is accepted before the
   newer one's or not at all;
@@ -773,7 +773,7 @@ makes one call on each side and can still override any single service.
 | C16 | What does a culture route name? | Its UI culture, and a formatting culture of its own or, naming none, the UI culture, so the address carries the whole pair; one mapping, defined in the neutral routing assembly and published to the page, reads it for every navigation, and it decides over the cookie, as [culture addresses](#culture-addresses) sets out |
 | C17 | Who applies an accepted pair? | The runtime's integration, through `ICultureStateIntegration`, resolved from the very instance resolved as `ICultureState`; a replacement that lacks it is rejected as the state is first resolved in its scope, or as it is registered where the registration is an instance, and a component reads the state and changes it only through the switch |
 | C18 | What does releasing the last registration do? | Nothing to the culture: the coordinator retains the accepted pair and version for the document's lifetime, and a later registration adopts it |
-| C19 | Where does a landing's pair come from? | One record per landing: a server-rendered landing's from its own response's marker, an interactive one's from the address its router accepted, resolved through the published mapping; the coordinator accepts it without waiting for a registration, and a cancelled or obsolete navigation changes nothing, as [landings](#landings) set out |
+| C19 | Where does a landing's pair come from? | One record per landing: a server-rendered landing's from its own response's marker, an interactive one's from the address its router accepted, resolved through the published mapping; the coordinator accepts it without waiting for a registration, and a canceled or obsolete navigation changes nothing, as [landings](#landings) set out |
 | C20 | How does the browser learn the switch's policy? | From configuration `FormaPageHead` publishes, or a standalone app's startup supplies, apart from any pair: the cookie's every setting and its one serialization, or the culture-route mapping, as [the policies](#switch-policies) set out |
 | C21 | What does a switch wait for while its runtime registers? | An attempt already started, which its failure, its disposal or a disconnection settles with an error; never a registration nobody started, as [awaiting a switch](#what-awaiting-a-switch-guarantees) sets out |
 | C22 | What does a switch to a pair without a route do? | Under the address policy it throws `InvalidOperationException` before anything changes, naming the pair |

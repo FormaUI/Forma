@@ -931,7 +931,7 @@ function Write-TestProgress {
 
 <#
 .SYNOPSIS
-Loads the machine with test projects run over and over until the token is cancelled.
+Loads the machine with test projects run over and over until the token is canceled.
 
 .DESCRIPTION
 Each project runs on a thread of its own from the output already on disk, its output discarded and without the wait
@@ -941,7 +941,7 @@ log, so its own waits stay out of the records.
 The test projects that load the machine.
 
 .PARAMETER Token
-Cancelled once the load is to end.
+Canceled once the load is to end.
 
 .OUTPUTS
 A loader for each project, for Stop-TestLoad.
