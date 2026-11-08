@@ -76,6 +76,26 @@ public sealed class MauiOperationsTests : IDisposable
     }
 
     [Fact]
+    public async Task Should_leave_only_the_file_it_saved_last_in_its_cache()
+    {
+        // Arrange
+        var share = new FakeShare();
+        var operations = CreateOperations(share, DevicePlatform.Android);
+        await operations.TrySaveAsync("Draft.html", "<p>Draft</p>", "text/html");
+
+        // Act
+        await operations.TrySaveAsync("Report.html", "<p>Report</p>", "text/html");
+
+        // Assert
+        var first = Assert.IsType<ShareFileRequest>(share.Requests[0]).File!.FullPath;
+        var last = Assert.IsType<ShareFileRequest>(share.Requests[1]).File!.FullPath;
+        Assert.Multiple(
+            () => Assert.False(File.Exists(first)),
+            () => Assert.True(File.Exists(last)),
+            () => Assert.Equal([Path.GetDirectoryName(last)], Directory.GetDirectories(Path.Combine(_cache, "forma"))));
+    }
+
+    [Fact]
     public void Should_register_the_operations_once_leaving_a_host_s_own_in_place()
     {
         // Arrange

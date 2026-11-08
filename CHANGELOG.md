@@ -78,6 +78,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - The [culture state](docs/culture-design.md#one-culture-state-per-user-scope) notifies its subscribers once the call
   that switched it has returned. Under Blazor Hybrid the application's culture coordinator was held while they ran, so
   a subscriber waiting on another native window's thread stopped that window's web view from starting or switching.
+- [`Forma.AddOns.Operations.Maui`](src/AddOns/Forma.AddOns.Operations.Maui/README.md#what-the-reader-gets) keeps
+  the file it saved last alone in the application's cache. Each print and download left its document there.
 
 ## `1.0.0-preview.4`
 
