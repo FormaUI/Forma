@@ -599,8 +599,82 @@ finally {
     Remove-Item -LiteralPath $exampleFolder -Recurse -Force -ErrorAction SilentlyContinue
 }
 
+# The browser check's outcome is read for real off results made for the purpose: two runs, the second of which
+# wrote no checks, a check failing in one run and another in both, and one an unreachable device interrupted; and a
+# run in which every check was skipped, which is refused, unless a result is missing.
+$outcomeFolder = Join-Path ([System.IO.Path]::GetTempPath()) "forma-outcome-$([guid]::NewGuid().ToString('N'))"
+$outcomeName = "the browser check's runs are read together, a missing result named, and a step that ran no check refused"
+
+try {
+    $runFolders = @('mixed/run-1', 'mixed/run-2', 'skipped/run-1', 'unwritten/run-1') | ForEach-Object { Join-Path $outcomeFolder $_ }
+
+    foreach ($folder in $runFolders) {
+        $null = New-Item -ItemType Directory -Path $folder
+    }
+
+    Set-Content -LiteralPath (Join-Path $runFolders[0] 'examples.json') -Value '{ "results": { "tests": [ { "name": "Smoke.Page", "status": "passed" } ] } }'
+    Set-Content -LiteralPath (Join-Path $runFolders[0] 'checks.json') -Value @'
+{ "results": { "tests": [
+  { "name": "Checks.B", "status": "failed", "message": "B failed first" },
+  { "name": "Checks.A", "status": "failed", "message": "A failed" },
+  { "name": "Checks.C", "status": "passed" }
+] } }
+'@
+    Set-Content -LiteralPath (Join-Path $runFolders[1] 'examples.json') -Value @'
+{ "results": { "tests": [
+  { "name": "Smoke.Page", "status": "passed" },
+  { "name": "Checks.B", "status": "failed", "message": "B failed again" },
+  { "name": "Checks.D", "status": "failed", "message": "Forma.Tests.Hosts.AndroidDeviceUnreachableException : device offline" }
+] } }
+'@
+    Set-Content -LiteralPath (Join-Path $runFolders[2] 'checks.json') -Value '{ "results": { "tests": [ { "name": "Checks.A", "status": "skipped" } ] } }'
+
+    $module = Get-Module Forma.Build
+    $readOutcome = { param($Path, $RunCount, $ExpectedResult, $Filter) Get-BrowserCheckOutcome -Path $Path -RunCount $RunCount -ExpectedResult $ExpectedResult -Filter $Filter }
+    $mixed = & $module $readOutcome (Join-Path $outcomeFolder 'mixed') 2 @('examples.json', 'checks.json') $null
+    $unwritten = & $module $readOutcome (Join-Path $outcomeFolder 'unwritten') 1 @('checks.json') $null
+    $refusal = $null
+
+    try {
+        $null = & $module $readOutcome (Join-Path $outcomeFolder 'skipped') 1 @('checks.json') 'Runtime=android'
+    }
+    catch {
+        $refusal = $_.Exception.Message
+    }
+
+    $failingNames = @($mixed.FailingChecks | ForEach-Object { $_.Name })
+
+    $wrong = @(
+        if ((@($mixed.MissingResults) -join '|') -ne 'run 2 wrote no checks.json') { "the missing results read as '$(@($mixed.MissingResults) -join '|')' rather than run 2's checks" }
+        if (($failingNames -join '|') -ne 'Checks.B|Checks.A') { "the failing checks read as '$($failingNames -join '|')' rather than the one failing twice ahead of the one failing once" }
+        if ($mixed.FailingChecks.Count -gt 0 -and $mixed.FailingChecks[0].Error -ne 'B failed first') { "a check failing twice kept '$($mixed.FailingChecks[0].Error)' rather than its first error" }
+        if ((@($mixed.InterruptedChecks | ForEach-Object { $_.Name }) -join '|') -ne 'Checks.D') { 'the check an unreachable device interrupted was not read apart' }
+        if ($mixed.ExecutionCount -ne 6) { "the runs read as $($mixed.ExecutionCount) executions rather than 6" }
+        if ((@($unwritten.MissingResults) -join '|') -ne 'run 1 wrote no checks.json' -or $unwritten.ExecutionCount -ne 0) { 'a run that wrote nothing was refused or read as having run' }
+        if ($refusal -ne 'No check ran: every check the filter Runtime=android selects is one this machine skips.') { "a step whose every check was skipped was not refused with the filter named: $refusal" }
+    )
+
+    $checkOutcome = [pscustomobject]@{
+        Name     = $outcomeName
+        Passed   = $wrong.Count -eq 0
+        Problems = $wrong
+        Output   = ''
+    }
+}
+catch {
+    $checkOutcome = [pscustomobject]@{
+        Name     = $outcomeName
+        Passed   = $false
+        Problems = @("the check could not be made: $($_.Exception.Message)")
+        Output   = ''
+    }
+}
+finally {
+    Remove-Item -LiteralPath $outcomeFolder -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 # The checks run for real, beside the described cases above.
-$realRuns = @($guard, $cleaning, $waitLog, $progress, $packageFiles, $examplePackages, $checkRates)
+$realRuns = @($guard, $cleaning, $waitLog, $progress, $packageFiles, $examplePackages, $checkRates, $checkOutcome)
 
 foreach ($check in $realRuns) {
     $mark = if ($check.Passed) { 'ok  ' } else { 'FAIL' }

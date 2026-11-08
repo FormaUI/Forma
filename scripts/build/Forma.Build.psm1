@@ -1546,6 +1546,68 @@ function Get-CheckRate {
 
 <#
 .SYNOPSIS
+Reads the results every run of the browser check wrote, together.
+
+.DESCRIPTION
+A check that failed in some runs and passed in others reads as the share of the runs that ran it, and a check this
+machine skips counts in none. Each results file a run was expected to write and didn't is named. A step in
+which no check ran, none was interrupted and no result is missing is refused, since every check it holds is then
+one this machine skips.
+
+.PARAMETER Path
+The folder holding each run's results, in a folder of its own named run-1, run-2 and on.
+
+.PARAMETER RunCount
+The number of runs made.
+
+.PARAMETER ExpectedResult
+The names of the results files each run writes.
+
+.PARAMETER Filter
+The filter the checks ran under, which the refusal names.
+
+.OUTPUTS
+The results missing, the checks that failed, most failures first, the checks an unreachable Android device
+interrupted, and the number of executions that ran.
+#>
+function Get-BrowserCheckOutcome {
+    [CmdletBinding()]
+    [OutputType([psobject])]
+    param(
+        [Parameter(Mandatory)] [string] $Path,
+        [Parameter(Mandatory)] [ValidateRange(1, 10000)] [int] $RunCount,
+        [Parameter(Mandatory)] [string[]] $ExpectedResult,
+        [string] $Filter
+    )
+
+    $missingResults = @(for ($run = 1; $run -le $RunCount; $run++) {
+            foreach ($name in $ExpectedResult) {
+                if (-not (Test-Path -LiteralPath (Join-Path $Path "run-$run" $name))) { "run $run wrote no $name" }
+            }
+        })
+    $rates = @(Get-CheckRate -Path @(Get-ChildItem -LiteralPath $Path -Recurse -Filter '*.json' | ForEach-Object { $_.FullName }))
+    $failingChecks = @($rates | Where-Object { $_.Failed -gt 0 } | Sort-Object -Property @{ Expression = 'Failed'; Descending = $true }, 'Name')
+    $interruptedChecks = @($rates | Where-Object { $_.Interrupted -gt 0 } | Sort-Object -Property 'Name')
+    $executionCount = 0
+
+    foreach ($rate in $rates) {
+        $executionCount += $rate.Executed
+    }
+
+    if ($executionCount -eq 0 -and $missingResults.Count -eq 0 -and $interruptedChecks.Count -eq 0) {
+        throw "No check ran: every check $(if ($Filter) { "the filter $Filter selects" } else { 'the step holds' }) is one this machine skips."
+    }
+
+    [pscustomobject]@{
+        MissingResults    = $missingResults
+        FailingChecks     = $failingChecks
+        InterruptedChecks = $interruptedChecks
+        ExecutionCount    = $executionCount
+    }
+}
+
+<#
+.SYNOPSIS
 Publishes the browser check's host, its full client, the components host, the WebView check host and the example hosts, runs the examples' smoke checks and drives them.
 
 .DESCRIPTION
@@ -1634,7 +1696,7 @@ function Test-BrowserCheck {
     $load = @(foreach ($name in $LoadWith) { Resolve-TestProject -Context $Context -Name $name })
     $startTestLoad = ${function:Start-TestLoad}
     $stopTestLoad = ${function:Stop-TestLoad}
-    $getCheckRate = ${function:Get-CheckRate}
+    $getBrowserCheckOutcome = ${function:Get-BrowserCheckOutcome}
     $runs = $Times
     $description = 'dotnet publish the host, the full client and the components host'
 
@@ -1853,57 +1915,40 @@ function Test-BrowserCheck {
             $stopLoad.Dispose()
         }
 
-        # Every run's results are read together, so a check that failed in some runs and passed in others shows as the
-        # share of the runs that ran it, and a check this machine skips counts in none.
-        $expected = @('examples.json', 'checks.json') + $(if ($isAndroid) { @('android.json') } else { @() })
-        $missingResults = @(for ($run = 1; $run -le $runs; $run++) {
-                foreach ($name in $expected) {
-                    if (-not (Test-Path -LiteralPath (Join-Path $resultsOutput "run-$run" $name))) { "run $run wrote no $name" }
-                }
-            })
-        $rates = @(& $getCheckRate -Path @(Get-ChildItem -LiteralPath $resultsOutput -Recurse -Filter '*.json' | ForEach-Object { $_.FullName }))
-        $failingChecks = @($rates | Where-Object { $_.Failed -gt 0 } | Sort-Object -Property @{ Expression = 'Failed'; Descending = $true }, 'Name')
-        $interruptedChecks = @($rates | Where-Object { $_.Interrupted -gt 0 } | Sort-Object -Property 'Name')
-        $executed = 0
-
-        foreach ($rate in $rates) {
-            $executed += $rate.Executed
-        }
+        $expectedResults = @('examples.json', 'checks.json') + $(if ($isAndroid) { @('android.json') } else { @() })
+        $outcome = & $getBrowserCheckOutcome -Path $resultsOutput -RunCount $runs -ExpectedResult $expectedResults -Filter $Filter
 
         Write-Host ''
 
-        foreach ($problem in $missingResults) {
+        foreach ($problem in $outcome.MissingResults) {
             Write-Host ("   {0}" -f $problem)
         }
 
-        if ($failingChecks.Count -gt 0) {
+        if ($outcome.FailingChecks.Count -gt 0) {
             Write-Host '   failed, in how many of the runs that ran it:'
 
-            foreach ($check in $failingChecks) {
+            foreach ($check in $outcome.FailingChecks) {
                 Write-Host ("   {0,3} of {1,-3} {2}" -f $check.Failed, $check.Executed, $check.Name)
                 Write-Host ("            {0}" -f $check.Error)
             }
         }
-        if ($interruptedChecks.Count -gt 0) {
+
+        if ($outcome.InterruptedChecks.Count -gt 0) {
             Write-Host '   not run, the Android device unreachable, in how many runs:'
 
-            foreach ($check in $interruptedChecks) {
+            foreach ($check in $outcome.InterruptedChecks) {
                 Write-Host ("   {0,3}        {1}" -f $check.Interrupted, $check.Name)
             }
         }
 
-        if ($failingChecks.Count -eq 0 -and $interruptedChecks.Count -eq 0 -and $executed -gt 0) {
-            Write-Host ("   every check passed in every run that ran it, {0} {1} across {2} {3}" -f $executed,
-                $(if ($executed -eq 1) { 'execution' } else { 'executions' }), $runs, $(if ($runs -eq 1) { 'run' } else { 'runs' }))
-        }
-
-        if ($executed -eq 0 -and $missingResults.Count -eq 0 -and $interruptedChecks.Count -eq 0) {
-            throw "No check ran: every check $(if ($Filter) { "the filter $Filter selects" } else { 'the step holds' }) is one this machine skips."
+        if ($outcome.FailingChecks.Count -eq 0 -and $outcome.InterruptedChecks.Count -eq 0 -and $outcome.ExecutionCount -gt 0) {
+            Write-Host ("   every check passed in every run that ran it, {0} {1} across {2} {3}" -f $outcome.ExecutionCount,
+                $(if ($outcome.ExecutionCount -eq 1) { 'execution' } else { 'executions' }), $runs, $(if ($runs -eq 1) { 'run' } else { 'runs' }))
         }
 
         # Each run's code is kept so that every run happens, so the step's own outcome is set here rather than left to
         # whichever run happened to be last.
-        $global:LASTEXITCODE = if ($failedRuns.Count -gt 0 -or $failingChecks.Count -gt 0 -or $missingResults.Count -gt 0 -or $loadFailed) { 1 } else { 0 }
+        $global:LASTEXITCODE = if ($failedRuns.Count -gt 0 -or $outcome.FailingChecks.Count -gt 0 -or $outcome.MissingResults.Count -gt 0 -or $loadFailed) { 1 } else { 0 }
     }.GetNewClosure()
 }
 
