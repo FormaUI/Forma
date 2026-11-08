@@ -52,6 +52,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   reader's edits.
 - `JSTransfer.ReadTextAsync` reads a streamed value other than a text as `null`, as it reads one carried inline. It
   threw an `InvalidOperationException`.
+- A text field drawn anew, or taken off its page and drawn again, goes on from the edits it sent before and holds the
+  text the reader left in it. Where its old element had already left the page, as it can on a slow Blazor Server
+  connection, it numbered its edits afresh, so an edit could be dropped or applied to the wrong text, and text not yet
+  sent was lost.
 
 ## `1.0.0-preview.4`
 

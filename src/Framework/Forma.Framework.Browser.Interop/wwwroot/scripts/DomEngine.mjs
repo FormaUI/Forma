@@ -19,6 +19,8 @@ export class DomEngine {
     #runtimeKey;
     #elements;
     #registrations = new RegistrationTable();
+    /** The interaction each token last held, which its next one goes on from however the last was released, until the owner's release. */
+    #lastInteractions = new Map();
 
     /**
      * @param {DomElements} elements The owner's DomElements.
@@ -41,8 +43,7 @@ export class DomEngine {
             throw new Error(`The capability '${capability}' has no interaction.`);
         }
 
-        // The token's interaction under an earlier generation, which a new one goes on from.
-        const predecessor = this.#registrations.get(token)?.interaction ?? null;
+        const predecessor = this.#lastInteractions.get(token) ?? null;
 
         if (!this.#registrations.begin(token, generation)) {
             return false;
@@ -60,14 +61,19 @@ export class DomEngine {
             report: (method, ...args) => this.#report(receiver, method, token, args),
         });
         const hold = this.#elements.get(target).hold(() => this.#registrations.remove(token, generation));
-
-        return this.#registrations.install(token, generation, {
+        const isInstalled = this.#registrations.install(token, generation, {
             interaction,
             dispose() {
                 hold.dispose();
                 interaction.dispose();
             },
         });
+
+        if (isInstalled) {
+            this.#lastInteractions.set(token, interaction);
+        }
+
+        return isInstalled;
     }
 
     /**
@@ -98,6 +104,7 @@ export class DomEngine {
 
     dispose() {
         this.#registrations.dispose();
+        this.#lastInteractions.clear();
     }
 
     // A receiver already released rejects rather than throwing into the interaction that reports.

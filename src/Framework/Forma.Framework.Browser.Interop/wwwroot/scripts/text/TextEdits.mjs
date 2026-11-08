@@ -30,6 +30,8 @@ export class TextEdits {
     #sending = new Set();
     #hold;
     #controller = new AbortController();
+    /** The text the field held as the edits were released. */
+    #textLeft = null;
 
     /**
      * @param {HTMLElement} field The field edited, or an element whose script provides the text its edits read and write.
@@ -53,7 +55,7 @@ export class TextEdits {
             this.#revision = predecessor.#revision;
 
             if (predecessor.#element !== field) {
-                this.#source.write(predecessor.#source.read());
+                this.#source.write(predecessor.#textLeft ?? predecessor.#source.read());
             }
         } else {
             this.#text = text;
@@ -163,6 +165,7 @@ export class TextEdits {
     }
 
     dispose() {
+        this.#textLeft ??= this.#source.read();
         this.#controller.abort();
         this.#count?.dispose();
         this.#hold.dispose();

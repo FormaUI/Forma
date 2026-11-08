@@ -195,17 +195,35 @@ describe('DomEngine', () => {
             expect(receiver.invokeMethodAsync).toHaveBeenLastCalledWith('EditAsync', '4', 2, 5, 0, { value: 'o' }, false);
         });
 
-        it('starts afresh from the owner\'s text once detached, sending what the field holds beyond it', async () => {
+        it('goes on from the registration its owner detached, sending what the field holds beyond it', async () => {
             const receiver = fakeOwner();
             await attach(runtimeKey, receiver, edits(1));
             type('Ada L');
             detach(runtimeKey, '4', 1);
+            type('Ada Lo');
             receiver.invokeMethodAsync.mockClear();
 
             await attach(runtimeKey, receiver, edits(2));
 
-            expect(document.querySelector('#notes').value).toBe('Ada L');
-            expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('EditAsync', '4', 1, 3, 0, { value: ' L' }, false);
+            expect(document.querySelector('#notes').value).toBe('Ada Lo');
+            expect(receiver.invokeMethodAsync).toHaveBeenCalledExactlyOnceWith('EditAsync', '4', 2, 5, 0, { value: 'o' }, false);
+        });
+
+        it('goes on from a registration whose field left the document, taking the text the reader left there', async () => {
+            const receiver = fakeOwner();
+            const notes = document.querySelector('#notes');
+            const redrawn = document.querySelector('#redrawn');
+            await attach(runtimeKey, receiver, edits(1));
+            type('Ada L');
+            notes.remove();
+            resizes.latest().deliver([{ target: notes }]);
+            frames.flush();
+
+            await attach(runtimeKey, receiver, edits(2, redrawn));
+            type('Ada Lo', redrawn);
+
+            expect(redrawn.value).toBe('Ada Lo');
+            expect(receiver.invokeMethodAsync).toHaveBeenLastCalledWith('EditAsync', '4', 2, 5, 0, { value: 'o' }, false);
         });
 
         it('runs a command the interaction offers, answering its result', async () => {
