@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Time.Testing
 @code {
     public sealed class Component
     {
@@ -119,6 +120,27 @@
             Assert.Multiple(
                 () => Assert.Equal([delay], debouncer.Delays),
                 () => Assert.Equal(["cov"], searched));
+        }
+
+        [Fact]
+        public async Task Should_raise_a_debounced_search_on_the_renderer()
+        {
+            // Arrange — the delay elapses on the clock's thread, as a timer's does on Server and in a web view
+            using var ctx = new FormaSearchBoxTests();
+            var fields = new TextFieldProbe(ctx);
+            var clock = new FakeTimeProvider();
+            ctx.Services.AddSingleton<IDebounceable>(new Debouncer(clock));
+            var searches = new List<(string Value, bool IsOnRenderer)>();
+            var delay = TimeSpan.FromMilliseconds(300);
+            var cut = ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { DebounceDelay = delay })" OnSearch="v => searches.Add((v, ctx.Renderer.Dispatcher.CheckAccess()))" />);
+            await fields.TypeAsync(cut.Find("input"), "cov");
+
+            // Act
+            clock.Advance(delay);
+            await cut.InvokeAsync(() => { });
+
+            // Assert
+            Assert.Equal([("cov", true)], searches);
         }
 
         [Fact]

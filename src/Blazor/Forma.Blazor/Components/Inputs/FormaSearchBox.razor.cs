@@ -104,7 +104,8 @@ public sealed partial class FormaSearchBox : FormaElementBase
     {
         try
         {
-            await Debouncer.DebounceAsync(_ => OnSearch.InvokeAsync(Value), Options.DebounceDelay);
+            // The delay elapses on the clock's thread, so the search goes back to the renderer to run.
+            await Debouncer.DebounceAsync(_ => InvokeAsync(() => OnSearch.InvokeAsync(Value)), Options.DebounceDelay);
         }
         catch (Exception ex)
         {
