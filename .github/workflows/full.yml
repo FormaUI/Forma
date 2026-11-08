@@ -204,6 +204,16 @@ jobs:
       - name: Build the MAUI example host for the platform
         run: pwsh ./scripts/build/mobile.ps1 -Platform ${{ matrix.platform }}
 
+      # The mobile step builds without driving where adb reaches no device, as on a machine without one; here the
+      # emulator was started for it, so its smoke checks' results are what the job is for.
+      - name: Require the smoke checks' results
+        if: matrix.platform == 'Android'
+        shell: pwsh
+        run: |
+          if (-not (Test-Path -LiteralPath 'artifacts/browser/mobile-results/run-1/maui.json')) {
+              throw "The MAUI example's smoke checks wrote no results; adb reached no device to drive them on."
+          }
+
       # A device that went unreachable is described where it happened: its process, the runner's memory and its log.
       - name: Describe the Android emulator
         if: failure() && matrix.platform == 'Android'
