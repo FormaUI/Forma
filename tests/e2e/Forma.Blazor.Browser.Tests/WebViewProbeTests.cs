@@ -47,6 +47,7 @@ public sealed class WebViewProbeTests
 
         // Act
         await first.Locator("#apply-threads").ClickAsync();
+        await Assertions.Expect(first.Locator("#applied")).ToHaveTextAsync("threads");
         await second.GetByRole(AriaRole.Button, new() { Name = "Event" }).ClickAsync();
 
         // Assert
@@ -62,6 +63,7 @@ public sealed class WebViewProbeTests
 
         // Act
         await first.Locator("#apply-defaults").ClickAsync();
+        await Assertions.Expect(first.Locator("#applied")).ToHaveTextAsync("defaults");
         await second.GetByRole(AriaRole.Button, new() { Name = "Event" }).ClickAsync();
 
         // Assert
@@ -77,6 +79,7 @@ public sealed class WebViewProbeTests
 
         // Act
         await first.Locator("#apply-captured").ClickAsync();
+        await Assertions.Expect(first.Locator("#applied")).ToHaveTextAsync("captured");
         await second.GetByRole(AriaRole.Button, new() { Name = "Event" }).ClickAsync();
 
         // Assert
@@ -90,6 +93,7 @@ public sealed class WebViewProbeTests
         await using var application = await WebViewCheckHost.StartAsync();
         var (first, second) = await application.OpenTwoWebViewsAsync();
         await first.Locator("#apply-threads").ClickAsync();
+        await Assertions.Expect(first.Locator("#applied")).ToHaveTextAsync("threads");
 
         // Act
         await second.Locator("#amount").FillAsync("1,5");

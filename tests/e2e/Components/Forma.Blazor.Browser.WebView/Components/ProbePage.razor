@@ -37,8 +37,9 @@
 
 <label>Culture <input id="culture" @bind="_culture" /></label>
 <button id="apply-defaults" @onclick="ApplyToDefaults">Apply to defaults</button>
-<button id="apply-threads" @onclick="ApplyToThreads">Apply to threads</button>
+<button id="apply-threads" @onclick="ApplyToThreadsAsync">Apply to threads</button>
 <button id="apply-captured" @onclick="ApplyInCapturedFlowAsync">Apply in captured flow</button>
+<output id="applied">@_applied</output>
 <button id="switch" @onclick="SwitchAsync">Switch</button>
 <button id="switch-native" @onclick="SwitchFromNativeCodeAsync">Switch from native code</button>
 <output id="switched">@_switched</output>
@@ -80,6 +81,7 @@
     private string? _work;
     private string _culture = "es-ES";
     private string? _switched;
+    private string? _applied;
     private string _startPath = "/en/probe";
     private string _openAs = string.Empty;
     private string? _opened;
@@ -131,13 +133,22 @@
         => _workGate?.TrySetResult();
 
     private void ApplyToDefaults()
-        => ProbeShell.ApplyToDefaults(CultureInfo.GetCultureInfo(_culture), CultureInfo.GetCultureInfo(_culture));
+    {
+        ProbeShell.ApplyToDefaults(CultureInfo.GetCultureInfo(_culture), CultureInfo.GetCultureInfo(_culture));
+        _applied = "defaults";
+    }
 
-    private void ApplyToThreads()
-        => Shell.ApplyToThreads(CultureInfo.GetCultureInfo(_culture), CultureInfo.GetCultureInfo(_culture));
+    private async Task ApplyToThreadsAsync()
+    {
+        await Shell.ApplyToThreadsAsync(CultureInfo.GetCultureInfo(_culture), CultureInfo.GetCultureInfo(_culture));
+        _applied = "threads";
+    }
 
-    private Task ApplyInCapturedFlowAsync()
-        => Shell.ApplyInCapturedFlowAsync(CultureInfo.GetCultureInfo(_culture), CultureInfo.GetCultureInfo(_culture));
+    private async Task ApplyInCapturedFlowAsync()
+    {
+        await Shell.ApplyInCapturedFlowAsync(CultureInfo.GetCultureInfo(_culture), CultureInfo.GetCultureInfo(_culture));
+        _applied = "captured";
+    }
 
     private async Task SwitchAsync()
     {

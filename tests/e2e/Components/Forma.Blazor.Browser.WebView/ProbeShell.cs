@@ -84,23 +84,30 @@ internal sealed class ProbeShell
     /// <summary>Sets the process's default cultures and, outside any flow a caller captured, the cultures each web view's UI thread runs its events in.</summary>
     /// <param name="culture">The formatting culture.</param>
     /// <param name="uiCulture">The UI culture.</param>
-    public void ApplyToThreads(CultureInfo culture, CultureInfo uiCulture)
+    /// <returns>A task that completes once every web view's UI thread took the cultures.</returns>
+    public Task ApplyToThreadsAsync(CultureInfo culture, CultureInfo uiCulture)
     {
         ApplyToDefaults(culture, uiCulture);
+        var threadAssignments = new List<Task>();
 
         using (ExecutionContext.SuppressFlow())
         {
             foreach (var attachment in _attachments.Values)
             {
+                var threadAssignment = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
                 attachment.Context.Post(
                     _ =>
                     {
                         CultureInfo.CurrentCulture = culture;
                         CultureInfo.CurrentUICulture = uiCulture;
+                        threadAssignment.SetResult();
                     },
                     null);
+                threadAssignments.Add(threadAssignment.Task);
             }
         }
+
+        return Task.WhenAll(threadAssignments);
     }
 
     /// <summary>Sets the process's default cultures and the cultures of each web view's renderer, through its dispatcher, in the flow the caller captured.</summary>
