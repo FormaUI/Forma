@@ -19,7 +19,13 @@ public sealed class MainWindow : Window
         _cultureState = services.GetRequiredService<ICultureState>();
         _locale = services.GetRequiredService<IStringLocale<MainWindow>>();
         ShowTitle();
-        _cultureState.Subscribe(OnCultureChangedAsync);
+
+        // The window follows the culture from its creation to its destruction, so one the platform never opens holds no subscription.
+        Created += (_, _) =>
+        {
+            ShowTitle();
+            _cultureState.Subscribe(OnCultureChangedAsync);
+        };
         Destroying += (_, _) => _cultureState.Unsubscribe(OnCultureChangedAsync);
     }
 
