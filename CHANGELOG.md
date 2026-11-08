@@ -17,6 +17,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   the ones the application's build recorded, in its order, as on every other platform. A library that recorded a pack
   for its own use was read as well, and the assembly that loaded last put its packs first, so a pack could override
   the one the host named.
+- [`FormaTextBox`](docs/component-catalog.md#formatextbox), `FormaPasswordBox`, `FormaTextArea`, `FormaColorPicker`,
+  `FormaCheckBox`, `FormaToggleSwitch` and `FormaSlider` post their values from a plain form rendered statically,
+  under the name Blazor's own inputs write for the bound value, which the server binds back. They wrote no name, so a
+  browser sent none of their values.
 - A [`FormaWindow`](docs/component-catalog.md#formawindow) minimized as it opens, or right after a press or focus
   inside it, stays minimized. The activation that opening, the press or the focus asked for applied after the
   minimize and restored the window.

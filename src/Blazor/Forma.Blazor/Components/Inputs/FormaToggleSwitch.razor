@@ -15,9 +15,11 @@
                        style="@RootStyle"
                        @attributes="AdditionalAttributes"
                        @ref="RootElement"
+                       name="@ControlName"
                        aria-describedby="@DescribedBy"
                        type="checkbox"
                        role="switch"
+                       value="true"
                        checked="@CurrentValue"
                        @onchange="HandleChange"
                        disabled="@Disabled" />

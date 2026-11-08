@@ -1,0 +1,41 @@
+@page "/{Runtime}/plain-form"
+
+@* A plain form of the fields that post a value of their own, which a static render posts as an ordinary web form does, and what the server bound from the post, shown where the check reads it. *@
+<EditForm Model="Model" FormName="plain" OnSubmit="@(() => _isPosted = true)">
+    <FormaTextBox Id="name" Label="Name" @bind-Value="Model!.Name" />
+    <FormaPasswordBox Id="secret" Label="Secret" ShowToggle="false" @bind-Value="Model!.Secret" />
+    <FormaTextArea Id="notes" Label="Notes" @bind-Value="Model!.Notes" />
+    <FormaCheckBox Id="agreed" @bind-Value="Model!.IsAgreed">Agreed</FormaCheckBox>
+    <FormaToggleSwitch Id="subscribed" Label="Subscribed" @bind-Value="Model!.IsSubscribed" />
+    <FormaSlider Id="volume" Label="Volume" Min="0" Max="10" Step="1" @bind-Value="Model!.Volume" />
+    <FormaColorPicker Id="color" Label="Color" @bind-Value="Model!.Color" />
+    <button id="post" type="submit">Post</button>
+</EditForm>
+<output id="posted">@(_isPosted ? $"{Model!.Name}|{Model.Secret}|{Model.Notes}|{Model.IsAgreed}|{Model.IsSubscribed}|{Model.Volume}|{Model.Color}" : string.Empty)</output>
+
+@code {
+    private bool _isPosted;
+
+    [SupplyParameterFromForm(FormName = "plain")]
+    private PlainModel? Model { get; set; }
+
+    protected override void OnInitialized()
+        => Model ??= new();
+
+    private sealed class PlainModel
+    {
+        public string? Name { get; set; }
+
+        public string? Secret { get; set; }
+
+        public string? Notes { get; set; }
+
+        public bool IsAgreed { get; set; }
+
+        public bool IsSubscribed { get; set; }
+
+        public int Volume { get; set; }
+
+        public string? Color { get; set; }
+    }
+}

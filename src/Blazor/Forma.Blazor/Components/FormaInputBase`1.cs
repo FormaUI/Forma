@@ -100,6 +100,10 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     protected virtual bool HasFieldContainer
         => true;
 
+    /// <summary>The name the input's control posts its value under from a plain form: the host's own, or the bound value's, as Blazor's own inputs write it.</summary>
+    protected string? ControlName
+        => string.IsNullOrEmpty(NameAttributeValue) ? null : NameAttributeValue;
+
     /// <summary>The space-separated element IDs used for the input's aria-describedby attribute.</summary>
     protected string? DescribedBy
     {
