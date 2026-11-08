@@ -38,6 +38,27 @@ public sealed class CultureRouterTests
         Assert.IsType<ArgumentException>(thrown);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(2_147_484)]
+    public void Should_reject_a_switch_timeout_a_browser_s_timer_can_t_hold(int seconds)
+    {
+        // Arrange — no time, or past the 2^31 - 1 milliseconds a timer holds
+        var options = new CultureRouterOptions
+        {
+            DefaultCulture = "en",
+            Routes = [new() { Token = "en", UICulture = new("en") }],
+            SwitchTimeout = TimeSpan.FromSeconds(seconds),
+        };
+
+        // Act
+        var thrown = Record.Exception(() => new CultureRouter(options));
+
+        // Assert
+        Assert.IsType<ArgumentOutOfRangeException>(thrown);
+    }
+
     [Fact]
     public void Should_reject_an_empty_culture_set()
     {

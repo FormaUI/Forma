@@ -55,6 +55,72 @@ public sealed class CultureTests(BrowserHost host)
             () => Assert.Equal("Ada", typed));
     }
 
+    [Fact]
+    public async Task Should_time_out_a_switch_whose_navigation_a_guard_refuses_leaving_the_culture_as_it_was()
+    {
+        // Arrange — interactive routing, whose router tells nothing of a navigation a handler refuses
+        var (context, page) = await host.OpenPageAsync(await host.GetInteractiveAddressAsync());
+        await using var _ = context;
+        await page.GotoAsync("culture");
+        await WaitForPanelAsync(page);
+        await page.Locator("#guard-refuse").ClickAsync();
+        await Assertions.Expect(page.Locator("#guard-state")).ToHaveTextAsync("refusing");
+
+        // Act
+        await page.Locator("#switch-state").ClickAsync();
+
+        // Assert — once the host's switch timeout has passed
+        await Assertions.Expect(page.Locator("#switch-outcome")).ToHaveTextAsync("timed out", new() { Timeout = 30000 });
+        await Assertions.Expect(page.Locator("#state")).ToHaveTextAsync("en");
+        Assert.EndsWith("/culture", new Uri(page.Url).AbsolutePath, StringComparison.Ordinal);
+        Assert.DoesNotContain("/he/", new Uri(page.Url).AbsolutePath, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Should_complete_a_switch_whose_navigation_a_guard_holds_once_the_guard_lets_it_go()
+    {
+        // Arrange — a guard asking first, as a handler asking the reader does
+        var (context, page) = await host.OpenPageAsync(await host.GetInteractiveAddressAsync());
+        await using var _ = context;
+        await page.GotoAsync("culture");
+        await WaitForPanelAsync(page);
+        await page.Locator("#guard-hold").ClickAsync();
+        await Assertions.Expect(page.Locator("#guard-state")).ToHaveTextAsync("holding");
+        await page.Locator("#switch-state").ClickAsync();
+        await Assertions.Expect(page.Locator("#guard-state")).ToHaveTextAsync("held");
+
+        // Act
+        await page.Locator("#guard-release").ClickAsync();
+
+        // Assert
+        await Assertions.Expect(page.Locator("#switch-outcome")).ToHaveTextAsync("accepted");
+        await Assertions.Expect(page.Locator("#state")).ToHaveTextAsync("he");
+        Assert.EndsWith("/he/culture", new Uri(page.Url).AbsolutePath, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task Should_take_a_switch_made_after_one_a_guard_refused_without_waiting_for_it()
+    {
+        // Arrange — a switch a guard refused, still waiting for a landing that never comes
+        var (context, page) = await host.OpenPageAsync(await host.GetInteractiveAddressAsync());
+        await using var _ = context;
+        await page.GotoAsync("culture");
+        await WaitForPanelAsync(page);
+        await page.Locator("#guard-refuse").ClickAsync();
+        await Assertions.Expect(page.Locator("#guard-state")).ToHaveTextAsync("refusing");
+        await page.Locator("#switch-state").ClickAsync();
+        await page.Locator("#guard-end").ClickAsync();
+        await Assertions.Expect(page.Locator("#guard-state")).ToHaveTextAsync("none");
+
+        // Act
+        await page.Locator("#switch-state").ClickAsync();
+
+        // Assert — the first, still waiting, gave way to the second, which landed
+        await Assertions.Expect(page.Locator("#switch-outcomes")).ToHaveTextAsync("canceled accepted");
+        await Assertions.Expect(page.Locator("#state")).ToHaveTextAsync("he");
+        Assert.EndsWith("/he/culture", new Uri(page.Url).AbsolutePath, StringComparison.Ordinal);
+    }
+
     [Theory]
     [MemberData(nameof(Routing))]
     public async Task Should_refuse_a_pair_no_route_carries_before_anything_changes(string routing)

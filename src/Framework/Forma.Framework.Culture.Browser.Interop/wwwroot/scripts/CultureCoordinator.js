@@ -28,8 +28,10 @@ let isNavigationPending = false;
 // Blazor's API, which an in-place switch navigates through.
 let blazorApi = null;
 
-// The switch by address waiting for its navigation's landing.
+// The switch by address waiting for its navigation's landing, and the pairs earlier switches navigated to that haven't
+// landed: one of their late landings is the page's culture, never the waiting switch's.
 let pendingSwitch = null;
+let earlierPairs = [];
 
 // The history entry state of an address a following document replaces to follow its application's culture, which tells
 // a navigation handler that the page and the user's work stay.
@@ -182,19 +184,20 @@ class CultureCoordinatorRegistration {
             }
 
             if (route !== null) {
-                return await navigate(policy, route, this);
+                return { landing: navigate(policy, route, this) };
             }
 
             persist(culture, uiCulture);
             await this.deliver(accept({ culture, uiCulture, direction }, [this]));
 
-            return 'accepted';
+            return { landing: Promise.resolve('accepted') };
         });
 
-        // The next request waits for this one to settle, whatever its outcome, which reaches its own requester.
+        // The next request waits for this one to settle, whatever its outcome, which reaches its own requester; a switch by
+        // address settles once its navigation is under way, so a newer one supersedes it rather than waiting for its landing.
         queue = pending.then(() => {}, () => {});
 
-        return pending;
+        return pending.then(({ landing }) => landing);
     }
 
     /**
@@ -358,10 +361,22 @@ function land(marker) {
 
 // A landing is accepted as the next switch, without waiting for any registration, unless it is the accepted pair
 // already. The registration that reported it, and the requester of a switch waiting on it, await their own delivery; a
-// switch waiting on a landing at another pair was replaced by it, and is canceled.
+// switch waiting on a landing at another pair was replaced by it, and is canceled, unless an earlier switch navigated
+// there, whose late landing leaves the waiting switch waiting.
 async function acceptLanding(pair, reporter = null) {
-    const waiting = pendingSwitch;
-    pendingSwitch = null;
+    const earlierIndex = earlierPairs.findIndex(earlier => isSamePair(pair, earlier));
+
+    if (earlierIndex >= 0) {
+        earlierPairs.splice(earlierIndex, 1);
+    }
+
+    const isEarlier = earlierIndex >= 0 && pendingSwitch !== null && !isSamePair(pair, pendingSwitch.route);
+    const waiting = isEarlier ? null : takePendingSwitch();
+
+    // A navigation the waiting switch made lands after every earlier one, so none of theirs can land after it.
+    if (waiting !== null && isSamePair(pair, waiting.route)) {
+        earlierPairs = [];
+    }
 
     const awaited = [reporter, waiting?.requester].filter(registration => registration != null);
     const isNew = pair.culture !== accepted.culture || pair.uiCulture !== accepted.uiCulture;
@@ -400,7 +415,8 @@ function accept(pair, excluded = []) {
 }
 
 // A switch by address navigates to the current page's address in its route: a full load leaves the document, and an
-// in-place navigation completes once its landing is accepted.
+// in-place navigation completes once its landing is accepted, or as timed out where none arrives within the policy's
+// timeout, as one a navigation handler refused doesn't; a newer switch supersedes it, which completes it as canceled.
 function navigate(policy, route, requester) {
     const destination = buildDestination(policy, route, location.href);
 
@@ -415,10 +431,41 @@ function navigate(policy, route, requester) {
     }
 
     return new Promise((resolve, reject) => {
-        cancelPendingSwitch();
-        pendingSwitch = { route, requester, resolve, reject };
+        const superseded = takePendingSwitch();
+
+        if (superseded !== null) {
+            earlierPairs.push(superseded.route);
+            superseded.resolve('canceled');
+        }
+
+        const attempt = { route, requester, resolve, reject, timeout: 0 };
+        attempt.timeout = setTimeout(() => timeOut(attempt), policy.switchTimeout);
+        pendingSwitch = attempt;
         (blazorApi ?? window.Blazor).navigateTo(destination);
     });
+}
+
+// A switch whose navigation didn't land in time completes as timed out; its landing, should it arrive, is still the page's.
+function timeOut(attempt) {
+    if (pendingSwitch !== attempt) {
+        return;
+    }
+
+    takePendingSwitch();
+    earlierPairs.push(attempt.route);
+    attempt.resolve('timed-out');
+}
+
+// The switch waiting for its landing, no longer waiting.
+function takePendingSwitch() {
+    const waiting = pendingSwitch;
+    pendingSwitch = null;
+
+    if (waiting !== null) {
+        clearTimeout(waiting.timeout);
+    }
+
+    return waiting;
 }
 
 // A following document moves its page into the route carrying `pair`, keeping its page, query and fragment, in place of the
@@ -456,9 +503,7 @@ function withoutHash(href) {
 }
 
 function cancelPendingSwitch() {
-    const waiting = pendingSwitch;
-    pendingSwitch = null;
-    waiting?.resolve('canceled');
+    takePendingSwitch()?.resolve('canceled');
 }
 
 function endHold() {
@@ -615,6 +660,13 @@ function readMarker(head) {
     return isCultureName(culture) && isCultureName(uiCulture) ? { culture, uiCulture } : null;
 }
 
+// The milliseconds a switch in place waits for its landing, 30 seconds where the page published none a timer can hold.
+function readSwitchTimeout(published) {
+    const timeout = Number(published);
+
+    return published !== null && Number.isInteger(timeout) && timeout > 0 && timeout <= 2147483647 ? timeout : 30000;
+}
+
 /** The switch's policy the page published in `head`, the state alone where it published none. */
 export function readPolicy(head) {
     const policy = head?.querySelector('meta[name="forma-culture-policy"]');
@@ -631,6 +683,7 @@ export function readPolicy(head) {
             defaultToken: policy.getAttribute('data-default'),
             prefixesDefault: policy.getAttribute('data-prefix') === 'always',
             switchesInPlace: policy.getAttribute('data-switch') === 'in-place',
+            switchTimeout: readSwitchTimeout(policy.getAttribute('data-switch-timeout')),
             root: policy.getAttribute('data-root') ?? '/',
             cookieName: policy.getAttribute('data-cookie-name'),
             cookiePath: policy.getAttribute('data-cookie-path') ?? '/',

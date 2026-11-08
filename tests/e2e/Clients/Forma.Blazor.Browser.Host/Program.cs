@@ -30,6 +30,9 @@ if (HostModes.UsesCultureAddresses)
     {
         Prefix = CulturePrefix.ExceptDefault,
         Switch = CultureSwitchMode.InPlace,
+
+        // Short enough for the check of a switch a guard refuses, long enough for any navigation that lands on a busy machine.
+        SwitchTimeout = TimeSpan.FromSeconds(10),
         DefaultCulture = "en",
         Routes =
         [

@@ -114,6 +114,27 @@ function toPolicy(map) {
     };
 }
 
+// An English route, the default without a token, a Hebrew one and a Spanish one, reached in place at the host's root,
+// a switch waiting `switchTimeout` milliseconds for its navigation's landing.
+function threeRoutePolicy({ switchTimeout = 30000 } = {}) {
+    return {
+        ...toPolicy({
+            routes: [
+                { token: 'en', aliases: [], culture: 'en', uiCulture: 'en', direction: 'ltr' },
+                { token: 'he', aliases: [], culture: 'he', uiCulture: 'he', direction: 'rtl' },
+                { token: 'es', aliases: [], culture: 'es', uiCulture: 'es', direction: 'ltr' },
+            ],
+            defaultToken: 'en',
+            prefixesDefault: false,
+            switchesInPlace: true,
+            root: '/',
+            cookieName: 'forma-culture-route',
+            cookiePath: '/',
+        }),
+        'data-switch-timeout': String(switchTimeout),
+    };
+}
+
 // An English route, the default without a token, and a Hebrew one, reached in place at the host's root.
 function addressPolicy({ switchesInPlace = true } = {}) {
     return toPolicy({
@@ -177,6 +198,7 @@ beforeEach(() => {
 
 afterEach(() => {
     vi.restoreAllMocks();
+    vi.useRealTimers();
     // An expiry in the past, since a cookie expiring this very millisecond still reads as set.
     document.cookie.split('; ').filter(Boolean).forEach(cookie => document.cookie = `${cookie.split('=')[0]}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`);
 });
@@ -1016,6 +1038,126 @@ describe('CultureCoordinator', () => {
             await expect(switching).resolves.toBe('canceled');
             expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
             expect(readDocument()).toBe('en/ltr');
+        });
+
+        it('lets a newer switch supersede one still waiting for its landing, completing the older as canceled', async () => {
+            // Arrange — a switch whose navigation a handler holds, so it hasn't landed
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: threeRoutePolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+            const first = registration.request('he', 'he', 'rtl');
+            await settle();
+
+            // Act
+            const second = registration.request('es', 'es', 'ltr');
+            await settle();
+            await registration.reportLanding('es', 1);
+
+            // Assert
+            await expect(first).resolves.toBe('canceled');
+            await expect(second).resolves.toBe('accepted');
+            expect(blazor.navigations).toEqual(['http://localhost/he/about', 'http://localhost/es/about']);
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'es/es #1']);
+        });
+
+        it('takes the page into the pair a superseded switch lands at late, leaving the newer switch waiting for its own', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: threeRoutePolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+            registration.request('he', 'he', 'rtl');
+            await settle();
+            let secondOutcome = null;
+            const second = registration.request('es', 'es', 'ltr').then(outcome => secondOutcome = outcome);
+            await settle();
+
+            // Act
+            await registration.reportLanding('he', 1);
+            const outcomeAfterLateLanding = secondOutcome;
+            await registration.reportLanding('es', 2);
+            await second;
+
+            // Assert
+            expect(outcomeAfterLateLanding).toBeNull();
+            expect(secondOutcome).toBe('accepted');
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1', 'es/es #2']);
+        });
+
+        it('completes a switch as timed out where its navigation doesn\'t land in time, as one a handler refused, and follows its landing should it arrive', async () => {
+            // Arrange
+            vi.useFakeTimers();
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: threeRoutePolicy({ switchTimeout: 5000 }) });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+            let outcome = null;
+            const switching = registration.request('he', 'he', 'rtl').then(result => outcome = result);
+            await settle();
+
+            // Act
+            vi.advanceTimersByTime(4999);
+            await settle();
+            const outcomeBeforeTimeout = outcome;
+            vi.advanceTimersByTime(1);
+            await switching;
+            await registration.reportLanding('he', 1);
+
+            // Assert
+            expect(outcomeBeforeTimeout).toBeNull();
+            expect(outcome).toBe('timed-out');
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+            expect(readDocument()).toBe('he/rtl');
+        });
+
+        it('waits 30 seconds for a landing where the page published no timeout a timer can hold', async () => {
+            // Arrange
+            vi.useFakeTimers();
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: { ...threeRoutePolicy(), 'data-switch-timeout': 'never' } });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const registration = await coordinator.register('a', fakeReceiver());
+            let outcome = null;
+            const switching = registration.request('he', 'he', 'rtl').then(result => outcome = result);
+            await settle();
+
+            // Act
+            vi.advanceTimersByTime(29999);
+            await settle();
+            const outcomeBeforeTimeout = outcome;
+            vi.advanceTimersByTime(1);
+            await switching;
+
+            // Assert
+            expect(outcomeBeforeTimeout).toBeNull();
+            expect(outcome).toBe('timed-out');
+        });
+
+        it('takes a switch after one that timed out without waiting for it', async () => {
+            // Arrange
+            vi.useFakeTimers();
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: threeRoutePolicy({ switchTimeout: 5000 }) });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+            const refused = registration.request('he', 'he', 'rtl');
+            await settle();
+            vi.advanceTimersByTime(5000);
+            await refused;
+
+            // Act
+            const switching = registration.request('es', 'es', 'ltr');
+            await settle();
+            await registration.reportLanding('es', 1);
+
+            // Assert
+            await expect(switching).resolves.toBe('accepted');
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'es/es #1']);
         });
 
         it('completes a switch as canceled where a landing at another pair replaced its navigation', async () => {

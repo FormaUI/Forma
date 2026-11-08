@@ -5,7 +5,7 @@ using System.Text.Json;
 
 public sealed class CulturePublicationTests
 {
-    private static readonly string[] AddressAttributes = ["content", "data-default", "data-prefix", "data-switch", "data-root", "data-cookie-name", "data-cookie-path"];
+    private static readonly string[] AddressAttributes = ["content", "data-default", "data-prefix", "data-switch", "data-switch-timeout", "data-root", "data-cookie-name", "data-cookie-path"];
 
     public sealed class Marker
     {
@@ -96,6 +96,7 @@ public sealed class CulturePublicationTests
                 DefaultToken = "he",
                 PrefixesDefault = true,
                 SwitchesInPlace = false,
+                SwitchTimeout = TimeSpan.FromSeconds(12.5),
                 Root = "/app/",
                 CookieName = "route",
                 CookiePath = "/app/",
@@ -109,7 +110,7 @@ public sealed class CulturePublicationTests
             var route = Assert.Single(routes.RootElement.EnumerateArray());
             Assert.Multiple(
                 () => Assert.Equal(
-                    "address he always full-load /app/ route /app/",
+                    "address he always full-load 12500 /app/ route /app/",
                     string.Join(' ', AddressAttributes.Select(name => attributes[name]))),
                 () => Assert.Equal(
                     "he iw he he rtl",

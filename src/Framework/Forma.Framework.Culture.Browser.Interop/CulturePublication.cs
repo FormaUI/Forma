@@ -58,6 +58,7 @@ public static class CulturePublication
                 ["data-default"] = map.DefaultToken,
                 ["data-prefix"] = map.PrefixesDefault ? "always" : "except-default",
                 ["data-switch"] = map.SwitchesInPlace ? "in-place" : "full-load",
+                ["data-switch-timeout"] = ((long)map.SwitchTimeout.TotalMilliseconds).ToString(CultureInfo.InvariantCulture),
                 ["data-root"] = map.Root,
                 ["data-cookie-name"] = map.CookieName,
                 ["data-cookie-path"] = map.CookiePath,

@@ -14,4 +14,7 @@ public sealed class CultureRouterOptions
 
     /// <summary>How a switch to another route navigates.</summary>
     public CultureSwitchMode Switch { get; init; } = CultureSwitchMode.FullLoad;
+
+    /// <summary>How long a switch in place waits for its navigation to land, past which it completes as timed out.</summary>
+    public TimeSpan SwitchTimeout { get; init; } = TimeSpan.FromSeconds(30);
 }

@@ -230,6 +230,26 @@ public sealed class CoordinatedCultureSwitchTests
     }
 
     [Fact]
+    public async Task Should_time_out_where_its_navigation_did_not_land_in_the_time_the_culture_routing_gives_it()
+    {
+        // Arrange — the navigation a handler refused, which never lands
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser();
+        await using var provider = CreateServices(browser, new HebrewAddressing());
+        await using var scope = provider.CreateAsyncScope();
+        await GetRegistration(scope).RegisterAsync();
+        browser.AnswerNextRequest("timed-out");
+
+        // Act
+        var exception = await Record.ExceptionAsync(() => GetSwitch(scope).SwitchAsync(Hebrew));
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.IsType<TimeoutException>(exception),
+            () => Assert.Equal("en-US/en-US #0", ReadPair(scope)));
+    }
+
+    [Fact]
     public async Task Should_complete_as_canceled_where_its_navigation_did_not_land()
     {
         // Arrange

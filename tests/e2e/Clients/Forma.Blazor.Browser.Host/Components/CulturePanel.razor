@@ -6,7 +6,7 @@
 @inject NavigationManager Navigation
 @inject DelayedSwitches Delayed
 
-@* What the culture checks read and press on the Server: the state, text a reader typed, the links to the other culture and to the other pages, switches at once or after a delay, a switch to a pair no route carries, and the outcome of the last switch made at once. *@
+@* What the culture checks read and press on the Server: the state, text a reader typed, the links to the other culture and to the other pages, switches at once or after a delay, a switch to a pair no route carries, the outcome of the last switch made at once, and a guard on the page's navigations that refuses each or holds it until the check lets it go. *@
 <output id="state">@CultureState.UICulture.Name</output>
 <output id="interactive">@RendererInfo.IsInteractive</output>
 <input id="typed" @bind="_typed" />
@@ -23,6 +23,12 @@
 <button id="switch-unrouted" @onclick="SwitchUnroutedAsync">Switch to a pair no route carries</button>
 <output id="switch-outcome">@_outcome</output>
 <button id="switch-later" @onclick="SwitchLater">Switch the state after a delay</button>
+<button id="guard-refuse" @onclick="GuardRefusing">Refuse every navigation</button>
+<button id="guard-hold" @onclick="GuardHolding">Hold each navigation</button>
+<button id="guard-release" @onclick="ReleaseHeldNavigation">Let the held navigation go</button>
+<button id="guard-end" @onclick="EndGuard">Guard no navigation</button>
+<output id="guard-state">@_guardState</output>
+<output id="switch-outcomes">@string.Join(' ', _outcomes)</output>
 
 @code {
     private static readonly CultureInfo Hebrew = CultureInfo.GetCultureInfo("he");
@@ -30,6 +36,10 @@
 
     private string? _typed;
     private string? _outcome;
+    private string _guardState = "none";
+    private readonly List<string> _outcomes = [];
+    private IDisposable? _guard;
+    private TaskCompletionSource? _heldNavigation;
 
     // Registered only where the host switches through culture addresses.
     private CultureRouter? Router
@@ -41,8 +51,12 @@
     protected override void OnInitialized()
         => CultureState.Subscribe(HandleCultureChangedAsync);
 
+    // Every switch's outcome is kept in order, beside the last one's.
     private async Task SwitchStateAsync()
-        => _outcome = await SwitchAsync(Hebrew);
+    {
+        _outcome = await SwitchAsync(Hebrew);
+        _outcomes.Add(_outcome);
+    }
 
     private async Task SwitchUnroutedAsync()
         => _outcome = await SwitchAsync(French);
@@ -58,6 +72,10 @@
         catch (TaskCanceledException)
         {
             return "canceled";
+        }
+        catch (TimeoutException)
+        {
+            return "timed out";
         }
         catch (InvalidOperationException)
         {
@@ -84,9 +102,54 @@
             });
         });
 
+    // A guard refusing every navigation, as one guarding the reader's unsaved work refuses one.
+    private void GuardRefusing()
+    {
+        EndGuard();
+        _guard = Navigation.RegisterLocationChangingHandler(context =>
+        {
+            context.PreventNavigation();
+
+            return ValueTask.CompletedTask;
+        });
+        _guardState = "refusing";
+    }
+
+    // A guard holding each navigation until the check lets it go, as one asking the reader first does.
+    private void GuardHolding()
+    {
+        EndGuard();
+        _guard = Navigation.RegisterLocationChangingHandler(async _ =>
+        {
+            var held = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            _heldNavigation = held;
+            _guardState = "held";
+            StateHasChanged();
+            await held.Task;
+        });
+        _guardState = "holding";
+    }
+
+    private void ReleaseHeldNavigation()
+    {
+        _guardState = "released";
+        _heldNavigation?.TrySetResult();
+    }
+
+    private void EndGuard()
+    {
+        _guard?.Dispose();
+        _guard = null;
+        _guardState = "none";
+    }
+
     private Task HandleCultureChangedAsync()
         => InvokeAsync(StateHasChanged);
 
     public void Dispose()
-        => CultureState.Unsubscribe(HandleCultureChangedAsync);
+    {
+        CultureState.Unsubscribe(HandleCultureChangedAsync);
+        _guard?.Dispose();
+        _heldNavigation?.TrySetResult();
+    }
 }

@@ -108,7 +108,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     }
 
     /// <summary>Requests a switch to <paramref name="culture"/> and <paramref name="uiCulture"/> from the coordinator, completing once the coordinator accepted it and delivered it to this registration's state.</summary>
-    /// <remarks>Where culture addresses decide the culture, the switch is a navigation to the pair's address, and a navigation that didn't land leaves it canceled.</remarks>
+    /// <remarks>Where culture addresses decide the culture, the switch is a navigation to the pair's address: a navigation canceled or replaced by another leaves it canceled, and one that didn't land within the culture routing's switch timeout, as one a navigation handler refused doesn't, leaves it timed out.</remarks>
     internal async Task RequestAsync(CultureInfo culture, CultureInfo uiCulture)
     {
         var registration = await GetRegistrationAsync().ConfigureAwait(false);
@@ -118,6 +118,11 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         if (outcome == "canceled")
         {
             throw new TaskCanceledException($"The switch to the culture '{culture.Name}' with the UI culture '{uiCulture.Name}' navigated, but the navigation didn't land.");
+        }
+
+        if (outcome == "timed-out")
+        {
+            throw new TimeoutException($"The switch to the culture '{culture.Name}' with the UI culture '{uiCulture.Name}' navigated, but the navigation didn't land within the culture routing's switch timeout; a navigation handler may have refused it. The page still follows the navigation should it land.");
         }
     }
 

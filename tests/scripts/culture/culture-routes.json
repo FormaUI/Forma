@@ -39,6 +39,7 @@
         "defaultToken": "en",
         "prefixesDefault": false,
         "switchesInPlace": true,
+        "switchTimeout": "00:00:12",
         "root": "/",
         "cookieName": "forma-culture-route",
         "cookiePath": "/"
@@ -271,6 +272,7 @@
         "defaultToken": "en",
         "prefixesDefault": false,
         "switchesInPlace": true,
+        "switchTimeout": "00:00:12",
         "root": "/app/",
         "cookieName": "forma-culture-route%2Fapp",
         "cookiePath": "/app"
@@ -503,6 +505,7 @@
         "defaultToken": "en",
         "prefixesDefault": true,
         "switchesInPlace": true,
+        "switchTimeout": "00:00:12",
         "root": "/",
         "cookieName": "forma-culture-route",
         "cookiePath": "/"
@@ -735,6 +738,7 @@
         "defaultToken": "en",
         "prefixesDefault": true,
         "switchesInPlace": true,
+        "switchTimeout": "00:00:12",
         "root": "/app/",
         "cookieName": "forma-culture-route%2Fapp",
         "cookiePath": "/app"

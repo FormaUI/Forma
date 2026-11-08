@@ -66,7 +66,7 @@ public sealed class FakeCultureCoordinatorBrowser
         _routes = routes;
     }
 
-    /// <summary>Answers the next request with <paramref name="outcome"/>; <c>canceled</c> accepts nothing, as a navigation that didn't land.</summary>
+    /// <summary>Answers the next request with <paramref name="outcome"/>; <c>canceled</c> and <c>timed-out</c> accept nothing, as a navigation that didn't land.</summary>
     public void AnswerNextRequest(string outcome)
         => _requestOutcomes.Enqueue(outcome);
 
@@ -172,7 +172,7 @@ public sealed class FakeCultureCoordinatorBrowser
             throw new JSException("The culture state requesting the switch is no longer registered with the page.");
         }
 
-        if (_requestOutcomes.TryDequeue(out var outcome) && outcome == "canceled")
+        if (_requestOutcomes.TryDequeue(out var outcome) && outcome is "canceled" or "timed-out")
         {
             return outcome;
         }

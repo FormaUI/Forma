@@ -55,6 +55,7 @@ options `/about` serves English, `/he/about` Hebrew, `/he-de/about` Hebrew text 
 | `CultureRouterOptions.DefaultCulture` | The `Token` of the route serving a request that names none. |
 | `CultureRouterOptions.Prefix` | `CulturePrefix.Always`, the default, puts a token on every route; `CulturePrefix.ExceptDefault` leaves the default route without one. |
 | `CultureRouterOptions.Switch` | `CultureSwitchMode.FullLoad`, the default, loads another route's address as a new document; `CultureSwitchMode.InPlace` reaches it in the same document, as [switching in place](#switching-in-place) sets out. |
+| `CultureRouterOptions.SwitchTimeout` | How long a switch in place waits for its navigation to land; 30 seconds by default. |
 | `CultureRoute.Token` | The canonical first path segment selecting the route. |
 | `CultureRoute.UICulture` | The culture choosing the strings and direction of a page the route selects. |
 | `CultureRoute.Culture` | The culture formatting dates, numbers and collation there; the UI culture where none is named. |
@@ -93,8 +94,11 @@ A page or component switches through `ICultureSwitch`, as every Forma host does,
 `CultureSwitcher.SwitchToAsync` with a route. Under culture routing a switch is a navigation to the
 current page's address in the route carrying the pair: by default it loads the address as a new
 document, which starts in the pair its address names; under `CultureSwitchMode.InPlace` it stays in the
-document, completing once its navigation's landing was accepted, and as canceled where the navigation
-didn't land. A pair no route carries throws `InvalidOperationException` before anything changes.
+document, completing once its navigation's landing was accepted, as canceled where the navigation was
+canceled or replaced by another, and with `TimeoutException` where it didn't land within `SwitchTimeout`, as a
+navigation a handler refused doesn't. A newer switch takes the place of one still waiting, and the page follows a
+navigation that lands after its switch timed out. A pair no route carries throws `InvalidOperationException` before
+anything changes.
 
 | Member | What it does |
 | --- | --- |

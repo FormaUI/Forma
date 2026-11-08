@@ -39,6 +39,7 @@ public sealed class CultureRouteMapTests
         {
             Prefix = prefix,
             Switch = CultureSwitchMode.InPlace,
+            SwitchTimeout = TimeSpan.FromSeconds(12),
             DefaultCulture = "en",
             Routes =
             [
@@ -140,7 +141,8 @@ public sealed class CultureRouteMapTests
             () => Assert.Equal("/my%20app", map.CookiePath),
             () => Assert.Equal("/my%20app/", map.Root),
             () => Assert.False(map.PrefixesDefault),
-            () => Assert.True(map.SwitchesInPlace));
+            () => Assert.True(map.SwitchesInPlace),
+            () => Assert.Equal(TimeSpan.FromSeconds(12), map.SwitchTimeout));
     }
 
     [Theory]

@@ -265,7 +265,12 @@ A switch that can't be accepted fails and changes nothing:
   accepted.
 - **A navigation that doesn't land.** An address switch whose navigation is canceled, fails or is
   replaced by another is never accepted, and its task completes as canceled; the accepted pair stays the
-  one the address that remained active names.
+  one the address that remained active names. A navigation that neither lands nor ends, as one a
+  navigation handler refuses under interactive routing, which tells nothing of it, holds its switch until
+  the culture routing's switch timeout, after which the switch fails with `TimeoutException`; should the
+  navigation land after all, its landing is accepted as any landing is. A newer switch takes the place of
+  one still waiting, which completes as canceled, and a late landing of the earlier switch's navigation
+  is the page's culture without completing the newer switch.
 - **In a static render** there is no page to coordinate, so a switch throws `InvalidOperationException`;
   a static page switches with a request.
 

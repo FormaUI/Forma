@@ -17,6 +17,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   the ones the application's build recorded, in its order, as on every other platform. A library that recorded a pack
   for its own use was read as well, and the assembly that loaded last put its packs first, so a pack could override
   the one the host named.
+- An in-place [culture switch](src/Framework/Forma.Framework.Culture.Router/README.md#switching) whose navigation a
+  handler refuses fails with `TimeoutException` once `CultureRouterOptions.SwitchTimeout`, 30 seconds by default, has
+  passed, and the page still follows the navigation should it land. Under interactive routing such a switch never
+  completed, and every later switch waited behind it; a newer switch now takes the place of one still waiting.
 - In a form, a submit [`FormaButton`](README.md#forms-and-long-text), and a `FormaButton` or `FormaInputScope` set to
   the new `ReadsForm`, waits for the form's fields before it acts. Every other button and routed action acts at once,
   so a pager's steps, a dialog's Cancel and a composer's commands stay usable beside a field whose text didn't arrive.

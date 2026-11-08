@@ -40,9 +40,14 @@ public sealed partial class CultureRouter : ICultureAddressing
             }
         }
 
+        // A browser's timer holds a delay of up to 2^31 - 1 milliseconds, and runs a longer one at once.
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(options.SwitchTimeout, TimeSpan.Zero, nameof(options));
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(options.SwitchTimeout, TimeSpan.FromMilliseconds(int.MaxValue), nameof(options));
+
         Routes = [.. options.Routes];
         Prefix = options.Prefix;
         Switch = options.Switch;
+        SwitchTimeout = options.SwitchTimeout;
         DefaultRoute = Routes.FirstOrDefault(route => string.Equals(route.Token, options.DefaultCulture, StringComparison.Ordinal))
             ?? throw new ArgumentException($"DefaultCulture '{options.DefaultCulture}' is not the token of any registered culture.", nameof(options));
     }
@@ -58,6 +63,9 @@ public sealed partial class CultureRouter : ICultureAddressing
 
     /// <summary>How a switch to another route navigates.</summary>
     public CultureSwitchMode Switch { get; }
+
+    /// <summary>How long a switch in place waits for its navigation to land, past which it completes as timed out.</summary>
+    public TimeSpan SwitchTimeout { get; }
 
     // Google reads an ISO 639-1 language with an optional ISO 15924 script and ISO 3166-1 alpha-2 region.
     [GeneratedRegex("^[a-z]{2}(-[a-z]{4})?(-[a-z]{2})?$", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
@@ -197,6 +205,7 @@ public sealed partial class CultureRouter : ICultureAddressing
             DefaultToken = DefaultRoute.Token,
             PrefixesDefault = Prefix is CulturePrefix.Always,
             SwitchesInPlace = Switch is CultureSwitchMode.InPlace,
+            SwitchTimeout = SwitchTimeout,
             Root = root,
             CookieName = GetCookieName(Uri.UnescapeDataString(pathBase)),
             CookiePath = GetCookiePath(pathBase),

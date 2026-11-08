@@ -15,6 +15,9 @@ public sealed record CultureRouteMap
     /// <summary>Whether a switch reaches another route's address in the same document, rather than loading it as a new one.</summary>
     public required bool SwitchesInPlace { get; init; }
 
+    /// <summary>How long a switch in place waits for its navigation to land, past which it completes as timed out.</summary>
+    public TimeSpan SwitchTimeout { get; init; } = TimeSpan.FromSeconds(30);
+
     /// <summary>The application's root, an escaped absolute path ending in a slash, such as <c>/app/</c>.</summary>
     public required string Root { get; init; }
 
