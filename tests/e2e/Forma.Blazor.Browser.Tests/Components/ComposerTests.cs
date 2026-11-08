@@ -299,9 +299,9 @@ public sealed class ComposerTests
         public async Task Should_copy_and_download_the_document_s_source(string runtime)
         {
             // Arrange
-            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime, prepare: page => page.AddInitScriptAsync(RecordingClipboard));
             await using var _ = context;
-            await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"]);
+            await context.GrantPermissionsAsync(["clipboard-write"]);
             await SelectTypedAsync(page, canvas, "Hello");
             await GetCommand(page, "Bold").ClickAsync();
             await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("<b>Hello</b>");
@@ -312,7 +312,7 @@ public sealed class ComposerTests
             var download = await page.RunAndWaitForDownloadAsync(() => GetCommand(page, "Download Source").ClickAsync());
 
             // Assert
-            await page.WaitForFunctionAsync("async () => (await navigator.clipboard.readText()).includes('<b>Hello</b>')");
+            await page.WaitForFunctionAsync("() => (window.formaCopied ?? []).some(text => text.includes('<b>Hello</b>'))");
             Assert.Equal("document.html", download.SuggestedFilename);
             Assert.Contains("<b>Hello</b>", await ReadAsync(page, download), StringComparison.Ordinal);
         }

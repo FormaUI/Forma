@@ -5,6 +5,9 @@ using Forma.Tests.Shared;
 /// <summary>What a component's check does in each runtime: opens the component's check page on the components host, waits until the page's runtime is interactive, waits for the signals a component gives once its script answers input, and makes a round trip through the runtime before it reads that something didn't happen.</summary>
 public static partial class ComponentChecks
 {
+    /// <summary>A script recording, in <c>window.formaCopied</c>, each text the page writes to the clipboard once the write lands, so a check reads its own copy rather than a clipboard every browser on the machine shares.</summary>
+    public const string RecordingClipboard = "const writeText = Clipboard.prototype.writeText; Clipboard.prototype.writeText = function (text) { return writeText.call(this, text).then(() => { (window.formaCopied ??= []).push(text); }); };";
+
     /// <summary>The runtimes every component is checked in: the Server, WebAssembly, Auto on a first visit, which runs on the Server, and once WebAssembly has downloaded, which runs there, and Blazor Hybrid's web view, WebView2's and Android's.</summary>
     /// <remarks>Each row carries its runtime as the <c>Runtime</c> trait, which a run that enumerates theories selects or leaves out by the runner's trait filters.</remarks>
     public static TheoryData<string> Runtimes { get; } = [.. ((string[])["server", "webassembly", "auto-server", "auto-webassembly", "webview", "android"]).Select(runtime => new TheoryDataRow<string>(runtime).WithTrait("Runtime", runtime))];

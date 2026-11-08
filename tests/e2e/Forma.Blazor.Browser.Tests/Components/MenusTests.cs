@@ -203,9 +203,9 @@ public sealed class MenusTests
         public async Task Should_copy_the_item_s_link_to_the_clipboard(string runtime)
         {
             // Arrange
-            var (context, page) = await OpenAsync(host, runtime, "share-menu");
+            var (context, page) = await OpenAsync(host, runtime, "share-menu", page => page.AddInitScriptAsync(RecordingClipboard));
             await using var _ = context;
-            await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"]);
+            await context.GrantPermissionsAsync(["clipboard-write"]);
             var menu = page.GetByRole(AriaRole.Menu);
             await page.Locator("#share").ClickAsync();
 
@@ -213,7 +213,7 @@ public sealed class MenusTests
             await menu.GetByRole(AriaRole.Menuitem, new() { Name = "Copy Link", Exact = true }).ClickAsync();
 
             // Assert
-            await page.WaitForFunctionAsync("async () => await navigator.clipboard.readText() === 'https://example.com/reports/quarterly'");
+            await page.WaitForFunctionAsync("() => (window.formaCopied ?? []).includes('https://example.com/reports/quarterly')");
             await Assertions.Expect(menu).ToBeHiddenAsync();
         }
 
