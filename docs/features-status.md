@@ -2,15 +2,15 @@
 
 ## Current state
 
-**Forma has 66 implemented components and 8 in progress. It runs statically, under Interactive Server, WebAssembly and Auto, and in Blazor Hybrid on WPF, Windows Forms and MAUI on Windows, every component checked in each, every call it makes to a script and every call back among it, and an inventory holds every component to every render mode.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
+**Forma has 66 implemented components and 8 in progress. It runs statically, under Interactive Server, WebAssembly and Auto, and in Blazor Hybrid on WPF, Windows Forms and MAUI on Windows. Every component is checked statically, under each interactive render mode and in a WPF web view, every call it makes to a script and every call back among it; each Blazor Hybrid host's setup is checked from its example; and an inventory holds every component to every render mode.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
 
 | Measure | Now |
 | --- | --- |
 | Components | 66 implemented and 8 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
-| Packages | Every project under `src/` but the Showcase, each at `1.0.0-preview.4`, released from `main` by `release.yml` to nuget.org and the organization's GitHub feed |
+| Packages | Every project under `src/` but the Showcase, released from `main` by `release.yml` to nuget.org and the organization's GitHub feed, the latest published release `1.0.0-preview.4` |
 | Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid implemented on WPF, Windows Forms and MAUI on Windows, every component checked in a web view and each host's application set up as the README says; an inventory holds every component to a check page in every render mode |
 
-The gate is the build with warnings as errors, every test project, the format check, the task scripts, the locale lint, the script tests and the browser check, which drives the components headless under Server, WebAssembly and Auto, renders them statically, and drives them in Blazor Hybrid's web view on Windows. It passes locally on Windows and in CI on Linux and Windows.
+The gate runs every check [the verification design](verification-design.md#gates) sets out, each platform's where the machine can run it. It passes locally on Windows and in CI on Linux, on Windows and on an Android emulator.
 
 [The catalog](component-catalog.md) lists the components that exist and [the roadmap](component-roadmap.md) those to build. Each area's design under `docs/` is its contract, and an implementation plan beside a design carries the steps still to build it. [The feature history](../FEATURE-HISTORY.md) records what each month added and what it broke. This file tracks where each feature stands and the work that remains. "Implemented" means built and passing the gate; a feature waiting for the maintainer's approval stays in progress.
 
@@ -45,10 +45,10 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | Bars: the toolbar, the search and selection toolbars, the status strip | [Catalog](component-catalog.md#formatoolbar), [toolbar design](toolbar-design.md) | Implemented | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Buttons: the button, close, eye and toggle buttons | [Catalog](component-catalog.md#formabutton), [icon buttons design](icon-buttons-design.md) | Implemented; eight more icon buttons [planned](#components-to-build) | [August 2026](../FEATURE-HISTORY.md#2026-08) |
-| Collections: the sortable list | [Catalog](component-catalog.md#formasortablelist) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
+| Collections: the sortable list | [Catalog](component-catalog.md#formasortablelisttitem) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
 | Feedback: dialogs, popovers, toasts, the spinner, status badges and the capacity indicator | [Catalog](component-catalog.md#formadialog), [popover design](popover-design.md) | Implemented | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Files: the file picker, uploader and viewer and the image picker | [Catalog](component-catalog.md#formafileviewer), [resources design](resources-design.md) | Implemented; the media picker [planned](#components-to-build) | [August 2026](../FEATURE-HISTORY.md#2026-08) |
-| Inputs: seventeen fields, text, numbers, currency, choices, dates and times among them, each in the field chrome | [Catalog](component-catalog.md#formafield), [time inputs](time-inputs-design.md), [currency input](currency-input-design.md) | Implemented | [March 2026](../FEATURE-HISTORY.md#2026-03) |
+| Inputs: sixteen fields, text, numbers, currency, choices, dates and times among them, each in the field chrome | [Catalog](component-catalog.md#formafield), [time inputs](time-inputs-design.md), [currency input](currency-input-design.md) | Implemented | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Layout: backdrops, stacks, frames and chromes, the command area, the freeze pane, the splitter and tabs | [Catalog](component-catalog.md#formabackdrop) | Implemented | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Media: the video player | [Catalog](component-catalog.md#formavideoplayer), [media design](media-design.md) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
 | Menus: the drop-down, overflow and share menus | [Catalog](component-catalog.md#formadropdownmenu), [share design](share-design.md) | Implemented; the context menu [planned](#components-to-build) | [August 2026](../FEATURE-HISTORY.md#2026-08) |
@@ -130,9 +130,10 @@ Xcode 27, which no hosted Mac carries yet, so those two build on a Mac by hand. 
 through the platform's share sheet with
 [`Forma.AddOns.Operations.Maui`](../src/AddOns/Forma.AddOns.Operations.Maui/README.md), as the WebView design's
 [native operations](webview-design.md#native-operations) set out. Every component's check page runs on Android
-as a runtime of its own beside the Web App's and WebView2's, in a check host of its own on an emulator, every
-week and on demand in CI. What remains is the component suite on iOS's simulator and a Mac, whose `WKWebView` a
-check reaches through Safari's remote inspector, once a Mac carries Xcode 27.
+as a runtime of its own beside the Web App's and WebView2's, in a check host of its own on an emulator, nightly
+on `dev`, on every push to `candidate` and on demand in CI. What remains is the component suite on iOS's
+simulator and a Mac, whose `WKWebView` a check reaches through Safari's remote inspector, once a Mac carries
+Xcode 27.
 
 <a id="the-dom-watcher-and-engine"></a>
 
@@ -140,7 +141,7 @@ check reaches through Safari's remote inspector, once a Mac carries Xcode 27.
 
 [Its plan](dom-watcher-engine-implementation-plan.md) has landed the component context's disposal, the watcher and engine, intersection and focus, steps 0 to 4. Steps 5 to 11 move the rest of the browser work onto them: DOMQL as the language a component's queries are written in, the input router's participation, and each remaining behavior, operation and component script, retiring the kind folders as each empties.
 
-DOMQL's language now lives in Nexo, which was ported out of DOMQL and has changed much since, and DOMQL is brought up to it in its own repository. Until it is, DOMQL's specification and design describe the language as it stood at the port, and so do the queries [the DOM watcher and engine design](dom-watcher-engine-design.md) writes as examples, which change with it.
+DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has moved onto it in its own repository. The queries [the DOM watcher and engine design](dom-watcher-engine-design.md) writes as examples predate the notation DOMQL took with Nexo, which [replacing Forma's JavaScript with DOMQL](forma-javascripts-domql-replacement.md) writes, and are brought up to it with the design.
 
 <a id="the-composers-later-phases"></a>
 
@@ -165,7 +166,7 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL and has change
 
 ## Release
 
-Forma's first release, `1.0.0-preview.1`, is published. `release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
+Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.4` are published, as [the changelog](../CHANGELOG.md) lists them. `release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
 
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
 
