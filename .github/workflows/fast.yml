@@ -38,14 +38,17 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # A file is code unless it is prose the gate never reads; a README is code, since a check holds the root one's
+      # examples to the example hosts. Every pattern must match, so the exclusions narrow the first.
       - name: Detect changes
         id: filter
         uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
         with:
+          predicate-quantifier: every
           filters: |
             code:
               - '**/*'
-              - '!**/*.md'
+              - '!**/!(README).md'
               - '!docs/**'
               - '!assets/**'
               - '!.github/ISSUE_TEMPLATE/**'
