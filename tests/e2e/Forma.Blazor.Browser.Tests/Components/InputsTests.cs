@@ -278,9 +278,11 @@ public sealed partial class InputsTests
             await numberInput.PressAsync("Tab");
             await Assertions.Expect(result).ToHaveTextAsync("41");
 
-            // Act
+            // Act — each press answered before the next, so the last step's answer is the only way to the number expected
             await numberInput.PressAsync("ArrowUp");
+            await Assertions.Expect(result).ToHaveTextAsync("42");
             await numberInput.PressAsync("ArrowUp");
+            await Assertions.Expect(result).ToHaveTextAsync("43");
             await numberInput.PressAsync("ArrowDown");
 
             // Assert
@@ -341,14 +343,17 @@ public sealed partial class InputsTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "slider");
             await using var _ = context;
             var slider = page.Locator("#check");
+            var result = page.Locator("#result");
 
-            // Act
+            // Act — each press answered before the next, so the last step's answer is the only way to the value expected
             await slider.PressAsync("ArrowRight");
+            await Assertions.Expect(result).ToHaveTextAsync("60");
             await slider.PressAsync("ArrowRight");
+            await Assertions.Expect(result).ToHaveTextAsync("70");
             await slider.PressAsync("ArrowLeft");
 
             // Assert
-            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("60");
+            await Assertions.Expect(result).ToHaveTextAsync("60");
             await Assertions.Expect(slider).ToHaveValueAsync("60");
             await Assertions.Expect(slider).ToHaveAttributeAsync("aria-valuetext", "60%");
             await Assertions.Expect(page.Locator(".forma-slider-value")).ToHaveTextAsync("60%");

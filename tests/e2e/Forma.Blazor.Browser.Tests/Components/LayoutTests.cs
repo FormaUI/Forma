@@ -239,10 +239,13 @@ public sealed class LayoutTests
             var splitter = page.Locator("#splitter");
             await WaitForInputScopeAsync(page, "#splitter");
 
-            // Act
+            // Act — each press answered before the next, so the last step's answer is the only way to the size expected
             await splitter.PressAsync("ArrowRight");
+            await Assertions.Expect(splitter).ToHaveAttributeAsync("aria-valuenow", "13");
             await splitter.PressAsync("ArrowRight");
+            await Assertions.Expect(splitter).ToHaveAttributeAsync("aria-valuenow", "14");
             await splitter.PressAsync("ArrowRight");
+            await Assertions.Expect(splitter).ToHaveAttributeAsync("aria-valuenow", "15");
             await splitter.PressAsync("ArrowLeft");
 
             // Assert

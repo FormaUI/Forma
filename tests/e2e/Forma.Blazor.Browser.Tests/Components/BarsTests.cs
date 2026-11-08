@@ -117,16 +117,18 @@ public sealed class BarsTests
             await page.Locator("#swap").ClickAsync();
             await ComponentChecks.WaitForInputRouteAsync(page, "#editor", "toolbar.italic");
 
-            // Act
+            // Act — Bold's shortcut pressed between two of Italic's, so the commands read in full only once every press was answered
             await editor.PressAsync("Control+i");
             await editor.PressAsync("Control+b");
-            await Assertions.Expect(result).ToHaveTextAsync("bold italic");
+            await editor.PressAsync("Control+i");
+            await Assertions.Expect(result).ToHaveTextAsync("bold italic italic");
             await page.Locator("#hide").ClickAsync();
             await page.WaitForFunctionAsync("() => window.formaInputRouter.describe(document.querySelector('#editor')) === null");
             await editor.PressAsync("Control+i");
+            await ComponentChecks.MakeRoundTripAsync(page);
 
             // Assert
-            await Assertions.Expect(result).ToHaveTextAsync("bold italic");
+            await Assertions.Expect(result).ToHaveTextAsync("bold italic italic");
         }
     }
 }

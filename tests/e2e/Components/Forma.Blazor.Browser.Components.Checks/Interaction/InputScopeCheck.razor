@@ -3,7 +3,8 @@
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
 
-@* A scope routing ArrowDown on the element inside it to its action, each action shown in order where the check reads it. *@
+@* A scope routing ArrowDown on the element inside it to one action and Enter to another, which a check presses last, each action shown in
+   order where the check reads it. *@
 <button id="outside" type="button" data-check-scaffold>Outside</button>
 <FormaInputScope Id="scope" Profile="ScopeProfile" OnAction="Record">
     <div id="inside" tabindex="0">Inside</div>
@@ -13,7 +14,11 @@
 @code {
     private static readonly InputProfile ScopeProfile = new()
     {
-        InputRoutes = [new InputRoute("check.next", new KeyBinding("ArrowDown"))],
+        InputRoutes =
+        [
+            new InputRoute("check.next", new KeyBinding("ArrowDown")),
+            new InputRoute("check.end", new KeyBinding("Enter")),
+        ],
     };
 
     private readonly List<string> _actions = [];

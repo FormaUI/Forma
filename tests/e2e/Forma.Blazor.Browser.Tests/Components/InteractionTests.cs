@@ -17,14 +17,15 @@ public sealed class InteractionTests
             var inside = page.Locator("#inside");
             await WaitForInputScopeAsync(page, "#scope");
 
-            // Act
+            // Act — Enter last, an action no earlier press makes, so the actions read in full only once every press was answered
             await page.Locator("#outside").PressAsync("ArrowDown");
             await inside.PressAsync("ArrowDown");
             await inside.PressAsync("ArrowUp");
             await inside.PressAsync("ArrowDown");
+            await inside.PressAsync("Enter");
 
             // Assert
-            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("check.next check.next");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("check.next check.next check.end");
         }
     }
 
