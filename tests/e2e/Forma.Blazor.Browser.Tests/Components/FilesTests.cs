@@ -174,9 +174,26 @@ public sealed partial class FilesTests
         // Whether the frame's view sits at the middle of what it can scroll across.
         private const string IsCentred = "frame => frame.scrollWidth > frame.clientWidth && Math.abs(frame.scrollLeft - (frame.scrollWidth - frame.clientWidth) / 2) <= 1";
 
-        // The image the viewer shows, wider than it is tall, is a file of the host's own.
-        private static Task<(IBrowserContext Context, IPage Page)> OpenImageAsync(BrowserHost host, string runtime)
-            => OpenAsync(host, runtime, "file-viewer");
+        // The image the viewer shows, wider than it is tall, is a file the check pages' library serves in every host, and the check acts
+        // once it has loaded, so an image the host can't serve fails the check rather than leaving the viewer an empty frame to zoom; a
+        // check that fails there ends, giving its runtime's turn to the next.
+        private static async Task<(IBrowserContext Context, IPage Page)> OpenImageAsync(BrowserHost host, string runtime)
+        {
+            var (context, page) = await OpenAsync(host, runtime, "file-viewer");
+
+            try
+            {
+                await Assertions.Expect(page.Locator("#image .forma-file-viewer-image")).Not.ToHaveJSPropertyAsync("naturalWidth", 0);
+            }
+            catch
+            {
+                await context.DisposeAsync();
+
+                throw;
+            }
+
+            return (context, page);
+        }
     }
 
     public sealed class ImagePicker(BrowserHost host)

@@ -4,7 +4,7 @@
 <FormaFileViewer Id="check" Source="@_source" Siblings="Documents" OnNavigate="@(source => _source = source)" />
 <output id="result">@_source</output>
 <div style="inline-size: 480px; block-size: 360px">
-    <FormaFileViewer Id="image" Source="images/check.svg" ZoomOnWheelGesture="_zoomsOnWheel" />
+    <FormaFileViewer Id="image" Source="_content/Forma.Blazor.Browser.Components.Checks/images/check.svg" ZoomOnWheelGesture="_zoomsOnWheel" />
 </div>
 <FormaButton Id="wheel-off" OnClick="@(() => _zoomsOnWheel = false)">Wheel Off</FormaButton>
 

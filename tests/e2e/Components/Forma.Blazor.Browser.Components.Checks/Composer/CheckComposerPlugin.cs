@@ -17,6 +17,9 @@ public sealed class CheckComposerPlugin(RichTextEditorPlugin editor) : IComposer
     private const string InsertCommand = "check.insert";
     private const string RevealPrefix = "check.reveal-";
 
+    // The picture it inserts, which the check pages' library serves in every host.
+    private const string ImageSource = "_content/Forma.Blazor.Browser.Components.Checks/images/check.svg";
+
     private IComposerGutterMarker? _marker;
 
     /// <inheritdoc />
@@ -59,7 +62,7 @@ public sealed class CheckComposerPlugin(RichTextEditorPlugin editor) : IComposer
         }
         else if (command == InsertCommand)
         {
-            await interaction.TryInsertAsync(new ResourceInsertion { Source = "images/check.svg", Name = "check.svg", Kind = "image", Embed = true, Link = false }).ConfigureAwait(false);
+            await interaction.TryInsertAsync(new ResourceInsertion { Source = ImageSource, Name = "check.svg", Kind = "image", Embed = true, Link = false }).ConfigureAwait(false);
         }
         else if (command.StartsWith(RevealPrefix, StringComparison.Ordinal))
         {

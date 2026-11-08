@@ -7,6 +7,9 @@ using static Forma.Blazor.Browser.Tests.ComponentChecks;
 /// <summary>The composer's interactions, in every runtime.</summary>
 public sealed class ComposerTests
 {
+    // The picture the checks insert, which the check pages' library serves in every host.
+    private const string ImageSource = "_content/Forma.Blazor.Browser.Components.Checks/images/check.svg";
+
     public sealed class Composer(BrowserHost host)
     {
         // The print a document's frame makes, recorded with what it was given to print.
@@ -185,18 +188,19 @@ public sealed class ComposerTests
             await canvas.ClickAsync();
             await GetCommand(page, "Insert Image").ClickAsync();
             var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert Image" });
-            await dialog.GetByLabel("Source").FillAsync("images/check.svg");
+            await dialog.GetByLabel("Source").FillAsync(ImageSource);
             await dialog.GetByLabel("Alt Text").FillAsync("A square");
             await dialog.GetByLabel("Caption").FillAsync("The check's square");
             await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
             await Assertions.Expect(canvas.Locator("figure.forma-composer-image figcaption")).ToHaveTextAsync("The check's square");
+            await Assertions.Expect(canvas.Locator("figure.forma-composer-image img")).Not.ToHaveJSPropertyAsync("naturalWidth", 0);
 
             // Act
             await canvas.Locator("figure.forma-composer-image img").DblClickAsync();
 
             // Assert
             var edit = page.GetByRole(AriaRole.Dialog, new() { Name = "Edit Image" });
-            await Assertions.Expect(edit.GetByLabel("Source")).ToHaveValueAsync("images/check.svg");
+            await Assertions.Expect(edit.GetByLabel("Source")).ToHaveValueAsync(ImageSource);
             await Assertions.Expect(edit.GetByLabel("Alt Text")).ToHaveValueAsync("A square");
             await edit.GetByLabel("Alt Text").FillAsync("A blue square");
             await edit.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
@@ -398,8 +402,10 @@ public sealed class ComposerTests
             await GetCommand(page, "Insert Picture").ClickAsync();
 
             // Assert
-            await Assertions.Expect(canvas.Locator("img.forma-composer-image[src='images/check.svg']")).ToHaveAttributeAsync("alt", "check.svg");
-            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("images/check.svg");
+            var picture = canvas.Locator($"img.forma-composer-image[src='{ImageSource}']");
+            await Assertions.Expect(picture).ToHaveAttributeAsync("alt", "check.svg");
+            await Assertions.Expect(picture).Not.ToHaveJSPropertyAsync("naturalWidth", 0);
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync(ImageSource);
         }
     }
 
