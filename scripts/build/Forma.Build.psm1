@@ -1371,7 +1371,7 @@ function Test-PackageFile {
         [Parameter(Mandatory)] [string] $FoundPath
     )
 
-    $found = [ordered]@{}
+    $packedFiles = [ordered]@{}
 
     foreach ($package in Get-ChildItem -LiteralPath $Directory -Filter '*.nupkg' -File | Sort-Object Name) {
         $archive = [System.IO.Compression.ZipFile]::OpenRead($package.FullName)
@@ -1387,7 +1387,7 @@ function Test-PackageFile {
                 $reader.Dispose()
             }
 
-            $found[$id] = @($archive.Entries |
+            $packedFiles[$id] = @($archive.Entries |
                     Where-Object { $_.FullName -notmatch '^(_rels/|package/|\[Content_Types\]\.xml$)' -and $_.FullName -ne $manifest.FullName -and $_.Name } |
                     ForEach-Object { $_.FullName -replace '\.[0-9a-z]{10}\.(bundle\.scp\.css|lib\.module\.js)$', '.{fingerprint}.$1' } |
                     Sort-Object)
@@ -1399,11 +1399,11 @@ function Test-PackageFile {
 
     $lines = [System.Collections.Generic.List[string]]::new([string[]] $packageFilesHeader)
 
-    foreach ($id in $found.Keys) {
+    foreach ($id in $packedFiles.Keys) {
         $lines.Add('')
         $lines.Add($id)
 
-        foreach ($file in $found[$id]) {
+        foreach ($file in $packedFiles[$id]) {
             $lines.Add("    $file")
         }
     }
@@ -1411,8 +1411,8 @@ function Test-PackageFile {
     $null = New-Item -ItemType Directory -Path (Split-Path -Parent $FoundPath) -Force
     [System.IO.File]::WriteAllText($FoundPath, (($lines -join "`n") + "`n"))
 
-    $listed = [ordered]@{}
-    $current = $null
+    $listedFiles = [ordered]@{}
+    $currentId = $null
 
     if (Test-Path -LiteralPath $ListPath) {
         foreach ($line in [System.IO.File]::ReadAllLines($ListPath)) {
@@ -1421,33 +1421,33 @@ function Test-PackageFile {
             }
 
             if ($line -match '^\s') {
-                if ($current) {
-                    $listed[$current].Add($line.Trim())
+                if ($currentId) {
+                    $listedFiles[$currentId].Add($line.Trim())
                 }
             }
             else {
-                $current = $line.Trim()
-                $listed[$current] = [System.Collections.Generic.List[string]]::new()
+                $currentId = $line.Trim()
+                $listedFiles[$currentId] = [System.Collections.Generic.List[string]]::new()
             }
         }
     }
 
-    foreach ($id in $found.Keys) {
-        if (-not $listed.Contains($id)) {
+    foreach ($id in $packedFiles.Keys) {
+        if (-not $listedFiles.Contains($id)) {
             "$id isn't in the list"
             continue
         }
 
-        foreach ($file in $listed[$id] | Where-Object { $found[$id] -cnotcontains $_ }) {
+        foreach ($file in $listedFiles[$id] | Where-Object { $packedFiles[$id] -cnotcontains $_ }) {
             "$id lacks $file"
         }
 
-        foreach ($file in $found[$id] | Where-Object { $listed[$id] -cnotcontains $_ }) {
+        foreach ($file in $packedFiles[$id] | Where-Object { $listedFiles[$id] -cnotcontains $_ }) {
             "$id holds $file, which the list doesn't name"
         }
     }
 
-    foreach ($id in $listed.Keys | Where-Object { -not $found.Contains($_) }) {
+    foreach ($id in $listedFiles.Keys | Where-Object { -not $packedFiles.Contains($_) }) {
         "$id is in the list, and the pack made no such package"
     }
 }
@@ -1695,20 +1695,20 @@ function Test-BrowserCheck {
         # The checks a filter selects are listed before anything is published, so a filter that selects none is refused
         # at once rather than after minutes of publishing.
         if ($Filter) {
-            $selected = 0
+            $selectedCount = 0
 
             foreach ($project in @($exampleChecks, $checks)) {
-                $listed = @(dotnet run --project $project -c Release -- -list tests -preEnumerateTheories -filterVSTest $Filter 2>&1 | ForEach-Object { "$_" })
+                $listedChecks = @(dotnet run --project $project -c Release -- -list tests -preEnumerateTheories -filterVSTest $Filter 2>&1 | ForEach-Object { "$_" })
 
                 if ($LASTEXITCODE -ne 0) {
-                    $listed | Write-Host
+                    $listedChecks | Write-Host
                     return
                 }
 
-                $selected += @($listed | Where-Object { $_.Trim() -and $_ -notmatch '^xUnit\.net ' }).Count
+                $selectedCount += @($listedChecks | Where-Object { $_.Trim() -and $_ -notmatch '^xUnit\.net ' }).Count
             }
 
-            if ($selected -eq 0) {
+            if ($selectedCount -eq 0) {
                 throw "The filter $Filter selects no check among the examples' smoke checks and the browser checks."
             }
         }
@@ -1858,50 +1858,50 @@ function Test-BrowserCheck {
         # Every run's results are read together, so a check that failed in some runs and passed in others shows as the
         # share of the runs that ran it, and a check this machine skips counts in none.
         $expected = @('examples.json', 'checks.json') + $(if ($isAndroid) { @('android.json') } else { @() })
-        $missing = @(for ($run = 1; $run -le $runs; $run++) {
+        $missingResults = @(for ($run = 1; $run -le $runs; $run++) {
                 foreach ($name in $expected) {
                     if (-not (Test-Path -LiteralPath (Join-Path $resultsOutput "run-$run" $name))) { "run $run wrote no $name" }
                 }
             })
         $rates = @(& $getCheckRate -Path @(Get-ChildItem -LiteralPath $resultsOutput -Recurse -Filter '*.json' | ForEach-Object { $_.FullName }))
-        $failing = @($rates | Where-Object { $_.Failed -gt 0 } | Sort-Object -Property @{ Expression = 'Failed'; Descending = $true }, 'Name')
-        $interrupted = @($rates | Where-Object { $_.Interrupted -gt 0 } | Sort-Object -Property 'Name')
+        $failingChecks = @($rates | Where-Object { $_.Failed -gt 0 } | Sort-Object -Property @{ Expression = 'Failed'; Descending = $true }, 'Name')
+        $interruptedChecks = @($rates | Where-Object { $_.Interrupted -gt 0 } | Sort-Object -Property 'Name')
         $executed = [int]($rates | Measure-Object -Property Executed -Sum).Sum
 
         Write-Host ''
 
-        foreach ($problem in $missing) {
+        foreach ($problem in $missingResults) {
             Write-Host ("   {0}" -f $problem)
         }
 
-        if ($failing.Count -gt 0) {
+        if ($failingChecks.Count -gt 0) {
             Write-Host '   failed, in how many of the runs that ran it:'
 
-            foreach ($check in $failing) {
+            foreach ($check in $failingChecks) {
                 Write-Host ("   {0,3} of {1,-3} {2}" -f $check.Failed, $check.Executed, $check.Name)
                 Write-Host ("            {0}" -f $check.Error)
             }
         }
-        if ($interrupted.Count -gt 0) {
+        if ($interruptedChecks.Count -gt 0) {
             Write-Host '   not run, the Android device unreachable, in how many runs:'
 
-            foreach ($check in $interrupted) {
+            foreach ($check in $interruptedChecks) {
                 Write-Host ("   {0,3}        {1}" -f $check.Interrupted, $check.Name)
             }
         }
 
-        if ($failing.Count -eq 0 -and $interrupted.Count -eq 0 -and $executed -gt 0) {
+        if ($failingChecks.Count -eq 0 -and $interruptedChecks.Count -eq 0 -and $executed -gt 0) {
             Write-Host ("   every check passed in every run that ran it, {0} {1} across {2} {3}" -f $executed,
                 $(if ($executed -eq 1) { 'execution' } else { 'executions' }), $runs, $(if ($runs -eq 1) { 'run' } else { 'runs' }))
         }
 
-        if ($executed -eq 0 -and $missing.Count -eq 0 -and $interrupted.Count -eq 0) {
+        if ($executed -eq 0 -and $missingResults.Count -eq 0 -and $interruptedChecks.Count -eq 0) {
             throw "No check ran: every check $(if ($Filter) { "the filter $Filter selects" } else { 'the step holds' }) is one this machine skips."
         }
 
         # Each run's code is kept so that every run happens, so the step's own outcome is set here rather than left to
         # whichever run happened to be last.
-        $global:LASTEXITCODE = if ($failedRuns.Count -gt 0 -or $failing.Count -gt 0 -or $missing.Count -gt 0 -or $loadFailed) { 1 } else { 0 }
+        $global:LASTEXITCODE = if ($failedRuns.Count -gt 0 -or $failingChecks.Count -gt 0 -or $missingResults.Count -gt 0 -or $loadFailed) { 1 } else { 0 }
     }.GetNewClosure()
 }
 
