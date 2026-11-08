@@ -217,10 +217,25 @@ public sealed class LayoutTests
             await Assertions.Expect(back).ToBeHiddenAsync();
             var (pageSide, serverSide) = connections[^1];
 
-            // Act — the connection dropped and the pane scrolled while nothing can tell the circuit, which the page then reconnects on its own
+            // Act — the connection dropped and the pane scrolled while nothing can tell the circuit: the page's reconnection is held at its
+            // negotiation until the pane's script has heard the scroll and had the frame it reports in, then the page reconnects on its own
+            var scrolled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            await page.RouteAsync("**/_blazor/negotiate**", async route =>
+            {
+                await scrolled.Task;
+                await route.ContinueAsync();
+            });
             await serverSide.CloseAsync();
             await pageSide.CloseAsync();
-            await viewport.EvaluateAsync("viewport => viewport.scrollLeft = viewport.scrollWidth");
+
+            try
+            {
+                await viewport.EvaluateAsync("viewport => new Promise(resolve => { viewport.addEventListener('scroll', () => requestAnimationFrame(() => requestAnimationFrame(resolve)), { once: true }); viewport.scrollLeft = viewport.scrollWidth; })");
+            }
+            finally
+            {
+                scrolled.SetResult();
+            }
 
             // Assert
             await Assertions.Expect(back).ToBeVisibleAsync(new() { Timeout = 30000 });
