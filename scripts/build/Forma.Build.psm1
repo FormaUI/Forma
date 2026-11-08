@@ -1864,7 +1864,11 @@ function Test-BrowserCheck {
         $rates = @(& $getCheckRate -Path @(Get-ChildItem -LiteralPath $resultsOutput -Recurse -Filter '*.json' | ForEach-Object { $_.FullName }))
         $failingChecks = @($rates | Where-Object { $_.Failed -gt 0 } | Sort-Object -Property @{ Expression = 'Failed'; Descending = $true }, 'Name')
         $interruptedChecks = @($rates | Where-Object { $_.Interrupted -gt 0 } | Sort-Object -Property 'Name')
-        $executed = [int]($rates | Measure-Object -Property Executed -Sum).Sum
+        $executed = 0
+
+        foreach ($rate in $rates) {
+            $executed += $rate.Executed
+        }
 
         Write-Host ''
 
@@ -2188,15 +2192,17 @@ function Clear-BuildOutput {
             Write-Host ("Cleaned {0} task program(s)." -f $programs.Count)
         }
         else {
-            $freed = 0
+            $freedBytes = 0
 
             foreach ($artifact in $artifacts) {
-                $freed += (Get-ChildItem -LiteralPath $artifact.FullName -Recurse -File -ErrorAction SilentlyContinue |
-                    Measure-Object -Property Length -Sum).Sum
+                foreach ($file in @(Get-ChildItem -LiteralPath $artifact.FullName -Recurse -File -ErrorAction SilentlyContinue)) {
+                    $freedBytes += $file.Length
+                }
+
                 Remove-Item -LiteralPath $artifact.FullName -Recurse -Force -ErrorAction SilentlyContinue
             }
 
-            Write-Host ("Deleted {0} folder(s) the SDK left in the temp directory, freeing {1:N0} MB." -f $artifacts.Count, ($freed / 1MB))
+            Write-Host ("Deleted {0} folder(s) the SDK left in the temp directory, freeing {1:N0} MB." -f $artifacts.Count, ($freedBytes / 1MB))
         }
     }.GetNewClosure()
 }
