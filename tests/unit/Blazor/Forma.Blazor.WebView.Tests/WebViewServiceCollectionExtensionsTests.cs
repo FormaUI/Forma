@@ -16,7 +16,7 @@ public sealed class WebViewServiceCollectionExtensionsTests
     // What a web view's platform registers for each web view's scope, its JS runtime and its navigation, with its own registrar.
     private static IServiceCollection AddPlatform(IServiceCollection services)
         => services
-            .AddScoped<IJSRuntime>(_ => new FakeCultureCoordinatorBrowser().Runtime)
+            .AddScoped<IJSRuntime>(_ => FakeCultureCoordinatorBrowser.CreateWithoutMarker().Runtime)
             .AddScoped<NavigationManager>(_ => new FakeNavigationManager(new Uri("https://0.0.0.1/"), new Uri("https://0.0.0.1/")));
 
     [Fact]

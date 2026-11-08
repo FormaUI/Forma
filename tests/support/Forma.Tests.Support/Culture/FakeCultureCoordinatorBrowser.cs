@@ -18,6 +18,8 @@ public sealed class FakeCultureCoordinatorBrowser
     private readonly List<(string Culture, string UICulture)> _followed = [];
     private (string Token, string Culture, string UICulture)[] _routes = [];
     private string? _defaultToken;
+    private bool _hasMarker = true;
+    private bool _isStarted;
 
     /// <summary>Creates the coordinator over a page the server rendered in <paramref name="culture"/> and <paramref name="uiCulture"/>.</summary>
     public FakeCultureCoordinatorBrowser(string culture = "en-US", string? uiCulture = null)
@@ -28,6 +30,10 @@ public sealed class FakeCultureCoordinatorBrowser
             ? Run("import", () => Module)
             : throw new JSException($"No module is served at '{args.FirstOrDefault()}'."));
     }
+
+    /// <summary>Creates the coordinator over a page no server published a culture marker in, a standalone app's or a web view's, which starts from the start its first registration supplies.</summary>
+    public static FakeCultureCoordinatorBrowser CreateWithoutMarker()
+        => new() { _hasMarker = false };
 
     /// <summary>The runtime the module is imported through.</summary>
     public RecordingJSRuntime Runtime { get; }
@@ -72,6 +78,21 @@ public sealed class FakeCultureCoordinatorBrowser
     public RecordingJSObjectReference GetRegistration(string identity)
         => _registrations[identity].Reference;
 
+    /// <summary>Holds every later registration open until <see cref="AnswerRegistrations"/>, as a runtime still importing the module holds it.</summary>
+    public void HoldRegistrations()
+        => Module.Recorder.Hold("register");
+
+    /// <summary>Answers every registration held open as the script does, delivering the accepted pair to each, and answers later ones at once.</summary>
+    public void AnswerRegistrations()
+    {
+        Module.Recorder.Release("register");
+
+        foreach (var call in Module.Recorder.GetCalls("register").Where(call => call.IsHeld && !call.IsAnswered))
+        {
+            call.Complete(Register((string)call.Arguments[0]!, (DotNetObjectReference<CultureCoordinatorReceiver>)call.Arguments[1]!, (CultureCoordinatorStart?)call.Arguments[3]));
+        }
+    }
+
     /// <summary>Faults the next call to <paramref name="identifier"/> with <paramref name="exception"/> before it takes effect.</summary>
     public void FailNext(string identifier, Exception exception)
         => Enqueue(identifier, exception);
@@ -102,12 +123,25 @@ public sealed class FakeCultureCoordinatorBrowser
     private RecordingJSObjectReference RespondToModule(string identifier, object?[] args)
         => identifier switch
         {
-            "register" => Run(identifier, () => Register((string)args[0]!, (DotNetObjectReference<CultureCoordinatorReceiver>)args[1]!)),
+            "register" => Run(identifier, () => Register((string)args[0]!, (DotNetObjectReference<CultureCoordinatorReceiver>)args[1]!, (CultureCoordinatorStart?)args[3])),
             _ => throw new JSException($"The module exports no '{identifier}'."),
         };
 
-    private RecordingJSObjectReference Register(string identity, DotNetObjectReference<CultureCoordinatorReceiver> receiver)
+    // A page without a marker starts from the first registration's start, as the script publishes it, at number zero.
+    private RecordingJSObjectReference Register(string identity, DotNetObjectReference<CultureCoordinatorReceiver> receiver, CultureCoordinatorStart? start)
     {
+        if (!_isStarted)
+        {
+            _isStarted = true;
+
+            if (!_hasMarker)
+            {
+                Accepted = start is null
+                    ? throw new JSException("The page carries no valid culture marker.")
+                    : (start.Marker["data-culture"], start.Marker["data-ui-culture"], 0);
+            }
+        }
+
         if (!_registrations.TryGetValue(identity, out var registration))
         {
             registration = new Registration(identity);

@@ -86,8 +86,8 @@ public sealed class ServiceCollectionExtensionsTests
             await using var provider = CreateServices();
 
             // Act
-            await using var first = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
-            await using var second = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+            await using var first = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
+            await using var second = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
 
             // Assert
             Assert.Multiple(
@@ -105,8 +105,8 @@ public sealed class ServiceCollectionExtensionsTests
             await using var provider = isRoutingFirst ? CreateServices(services => AddRouting(services)) : CreateServices(configureAfter: services => AddRouting(services));
 
             // Act
-            await using var first = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
-            await using var second = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+            await using var first = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
+            await using var second = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
 
             // Assert
             Assert.Same(first.ServiceProvider.GetRequiredService<ICultureState>(), second.ServiceProvider.GetRequiredService<ICultureState>());
@@ -119,7 +119,7 @@ public sealed class ServiceCollectionExtensionsTests
             await using var provider = CreateServices(services => services.AddScoped<ICultureState>(_ => new FakeCultureState(Hebrew)));
 
             // Act
-            var exception = Record.Exception(() => OpenWebView(provider, new FakeCultureCoordinatorBrowser()));
+            var exception = Record.Exception(() => OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker()));
 
             // Assert
             Assert.Contains("singleton", Assert.IsType<InvalidOperationException>(exception).Message, StringComparison.Ordinal);
@@ -138,7 +138,7 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices();
-            var browser = new FakeCultureCoordinatorBrowser();
+            var browser = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
 
             // Act
             await using var webView = OpenWebView(provider, browser);
@@ -159,7 +159,7 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices();
-            var browser = new FakeCultureCoordinatorBrowser();
+            var browser = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
             await using var webView = OpenWebView(provider, browser);
 
             // Act
@@ -175,7 +175,7 @@ public sealed class ServiceCollectionExtensionsTests
             // Arrange
             await using var provider = CreateServices();
             await SwitchAsync(provider, Hebrew, Hebrew);
-            var browser = new FakeCultureCoordinatorBrowser("he");
+            var browser = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
 
             // Act
             await using var webView = OpenWebView(provider, browser);
@@ -188,12 +188,34 @@ public sealed class ServiceCollectionExtensionsTests
         }
 
         [Fact]
+        public async Task Should_keep_a_switch_accepted_while_a_web_view_s_document_registers()
+        {
+            // Arrange — the second web view's document registers from the English it was handed, while the application switches to Hebrew
+            await using var provider = CreateServices();
+            var first = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
+            await using var firstWebView = OpenWebView(provider, first);
+            var registering = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
+            registering.HoldRegistrations();
+            await using var registeringWebView = OpenWebView(provider, registering);
+            await SwitchAsync(provider, Hebrew, Hebrew);
+
+            // Act
+            registering.AnswerRegistrations();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("he/he", Describe(provider.GetRequiredService<ICultureState>())),
+                () => Assert.Equal("he/he", GetDefaults()),
+                () => Assert.Equal([("he", "he")], first.Followed));
+        }
+
+        [Fact]
         public async Task Should_apply_a_switch_to_the_state_and_the_process_s_defaults_and_have_every_web_view_s_document_follow_it()
         {
             // Arrange
             await using var provider = CreateServices();
-            var first = new FakeCultureCoordinatorBrowser();
-            var second = new FakeCultureCoordinatorBrowser();
+            var first = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
+            var second = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
             await using var firstWebView = OpenWebView(provider, first);
             await using var secondWebView = OpenWebView(provider, second);
 
@@ -213,7 +235,7 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices(services => services.AddSingleton<ICultureProvider>(new FakeCultureProvider()));
-            var browser = new FakeCultureCoordinatorBrowser();
+            var browser = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
             await using var webView = OpenWebView(provider, browser);
             var state = provider.GetRequiredService<ICultureState>();
             var patterns = $"{FakeCultureProvider.ShortTimePattern}/{FakeCultureProvider.ShortTimePattern}";
@@ -234,8 +256,8 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices();
-            var landing = new FakeCultureCoordinatorBrowser();
-            var other = new FakeCultureCoordinatorBrowser();
+            var landing = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
+            var other = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
             await using var landingWebView = OpenWebView(provider, landing);
             await using var otherWebView = OpenWebView(provider, other);
 
@@ -258,7 +280,7 @@ public sealed class ServiceCollectionExtensionsTests
             await SwitchAsync(provider, pinned, pinned);
 
             // Act
-            await using var webView = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+            await using var webView = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
 
             // Assert
             Assert.Equal("yyyy-MM-dd", provider.GetRequiredService<ICultureState>().Culture.DateTimeFormat.ShortDatePattern);
@@ -269,8 +291,8 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices();
-            var closed = new FakeCultureCoordinatorBrowser();
-            var open = new FakeCultureCoordinatorBrowser();
+            var closed = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
+            var open = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
             await using (OpenWebView(provider, closed))
             {
             }
@@ -291,7 +313,7 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices();
-            var abandoned = new FakeCultureCoordinatorBrowser();
+            var abandoned = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
             await using var webView = OpenWebView(provider, abandoned);
             abandoned.FailNext("follow", new JSDisconnectedException("The web view's native window closed."));
             await SwitchAsync(provider, Hebrew, Hebrew);
@@ -313,7 +335,7 @@ public sealed class ServiceCollectionExtensionsTests
             // Arrange
             var clock = new FakeTimeProvider();
             await using var provider = CreateServices(services => services.AddSingleton<TimeProvider>(clock));
-            var unanswering = new FakeCultureCoordinatorBrowser();
+            var unanswering = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
             await using var webView = OpenWebView(provider, unanswering);
             var registration = unanswering.GetRegistration(Assert.Single(unanswering.Identities));
             registration.Recorder.Hold("follow");
@@ -330,11 +352,12 @@ public sealed class ServiceCollectionExtensionsTests
         [Fact]
         public async Task Should_put_the_accepted_pair_on_each_web_view_s_UI_thread_for_its_later_events()
         {
-            // Arrange
+            // Arrange — the application's state starts in the test's English, and the web view's thread runs in French
             await using var provider = CreateServices();
+            _ = provider.GetRequiredService<ICultureState>();
             using var thread = new UIThreadSynchronizationContext();
             await thread.RunAsync(() => CultureInfo.CurrentCulture = CultureInfo.CurrentUICulture = CultureInfo.GetCultureInfo("fr-FR"));
-            await using var webView = await thread.RunAsync(() => OpenWebView(provider, new FakeCultureCoordinatorBrowser()));
+            await using var webView = await thread.RunAsync(() => OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker()));
             var opened = await thread.RunAsync(GetCurrent);
 
             // Act
@@ -352,7 +375,7 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices();
-            var browser = new FakeCultureCoordinatorBrowser();
+            var browser = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
             await using var webView = OpenWebView(provider, browser);
             var integration = webView.ServiceProvider.GetRequiredService<ICultureStateIntegration>();
 
@@ -378,7 +401,7 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices(services => AddRouting(services));
-            var browser = new FakeCultureCoordinatorBrowser();
+            var browser = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
 
             // Act
             await using var webView = OpenWebView(provider, browser);
@@ -395,7 +418,7 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices(services => AddRouting(services));
-            var browser = new FakeCultureCoordinatorBrowser();
+            var browser = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
             await using var webView = OpenWebView(provider, browser);
 
             // Act
@@ -445,8 +468,8 @@ public sealed class ServiceCollectionExtensionsTests
             await using var provider = CreateServices();
 
             // Act
-            await using var first = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
-            await using var second = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+            await using var first = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
+            await using var second = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
 
             // Assert
             Assert.Multiple(
@@ -459,7 +482,7 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices();
-            var browser = new FakeCultureCoordinatorBrowser();
+            var browser = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
 
             // Act
             await using var webView = OpenWebView(provider, browser);
@@ -480,8 +503,8 @@ public sealed class ServiceCollectionExtensionsTests
             // Arrange
             await using var provider = CreateServices();
             var defaults = GetDefaults();
-            var other = new FakeCultureCoordinatorBrowser();
-            await using var switching = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+            var other = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
+            await using var switching = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
             await using var otherWebView = OpenWebView(provider, other);
 
             // Act
@@ -500,9 +523,9 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices();
-            var landing = new FakeCultureCoordinatorBrowser();
+            var landing = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
             await using var landingWebView = OpenWebView(provider, landing);
-            await using var otherWebView = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+            await using var otherWebView = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
 
             // Act
             await landing.LandAsync("he", "he");
@@ -518,10 +541,10 @@ public sealed class ServiceCollectionExtensionsTests
         {
             // Arrange
             await using var provider = CreateServices(services => services.AddSingleton<ICultureState>(_ => new FakeCultureState(Hebrew)));
-            await using var first = OpenWebView(provider, new FakeCultureCoordinatorBrowser());
+            await using var first = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
 
             // Act
-            var exception = Record.Exception(() => OpenWebView(provider, new FakeCultureCoordinatorBrowser()));
+            var exception = Record.Exception(() => OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker()));
 
             // Assert
             Assert.Contains("scoped", Assert.IsType<InvalidOperationException>(exception).Message, StringComparison.Ordinal);
@@ -535,8 +558,8 @@ public sealed class ServiceCollectionExtensionsTests
             await using var cookie = CreateServices(services => services.AddFormaCultureSwitchPolicy(new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie }));
 
             // Act
-            var fullLoadException = Record.Exception(() => OpenWebView(fullLoad, new FakeCultureCoordinatorBrowser()));
-            var cookieException = Record.Exception(() => OpenWebView(cookie, new FakeCultureCoordinatorBrowser()));
+            var fullLoadException = Record.Exception(() => OpenWebView(fullLoad, FakeCultureCoordinatorBrowser.CreateWithoutMarker()));
+            var cookieException = Record.Exception(() => OpenWebView(cookie, FakeCultureCoordinatorBrowser.CreateWithoutMarker()));
 
             // Assert
             Assert.Multiple(

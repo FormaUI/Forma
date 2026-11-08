@@ -17,6 +17,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   for the activation, which waited on a script call the old page would never answer.
 - A call on a `JSInterop` wrapper's attached instance still in flight as the wrapper detaches or is disposed reports
   that it didn't run.
+- A culture switch made while a Blazor Hybrid web view's page was starting stands. The page took the culture it
+  started in for a switch of its own and switched the application back to it.
 
 ## `1.0.0-preview.4`
 

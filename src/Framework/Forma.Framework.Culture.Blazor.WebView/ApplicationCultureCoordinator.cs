@@ -137,6 +137,7 @@ internal sealed class ApplicationCultureCoordinator : ICultureStateIntegration
     }
 
     /// <summary>Takes a pair a web view's document accepted as the application's next switch.</summary>
+    /// <remarks>The pair a document starts from, number zero in its sequence, is the one the coordinator handed it as it registered, which a switch accepted since may have moved past, so it switches nothing.</remarks>
     private sealed class DocumentPairIntegration(ApplicationCultureCoordinator coordinator) : ICultureStateIntegration
     {
         /// <inheritdoc />
@@ -144,7 +145,7 @@ internal sealed class ApplicationCultureCoordinator : ICultureStateIntegration
         {
             ArgumentNullException.ThrowIfNull(accepted);
 
-            return coordinator.AcceptDocumentPairAsync(accepted.Culture, accepted.UICulture);
+            return accepted.Version.Number == 0 ? Task.CompletedTask : coordinator.AcceptDocumentPairAsync(accepted.Culture, accepted.UICulture);
         }
     }
 }
