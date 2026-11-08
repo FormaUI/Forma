@@ -32,6 +32,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   unavailable day, its focus ring with it.
 - A composer dialog's confirming action waits for the text its fields are still receiving, such as a long inline
   picture's address. It went on with what had arrived, so the image dialog asked for an address already entered.
+- A field that leaves its form while its text can't follow the reader's edits takes its message with it. The message
+  stayed in the form, which then never validated.
 
 ## `1.0.0-preview.4`
 

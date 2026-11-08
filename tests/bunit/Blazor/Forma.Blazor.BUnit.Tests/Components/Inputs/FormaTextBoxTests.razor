@@ -255,6 +255,30 @@
         }
 
         [Fact]
+        public async Task Should_take_the_message_its_text_left_in_the_form_away_with_it()
+        {
+            // Arrange — a box whose text did not arrive, in a form it then leaves
+            using var ctx = new FormaTextBoxTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel();
+            var form = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { MaxLength = 2 })" />
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find("input"), "Ada Lovelace");
+            var whileLost = form.GetValidationMessages().ToList();
+            var box = cut.FindComponent<FormaTextBox>();
+
+            // Act
+            await cut.InvokeAsync(() => box.Instance.DisposeAsync().AsTask());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Your text didn't arrive in full. Edit it to try again."], whileLost),
+                () => Assert.Empty(form.GetValidationMessages()));
+        }
+
+        [Fact]
         public void Should_render_id_when_specified()
         {
             // Arrange
