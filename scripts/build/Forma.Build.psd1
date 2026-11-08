@@ -4,7 +4,7 @@
     GUID              = 'a3c1f7e2-9b04-4d6a-8e35-2f7c5b1d90aa'
     Author            = 'Eyal Alon'
     CompanyName       = 'FormaUI'
-    Copyright         = '(c) Eyal Alon. Licensed under the MIT licence.'
+    Copyright         = '(c) Eyal Alon. Licensed under the Apache License 2.0.'
     Description       = 'What the Forma build does: the gate and every action it is made of.'
     PowerShellVersion = '7.0'
 
