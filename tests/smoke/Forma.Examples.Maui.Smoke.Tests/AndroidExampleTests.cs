@@ -8,21 +8,17 @@ public sealed class AndroidExampleTests
     private const string Welcome = "ברוכים הבאים";
     private const string PaginationLabel = "ניווט עמודים";
 
-    // The window the share sheet shows, as Android's own resolver of intents, or the system's, names it.
-    private static bool IsShareSheet(string window)
-        => window.Contains("Chooser", StringComparison.Ordinal) || window.Contains("intentresolver", StringComparison.Ordinal);
-
     private static async Task WaitForShareSheetAsync()
     {
         var window = string.Empty;
 
-        for (var attempt = 0; attempt < 60 && !IsShareSheet(window); attempt++)
+        for (var attempt = 0; attempt < 60 && !AndroidDevice.IsShareSheet(window); attempt++)
         {
             await Task.Delay(TimeSpan.FromMilliseconds(500));
             window = await AndroidDevice.GetFocusedWindowAsync();
         }
 
-        Assert.True(IsShareSheet(window), $"The share sheet never came to the front; the focus is on {window}.");
+        Assert.True(AndroidDevice.IsShareSheet(window), $"The share sheet never came to the front; the focus is on {window}.");
     }
 
     [Fact]
@@ -69,7 +65,7 @@ public sealed class AndroidExampleTests
         var page = application.Page;
         await page.Locator(".forma-dropdown-menu-anchor button").ClickAsync();
         var item = page.GetByRole(AriaRole.Menuitem, new() { Name = command, Exact = true });
-        Assert.False(IsShareSheet(await AndroidDevice.GetFocusedWindowAsync()), "A share sheet stood in front before the command ran.");
+        Assert.False(AndroidDevice.IsShareSheet(await AndroidDevice.GetFocusedWindowAsync()), "A share sheet stood in front before the command ran.");
 
         // Act
         await item.ClickAsync();

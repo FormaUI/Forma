@@ -16,8 +16,10 @@ public static partial class AndroidDevice
 {
     private const string ShareSheetPackage = "com.android.intentresolver";
     private const int LaunchAttempts = 3;
+    private const int ShareSheetDismissals = 10;
 
     private static readonly TimeSpan StartTimeout = TimeSpan.FromMinutes(3);
+    private static readonly TimeSpan ShareSheetPoll = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan CommandTimeout = TimeSpan.FromMinutes(5);
     private static readonly SemaphoreSlim Installing = new(1, 1);
     private static readonly HashSet<string> Installed = new(StringComparer.Ordinal);
@@ -61,6 +63,15 @@ public static partial class AndroidDevice
         }
     }
 
+    /// <summary>Whether <paramref name="window"/>, as <see cref="GetFocusedWindowAsync"/> names it, is the share sheet, as Android's own resolver of intents or the system's names it.</summary>
+    /// <param name="window">The window that holds the focus.</param>
+    public static bool IsShareSheet(string window)
+    {
+        ArgumentNullException.ThrowIfNull(window);
+
+        return window.Contains("Chooser", StringComparison.Ordinal) || window.Contains("intentresolver", StringComparison.Ordinal);
+    }
+
     /// <summary>Starts the application afresh, its data cleared and any share sheet an earlier check opened closed, and forwards its web view's DevTools socket.</summary>
     /// <param name="package">The application's package name.</param>
     /// <returns>The port of this machine the web view's socket is forwarded to.</returns>
@@ -69,7 +80,7 @@ public static partial class AndroidDevice
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(package);
 
-        await RunAdbAsync("shell", "am", "force-stop", ShareSheetPackage).ConfigureAwait(false);
+        await CloseShareSheetAsync().ConfigureAwait(false);
         await RunAdbAsync("shell", "pm", "clear", package).ConfigureAwait(false);
         await LaunchAsync(package).ConfigureAwait(false);
 
@@ -159,6 +170,19 @@ public static partial class AndroidDevice
         }
 
         return $"{await output.ConfigureAwait(false)}{await error.ConfigureAwait(false)}";
+    }
+
+    // A share sheet still showing is dismissed with Back, as a reader dismisses it, before its package is stopped, since an
+    // emulator whose share sheet is stopped while it shows can crash.
+    private static async Task CloseShareSheetAsync()
+    {
+        for (var attempt = 0; attempt < ShareSheetDismissals && IsShareSheet(await GetFocusedWindowAsync().ConfigureAwait(false)); attempt++)
+        {
+            await RunAdbAsync("shell", "input", "keyevent", "KEYCODE_BACK").ConfigureAwait(false);
+            await Task.Delay(ShareSheetPoll).ConfigureAwait(false);
+        }
+
+        await RunAdbAsync("shell", "am", "force-stop", ShareSheetPackage).ConfigureAwait(false);
     }
 
     // Starts the application's launcher activity, asking again where adb dropped the request before the device ran it.
