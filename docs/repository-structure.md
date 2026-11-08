@@ -625,7 +625,7 @@ workflow runs it on Linux for Android.
 |-----------|------|
 | `-Target` | Chooses the tests: `DotNet`, `Scripts`, or both |
 | `-Project` | Runs one test project, named rather than spelled out as a path |
-| `-Filter` | Narrows which tests run, as `dotnet test` takes it |
+| `-Filter` | Narrows which tests run, as `dotnet test` takes it; a filter that runs no test fails the run |
 | `-NoBuild` | Runs against the output already on disk |
 | `-Times` | Repeats the run, continuing past a failure, so a test failing sometimes shows as a rate |
 | `-LoadWith` | Runs other test projects over and over beside it, to load the machine |

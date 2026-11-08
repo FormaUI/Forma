@@ -412,6 +412,10 @@ try {
     )
     $shown = @($runnerLines | & $module { param($Folder) $input | Write-TestProgress -ProjectCount 3 -ResultsDirectory $Folder -Estimate ([timespan]::FromMinutes(5)) } $progressFolder 6>&1 | ForEach-Object { "$_" })
     $counted = & $module { param($Target) Get-TestProjectCount -Target $Target } (Initialize-BuildContext -RepositoryRoot $repositoryRoot).Solution
+    $executedCount = & $module { param($Folder) Get-TestExecutionCount -ResultsDirectory $Folder } $progressFolder
+    $emptyFolder = Join-Path $progressFolder 'Forma.D.Tests'
+    $null = New-Item -ItemType Directory -Path $emptyFolder
+    $executedNoneCount = & $module { param($Folder) Get-TestExecutionCount -ResultsDirectory $Folder } $emptyFolder
 
     $wrong = @(
         if ($shown -match '^Running tests from|In process file artifacts produced|\.trx$') { 'the runner''s announcements were shown' }
@@ -423,10 +427,12 @@ try {
         if (-not ($shown -match '^\s+1 project gave no result$')) { 'the project that gave no result was not reported' }
         if (-not ($shown -match '^\s+Forma\.B\.Tests\.Thing\.Should_work\(text: "a b"\)$')) { 'the failed test was not listed by name' }
         if ($counted -lt 2) { "the solution counted $counted test projects" }
+        if ($executedCount -ne 39) { "the run's executed tests were counted as $executedCount rather than 39" }
+        if ($executedNoneCount -ne 0) { "a run that wrote no results counted $executedNoneCount executed tests" }
     )
 
     $progress = [pscustomobject]@{
-        Name     = 'a test run shows each project as it finishes and adds up the totals'
+        Name     = 'a test run shows each project as it finishes, adds up the totals and counts what it executed'
         Passed   = $wrong.Count -eq 0
         Problems = $wrong
         Output   = ''
@@ -434,7 +440,7 @@ try {
 }
 catch {
     $progress = [pscustomobject]@{
-        Name     = 'a test run shows each project as it finishes and adds up the totals'
+        Name     = 'a test run shows each project as it finishes, adds up the totals and counts what it executed'
         Passed   = $false
         Problems = @("the check could not be made: $($_.Exception.Message)")
         Output   = ''

@@ -621,7 +621,7 @@ One test project to run instead of the whole solution, named rather than spelled
 Runs the fast gate's selection, the unit and bUnit suites, which Build-Solution -Fast writes and builds.
 
 .PARAMETER Filter
-An expression narrowing which tests run, as dotnet test takes it.
+An expression narrowing which tests run, as dotnet test takes it. A filter that runs no test fails the step.
 
 .PARAMETER NoBuild
 Runs against the output already on disk rather than building first. For a run that follows a build.
@@ -669,6 +669,7 @@ function Test-Solution {
     $clearWaitLog = ${function:Clear-WaitLog}
     $summarizeWaitLog = ${function:Get-WaitLogSummary}
     $writeTestProgress = ${function:Write-TestProgress}
+    $countExecutedTests = ${function:Get-TestExecutionCount}
     $startTestLoad = ${function:Start-TestLoad}
     $stopTestLoad = ${function:Stop-TestLoad}
     $projectCount = if ($Fast) { @(Get-FastTestProject -Context $Context).Count } else { Get-TestProjectCount -Target $target }
@@ -746,6 +747,10 @@ function Test-Solution {
                     if ($LASTEXITCODE -ne 0) {
                         $failures.Add($run)
                     }
+                    elseif ($Filter -and (& $countExecutedTests -ResultsDirectory $resultsDirectory) -eq 0) {
+                        # A filter that matches nothing anywhere passes for want of a failure, and would report a clean rate.
+                        throw "The filter $Filter runs no test in $([System.IO.Path]::GetFileName($target))."
+                    }
                 }
                 finally {
                     Remove-Item -LiteralPath $resultsDirectory -Recurse -Force -ErrorAction SilentlyContinue
@@ -774,6 +779,46 @@ function Test-Solution {
         # is set here rather than left to whichever run happened to be last.
         $global:LASTEXITCODE = if ($failures.Count -gt 0 -or $loadFailed) { 1 } else { 0 }
     }.GetNewClosure()
+}
+
+<#
+.SYNOPSIS
+Counts the tests a run executed, across the TRX file each of its projects wrote.
+
+.DESCRIPTION
+A file still being written, which doesn't read as a whole document yet, counts nothing.
+
+.PARAMETER ResultsDirectory
+The folder the run wrote each project's TRX file to.
+
+.OUTPUTS
+The number of tests the run executed.
+#>
+function Get-TestExecutionCount {
+    [CmdletBinding()]
+    [OutputType([int])]
+    param(
+        [Parameter(Mandatory)] [string] $ResultsDirectory
+    )
+
+    $count = 0
+
+    foreach ($file in Get-ChildItem -LiteralPath $ResultsDirectory -Filter '*.trx' -File -Recurse -ErrorAction SilentlyContinue) {
+        try {
+            $run = [xml][System.IO.File]::ReadAllText($file.FullName)
+        }
+        catch {
+            continue
+        }
+
+        $counters = if ($run) { $run.SelectSingleNode("//*[local-name()='Counters']") } else { $null }
+
+        if ($counters) {
+            $count += [int]$counters.GetAttribute('executed')
+        }
+    }
+
+    $count
 }
 
 <#

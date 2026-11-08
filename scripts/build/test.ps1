@@ -24,7 +24,7 @@ One test project to run instead of the solution, named rather than spelled out a
 is enough where it matches one project.
 
 .PARAMETER Filter
-Narrows which tests run, as dotnet test takes it.
+Narrows which tests run, as dotnet test takes it. A filter that runs no test fails the run.
 
 .PARAMETER NoBuild
 Runs against the output already on disk rather than building first. For a run that follows a build, such
