@@ -15,4 +15,14 @@
         </ItemGroup>
     </Target>
 
+    <!--
+        WebView2's package references its WPF assembly from every .NET project, and that assembly needs WPF's own
+        WindowsBase, which a Windows Forms application without WPF doesn't carry; such an example leaves it out.
+    -->
+    <Target Name="FormaExampleWebView2WithoutWpf" BeforeTargets="ResolveAssemblyReferences" Condition="'$(UseWindowsForms)' == 'true' And '$(UseWPF)' != 'true'">
+        <ItemGroup>
+            <Reference Remove="@(Reference)" Condition="'%(Filename)' == 'Microsoft.Web.WebView2.Wpf'" />
+        </ItemGroup>
+    </Target>
+
 </Project>
