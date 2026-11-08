@@ -19,6 +19,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   never answer.
 - A call on a [`JSInterop`](src/Framework/Forma.Framework.JavaScript.Interop/README.md#writing-a-wrapper) wrapper's
   attached instance still in flight as the wrapper detaches or is disposed reports that it didn't run.
+- A `Try*` call on a [`JSModule`](src/Framework/Forma.Framework.JavaScript.Interop/README.md#writing-a-wrapper)
+  whose import was still under way as the module was disposed reports that it didn't run. The release could run
+  first, and the call then threw `ObjectDisposedException` into the component that made it.
 - A [culture switch](docs/culture-design.md#blazor-hybrid) made while a Blazor Hybrid web view's page was starting
   stands. The page took the culture it started in for a switch of its own and switched the application back to it.
 - [`IsCultureFollowing`](src/Framework/Forma.Framework.Culture.Blazor.WebView/README.md#culture-routing) tells only

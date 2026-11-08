@@ -20,6 +20,9 @@ internal static partial class InteropLog
     [LoggerMessage(Level = LogLevel.Debug, Message = "The call to {Identifier} in {Module} was canceled for {RuntimeId}.")]
     public static partial void CallCanceled(ILogger logger, string identifier, string module, Guid runtimeId);
 
+    [LoggerMessage(Level = LogLevel.Debug, Message = "{Identifier} in {Module} wasn't called for {RuntimeId}, since what the call needed was released.")]
+    public static partial void ReleasedBeforeCalling(ILogger logger, Exception exception, string identifier, string module, Guid runtimeId);
+
     [LoggerMessage(Level = LogLevel.Debug, Message = "{Identifier} in {Module} threw for {RuntimeId}.")]
     public static partial void ScriptThrewWhileCalling(ILogger logger, Exception exception, string identifier, string module, Guid runtimeId);
 

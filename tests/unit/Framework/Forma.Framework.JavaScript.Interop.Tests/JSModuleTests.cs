@@ -169,6 +169,32 @@ public sealed class JSModuleTests
         }
 
         [Fact]
+        public async Task Should_log_a_call_made_once_its_module_was_released()
+        {
+            // Arrange — as a disposal's release overtakes a call that shared the import still under way
+            using var loggerFactory = new FakeLoggerFactory();
+            FakeJSObjectReference? moduleReference = null;
+            moduleReference = new FakeJSObjectReference((_, _) => moduleReference!.IsDisposed ? throw new ObjectDisposedException(nameof(IJSObjectReference)) : null);
+            await moduleReference.DisposeAsync();
+            await using var module = new JSModule(CreateEnvironment(FakeJSRuntime.Importing(moduleReference), loggerFactory), Path);
+
+            // Act
+            var ran = await module.TryInvokeVoidAsync("attach");
+
+            // Assert
+            Assert.False(ran);
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(LogLevel.Debug, entry.Level);
+                Assert.Contains("attach in", entry.Message, StringComparison.Ordinal);
+                Assert.Contains("wasn't called", entry.Message, StringComparison.Ordinal);
+                Assert.Contains(Path, entry.Message, StringComparison.Ordinal);
+                Assert.Contains(Owner.ToString(), entry.Message, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
         public async Task Should_log_the_export_that_threw()
         {
             // Arrange

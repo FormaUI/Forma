@@ -182,9 +182,9 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
     }
 
     // JSDisconnectedException derives from Exception, so it is named beside JSException; a call the runtime canceled, as its
-    // circuit ended or the call ran out of time, didn't run either.
+    // circuit ended or the call ran out of time, didn't run either, nor did one whose module, or an object it passes, was released.
     private static bool IsInteropFailure(Exception ex)
-        => ex is JSDisconnectedException or JSException or OperationCanceledException;
+        => ex is JSDisconnectedException or JSException or OperationCanceledException or ObjectDisposedException;
 
     // The release touches nothing of the owner's, so it needn't return to the owner's context.
     private async Task ReleaseAsync(Task<IJSObjectReference> import)
@@ -217,6 +217,10 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         else if (ex is OperationCanceledException)
         {
             InteropLog.CallCanceled(js.Logger, identifier, path, js.RuntimeId);
+        }
+        else if (ex is ObjectDisposedException)
+        {
+            InteropLog.ReleasedBeforeCalling(js.Logger, ex, identifier, path, js.RuntimeId);
         }
         else
         {
