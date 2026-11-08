@@ -82,7 +82,7 @@ function Format-Cell {
 $folders = @(if (Test-Path -LiteralPath $Results) { Get-ChildItem -LiteralPath $Results -Directory | Where-Object { $_.Name -match '^checks-(?<job>[a-z]+)-(?<os>[a-z]+)-\d+$' } })
 $byMachine = $folders | Group-Object { ($_.Name -split '-')[2] }
 $findings = [System.Collections.Generic.List[psobject]]::new()
-$interrupted = [System.Collections.Generic.List[psobject]]::new()
+$interruptedChecks = [System.Collections.Generic.List[psobject]]::new()
 
 foreach ($machine in $byMachine) {
     $files = @($machine.Group | ForEach-Object { Get-ChildItem -LiteralPath $_.FullName -Recurse -Filter '*.json' | ForEach-Object { $_.FullName } })
@@ -93,7 +93,7 @@ foreach ($machine in $byMachine) {
         }
 
         if ($rate.Interrupted -gt 0) {
-            $interrupted.Add([pscustomobject]@{ Name = $rate.Name; Machine = $machine.Name; Interrupted = $rate.Interrupted })
+            $interruptedChecks.Add([pscustomobject]@{ Name = $rate.Name; Machine = $machine.Name; Interrupted = $rate.Interrupted })
         }
     }
 }
@@ -101,35 +101,35 @@ foreach ($machine in $byMachine) {
 # A job's run that failed with nothing failing or interrupted among its own results failed outside its checks.
 $failedJobs = @(@(foreach ($folder in $folders) {
         if (Test-Path -LiteralPath (Join-Path $folder.FullName 'job-failed')) {
-            $own = @(Get-CheckRate -Path @(Get-ChildItem -LiteralPath $folder.FullName -Recurse -Filter '*.json' | ForEach-Object { $_.FullName }))
+            $jobRates = @(Get-CheckRate -Path @(Get-ChildItem -LiteralPath $folder.FullName -Recurse -Filter '*.json' | ForEach-Object { $_.FullName }))
 
-            if (@($own | Where-Object { $_.Failed -gt 0 -or $_.Interrupted -gt 0 }).Count -eq 0) {
+            if (@($jobRates | Where-Object { $_.Failed -gt 0 -or $_.Interrupted -gt 0 }).Count -eq 0) {
                 $parts = $folder.Name -split '-'
                 "$($parts[1]) on $($parts[2])"
             }
         }
     }) | Sort-Object -Unique)
 
-$short = $Commit.Substring(0, 12)
-$commitLink = "[$short](https://github.com/$Repository/commit/$Commit)"
-Write-Host ("On {0}: failing checks {1}, checks interrupted {2}, jobs failed outside their checks {3}" -f $short, @($findings | Select-Object -ExpandProperty Name -Unique).Count, $interrupted.Count, $failedJobs.Count)
+$shortCommit = $Commit.Substring(0, 12)
+$commitLink = "[$shortCommit](https://github.com/$Repository/commit/$Commit)"
+Write-Host ("On {0}: failing checks {1}, checks interrupted {2}, jobs failed outside their checks {3}" -f $shortCommit, @($findings | Select-Object -ExpandProperty Name -Unique).Count, $interruptedChecks.Count, $failedJobs.Count)
 
 # Issues are read only for a run that changes them, so a described run needs no token.
-$existing = @()
+$openIssueList = @()
 $isDescribed = $WhatIfPreference
 
-if (-not $isDescribed -and ($findings.Count -gt 0 -or $interrupted.Count -gt 0 -or $failedJobs.Count -gt 0)) {
+if (-not $isDescribed -and ($findings.Count -gt 0 -or $interruptedChecks.Count -gt 0 -or $failedJobs.Count -gt 0)) {
     foreach ($name in $labels.Keys) {
         $null = Invoke-GitHub @('label', 'create', $name, '--repo', $Repository, '--color', $labels[$name].Color, '--description', $labels[$name].Description, '--force')
     }
 
-    $existing = @((Invoke-GitHub @('issue', 'list', '--repo', $Repository, '--label', $nightly, '--state', 'open', '--limit', '1000', '--json', 'number,body,labels')) -join "`n" | ConvertFrom-Json)
+    $openIssueList = @((Invoke-GitHub @('issue', 'list', '--repo', $Repository, '--label', $nightly, '--state', 'open', '--limit', '1000', '--json', 'number,body,labels')) -join "`n" | ConvertFrom-Json)
 }
 
 function Find-Issue {
     param([Parameter(Mandatory)] [string] $Marker)
 
-    $existing | Where-Object { $_.body -and $_.body.Contains($Marker) } | Select-Object -First 1
+    $openIssueList | Where-Object { $_.body -and $_.body.Contains($Marker) } | Select-Object -First 1
 }
 
 # Opens the issue the marker names, or comments on it, and sets its labels.
@@ -139,20 +139,20 @@ function Write-Issue {
         [Parameter(Mandatory)] [string] $Title,
         [Parameter(Mandatory)] [string] $Opening,
         [Parameter(Mandatory)] [string] $Occurrence,
-        [string[]] $Add = @(),
-        [string[]] $Remove = @()
+        [string[]] $AddedLabel = @(),
+        [string[]] $RemovedLabel = @()
     )
 
     $issue = Find-Issue -Marker $Marker
 
     if (-not $issue) {
         $body = "$Opening`n`n$Occurrence`n`n$Marker"
-        $labelText = (@($nightly) + $Add) -join ', '
+        $labelText = (@($nightly) + $AddedLabel) -join ', '
 
         if ($PSCmdlet.ShouldProcess("$Repository, labeled $labelText", "Open the issue '$Title'")) {
             $arguments = @('issue', 'create', '--repo', $Repository, '--title', $Title, '--body', $body)
 
-            foreach ($label in @($nightly) + $Add) {
+            foreach ($label in @($nightly) + $AddedLabel) {
                 $arguments += @('--label', $label)
             }
 
@@ -166,18 +166,18 @@ function Write-Issue {
         $null = Invoke-GitHub @('issue', 'comment', "$($issue.number)", '--repo', $Repository, '--body', $Occurrence)
     }
 
-    $held = @($issue.labels | ForEach-Object { $_.name })
-    $adding = @($Add | Where-Object { $_ -notin $held })
-    $removing = @($Remove | Where-Object { $_ -in $held })
+    $heldLabels = @($issue.labels | ForEach-Object { $_.name })
+    $labelsToAdd = @($AddedLabel | Where-Object { $_ -notin $heldLabels })
+    $labelsToRemove = @($RemovedLabel | Where-Object { $_ -in $heldLabels })
 
-    if (($adding.Count -gt 0 -or $removing.Count -gt 0) -and $PSCmdlet.ShouldProcess("#$($issue.number) in $Repository", "Label it $($adding -join ', ') and take off $($removing -join ', ')")) {
+    if (($labelsToAdd.Count -gt 0 -or $labelsToRemove.Count -gt 0) -and $PSCmdlet.ShouldProcess("#$($issue.number) in $Repository", "Label it $($labelsToAdd -join ', ') and take off $($labelsToRemove -join ', ')")) {
         $arguments = @('issue', 'edit', "$($issue.number)", '--repo', $Repository)
 
-        foreach ($label in $adding) {
+        foreach ($label in $labelsToAdd) {
             $arguments += @('--add-label', $label)
         }
 
-        foreach ($label in $removing) {
+        foreach ($label in $labelsToRemove) {
             $arguments += @('--remove-label', $label)
         }
 
@@ -199,28 +199,28 @@ foreach ($check in ($findings | Group-Object Name)) {
         }
     ) -join "`n"
 
-    $add = if ($isIntermittent -or $wasIntermittent) { @('flaky') } else { @('regression') }
-    $remove = if ($isIntermittent) { @('regression') } else { @() }
+    $addedLabels = if ($isIntermittent -or $wasIntermittent) { @('flaky') } else { @('regression') }
+    $removedLabels = if ($isIntermittent) { @('regression') } else { @() }
     $title = "Check failing: $(Format-Cell ($check.Name -replace '^Forma\.[\w.]+\.Tests\.', '') -Length 200)"
     $opening = "The nightly run failed the check ``$($check.Name)``. Each later night it fails comments here."
 
-    Write-Issue -Marker $marker -Title $title -Opening $opening -Occurrence $table -Add $add -Remove $remove
+    Write-Issue -Marker $marker -Title $title -Opening $opening -Occurrence $table -AddedLabel $addedLabels -RemovedLabel $removedLabels
 }
 
-if ($interrupted.Count -gt 0) {
+if ($interruptedChecks.Count -gt 0) {
     $list = @(
         "Checks not run on $commitLink, in [the run]($Run), their device unreachable:"
         ''
-        foreach ($check in ($interrupted | Sort-Object Machine, Name)) { "- $($check.Machine): ``$($check.Name)``" }
+        foreach ($check in ($interruptedChecks | Sort-Object Machine, Name)) { "- $($check.Machine): ``$($check.Name)``" }
     ) -join "`n"
 
     Write-Issue -Marker '<!-- forma-device-unreachable -->' -Title 'An Android device the checks ran on went unreachable' `
         -Opening "adb couldn't reach the device the checks ran on, so the checks it interrupted didn't run. Each later night it happens comments here; the job's description of the emulator says what it last showed." `
-        -Occurrence $list -Add @('infrastructure')
+        -Occurrence $list -AddedLabel @('infrastructure')
 }
 
 foreach ($job in $failedJobs) {
     Write-Issue -Marker "<!-- forma-job: $job -->" -Title "The nightly job $job failed outside its checks" `
         -Opening "The nightly run's job $job failed with no failing or interrupted check among its results, so the failure is in what it ran around them." `
-        -Occurrence "Failed on $commitLink, in [the run]($Run)." -Add @('infrastructure')
+        -Occurrence "Failed on $commitLink, in [the run]($Run)." -AddedLabel @('infrastructure')
 }
