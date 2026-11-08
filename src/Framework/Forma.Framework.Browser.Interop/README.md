@@ -179,13 +179,20 @@ wrapper.
 | `Asset` | Loads a module, stylesheet or SVG sprite once per page. |
 | `CheckBox` | Sets whether a checkbox shows as indeterminate. |
 | `Clipboard` | Places text on the clipboard. |
+| `DocumentOrder` | Reads the order elements stand in within the document. |
 | `Download` | Hands the reader a file to save. |
 | `Embedding` | Loads a third-party embed script and has it process the markup rendered since. |
 | `Playback` | Mutes a media element, resuming it if it is paused. |
-| `Pointer` | Captures a pointer to one element for the rest of its gesture, and releases it. |
 | `Print` | Prints the page, or a piece of markup dressed in the page's stylesheets. |
 | `Share` | Offers a title and URL to the platform's share surface, and reports whether it has one. |
-| `TextEntry` | Reads and clears a text entry's value, and reads or writes its selected range. |
+| `TextEntry` | Reads or writes a text entry's selected range. |
+
+`INativeOperations` is a host's own way to save a file and share an address, for a web view that does
+neither. `Download`, `Print` and `Share` take it where the host registers one, and take the browser's path
+where the host hasn't registered one or declines.
+
+`Pointer.js`, a pointer captured to one element for the rest of its gesture, is composed by
+`DragGesture.js` alone, without a wrapper.
 
 ## Components
 
@@ -193,6 +200,7 @@ wrapper.
 | --- | --- |
 | `Dialog` | Opens and closes a native dialog as a modal. |
 | `Frame` | Moves a frame by its drag region, resizes it at its edges, steps it with the arrow keys and holds it within its bounds. |
+| `Splitter` | Drags a splitter's bar along its axis, telling its owner the travel once a frame and the drag's end. |
 | `Virtualize` | Tells a virtualized list's owner where the list stands in what scrolls it and how much room its drawn items take, and scrolls it to an offset or an item. |
 | `Window` | Shows a window in the top layer, raises it in front of the others, returns focus to where it was inside it, and tells its owner of each press inside it. |
 
