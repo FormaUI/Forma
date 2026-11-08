@@ -684,7 +684,8 @@ under Blazor Hybrid the application's culture decides, and each web view's addre
   fragment in the route carrying the pair, in place of the current history entry. The replacement carries
   Forma's mark, and its landing requests nothing. Blazor runs the web view's navigation handlers for it as
   for any navigation, and a handler that guards the user's work tells it from a navigation away by that
-  mark, since the page and the work stay.
+  mark, since the page and the work stay. The mark is the replacement's alone: once it lands, its history
+  entry carries none, so Back or Forward onto that entry is guarded as any traversal is.
 - **A web view whose handler refuses to follow** keeps its address, and shows the accepted pair meanwhile,
   since its components and its document follow the state. The switch stands: a switch is the
   application's, and a landing the requesting web view shows is resolved by its address, as every landing

@@ -489,6 +489,66 @@ describe('CultureCoordinator', () => {
             expect(readDocument()).toBe('he/rtl');
         });
 
+        it('clears the mark from the entry its replacement landed at, so a traversal back to it is no follow', async () => {
+            // Arrange
+            const coordinator = await loadStandalone();
+            const registration = await coordinator.register('a', fakeReceiver(), 'webview', followingStart());
+            registration.follow('he', 'he', 'rtl');
+            window.happyDOM.setURL('http://localhost/he/about#part');
+            history.replaceState({ userState: coordinator.FollowMark, _index: 3 }, '');
+
+            // Act
+            await registration.reportLanding('he', 1);
+
+            // Assert
+            expect(history.state).toEqual({ userState: null, _index: 3 });
+        });
+
+        it('requests nothing for the landing an earlier replacement made after a later follow', async () => {
+            // Arrange — a navigation handler holds each replacement, so the one into Hebrew lands after the application moved to Spanish
+            const spanish = { token: 'es', aliases: [], culture: 'es', uiCulture: 'es', direction: 'ltr' };
+            const policy = toPolicy({
+                routes: [...JSON.parse(addressPolicy()['data-routes']), spanish],
+                defaultToken: 'en',
+                prefixesDefault: false,
+                switchesInPlace: true,
+                root: '/',
+                cookieName: 'forma-culture-route',
+                cookiePath: '/',
+            });
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver, 'webview', followingStart({ policy }));
+            await registration.reportLanding(null, 1);
+            registration.follow('he', 'he', 'rtl');
+            registration.follow('es', 'es', 'ltr');
+
+            // Act
+            window.happyDOM.setURL('http://localhost/he/about#part');
+            await registration.reportLanding('he', 2);
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
+            expect(window.Blazor.navigations).toEqual(['http://localhost/he/about#part', 'http://localhost/es/about#part']);
+        });
+
+        it('delivers a navigation the page made after a traversal that never landed', async () => {
+            // Arrange — a navigation handler kept the page where it was, so the traversal landed nowhere
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver, 'webview', followingStart());
+            await registration.reportLanding(null, 1);
+            window.dispatchEvent(new PopStateEvent('popstate'));
+
+            // Act
+            window.happyDOM.setURL('http://localhost/he/about');
+            await registration.reportLanding('he', 2);
+
+            // Assert
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+            expect(window.Blazor.navigations).toEqual([]);
+        });
+
         it("delivers a navigation the page made to another culture's address, writing no cookie", async () => {
             // Arrange
             const coordinator = await loadStandalone();

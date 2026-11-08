@@ -35,10 +35,10 @@ let pendingSwitch = null;
 // a navigation handler that the page and the user's work stay.
 export const FollowMark = 'forma-culture';
 
-// What a following document knows of its own landings: the address its last replacement went to, whether a traversal
-// came before the next landing, and whether it has landed at all.
-let following = null;
-let isTraversing = false;
+// What a following document knows of its own landings: the addresses its replacements went to that haven't landed, in
+// the order it made them, the address the last traversal arrived at, and whether it has landed at all.
+let replacements = [];
+let traversalAddress = null;
 let hasLanded = false;
 
 /** Reads the page's culture marker and the switch's policy from the document's head, once, as the document loads. */
@@ -61,9 +61,10 @@ export function initialize(head = document.head) {
     initialization = { documentKey: crypto.randomUUID(), policy: readPolicy(head) };
     accepted = { ...marker, direction: servedPair.direction, number: 0 };
 
-    // A traversal is told by the document's own history, since the location's change reports one as any other.
+    // A traversal is told by the document's own history, since the location's change reports one as any other; a landing
+    // is the traversal's only where it lands at the address the traversal arrived at, which a refused one never leaves.
     if (initialization.policy.follows) {
-        addEventListener('popstate', () => isTraversing = true);
+        addEventListener('popstate', () => traversalAddress = withoutHash(location.href));
     }
 }
 
@@ -230,17 +231,20 @@ class CultureCoordinatorRegistration {
         await acceptLanding(toPair(route), this);
     }
 
-    // A following document's landing: the one its own replacement made requests nothing; a traversal and its first landing
-    // take the application's culture, replacing their address where it is another culture's; a navigation the page made
-    // to another culture's address is accepted, and its delivery requests the switch from the application's coordinator.
+    // A following document's landing, which leaves its history entry unmarked: one its own replacement made requests
+    // nothing; a traversal and its first landing take the application's culture, replacing their address where it is
+    // another culture's; a navigation the page made to another culture's address is accepted, and its delivery requests
+    // the switch from the application's coordinator. A landing at one replacement's address passes over every replacement
+    // made before it, and a landing elsewhere over them all, since a later navigation supersedes them.
     async #landFollowing(policy, pair) {
-        const isFollowing = following !== null && isSameAddress(following, location.href);
-        const isAdopting = isTraversing || !hasLanded;
-        following = null;
-        isTraversing = false;
+        const replacementIndex = replacements.findIndex(destination => isSameAddress(destination, location.href));
+        const isAdopting = (traversalAddress !== null && isSameAddress(traversalAddress, location.href)) || !hasLanded;
+        replacements = replacementIndex >= 0 ? replacements.slice(replacementIndex + 1) : [];
+        traversalAddress = null;
         hasLanded = true;
+        unmarkHistoryEntry();
 
-        if (isFollowing || isSamePair(accepted, pair)) {
+        if (replacementIndex >= 0 || isSamePair(accepted, pair)) {
             return;
         }
 
@@ -432,8 +436,23 @@ function readdress(policy, pair) {
         return;
     }
 
-    following = destination;
+    replacements.push(destination);
     (blazorApi ?? window.Blazor).navigateTo(`${destination}${location.hash}`, { replaceHistoryEntry: true, historyEntryState: FollowMark });
+}
+
+// The entry a replacement landed at keeps its page, so a traversal back to it is an ordinary one, which a navigation
+// handler may hold for the user's work; Blazor's own index on the entry stays.
+function unmarkHistoryEntry() {
+    if (history.state?.userState === FollowMark) {
+        history.replaceState({ ...history.state, userState: null }, '');
+    }
+}
+
+function withoutHash(href) {
+    const address = new URL(href);
+    address.hash = '';
+
+    return address.href;
 }
 
 function cancelPendingSwitch() {
@@ -579,10 +598,7 @@ function isSamePair(pair, other) {
 }
 
 function isSameAddress(destination, href) {
-    const current = new URL(href);
-    current.hash = '';
-
-    return destination === current.href;
+    return destination === withoutHash(href);
 }
 
 function readMarker(head) {

@@ -19,6 +19,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
   that it didn't run.
 - A culture switch made while a Blazor Hybrid web view's page was starting stands. The page took the culture it
   started in for a switch of its own and switched the application back to it.
+- `IsCultureFollowing` tells only the navigation that moves a web view's address into the application's culture.
+  It also told Back or Forward onto the page that navigation landed at, so a handler guarding the user's work let
+  that traversal through.
+- A web view that follows two culture switches in quick succession stays in the later one. The earlier switch's
+  address, landing after the later switch, switched the application back.
+- A navigation a web view makes to another culture's address after its navigation handler refused Back or
+  Forward switches the application. It took the application's culture instead, as a traversal does.
 
 ## `1.0.0-preview.4`
 
