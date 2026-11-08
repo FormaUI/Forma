@@ -34,6 +34,8 @@
 
     <PropertyGroup Condition="'$(FormaExamplePlatform)' == 'ios'">
         <SupportedOSPlatformVersion>15.0</SupportedOSPlatformVersion>
+        <!-- A blank launch storyboard, which iOS needs to open the app full screen and an iPad to place it beside other apps' windows. -->
+        <EnableBlankMauiSplashScreen>true</EnableBlankMauiSplashScreen>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(FormaExamplePlatform)' == 'maccatalyst'">
