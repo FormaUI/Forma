@@ -55,8 +55,12 @@ internal static class Program
             services.AddJsonLocalization();
         }
 
-        // What Forma and the web view log, written for the browser check to report where a web view never opens or never closes.
-        services.AddLogging(logging => logging.AddSimpleConsole(console => console.SingleLine = true).SetMinimumLevel(LogLevel.Debug));
+        // What Forma and the web view log, written for the browser check to report where a web view never opens or never closes; the
+        // renderer's own debug lines, one for each component it renders and each event it dispatches, are left out.
+        services.AddLogging(logging => logging
+            .AddSimpleConsole(console => console.SingleLine = true)
+            .SetMinimumLevel(LogLevel.Debug)
+            .AddFilter("Microsoft.AspNetCore.Components.RenderTree", LogLevel.Information));
         services.AddSingleton(shell);
         services.AddScoped(provider => new ProbeScope(provider.GetRequiredService<ProbeShell>()));
         shell.Services = services.BuildServiceProvider();
