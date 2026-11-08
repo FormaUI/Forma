@@ -105,20 +105,25 @@ public sealed class WebViewProbeTests
         // Arrange
         await using var application = await WebViewCheckHost.StartAsync();
         var webView = await application.GetWebViewAsync("A");
-        await webView.Locator("#to-es").ClickAsync();
-        await Assertions.Expect(webView.Locator("#segment")).ToHaveTextAsync("es");
+        await webView.Locator("#to-entry").ClickAsync();
+        await Assertions.Expect(webView.Locator("#navigations li")).ToHaveTextAsync(["changing /en/probe?entry=2 state=none intercepted=True", "changed /en/probe?entry=2 state=none intercepted=True"]);
         var made = await webView.EvaluateAsync<string[]>("() => [...formaProbe.history]");
 
         // Act
         await webView.GoBackAsync();
 
         // Assert
-        await Assertions.Expect(webView.Locator("#navigations li").Nth(3)).ToHaveTextAsync("changed /en/probe state=none intercepted=True");
+        await Assertions.Expect(webView.Locator("#navigations li")).ToHaveTextAsync(
+        [
+            "changing /en/probe?entry=2 state=none intercepted=True",
+            "changed /en/probe?entry=2 state=none intercepted=True",
+            "changing /en/probe state=none intercepted=False",
+            "changed /en/probe state=none intercepted=True",
+        ]);
         var traversed = await webView.EvaluateAsync<string[]>("from => formaProbe.history.slice(from)", made.Length);
         Assert.Equal(["navigate push"], made);
         Assert.Contains("navigate traverse", traversed);
         Assert.Contains("popstate", traversed);
-        Assert.Equal(["changing /es/probe state=none intercepted=True", "changed /es/probe state=none intercepted=True", "changing /en/probe state=none intercepted=False", "changed /en/probe state=none intercepted=True"], (await webView.Locator("#navigations li").AllTextContentsAsync()).Take(4));
     }
 
     [Fact]

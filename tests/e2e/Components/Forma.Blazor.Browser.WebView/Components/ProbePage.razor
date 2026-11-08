@@ -54,6 +54,7 @@
 
 <label><input id="guard-work" type="checkbox" @bind="_isGuardingWork" /> Guard work</label>
 <label><input id="refuse" type="checkbox" @bind="_isRefusing" /> Refuse every navigation</label>
+<a id="to-entry" href="en/probe?entry=2">entry 2</a>
 <a id="to-es" href="es/probe">es</a>
 <a id="to-he" href="he/probe">he</a>
 <ol id="navigations">
@@ -161,7 +162,7 @@
     // A guard on the user's work lets the web view's address follow the application's culture, which keeps the page and the work.
     private ValueTask OnLocationChangingAsync(LocationChangingContext context)
     {
-        _navigations.Add($"changing {Navigation.ToAbsoluteUri(context.TargetLocation).AbsolutePath} state={context.HistoryEntryState ?? "none"} intercepted={context.IsNavigationIntercepted}");
+        _navigations.Add($"changing {Navigation.ToAbsoluteUri(context.TargetLocation).PathAndQuery} state={context.HistoryEntryState ?? "none"} intercepted={context.IsNavigationIntercepted}");
 
         if (_isRefusing || (_isGuardingWork && !context.IsCultureFollowing()))
         {
@@ -176,7 +177,7 @@
 
     private void OnLocationChanged(object? sender, LocationChangedEventArgs args)
     {
-        _navigations.Add($"changed {new Uri(args.Location).AbsolutePath} state={args.HistoryEntryState ?? "none"} intercepted={args.IsNavigationIntercepted}");
+        _navigations.Add($"changed {new Uri(args.Location).PathAndQuery} state={args.HistoryEntryState ?? "none"} intercepted={args.IsNavigationIntercepted}");
         _ = InvokeAsync(StateHasChanged);
     }
 

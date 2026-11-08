@@ -180,8 +180,13 @@ public sealed class WebViewCultureTests
         // Arrange
         await using var application = await WebViewCheckHost.StartAsync();
         var webView = await application.GetWebViewAsync("A");
-        await webView.Locator("#to-es").ClickAsync();
-        await Assertions.Expect(webView.Locator("#state")).ToHaveTextAsync(Switched);
+        await webView.Locator("#to-entry").ClickAsync();
+        await Assertions.Expect(webView.Locator("#navigations li")).ToHaveTextAsync(["changing /en/probe?entry=2 state=none intercepted=True", "changed /en/probe?entry=2 state=none intercepted=True"]);
+
+        // The traversal starts once the switch's follow has replaced the entry's address and its page rendered there, so no follow crosses it.
+        await webView.Locator("#switch").ClickAsync();
+        await Assertions.Expect(webView.Locator("#navigations li").Nth(3)).ToHaveTextAsync("changed /es/probe?entry=2 state=forma-culture intercepted=False");
+        await Assertions.Expect(webView.Locator("#segment")).ToHaveTextAsync("es");
 
         // Act
         await webView.GoBackAsync();
@@ -189,8 +194,10 @@ public sealed class WebViewCultureTests
         // Assert
         await Assertions.Expect(webView.Locator("#navigations li")).ToHaveTextAsync(
         [
-            "changing /es/probe state=none intercepted=True",
-            "changed /es/probe state=none intercepted=True",
+            "changing /en/probe?entry=2 state=none intercepted=True",
+            "changed /en/probe?entry=2 state=none intercepted=True",
+            "changing /es/probe?entry=2 state=forma-culture intercepted=False",
+            "changed /es/probe?entry=2 state=forma-culture intercepted=False",
             "changing /en/probe state=none intercepted=False",
             "changed /en/probe state=none intercepted=True",
             "changing /es/probe state=forma-culture intercepted=False",

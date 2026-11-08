@@ -42,8 +42,11 @@ commit. And the push that publishes a release stopped at a manual step.
    again on the fix:
    - `WindowsTests+RestArea.Should_restore_a_minimized_window_from_its_handle`, on WebAssembly in the Linux gate,
      which failed once before in Android's web view under Auto with WebAssembly;
-   - `WebViewProbeTests.Should_tell_a_traversal_from_a_navigation_the_web_view_makes`, on Windows, which may be
-     the web view teardown `23f8b9c1` fixed;
+   - ✅ `WebViewProbeTests.Should_tell_a_traversal_from_a_navigation_the_web_view_makes`, on Windows. The switch its
+     navigation to another culture's address made was followed in the web view as Back began, and Blazor
+     superseded that follow with the traversal, a navigation the check didn't expect. A follow held until the
+     traversal began failed it every run. The check now navigates within one culture, and the culture check that
+     traverses after a switch waits for the switch's follow to land first;
    - the Android emulator going offline in the MAUI example's job, investigated in that job with step 2's report.
 6. **The local gate follows the change.** Once steps 1 to 5 have been exercised, the design states when each
    gate runs: before a commit, the fast gate, the format check where C# changed, and the browser checks for what
