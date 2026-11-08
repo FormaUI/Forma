@@ -4,16 +4,16 @@ namespace Forma.Blazor.Browser.Tests.Components;
 public sealed class StaticRenderingTests(BrowserHost host)
 {
     // The controls a component offers in a static render that need interactivity to act: an enabled button other than a form's
-    // submit, and an element of a widget's role a reader can reach that isn't marked disabled. A link and a native form control
-    // keep what the browser gives them, what the page doesn't show is offered to no one, and what the check page marks as its own
-    // scaffolding is no component's.
+    // submit, an element of a widget's role a reader can reach that isn't marked disabled, and an editable element, whose typing
+    // reaches no script. A link and a native form control keep what the browser gives them, what the page doesn't show is offered
+    // to no one, and what the check page marks as its own scaffolding is no component's.
     private const string FindControlsNeedingInteractivity = """
         () => {
-            const roles = ['button', 'tab', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'option', 'switch', 'checkbox', 'radio', 'slider', 'spinbutton', 'combobox', 'treeitem', 'gridcell'];
+            const roles = ['button', 'tab', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'option', 'switch', 'checkbox', 'radio', 'slider', 'spinbutton', 'combobox', 'textbox', 'treeitem', 'gridcell'];
             const describe = element => `${element.localName}${element.id ? `#${element.id}` : ''}${element.classList.length > 0 ? `.${[...element.classList].join('.')}` : ''} "${element.textContent.trim().slice(0, 40)}"`;
             const found = [];
 
-            for (const element of document.querySelectorAll('button, [role]')) {
+            for (const element of document.querySelectorAll('button, [role], [contenteditable]')) {
                 if (!element.checkVisibility() || element.closest('[data-check-scaffold]') !== null || ['input', 'select', 'textarea'].includes(element.localName)) {
                     continue;
                 }
@@ -26,7 +26,7 @@ public sealed class StaticRenderingTests(BrowserHost host)
                     continue;
                 }
 
-                if (roles.includes(element.getAttribute('role')) && element.tabIndex >= 0 && element.getAttribute('aria-disabled') !== 'true') {
+                if (element.isContentEditable || (roles.includes(element.getAttribute('role')) && element.tabIndex >= 0 && element.getAttribute('aria-disabled') !== 'true')) {
                     found.push(describe(element));
                 }
             }

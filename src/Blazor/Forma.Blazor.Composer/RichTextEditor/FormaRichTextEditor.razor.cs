@@ -66,8 +66,12 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     private bool IsReadOnly
         => Composer?.IsReadOnly ?? false;
 
+    // A static render shows the document and takes no edit, since the canvas's script never runs there.
+    private bool IsCanvasDisabled
+        => IsDisabled || !RendererInfo.IsInteractive;
+
     private bool ContentEditable
-        => !IsDisabled && !IsReadOnly;
+        => !IsCanvasDisabled && !IsReadOnly;
 
     private bool IsSelectionBarShown
         => Composer?.IsSelectionBarShown ?? true;

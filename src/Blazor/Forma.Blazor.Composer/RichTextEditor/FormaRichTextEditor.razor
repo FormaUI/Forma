@@ -9,10 +9,15 @@
          role="textbox"
          aria-multiline="true"
          aria-label="@L["Rich Text Document"]"
-         aria-disabled="@IsDisabled"
-         aria-readonly="@IsReadOnly"
+         aria-disabled="@(IsCanvasDisabled ? "true" : null)"
+         aria-readonly="@(IsReadOnly ? "true" : null)"
          tabindex="0"
-         spellcheck="true"></div>
+         spellcheck="true">
+        @if (!RendererInfo.IsInteractive)
+        {
+            @((MarkupString)_canvasText)
+        }
+    </div>
 
     @if (_isAttached && HasMarkers)
     {

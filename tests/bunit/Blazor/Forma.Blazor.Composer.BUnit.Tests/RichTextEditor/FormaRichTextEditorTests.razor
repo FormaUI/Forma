@@ -165,7 +165,9 @@
 
             // Assert
             var canvas = cut.Find(".forma-composer-rich-text-canvas");
-            Assert.Equal("false", canvas.GetAttribute("contenteditable"));
+            Assert.Multiple(
+                () => Assert.Equal("false", canvas.GetAttribute("contenteditable")),
+                () => Assert.Equal("true", canvas.GetAttribute("aria-disabled")));
         }
 
         [Fact]
@@ -180,7 +182,47 @@
 
             // Assert
             var canvas = cut.Find(".forma-composer-rich-text-canvas");
-            Assert.Equal("false", canvas.GetAttribute("contenteditable"));
+            Assert.Multiple(
+                () => Assert.Equal("false", canvas.GetAttribute("contenteditable")),
+                () => Assert.Equal("true", canvas.GetAttribute("aria-readonly")),
+                () => Assert.False(canvas.HasAttribute("aria-disabled")));
+        }
+
+        [Fact]
+        public void Should_show_its_document_in_a_canvas_that_takes_no_edit_under_a_static_render()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            Assert.Multiple(
+                () => Assert.Equal("Initial Text", canvas.QuerySelector("p")?.TextContent),
+                () => Assert.Equal("false", canvas.GetAttribute("contenteditable")),
+                () => Assert.Equal("true", canvas.GetAttribute("aria-disabled")));
+        }
+
+        [Fact]
+        public void Should_leave_its_canvas_to_its_script_under_an_interactive_render()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            Assert.Multiple(
+                () => Assert.Empty(canvas.ChildNodes),
+                () => Assert.Equal("true", canvas.GetAttribute("contenteditable")),
+                () => Assert.False(canvas.HasAttribute("aria-disabled")));
         }
 
         [Fact]
