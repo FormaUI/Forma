@@ -16,35 +16,27 @@ public static class WebViewCheckHost
     /// <param name="application">The check host.</param>
     /// <param name="name">The web view's name, <c>A</c> for the first.</param>
     /// <returns>The web view's page.</returns>
-    public static async Task<IPage> GetWebViewAsync(this WebViewApplication application, string name)
+    public static Task<IPage> GetWebViewAsync(this WebViewApplication application, string name)
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        var deadline = DateTime.UtcNow.AddSeconds(30);
+        return application.FindWebViewAsync(
+            async page => await page.EvaluateAsync<string>("() => `${document.querySelector('#web-view')?.textContent}|${document.querySelector('#runtime')?.textContent}`").ConfigureAwait(false) == $"{name}|WebView True",
+            $"named {name} rendered interactively",
+            TimeSpan.FromSeconds(30));
+    }
 
-        while (DateTime.UtcNow < deadline)
-        {
-            // A snapshot, since a web view opening meanwhile adds its page to these lists.
-            foreach (var page in application.Browser.Contexts.ToArray().SelectMany(context => context.Pages.ToArray()))
-            {
-                try
-                {
-                    if (await page.EvaluateAsync<string?>("() => document.querySelector('#web-view')?.textContent ?? null").ConfigureAwait(false) == name)
-                    {
-                        await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync("WebView True").ConfigureAwait(false);
+    /// <summary>Opens the check host's second web view, <c>B</c>, from its first, <c>A</c>, once both render interactively.</summary>
+    /// <param name="application">The check host.</param>
+    /// <returns>The two web views' pages, the first's ahead.</returns>
+    public static async Task<(IPage First, IPage Second)> OpenTwoWebViewsAsync(this WebViewApplication application)
+    {
+        ArgumentNullException.ThrowIfNull(application);
 
-                        return page;
-                    }
-                }
-                catch (PlaywrightException)
-                {
-                    // A page still loading, or one that closed meanwhile; the next pass asks again.
-                }
-            }
+        var first = await application.GetWebViewAsync("A").ConfigureAwait(false);
+        await first.Locator("#open").ClickAsync().ConfigureAwait(false);
+        var second = await application.GetWebViewAsync("B").ConfigureAwait(false);
 
-            await Task.Delay(TimeSpan.FromMilliseconds(100)).ConfigureAwait(false);
-        }
-
-        throw new TimeoutException($"No web view named {name} rendered within 30 seconds.");
+        return (first, second);
     }
 }

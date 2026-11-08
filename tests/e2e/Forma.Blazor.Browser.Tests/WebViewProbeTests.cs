@@ -43,7 +43,7 @@ public sealed class WebViewProbeTests
     {
         // Arrange
         await using var application = await WebViewCheckHost.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
+        var (first, second) = await application.OpenTwoWebViewsAsync();
 
         // Act
         await first.Locator("#apply-threads").ClickAsync();
@@ -58,7 +58,7 @@ public sealed class WebViewProbeTests
     {
         // Arrange
         await using var application = await WebViewCheckHost.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
+        var (first, second) = await application.OpenTwoWebViewsAsync();
 
         // Act
         await first.Locator("#apply-defaults").ClickAsync();
@@ -73,7 +73,7 @@ public sealed class WebViewProbeTests
     {
         // Arrange
         await using var application = await WebViewCheckHost.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
+        var (first, second) = await application.OpenTwoWebViewsAsync();
 
         // Act
         await first.Locator("#apply-captured").ClickAsync();
@@ -88,7 +88,7 @@ public sealed class WebViewProbeTests
     {
         // Arrange
         await using var application = await WebViewCheckHost.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
+        var (first, second) = await application.OpenTwoWebViewsAsync();
         await first.Locator("#apply-threads").ClickAsync();
 
         // Act
@@ -146,7 +146,7 @@ public sealed class WebViewProbeTests
     {
         // Arrange
         await using var application = await WebViewCheckHost.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
+        var (first, second) = await application.OpenTwoWebViewsAsync();
         await second.Locator("#close").ClickAsync();
         await first.Locator("#open").ClickAsync();
         var third = await application.GetWebViewAsync("C");
@@ -154,8 +154,8 @@ public sealed class WebViewProbeTests
         // Act
         await third.Locator("#close-disposing").ClickAsync();
 
-        // Assert
-        await Assertions.Expect(first.Locator("#released")).ToHaveTextAsync("1");
+        // Assert — C's scope alone, B's kept though its native window closed before C opened
+        await Assertions.Expect(first.Locator("#released")).ToHaveTextAsync("C");
     }
 
     [Fact]
@@ -163,23 +163,14 @@ public sealed class WebViewProbeTests
     {
         // Arrange
         await using var application = await WebViewCheckHost.StartAsync();
-        var (first, second) = await OpenTwoWebViewsAsync(application);
+        var (first, second) = await application.OpenTwoWebViewsAsync();
 
         // Act
         await second.Locator("#close-disposing").ClickAsync();
 
         // Assert
-        await Assertions.Expect(first.Locator("#released")).ToHaveTextAsync("1");
+        await Assertions.Expect(first.Locator("#released")).ToHaveTextAsync("B");
         await first.GetByRole(AriaRole.Button, new() { Name = "Event" }).ClickAsync();
         await Assertions.Expect(first.Locator("#event")).ToHaveTextAsync($"{Assigned}|1,234.5|Hello");
-    }
-
-    private static async Task<(IPage First, IPage Second)> OpenTwoWebViewsAsync(WebViewApplication application)
-    {
-        var first = await application.GetWebViewAsync("A");
-        await first.Locator("#open").ClickAsync();
-        var second = await application.GetWebViewAsync("B");
-
-        return (first, second);
     }
 }

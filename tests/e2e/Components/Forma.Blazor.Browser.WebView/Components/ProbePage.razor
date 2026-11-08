@@ -10,8 +10,8 @@
 
 @* One web view's page, a culture route page: the culture it renders in, a string of the host's own, a select reaching its script,
    an event, a binding, work begun before a switch, the ways a culture is applied, the application's switch from a component and from
-   native code, the web views it opens and closes, its own or another by name, the guards a navigation handler keeps, and what its
-   navigation saw. *@
+   native code, the web views it opens, under the name a check gives or the next in order, and closes, its own or another by name, the
+   web views whose scopes were released, the guards a navigation handler keeps, and what its navigation saw. *@
 <output id="segment">@Culture</output>
 <output id="instance">@_instance</output>
 <output id="context">@_context</output>
@@ -44,13 +44,14 @@
 <output id="switched">@_switched</output>
 
 <label>Start path <input id="start-path" @bind="_startPath" /></label>
+<label>Open as <input id="open-as" @bind="_openAs" /></label>
 <button id="open" @onclick="Open">Open</button>
 <output id="opened">@_opened</output>
 <button id="close" @onclick="() => Shell.Close(WebView, isDisposing: false)">Close</button>
 <button id="close-disposing" @onclick="() => Shell.Close(WebView, isDisposing: true)">Close and dispose</button>
 <label>Web view <input id="other" @bind="_other" /></label>
 <button id="close-other" @onclick="() => Shell.Close(_other, isDisposing: true)">Close and dispose the web view named</button>
-<output id="released">@_released</output>
+<output id="released">@_releasedWebViews</output>
 
 <label><input id="guard-work" type="checkbox" @bind="_isGuardingWork" /> Guard work</label>
 <label><input id="refuse" type="checkbox" @bind="_isRefusing" /> Refuse every navigation</label>
@@ -80,9 +81,10 @@
     private string _culture = "es-ES";
     private string? _switched;
     private string _startPath = "/en/probe";
+    private string _openAs = string.Empty;
     private string? _opened;
     private string _other = string.Empty;
-    private int _released;
+    private string? _releasedWebViews;
     private bool _isGuardingWork;
     private bool _isRefusing;
 
@@ -150,12 +152,12 @@
     }
 
     private void Open()
-        => _opened = Shell.Open(_startPath);
+        => _opened = Shell.Open(_startPath, string.IsNullOrEmpty(_openAs) ? null : _openAs);
 
     private void OnScopeReleased()
         => _ = InvokeAsync(() =>
         {
-            _released = Shell.Released;
+            _releasedWebViews = string.Join(' ', Shell.ReleasedWebViews);
             StateHasChanged();
         });
 

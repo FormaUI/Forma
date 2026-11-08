@@ -14,8 +14,8 @@ internal sealed class ProbeShell
 {
     private readonly ConcurrentDictionary<string, WebViewHostWindow> _hostWindows = new();
     private readonly ConcurrentDictionary<string, ProbeAttachment> _attachments = new();
+    private readonly ConcurrentQueue<string> _releasedWebViews = new();
     private int _webViewCount;
-    private int _released;
 
     /// <summary>The services every web view resolves from.</summary>
     public IServiceProvider Services { get; set; } = default!;
@@ -23,19 +23,20 @@ internal sealed class ProbeShell
     /// <summary>Raised after a web view's scope is released.</summary>
     public event Action? ScopeReleased;
 
-    /// <summary>How many web views' scopes have been released.</summary>
-    public int Released
-        => Volatile.Read(ref _released);
+    /// <summary>The names of the web views whose scopes have been released, in the order they were.</summary>
+    public IReadOnlyList<string> ReleasedWebViews
+        => [.. _releasedWebViews];
 
-    /// <summary>Opens a native window whose web view starts at <paramref name="startPath"/>, the web view named by the order web views open in, <c>A</c> to <c>Z</c>, then <c>AA</c> on.</summary>
+    /// <summary>Opens a native window whose web view starts at <paramref name="startPath"/>, the web view named <paramref name="name"/>, or by the order web views open in, <c>A</c> to <c>Z</c>, then <c>AA</c> on, where none is given.</summary>
     /// <param name="startPath">The address the web view starts at.</param>
+    /// <param name="name">The web view's name, which a check that opens a web view of its own gives it.</param>
     /// <returns>The web view's name.</returns>
-    public string Open(string startPath)
+    public string Open(string startPath, string? name = null)
     {
-        var name = GetName(Interlocked.Increment(ref _webViewCount));
-        Application.Current.Dispatcher.Invoke(() => Show(name, startPath));
+        var webViewName = name ?? GetName(Interlocked.Increment(ref _webViewCount));
+        Application.Current.Dispatcher.Invoke(() => Show(webViewName, startPath));
 
-        return name;
+        return webViewName;
     }
 
     /// <summary>Closes the native window of the web view <paramref name="name"/> names, disposing the web view first where <paramref name="isDisposing"/> says so.</summary>
@@ -59,7 +60,7 @@ internal sealed class ProbeShell
     }
 
     /// <summary>Records that the web view <paramref name="webView"/> names released its scope.</summary>
-    /// <param name="webView">The web view's name.</param>
+    /// <param name="webView">The web view's name, none where its page never learned it.</param>
     public void Release(string? webView)
     {
         if (webView is not null)
@@ -67,7 +68,7 @@ internal sealed class ProbeShell
             _attachments.TryRemove(webView, out _);
         }
 
-        Interlocked.Increment(ref _released);
+        _releasedWebViews.Enqueue(webView ?? "unnamed");
         ScopeReleased?.Invoke();
     }
 
