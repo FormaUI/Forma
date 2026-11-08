@@ -683,6 +683,45 @@ describe('InputRouter pending edits', () => {
         expect(changes).not.toHaveBeenCalled();
     });
 
+    it("holds back the field's own change for the edit it committed", () => {
+        const changes = vi.fn();
+        host({ preemptiveRoutes: [route('test.save', vi.fn(), keyBinding('s', { primary: true }))] });
+        field().addEventListener('change', changes);
+        edit(field(), 'typed');
+        key(field(), 's', { ctrlKey: true });
+
+        // As the browser raises it once the field loses the focus.
+        field().dispatchEvent(new Event('change', { bubbles: true }));
+
+        expect(changes).toHaveBeenCalledOnce();
+    });
+
+    it("holds back the field's own change from a document's listener added before the router's, as Blazor's is", () => {
+        const changes = vi.fn();
+        document.addEventListener('change', changes, { capture: true });
+        host({ preemptiveRoutes: [route('test.save', vi.fn(), keyBinding('s', { primary: true }))] });
+        edit(field(), 'typed');
+        key(field(), 's', { ctrlKey: true });
+
+        field().dispatchEvent(new Event('change', { bubbles: true }));
+        document.removeEventListener('change', changes, { capture: true });
+
+        expect(changes).toHaveBeenCalledOnce();
+    });
+
+    it("lets the field's own change through for an edit made after the one it committed", () => {
+        const values = [];
+        host({ preemptiveRoutes: [route('test.save', vi.fn(), keyBinding('s', { primary: true }))] });
+        field().addEventListener('change', () => values.push(field().value));
+        edit(field(), 'typed');
+        key(field(), 's', { ctrlKey: true });
+        edit(field(), 'typed more');
+
+        field().dispatchEvent(new Event('change', { bubbles: true }));
+
+        expect(values).toEqual(['typed', 'typed more']);
+    });
+
     it('commits nothing for a key a native field keeps', () => {
         const changes = vi.fn();
         host({ preemptiveRoutes: [route('test.save', vi.fn(), keyBinding('s', { primary: true }))] });

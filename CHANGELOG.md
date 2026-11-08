@@ -19,6 +19,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   never answer.
 - A call on a [`JSInterop`](src/Framework/Forma.Framework.JavaScript.Interop/README.md#writing-a-wrapper) wrapper's
   attached instance still in flight as the wrapper detaches or is disposed reports that it didn't run.
+- A text field whose edit the [input router](docs/input-router-design.md#a-fields-pending-edit) commits ahead of
+  an action it routes reports its change once. The browser reported the same edit again as the field lost the
+  focus, so a field's change handlers, `OnChange` among them, ran twice for one edit.
 - A `Try*` call on a [`JSModule`](src/Framework/Forma.Framework.JavaScript.Interop/README.md#writing-a-wrapper)
   whose import was still under way as the module was disposed reports that it didn't run. The release could run
   first, and the call then threw `ObjectDisposedException` into the component that made it.

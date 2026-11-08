@@ -114,6 +114,12 @@ const dispatched = new WeakSet();
 // The text fields, and the editable elements an editor's script owns, edited since they last reported a change.
 const editedFields = new WeakSet();
 
+// The text fields whose edit the router committed, whose own change the browser still raises as they lose the focus.
+const committedFields = new WeakSet();
+
+// The change events the router raised itself.
+const committingChanges = new WeakSet();
+
 /**
  * Sets the host's policy: the ambient defaults a scope inherits, and the bindings that replace,
  * extend, or remove an action's defaults, keyed by action. A `bindings` given replaces the whole
@@ -698,12 +704,26 @@ function ensureDocumentListeners() {
     document.addEventListener('click', event => swallowSuppressedClick(event), { signal, capture: true });
     document.addEventListener('cancel', event => offerCloseRequest(event), { signal, capture: true });
     document.addEventListener('input', event => noteEdit(event.target), { signal, capture: true });
-    document.addEventListener('change', event => editedFields.delete(event.target), { signal, capture: true });
+
+    // Heard on the window, ahead of every listener on the document, Blazor's among them, so a change held back reaches none of them.
+    globalThis.addEventListener('change', event => noteChange(event), { signal, capture: true });
 }
 
 function noteEdit(field) {
     if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement || (field instanceof HTMLElement && field.isContentEditable)) {
         editedFields.add(field);
+        committedFields.delete(field);
+    }
+}
+
+// A text field's own change for an edit the router already committed reports nothing new, so it is held back from every listener.
+function noteChange(event) {
+    const field = event.target;
+    editedFields.delete(field);
+
+    if (!committingChanges.has(event) && committedFields.has(field)) {
+        committedFields.delete(field);
+        event.stopImmediatePropagation();
     }
 }
 
@@ -713,8 +733,15 @@ function commitEdit() {
     const field = document.activeElement;
 
     if (field !== null && editedFields.has(field)) {
+        const change = new Event('change', { bubbles: true });
         editedFields.delete(field);
-        field.dispatchEvent(new Event('change', { bubbles: true }));
+        committingChanges.add(change);
+
+        if (field instanceof HTMLInputElement || field instanceof HTMLTextAreaElement) {
+            committedFields.add(field);
+        }
+
+        field.dispatchEvent(change);
     }
 }
 

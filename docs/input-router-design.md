@@ -236,8 +236,9 @@ A text field reports its value as each character is typed or, where its componen
 change, as it commits its edit, which the browser does as the field loses the focus. An action
 the router routes, or a dismissal, while the field holds the focus would run before that commit,
 so the router first commits the focused field's pending edit, raising its change event, and the
-action reads the text as it stands. A field whose last edit already reported its change is left
-as it is, and a key the field consumes commits nothing.
+action reads the text as it stands. The change the browser raises for that edit as the field
+loses the focus is held back, so an edit reports its change once. A field whose last edit already
+reported its change is left as it is, and a key the field consumes commits nothing.
 
 ## Structural routing
 
