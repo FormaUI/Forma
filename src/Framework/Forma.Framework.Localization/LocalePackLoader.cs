@@ -56,7 +56,7 @@ public static class LocalePackLoader
         var assemblies = new List<Assembly>();
         foreach (var name in application.GetCustomAttributes<LocaleReferenceAttribute>().Select(host => host.AssemblyName).Where(name => !string.IsNullOrWhiteSpace(name)).Distinct(StringComparer.Ordinal))
         {
-            if (LoadHostLocaleAssembly(name, logger) is { } assembly && !assemblies.Contains(assembly))
+            if (TryLoad(name, reason => LocalizationLog.HostLocaleAssemblyNotLoaded(logger, name, reason)) is { } assembly && !assemblies.Contains(assembly))
             {
                 assemblies.Add(assembly);
             }
@@ -81,7 +81,7 @@ public static class LocalePackLoader
         var packs = new List<Assembly>();
         foreach (var name in GetNames(assembly))
         {
-            if (LoadPack(name, logger) is { } pack)
+            if (TryLoad(name, reason => LocalizationLog.LocalePackNotLoaded(logger, name, reason)) is { } pack)
             {
                 packs.Add(pack);
             }
@@ -90,7 +90,8 @@ public static class LocalePackLoader
         return packs;
     }
 
-    private static Assembly? LoadHostLocaleAssembly(string name, ILogger logger)
+    // Loads the named assembly, reporting why one can't be loaded.
+    private static Assembly? TryLoad(string name, Action<string> reportNotLoaded)
     {
         try
         {
@@ -98,21 +99,7 @@ public static class LocalePackLoader
         }
         catch (Exception exception) when (exception is FileNotFoundException or FileLoadException or BadImageFormatException)
         {
-            LocalizationLog.HostLocaleAssemblyNotLoaded(logger, name, exception.Message);
-
-            return null;
-        }
-    }
-
-    private static Assembly? LoadPack(string name, ILogger logger)
-    {
-        try
-        {
-            return Assembly.Load(new AssemblyName(name));
-        }
-        catch (Exception exception) when (exception is FileNotFoundException or FileLoadException or BadImageFormatException)
-        {
-            LocalizationLog.LocalePackNotLoaded(logger, name, exception.Message);
+            reportNotLoaded(exception.Message);
 
             return null;
         }
