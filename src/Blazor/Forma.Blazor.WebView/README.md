@@ -1,8 +1,9 @@
 # Forma.Blazor.WebView
 
 The WebView half of Forma's component library: the registration a Blazor Hybrid application makes, in
-WPF, Windows Forms or MAUI on Windows, which registers what the components need in a web view and the one
-culture the application keeps across its web views.
+WPF, Windows Forms or MAUI on Windows, or MAUI on Android, iOS or Mac Catalyst, which registers what the
+components need in a web view and the culture its web views keep, one for the whole application by default,
+or one for each web view.
 
 ## Install
 
@@ -27,7 +28,7 @@ services.AddFormaUIWebView();
 `AddFormaUIWebView()` registers what `AddFormaUI()` registers for every render mode, each only where
 nothing is registered for it yet, and the culture's WebView half,
 [`Forma.Framework.Culture.Blazor.WebView`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture.Blazor.WebView/README.md):
-one culture state and one switch for the application, which every web view follows.
+by default, one culture state and one switch for the application, which every web view follows.
 `UIWebViewOptions.InputRouting` sets the application's input policy:
 
 ```csharp
@@ -58,15 +59,15 @@ its own scoped styles and `_framework/blazor.webview.js`, as a standalone WebAss
 A MAUI application's page loads the script with `autostart="false"`, leaving Blazor's start to MAUI, which
 starts it once the web view's channel to the application is in place.
 
-Each web view's document takes the application's culture from its first Forma component, so the page
-carries no culture marker of its own.
+Each web view's document takes its culture, the application's by default, from its first Forma component,
+so the page carries no culture marker of its own.
 
 ## The application
 
-Every web view resolves from the application's one service provider, so they share its culture, and a WPF
-application disposes a web view as its native window closes, since WPF disposes no control on its own. The
-[library's README](https://github.com/FormaUI/Forma/blob/main/README.md#blazor-hybrid) sets each host up in full,
-its native user interface and the culture it keeps from one run to the next among it.
+Every web view resolves from the application's one service provider, so by default they share its culture,
+and a WPF application disposes a web view as its native window closes, since WPF disposes no control on its
+own. The [library's README](https://github.com/FormaUI/Forma/blob/main/README.md#blazor-hybrid) sets each host
+up in full, its native user interface and the culture it keeps from one run to the next among it.
 
 ## License
 
