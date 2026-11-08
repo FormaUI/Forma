@@ -278,7 +278,7 @@ Focus is the exception: a press or a key acts on where the focus went, so its wa
 
 A rejected application handler is reported with the owner, capability and registration identity. A transport failure is reported locally in the browser and suspends managed delivery; bounded state is retained, and delivery resumes through explicit resynchronization. Every failure is reported: a shared helper never swallows a rejection the way `.catch(() => {})` does, and failure reporting never runs through the channel that failed.
 
-Occurrences are delivered through a bounded ordered queue per consumer, with an explicit failure on overflow, and are never coalesced into state. The queue sends each occurrence as it is queued, never once .NET has acknowledged the one before it: a click the browser dispatches next reaches .NET by Blazor's own route, and in a Blazor Web App it overtook a blur's flush held behind an earlier one in every run. An action that must see what an occurrence carries waits for it to be applied, as the [edit boundary](browser-transfer-design.md#the-edit-boundary) does. Ordering applies while delivery is healthy; an occurrence whose delivery becomes uncertain on disconnection is not automatically replayed. State recovery uses a new snapshot, while occurrence recovery follows the capability's contract.
+Occurrences are delivered through a bounded ordered queue per consumer, with an explicit failure on overflow, and are never coalesced into state. The queue sends each occurrence as it is queued, never once .NET has acknowledged the one before it, since a click the browser dispatches next reaches .NET by Blazor's own route and would overtake a blur's flush held behind an earlier one. An action that must see what an occurrence carries waits for it to be applied, as the [edit boundary](browser-transfer-design.md#the-edit-boundary) does. Ordering applies while delivery is healthy; an occurrence whose delivery becomes uncertain on disconnection is not automatically replayed. State recovery uses a new snapshot, while occurrence recovery follows the capability's contract.
 
 ### Actions and snapshots
 
@@ -330,7 +330,7 @@ Closing on a scrim click is an opt-in presentation behavior, `scrimClose`, which
 
 A frame uses a placement registration over an explicitly designated box, which may be its own element or its presenter's element. Options supply the drag region, resize handles, bounds, limits, keyboard actions and visual markers, so the framework names no Forma component class.
 
-Movement and resizing stay local through a gesture, with a placement result at completion. A bounds change can also report a corrected placement, and a registration centers an unplaced box that has bounds as it starts, reporting that placement too. Gesture cancellation retains and reports the position reached, as the frame does today; a rollback policy is a separate API decision.
+Movement and resizing stay local through a gesture, with a placement result at completion. A bounds change can also report a corrected placement, and a registration centers an unplaced box that has bounds as it starts, reporting that placement too. Gesture cancellation retains and reports the position reached; a rollback policy is a separate API decision.
 
 A component subscribes to its frame's placement results before it establishes the registration. A subscription receives only occurrences after it began, so one made later loses the placement the start reports.
 
