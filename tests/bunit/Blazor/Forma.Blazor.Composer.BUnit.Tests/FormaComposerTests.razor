@@ -1017,7 +1017,7 @@
             string? saved = null;
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaComposer @bind-Value="model.Body" />
-                <FormaButton OnClick="@(() => saved = model.Body.Content)">Save</FormaButton>
+                <FormaButton Type="ButtonType.Submit" OnClick="@(() => saved = model.Body.Content)">Save</FormaButton>
             </FakeFormHost>);
             await fields.TypeAsync(cut.Find("textarea"), "typed");
 

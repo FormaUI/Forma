@@ -56,12 +56,14 @@
             @RenderNavigationButton(NavigationDirection.Previous, 1)
             <div class="forma-pagination-navigation-input-group">
                 <label class="forma-pagination-navigation-input-label" for="@NavigationInputId">@L["Go to Page"]</label>
-                <FormaTextBox @ref="NavigationInput"
-                              @bind-Value="_navigationEntry"
-                              Id="@NavigationInputId"
-                              class="forma-pagination-navigation-input-box"
-                              Options="NavigationEntryOptions"
-                              Placeholder="@L["Go to Page"]" />
+                <CascadingValue Value="_navigationForm" IsFixed="true">
+                    <FormaTextBox @ref="NavigationInput"
+                                  @bind-Value="_navigationEntry"
+                                  Id="@NavigationInputId"
+                                  class="forma-pagination-navigation-input-box"
+                                  Options="NavigationEntryOptions"
+                                  Placeholder="@L["Go to Page"]" />
+                </CascadingValue>
                 <FormaButton Variant="ButtonVariant.Tertiary"
                              class="@(Options.GoButton ? "forma-pagination-go-button" : "forma-pagination-go-button forma-pagination-go-button-touch")"
                              OnClick="GoAsync">

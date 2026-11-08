@@ -141,11 +141,14 @@ saves stale data.
   reported on its field and fails the form's validation, and the action it held back never runs: a valid submit
   isn't called, an invalid one is.
 
-Forma's buttons and input scopes inside a form wait for the form's fields, a component acting on its own field
-waits for that field, and a form's submit, and any asynchronous validation of the form, wait for the form's. A composer in a form is
-one of its fields: the editor in its surface settles its edits, cuts its pause short and reports its selection,
-as it does before any command the composer runs, before the composer converts the document for another
-editor, and before a view takes the editor's place, since the editor's edits go with it. A host's form takes
+A form's submit, by a submit button or by Enter, which clicks the form's submit button, any asynchronous
+validation of the form, and a button or input scope declaring that it reads the form wait for the form's fields; any
+other action in the form acts at once, and a component acting on its own field waits for that field alone. A field a
+component keeps for itself, as a pager keeps its page box and an explorer the name box of its dialogs, belongs to a
+form of the component's own, so the form the component stands in neither waits for it nor fails with it. A
+composer in a form is one of its fields: the editor in its surface settles its edits, cuts its pause short and
+reports its selection, as it does before any command the composer runs, before the composer converts the document
+for another editor, and before a view takes the editor's place, since the editor's edits go with it. A host's form takes
 part as it stands, on `OnValidSubmit`, `OnInvalidSubmit` or a submit of its own that awaits `ValidateAsync`, so a
 host keeps its own components and forms. A synchronous `Validate`, which takes no asynchronous work, reads the
 form as it stands, and so does a host's own control outside a participating action, which settles the form's

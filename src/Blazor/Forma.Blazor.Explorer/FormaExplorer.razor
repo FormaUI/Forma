@@ -107,30 +107,32 @@
     <!-- Rename Dialog -->
     @if (_itemManager.PendingAction is ExplorerRenameAction<ICatalogItem> rename)
     {
-        <FormaDialog Opened="true"
-                    Size="DialogSize.Small"
-                    Title="@RenameDialogTitle"
-                    Options="DialogOptions"
-                    OnClose="_itemManager.CancelAction">
-            <Body>
-                <div class="forma-explorer-dialog-field">
-                    <label class="forma-explorer-dialog-label" for="forma-explorer-rename-input">@RenameDialogFieldLabel</label>
-                    <FormaTextBox Id="forma-explorer-rename-input"
-                                  class="forma-explorer-dialog-input"
-                                  Value="@rename.Name"
-                                  ValueChanged="name => _itemManager.SetActionName(name)"
-                                  ValueExpression="() => rename.Name" />
-                </div>
-            </Body>
-            <Footer>
-                <FormaButton Variant="ButtonVariant.Secondary" OnClick="_itemManager.CancelAction">
-                    @L["Cancel"]
-                </FormaButton>
-                <FormaButton Variant="ButtonVariant.Primary" OnClick="_itemManager.ConfirmActionAsync">
-                    @L["Save"]
-                </FormaButton>
-            </Footer>
-        </FormaDialog>
+        <CascadingValue Value="_dialogForm" IsFixed="true">
+            <FormaDialog Opened="true"
+                        Size="DialogSize.Small"
+                        Title="@RenameDialogTitle"
+                        Options="DialogOptions"
+                        OnClose="_itemManager.CancelAction">
+                <Body>
+                    <div class="forma-explorer-dialog-field">
+                        <label class="forma-explorer-dialog-label" for="forma-explorer-rename-input">@RenameDialogFieldLabel</label>
+                        <FormaTextBox Id="forma-explorer-rename-input"
+                                      class="forma-explorer-dialog-input"
+                                      Value="@rename.Name"
+                                      ValueChanged="name => _itemManager.SetActionName(name)"
+                                      ValueExpression="() => rename.Name" />
+                    </div>
+                </Body>
+                <Footer>
+                    <FormaButton Variant="ButtonVariant.Secondary" OnClick="_itemManager.CancelAction">
+                        @L["Cancel"]
+                    </FormaButton>
+                    <FormaButton Variant="ButtonVariant.Primary" ReadsForm="true" OnClick="_itemManager.ConfirmActionAsync">
+                        @L["Save"]
+                    </FormaButton>
+                </Footer>
+            </FormaDialog>
+        </CascadingValue>
     }
 
     <!-- Delete Media Dialog -->
@@ -158,30 +160,32 @@
     <!-- Create Folder Dialog -->
     @if (_itemManager.PendingAction is ExplorerCreateFolderAction draft)
     {
-        <FormaDialog Opened="true"
-                    Size="DialogSize.Small"
-                    Title="@L["New Folder"]"
-                    Options="DialogOptions"
-                    OnClose="_itemManager.CancelAction">
-            <Body>
-                <div class="forma-explorer-dialog-field">
-                    <label class="forma-explorer-dialog-label" for="forma-explorer-folder-input">@L["Folder Name"]</label>
-                    <FormaTextBox Id="forma-explorer-folder-input"
-                                  class="forma-explorer-dialog-input"
-                                  Value="@draft.Name"
-                                  ValueChanged="name => _itemManager.SetActionName(name)"
-                                  ValueExpression="() => draft.Name" />
-                </div>
-            </Body>
-            <Footer>
-                <FormaButton Variant="ButtonVariant.Secondary" OnClick="_itemManager.CancelAction">
-                    @L["Cancel"]
-                </FormaButton>
-                <FormaButton Variant="ButtonVariant.Primary" OnClick="_itemManager.ConfirmActionAsync">
-                    @L["Create"]
-                </FormaButton>
-            </Footer>
-        </FormaDialog>
+        <CascadingValue Value="_dialogForm" IsFixed="true">
+            <FormaDialog Opened="true"
+                        Size="DialogSize.Small"
+                        Title="@L["New Folder"]"
+                        Options="DialogOptions"
+                        OnClose="_itemManager.CancelAction">
+                <Body>
+                    <div class="forma-explorer-dialog-field">
+                        <label class="forma-explorer-dialog-label" for="forma-explorer-folder-input">@L["Folder Name"]</label>
+                        <FormaTextBox Id="forma-explorer-folder-input"
+                                      class="forma-explorer-dialog-input"
+                                      Value="@draft.Name"
+                                      ValueChanged="name => _itemManager.SetActionName(name)"
+                                      ValueExpression="() => draft.Name" />
+                    </div>
+                </Body>
+                <Footer>
+                    <FormaButton Variant="ButtonVariant.Secondary" OnClick="_itemManager.CancelAction">
+                        @L["Cancel"]
+                    </FormaButton>
+                    <FormaButton Variant="ButtonVariant.Primary" ReadsForm="true" OnClick="_itemManager.ConfirmActionAsync">
+                        @L["Create"]
+                    </FormaButton>
+                </Footer>
+            </FormaDialog>
+        </CascadingValue>
     }
 
     <!-- Delete Folder Dialog -->

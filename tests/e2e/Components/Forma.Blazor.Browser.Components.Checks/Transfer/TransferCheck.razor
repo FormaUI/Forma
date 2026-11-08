@@ -11,7 +11,7 @@
     <FormaTextArea Id="forma-notes" @bind-Value="_forma.Notes" Label="Notes" />
     <FormaTextBox Id="forma-code" @bind-Value="_forma.Code" Label="Code" Options="CodeOptions" />
     <FormaComposer Id="forma-body" @bind-Value="_forma.Body" />
-    <FormaButton Id="forma-save" OnClick="SaveForma">Save</FormaButton>
+    <FormaButton Id="forma-save" ReadsForm="true" OnClick="SaveForma">Save</FormaButton>
 </EditForm>
 <output id="forma-notes-saved">@_formaNotesSaved</output>
 <output id="forma-body-saved">@_formaBodySaved</output>

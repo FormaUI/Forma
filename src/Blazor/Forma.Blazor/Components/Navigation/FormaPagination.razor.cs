@@ -13,6 +13,7 @@ using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 using Microsoft.JSInterop;
 
@@ -41,6 +42,8 @@ public sealed partial class FormaPagination : FormaElementBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
+    // The go-to-page box is a field of the pager's own, outside any form the pager stands in.
+    private readonly EditContext _navigationForm = new(new object());
     private InputRegistration _navigationInputRegistration = default!;
     private Wheel _wheel = default!;
     private TextEntry _textEntry = default!;

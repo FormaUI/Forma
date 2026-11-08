@@ -17,6 +17,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   the ones the application's build recorded, in its order, as on every other platform. A library that recorded a pack
   for its own use was read as well, and the assembly that loaded last put its packs first, so a pack could override
   the one the host named.
+- In a form, a submit [`FormaButton`](README.md#forms-and-long-text), and a `FormaButton` or `FormaInputScope` set to
+  the new `ReadsForm`, waits for the form's fields before it acts. Every other button and routed action acts at once,
+  so a pager's steps, a dialog's Cancel and a composer's commands stay usable beside a field whose text didn't arrive.
+  A host action that reads the whole form without submitting it, such as a preview, sets `ReadsForm`. A pager's page
+  box and an explorer's name boxes no longer join the form around them.
 - [`FormaTextBox`](docs/component-catalog.md#formatextbox), `FormaPasswordBox`, `FormaTextArea`, `FormaColorPicker`,
   `FormaCheckBox`, `FormaToggleSwitch` and `FormaSlider` post their values from a plain form rendered statically,
   under the name Blazor's own inputs write for the bound value, which the server binds back. They wrote no name, so a

@@ -156,9 +156,11 @@ Aligning a row at its top edge keeps the boxes level when a validation message s
 - Every other value a reader can make large in a Forma component travels in pieces past a message's size: a
   composer's document, a selection across a long list, a page composed for printing.
 
-**A Forma action inside a form waits for the form's fields.** A `FormaButton` or a `FormaInputScope` inside a form
-waits, before it acts, until every Forma field in the form holds what the reader typed, a `FormaComposer` among
-them. It doesn't act where a field's text didn't arrive, and that field says so.
+**A form's submit waits for the form's fields.** A submit `FormaButton`, and a `FormaButton` or `FormaInputScope` set
+to `ReadsForm`, as an action previewing the whole form is, waits before it acts until every Forma field in the form
+holds what the reader typed, a `FormaComposer` among them. It doesn't act where a field's text didn't arrive, and that
+field says so. Any other action in the form acts at once, so a step, a Cancel or a composer's command stays usable
+beside a field whose text didn't arrive.
 
 **A form of the host's own waits the same way, with nothing added.** Its submit, by Enter or a plain submit button,
 waits for its Forma fields before it validates. A field whose text didn't arrive fails the validation, so

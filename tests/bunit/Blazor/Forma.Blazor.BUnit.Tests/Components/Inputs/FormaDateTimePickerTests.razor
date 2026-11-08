@@ -397,7 +397,7 @@
             var saved = new List<DateTime?>();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
-                <FormaButton OnClick="@(() => saved.Add(model.Starts))">Save</FormaButton>
+                <FormaButton Type="ButtonType.Submit" OnClick="@(() => saved.Add(model.Starts))">Save</FormaButton>
             </FakeFormHost>);
             var typing = fields.CommitHeld(GetTime(cut), "2:30 PM");
 

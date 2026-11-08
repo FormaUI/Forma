@@ -475,6 +475,31 @@
         }
 
         [Fact]
+        public async Task Should_keep_its_page_box_out_of_the_form_it_stands_in()
+        {
+            // Arrange — the pager inside a host's form, a page typed into its box and another still on its way
+            using var ctx = new FormaPaginationTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var form = new EditContext(new FakeModel());
+            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+                <FormaPagination TotalItems="50" PageSize="10" CurrentPage="1" />
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find(InputBox), "3");
+            var typing = fields.CommitHeld(cut.Find(InputBox), "4");
+
+            // Act
+            var validating = cut.InvokeAsync(() => form.ValidateAsync());
+            var isValidatedAtOnce = validating.IsCompleted;
+            await typing.ReleaseAsync();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isValidatedAtOnce),
+                () => Assert.False(form.IsModified()));
+        }
+
+        [Fact]
         public async Task Should_keep_a_typed_page_through_the_blur_a_go_click_causes()
         {
             // Arrange

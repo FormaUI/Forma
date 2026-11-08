@@ -163,6 +163,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private readonly ExplorerItemManager _itemManager = new();
 
+    // A dialog's name box is a field of the dialog's own form, outside any form the explorer stands in.
+    private readonly EditContext _dialogForm = new(new object());
+
     private readonly CatalogSelection _selection = new();
 
     private const double MinSidebarWidth = 10;

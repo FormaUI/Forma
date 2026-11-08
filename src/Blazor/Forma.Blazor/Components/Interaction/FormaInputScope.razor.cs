@@ -28,6 +28,9 @@ public sealed partial class FormaInputScope : FormaElementBase
     /// <summary>The content the scope owns input within.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
+    /// <summary>Whether the scope's actions read the whole form it stands in.</summary>
+    [Parameter] public bool ReadsForm { get; set; }
+
     /// <summary>Raised with each action the router resolves to this scope.</summary>
     [Parameter] public EventCallback<InputAction> OnAction { get; set; }
 
@@ -53,10 +56,11 @@ public sealed partial class FormaInputScope : FormaElementBase
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _inputRegistration.SyncAsync(RootElement, Profile, active: Active, parent: Parent, within: Within);
 
-    // An action inside a form waits for the form's text fields to hold the reader's edits, and doesn't run where one can't.
+    // An action that reads its form waits for the form's text fields to hold the reader's edits, and doesn't run where one can't; any other
+    // action runs at once, whatever a field of the form holds.
     private async Task HandleActionAsync(string action, InputInfo input)
     {
-        if (CascadedEditContext is { } form && !await form.SettleEditsAsync())
+        if (ReadsForm && CascadedEditContext is { } form && !await form.SettleEditsAsync())
         {
             return;
         }

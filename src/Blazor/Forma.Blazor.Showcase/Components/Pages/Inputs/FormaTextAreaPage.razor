@@ -29,7 +29,7 @@
         <div class="demo-box">
             <FormaTextArea @bind-Value="_model.Excerpt" Label="@L["Excerpt"]" Required="true" MaxLength="280" />
             <div class="demo-row">
-                <FormaButton Variant="ButtonVariant.Primary" OnClick="Validate">@L["Validate"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Primary" ReadsForm="true" OnClick="Validate">@L["Validate"]</FormaButton>
             </div>
         </div>
     </div>
@@ -49,7 +49,7 @@
         <div class="demo-box">
             <FormaTextArea @bind-Value="_model.Terms" Label="@L["Terms of Service"]" Rows="8" MaxLength="50000" ShowCharacterCount="true" UpdateOn="TextUpdate.Change" />
             <div class="demo-row">
-                <FormaButton Variant="ButtonVariant.Primary" OnClick="@(() => _savedTerms = _model.Terms)">@L["Save"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Primary" ReadsForm="true" OnClick="@(() => _savedTerms = _model.Terms)">@L["Save"]</FormaButton>
             </div>
             <p class="demo-note">@L["Saved"]: <code>@_savedTerms</code></p>
         </div>

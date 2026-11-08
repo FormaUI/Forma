@@ -5,7 +5,7 @@
 <EditForm Model="_model">
     <FormaTextBox Id="check" Label="Name" @bind-Value="_model.Name" />
     <FormaTextBox Id="committed" Label="Title" Options="CommittingOptions" @bind-Value="_model.Title" />
-    <FormaButton Id="save" OnClick="@(() => _saved = _model.Title)">Save</FormaButton>
+    <FormaButton Id="save" ReadsForm="true" OnClick="@(() => _saved = _model.Title)">Save</FormaButton>
 </EditForm>
 <output id="result">@_model.Name</output>
 <output id="title">@_model.Title</output>

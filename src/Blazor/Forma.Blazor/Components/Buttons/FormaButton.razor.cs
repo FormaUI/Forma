@@ -23,6 +23,9 @@ public sealed partial class FormaButton : FormaElementBase
     /// <summary>The behavior the button has inside a form.</summary>
     [Parameter] public ButtonType Type { get; set; } = ButtonType.Button;
 
+    /// <summary>Whether the button's click reads the whole form it stands in, as a submit button's does.</summary>
+    [Parameter] public bool ReadsForm { get; set; }
+
     /// <summary>Whether the button is busy with work in flight.</summary>
     [Parameter] public bool Busy { get; set; }
 
@@ -53,10 +56,11 @@ public sealed partial class FormaButton : FormaElementBase
     private EventCallback<MouseEventArgs> ClickCallback
         => OnClick.HasDelegate ? EventCallback.Factory.Create<MouseEventArgs>(this, HandleClickAsync) : default;
 
-    // A click inside a form waits for the form's text fields to hold the reader's edits, and does nothing where one can't.
+    // A click that reads its form, a submit button's among them, waits for the form's text fields to hold the reader's edits, and does
+    // nothing where one can't; any other click acts at once, whatever a field of the form holds.
     private async Task HandleClickAsync(MouseEventArgs args)
     {
-        if (Busy || (CascadedEditContext is { } form && !await form.SettleEditsAsync()))
+        if (Busy || ((ReadsForm || Type == ButtonType.Submit) && CascadedEditContext is { } form && !await form.SettleEditsAsync()))
         {
             return;
         }

@@ -8,10 +8,10 @@
    text each save read shown where the check reads them. *@
 <EditForm Model="_model">
     <FormaTextArea Id="check" Label="Notes" MaxLength="100" ShowCharacterCount="true" @bind-Value="_model.Notes" />
-    <FormaInputScope Id="scope" Profile="SaveProfile" OnAction="@(_ => Save())">
+    <FormaInputScope Id="scope" Profile="SaveProfile" ReadsForm="true" OnAction="@(_ => Save())">
         <FormaTextArea Id="committed" Label="Body" MaxLength="100" ShowCharacterCount="true" UpdateOn="TextUpdate.Change" @bind-Value="_model.Body" />
     </FormaInputScope>
-    <FormaButton Id="save" OnClick="Save">Save</FormaButton>
+    <FormaButton Id="save" ReadsForm="true" OnClick="Save">Save</FormaButton>
 </EditForm>
 <output id="result">@_model.Notes</output>
 <output id="body">@_model.Body</output>

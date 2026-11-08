@@ -17,17 +17,19 @@
             Assert.Equal("Save", button.TextContent);
         }
 
-        [Fact]
-        public async Task Should_run_its_click_in_a_form_with_the_text_the_reader_typed()
+        [Theory]
+        [InlineData(ButtonType.Submit, false)]
+        [InlineData(ButtonType.Button, true)]
+        public async Task Should_run_a_click_that_reads_its_form_with_the_text_the_reader_typed(ButtonType type, bool readsForm)
         {
-            // Arrange
+            // Arrange — a submit button, or another that reads the form
             using var ctx = new FormaButtonTests();
             var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
             string? saved = null;
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTextBox @bind-Value="model.Text" Label="Name" />
-                <FormaButton OnClick="@(() => saved = model.Text)">Save</FormaButton>
+                <FormaButton Type="type" ReadsForm="readsForm" OnClick="@(() => saved = model.Text)">Save</FormaButton>
             </FakeFormHost>);
             var typing = fields.CommitHeld(cut.Find("input"), "Ada");
             var clicking = cut.Find("button").ClickAsync(new());
@@ -43,17 +45,19 @@
                 () => Assert.Equal("Ada", saved));
         }
 
-        [Fact]
-        public async Task Should_run_no_click_in_a_form_while_a_field_s_text_did_not_arrive()
+        [Theory]
+        [InlineData(ButtonType.Submit, false)]
+        [InlineData(ButtonType.Button, true)]
+        public async Task Should_run_no_click_that_reads_its_form_while_a_field_s_text_did_not_arrive(ButtonType type, bool readsForm)
         {
-            // Arrange
+            // Arrange — a submit button, or another that reads the form
             using var ctx = new FormaButtonTests();
             var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
             var clicks = 0;
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { MaxLength = 2 })" />
-                <FormaButton OnClick="@(() => clicks++)">Save</FormaButton>
+                <FormaButton Type="type" ReadsForm="readsForm" OnClick="@(() => clicks++)">Save</FormaButton>
             </FakeFormHost>);
             await fields.TypeAsync(cut.Find("input"), "Ada Lovelace");
 
@@ -62,6 +66,27 @@
 
             // Assert
             Assert.Equal(0, clicks);
+        }
+
+        [Fact]
+        public async Task Should_run_any_other_click_in_a_form_while_a_field_s_text_did_not_arrive()
+        {
+            // Arrange — a button reading nothing of the form, as a pager's step or a dialog's Cancel
+            using var ctx = new FormaButtonTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel();
+            var clicks = 0;
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { MaxLength = 2 })" />
+                <FormaButton OnClick="@(() => clicks++)">Next</FormaButton>
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find("input"), "Ada Lovelace");
+
+            // Act
+            await cut.Find("button").ClickAsync(new());
+
+            // Assert
+            Assert.Equal(1, clicks);
         }
 
         [Fact]

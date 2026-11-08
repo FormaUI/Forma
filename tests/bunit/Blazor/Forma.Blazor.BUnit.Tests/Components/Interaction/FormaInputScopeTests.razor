@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using Forma.Blazor.Components.Interaction
+@using Microsoft.AspNetCore.Components.Forms
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
 @code {
@@ -81,6 +82,55 @@
 
             // Assert
             Assert.Equal(new InputDismissal(DismissBehavior.Cancel, DismissReason.CloseRequest), received);
+        }
+
+        [Fact]
+        public async Task Should_raise_an_action_that_reads_its_form_once_the_form_holds_the_text_the_reader_typed()
+        {
+            // Arrange — the typed text still on its way as the action is routed
+            using var ctx = new FormaInputScopeTests();
+            var fields = new TextFieldProbe(ctx);
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel();
+            string? saved = null;
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" />
+                <FormaInputScope ReadsForm="true" OnAction="@(_ => saved = model.Text)"><p>Content</p></FormaInputScope>
+            </FakeFormHost>);
+            var typing = fields.CommitHeld(cut.Find("input"), "Ada");
+            var routing = router.RouteAsync(cut.FindComponent<FormaInputScope>().Instance.RootElement, "form.save", "s");
+            var isRaisedAtOnce = saved is not null;
+
+            // Act
+            await typing.ReleaseAsync();
+            await routing;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(isRaisedAtOnce),
+                () => Assert.Equal("Ada", saved));
+        }
+
+        [Fact]
+        public async Task Should_raise_any_other_action_while_a_field_of_its_form_did_not_arrive()
+        {
+            // Arrange
+            using var ctx = new FormaInputScopeTests();
+            var fields = new TextFieldProbe(ctx);
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel();
+            InputAction? received = null;
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { MaxLength = 2 })" />
+                <FormaInputScope OnAction="action => received = action"><p>Content</p></FormaInputScope>
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find("input"), "Ada Lovelace");
+
+            // Act
+            await router.RouteAsync(cut.FindComponent<FormaInputScope>().Instance.RootElement, "list.next", "ArrowDown");
+
+            // Assert
+            Assert.Equal("list.next", received?.Action);
         }
     }
 }

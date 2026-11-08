@@ -719,6 +719,35 @@
         }
 
         [Fact]
+        public async Task Should_rename_to_the_name_the_reader_typed_where_it_arrives_after_the_save_is_pressed()
+        {
+            // Arrange — the typed name still on its way as the reader presses Save
+            using var ctx = new FormaExplorerTests();
+            var fields = new TextFieldProbe(ctx);
+            IReadOnlyList<ResourceInfo> resources =
+            [
+                new ImageResourceInfo("https://example.com/old-name.jpg")
+            ];
+            CatalogRenameRequest? request = null;
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))"
+                                                OnRename="@(req => { request = req; return Task.CompletedTask; })" />);
+            cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
+            cut.Find("[data-action='rename']").Click();
+            var typing = fields.CommitHeld(cut.Find("#forma-explorer-rename-input"), "new-name.jpg");
+            var saving = cut.Find(".forma-dialog-footer .forma-button-primary").ClickAsync(new());
+            var isRenamedAtOnce = request is not null;
+
+            // Act
+            await typing.ReleaseAsync();
+            await saving;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(isRenamedAtOnce),
+                () => Assert.Equal("new-name.jpg", request?.NewName));
+        }
+
+        [Fact]
         public void Should_raise_on_delete_when_delete_is_confirmed()
         {
             // Arrange

@@ -172,7 +172,7 @@
             var saved = new List<TimeOnly?>();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTimePicker @bind-Value="model.End" Label="Ends" />
-                <FormaButton OnClick="@(() => saved.Add(model.End))">Save</FormaButton>
+                <FormaButton Type="ButtonType.Submit" OnClick="@(() => saved.Add(model.End))">Save</FormaButton>
             </FakeFormHost>);
             var typing = fields.CommitHeld(cut.Find("input"), "4:45 PM");
 

@@ -178,7 +178,7 @@
             var saved = new List<string?>();
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaColorPicker @bind-Value="model.Color" Label="Brand color" />
-                <FormaButton OnClick="@(() => saved.Add(model.Color))">Save</FormaButton>
+                <FormaButton Type="ButtonType.Submit" OnClick="@(() => saved.Add(model.Color))">Save</FormaButton>
             </FakeFormHost>);
             var typing = fields.CommitHeld(cut.Find(".forma-color-picker-hex-input"), "#00FF00");
 
