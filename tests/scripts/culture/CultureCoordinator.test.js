@@ -177,7 +177,8 @@ beforeEach(() => {
 
 afterEach(() => {
     vi.restoreAllMocks();
-    document.cookie.split('; ').filter(Boolean).forEach(cookie => document.cookie = `${cookie.split('=')[0]}=; max-age=0; path=/`);
+    // An expiry in the past, since a cookie expiring this very millisecond still reads as set.
+    document.cookie.split('; ').filter(Boolean).forEach(cookie => document.cookie = `${cookie.split('=')[0]}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`);
 });
 
 describe('CultureCoordinator', () => {
