@@ -13,12 +13,15 @@ packages, never its projects, so they build as a host outside the repository bui
 | `Forma.Examples.WinForms` | A Windows Forms application, registering Forma before the platform's web view |
 | `Forma.Examples.Maui` | A MAUI application on Windows, Android, iOS and Mac Catalyst, registering on its builder, keeping the culture in its preferences |
 
-Each Web App's page shows the islands' runtime, a string of the host's own from the server's `.locales` folder,
-which the client names as its `LocalesPath`, a library component's label from the Hebrew pack and its pages
-turning, and a switch to Hebrew. Each application's native window shows its web view's runtime, a string of the
-host's own from the `.locales` folder its build embeds, the library component's label and its pages turning, a
-switch to English and to Hebrew, and another native window to open, its own title in the application's culture,
-and the application keeps the culture from one run to the next.
+Each Web App's page shows the islands' runtime, a string of the client's own from the `.locales` folder beside
+its components, a library component's label in Hebrew and its pages turning, and a switch to Hebrew. The
+independent client takes that label from the Hebrew pack, and the coordinated client rewords it from its root
+`.locales` folder.
+
+Each application's native window shows its web view's runtime, a string of the host's own from the `.locales`
+folder its build embeds, the library component's label and its pages turning, a switch to English and to
+Hebrew, and another native window to open, its own title in the application's culture, and the application
+keeps the culture from one run to the next.
 
 ## Build
 
