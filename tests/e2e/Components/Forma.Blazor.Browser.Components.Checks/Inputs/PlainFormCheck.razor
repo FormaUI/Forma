@@ -1,7 +1,7 @@
 @page "/{Runtime}/plain-form"
 
-@* A plain form of the fields that post a value of their own, which a static render posts as an ordinary web form does, and what the server bound from the post, shown where the check reads it. *@
-<EditForm Model="Model" FormName="plain" OnSubmit="@(() => _isPosted = true)">
+@* A plain form of the fields that post a value of their own, which a static render posts as an ordinary web form does and an interactive one submits, and what the form bound, shown where the check reads it. *@
+<EditForm Model="Model" FormName="plain" OnValidSubmit="@(() => _isPosted = true)">
     <FormaTextBox Id="name" Label="Name" @bind-Value="Model!.Name" />
     <FormaPasswordBox Id="secret" Label="Secret" ShowToggle="false" @bind-Value="Model!.Secret" />
     <FormaTextArea Id="notes" Label="Notes" @bind-Value="Model!.Notes" />
