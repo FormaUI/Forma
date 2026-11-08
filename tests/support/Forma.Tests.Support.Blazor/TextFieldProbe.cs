@@ -47,65 +47,65 @@ public sealed class TextFieldProbe
         engine.AddInvocationHandler(_resend);
     }
 
-    /// <summary>Leaves <paramref name="text"/> in <paramref name="field"/> as the reader types it, sending the edit at once where the field sends each edit as it is typed.</summary>
-    public Task TypeAsync(IElement field, string text)
+    /// <summary>Leaves <paramref name="text"/> in <paramref name="fieldElement"/> as the reader types it, sending the edit at once where the field sends each edit as it is typed.</summary>
+    public Task TypeAsync(IElement fieldElement, string text)
     {
         ArgumentNullException.ThrowIfNull(text);
 
-        var edits = GetField(field);
-        edits.Value = text;
+        var field = GetField(fieldElement);
+        field.Value = text;
 
-        return edits.SendsOnInput ? SendAsync(edits, isCommit: false) : Task.CompletedTask;
+        return field.SendsOnInput ? SendAsync(field, isCommit: false) : Task.CompletedTask;
     }
 
-    /// <summary>Commits the edit of <paramref name="field"/>, as the field does losing the focus.</summary>
-    public Task CommitAsync(IElement field)
-        => SendAsync(GetField(field), isCommit: true);
+    /// <summary>Commits the edit of <paramref name="fieldElement"/>, as the field does losing the focus.</summary>
+    public Task CommitAsync(IElement fieldElement)
+        => SendAsync(GetField(fieldElement), isCommit: true);
 
-    /// <summary>Leaves <paramref name="text"/> in <paramref name="field"/> and commits it, as the reader does typing and leaving the field.</summary>
-    public async Task ChangeAsync(IElement field, string text)
+    /// <summary>Leaves <paramref name="text"/> in <paramref name="fieldElement"/> and commits it, as the reader does typing and leaving the field.</summary>
+    public async Task ChangeAsync(IElement fieldElement, string text)
     {
-        await TypeAsync(field, text).ConfigureAwait(false);
-        await CommitAsync(field).ConfigureAwait(false);
+        await TypeAsync(fieldElement, text).ConfigureAwait(false);
+        await CommitAsync(fieldElement).ConfigureAwait(false);
     }
 
-    /// <summary>Leaves <paramref name="text"/> in <paramref name="field"/> and commits it as the browser sends a text too long for one message, its inserted text streamed and held on its way until the edit is released.</summary>
+    /// <summary>Leaves <paramref name="text"/> in <paramref name="fieldElement"/> and commits it as the browser sends a text too long for one message, its inserted text streamed and held on its way until the edit is released.</summary>
     /// <returns>The edit, whose release lets its text arrive.</returns>
-    public HeldEdit CommitHeld(IElement field, string text)
+    public HeldEdit CommitHeld(IElement fieldElement, string text)
     {
         ArgumentNullException.ThrowIfNull(text);
 
-        var edits = GetField(field);
-        edits.Value = text;
-        var (start, removed, inserted) = Diff(edits.Sent, edits.Value);
-        edits.Sent = edits.Value;
-        var revision = ++edits.Revision;
+        var field = GetField(fieldElement);
+        field.Value = text;
+        var (start, removed, inserted) = Diff(field.Sent, field.Value);
+        field.Sent = field.Value;
+        var revision = ++field.Revision;
         var stream = new HeldJSStreamReference(Encoding.UTF8.GetBytes(inserted));
         var transfer = new JSTransfer { Stream = stream, IsText = true };
-        var delivery = _context.Renderer.Dispatcher.InvokeAsync(() => edits.Receiver.EditAsync(edits.Token, revision, start, removed, transfer, isCommit: true));
+        var delivery = _context.Renderer.Dispatcher.InvokeAsync(() => field.Receiver.EditAsync(field.Token, revision, start, removed, transfer, isCommit: true));
 
         return new HeldEdit(stream, delivery);
     }
 
-    /// <summary>Leaves <paramref name="text"/> in <paramref name="field"/> and commits it as the browser sends a text too long for one message, its stream breaking on its way, and the whole text the browser then sends in its place breaking too, so the field's edits can't follow it until the reader's next edit.</summary>
+    /// <summary>Leaves <paramref name="text"/> in <paramref name="fieldElement"/> and commits it as the browser sends a text too long for one message, its stream breaking on its way, and the whole text the browser then sends in its place breaking too, so the field's edits can't follow it until the reader's next edit.</summary>
     /// <returns>A task that completes once the field's edits have lost the replacement.</returns>
-    public Task CommitBrokenAsync(IElement field, string text)
+    public Task CommitBrokenAsync(IElement fieldElement, string text)
     {
         ArgumentNullException.ThrowIfNull(text);
 
-        var edits = GetField(field);
-        edits.Value = text;
-        var (start, removed, inserted) = Diff(edits.Sent, edits.Value);
-        edits.Sent = edits.Value;
-        var revision = ++edits.Revision;
-        edits.BreaksNextReplacement = true;
+        var field = GetField(fieldElement);
+        field.Value = text;
+        var (start, removed, inserted) = Diff(field.Sent, field.Value);
+        field.Sent = field.Value;
+        var revision = ++field.Revision;
+        field.BreaksNextReplacement = true;
 
-        return _context.Renderer.Dispatcher.InvokeAsync(() => edits.Receiver.EditAsync(edits.Token, revision, start, removed, CreateBrokenTransfer(inserted), isCommit: true));
+        return _context.Renderer.Dispatcher.InvokeAsync(() => field.Receiver.EditAsync(field.Token, revision, start, removed, CreateBrokenTransfer(inserted), isCommit: true));
     }
 
-    /// <summary>The text <paramref name="field"/> holds.</summary>
-    public string GetText(IElement field)
-        => GetField(field).Value;
+    /// <summary>The text <paramref name="fieldElement"/> holds.</summary>
+    public string GetText(IElement fieldElement)
+        => GetField(fieldElement).Value;
 
     // A text's stream that breaks as it is read.
     private static JSTransfer CreateBrokenTransfer(string text)
@@ -156,18 +156,18 @@ public sealed class TextFieldProbe
     // A field is found by the reference its element was rendered with. bUnit leaves the reference empty on an element it draws again, so
     // every lookup first notes the id of each field's element still carrying its reference, and a field is found by that id, or as the one
     // field whose reference no element in the markup carries.
-    private Field GetField(IElement field)
+    private Field GetField(IElement fieldElement)
     {
-        ArgumentNullException.ThrowIfNull(field);
+        ArgumentNullException.ThrowIfNull(fieldElement);
 
-        IEnumerable<IElement> elements = field.GetRoot() is IParentNode root ? root.QuerySelectorAll("*") : [];
-        var carried = new HashSet<string>();
+        IEnumerable<IElement> elements = fieldElement.GetRoot() is IParentNode root ? root.QuerySelectorAll("*") : [];
+        var carriedReferences = new HashSet<string>();
 
         foreach (var element in elements)
         {
             if (element.GetAttribute(ElementReferenceAttribute) is { Length: > 0 } reference)
             {
-                carried.Add(reference);
+                carriedReferences.Add(reference);
 
                 foreach (var candidate in _fields.Where(candidate => candidate.ElementId == reference && !string.IsNullOrEmpty(element.Id)))
                 {
@@ -176,13 +176,13 @@ public sealed class TextFieldProbe
             }
         }
 
-        var elementId = field.GetAttribute(ElementReferenceAttribute);
-        var redrawn = _fields.Where(candidate => !carried.Contains(candidate.ElementId ?? string.Empty)).ToList();
+        var elementId = fieldElement.GetAttribute(ElementReferenceAttribute);
+        var redrawnFields = _fields.Where(candidate => !carriedReferences.Contains(candidate.ElementId ?? string.Empty)).ToList();
 
         return (string.IsNullOrEmpty(elementId) ? null : _fields.LastOrDefault(candidate => candidate.ElementId == elementId))
-            ?? (string.IsNullOrEmpty(field.Id) ? null : _fields.LastOrDefault(candidate => candidate.DomId == field.Id))
-            ?? (string.IsNullOrEmpty(elementId) && redrawn.Count == 1 ? redrawn[0] : null)
-            ?? throw new InvalidOperationException($"No text field's edits are attached to <{field.LocalName}>.");
+            ?? (string.IsNullOrEmpty(fieldElement.Id) ? null : _fields.LastOrDefault(candidate => candidate.DomId == fieldElement.Id))
+            ?? (string.IsNullOrEmpty(elementId) && redrawnFields.Count == 1 ? redrawnFields[0] : null)
+            ?? throw new InvalidOperationException($"No text field's edits are attached to <{fieldElement.LocalName}>.");
     }
 
     private Field? FindField(object? runtimeKey, object? token)
