@@ -30,8 +30,9 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     /// <summary>The options of the composer the canvas belongs to.</summary>
     [CascadingParameter] public ComposerOptions? ComposerOptions { get; set; }
 
-
     [Inject] private InputRouter InputRouter { get; set; } = default!;
+
+    [Inject] private TimeProvider Clock { get; set; } = default!;
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType
@@ -203,7 +204,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     {
         try
         {
-            await Task.Delay(CommitDelay, cancellationToken);
+            await Task.Delay(CommitDelay, Clock, cancellationToken);
             await CommitAsync();
         }
         catch (OperationCanceledException)
@@ -233,7 +234,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     {
         try
         {
-            await Task.Delay(CommitDelay, cancellationToken);
+            await Task.Delay(CommitDelay, Clock, cancellationToken);
 
             if (Interaction is { } interaction)
             {

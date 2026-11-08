@@ -3,6 +3,7 @@
     <ItemGroup>
         <PackageReference Include="AngleSharp" />
         <PackageReference Include="bunit" />
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
         <PackageReference Include="xunit.v3" />
         <PackageReference Include="xunit.runner.visualstudio" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" />

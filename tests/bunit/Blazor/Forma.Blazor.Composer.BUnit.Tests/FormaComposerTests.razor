@@ -10,6 +10,7 @@
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
 @using System.Globalization
+@using Microsoft.Extensions.Time.Testing
 @using Forma.Blazor.Components.Composer.Dialogs
 @using Forma.Framework.Localization
 @using Forma.Tests.Localization
@@ -81,6 +82,9 @@
 
     public sealed class Component
     {
+        // The pause after which typing in the plain text editor commits.
+        private static readonly TimeSpan CommitPause = TimeSpan.FromMilliseconds(400);
+
         private sealed class TestModel
         {
             public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.PlainText, "Initial Content");
@@ -872,7 +876,7 @@
             await fields.ChangeAsync(cut.Find("textarea"), "<p onclick=\"steal()\">Text</p><script>evil()</script>");
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal("<p>Text</p>", model.Body.Content));
+            Assert.Equal("<p>Text</p>", model.Body.Content);
         }
 
         [Fact]
@@ -924,7 +928,7 @@
             await fields.ChangeAsync(cut.Find("textarea"), "2 < 3 & 4 > 1");
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal("2 < 3 & 4 > 1", model.Body.Content));
+            Assert.Equal("2 < 3 & 4 > 1", model.Body.Content);
         }
 
         [Fact]
@@ -989,16 +993,18 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var fields = new TextFieldProbe(ctx);
+            var clock = new FakeTimeProvider();
+            ctx.Services.AddSingleton<TimeProvider>(clock);
             var model = new TestModel();
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
 
-            // Act
+            // Act — the typing, and its commit pause
             await fields.TypeAsync(cut.Find("textarea"), "typed");
+            clock.Advance(CommitPause);
+            await cut.InvokeAsync(() => { });
 
             // Assert
-            cut.WaitForAssertion(
-                () => Assert.False(cut.Find("button[aria-label=Undo]").HasAttribute("disabled")),
-                TimeSpan.FromSeconds(5));
+            Assert.False(cut.Find("button[aria-label=Undo]").HasAttribute("disabled"));
         }
 
         [Fact]
@@ -1135,19 +1141,25 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             var fields = new TextFieldProbe(ctx);
+            var clock = new FakeTimeProvider();
+            ctx.Services.AddSingleton<TimeProvider>(clock);
             var model = new TestModel();
             var original = model.Body.Content;
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
             await fields.TypeAsync(cut.Find("textarea"), "a");
             await fields.TypeAsync(cut.Find("textarea"), "ab");
             await fields.TypeAsync(cut.Find("textarea"), "abc");
-            cut.WaitForAssertion(() => Assert.Equal("abc", model.Body.Content), TimeSpan.FromSeconds(5));
+            clock.Advance(CommitPause);
+            await cut.InvokeAsync(() => { });
+            var committed = model.Body.Content;
 
             // Act
-            await cut.InvokeAsync(() => cut.Find("button[aria-label=Undo]").Click());
+            await cut.Find("button[aria-label=Undo]").ClickAsync(new());
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal(original, model.Body.Content));
+            Assert.Multiple(
+                () => Assert.Equal("abc", committed),
+                () => Assert.Equal(original, model.Body.Content));
         }
 
         [Fact]
@@ -1162,10 +1174,10 @@
             await fields.ChangeAsync(cut.Find("textarea"), "edited");
 
             // Act
-            cut.Find("button[aria-label=Undo]").Click();
+            await cut.Find("button[aria-label=Undo]").ClickAsync(new());
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal(original, model.Body.Content));
+            Assert.Equal(original, model.Body.Content);
         }
 
         [Fact]
@@ -1177,13 +1189,13 @@
             var model = new TestModel();
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
             await fields.ChangeAsync(cut.Find("textarea"), "edited");
-            cut.Find("button[aria-label=Undo]").Click();
+            await cut.Find("button[aria-label=Undo]").ClickAsync(new());
 
             // Act
-            cut.Find("button[aria-label=Redo]").Click();
+            await cut.Find("button[aria-label=Redo]").ClickAsync(new());
 
             // Assert
-            cut.WaitForAssertion(() => Assert.Equal("edited", model.Body.Content));
+            Assert.Equal("edited", model.Body.Content);
         }
 
         [Fact]
