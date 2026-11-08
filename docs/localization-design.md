@@ -6,8 +6,8 @@ How locale files are laid out and found. Authoritative for the paths a source re
 the tokens a path is written in, the `.locale.json` config that shapes it, the locale packs an
 assembly's locale files may ship in instead, and the order entries are applied in. The contract a
 component reads strings through, holes, plural forms and the file format are the
-`Forma.Framework.Localization` README's; the checks run over the files are the `Forma.Locali`
-linter's.
+`Forma.Framework.Localization` README's; the checks run over the files are the
+[Locali](https://github.com/FormaUI/Locali) linter's, `dotnet locali`.
 
 A source reads its folder once, as the application starts; a path that names `$Culture` is
 read for whichever culture its file names, never chosen by the culture asked for; and a
