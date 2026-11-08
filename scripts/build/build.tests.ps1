@@ -181,10 +181,20 @@ try {
     $context.TaskPrograms = $empty
     $step = Build-TaskProgram -Context $context 6>$null
 
+    # A folder whose one entry point tests nothing, run as the fast gate runs it, building nothing.
+    $untested = Join-Path $empty 'untested'
+    New-Item -ItemType Directory -Path $untested | Out-Null
+    Set-Content -LiteralPath (Join-Path $untested 'Tool.cs') -Value @('#!/usr/bin/env dotnet', 'System.Console.WriteLine();')
+    $context.TaskPrograms = $untested
+    $testsStep = Build-TaskProgram -Context $context -TestsOnly 6>$null
+
     $guard = [pscustomobject]@{
-        Name     = 'building no task program at all is a failure'
-        Passed   = -not $step.Passed
-        Problems = @(if ($step.Passed) { 'the step passed on a folder holding no program' })
+        Name     = 'building no task program at all, or running no test program, is a failure'
+        Passed   = -not $step.Passed -and -not $testsStep.Passed
+        Problems = @(
+            if ($step.Passed) { 'the step passed on a folder holding no program' }
+            if ($testsStep.Passed) { 'the step passed on a folder holding no test program' }
+        )
         Output   = ''
     }
 }
@@ -192,7 +202,7 @@ catch {
     # Setting the check up is part of the check. Letting this escape would end the run on a variable that
     # was never assigned, naming neither the check nor what actually went wrong.
     $guard = [pscustomobject]@{
-        Name     = 'building no task program at all is a failure'
+        Name     = 'building no task program at all, or running no test program, is a failure'
         Passed   = $false
         Problems = @("the check could not be made: $($_.Exception.Message)")
         Output   = ''

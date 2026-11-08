@@ -1249,8 +1249,9 @@ and they broke unnoticed: central package management refused the versions their 
 pinned compiler added rules they had never been held to.
 
 An entry point is the one marked by a shebang; a file included into another is compiled with whatever
-includes it. Finding no entry point at all fails the step, since a check that checked nothing and reported
-success would be the same silence the step exists to break, and these programs have moved folder before.
+includes it. Finding no entry point at all fails the step, and so does finding no test program among them,
+since a check that checked nothing and reported success would be the same silence the step exists to break,
+and these programs have moved folder before.
 Once every entry point has built, each test program, named for what it tests with Tests after it, runs, and
 a failing test fails the step. -TestsOnly runs the test programs alone, which build what they include.
 
@@ -1285,6 +1286,12 @@ function Build-TaskProgram {
             throw "No task program was found to build: nothing under $folder opens with a shebang."
         }
 
+        $testPrograms = @($programs | Where-Object { $_.BaseName -like '*Tests' })
+
+        if ($testPrograms.Count -eq 0) {
+            throw "No task test program was found to run: no entry point under $folder is named for what it tests with Tests after it."
+        }
+
         foreach ($program in @($programs | Where-Object { $isBuilt })) {
             dotnet build $program.FullName --nologo -v:q
 
@@ -1293,7 +1300,7 @@ function Build-TaskProgram {
             }
         }
 
-        foreach ($program in @($programs | Where-Object { $_.BaseName -like '*Tests' })) {
+        foreach ($program in $testPrograms) {
             dotnet run $program.FullName
 
             if ($LASTEXITCODE -ne 0) {
