@@ -81,11 +81,13 @@ that fails to load, reaches a host through the log the host already configures.
   holds is named for its subject alone, `Composer` for `FormaComposer`'s parts' cascaded state
   and `JS` for the environment, never `ComposerContext` or `JSEnvironment`.
 - **The JS environment is a runtime.** `IJSEnvironment : IJSRuntime` adds the owner's
-  `RuntimeId` and `Logger` to the runtime, so a wrapper calls it as the runtime it is
-  and logs through it as its owner. It lives in `Forma.Framework.JavaScript.Interop`, which
-  knows nothing of components; the component context builds its environment from its
-  own identity and log, so the two can never disagree. `JSInterop` and `JSModule` take
-  the `JS` casing of `Microsoft.JSInterop` and of every Forma type named for it.
+  `RuntimeId` and `Logger` to the runtime, and the `TransferOptions` that bound what the
+  browser sends the owner through the [browser transfer](browser-transfer-design.md), so a
+  wrapper calls it as the runtime it is and logs through it as its owner. It lives in
+  `Forma.Framework.JavaScript.Interop`, which knows nothing of components; the component
+  context builds its environment from its own identity and log, so the two can never
+  disagree. `JSInterop` and `JSModule` take the `JS` casing of `Microsoft.JSInterop` and of
+  every Forma type named for it.
 - **Style is built, not concatenated.** `CssStyleBuilder` beside `CssClassBuilder`, so
   `BuildRootStyle` adds declarations the way `BuildRootClass` adds classes, and the
   termination rule lives in one place.
@@ -104,10 +106,11 @@ that fails to load, reaches a host through the log the host already configures.
 
 ### `FormaComponentBase`
 
-`FormaComponentBase` injects the runtime, the logger factory, the locale factory, the
-service provider and the culture state, all required, subscribes to the state, and builds
-the component's context once from them and its `LocalizationSourceType`, finding the user
-scope's DOM bridge where one is registered. It
+`FormaComponentBase` injects the logger factory, the service provider and the culture
+state, all required, and resolves the runtime and the locale factory from the provider,
+falling back to their null objects, as [the services](#the-services) set out. It subscribes
+to the state, and builds the component's context once from them and its
+`LocalizationSourceType`, finding the user scope's DOM bridge where one is registered. It
 gives the component its strings as `L`, reports whether it is disposed, and runs
 `DisposeAsyncCore` once on disposal, then releases a context it built, so the component's
 own cleanup can still use it. The context carries the component's identity, cultures,
@@ -120,8 +123,9 @@ state's UI culture, and each change of the state renders it again, even where it
 unchanged. The [culture design](culture-design.md) sets out the state, how a change reaches each
 component, and how the document and the address follow it.
 
-The context builds its JS environment once from the runtime, its logger and its identity,
-so the environment's identity and log are the context's by construction. The environment
+The context builds its JS environment once from the runtime, its logger, its identity and
+the transfer options the host registered, or their default, so the environment's identity
+and log are the context's by construction. The environment
 carries the runtime's asynchronous calls, which are the ones every Forma wrapper makes. A
 service that is not a component, such as the input router or the emoji sprite loader, has
 no context and builds its own environment from the runtime and the `ILogger<T>` it takes,
@@ -203,8 +207,6 @@ A dialog base a composite owns derives from `FormaComponentBase` and overrides
 | Contract | Null object | Behavior |
 | --- | --- | --- |
 | `IJSRuntime` | `UnavailableJSRuntime.Instance` | Throws `JSRuntimeUnavailableException` on any call. |
-| `ILoggerFactory` | `NullLoggerFactory.Instance` | Discards. |
-| `ILogger<T>` | `NullLogger<T>` | Discards; for services that inject a typed logger. |
 | `IStringLocaleFactory` | `NullStringLocaleFactory.Instance` | Every key is its own text, holes and plurals resolved for the source language, as the JSON locale does when no file matches. |
 
 No registration Forma makes stands in for a service another registrar supplies, since that
