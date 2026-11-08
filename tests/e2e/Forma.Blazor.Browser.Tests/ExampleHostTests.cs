@@ -15,7 +15,7 @@ public sealed class ExampleHostTests(BrowserHost host)
     public async Task Should_follow_a_switch_from_either_runtime_in_both_and_the_document_under_coordinated_pages(string switching)
     {
         // Arrange
-        var (context, page) = await OpenAsync(host.CoordinatedExampleAddress);
+        var (context, page) = await OpenAsync(await host.GetCoordinatedExampleAddressAsync());
         await using var _ = context;
 
         // Act
@@ -31,7 +31,7 @@ public sealed class ExampleHostTests(BrowserHost host)
     public async Task Should_switch_each_runtime_alone_under_an_independent_client_culture()
     {
         // Arrange
-        var (context, page) = await OpenAsync(host.IndependentExampleAddress);
+        var (context, page) = await OpenAsync(await host.GetIndependentExampleAddressAsync());
         await using var _ = context;
         var served = await GetDocumentAsync(page);
 

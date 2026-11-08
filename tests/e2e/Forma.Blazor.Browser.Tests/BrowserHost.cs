@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
 
-/// <summary>The published host the checks drive, running on free ports in each of its modes, the published full client served as a standalone app, the published components host and example hosts, and the browser they drive them in.</summary>
+/// <summary>The published host the checks drive, running on free ports in each of its modes, the published full client served as a standalone app, the published components host and example hosts, each started as the first check asks for its address, and the browser they drive them in.</summary>
 /// <remarks>The host runs with islands and culture addresses, with interactive routing and culture addresses, with islands switching the culture state alone, with islands persisting a switch in the culture cookie, with islands and culture addresses beside an independent client culture, and with the recording router in each runtime. The gate publishes the host, the full client, the components host and the example hosts and names their folders in <c>FORMA_BROWSER_HOST</c>, <c>FORMA_BROWSER_FULL</c>, <c>FORMA_BROWSER_COMPONENTS</c> and <c>FORMA_BROWSER_EXAMPLES</c>; <c>FORMA_BROWSER_VISIBLE</c> opens a visible window instead of a headless one.</remarks>
 public sealed class BrowserHost : IAsyncLifetime
 {
     private readonly List<WebHostProcess> _hosts = [];
+    private readonly Lock _hostsLock = new();
+    private readonly Dictionary<string, Task<Uri>> _hostStarts = [];
     private readonly HttpClient _client = new();
     private readonly Lock _webViewLock = new();
     private readonly Lock _androidLock = new();
@@ -34,42 +36,6 @@ public sealed class BrowserHost : IAsyncLifetime
     /// <summary>The folder each example host was published to a folder of its own in.</summary>
     public string ExamplesFolder { get; } = GetFolder("FORMA_BROWSER_EXAMPLES", Path.Combine("artifacts", "browser", "examples"));
 
-    /// <summary>The address of the host whose pages are islands under a static router, switching through culture addresses.</summary>
-    public Uri Address { get; private set; } = default!;
-
-    /// <summary>The address of the host whose router is interactive on the Server, switching through culture addresses.</summary>
-    public Uri InteractiveAddress { get; private set; } = default!;
-
-    /// <summary>The address of the host whose pages are islands, switching the culture state alone, which renders every request in <c>en-US</c>.</summary>
-    public Uri StateAddress { get; private set; } = default!;
-
-    /// <summary>The address of the host whose pages are islands, switching the culture state alone, which renders every request in the invariant culture.</summary>
-    public Uri InvariantStateAddress { get; private set; } = default!;
-
-    /// <summary>The address of the host whose pages are islands, persisting a switch in the culture cookie request localization reads.</summary>
-    public Uri CookieAddress { get; private set; } = default!;
-
-    /// <summary>The address of the host whose pages are islands switching through culture addresses, beside a client culture each WebAssembly runtime keeps as its own, with culture capture off.</summary>
-    public Uri IndependentAddress { get; private set; } = default!;
-
-    /// <summary>The address the full client is served at as a standalone app, with no server of its own.</summary>
-    public Uri StandaloneAddress { get; private set; } = default!;
-
-    /// <summary>The address of the components host, whose check pages each render one component in the runtime their address names.</summary>
-    public Uri ComponentsAddress { get; private set; } = default!;
-
-    /// <summary>The address of the example host whose client follows the page's culture.</summary>
-    public Uri CoordinatedExampleAddress { get; private set; } = default!;
-
-    /// <summary>The address of the example host whose client's culture is its own.</summary>
-    public Uri IndependentExampleAddress { get; private set; } = default!;
-
-    /// <summary>The address of the host rendering the recording router on the Server.</summary>
-    public Uri NavigationServerAddress { get; private set; } = default!;
-
-    /// <summary>The address of the host rendering the recording router under WebAssembly.</summary>
-    public Uri NavigationWebAssemblyAddress { get; private set; } = default!;
-
     /// <summary>One component check's turn in a web view of <see cref="GetWebViewApplicationAsync"/>, which runs one check at a time, since every web view of a WPF application dispatches on its UI thread.</summary>
     public SemaphoreSlim WebViewTurn { get; } = new(1, 1);
 
@@ -82,19 +48,6 @@ public sealed class BrowserHost : IAsyncLifetime
     /// <inheritdoc />
     public async ValueTask InitializeAsync()
     {
-        Address = await StartAsync(routes: null, culture: null).ConfigureAwait(false);
-        InteractiveAddress = await StartAsync(routes: "interactive", culture: null).ConfigureAwait(false);
-        StateAddress = await StartAsync(routes: null, culture: "state", requestCulture: "en-US").ConfigureAwait(false);
-        InvariantStateAddress = await StartAsync(routes: null, culture: "state", requestCulture: "invariant").ConfigureAwait(false);
-        CookieAddress = await StartAsync(routes: null, culture: "cookie").ConfigureAwait(false);
-        IndependentAddress = await StartAsync(routes: null, culture: null, arrangement: "independent").ConfigureAwait(false);
-        StandaloneAddress = await StartStandaloneAsync().ConfigureAwait(false);
-        ComponentsAddress = await StartProcessAsync(ComponentsFolder, "Forma.Blazor.Browser.Components.dll", "_check/ready", []).ConfigureAwait(false);
-        CoordinatedExampleAddress = await StartExampleAsync("Coordinated").ConfigureAwait(false);
-        IndependentExampleAddress = await StartExampleAsync("Independent").ConfigureAwait(false);
-        NavigationServerAddress = await StartAsync(routes: "navigation-server", culture: null).ConfigureAwait(false);
-        NavigationWebAssemblyAddress = await StartAsync(routes: "navigation-webassembly", culture: null).ConfigureAwait(false);
-
         _playwright = await Playwright.CreateAsync().ConfigureAwait(false);
         Browser = await _playwright.Chromium.LaunchAsync(new()
         {
@@ -103,12 +56,72 @@ public sealed class BrowserHost : IAsyncLifetime
         }).ConfigureAwait(false);
     }
 
+    /// <summary>The address of the host whose pages are islands under a static router, switching through culture addresses, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetAddressAsync()
+        => GetStartedHostAsync(nameof(GetAddressAsync), () => StartAsync(routes: null, culture: null));
+
+    /// <summary>The address of the host whose router is interactive on the Server, switching through culture addresses, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetInteractiveAddressAsync()
+        => GetStartedHostAsync(nameof(GetInteractiveAddressAsync), () => StartAsync(routes: "interactive", culture: null));
+
+    /// <summary>The address of the host whose pages are islands, switching the culture state alone, which renders every request in <c>en-US</c>, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetStateAddressAsync()
+        => GetStartedHostAsync(nameof(GetStateAddressAsync), () => StartAsync(routes: null, culture: "state", requestCulture: "en-US"));
+
+    /// <summary>The address of the host whose pages are islands, switching the culture state alone, which renders every request in the invariant culture, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetInvariantStateAddressAsync()
+        => GetStartedHostAsync(nameof(GetInvariantStateAddressAsync), () => StartAsync(routes: null, culture: "state", requestCulture: "invariant"));
+
+    /// <summary>The address of the host whose pages are islands, persisting a switch in the culture cookie request localization reads, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetCookieAddressAsync()
+        => GetStartedHostAsync(nameof(GetCookieAddressAsync), () => StartAsync(routes: null, culture: "cookie"));
+
+    /// <summary>The address of the host whose pages are islands switching through culture addresses, beside a client culture each WebAssembly runtime keeps as its own, with culture capture off, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetIndependentAddressAsync()
+        => GetStartedHostAsync(nameof(GetIndependentAddressAsync), () => StartAsync(routes: null, culture: null, arrangement: "independent"));
+
+    /// <summary>The address the full client is served at as a standalone app, with no server of its own, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetStandaloneAddressAsync()
+        => GetStartedHostAsync(nameof(GetStandaloneAddressAsync), StartStandaloneAsync);
+
+    /// <summary>The address of the components host, whose check pages each render one component in the runtime their address names, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetComponentsAddressAsync()
+        => GetStartedHostAsync(nameof(GetComponentsAddressAsync), () => StartProcessAsync(ComponentsFolder, "Forma.Blazor.Browser.Components.dll", "_check/ready", []));
+
+    /// <summary>The address of the example host whose client follows the page's culture, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetCoordinatedExampleAddressAsync()
+        => GetStartedHostAsync(nameof(GetCoordinatedExampleAddressAsync), () => StartExampleAsync("Coordinated"));
+
+    /// <summary>The address of the example host whose client's culture is its own, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetIndependentExampleAddressAsync()
+        => GetStartedHostAsync(nameof(GetIndependentExampleAddressAsync), () => StartExampleAsync("Independent"));
+
+    /// <summary>The address of the host rendering the recording router on the Server, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetNavigationServerAddressAsync()
+        => GetStartedHostAsync(nameof(GetNavigationServerAddressAsync), () => StartAsync(routes: "navigation-server", culture: null));
+
+    /// <summary>The address of the host rendering the recording router under WebAssembly, started as the first check asks for it.</summary>
+    /// <returns>The address.</returns>
+    public Task<Uri> GetNavigationWebAssemblyAddressAsync()
+        => GetStartedHostAsync(nameof(GetNavigationWebAssemblyAddressAsync), () => StartAsync(routes: "navigation-webassembly", culture: null));
+
     /// <summary>Opens a page in a context of its own, which shares no cache, storage or cookie with another check's.</summary>
     /// <param name="address">The host the page's relative addresses resolve against; the islands host where none is given.</param>
     /// <returns>The page and the context that owns it.</returns>
     public async Task<(IBrowserContext Context, IPage Page)> OpenPageAsync(Uri? address = null)
     {
-        var context = await Browser.NewContextAsync(new() { BaseURL = (address ?? Address).ToString() }).ConfigureAwait(false);
+        var context = await Browser.NewContextAsync(new() { BaseURL = (address ?? await GetAddressAsync().ConfigureAwait(false)).ToString() }).ConfigureAwait(false);
         var page = await context.NewPageAsync().ConfigureAwait(false);
 
         return (context, page);
@@ -148,9 +161,18 @@ public sealed class BrowserHost : IAsyncLifetime
     }
 
     /// <inheritdoc />
-    /// <remarks>Each part is stopped however the one before it ends, so a part that fails to stop leaves no host running after the run, nor a publish it holds locked.</remarks>
+    /// <remarks>A host still starting is awaited first, and each part is then stopped however the one before it ends, so a part that fails to stop leaves no host running after the run, nor a publish it holds locked.</remarks>
     public async ValueTask DisposeAsync()
     {
+        Task[] hostStarts;
+
+        lock (_hostsLock)
+        {
+            hostStarts = [.. _hostStarts.Values];
+        }
+
+        await Task.WhenAll(hostStarts).ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
         try
         {
             await DisposeInTurnAsync(
@@ -215,10 +237,29 @@ public sealed class BrowserHost : IAsyncLifetime
     private Task<Uri> StartExampleAsync(string name)
         => StartProcessAsync(Path.Combine(ExamplesFolder, name), $"Forma.Examples.{name}.dll", string.Empty, []);
 
+    // A host starts as the first check asks for it, and a check asking while it starts awaits the same start.
+    private Task<Uri> GetStartedHostAsync(string name, Func<Task<Uri>> start)
+    {
+        lock (_hostsLock)
+        {
+            if (!_hostStarts.TryGetValue(name, out var hostStart))
+            {
+                hostStart = Task.Run(start);
+                _hostStarts[name] = hostStart;
+            }
+
+            return hostStart;
+        }
+    }
+
     private async Task<Uri> StartProcessAsync(string folder, string assembly, string readyPath, Dictionary<string, string?> environment)
     {
         var host = await WebHostProcess.StartAsync(folder, assembly, readyPath, environment).ConfigureAwait(false);
-        _hosts.Add(host);
+
+        lock (_hostsLock)
+        {
+            _hosts.Add(host);
+        }
 
         return host.Address;
     }

@@ -13,7 +13,7 @@ public sealed class CultureTests(BrowserHost host)
     public async Task Should_follow_a_switch_to_another_culture_in_place(string routing)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(GetAddress(routing));
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(routing));
         await using var _ = context;
         await page.GotoAsync("culture");
         await WaitForPanelAsync(page);
@@ -36,7 +36,7 @@ public sealed class CultureTests(BrowserHost host)
     public async Task Should_switch_by_address_in_place_through_the_culture_switch(string routing)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(GetAddress(routing));
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(routing));
         await using var _ = context;
         await page.GotoAsync("culture");
         await WaitForPanelAsync(page);
@@ -60,7 +60,7 @@ public sealed class CultureTests(BrowserHost host)
     public async Task Should_refuse_a_pair_no_route_carries_before_anything_changes(string routing)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(GetAddress(routing));
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(routing));
         await using var _ = context;
         await page.GotoAsync("culture");
         await WaitForPanelAsync(page);
@@ -120,7 +120,7 @@ public sealed class CultureTests(BrowserHost host)
     public async Task Should_end_rapid_switches_on_the_last(string routing)
     {
         // Arrange — each switch is a navigation the page reports, so the last one's landing is known
-        var (context, page) = await host.OpenPageAsync(GetAddress(routing));
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(routing));
         await using var _ = context;
         await page.GotoAsync("culture");
         await WaitForPanelAsync(page);
@@ -150,14 +150,15 @@ public sealed class CultureTests(BrowserHost host)
     public async Task Should_leave_the_document_and_the_state_on_one_pair_after_a_switch_made_while_the_browser_is_offline()
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(host.StateAddress);
+        var stateAddress = await host.GetStateAddressAsync();
+        var (context, page) = await host.OpenPageAsync(stateAddress);
         await using var _ = context;
         await page.GotoAsync("state");
         await WaitForPanelAsync(page);
         var served = await GetDocumentAsync(page);
         var servedState = await page.Locator("#state").TextContentAsync();
-        var settled = await host.GetDelayedSwitchesAsync(host.StateAddress);
-        var failed = await host.GetDelayedSwitchFailuresAsync(host.StateAddress);
+        var settled = await host.GetDelayedSwitchesAsync(stateAddress);
+        var failed = await host.GetDelayedSwitchFailuresAsync(stateAddress);
         await page.Locator("#switch-later").ClickAsync();
         await context.SetOfflineAsync(true);
 
@@ -166,13 +167,13 @@ public sealed class CultureTests(BrowserHost host)
         await Task.Delay(TimeSpan.FromSeconds(4), TestContext.Current.CancellationToken);
         await context.SetOfflineAsync(false);
         using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        while (await host.GetDelayedSwitchesAsync(host.StateAddress) == settled)
+        while (await host.GetDelayedSwitchesAsync(stateAddress) == settled)
         {
             await Task.Delay(TimeSpan.FromMilliseconds(200), timeout.Token);
         }
 
         // Assert
-        var isFailed = await host.GetDelayedSwitchFailuresAsync(host.StateAddress) > failed;
+        var isFailed = await host.GetDelayedSwitchFailuresAsync(stateAddress) > failed;
         TestContext.Current.TestOutputHelper?.WriteLine($"the switch {(isFailed ? "failed" : "was accepted")}");
         await WaitForDocumentAsync(page, isFailed ? served : "he/rtl", timeout: 60000);
         await Assertions.Expect(page.Locator("#state")).ToHaveTextAsync(isFailed ? servedState! : "he");
@@ -207,7 +208,7 @@ public sealed class CultureTests(BrowserHost host)
     {
         // Arrange — a host that renders every request in the culture named, whatever the runner's
         var isInvariant = requestCulture == "invariant";
-        var (context, page) = await host.OpenPageAsync(isInvariant ? host.InvariantStateAddress : host.StateAddress);
+        var (context, page) = await host.OpenPageAsync(await (isInvariant ? host.GetInvariantStateAddressAsync() : host.GetStateAddressAsync()));
         await using var _ = context;
         var errors = new List<string>();
         page.Console += (_, message) => errors.Add(message.Text);
@@ -233,7 +234,7 @@ public sealed class CultureTests(BrowserHost host)
     public async Task Should_show_the_served_pair_once_the_circuit_closes()
     {
         // Arrange — the state switched alone, with the server still serving English
-        var (context, page) = await host.OpenPageAsync(host.StateAddress);
+        var (context, page) = await host.OpenPageAsync(await host.GetStateAddressAsync());
         await using var _ = context;
         await page.GotoAsync("state");
         await WaitForPanelAsync(page);
@@ -250,6 +251,6 @@ public sealed class CultureTests(BrowserHost host)
         await WaitForDocumentAsync(page, served, timeout: 60000);
     }
 
-    private Uri GetAddress(string routing)
-        => routing == "interactive" ? host.InteractiveAddress : host.Address;
+    private Task<Uri> GetAddressAsync(string routing)
+        => routing == "interactive" ? host.GetInteractiveAddressAsync() : host.GetAddressAsync();
 }

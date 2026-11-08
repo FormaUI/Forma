@@ -48,7 +48,7 @@ public static partial class ComponentChecks
             _ => throw new ArgumentOutOfRangeException(nameof(runtime), runtime, "The runtime is server, webassembly, auto-server, auto-webassembly, webview or android."),
         };
 
-        var (context, page) = await host.OpenPageAsync(host.ComponentsAddress).ConfigureAwait(false);
+        var (context, page) = await host.OpenPageAsync(await host.GetComponentsAddressAsync().ConfigureAwait(false)).ConfigureAwait(false);
         var problems = WatchProblems(page);
 
         if (prepare is not null)

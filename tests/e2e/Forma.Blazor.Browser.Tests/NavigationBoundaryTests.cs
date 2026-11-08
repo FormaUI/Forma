@@ -11,7 +11,7 @@ public sealed class NavigationBoundaryTests(BrowserHost host)
     public async Task Should_accept_the_destination_its_router_navigates_to(string runtime)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(GetAddress(runtime));
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(runtime));
         await using var _ = context;
         await OpenAsync(page, runtime);
 
@@ -29,7 +29,7 @@ public sealed class NavigationBoundaryTests(BrowserHost host)
     public async Task Should_never_accept_a_navigation_a_newer_one_cancelled(string runtime)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(GetAddress(runtime));
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(runtime));
         await using var _ = context;
         await OpenAsync(page, runtime);
 
@@ -49,7 +49,7 @@ public sealed class NavigationBoundaryTests(BrowserHost host)
     public async Task Should_start_no_navigation_a_location_changing_handler_prevented(string runtime)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(GetAddress(runtime));
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(runtime));
         await using var _ = context;
         await OpenAsync(page, runtime);
         await page.Locator("#guard").CheckAsync();
@@ -70,7 +70,7 @@ public sealed class NavigationBoundaryTests(BrowserHost host)
     public async Task Should_navigate_back_and_forward_through_the_router(string runtime)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(GetAddress(runtime));
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(runtime));
         await using var _ = context;
         await OpenAsync(page, runtime);
         await page.Locator("#go-b").ClickAsync();
@@ -94,7 +94,7 @@ public sealed class NavigationBoundaryTests(BrowserHost host)
     public async Task Should_land_on_no_page_for_an_address_no_route_names(string runtime)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(GetAddress(runtime));
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(runtime));
         await using var _ = context;
         await OpenAsync(page, runtime);
 
@@ -111,7 +111,7 @@ public sealed class NavigationBoundaryTests(BrowserHost host)
     public async Task Should_start_a_new_runtime_for_a_navigation_that_replaces_the_document(string runtime)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(GetAddress(runtime));
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(runtime));
         await using var _ = context;
         await OpenAsync(page, runtime);
         var before = await page.Locator("#nav-runtime").TextContentAsync();
@@ -126,8 +126,8 @@ public sealed class NavigationBoundaryTests(BrowserHost host)
         Assert.Equal(["start 1 /nav/b", "accepted 1"], log);
     }
 
-    private Uri GetAddress(string runtime)
-        => runtime == "Server" ? host.NavigationServerAddress : host.NavigationWebAssemblyAddress;
+    private Task<Uri> GetAddressAsync(string runtime)
+        => runtime == "Server" ? host.GetNavigationServerAddressAsync() : host.GetNavigationWebAssemblyAddressAsync();
 
     private static async Task OpenAsync(IPage page, string runtime)
     {

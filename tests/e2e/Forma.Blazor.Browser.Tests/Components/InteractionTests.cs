@@ -128,7 +128,7 @@ public sealed class InteractionTests
                 return await OpenAsync(host, runtime, path);
             }
 
-            var (context, page) = await host.OpenPageAsync(host.ComponentsAddress);
+            var (context, page) = await host.OpenPageAsync(await host.GetComponentsAddressAsync());
             await page.GotoAsync($"static/{path}");
 
             return (context, page);

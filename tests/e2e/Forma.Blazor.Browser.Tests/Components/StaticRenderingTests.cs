@@ -66,7 +66,7 @@ public sealed class StaticRenderingTests(BrowserHost host)
     public async Task Should_render_its_state_with_no_error_no_wait_on_a_script_and_no_enabled_control_that_needs_interactivity(string path)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(host.ComponentsAddress);
+        var (context, page) = await host.OpenPageAsync(await host.GetComponentsAddressAsync());
         await using var _ = context;
         var errors = new List<string>();
         page.PageError += (_, error) => errors.Add(error);

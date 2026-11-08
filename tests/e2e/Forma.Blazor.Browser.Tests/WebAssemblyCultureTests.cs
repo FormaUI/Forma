@@ -60,7 +60,7 @@ public sealed class WebAssemblyCultureTests(BrowserHost host)
     public async Task Should_reach_both_runtimes_with_a_switch_from_either(string switching, string reached, string pair)
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(host.StateAddress);
+        var (context, page) = await host.OpenPageAsync(await host.GetStateAddressAsync());
         await using var _ = context;
         await OpenWebAssemblyPanelAsync(page, "culture/both");
         await WaitForPanelAsync(page);
@@ -97,7 +97,7 @@ public sealed class WebAssemblyCultureTests(BrowserHost host)
     public async Task Should_agree_with_the_server_s_next_response_after_a_webassembly_switch_under_the_cookie_policy()
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(host.CookieAddress);
+        var (context, page) = await host.OpenPageAsync(await host.GetCookieAddressAsync());
         await using var _ = context;
         await OpenWebAssemblyPanelAsync(page, "webassembly/culture");
         await page.Locator("#wasm-switch").ClickAsync();
@@ -135,7 +135,7 @@ public sealed class WebAssemblyCultureTests(BrowserHost host)
     public async Task Should_switch_an_independent_client_culture_alone()
     {
         // Arrange
-        var (context, page) = await host.OpenPageAsync(host.IndependentAddress);
+        var (context, page) = await host.OpenPageAsync(await host.GetIndependentAddressAsync());
         await using var _ = context;
         await OpenWebAssemblyPanelAsync(page, "webassembly/culture");
         var address = page.Url;
@@ -160,7 +160,7 @@ public sealed class WebAssemblyCultureTests(BrowserHost host)
     public async Task Should_start_a_standalone_app_s_page_from_its_runtime_s_pair_and_follow_its_switch_in_the_host_s_strings_and_the_library_s()
     {
         // Arrange — a browser in German, whose language the standalone runtime starts in
-        await using var context = await host.Browser.NewContextAsync(new() { BaseURL = host.StandaloneAddress.ToString(), Locale = "de-DE" });
+        await using var context = await host.Browser.NewContextAsync(new() { BaseURL = (await host.GetStandaloneAddressAsync()).ToString(), Locale = "de-DE" });
         var page = await context.NewPageAsync();
         await page.GotoAsync(string.Empty);
         await Assertions.Expect(page.Locator("#standalone-state")).ToHaveTextAsync("de-DE/de-DE", new() { Timeout = 60000 });
