@@ -43,11 +43,10 @@ jobs:
         with:
           gate-workflow: full.yml
           packages-artifact: packages
+          # The build reads the version as every package ships at it, a suffix or none.
           version-command: |
-            $properties = [xml](Get-Content Directory.Build.props -Raw)
-            $prefix = $properties.SelectSingleNode('//PropertyGroup/VersionPrefix').InnerText
-            $suffix = $properties.SelectSingleNode('//PropertyGroup/VersionSuffix').InnerText
-            if ($suffix) { "$prefix-$suffix" } else { $prefix }
+            Import-Module ./scripts/build/Forma.Build.psd1
+            (Initialize-BuildContext).Version
 
       - name: Attach the release's packages
         id: packages
