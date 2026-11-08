@@ -29,11 +29,11 @@ commit. And the push that publishes a release stopped at a manual step.
    the kernel killed and its log. Gate: the support assembly has no test project of its own, so a call through the
    harness with no device attached was made instead, which threw the error with adb's device list, and the build's
    rate case counts an interrupted check apart.
-3. **The nightly run checks one commit, three times.** The nightly run resolves `dev` to one SHA first, and every
+3. ✅ **The nightly run checks one commit, three times.** The nightly run resolves `dev` to one SHA first, and every
    job checks out that SHA. The browser step runs three times on Linux and on Windows: once in each gate, and
    twice more in jobs of their own. Every run's results are kept. The design's gate table says so. Gate: a
    dispatched nightly run on `dev`.
-4. **The nightly run files what failed.** A last job reads every run's results and opens or updates one issue per
+4. ✅ **The nightly run files what failed.** A last job reads every run's results and opens or updates one issue per
    failing check, recording the SHA, the platform, the runtime, the first error and the run. A check that passed
    and failed on one SHA is labeled `flaky`. One that failed every run on a SHA where it had passed before is
    labeled a regression. An unreachable device gets one infrastructure issue, its interrupted checks listed as not
@@ -56,5 +56,5 @@ commit. And the push that publishes a release stopped at a manual step.
    then pushes `main` and the tag in one atomic push, and resumes a release that stopped partway. It runs from a
    checkout of a released Versioning tag outside any working tree, which one standing permission names. Gate:
    its cases, and Versioning's own release made through it.
-8. **Forma `1.0.0-preview.4` is published** through the release command, and checked from an empty package
+8. ✅ **Forma `1.0.0-preview.4` is published** through the release command, and checked from an empty package
    cache.
