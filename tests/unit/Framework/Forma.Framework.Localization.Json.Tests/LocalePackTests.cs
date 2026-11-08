@@ -212,7 +212,7 @@ public sealed class LocalePackTests
         {
             // Arrange — an application whose only locales are a host's files it embedded, over a pack the options name
             using var culture = new CultureScope("fr");
-            var application = new FakeAssembly("Contoso.App") { Resources = { [LocalePackSource.HostResourcePrefix + RootFile] = CreateFile("Ouvrir (application)") } };
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute() }, Resources = { [LocalePackSource.HostResourcePrefix + RootFile] = CreateFile("Ouvrir (application)") } };
             var pack = new FakeAssembly("Contoso.Pack") { Resources = { [RootFile] = CreateFile("Ouvrir (paquet nommé)") } };
             var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty, LocalePacks = [pack] }, new FakeAssembly("System.Runtime"), application);
 
@@ -228,7 +228,7 @@ public sealed class LocalePackTests
         {
             // Arrange — an application whose only locale is a recorded pack
             using var culture = new CultureScope("fr");
-            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocalePackAttribute(TestAssembly) } };
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute(), new LocalePackAttribute(TestAssembly) } };
             var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty }, new FakeAssembly("System.Runtime"), application);
 
             // Act
@@ -238,12 +238,31 @@ public sealed class LocalePackTests
             Assert.Equal("Ouvrir (paquet)", open.Value);
         }
 
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Should_read_no_pack_a_library_records_for_its_own_use_whichever_loads_first(bool isLibraryFirst)
+        {
+            // Arrange — the application, recording no pack, and a library recording one that translates the key
+            using var culture = new CultureScope("fr");
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute() } };
+            var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute(TestAssembly) } };
+            Assembly[] loaded = isLibraryFirst ? [library, application] : [application, library];
+            var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty }, loaded);
+
+            // Act
+            var open = strings["Open"];
+
+            // Assert
+            Assert.Equal("Open", open.Value);
+        }
+
         [Fact]
         public void Should_read_the_host_files_of_the_client_a_server_names()
         {
             // Arrange — a server whose only locale is the client it names, over a pack the options name
             using var culture = new CultureScope("fr");
-            var server = new FakeAssembly("Contoso.Server") { Attributes = { new LocaleReferenceAttribute(TestAssembly) } };
+            var server = new FakeAssembly("Contoso.Server") { Attributes = { new LocaleApplicationAttribute(), new LocaleReferenceAttribute(TestAssembly) } };
             var pack = new FakeAssembly("Contoso.Pack") { Resources = { [RootFile] = CreateFile("Ouvrir (paquet nommé)") } };
             var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty, LocalePacks = [pack] }, new FakeAssembly("System.Runtime"), server);
 
@@ -261,7 +280,7 @@ public sealed class LocalePackTests
             using var culture = new CultureScope("fr");
             var server = new FakeAssembly("Contoso.Server")
             {
-                Attributes = { new LocaleReferenceAttribute(TestAssembly) },
+                Attributes = { new LocaleApplicationAttribute(), new LocaleReferenceAttribute(TestAssembly) },
                 Resources = { [LocalePackSource.HostResourcePrefix + RootFile] = CreateFile("Ouvrir (serveur)") },
             };
             var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty }, server);

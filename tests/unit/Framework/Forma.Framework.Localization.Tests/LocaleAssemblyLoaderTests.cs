@@ -24,21 +24,44 @@ public sealed class LocaleAssemblyLoaderTests
         }
 
         [Fact]
-        public void Should_read_them_from_each_assembly_that_embeds_a_host_s_files_names_one_or_records_a_pack_where_the_runtime_names_no_entry()
+        public void Should_read_them_from_the_assembly_its_build_marked_as_the_application_where_the_runtime_names_no_entry()
         {
-            // Arrange — on a runtime naming no entry assembly, as .NET for Android's: an application embedding a host's files, a server
-            // naming its client, a library recording a pack, the framework, and a dynamic assembly, which lists no resources.
-            var application = new FakeAssembly("Contoso.App") { Resources = { [LocalePackSource.HostResourcePrefix + "Contoso.Library.he.json"] = "{}" } };
-            var server = new FakeAssembly("Contoso.Server") { Attributes = { new LocaleReferenceAttribute("Contoso.Client") } };
-            var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute("Contoso.Hebrew") } };
+            // Arrange — on a runtime naming no entry assembly, as .NET for Android's: the application its build marked, a library recording
+            // a pack for its own use, a client embedding a host's files and naming none, the framework, and a dynamic assembly.
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute(), new LocalePackAttribute("Contoso.Hebrew") } };
+            var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute("Contoso.Spanish") } };
+            var client = new FakeAssembly("Contoso.Client") { Resources = { [LocalePackSource.HostResourcePrefix + "Contoso.Library.he.json"] = "{}" } };
             var framework = new FakeAssembly("System.Runtime") { Resources = { ["System.Runtime.Strings.resources"] = string.Empty } };
             var dynamic = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("Contoso.Dynamic"), AssemblyBuilderAccess.Run);
 
             // Act
-            var applications = LocaleAssemblyLoader.GetApplicationAssemblies(null, [framework, application, dynamic, server, library]);
+            var applications = LocaleAssemblyLoader.GetApplicationAssemblies(null, [library, framework, client, dynamic, application]);
 
             // Assert
-            Assert.Equal([application, server, library], applications);
+            Assert.Equal([application], applications);
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public void Should_keep_the_application_s_packs_in_its_order_whichever_assembly_loads_first(bool isLibraryFirst)
+        {
+            // Arrange — the application records a pack and the host names a second, which a library records for its own use; a later pack
+            // overrides an earlier one, so the order decides which of two conflicting translations is read.
+            using var loggerFactory = new FakeLoggerFactory();
+            var recorded = typeof(LocalizationOptions).Assembly;
+            var named = typeof(LocaleAssemblyLoaderTests).Assembly;
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute(), new LocalePackAttribute(recorded.GetName().Name!) } };
+            var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute(named.GetName().Name!) } };
+            var options = new LocalizationOptions { LocalePacks = [named] };
+            Assembly[] loaded = isLibraryFirst ? [library, application] : [application, library];
+
+            // Act
+            var configured = LocaleAssemblyLoader.GetApplicationAssemblies(null, loaded)
+                .Aggregate(options, (recordedLocales, assembly) => recordedLocales.WithRecordedLocales(assembly, loggerFactory.CreateLogger("packs")));
+
+            // Assert
+            Assert.Equal([recorded, named], configured.LocalePacks);
         }
 
         [Fact]

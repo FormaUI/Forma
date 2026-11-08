@@ -7,12 +7,12 @@
         by the $localization entry each one carries, so a project names none of them; for an application
         it embeds the host's files for other assemblies apart from its own, since a browser has no folder
         to read them from, an application MAUI packages has none beside it, and a server's build copies
-        none beside its binary; for a server it records the client it references whose build embedded
-        a host's files; and for a locale pack, a project that declared IsLocalePack, it does the rest: a
-        pack is a project of nothing but locale files, for other assemblies' types, so it compiles no
-        code, embeds every locale file beneath it under its own path so that a resource name spells the
-        tree a reader sees, and carries in its own package a targets file that records the pack in
-        whatever references it, since nothing else would.
+        none beside its binary, and marks the assembly as the application; for a server it records the
+        client it references whose build embedded a host's files; and for a locale pack, a project that
+        declared IsLocalePack, it does the rest: a pack is a project of nothing but locale files, for
+        other assemblies' types, so it compiles no code, embeds every locale file beneath it under its
+        own path so that a resource name spells the tree a reader sees, and carries in its own package a
+        targets file that records the pack in whatever references it, since nothing else would.
     -->
 
     <!-- An assembly's config file sits at its root and is embedded whenever it is there, since the SDK embeds nothing by default and would ship it as content instead. -->
@@ -92,6 +92,13 @@
             <AssemblyAttribute Include="Forma.Framework.Localization.LocaleReferenceAttribute" Condition="'@(_ReferencedHostLocaleAssembly)' != ''">
                 <_Parameter1>%(_ReferencedHostLocaleAssembly.Identity)</_Parameter1>
             </AssemblyAttribute>
+        </ItemGroup>
+    </Target>
+
+    <!-- Marks an application's assembly, whose recorded locales the runtime reads where it names no entry assembly, as a native host on Android or iOS names none. -->
+    <Target Name="RecordLocaleApplication" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="CollectLocaleFiles" Condition="'$(IsLocalePack)' != 'true'">
+        <ItemGroup Condition="'$(_IsLocaleApplication)' == 'true'">
+            <AssemblyAttribute Include="Forma.Framework.Localization.LocaleApplicationAttribute" />
         </ItemGroup>
     </Target>
 

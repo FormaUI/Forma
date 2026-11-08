@@ -168,8 +168,8 @@ App therefore keeps the host's files both runtimes read in its client, and its o
 the components they belong to, which every runtime that loads the assembly reads.
 
 The runtime finds the application by its entry assembly or, where the runtime names none, as a
-native host such as .NET for Android's or iOS's names none, among the loaded assemblies: each one
-that embeds a host's files, names an assembly that does, or records a pack. It reads each named
+native host such as .NET for Android's or iOS's names none, among the loaded assemblies: the one
+its build marked as the application, which only an application's build does. It reads each named
 assembly's files first, in the order the application's attributes name them, then the application's
 own, and then the host's folder on disk, which `LocalizationOptions.LocalesPath` names, `.locales`
 beside the application by default. No build fills that folder; a host places files in it to change
@@ -274,12 +274,12 @@ install: a pack carries as many assemblies' folders as it has files for.
 ### An application names its packs, not a library
 
 The attribute that records a pack is written into the project holding the reference, and the packs
-that are read are the ones the entry assembly names. Which languages ship is therefore the
-application's decision and cannot be made for it by a library it installs, so a library never
-references a pack.
+that are read are the ones the application names, its entry assembly or, where the runtime names
+none, the assembly its build marked. Which languages ship is therefore the application's decision
+and cannot be made for it by a library it installs, so a library never references a pack.
 
 A class library that references a pack is stamped itself rather than stamping the application, so
-its pack is not found from the entry assembly. A host arranged that way names its packs through
+its pack is not found from the application. A host arranged that way names its packs through
 `LocalizationOptions`, which is also how a test reaches a pack without depending on what its runner
 made the entry assembly.
 
@@ -341,7 +341,7 @@ say and the file's name to spell, so a file declares no root and no path of its 
 
 For one type and one culture, entries are applied in this order, each overriding the one before:
 
-1. An assembly's own embedded files, then each locale pack in the order the entry assembly's
+1. An assembly's own embedded files, then each locale pack in the order the application's
    attributes name them, then host files: each assembly the application names, in the order its
    attributes name them, then the application's own, then the host's folder.
 2. Within a source, shallower anchors, then deeper ones.
@@ -377,4 +377,4 @@ different paths are both read, and the linter reports the pair.
 | L16 | Does the runtime read anything out of a pack's name? | No. A pack is loaded by name and read by its resources, neither of which is parsed, so any assembly can be a pack whatever it is called, for whichever assemblies it holds folders for, published by anyone. `Forma.Blazor.Locales.{Language}` is this repository's convention for its own. |
 | L17 | What does a project write to embed its locale files? | Nothing. The build finds them by the `$localization` entry every locale file carries and embeds each once, so configuration stays in `.locale.json` and `LocalizationOptions` and no fact about a locale file lives in a project file; a file a project embeds through an item of its own keeps that item's name. |
 | L18 | Where does a host's folder sit, and how does it reach a runtime with no file system? | In the application's root `.locales`, beside the application's own root files, a folder per assembly inside it; an application, a WebAssembly client, a Web SDK server or a Blazor Hybrid application, embeds it under the prefix `.locales.`, which the build reserves for it. |
-| L19 | How does a Web App's server read its client's host files? | Through `LocaleReferenceAttribute`, which the server's build writes for each referenced project that embedded a host's files, naming its assembly; the server reads them before its own. The runtime finds the application by its entry assembly or, with none, by what a loaded assembly embeds, names or records. |
+| L19 | How does a Web App's server read its client's host files? | Through `LocaleReferenceAttribute`, which the server's build writes for each referenced project that embedded a host's files, naming its assembly; the server reads them before its own. The runtime finds the application by its entry assembly or, with none, by the mark its build writes into the application alone. |
