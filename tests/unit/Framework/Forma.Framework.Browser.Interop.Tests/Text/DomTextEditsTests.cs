@@ -405,6 +405,26 @@ public sealed class DomTextEditsTests
         }
 
         [Fact]
+        public async Task Should_take_the_whole_text_of_a_field_holding_a_text_of_net_s_own_longer_than_it_accepts()
+        {
+            // Arrange — a field holding a text past its maximum length, which the reader shortened in an edit lost on its way
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser((command, _) => command == "resend");
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            await using var edits = await FollowAsync(engine, "Ada Lovelace", Live with { MaxLength = 2 }, _ => Task.CompletedTask);
+
+            // Act
+            await EditAsync(browser, 1, 40, 1, string.Empty);
+            await ReplaceAsync(browser, 1, "Ada Lovelac");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(edits.IsFaulted),
+                () => Assert.Equal("Ada Lovelac", edits.Text));
+        }
+
+        [Fact]
         public async Task Should_ask_again_with_the_next_edit_while_the_field_cannot_be_reached_rather_than_in_a_loop()
         {
             // Arrange

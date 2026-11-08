@@ -76,6 +76,10 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
     private long AcceptedLength
         => _options.MaxLength is { } maxLength ? 3L * maxLength : _session.TransferOptions.MaximumLength;
 
+    // A field's whole text can also be as long as a text .NET put there past its maximum length, which the reader can shorten and not lengthen.
+    private long ReplacementLength
+        => _options.MaxLength is { } maxLength ? 3L * Math.Max(maxLength, _text.Length) : _session.TransferOptions.MaximumLength;
+
     /// <summary>The text a field renders as its value while its component shows <paramref name="text"/>.</summary>
     /// <remarks>
     /// While the text shown is the one .NET holds, the field keeps the text it was last rendered or written with, so a render never reverts typing
@@ -442,7 +446,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
 
         try
         {
-            text = await replacement.Transfer.ReadTextAsync(AcceptedLength) ?? string.Empty;
+            text = await replacement.Transfer.ReadTextAsync(ReplacementLength) ?? string.Empty;
         }
         catch (JSTransferException ex)
         {

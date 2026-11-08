@@ -47,6 +47,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   into it, and an edit still arriving as the write lands gives way to it. The field kept saying its text couldn't
   follow the reader's edits, and its form refused its actions, until the reader edited it again. The late edit was
   applied over the text written.
+- A text field with a maximum length, holding a longer text the application gave it, takes its whole text again after
+  an edit was lost on its way. It refused that text as longer than it accepts, and its text couldn't follow the
+  reader's edits.
 
 ## `1.0.0-preview.4`
 
