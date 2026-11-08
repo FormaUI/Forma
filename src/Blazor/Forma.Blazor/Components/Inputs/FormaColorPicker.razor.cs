@@ -34,6 +34,9 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
         ? CurrentValueAsString[..7]
         : "#000000";
 
+    private string FieldName
+        => DisplayName ?? Label;
+
     private int AlphaPercent => CurrentValueAsString?.Length == 9
         ? (int)Math.Round(int.Parse(CurrentValueAsString.AsSpan(7, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture) / 255.0 * 100)
         : 100;
@@ -106,7 +109,7 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
         }
 
         result = CurrentValue ?? "#000000";
-        validationErrorMessage = $"'{value}' is not a valid hex color.";
+        validationErrorMessage = L["The {Field} field must be a hex color.", FieldName];
         return false;
     }
 

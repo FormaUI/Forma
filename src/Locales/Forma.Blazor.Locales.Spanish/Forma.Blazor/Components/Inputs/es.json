@@ -11,7 +11,8 @@
   },
   "FormaColorPicker": {
     "Alpha": "Alfa",
-    "Choose Color": "Elegir Color"
+    "Choose Color": "Elegir Color",
+    "The {Field} field must be a hex color.": "El campo {Field} debe ser un color hexadecimal."
   },
   "FormaDateBox": {
     "Select Date": "Seleccionar Fecha"

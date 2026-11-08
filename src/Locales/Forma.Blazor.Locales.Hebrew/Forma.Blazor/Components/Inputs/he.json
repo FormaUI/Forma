@@ -10,7 +10,8 @@
   },
   "FormaColorPicker": {
     "Alpha": "שקיפות",
-    "Choose Color": "בחר צבע"
+    "Choose Color": "בחר צבע",
+    "The {Field} field must be a hex color.": "השדה {Field} חייב להיות צבע בכתיב הקסדצימלי."
   },
   "FormaDateBox": {
     "Select Date": "בחר תאריך"
