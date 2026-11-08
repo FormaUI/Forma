@@ -19,7 +19,6 @@ internal sealed class DomSession
     private readonly Dictionary<string, Func<int, JsonElement, Task>> _stateTargets = [];
     private readonly Dictionary<string, DomTextEdits> _editTargets = [];
     private readonly HashSet<DomRoot> _reachedRoots = [];
-    private readonly SynchronizationContext? _context;
     private DomBridge? _ownBridge;
     private DotNetObjectReference<DomReceiver>? _receiver;
     private int _lastToken;
@@ -31,7 +30,6 @@ internal sealed class DomSession
 
         _js = js;
         _sharedBridge = bridge;
-        _context = SynchronizationContext.Current;
     }
 
     /// <summary>The text form of <see cref="RuntimeId"/>.</summary>
@@ -91,20 +89,7 @@ internal sealed class DomSession
         => _editTargets.TryGetValue(token, out edits);
 
     /// <summary>Starts bringing every text field's edits back in step with its field, as the connection comes back.</summary>
-    /// <remarks>The connection comes back off the owner's context, where its edits run, so the resync is posted there.</remarks>
     public void BeginResync()
-    {
-        if (_context is { } context)
-        {
-            context.Post(_ => Resync(), null);
-        }
-        else
-        {
-            Resync();
-        }
-    }
-
-    private void Resync()
     {
         foreach (var edits in _editTargets.Values.ToList())
         {
