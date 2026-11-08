@@ -1,10 +1,13 @@
 namespace Forma.Tests.Hosts;
 
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
 using System.Text.RegularExpressions;
 
-/// <summary>The Android device or emulator adb reaches: installing a build, starting an application afresh, forwarding its web view's DevTools socket to a port of this machine, and reading what the device shows and logs.</summary>
+using Microsoft.Playwright;
+
+/// <summary>The Android device or emulator adb reaches: the build a run is asked to check, installing it, starting an application afresh, forwarding its web view's DevTools socket to a port of this machine and connecting to the web view there, and reading what the device shows and logs.</summary>
 /// <remarks>
 /// Android's WebView opens a socket named for the application's process once the application's first web view initializes, which adb
 /// forwards to a port of this machine, where Chrome's DevTools protocol reaches the web view as it reaches WebView2's. adb is the one in
@@ -23,6 +26,55 @@ public static partial class AndroidDevice
     private static readonly SemaphoreSlim Installing = new(1, 1);
     private static readonly HashSet<string> Installed = new(StringComparer.Ordinal);
     private static readonly Lazy<Task<bool>> Attached = new(async () => (await RunAdbCoreAsync("get-state").ConfigureAwait(false)).Trim() == "device");
+
+    /// <summary>The build of an application the environment variable <paramref name="variable"/> names for the run to check.</summary>
+    /// <param name="variable">The variable's name.</param>
+    /// <returns>The build's signed package, or <see langword="null"/> where the variable names none, which leaves the checks on Android to be skipped.</returns>
+    /// <exception cref="InvalidOperationException">The variable names a file that doesn't exist, which fails the run rather than skipping what it was asked to check.</exception>
+    public static string? GetBuild(string variable)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(variable);
+
+        var build = Environment.GetEnvironmentVariable(variable);
+
+        if (string.IsNullOrEmpty(build))
+        {
+            return null;
+        }
+
+        return File.Exists(build)
+            ? build
+            : throw new InvalidOperationException($"{variable} names {build}, which doesn't exist; the run checks the build it names, so a build named and missing fails the run.");
+    }
+
+    /// <summary>Connects to the web view whose DevTools socket is forwarded to <paramref name="port"/>, once it shows the application's page.</summary>
+    /// <param name="playwright">The driver the connection is made through.</param>
+    /// <param name="port">The port of this machine the web view's socket is forwarded to.</param>
+    /// <param name="timeout">How long the web view may take to show the page.</param>
+    /// <returns>The connection, whose closing ends what a check added to the page, and the application's page.</returns>
+    /// <exception cref="TimeoutException">The web view showed no page within <paramref name="timeout"/>.</exception>
+    public static async Task<(IBrowser Browser, IPage Page)> ConnectAsync(IPlaywright playwright, int port, TimeSpan timeout)
+    {
+        ArgumentNullException.ThrowIfNull(playwright);
+
+        var browser = await playwright.Chromium.ConnectOverCDPAsync($"http://127.0.0.1:{port}/").ConfigureAwait(false);
+        var started = Stopwatch.StartNew();
+
+        while (started.Elapsed < timeout)
+        {
+            // A snapshot, since the page opening meanwhile adds itself to these lists.
+            if (browser.Contexts.ToArray().SelectMany(context => context.Pages.ToArray()).FirstOrDefault(page => page.Url.StartsWith("https://0.0.0.", StringComparison.Ordinal)) is { } page)
+            {
+                return (browser, page);
+            }
+
+            await Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(false);
+        }
+
+        await browser.CloseAsync().ConfigureAwait(false);
+
+        throw new TimeoutException($"The application's web view showed no page within {timeout.TotalMinutes} minutes.");
+    }
 
     /// <summary>Whether adb reached a device or emulator as the run first asked.</summary>
     /// <returns><see langword="true"/> where one was attached.</returns>
@@ -149,7 +201,7 @@ public static partial class AndroidDevice
             UseShellExecute = false,
         };
 
-        using var process = Process.Start(start) ?? throw new InvalidOperationException("adb didn't start.");
+        using var process = StartAdb(start);
         var output = process.StandardOutput.ReadToEndAsync();
         var error = process.StandardError.ReadToEndAsync();
         using var timeout = new CancellationTokenSource(CommandTimeout);
@@ -241,4 +293,17 @@ public static partial class AndroidDevice
     // What adb says where the device it addresses can't be reached, as each of its versions words it.
     [GeneratedRegex(@"^(?:adb(?:\.exe)?|error): (?<reason>device offline|no devices/emulators found|device '[^']*' not found|device unauthorized|device still authorizing)", RegexOptions.Multiline)]
     private static partial Regex UnreachableDevice();
+
+    // adb is the one in the Android SDK ANDROID_HOME names, or the one on the path; where neither has one, the run fails saying so.
+    private static Process StartAdb(ProcessStartInfo start)
+    {
+        try
+        {
+            return Process.Start(start) ?? throw new InvalidOperationException("adb didn't start.");
+        }
+        catch (Win32Exception exception)
+        {
+            throw new InvalidOperationException($"adb isn't in the platform-tools folder of the Android SDK ANDROID_HOME names, nor on the PATH: {exception.Message}", exception);
+        }
+    }
 }

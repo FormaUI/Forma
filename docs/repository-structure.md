@@ -402,7 +402,10 @@ features that own them.
     after a start that failed.
   - `WebViewApplication` starts a Blazor Hybrid application from its publish with WebView2's DevTools port open and
     connects to its web views.
-  - `AndroidDevice` installs, starts and reads an application on the Android device or emulator adb reaches.
+  - `AndroidDevice` reads the build a run checks, installs, starts and reads an application on the Android device or
+    emulator adb reaches, and connects to its web view.
+  - Each host starts through one process that keeps what the host writes, for a failure to report, and on Windows
+    joins a job of the checks' process, which ends the host if that process ends first.
 
 ### Script tests
 

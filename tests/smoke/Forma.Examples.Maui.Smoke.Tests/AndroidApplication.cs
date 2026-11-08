@@ -1,13 +1,11 @@
 namespace Forma.Examples.Maui.Smoke.Tests;
 
-using System.Diagnostics;
-
 using Forma.Tests.Hosts;
 
 /// <summary>The MAUI example host built for Android, installed on the device adb reaches and started afresh, and the browser connection a check drives its web view through.</summary>
 /// <remarks>
 /// The build is named by <c>FORMA_BROWSER_ANDROID</c>, which the mobile step sets, and installed once for the run; a check is skipped where
-/// none is named or no device is attached.
+/// none is named or no device is attached, and fails where the build named doesn't exist.
 /// </remarks>
 public sealed class AndroidApplication : IAsyncDisposable
 {
@@ -35,19 +33,19 @@ public sealed class AndroidApplication : IAsyncDisposable
     /// <returns>The application.</returns>
     public static async Task<AndroidApplication> StartAsync()
     {
-        var build = Environment.GetEnvironmentVariable("FORMA_BROWSER_ANDROID");
-        Assert.SkipWhen(string.IsNullOrEmpty(build) || !File.Exists(build), "No Android build of the MAUI example host is named; the mobile step builds one and names it in FORMA_BROWSER_ANDROID.");
+        var build = AndroidDevice.GetBuild("FORMA_BROWSER_ANDROID");
+        Assert.SkipWhen(build is null, "No Android build of the MAUI example host is named; the mobile step builds one and names it in FORMA_BROWSER_ANDROID.");
         Assert.SkipUnless(await AndroidDevice.IsAttachedAsync().ConfigureAwait(false), "No Android device or emulator is attached.");
         Assertions.SetDefaultExpectTimeout((float)ExpectTimeout.TotalMilliseconds);
 
         await AndroidDevice.InstallAsync(build).ConfigureAwait(false);
         var port = await AndroidDevice.StartAsync(PackageName).ConfigureAwait(false);
-        var playwright = await Playwright.CreateAsync().ConfigureAwait(false);
+        IPlaywright? playwright = null;
 
         try
         {
-            var browser = await playwright.Chromium.ConnectOverCDPAsync($"http://127.0.0.1:{port}/").ConfigureAwait(false);
-            var page = await WaitForPageAsync(browser).ConfigureAwait(false);
+            playwright = await Playwright.CreateAsync().ConfigureAwait(false);
+            var (_, page) = await AndroidDevice.ConnectAsync(playwright, port, StartTimeout).ConfigureAwait(false);
 
             try
             {
@@ -64,8 +62,7 @@ public sealed class AndroidApplication : IAsyncDisposable
         }
         catch
         {
-            playwright.Dispose();
-            await AndroidDevice.StopAsync(PackageName, port).ConfigureAwait(false);
+            await StopAsync(playwright, port).ConfigureAwait(false);
 
             throw;
         }
@@ -73,9 +70,19 @@ public sealed class AndroidApplication : IAsyncDisposable
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
+        => await StopAsync(_playwright, _port).ConfigureAwait(false);
+
+    // The driver goes, and the application and its socket's forwarding stop however the driver's going ends.
+    private static async Task StopAsync(IPlaywright? playwright, int port)
     {
-        _playwright.Dispose();
-        await AndroidDevice.StopAsync(PackageName, _port).ConfigureAwait(false);
+        try
+        {
+            playwright?.Dispose();
+        }
+        finally
+        {
+            await AndroidDevice.StopAsync(PackageName, port).ConfigureAwait(false);
+        }
     }
 
     // What the web view shows, what holds the device's focus, and what the application and its web view's console last wrote.
@@ -85,22 +92,5 @@ public sealed class AndroidApplication : IAsyncDisposable
         var newLine = Environment.NewLine;
 
         return $"{newLine}The page at {page.Url} holds:{newLine}{content[..Math.Min(content.Length, 1500)]}{newLine}The focus is on {await AndroidDevice.GetFocusedWindowAsync().ConfigureAwait(false)}.{newLine}The application and its web view's console last wrote:{newLine}{log}";
-    }
-
-    private static async Task<IPage> WaitForPageAsync(IBrowser browser)
-    {
-        var started = Stopwatch.StartNew();
-
-        while (started.Elapsed < StartTimeout)
-        {
-            if (browser.Contexts.SelectMany(context => context.Pages).FirstOrDefault(page => page.Url.StartsWith("https://0.0.0.", StringComparison.Ordinal)) is { } page)
-            {
-                return page;
-            }
-
-            await Task.Delay(TimeSpan.FromMilliseconds(250)).ConfigureAwait(false);
-        }
-
-        throw new TimeoutException($"The application's web view showed no page within {StartTimeout.TotalMinutes} minutes.");
     }
 }

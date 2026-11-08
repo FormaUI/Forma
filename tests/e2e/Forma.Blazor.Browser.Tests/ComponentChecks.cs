@@ -203,11 +203,11 @@ public static partial class ComponentChecks
     // a browser, loading the page afresh at its address, which starts the web view's scope anew as a new web view's does; checks take the
     // web view in turn, and closing the connection at the check's end takes back what the check added. An emulator answers a press in
     // seconds, so what a check expects is waited for as long as a script's first answer is, for every check the run holds, which the
-    // browser step keeps to Android's.
+    // browser step keeps to Android's. A build named that doesn't exist fails the check rather than skipping it.
     private static async Task<(IBrowserContext Context, IPage Page)> OpenOnAndroidAsync(BrowserHost host, string path, Func<IPage, Task>? prepare)
     {
-        var build = Environment.GetEnvironmentVariable("FORMA_BROWSER_ANDROID_CHECKS");
-        Assert.SkipWhen(string.IsNullOrEmpty(build) || !File.Exists(build), "No Android build of the check host is named; the browser step builds one where -Android asks for it and names it in FORMA_BROWSER_ANDROID_CHECKS.");
+        var build = AndroidDevice.GetBuild("FORMA_BROWSER_ANDROID_CHECKS");
+        Assert.SkipWhen(build is null, "No Android build of the check host is named; the browser step builds one where -Android asks for it and names it in FORMA_BROWSER_ANDROID_CHECKS.");
         Assert.SkipUnless(await AndroidDevice.IsAttachedAsync().ConfigureAwait(false), "No Android device or emulator is attached.");
 
         Assertions.SetDefaultExpectTimeout(30000);
