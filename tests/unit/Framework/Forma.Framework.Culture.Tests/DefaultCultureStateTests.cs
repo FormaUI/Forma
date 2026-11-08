@@ -423,6 +423,35 @@ public sealed class DefaultCultureStateTests
         }
 
         [Fact]
+        public async Task Should_notify_its_subscribers_once_the_call_that_applied_the_pair_has_returned()
+        {
+            // Arrange — the applying flow's context runs what is posted to it as the test asks
+            using var fixture = new CultureFixture("en");
+            using var services = CreateServices();
+            using var scope = services.CreateScope();
+            var state = GetState(scope);
+            var notifications = 0;
+            state.Subscribe(() => { notifications++; return Task.CompletedTask; });
+            var context = new QueuedSynchronizationContext();
+            Task change;
+
+            // Act
+            using (context.MakeCurrent())
+            {
+                change = ApplyAsync(scope, Hebrew);
+            }
+
+            var notifiedOnReturn = notifications;
+            context.RunPending();
+            await change;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, notifiedOnReturn),
+                () => Assert.Equal(1, notifications));
+        }
+
+        [Fact]
         public async Task Should_complete_once_every_subscriber_has_been_notified()
         {
             // Arrange

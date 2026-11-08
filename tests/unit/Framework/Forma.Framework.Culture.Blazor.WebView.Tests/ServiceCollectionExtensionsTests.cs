@@ -252,6 +252,35 @@ public sealed class ServiceCollectionExtensionsTests
         }
 
         [Fact]
+        public async Task Should_notify_the_application_s_subscribers_once_its_switch_has_returned()
+        {
+            // Arrange — the switching flow's context runs what is posted to it as the test asks
+            await using var provider = CreateServices();
+            await using var webView = OpenWebView(provider, FakeCultureCoordinatorBrowser.CreateWithoutMarker());
+            var state = provider.GetRequiredService<ICultureState>();
+            var notifications = 0;
+            state.Subscribe(() => { notifications++; return Task.CompletedTask; });
+            var context = new QueuedSynchronizationContext();
+            Task switching;
+
+            // Act
+            using (context.MakeCurrent())
+            {
+                switching = SwitchAsync(provider, German, Hebrew);
+            }
+
+            var notifiedOnReturn = notifications;
+            context.RunPending();
+            await switching;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, notifiedOnReturn),
+                () => Assert.Equal(1, notifications),
+                () => Assert.Equal("de-DE/he", Describe(state)));
+        }
+
+        [Fact]
         public async Task Should_switch_the_application_as_a_web_view_lands_at_another_culture_s_address()
         {
             // Arrange

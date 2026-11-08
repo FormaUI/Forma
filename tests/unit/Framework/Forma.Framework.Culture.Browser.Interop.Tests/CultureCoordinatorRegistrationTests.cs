@@ -200,14 +200,14 @@ public sealed class CultureCoordinatorRegistrationTests
             await GetRegistration(scope).RegisterAsync();
             GetCultureState(scope).Subscribe(() => Task.FromException(new InvalidOperationException("A subscriber failed.")));
 
-            // Act
+            // Act — the subscribers hear of the landing once the delivery has returned, and the failure is logged then
             await browser.LandAsync("he", "he");
+            var entry = await loggerFactory.WaitForEntryAsync(written => written.Level == LogLevel.Error);
 
             // Assert
-            var entry = Assert.Single(loggerFactory.Entries);
             Assert.Multiple(
                 () => Assert.Equal(typeof(CultureCoordinatorRegistration).FullName, entry.Category),
-                () => Assert.Equal(LogLevel.Error, entry.Level));
+                () => Assert.Single(loggerFactory.Entries));
         }
 
         [Fact]

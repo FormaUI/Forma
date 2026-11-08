@@ -75,6 +75,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   receiving, and the picker says on its field when its text can't follow the reader's edits, as the text inputs do.
 - A [`FormaColorPicker`](docs/component-catalog.md#formacolorpicker) holding text that isn't a hex color says so by
   its field's name, in the reader's language. It said so in English, quoting the text.
+- The [culture state](docs/culture-design.md#one-culture-state-per-user-scope) notifies its subscribers once the call
+  that switched it has returned. Under Blazor Hybrid the application's culture coordinator was held while they ran, so
+  a subscriber waiting on another native window's thread stopped that window's web view from starting or switching.
 
 ## `1.0.0-preview.4`
 

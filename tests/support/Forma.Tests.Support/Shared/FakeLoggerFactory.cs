@@ -5,15 +5,50 @@ using Microsoft.Extensions.Logging;
 /// <summary>A logger factory that keeps every entry written through it, with the category it was written under.</summary>
 public sealed class FakeLoggerFactory : ILoggerFactory
 {
+    private readonly Lock _lock = new();
     private readonly List<FakeLogEntry> _entries = [];
+    private readonly List<(Func<FakeLogEntry, bool> Predicate, TaskCompletionSource<FakeLogEntry> Entry)> _waiters = [];
 
     /// <summary>Every entry written through a logger this factory created, in the order written.</summary>
     public IReadOnlyList<FakeLogEntry> Entries
-        => _entries;
+    {
+        get
+        {
+            lock (_lock)
+            {
+                return [.. _entries];
+            }
+        }
+    }
 
     /// <inheritdoc />
     public ILogger CreateLogger(string categoryName)
-        => new FakeLogger(categoryName, _entries);
+        => new FakeLogger(categoryName, this);
+
+    /// <summary>The first entry <paramref name="predicate"/> matches, once it is written.</summary>
+    /// <param name="predicate">Whether an entry is the one waited for.</param>
+    /// <returns>The entry.</returns>
+    public Task<FakeLogEntry> WaitForEntryAsync(Func<FakeLogEntry, bool> predicate)
+    {
+        ArgumentNullException.ThrowIfNull(predicate);
+
+        lock (_lock)
+        {
+            foreach (var entry in _entries)
+            {
+                if (predicate(entry))
+                {
+                    return Task.FromResult(entry);
+                }
+            }
+
+            // Its continuation runs apart from the logger's caller, which goes on as it would with no test waiting.
+            var waiter = new TaskCompletionSource<FakeLogEntry>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _waiters.Add((predicate, waiter));
+
+            return waiter.Task;
+        }
+    }
 
     /// <inheritdoc />
     public void AddProvider(ILoggerProvider provider)
@@ -25,7 +60,24 @@ public sealed class FakeLoggerFactory : ILoggerFactory
     {
     }
 
-    private sealed class FakeLogger(string category, List<FakeLogEntry> entries) : ILogger
+    private void Add(FakeLogEntry entry)
+    {
+        List<TaskCompletionSource<FakeLogEntry>> matched;
+
+        lock (_lock)
+        {
+            _entries.Add(entry);
+            matched = [.. _waiters.Where(waiter => waiter.Predicate(entry)).Select(waiter => waiter.Entry)];
+            _waiters.RemoveAll(waiter => matched.Contains(waiter.Entry));
+        }
+
+        foreach (var waiter in matched)
+        {
+            waiter.SetResult(entry);
+        }
+    }
+
+    private sealed class FakeLogger(string category, FakeLoggerFactory factory) : ILogger
     {
         public IDisposable? BeginScope<TState>(TState state)
             where TState : notnull
@@ -35,7 +87,7 @@ public sealed class FakeLoggerFactory : ILoggerFactory
             => true;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-            => entries.Add(new FakeLogEntry(category, logLevel, formatter(state, exception)));
+            => factory.Add(new FakeLogEntry(category, logLevel, formatter(state, exception)));
     }
 }
 

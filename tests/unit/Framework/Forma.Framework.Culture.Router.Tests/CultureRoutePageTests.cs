@@ -250,15 +250,14 @@ public sealed class CultureRoutePageTests
             await using var renderer = new FakeRenderer(scope.ServiceProvider, InteractiveServer);
             var lifecycle = new List<string>();
 
-            // Act
+            // Act — the subscribers hear of the landing once the delivery has returned, and the failure is logged then
             await renderer.RenderAsync(CreatePage("he", lifecycle));
+            var entry = await loggerFactory.WaitForEntryAsync(written => written.Level == LogLevel.Error);
 
             // Assert
-            var entry = Assert.Single(loggerFactory.Entries);
-
             Assert.Multiple(
                 () => Assert.Equal(typeof(CultureCoordinatorRegistration).FullName, entry.Category),
-                () => Assert.Equal(LogLevel.Error, entry.Level),
+                () => Assert.Single(loggerFactory.Entries),
                 () => Assert.Equal(["initialized he he he", "parameters set he he he"], lifecycle),
                 () => Assert.Empty(renderer.Exceptions));
         }

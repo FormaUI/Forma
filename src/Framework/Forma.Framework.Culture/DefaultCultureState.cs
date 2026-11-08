@@ -30,7 +30,7 @@ internal sealed class DefaultCultureState(ICultureProvider? cultureProvider = nu
     public CultureVersion Version { get; private set; } = CultureVersion.Initial;
 
     /// <inheritdoc />
-    /// <remarks>The method is synchronous up to the notification's task it returns, so the cultures are assigned on the caller's flow and stay in force after the call.</remarks>
+    /// <remarks>The cultures are assigned on the caller's flow, where they stay in force after the call, and the subscribers hear of the change once the call has returned.</remarks>
     public Task ApplyAsync(AcceptedCulture accepted)
     {
         ArgumentNullException.ThrowIfNull(accepted);
@@ -58,7 +58,7 @@ internal sealed class DefaultCultureState(ICultureProvider? cultureProvider = nu
         CultureInfo.CurrentUICulture = uiCulture;
         Volatile.Write(ref _revision, _revision + 1);
 
-        return _notifier.NotifyAsync();
+        return NotifyAsync();
     }
 
     /// <inheritdoc />
@@ -68,6 +68,13 @@ internal sealed class DefaultCultureState(ICultureProvider? cultureProvider = nu
     /// <inheritdoc />
     public void Unsubscribe(Func<Task> callback)
         => _notifier.Unsubscribe(callback);
+
+    // The notification goes on in the caller's context once the call that applied the change has returned.
+    private async Task NotifyAsync()
+    {
+        await Task.Yield();
+        await _notifier.NotifyAsync().ConfigureAwait(false);
+    }
 
     // A culture of the same name that writes dates or numbers otherwise, as a clone pinning its own patterns does, is a change.
     private static bool IsHeld(CultureInfo culture, CultureInfo held)
