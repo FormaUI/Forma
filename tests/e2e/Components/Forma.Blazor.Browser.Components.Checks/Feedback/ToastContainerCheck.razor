@@ -16,7 +16,7 @@
     private Task SaveAsync()
         => ToastService.ShowAsync("Draft saved.", ToastType.Success, TimeSpan.FromMinutes(5));
 
-    // Long enough to be seen before it leaves.
+    // A toast that leaves on its own, which the check records showing and leaving.
     private Task PublishAsync()
         => ToastService.ShowAsync("Published.", ToastType.Info, TimeSpan.FromSeconds(2));
 }

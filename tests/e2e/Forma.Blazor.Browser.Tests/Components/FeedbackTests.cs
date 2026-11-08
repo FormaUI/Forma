@@ -215,6 +215,22 @@ public sealed class FeedbackTests
 
     public sealed class ToastContainer(BrowserHost host)
     {
+        // Records in window.formaToastStates each change of whether the toast with the message given shows in the container, 'shown' as
+        // it does and 'gone' as it no longer does, as the page changes it.
+        private const string RecordingToastStates = """
+            (toasts, message) => {
+                window.formaToastStates = [];
+                const isShown = () => [...toasts.querySelectorAll('.forma-toast')].some(toast => toast.textContent.includes(message) && toast.checkVisibility());
+                new MutationObserver(() => {
+                    const state = isShown() ? 'shown' : 'gone';
+
+                    if (state !== (window.formaToastStates.at(-1) ?? 'gone')) {
+                        window.formaToastStates.push(state);
+                    }
+                }).observe(toasts, { childList: true, subtree: true, characterData: true });
+            }
+            """;
+
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_show_a_raised_toast_until_it_is_dismissed(string runtime)
@@ -238,17 +254,16 @@ public sealed class FeedbackTests
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_dismiss_a_toast_once_its_duration_passes(string runtime)
         {
-            // Arrange — a toast raised for two seconds
+            // Arrange — the toast's showing and leaving recorded as the page makes them, so its two seconds on screen need no catching
             var (context, page) = await OpenAsync(host, runtime, "toast-container");
             await using var _ = context;
-            var toast = page.Locator("#toasts").GetByText("Published.");
+            await page.Locator("#toasts").EvaluateAsync(RecordingToastStates, "Published.");
 
             // Act
             await page.Locator("#publish").ClickAsync();
-            await Assertions.Expect(toast).ToBeVisibleAsync();
 
             // Assert
-            await Assertions.Expect(toast).ToBeHiddenAsync(new() { Timeout = 10000 });
+            await page.WaitForFunctionAsync("() => window.formaToastStates.join(' ') === 'shown gone'", null, new() { Timeout = 10000 });
         }
     }
 }
