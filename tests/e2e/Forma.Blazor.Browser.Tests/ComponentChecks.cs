@@ -59,9 +59,7 @@ public static partial class ComponentChecks
             var downloads = new FrameworkDownloads(page);
             await page.GotoAsync($"{mode}/{path}").ConfigureAwait(false);
             await WaitForRendererAsync(page, "Server", problems).ConfigureAwait(false);
-            await downloads.WaitAsync().ConfigureAwait(false);
-            await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)))").ConfigureAwait(false);
-            downloads.Stop();
+            await downloads.StopOnceDownloadedAsync().ConfigureAwait(false);
         }
 
         await page.GotoAsync($"{mode}/{path}").ConfigureAwait(false);

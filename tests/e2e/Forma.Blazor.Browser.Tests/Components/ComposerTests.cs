@@ -20,16 +20,12 @@ public sealed class ComposerTests
         public async Task Should_write_the_text_typed_and_made_bold_into_the_bound_document(string runtime)
         {
             // Arrange
-            var (context, page) = await OpenAsync(host, runtime, "composer");
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
             await using var _ = context;
-            var canvas = page.Locator("#check .forma-composer-rich-text-canvas");
-            var bold = page.Locator("#check .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Bold", Exact = true });
-            await WaitForInputScopeAsync(page, "#check .forma-composer-rich-text-canvas");
+            var bold = GetCommand(page, "Bold");
 
             // Act — the whole text selected before Bold is pressed
-            await canvas.PressSequentiallyAsync("Hello");
-            await canvas.PressAsync("ControlOrMeta+A");
-            await page.WaitForFunctionAsync("() => getSelection().toString() === 'Hello'");
+            await SelectTypedAsync(page, canvas, "Hello");
             await bold.ClickAsync();
 
             // Assert
@@ -44,14 +40,10 @@ public sealed class ComposerTests
         public async Task Should_link_the_text_selected_through_the_link_dialog(string runtime)
         {
             // Arrange — the whole text selected and the link dialog opened on it
-            var (context, page) = await OpenAsync(host, runtime, "composer");
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime);
             await using var _ = context;
-            var canvas = page.Locator("#check .forma-composer-rich-text-canvas");
-            await WaitForInputScopeAsync(page, "#check .forma-composer-rich-text-canvas");
-            await canvas.PressSequentiallyAsync("Docs");
-            await canvas.PressAsync("ControlOrMeta+A");
-            await page.WaitForFunctionAsync("() => getSelection().toString() === 'Docs'");
-            await page.Locator("#check .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Insert Link", Exact = true }).ClickAsync();
+            await SelectTypedAsync(page, canvas, "Docs");
+            await GetCommand(page, "Insert Link").ClickAsync();
             var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Insert Link" });
 
             // Act
@@ -425,17 +417,15 @@ public sealed class ComposerTests
                 await WaitForInputScopeAsync(page, $"#{preset} .forma-composer-rich-text-canvas");
 
                 // Act — the whole text selected before Bold is pressed
-                await canvas.PressSequentiallyAsync("Hello");
-                await canvas.PressAsync("ControlOrMeta+A");
-                await page.WaitForFunctionAsync("() => getSelection().toString() === 'Hello'");
-                await page.Locator($"#{preset} .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Bold", Exact = true }).ClickAsync();
+                await SelectTypedAsync(page, canvas, "Hello");
+                await GetCommand(page, "Bold", preset).ClickAsync();
 
                 // Assert
                 await Assertions.Expect(page.Locator($"#{preset}-result")).ToContainTextAsync("<b>Hello</b>");
             }
 
-            await Assertions.Expect(page.Locator("#standard .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Table", Exact = true })).ToBeVisibleAsync();
-            await Assertions.Expect(page.Locator("#compact .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Table", Exact = true })).ToHaveCountAsync(0);
+            await Assertions.Expect(GetCommand(page, "Table", "standard")).ToBeVisibleAsync();
+            await Assertions.Expect(GetCommand(page, "Table", "compact")).ToHaveCountAsync(0);
         }
     }
 
@@ -521,22 +511,30 @@ public sealed class ComposerTests
 
             await GetCommand(page, "Plugin Commands").ClickAsync();
 
-            // Act — the editor reads the selection in its own time, so the readout is asked for until it has
-            await page.WaitForFunctionAsync(
-                "() => { if ([...document.querySelectorAll('#check .forma-toolbar-readout')].some(readout => readout.textContent.trim() === '0-5')) { return true; } document.querySelector('#check button[aria-label=\"Show Selection\"]')?.click(); return false; }",
-                null,
-                new() { PollingInterval = 250 });
+            // Act — the composer settles the editor before it runs a command, which reads the selection as the textarea holds it
+            await GetCommand(page, "Show Selection").ClickAsync();
 
             // Assert
             await Assertions.Expect(page.Locator("#check .forma-toolbar-readout", new() { HasText = "0-5" })).ToHaveCountAsync(1);
         }
     }
 
+    // The page's composer, once its canvas answers input; a check that fails there ends, giving its runtime's turn to the next.
     private static async Task<(IBrowserContext Context, IPage Page, ILocator Canvas)> OpenComposerAsync(BrowserHost host, string runtime, string path = "composer", Func<IPage, Task>? prepare = null)
     {
         var (context, page) = await OpenAsync(host, runtime, path, prepare);
         var canvas = page.Locator("#check .forma-composer-rich-text-canvas");
-        await WaitForInputScopeAsync(page, "#check .forma-composer-rich-text-canvas");
+
+        try
+        {
+            await WaitForInputScopeAsync(page, "#check .forma-composer-rich-text-canvas");
+        }
+        catch
+        {
+            await context.DisposeAsync();
+
+            throw;
+        }
 
         return (context, page, canvas);
     }
@@ -549,8 +547,9 @@ public sealed class ComposerTests
         await page.WaitForFunctionAsync("text => getSelection().toString() === text", text);
     }
 
-    private static ILocator GetCommand(IPage page, string name)
-        => page.Locator("#check .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
+    // A command of the composer the page's element of that id holds in its toolbar.
+    private static ILocator GetCommand(IPage page, string name, string composer = "check")
+        => page.Locator($"#{composer} .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = name, Exact = true });
 
     private static ILocator GetOption(IPage page, string name)
         => page.Locator("[role=menuitem], [role=menuitemradio], [role=menuitemcheckbox]").Filter(new() { HasText = name });

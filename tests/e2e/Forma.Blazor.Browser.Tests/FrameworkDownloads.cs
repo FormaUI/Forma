@@ -4,6 +4,7 @@ namespace Forma.Blazor.Browser.Tests;
 /// <remarks>A request is pending until it finishes with a successful response or fails, and a failure is kept apart. Once none is pending and the ICU data downloaded, a request that starts is recorded as late rather than reopening the wait, until tracking stops.</remarks>
 public sealed class FrameworkDownloads
 {
+    private readonly IPage _page;
     private readonly Lock _gate = new();
     private readonly HashSet<IRequest> _pending = new(ReferenceEqualityComparer.Instance);
     private readonly List<string> _downloaded = [];
@@ -19,6 +20,7 @@ public sealed class FrameworkDownloads
     {
         ArgumentNullException.ThrowIfNull(page);
 
+        _page = page;
         page.Request += (_, request) => Start(request);
         page.RequestFinished += async (_, request) =>
         {
@@ -81,6 +83,20 @@ public sealed class FrameworkDownloads
 
             await _changed.WaitAsync(timeout.Token).ConfigureAwait(false);
         }
+    }
+
+    /// <summary>Waits until the page has downloaded the framework, as <see cref="WaitAsync"/> does, and given the page a frame and a task to record that it did, which Auto reads on the next visit, then stops tracking.</summary>
+    /// <returns>A task that completes once tracking stopped.</returns>
+    /// <remarks>A request that failed fails the check there, naming it, since Auto stays on the Server without what it failed to download.</remarks>
+    public async Task StopOnceDownloadedAsync()
+    {
+        await WaitAsync().ConfigureAwait(false);
+
+        var failed = Failed;
+        Assert.True(failed.Count == 0, $"The page's framework didn't download: {string.Join(", ", failed)}.");
+
+        await _page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)))").ConfigureAwait(false);
+        Stop();
     }
 
     /// <summary>Stops tracking, so what the page requests next, a reload's requests among it, is no late start.</summary>

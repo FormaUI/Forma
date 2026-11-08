@@ -73,18 +73,14 @@ public sealed class RenderModeTests(BrowserHost host)
         var downloads = new FrameworkDownloads(page);
         await page.GotoAsync("auto");
         await WaitForInteractiveAsync(page);
-        await downloads.WaitAsync();
-        await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)))");
-        downloads.Stop();
+        await downloads.StopOnceDownloadedAsync();
 
         // Act
         await page.ReloadAsync();
         await WaitForInteractiveAsync(page);
 
         // Assert
-        Assert.Multiple(
-            () => Assert.Empty(downloads.Failed),
-            () => Assert.Empty(downloads.Late));
+        Assert.Empty(downloads.Late);
         Assert.Equal("WebAssembly True", await page.Locator("#runtime").TextContentAsync());
     }
 

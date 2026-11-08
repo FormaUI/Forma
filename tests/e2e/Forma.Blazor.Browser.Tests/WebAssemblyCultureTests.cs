@@ -121,9 +121,7 @@ public sealed class WebAssemblyCultureTests(BrowserHost host)
         var downloads = new FrameworkDownloads(page);
         await page.GotoAsync("he/auto/culture");
         await Assertions.Expect(page.Locator("#wasm-runtime")).ToHaveTextAsync("Server True", new() { Timeout = 60000 });
-        await downloads.WaitAsync();
-        await page.EvaluateAsync("() => new Promise(resolve => requestAnimationFrame(() => setTimeout(resolve)))");
-        downloads.Stop();
+        await downloads.StopOnceDownloadedAsync();
 
         // Act
         await page.ReloadAsync();
