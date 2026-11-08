@@ -247,6 +247,11 @@ active; failing that, the most recently active eligible window in the workspace.
 disabled, minimized, ancestor-hidden, and modally blocked windows are not eligible. With
 no eligible window, nothing is active and focus returns to the workspace.
 
+A window that opens, a press inside it and the focus arriving inside it each make the window
+active only while it is visible. Each is reported after it happens, and a window minimized
+before its activation applies stays minimized, since nothing reaches a hidden window; an
+activation a caller asks for, such as choosing a handle, restores it.
+
 Each window remembers its last focused element. Activating it again restores that
 element if it is still inside the window; otherwise the window's first control, else the
 window itself. Modal redirection is applied before the final target is chosen.

@@ -142,6 +142,7 @@ Each takes an `IWindowSelector` and answers a `WindowOperationResult`.
 | Member | What it does |
 | --- | --- |
 | `ActivateAsync(selector)` | Makes exactly one window current, restoring it and its ancestors; a visible modal descendant of that window becomes current in its place. |
+| `ActivateVisibleAsync(selector)` | Makes exactly one window current while it is visible, as a press or the focus arriving inside it does; a window minimized, or beneath a minimized ancestor, stays as it is. |
 | `BringToFrontAsync(selector)` | Moves the selected windows to the front, keeping their order among themselves. |
 | `SendToBackAsync(selector)` | Moves the selected windows to the back, keeping each visible modal in front of what it blocks. |
 | `MinimizeAsync(selector)` | Minimizes the selected windows, hiding their descendants with them. |

@@ -308,7 +308,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             // A window that opens becomes the current one.
             if (_isAttached && !Active && !Disabled && IsPresented)
             {
-                await ActivateAsync();
+                await ActivateWhileVisibleAsync();
             }
         }
 
@@ -474,7 +474,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
 
         if (!Active)
         {
-            await ActivateAsync();
+            await ActivateWhileVisibleAsync();
         }
         else
         {
@@ -492,7 +492,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             }
             else if (!Active)
             {
-                await ActivateAsync();
+                await ActivateWhileVisibleAsync();
             }
             else
             {
@@ -501,6 +501,10 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
 
             StateHasChanged();
         });
+
+    // Opening, a press and the focus arriving each report the window when it was shown, and a minimize may apply before the activation does.
+    private ValueTask<WindowOperationResult> ActivateWhileVisibleAsync()
+        => Manager.ActivateVisibleAsync(Manager.Within(this));
 
     private WindowDeclaration Declare()
         => new(Title, Icon, Parent?.RuntimeId, Origin, CascadedOrigin, Minimized, Disabled, Modal);

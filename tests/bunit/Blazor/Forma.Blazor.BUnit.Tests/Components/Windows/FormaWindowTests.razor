@@ -1,6 +1,7 @@
 @inherits FormaBunitContext
 @using Bunit.Rendering
 @using Forma.Blazor.Components.Layout
+@using Forma.Framework.Browser.Interop.Focus
 @using Forma.Framework.Icons
 @using Forma.Framework.Input
 @using Forma.Framework.Toolbar
@@ -543,6 +544,38 @@
 
             // Assert
             Assert.Equal("Second", manager.Current?.Title);
+        }
+
+        [Fact]
+        public async Task Should_stay_minimized_when_focus_it_held_before_its_minimize_is_reported_after_it()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var cut = ctx.Render(@<FormaWindow Title="Folders"><Body>Kept</Body></FormaWindow>);
+            cut.Find("button[aria-label=Minimize]").Click();
+
+            // Act — the focus watch reports the focus the window held before the minimize hid it
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+
+            // Assert
+            Assert.True(cut.Find(".forma-window").HasAttribute("hidden"));
+        }
+
+        [Fact]
+        public async Task Should_stay_minimized_when_a_press_made_before_its_minimize_is_reported_after_it()
+        {
+            // Arrange
+            using var ctx = new FormaWindowTests();
+            var cut = ctx.Render(@<FormaWindow Title="Folders"><Body>Kept</Body></FormaWindow>);
+            cut.Find("button[aria-label=Minimize]").Click();
+
+            // Act — the window's script tells it of a press made before the minimize hid it
+            var window = cut.FindComponent<FormaWindow>();
+            await window.InvokeAsync(window.Instance.HandlePressAsync);
+
+            // Assert
+            Assert.True(cut.Find(".forma-window").HasAttribute("hidden"));
         }
 
         [Fact]

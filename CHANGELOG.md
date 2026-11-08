@@ -5,6 +5,15 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.5`
+
+*Unreleased*
+
+- A `FormaWindow` minimized as it opens, or right after a press or focus inside it, stays minimized. The activation
+  that opening, the press or the focus asked for applied after the minimize and restored the window.
+- `WindowManager.ActivateVisibleAsync` makes a window current while it is visible and leaves a hidden one as it is,
+  as a window's own press and focus do.
+
 ## `1.0.0-preview.4`
 
 *November 7, 2026*

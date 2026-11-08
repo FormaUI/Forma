@@ -245,7 +245,15 @@ public sealed class WindowManager
 
     /// <summary>Makes the one selected window the current one.</summary>
     /// <remarks>The window and its minimized ancestors are restored, and a visible modal that controls or blocks the window becomes current in its place.</remarks>
-    public async ValueTask<WindowOperationResult> ActivateAsync(IWindowSelector selector)
+    public ValueTask<WindowOperationResult> ActivateAsync(IWindowSelector selector)
+        => ActivateAsync(selector, shouldRestoreLine: true);
+
+    /// <summary>Makes the one selected window the current one while it is visible, as a press or the focus arriving inside it does.</summary>
+    /// <remarks>A window minimized, or beneath a minimized ancestor, by the time the activation applies is left as it is and reported ineligible, since nothing reaches a hidden window; a visible modal that controls or blocks the window becomes current in its place.</remarks>
+    public ValueTask<WindowOperationResult> ActivateVisibleAsync(IWindowSelector selector)
+        => ActivateAsync(selector, shouldRestoreLine: false);
+
+    private async ValueTask<WindowOperationResult> ActivateAsync(IWindowSelector selector, bool shouldRestoreLine)
     {
         await _gate.WaitAsync().ConfigureAwait(false);
 
@@ -263,7 +271,7 @@ public sealed class WindowManager
 
             var target = matchingWindows[0];
 
-            if (target.IsDisabled)
+            if (target.IsDisabled || (!shouldRestoreLine && !IsVisible(target)))
             {
                 return WindowOperationResult.Ineligible;
             }

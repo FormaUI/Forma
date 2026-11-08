@@ -449,6 +449,50 @@ public sealed class WindowManagerTests
         }
 
         [Fact]
+        public async Task Should_make_a_visible_window_current_where_only_a_visible_one_may_become_current()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            var first = await AddAsync(manager, "First");
+            var second = await AddAsync(manager, "Second");
+            await manager.ActivateAsync(GetSelector(second));
+
+            // Act
+            var result = await manager.ActivateVisibleAsync(GetSelector(first));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(result.Succeeded),
+                () => Assert.Same(first, manager.Current),
+                () => Assert.Equal(["Second", "First"], GetTitles(manager.StackedWindows)));
+        }
+
+        [Fact]
+        public async Task Should_leave_a_minimized_window_and_one_beneath_a_minimized_parent_where_only_a_visible_one_may_become_current()
+        {
+            // Arrange
+            var manager = new WindowManager();
+            var parent = await AddAsync(manager, "Parent");
+            var child = await AddAsync(manager, "Child", parent);
+            var lone = await AddAsync(manager, "Lone");
+            await manager.MinimizeAsync(GetSelector(parent));
+            await manager.MinimizeAsync(GetSelector(lone));
+
+            // Act
+            var fromChild = await manager.ActivateVisibleAsync(GetSelector(child));
+            var fromLone = await manager.ActivateVisibleAsync(GetSelector(lone));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(WindowOperationOutcome.Ineligible, fromChild.Outcome),
+                () => Assert.Equal(WindowOperationOutcome.Ineligible, fromLone.Outcome),
+                () => Assert.True(parent.IsMinimized),
+                () => Assert.True(child.IsHidden),
+                () => Assert.True(lone.IsMinimized),
+                () => Assert.Null(manager.Current));
+        }
+
+        [Fact]
         public async Task Should_redirect_to_the_modal_that_controls_the_window()
         {
             // Arrange

@@ -40,8 +40,11 @@ commit. And the push that publishes a release stopped at a manual step.
    run. Gate: the report's cases on results made for them, and the dispatched run of step 3.
 5. **The known intermittent failures are fixed at their cause.** Each is reproduced on the SHA it failed on, and
    again on the fix:
-   - `WindowsTests+RestArea.Should_restore_a_minimized_window_from_its_handle`, on WebAssembly in the Linux gate,
-     which failed once before in Android's web view under Auto with WebAssembly;
+   - ✅ `WindowsTests+RestArea.Should_restore_a_minimized_window_from_its_handle`, on WebAssembly in the Linux gate,
+     which failed once before in Android's web view under Auto with WebAssembly. The activation a window's opening
+     asks for, decided while it was shown, could apply after the check's minimize, and an activation restores what it
+     activates. Delaying that activation past the minimize restored the window in every run before the fix and in
+     none after it. The window's opening, a press and the focus arriving now activate it only while it is visible;
    - ✅ `WebViewProbeTests.Should_tell_a_traversal_from_a_navigation_the_web_view_makes`, on Windows. The switch its
      navigation to another culture's address made was followed in the web view as Back began, and Blazor
      superseded that follow with the traversal, a navigation the check didn't expect. A follow held until the
