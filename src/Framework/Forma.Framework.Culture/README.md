@@ -89,8 +89,8 @@ version of the accepted pair the state last applied: the key of the document who
 to, and its number in that sequence.
 
 A switch applies the pair it accepted through `ICultureStateIntegration.ApplyAsync(accepted)`, which
-resolves as the state's own instance, so a state registered in place of Forma's implements both; one
-that doesn't is rejected with `InvalidOperationException` as a scope first resolves it. A version the
+applies the pair to the state's own instance, so a state registered in place of Forma's implements both;
+one that doesn't is rejected with `InvalidOperationException` as a scope first resolves it. A version the
 state has applied already, or an earlier one of the same document, changes nothing, and a version of
 another document is newer whatever its number. A later version of the pair the state already holds
 records the version and applies the pair to the calling flow, and nothing more: `Revision` stays, and no

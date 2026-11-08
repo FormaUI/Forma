@@ -576,7 +576,8 @@ sets out.
 
 A WPF, Windows Forms or MAUI application on Windows, or a MAUI application on Android, iOS or Mac Catalyst, renders
 the components in a `BlazorWebView` in each of its native windows. Every web view shows the one culture the
-application holds.
+application holds, unless each is given a culture of its own, as [a culture per web view](#a-culture-per-web-view)
+sets out.
 
 Each host below is an [example host](https://github.com/FormaUI/Forma/blob/main/examples/README.md) that the gate
 builds from Forma's packages and drives through WebView2. `MyApp` stands for the example's name.
@@ -769,7 +770,7 @@ services.AddFormaUIWebView(options => options.CultureArrangement = CultureArrang
 
 Each web view then holds a culture state and a switch of its own. A switch in one web view, or under culture routing
 a navigation to another culture's address, changes that web view's components, its document and its address alone.
-A native window opens a web view in a culture by its `StartPath`, `/he/orders`.
+Under culture routing, a native window opens a web view in a culture by its `StartPath`, `/he/orders`.
 
 The process's and the threads' cultures are shared by every web view, so they stay the application's to set:
 

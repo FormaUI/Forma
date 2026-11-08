@@ -1,11 +1,12 @@
 # Forma.Framework.Culture.Blazor.WebView
 
-What the culture state needs from a Blazor Hybrid application: one culture for the whole application,
-across every web view in every native window. A switch made in any web view, or by the application's own
-native code, is applied to the one culture state, to the process's default cultures and to each web view's
-UI thread, so every event any web view dispatches after it runs in the new pair; each web view's document
-takes the pair's language and direction, and under culture routing its address moves into the pair's
-route, keeping the page and the user's work.
+What the culture state needs from a Blazor Hybrid application: by default, one culture for the whole
+application, across every web view in every native window, or, declared independent, one for each web view.
+Under the default, a switch made in any web view, or by the application's own native code, is applied to
+the one culture state, to the process's default cultures and to each web view's UI thread, so every event
+any web view dispatches after it runs in the new pair; each web view's document takes the pair's language
+and direction, and under culture routing its address moves into the pair's route, keeping the page and the
+user's work.
 
 ## Use it
 
@@ -52,18 +53,20 @@ registered scoped; one two web views share is rejected with `InvalidOperationExc
 
 The switch persists the pair in the state alone. A native application keeps the user's choice in its own
 settings: it saves the pair as the state notifies it, and switches to the saved pair at startup, before its
-first web view opens. A cookie policy is rejected with `InvalidOperationException` as the coordinator is
-first resolved, since no request carries a cookie to a server.
+first web view opens. A cookie policy is rejected with `InvalidOperationException` as the coordinator, or
+under a culture per web view a web view's start, is first resolved, since no request carries a cookie to a
+server.
 
 ## Culture routing
 
 Pages a Web App shares with the application, culture route pages under `CultureRouteScope`, route as they
 do in the Web App, registered with `AddFormaCultureRouting` before or after `AddFormaUIWebView()` under
 `CultureSwitchMode.InPlace`; a full-load switch is rejected with `InvalidOperationException` as the
-coordinator is first resolved, since a web view reloads only by restarting its session. The application's
-culture decides each web view's address: a navigation to an address in another culture switches the
-application, and every web view then replaces its address with the same page in the new route; Back,
-Forward and a web view's first landing take the application's culture, never switching it.
+coordinator, or under a culture per web view a web view's start, is first resolved, since a web view reloads
+only by restarting its session. By default the application's culture decides each web view's address: a
+navigation to an address in another culture switches the application, and every web view then replaces its
+address with the same page in the new route; Back, Forward and a web view's first landing take the
+application's culture, never switching it.
 
 A web view replaces its address through its navigation, so its location-changing handlers run for the
 replacement. A handler guarding the user's work lets it go on, since it keeps the page and the work:

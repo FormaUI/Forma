@@ -4,8 +4,8 @@ Blazor Hybrid hosts Blazor components in a native application, which renders the
 web view in each of its native windows, and Forma's components run there as they do in a Web App. This design states what
 Forma supports under Blazor Hybrid, what an application loads, how a host registers Forma, how long what it
 registers lives, what the application's page carries, how its strings reach it, and how each host is
-checked. The one culture an application holds across its web views is the
-[culture design](culture-design.md#blazor-hybrid)'s.
+checked. The culture an application holds across its web views, one by default or one for each web view, is
+the [culture design](culture-design.md#blazor-hybrid)'s.
 
 ## The contract
 
@@ -48,17 +48,21 @@ Culture routing registers as it does in a Web App, `AddFormaCultureRouting`, bef
 `AddFormaUIWebView`, since it registers only its own services, under `CultureSwitchMode.InPlace`;
 `CultureSwitchMode.FullLoad` and a cookie policy are rejected with `InvalidOperationException` naming the
 setting as the application first resolves its culture coordinator, at its first web view or its first
-switch, since nothing reloads a web view's session on purpose and no request reaches a server to read a
-cookie, and the culture-route cookie is never written.
+switch, or under a culture per web view as a web view first resolves its start, since nothing reloads a web
+view's session on purpose and no request reaches a server to read a cookie, and the culture-route cookie is
+never written.
 
 ## Lifetimes
 
-The culture is the application's, and everything that reaches a document is its web view's:
+By default the culture is the application's, and everything that reaches a document is its web view's:
 
 | Lifetime | Holds |
 | --- | --- |
 | The application | The culture state, the application's culture coordinator and the switch |
 | Each web view | Its JS runtime, its navigation, its document's culture coordinator and its registration with the application's, the input router's scopes, every component's subscriptions, and every other scoped service |
+
+Under a culture per web view, each web view holds its culture state and its switch as well, and its
+document's coordinator orders its switches in place of the application's.
 
 A web view takes part once the first Forma component in it initializes, or a culture route page in it
 lands, whichever comes first, which registers the web view with the application's coordinator. A web view releases its scope as it is disposed, which releases its
@@ -142,7 +146,7 @@ it marks as an application.
 | --- | --- | --- |
 | V1 | Which hosts does Forma support under Blazor Hybrid? | WPF, Windows Forms and MAUI on Windows, on WebView2, and MAUI on Android, iOS and Mac Catalyst, on Android's WebView and `WKWebView`, each checked for its integration |
 | V2 | What is the half called? | `Forma.Blazor.WebView` with `AddFormaUIWebView`, and the culture's `Forma.Framework.Culture.Blazor.WebView`, after Microsoft's `Microsoft.AspNetCore.Components.WebView` and the renderer's name, as each half takes its render mode's name |
-| V3 | What lives for the application, and what for a web view? | The culture state, the application's coordinator and the switch for the application; the JS runtime, navigation, the document's coordinator, the input router's scopes and every subscription for its web view, released as the web view is disposed |
+| V3 | What lives for the application, and what for a web view? | The culture state, the application's coordinator and the switch for the application by default, or the state and the switch for each web view under a culture per web view; the JS runtime, navigation, the document's coordinator, the input router's scopes and every subscription for its web view, released as the web view is disposed |
 | V4 | When does a web view take part? | As the first Forma component in it initializes, or a culture route page in it lands, whichever comes first |
 | V5 | In which order does a host register? | Either; no Forma registration stands in for a platform's service |
 | V6 | What does a Blazor Hybrid page carry? | The host's `index.html` with Forma's stylesheets; no `FormaPageHead`, each web view's coordinator starting from its registration |
