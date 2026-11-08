@@ -7,8 +7,9 @@ It sets out:
 - how the repository is built and verified, and how a release is made;
 - where the components' designs come from, and who consumes the library.
 
-Forma is a reusable Blazor component library: .NET 11, C# latest, Razor Class Libraries whose components render in a
-Web App's interactive render modes, Server, WebAssembly and Auto. It is JS-free by default.
+Forma is a reusable Blazor component library: .NET 11, C# latest, Razor Class Libraries whose components render
+under static server rendering, Interactive Server, WebAssembly and Auto, and in Blazor Hybrid's web view. It is
+JS-free by default.
 
 Other documents cover what this one doesn't:
 
@@ -107,8 +108,9 @@ emoji or icon contracts, destinations over the share contracts, converters over 
 ### Namespaces and identities
 
 **Every assembly has one root namespace unique to it, its project name.** `Forma.Blazor` holds `Forma.Blazor.*`, and
-`Forma.Framework.Icons` holds `Forma.Framework.Icons.*`. The test support projects' are `Forma.Tests` and, for the
-bUnit support, `Forma.Tests.Blazor`. A locale pack compiles no code, so it owns no namespace.
+`Forma.Framework.Icons` holds `Forma.Framework.Icons.*`. The test support projects' are `Forma.Tests`, for the
+bUnit support `Forma.Tests.Blazor`, and for the hosts' lifecycle `Forma.Tests.Hosts`. A locale pack compiles no
+code, so it owns no namespace.
 
 **A folder and its namespace stay in step**, so `Forma.Blazor/Components/Symbols/` holds
 `Forma.Blazor.Components.Symbols`. The group folder a project sits in, such as `Framework/` or `Blazor/`, stays out of
@@ -189,7 +191,7 @@ whichever package brings it to a host.
 any render mode. Each render-mode half ships one more that calls it and adds its render mode's halves, so a host
 makes one call on each side: `AddFormaUIServer()` on the host's builder, `AddFormaUIWebAssembly()` and
 `AddFormaUIWebView()`. A Framework half that serves a render mode names its registrar for it: `AddFormaCultureServer()`,
-`AddFormaCultureWebView()` and `AddFormaBrowserServer()`.
+`AddFormaCultureWebAssembly()`, `AddFormaCultureWebView()` and `AddFormaBrowserServer()`.
 
 **A component whose optional contract is unregistered falls back to a default the library carries**, as `FormaIcon`
 does with the library's own glyph artwork. A contract carrying data nobody can synthesize, such as an emoji catalog,
@@ -202,7 +204,7 @@ Components live in `src/Blazor/Forma.Blazor/Components/{Category}/`, where a cat
 folder inside its category, as `Debugging/InputInspector/` does.
 
 A component large enough to grow sub-components and ship as its own package, such as `Explorer` or `Composer`, is
-instead its own project directly under `src/`. It is laid out the same way but with no `Components/{Category}/`
+instead its own project in `src/Blazor/`. It is laid out the same way but with no `Components/{Category}/`
 wrapper, since the project itself is the category.
 
 A component is a file set:
@@ -219,9 +221,9 @@ Every component derives from one of three bases in `src/Blazor/Forma.Blazor/Comp
 
 | Base | For |
 |------|-----|
-| `FormaElementBase` | A component a host places |
+| `FormaElementBase` | A component that draws a root its host addresses |
 | `FormaInputBase<TValue>` | A form input |
-| `FormaComponentBase` | A part that only lives inside its owner |
+| `FormaComponentBase` | Every other component: a part inside its owner, or one without a root of its own |
 
 ### Strings
 
@@ -245,8 +247,9 @@ Scripts ship with the project that owns them:
   its selection, column-fit, height and card-grid behaviors, `Forma.Blazor.Explorer` its layout tier, and
   `Forma.Blazor.Composer` the rich text editor and the behaviors around its canvas.
 - **`Forma.Framework.JavaScript.Interop`** holds the interop bases, `JSModule`, `JSInterop` and the `IJSEnvironment`
-  they take. It also holds the scripts every other script builds on: the report to a .NET owner, the selectors of the
-  controls a list leaves alone, the frame scheduler, the reading direction, the scroller lookup and the markup
+  they take, and `JSTransfer`, a value the browser sends .NET through the transfer. It also holds the scripts every
+  other script builds on: the report to a .NET owner, the transfer that carries a large value to .NET, the selectors
+  of the controls a list leaves alone, the frame scheduler, the reading direction, the scroller lookup and the markup
   sanitizer.
 - **`Forma.Framework.Browser.Interop`** holds the browser capabilities the component library's components use or
   several products share. The DOM watcher and engine sit at its root, and each capability area in a folder of its own,
@@ -259,7 +262,7 @@ Scripts ship with the project that owns them:
   `scripts/InputRouter.js` beside `InputRouter.cs`.
 
 The interop assemblies are served side by side as `_content/forma/core`, `_content/forma/browser`,
-`_content/forma/input`, `_content/forma/culture` and `_content/forma/culture-router`. A script reaches another
+`_content/forma/input` and `_content/forma/culture`. A script reaches another
 assembly's script by climbing to the content root, so the import survives a host path base:
 
 | From | Import |
@@ -342,9 +345,10 @@ sets out:
 | `tests/scripts/` | The JavaScript tests |
 | `tests/support/` | The support projects |
 
-A unit or bUnit suite sits in the group folder of the assembly it tests, `AddOns/`, `Blazor/` or `Framework/`. Two
+A unit or bUnit suite sits in the group folder of the assembly it tests, `AddOns/`, `Blazor/` or `Framework/`. Three
 suites sit elsewhere:
 
+- The examples' tests sit in `tests/unit/Examples/`, since they hold the README's blocks to the examples' files.
 - The analyzers' tests sit in `eng/`, beside the analyzers.
 - The glyph drawing rules' tests sit beside the rules, in `scripts/cs/GlyphParserTests.cs`, a single-file test
   program the gate's task step runs.
@@ -597,6 +601,7 @@ heading gives the time it took the last time it passed, kept under `artifacts/bu
 |----------|------|------|
 | `fast.yml` | The fast gate, on Linux | Every push but `main`'s and `candidate`'s, and every pull request into `dev` |
 | `full.yml` | The full gate on Linux and on Windows; the MAUI example's build and smoke check on Android, and the components in Android's web view, both on an emulator of 1280 by 800 points; on the nightly run, the browser check twice more on Linux and on Windows, and a report that files each failing check as an issue | Every push to `candidate`, nightly on `dev`, and a run dispatched by hand |
+| `canary.yml` | The full gate on Linux against the newest preview SDK in place of the pinned one, then the list of packages with newer versions, as a report alone | Every Monday at 06:00 UTC, and a run dispatched by hand |
 
 The MAUI example's Apple builds, for iOS and Mac Catalyst, need a Mac whose Xcode is the one their workloads name,
 which no hosted Mac carries yet.
@@ -711,7 +716,8 @@ MSBuild keeps its workers alive between builds, and they hold what they last bui
 - `Stop-MsBuild.ps1` stops those workers. `Stop-DotNet.ps1` goes further and stops whatever is running out of the
   repository too.
 - Both ask for the supported shutdown before stopping anything.
-- Neither reaches the language server an editor runs for C# unless it is asked to.
+- `Stop-MsBuild.ps1` never reaches the language server an editor runs for C#. `Stop-DotNet.ps1` reaches it only under
+  `-All`, which stops every other .NET process on the machine too.
 
 **C# programs.** Work a script can't do in PowerShell without writing C# through it, browser automation and glyph
 geometry so far, is a file-based C# program under `scripts/cs/` that the script runs: `Test-ComponentScale.ps1` runs
