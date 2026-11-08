@@ -122,7 +122,6 @@
     }
 }
 
-.forma-calendar-day:focus-visible,
 .forma-calendar-day.unavailable {
     opacity: 0.35;
     cursor: default;

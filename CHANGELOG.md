@@ -28,6 +28,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   Forward switches the application. It took the application's culture instead, as a traversal does.
 - A `FormaSearchBox` with a `DebounceDelay` raises `OnSearch` on the renderer under Blazor Server and in a Blazor
   Hybrid web view. It raised it on a timer's thread, where the search's render failed and ended the page's session.
+- A `FormaCalendar` day the keyboard focuses is drawn as any day the reader can choose. It was drawn as faintly as an
+  unavailable day, its focus ring with it.
 
 ## `1.0.0-preview.4`
 

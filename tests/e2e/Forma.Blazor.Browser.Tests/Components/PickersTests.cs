@@ -64,6 +64,25 @@ public sealed class PickersTests
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("2026-03-20");
             await Assertions.Expect(day).ToHaveAttributeAsync("aria-pressed", "true");
         }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_draw_the_day_the_keyboard_reaches_as_one_it_can_choose(string runtime)
+        {
+            // Arrange — a press puts the focus on a day without showing it, and Tab then moves it on by the keyboard
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "calendar");
+            await using var _ = context;
+            await GetDay(page.Locator(".forma-calendar"), 20).ClickAsync();
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("2026-03-20");
+
+            // Act
+            await page.Keyboard.PressAsync("Tab");
+
+            // Assert
+            var focused = page.Locator(".forma-calendar-day:focus-visible");
+            await Assertions.Expect(focused).ToHaveTextAsync("21");
+            await Assertions.Expect(focused).ToHaveCSSAsync("opacity", "1");
+        }
     }
 
     public sealed class DateBox(BrowserHost host)
