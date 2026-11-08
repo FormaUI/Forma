@@ -2,6 +2,8 @@
 
     <PropertyGroup>
         <RootNamespace>Forma.Tests.Hosts</RootNamespace>
+        <!-- The interop the source generator writes for the Win32 calls that put a started host in a job of the check's process. -->
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
 
     <ItemGroup>

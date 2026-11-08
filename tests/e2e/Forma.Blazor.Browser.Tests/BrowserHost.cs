@@ -148,43 +148,57 @@ public sealed class BrowserHost : IAsyncLifetime
     }
 
     /// <inheritdoc />
+    /// <remarks>Each part is stopped however the one before it ends, so a part that fails to stop leaves no host running after the run, nor a publish it holds locked.</remarks>
     public async ValueTask DisposeAsync()
     {
-        if (_webView is { IsCompletedSuccessfully: true } webView)
-        {
-            await (await webView.ConfigureAwait(false)).DisposeAsync().ConfigureAwait(false);
-        }
-
         try
         {
-            if (_android is { IsCompletedSuccessfully: true } android)
-            {
-                await (await android.ConfigureAwait(false)).DisposeAsync().ConfigureAwait(false);
-            }
+            await DisposeInTurnAsync(
+            [
+                async () =>
+                {
+                    if (_webView is { IsCompletedSuccessfully: true } webView)
+                    {
+                        await (await webView.ConfigureAwait(false)).DisposeAsync().ConfigureAwait(false);
+                    }
+                },
+                async () =>
+                {
+                    if (_android is { IsCompletedSuccessfully: true } android)
+                    {
+                        await (await android.ConfigureAwait(false)).DisposeAsync().ConfigureAwait(false);
+                    }
+                },
+                () =>
+                {
+                    WebViewTurn.Dispose();
+                    AndroidTurn.Dispose();
+
+                    return ValueTask.CompletedTask;
+                },
+                () => Browser?.DisposeAsync() ?? ValueTask.CompletedTask,
+                () =>
+                {
+                    _playwright?.Dispose();
+
+                    return ValueTask.CompletedTask;
+                },
+                .. _hosts.Select(host => (Func<ValueTask>)host.DisposeAsync),
+            ]).ConfigureAwait(false);
         }
         finally
         {
-            WebViewTurn.Dispose();
-            AndroidTurn.Dispose();
-
-            if (Browser is not null)
+            try
             {
-                await Browser.DisposeAsync().ConfigureAwait(false);
+                if (_standalone is not null)
+                {
+                    await _standalone.DisposeAsync().ConfigureAwait(false);
+                }
             }
-
-            _playwright?.Dispose();
-
-            if (_standalone is not null)
+            finally
             {
-                await _standalone.DisposeAsync().ConfigureAwait(false);
+                _client.Dispose();
             }
-
-            foreach (var host in _hosts)
-            {
-                await host.DisposeAsync().ConfigureAwait(false);
-            }
-
-            _client.Dispose();
         }
     }
 
@@ -225,6 +239,24 @@ public sealed class BrowserHost : IAsyncLifetime
         _standalone = app;
 
         return address;
+    }
+
+    // Runs each disposal in turn from the one at index, every one of them whatever an earlier one throws.
+    private static async ValueTask DisposeInTurnAsync(IReadOnlyList<Func<ValueTask>> disposals, int index = 0)
+    {
+        if (index == disposals.Count)
+        {
+            return;
+        }
+
+        try
+        {
+            await disposals[index]().ConfigureAwait(false);
+        }
+        finally
+        {
+            await DisposeInTurnAsync(disposals, index + 1).ConfigureAwait(false);
+        }
     }
 
     private static string GetFolder(string variable, string fallback)
