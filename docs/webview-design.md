@@ -136,9 +136,10 @@ it marks as an application.
   a switch; Back and Forward; a web view's handler refusing to follow; and native windows on UI threads of
   their own.
 - **Where they run.** WebView2 runs on Windows, so the WebView checks run in the Windows gate and report
-  themselves skipped on another platform. The Android checks run on an emulator, the example host's on every
-  change and the component suite's every week and on demand, after the rest of the browser check and in a run of
-  their own, and report themselves skipped where no device is attached.
+  themselves skipped on another platform. The Android checks, the example host's and the component suite's, run
+  on an emulator in the full gate, nightly on `dev`, on every push to `candidate` and on demand, and locally
+  where a device is attached, the component suite's after the rest of the browser check and in a run of its own;
+  they report themselves skipped where a device isn't attached.
 
 ## Decisions
 

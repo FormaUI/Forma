@@ -123,7 +123,7 @@ run of the branch it's dispatched on.
 
 | Event | What runs |
 | --- | --- |
-| A push to `dev` or to a fix or feature branch, and a pull request into `dev` | The fast gate, required of every pull request into `dev`; push and pull request triggers never check one revision twice. |
+| A push to `dev` or to a fix or feature branch, and a pull request into `dev` | The fast gate, required of every pull request into `dev`; a feature's branch, its pull request and the integrated `dev` commit are each checked once. |
 | Nightly on `dev` | The full gate, Android's E2E included, so an integration regression surfaces before a candidate is selected; and the browser check twice more on Linux and on Windows, each run on a runner of its own, so a check that fails sometimes shows as a rate. Every job keeps its checks' results. |
 | A push to `candidate` | The full gate on the candidate's SHA, packaging, integration, smoke, the browsers, WebView2 and Android's E2E included; its Linux gate keeps the packages it packed, built the examples from and checked. |
 | A pull request into `main` | Versioning's promotion check, the required check `promotion`. |
