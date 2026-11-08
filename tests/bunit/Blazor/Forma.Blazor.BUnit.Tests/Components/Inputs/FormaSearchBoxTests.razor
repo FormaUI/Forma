@@ -144,6 +144,27 @@
         }
 
         [Fact]
+        public async Task Should_search_the_text_typed_ahead_of_enter_once_it_arrives()
+        {
+            // Arrange — the typed text still on its way as the reader presses Enter, its own search waiting out its delay
+            using var ctx = new FormaSearchBoxTests();
+            var fields = new TextFieldProbe(ctx);
+            var router = new InputRouterProbe(ctx);
+            ctx.Services.AddSingleton<IDebounceable>(new Debouncer(new FakeTimeProvider()));
+            var searched = new List<string>();
+            var cut = ctx.Render(@<FormaSearchBox Options="@(new SearchBoxOptions { DebounceDelay = TimeSpan.FromSeconds(30) })" OnSearch="v => searched.Add(v)" />);
+            var typing = fields.CommitHeld(cut.Find("input"), "cover");
+            var searching = router.RouteAsync("search-box.search", "Enter");
+
+            // Act
+            await typing.ReleaseAsync();
+            await searching;
+
+            // Assert
+            Assert.Equal(["cover"], searched);
+        }
+
+        [Fact]
         public async Task Should_search_at_once_without_a_debounce()
         {
             // Arrange

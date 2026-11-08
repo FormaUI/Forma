@@ -271,7 +271,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
     // A step starts from the number shown, an edit in progress's where its text reads as one in the culture it was typed in, or from the
     // limit it moves away from, or from zero, and stops at the limits.
-    private Task HandleActionAsync(string action, InputInfo input)
+    private async Task HandleActionAsync(string action, InputInfo input)
     {
         var direction = action switch
         {
@@ -280,9 +280,10 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             _ => 0,
         };
 
-        if (direction == 0 || Disabled || ReadOnly)
+        // The step reads the number the reader typed, every edit sent ahead of the key applied.
+        if (direction == 0 || Disabled || ReadOnly || !await _edits.SettleAsync())
         {
-            return Task.CompletedTask;
+            return;
         }
 
         var start = _draft.IsInProgress && TryParseNumber(_draft.Text, _draft.Culture, out var drafted) ? drafted : CurrentValue;
@@ -296,7 +297,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         }
         catch (OverflowException)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         var lowest = Math.Max(Min ?? TypeRange.Lowest, TypeRange.Lowest);
@@ -304,7 +305,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
         if (lowest > highest)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         // Dividing by one written to the most decimal places drops the trailing zeros a sum keeps, so 12.5 and a half step shows 13.
@@ -314,8 +315,6 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
         // A routed key is no event of the field's own, so the field renders the number it stepped to itself, and its edits write it in.
         StateHasChanged();
-
-        return Task.CompletedTask;
     }
 
     // A sign, digits and, for a fractional number, the culture's decimal separator, with the whole part grouped as the culture groups it or

@@ -408,6 +408,29 @@
         }
 
         [Fact]
+        public async Task Should_step_from_the_number_typed_ahead_of_the_key_once_it_arrives()
+        {
+            // Arrange — the typed number still on its way as the reader presses ArrowUp
+            using var ctx = new FormaNumberInputTests();
+            using var culture = new CultureFixture("en-US");
+            var fields = new TextFieldProbe(ctx);
+            var router = new InputRouterProbe(ctx);
+            var model = new Stock { Count = 2 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" />
+            </FakeFormHost>);
+            var typing = fields.CommitHeld(cut.Find("input"), "41");
+            var stepping = router.RouteAsync("number-input.increase", "ArrowUp");
+
+            // Act
+            await typing.ReleaseAsync();
+            await stepping;
+
+            // Assert
+            Assert.Equal(42, model.Count);
+        }
+
+        [Fact]
         public async Task Should_show_a_stepped_number_without_the_zeros_a_sum_keeps()
         {
             // Arrange

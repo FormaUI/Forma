@@ -38,6 +38,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   and takes it off once it can. Its commands and its form's actions stopped without a word.
 - `IComposerInteraction` takes `ReportTextFault`, through which an editor shows on the composer's field that its
   text can't follow the reader's edits.
+- A `FormaNumberInput`'s arrow keys step from the number the reader typed, and a `FormaSearchBox`'s Enter searches
+  the text typed, where that text is still on its way as the key is pressed. They read the text that had arrived.
 
 ## `1.0.0-preview.4`
 

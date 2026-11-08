@@ -115,7 +115,8 @@ public sealed partial class FormaSearchBox : FormaElementBase
 
     private async Task HandleActionAsync(string action, InputInfo input)
     {
-        if (action != SearchAction)
+        // The search reads the text the reader typed, every edit sent ahead of the key applied.
+        if (action != SearchAction || !await _edits.SettleAsync())
         {
             return;
         }
