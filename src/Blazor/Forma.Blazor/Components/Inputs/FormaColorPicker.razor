@@ -12,9 +12,8 @@
                    @ref="RootElement"
                    aria-describedby="@DescribedBy"
                    type="text"
-                   value="@CurrentValueAsString"
-                   @onchange="HandleHexInput"
-                   maxlength="@(ShowAlpha ? 9 : 7)"
+                   value="@ShownText"
+                   maxlength="@MaxLength"
                    placeholder="@(ShowAlpha ? "#RRGGBBAA" : "#RRGGBB")"
                    spellcheck="false"
                    dir="ltr" />

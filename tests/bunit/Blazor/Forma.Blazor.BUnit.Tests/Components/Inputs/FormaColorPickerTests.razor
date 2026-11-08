@@ -135,16 +135,43 @@
         {
             // Arrange
             using var ctx = new FormaColorPickerTests();
+            var fields = new TextFieldProbe(ctx);
             var model = new FakeModel { Color = "#FF5533" };
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaColorPicker @bind-Value="model.Color" Label="Brand color" />
             </FakeFormHost>);
 
             // Act
-            await cut.Find(".forma-color-picker-hex-input").ChangeAsync(new ChangeEventArgs { Value = "#00FF00" });
+            await fields.ChangeAsync(cut.Find(".forma-color-picker-hex-input"), "#00FF00");
 
             // Assert
             Assert.Equal("#00FF00", model.Color);
+        }
+
+        [Fact]
+        public async Task Should_run_its_form_s_actions_with_the_hex_value_typed_once_it_arrives()
+        {
+            // Arrange — the typed value still on its way as the reader presses the form's button
+            using var ctx = new FormaColorPickerTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel { Color = "#FF5533" };
+            var saved = new List<string?>();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaColorPicker @bind-Value="model.Color" Label="Brand color" />
+                <FormaButton OnClick="@(() => saved.Add(model.Color))">Save</FormaButton>
+            </FakeFormHost>);
+            var typing = fields.CommitHeld(cut.Find(".forma-color-picker-hex-input"), "#00FF00");
+
+            // Act
+            var saving = cut.FindAll("button").Single(button => button.TextContent.Trim() == "Save").ClickAsync(new());
+            var savedEarly = saved.ToList();
+            await typing.ReleaseAsync();
+            await saving;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(savedEarly),
+                () => Assert.Equal(["#00FF00"], saved));
         }
 
         [Fact]

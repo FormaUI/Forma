@@ -71,6 +71,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   [edits](docs/browser-transfer-design.md#edits) it sent before and holds the text the reader left in it. Where its
   old element had already left the page, as it can on a slow Blazor Server connection, it numbered its edits afresh,
   so an edit could be dropped or applied to the wrong text, and text not yet sent was lost.
+- A form's actions wait for the hex value a [`FormaColorPicker`](docs/component-catalog.md#formacolorpicker) is still
+  receiving, and the picker says on its field when its text can't follow the reader's edits, as the text inputs do.
 
 ## `1.0.0-preview.4`
 

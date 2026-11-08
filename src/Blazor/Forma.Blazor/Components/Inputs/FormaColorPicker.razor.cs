@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -16,6 +17,19 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
     /// <summary>Whether the picker shows an alpha (opacity) slider and accepts 8-digit hex values.</summary>
     [Parameter] public bool ShowAlpha { get; set; }
 
+    private DomTextEdits _edits = default!;
+
+    // The hex value the field renders, which a render never writes back over the reader's typing.
+    private string? ShownText
+        => _edits.GetShownText(CurrentValueAsString);
+
+    private int MaxLength
+        => ShowAlpha ? 9 : 7;
+
+    // The hex value reaches the component as the reader commits it, as the field's change does.
+    private TextEditOptions EditOptions
+        => new() { MaxLength = MaxLength };
+
     private string RgbHex => CurrentValueAsString?.Length >= 7
         ? CurrentValueAsString[..7]
         : "#000000";
@@ -25,11 +39,28 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
         : 100;
 
     /// <inheritdoc />
+    protected override void OnInitialized()
+    {
+        _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
+        JoinForm(_edits.SettleAsync);
+    }
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
-    private void HandleHexInput(ChangeEventArgs args) =>
-        CurrentValueAsString = args.Value?.ToString();
+    /// <inheritdoc />
+    protected override Task OnAfterRenderAsync(bool firstRender)
+        => _edits.SyncAsync(RootElement, CurrentValueAsString, EditOptions);
+
+    private Task HandleTextChangedAsync(TextChange change)
+    {
+        ReportTextFault(change.IsFaulted, L["Your text didn't arrive in full. Edit it to try again."]);
+        CurrentValueAsString = change.Text;
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
 
     private void HandleNativeInput(string? rgb)
     {
@@ -84,4 +115,11 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
         (value.Length != 9 || ShowAlpha) &&
         value[0] == '#' &&
         value[1..].All(char.IsAsciiHexDigit);
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _edits.DisposeAsync();
+        await base.DisposeAsyncCore();
+    }
 }
