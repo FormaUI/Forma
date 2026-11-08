@@ -523,10 +523,10 @@ Each is set up as the library's README sets a host up, behind build files of its
 Forma's packages and take nothing from the repository's build. They are listed in a solution of their own,
 `examples/Forma.Examples.slnx`, which restores once the browser or mobile step has packed the packages.
 
-**The examples restore into a packages folder of their own**, `artifacts/browser/restored`, which their `nuget.config`
-names, so the machine's package cache never holds what the repository packed. The browser step packs the solution
-at the version the root properties file declares, clears that version from the examples' packages folder, publishes
-the examples and drives them.
+**The examples restore into a packages folder of their own**, `artifacts/browser/restored`, which their build
+properties name over a machine's `NUGET_PACKAGES`, so the machine's package cache never holds what the repository
+packed. The browser step packs the solution at the version the root properties file declares, clears that version
+from the examples' packages folder, publishes the examples and drives them.
 
 **The smoke checks** start each example and use it once:
 

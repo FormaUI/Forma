@@ -12,4 +12,13 @@
         <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     </PropertyGroup>
 
+    <!--
+        The examples restore into a packages folder of their own, so the packages the gate packed never reach the
+        machine's cache and one restored there never stands in for one just packed. The property holds the folder
+        over the NUGET_PACKAGES variable a machine may set, which takes precedence over the NuGet configuration's.
+    -->
+    <PropertyGroup>
+        <RestorePackagesPath>$([MSBuild]::NormalizeDirectory('$(MSBuildThisFileDirectory)', '..', 'artifacts', 'browser', 'restored'))</RestorePackagesPath>
+    </PropertyGroup>
+
 </Project>

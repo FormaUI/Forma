@@ -7,7 +7,7 @@
         example's are on Windows, take none of the repository's analyzer rules. The SDK reads only the .editorconfig
         files above the sources a project names, so the compile is handed this one.
     -->
-    <Target Name="FormaExamplePackageFolderEditorConfig" BeforeTargets="CoreCompile" Condition="'$(NuGetPackageRoot)' != ''">
+    <Target Name="FormaExamplePackageFolderEditorConfig" BeforeTargets="CoreCompile" Condition="'$(NuGetPackageRoot)' != '' And '$([MSBuild]::NormalizeDirectory($(NuGetPackageRoot)))' == '$(RestorePackagesPath)'">
         <WriteLinesToFile File="$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)')).editorconfig" Lines="root = true" Overwrite="true" WriteOnlyWhenDifferent="true" />
 
         <ItemGroup>

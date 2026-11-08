@@ -552,10 +552,21 @@ try {
         $null = New-Item -ItemType Directory -Path (Join-Path $restored $package)
     }
 
-    [System.IO.File]::WriteAllText((Join-Path $examplesRoot 'nuget.config'), '<configuration><config><add key="globalPackagesFolder" value="../restored" /></config></configuration>')
+    # A machine's own packages folder, which the examples' properties hold their folder over, holds the same packages.
+    $machinePackages = Join-Path $exampleFolder 'machine'
+    $null = New-Item -ItemType Directory -Path (Join-Path $machinePackages 'formaui-net.a/1.0.0-preview.1')
+    [System.IO.File]::WriteAllText((Join-Path $examplesRoot 'Directory.Build.props'), '<Project><PropertyGroup><RestorePackagesPath>$(MSBuildThisFileDirectory)../restored/</RestorePackagesPath></PropertyGroup></Project>')
 
     $module = Get-Module Forma.Build
-    & $module { param($Examples, $Version) Clear-ExamplePackage -Examples $Examples -Version $Version } $examplesRoot '1.0.0-preview.1'
+    $previousPackages = $env:NUGET_PACKAGES
+    $env:NUGET_PACKAGES = $machinePackages
+
+    try {
+        & $module { param($Examples, $Version) Clear-ExamplePackage -Examples $Examples -Version $Version } $examplesRoot '1.0.0-preview.1'
+    }
+    finally {
+        $env:NUGET_PACKAGES = $previousPackages
+    }
 
     $wrong = @(
         foreach ($package in @('formaui-net.a/1.0.0-preview.1', 'formaui-net.b/1.0.0-preview.1')) {
@@ -565,10 +576,12 @@ try {
         foreach ($package in @('formaui-net.a/0.9.0', 'other.c/1.0.0-preview.1')) {
             if (-not (Test-Path -LiteralPath (Join-Path $restored $package))) { "$package was removed, which isn't Forma's at the version cleared" }
         }
+
+        if (-not (Test-Path -LiteralPath (Join-Path $machinePackages 'formaui-net.a/1.0.0-preview.1'))) { "the machine's packages folder, which NUGET_PACKAGES names, was cleared" }
     )
 
     $examplePackages = [pscustomobject]@{
-        Name     = 'a version is cleared from the packages folder the examples'' configuration names'
+        Name     = 'a version is cleared from the packages folder the examples'' properties name, whatever NUGET_PACKAGES names'
         Passed   = $wrong.Count -eq 0
         Problems = $wrong
         Output   = ''
@@ -576,7 +589,7 @@ try {
 }
 catch {
     $examplePackages = [pscustomobject]@{
-        Name     = 'a version is cleared from the packages folder the examples'' configuration names'
+        Name     = 'a version is cleared from the packages folder the examples'' properties name, whatever NUGET_PACKAGES names'
         Passed   = $false
         Problems = @("the check could not be made: $($_.Exception.Message)")
         Output   = ''

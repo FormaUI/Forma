@@ -1457,9 +1457,9 @@ function Test-PackageFile {
 Removes a version of Forma's packages from the packages folder the example hosts restore into.
 
 .DESCRIPTION
-The example hosts' NuGet configuration names a packages folder of their own, which NuGet reports when asked from
-their folder, and a package of the version found there is removed, so the examples restore the packages just
-packed rather than an earlier run's of the same version.
+The example hosts' build properties name a packages folder of their own, read as MSBuild evaluates them, and a
+package of the version found there is removed, so the examples restore the packages just packed rather than an
+earlier run's of the same version.
 #>
 function Clear-ExamplePackage {
     [CmdletBinding()]
@@ -1468,16 +1468,14 @@ function Clear-ExamplePackage {
         [Parameter(Mandatory)] [string] $Version
     )
 
-    Push-Location -LiteralPath $Examples
+    $properties = Join-Path $Examples 'Directory.Build.props'
+    $folder = @(dotnet msbuild $properties -getProperty:RestorePackagesPath -nologo) | Select-Object -Last 1
 
-    try {
-        $folder = (dotnet nuget locals global-packages --list --force-english-output) -replace '^global-packages:\s*', ''
-    }
-    finally {
-        Pop-Location
+    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($folder)) {
+        throw "The examples' build properties, $properties, name no packages folder to restore into: $folder"
     }
 
-    Get-ChildItem -LiteralPath $folder -Directory -Filter 'formaui-net.*' -ErrorAction SilentlyContinue |
+    Get-ChildItem -LiteralPath $folder.Trim() -Directory -Filter 'formaui-net.*' -ErrorAction SilentlyContinue |
         ForEach-Object { Join-Path $_.FullName $Version } |
         Where-Object { Test-Path -LiteralPath $_ } |
         ForEach-Object { Remove-Item -LiteralPath $_ -Recurse -Force }
@@ -1557,8 +1555,8 @@ breaks the browser fails here rather than in a host. Both clients are published 
 the budgets were measured in, into folders emptied first, since a publish names its files by their content and
 an earlier publish's files would be counted beside the new ones. The example hosts are built from the solution's
 packages rather than its projects, as a host outside the repository builds: the solution is packed at the version
-the root properties file declares, the examples restore into a packages folder of their own, which their NuGet
-configuration names, and that version is cleared from it first, so a package an earlier run restored never stands
+the root properties file declares, the examples restore into a packages folder of their own, which their build
+properties name, and that version is cleared from it first, so a package an earlier run restored never stands
 in for the one just packed. The examples' smoke checks run first, each starting
 an example afresh and turning a page of the library's pagination, and the browser check after them, each run
 reporting. The WebView check host and the Blazor Hybrid example hosts are published on Windows alone, the one platform WebView2 runs on, and their checks report themselves skipped
