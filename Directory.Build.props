@@ -30,10 +30,11 @@
         <VersionSuffix>preview.5</VersionSuffix>
     </PropertyGroup>
 
-    <!-- Reports the .editorconfig IDE* code-style severities from the compiler, not just the IDE. -->
+    <!-- Reports the .editorconfig IDE* code-style severities from the compiler, not just the IDE, and fails the build on any warning, the compiler's or MSBuild's. -->
     <PropertyGroup>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
         <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <MSBuildTreatWarningsAsErrors>true</MSBuildTreatWarningsAsErrors>
     </PropertyGroup>
 
 </Project>

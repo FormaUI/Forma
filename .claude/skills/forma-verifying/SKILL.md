@@ -7,7 +7,7 @@ description: The build and verification gate — the build, tests, format check,
 
 The gate is the build, every test project, the format check, the locale lint, the script tests and the browser check, all passing, and the showcase for anything that renders. The repository's own documentation lists the commands.
 
-Every compiler warning is a build failure: warnings are errors for source and tests alike, the `.editorconfig` severity table decides what the compiler reports, and the answer to an unwanted diagnostic is that table, never a local suppression.
+Every warning, the compiler's or MSBuild's, is a build failure: warnings are errors for source, tests and the examples alike, the `.editorconfig` severity table decides what the compiler reports, and the answer to an unwanted diagnostic is that table, never a local suppression.
 
 No project generates a documentation file, so nothing reports an undocumented public member. Turn `GenerateDocumentationFile` on for one throwaway, non-incremental build and filter its output for `CS1591`.
 
