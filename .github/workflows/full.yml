@@ -137,9 +137,10 @@ jobs:
         if: matrix.attempt != 1
         run: pwsh ./scripts/build/browser.ps1
 
-      # A job that failed says so beside its results, so the nightly report finds a failure outside the checks too.
+      # A job that failed says so beside its results, so the nightly report finds a failure outside the checks too; a job
+      # that ran out of time is cancelled rather than failed, and says so as well.
       - name: Note the job's failure
-        if: failure()
+        if: failure() || cancelled()
         shell: pwsh
         run: New-Item -ItemType File -Force -Path 'artifacts/browser/results/job-failed' | Out-Null
 
@@ -216,12 +217,13 @@ jobs:
 
       # A device that went unreachable is described where it happened: its process, the runner's memory and its log.
       - name: Describe the Android emulator
-        if: failure() && matrix.platform == 'Android'
+        if: (failure() || cancelled()) && matrix.platform == 'Android'
         uses: ./.github/actions/android-emulator-state
 
-      # A job that failed says so beside its results, so the nightly report finds a failure outside the checks too.
+      # A job that failed says so beside its results, so the nightly report finds a failure outside the checks too; a job
+      # that ran out of time is cancelled rather than failed, and says so as well.
       - name: Note the job's failure
-        if: failure()
+        if: failure() || cancelled()
         shell: pwsh
         run: New-Item -ItemType File -Force -Path 'artifacts/browser/mobile-results/job-failed' | Out-Null
 
@@ -266,12 +268,13 @@ jobs:
 
       # A device that went unreachable is described where it happened: its process, the runner's memory and its log.
       - name: Describe the Android emulator
-        if: failure()
+        if: failure() || cancelled()
         uses: ./.github/actions/android-emulator-state
 
-      # A job that failed says so beside its results, so the nightly report finds a failure outside the checks too.
+      # A job that failed says so beside its results, so the nightly report finds a failure outside the checks too; a job
+      # that ran out of time is cancelled rather than failed, and says so as well.
       - name: Note the job's failure
-        if: failure()
+        if: failure() || cancelled()
         shell: pwsh
         run: New-Item -ItemType File -Force -Path 'artifacts/browser/results/job-failed' | Out-Null
 
@@ -289,7 +292,8 @@ jobs:
   report:
     name: report
     needs: [commit, gate, mobile, android]
-    if: always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+    # A run cancelled as a whole files nothing; a job of it that ran out of time is reported as failed.
+    if: always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest
 
     permissions:
