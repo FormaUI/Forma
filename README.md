@@ -490,7 +490,17 @@ Two requirements hold for a coordinated page:
 - **`FormaPageHead` is in the page's head.** It publishes the cultures the server rendered the page in, which the
   page's coordinator starts from.
 
-**The client** registers its half:
+**The client** installs, in its own project, the library's WebAssembly half, the JSON localization backend and the
+locale packs of the languages it shows:
+
+```pwsh
+dotnet add package formaui-net.Blazor.WebAssembly --prerelease
+dotnet add package formaui-net.Framework.Localization.Json --prerelease
+dotnet add package formaui-net.Blazor.Locales.Hebrew --prerelease
+dotnet add package formaui-net.Blazor.Locales.Spanish --prerelease
+```
+
+It registers its half:
 
 <!-- example: examples/Forma.Examples.Coordinated.Client/Program.cs -->
 ```csharp
