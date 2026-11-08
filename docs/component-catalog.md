@@ -87,7 +87,7 @@ Forma.Blazor/Components/
     ├── ✅ FormaRestArea
     └── ✅ FormaWindow
 
-src/
+src/Blazor/
 ├── (1 / 1) Forma.Blazor.Composer/
 │   └── ✅ FormaComposer
 ├── (2 / 2) Forma.Blazor.Composer/RichTextEditor/

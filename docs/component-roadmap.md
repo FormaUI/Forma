@@ -34,7 +34,7 @@ Forma.Blazor/Components/
 └── (1) Windows/
     └── FormaLaunchBar
 
-src/
+src/Blazor/
 └── (1) Forma.Blazor.Gallery/
     └── FormaGallery
 ```
