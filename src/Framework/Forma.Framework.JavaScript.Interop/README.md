@@ -63,7 +63,9 @@ and `RuntimeId`, attaches it from `OnAfterRenderAsync`, and disposes it from `Di
 attach that a later attach, a detach or the disposal overtakes releases the instance it gets and
 reports that it did not attach, so a component disposed mid-attach leaves nothing attached; a module
 whose import is still under way is released once it completes, without the disposal waiting for it. A
-service builds its own environment from the runtime and logger it is given:
+call on the attached instance still in flight as a detach or the disposal releases it reports that it did
+not run, so a teardown never waits behind a call a reloaded Blazor Hybrid page never answers. A service
+builds its own environment from the runtime and logger it is given:
 
 ```csharp
 _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());

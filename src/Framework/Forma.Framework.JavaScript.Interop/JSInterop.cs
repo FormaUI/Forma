@@ -4,16 +4,20 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
 
 /// <summary>A JS module attached to an element.</summary>
 /// <remarks>
 /// Every attach and detach starts a new generation, so an attach answering after a later attach, a detach or the
-/// disposal has superseded it releases the instance it got rather than holding it.
+/// disposal has superseded it releases the instance it got rather than holding it. A call on the attached instance
+/// ends as its attachment is released, reporting that it didn't run, so a release never waits behind a call a
+/// runtime leaves unanswered, as Blazor Hybrid leaves a reloaded page's.
 /// </remarks>
 public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposable
 {
     private readonly JSModule _module = new(js, path);
     private IJSObjectReference? _handle;
+    private CancellationTokenSource? _attachment;
     private int _generation;
 
     /// <summary>Whether the module is currently attached.</summary>
@@ -35,6 +39,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         }
 
         _handle = handle;
+        _attachment = handle is null ? null : new CancellationTokenSource();
 
         return handle is not null;
     }
@@ -59,10 +64,16 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
             return false;
         }
 
+        var released = _attachment!.Token;
+
         try
         {
-            await _handle.InvokeVoidAsync(identifier, args);
+            await AwaitWhileAttachedAsync(_handle.InvokeAsync<IJSVoidResult>(identifier, args), released);
             return true;
+        }
+        catch (OperationCanceledException) when (released.IsCancellationRequested)
+        {
+            return false;
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException)
         {
@@ -79,9 +90,15 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
             return default;
         }
 
+        var released = _attachment!.Token;
+
         try
         {
-            return await _handle.InvokeAsync<TValue>(identifier, args);
+            return await AwaitWhileAttachedAsync(_handle.InvokeAsync<TValue>(identifier, args), released);
+        }
+        catch (OperationCanceledException) when (released.IsCancellationRequested)
+        {
+            return default;
         }
         catch (Exception ex) when (ex is JSDisconnectedException or JSException or OperationCanceledException)
         {
@@ -115,10 +132,34 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         GC.SuppressFinalize(this);
     }
 
+    // The wait ends with the attachment while the call keeps the runtime's own timeout, and a fault arriving after the release is observed.
+    private static async ValueTask<TValue> AwaitWhileAttachedAsync<TValue>(ValueTask<TValue> call, CancellationToken released)
+    {
+        var answer = call.AsTask();
+
+        try
+        {
+            return await answer.WaitAsync(released);
+        }
+        catch (OperationCanceledException) when (released.IsCancellationRequested && !answer.IsCompleted)
+        {
+            _ = answer.ContinueWith(static late => late.Exception, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+            throw;
+        }
+    }
+
+    // The calls still in flight on the attachment end with it.
     private IJSObjectReference? TakeHandle()
     {
         var handle = _handle;
         _handle = null;
+
+        if (_attachment is { } attachment)
+        {
+            _attachment = null;
+            attachment.Cancel();
+            attachment.Dispose();
+        }
 
         return handle;
     }

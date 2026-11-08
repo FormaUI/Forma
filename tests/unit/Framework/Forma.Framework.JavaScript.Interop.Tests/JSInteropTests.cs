@@ -263,6 +263,28 @@ public sealed class JSInteropTests
     public sealed class Detachment
     {
         [Fact]
+        public async Task Should_end_a_call_still_in_flight_as_the_attachment_is_released_without_logging()
+        {
+            // Arrange — a call a reloaded page never answers, as Blazor Hybrid leaves one pending
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var handle = new RecordingJSObjectReference((_, _) => null);
+            handle.Recorder.Hold("measure");
+            await using var moduleReference = new FakeJSObjectReference((identifier, _) => identifier == "attach" ? handle : null);
+            await using var probe = new Probe(CreateEnvironment(FakeJSRuntime.Importing(moduleReference), loggerFactory));
+            await probe.AttachAsync(default);
+            var measuring = probe.MeasureAsync().AsTask();
+
+            // Act
+            await probe.DetachAsync();
+
+            // Assert
+            var isEndedAtOnce = measuring.IsCompleted;
+            Assert.True(isEndedAtOnce);
+            Assert.False(await measuring);
+            Assert.DoesNotContain(loggerFactory.Entries, entry => entry.Message.Contains("measure", StringComparison.Ordinal));
+        }
+
+        [Fact]
         public async Task Should_log_a_dispose_the_runtime_canceled_at_debug()
         {
             // Arrange — as the runtime cancels the calls of a circuit that ends while its components are disposed
