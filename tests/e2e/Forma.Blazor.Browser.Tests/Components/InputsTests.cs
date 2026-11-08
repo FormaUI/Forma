@@ -75,6 +75,32 @@ public sealed partial class InputsTests
     public sealed class TextBox(BrowserHost host)
     {
         [Theory]
+        [InlineData("server")]
+        [InlineData("webassembly")]
+        public async Task Should_take_the_text_typed_before_its_field_listened(string runtime)
+        {
+            // Arrange — the DOM engine's script held on its way, so the field is in the page and nothing listens to it
+            var engine = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-box", page => page.RouteAsync("**/scripts/DomEngine*.js", async route =>
+            {
+                await engine.Task;
+                await route.ContinueAsync();
+            }));
+            await using var _ = context;
+            var textBox = page.Locator("#check");
+            await textBox.PressSequentiallyAsync("Ada Lovelace");
+            await ComponentChecks.MakeRoundTripAsync(page);
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync(string.Empty);
+
+            // Act
+            engine.SetResult();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Ada Lovelace");
+            await Assertions.Expect(textBox).ToHaveValueAsync("Ada Lovelace");
+        }
+
+        [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_bind_text_as_it_is_typed(string runtime)
         {
@@ -82,6 +108,7 @@ public sealed partial class InputsTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-box");
             await using var _ = context;
             var textBox = page.Locator("#check");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
 
             // Act
             await textBox.PressSequentiallyAsync("Ada Lovelace");
@@ -98,6 +125,7 @@ public sealed partial class InputsTests
             // Arrange — text typed and not yet taken
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-box");
             await using var _ = context;
+            await ComponentChecks.WaitForInteractionAsync(page, "#committed", "edits");
             await page.Locator("#committed").PressSequentiallyAsync("Quarterly");
             await ComponentChecks.MakeRoundTripAsync(page);
             await Assertions.Expect(page.Locator("#title")).ToHaveTextAsync(string.Empty);
@@ -133,6 +161,7 @@ public sealed partial class InputsTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-area");
             await using var _ = context;
             var textArea = page.Locator("#check");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
 
             // Act
             await textArea.PressSequentiallyAsync("First line");
@@ -153,6 +182,7 @@ public sealed partial class InputsTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-area");
             await using var _ = context;
             var textArea = page.Locator("#committed");
+            await ComponentChecks.WaitForInteractionAsync(page, "#committed", "edits");
             await textArea.PressSequentiallyAsync("Draft");
             await Assertions.Expect(page.Locator("#committed-count-value")).ToHaveTextAsync("5 / 100");
             await ComponentChecks.MakeRoundTripAsync(page);
@@ -173,6 +203,7 @@ public sealed partial class InputsTests
             // Arrange
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-area");
             await using var _ = context;
+            await ComponentChecks.WaitForInteractionAsync(page, "#committed", "edits");
             await page.Locator("#committed").PressSequentiallyAsync("Pressed");
 
             // Act
@@ -191,6 +222,7 @@ public sealed partial class InputsTests
             await using var _ = context;
             await ComponentChecks.WaitForInputScopeAsync(page, "#scope");
             var textArea = page.Locator("#committed");
+            await ComponentChecks.WaitForInteractionAsync(page, "#committed", "edits");
             await textArea.PressSequentiallyAsync("Shortcut");
 
             // Act
@@ -213,6 +245,7 @@ public sealed partial class InputsTests
             await using var _ = context;
             var passwordBox = page.Locator("#check");
             var toggle = page.Locator(".forma-password-box-toggle button");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
             await passwordBox.PressSequentiallyAsync("Tr0ub4dor&3");
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Tr0ub4dor&3");
             await Assertions.Expect(passwordBox).ToHaveAttributeAsync("type", "password");
@@ -250,6 +283,7 @@ public sealed partial class InputsTests
             await using var _ = context;
             var result = page.Locator("#result");
             var searchBox = page.Locator("#check");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
             await searchBox.PressSequentiallyAsync("forma");
             await Assertions.Expect(result).ToHaveTextAsync("forma");
 
@@ -274,6 +308,7 @@ public sealed partial class InputsTests
             var result = page.Locator("#result");
             var numberInput = page.Locator("#check");
             await ComponentChecks.WaitForInputRouteAsync(page, "#check", "number-input.increase");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
             await numberInput.FillAsync("41");
             await numberInput.PressAsync("Tab");
             await Assertions.Expect(result).ToHaveTextAsync("41");
@@ -300,6 +335,7 @@ public sealed partial class InputsTests
             await using var _ = context;
             var numberInput = page.Locator("#check");
             await ComponentChecks.WaitForInputRouteAsync(page, "#check", "number-input.decrease");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
             await numberInput.FillAsync("150");
 
             // Act
@@ -321,6 +357,7 @@ public sealed partial class InputsTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "currency-input");
             await using var _ = context;
             var currencyInput = page.Locator("#check");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
 
             // Act
             await currencyInput.FillAsync("12.5");
@@ -372,6 +409,7 @@ public sealed partial class InputsTests
             var result = page.Locator("#result");
             var hexInput = page.Locator("#check");
             var colorInput = page.Locator(".forma-color-picker-native");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
             await hexInput.FillAsync("#FF8800");
             await hexInput.PressAsync("Tab");
             await Assertions.Expect(result).ToHaveTextAsync("#FF8800");

@@ -109,6 +109,7 @@ public sealed class NavigationTests
             await ComponentChecks.WaitForInputRouteAsync(page, "#entry .forma-pagination-navigation-input-box", "pagination.go");
             await entry.FocusAsync();
             await page.WaitForFunctionAsync("entry => entry.value.length > 0 && entry.selectionStart === 0 && entry.selectionEnd === entry.value.length", await entry.ElementHandleAsync());
+            await ComponentChecks.WaitForInteractionAsync(page, "#entry .forma-pagination-navigation-input-box", "edits");
 
             // Act
             await entry.PressSequentiallyAsync("7");
@@ -157,6 +158,7 @@ public sealed class NavigationTests
             await using var _ = context;
             var entry = page.Locator("#entry .forma-pagination-navigation-input-box");
             await ComponentChecks.WaitForInputRouteAsync(page, "#entry .forma-pagination-navigation-input-box", "pagination.go");
+            await ComponentChecks.WaitForInteractionAsync(page, "#entry .forma-pagination-navigation-input-box", "edits");
             await entry.FillAsync(string.Empty);
             await entry.EvaluateAsync("entry => entry.value = '9'");
 

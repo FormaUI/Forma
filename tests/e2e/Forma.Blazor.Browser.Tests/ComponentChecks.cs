@@ -103,6 +103,19 @@ public static partial class ComponentChecks
         await page.WaitForFunctionAsync("([selector, action]) => window.formaInputRouter.describe(document.querySelector(selector))?.routes.some(route => route.action === action) === true", new[] { selector, action }).ConfigureAwait(false);
     }
 
+    /// <summary>Waits until the DOM engine has installed the interaction of <paramref name="capability"/> on the element <paramref name="selector"/> finds, its listeners in place, as a text field's edits are once they listen.</summary>
+    /// <param name="page">The page.</param>
+    /// <param name="selector">The element's selector.</param>
+    /// <param name="capability">The capability, such as <c>edits</c>.</param>
+    /// <returns>A task that completes once the interaction listens.</returns>
+    public static async Task WaitForInteractionAsync(IPage page, string selector, string capability)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        await page.EvaluateAsync("async () => { window.formaDomEngine ??= await import(new URL('_content/forma/browser/scripts/DomEngine.js', document.baseURI).href); }").ConfigureAwait(false);
+        await page.WaitForFunctionAsync("([selector, capability]) => window.formaDomEngine.describe(document.querySelector(selector)).capabilities.includes(capability)", new[] { selector, capability }).ConfigureAwait(false);
+    }
+
     /// <summary>Waits until the input router has placed <paramref name="scope"/> among the page's layers, which it does as an open surface registers.</summary>
     /// <param name="scope">The surface's element.</param>
     /// <returns>A task that completes once the surface carries its layer.</returns>

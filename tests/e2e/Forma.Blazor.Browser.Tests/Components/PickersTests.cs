@@ -157,6 +157,7 @@ public sealed class PickersTests
             // Arrange
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "time-box");
             await using var _ = context;
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
 
             // Act
             await page.Locator("#check").FillAsync("14:45");
@@ -249,6 +250,7 @@ public sealed class PickersTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "date-time-picker");
             await using var _ = context;
             var message = page.GetByText("The Start field needs a time.", new() { Exact = true });
+            await ComponentChecks.WaitForInteractionAsync(page, "#check-time", "edits");
             await page.Locator("#check-time").FillAsync(string.Empty);
             await page.Locator("#check-date").FocusAsync();
             await ComponentChecks.MakeRoundTripAsync(page);

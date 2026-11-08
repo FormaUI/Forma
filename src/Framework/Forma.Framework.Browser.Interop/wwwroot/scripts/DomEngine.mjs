@@ -8,6 +8,30 @@ import { RegistrationTable } from './RegistrationTable.mjs';
 /** @typedef {import('./DomWatcher.mjs').Receiver} Receiver */
 /** @typedef {{ token: string, generation: number, capability: string, target: Element, options: object }} Request */
 
+// The capabilities whose interactions are installed on each element, counted across the owners that installed them.
+const installedCapabilities = new WeakMap();
+
+/**
+ * The capabilities whose interactions are installed on `target`, their listeners in place.
+ * @param {Element | null} target
+ */
+export function describeInstalled(target) {
+    return target instanceof Element ? [...(installedCapabilities.get(target)?.keys() ?? [])] : [];
+}
+
+function countInstalled(target, capability, change) {
+    const counts = installedCapabilities.get(target) ?? new Map();
+    const count = (counts.get(capability) ?? 0) + change;
+
+    if (count > 0) {
+        counts.set(capability, count);
+    } else {
+        counts.delete(capability);
+    }
+
+    installedCapabilities.set(target, counts);
+}
+
 /** The interaction each capability attaches. */
 const Interactions = {
     scroll: () => import('./scrolling/ScrollInteraction.mjs').then(module => module.ScrollInteraction),
@@ -61,11 +85,15 @@ export class DomEngine {
             report: (method, ...args) => this.#report(receiver, method, token, args),
         });
         const hold = this.#elements.get(target).hold(() => this.#registrations.remove(token, generation));
+
+        // Counted before the install, whose refusal releases the resource and with it the count.
+        countInstalled(target, capability, 1);
         const isInstalled = this.#registrations.install(token, generation, {
             interaction,
             dispose() {
                 hold.dispose();
                 interaction.dispose();
+                countInstalled(target, capability, -1);
             },
         });
 

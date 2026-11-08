@@ -27,6 +27,7 @@ public sealed class TransferTests
             var (context, page) = await OpenAsync(host, runtime, "transfer");
             await using var _ = context;
             var notes = new string('n', 2_000_000);
+            await WaitForInteractionAsync(page, "#forma-notes", "edits");
             await page.Locator("#forma-notes").FillAsync(notes);
 
             // Act
@@ -82,7 +83,9 @@ public sealed class TransferTests
             var (context, page) = await OpenAsync(host, runtime, "transfer");
             await using var _ = context;
             var notes = new string('h', 3_000_000);
+            await WaitForInteractionAsync(page, "#host-notes", "edits");
             await page.Locator("#host-notes").FillAsync(notes);
+            await WaitForInteractionAsync(page, "#host-name", "edits");
             await page.Locator("#host-name").FillAsync("Ada");
 
             // Act
@@ -103,6 +106,7 @@ public sealed class TransferTests
             var code = page.Locator("#forma-code");
             var message = page.Locator("#forma-form .forma-field-message");
             await WaitForInputScopeAsync(page, "#forma-body .forma-composer-rich-text-canvas");
+            await WaitForInteractionAsync(page, "#forma-code", "edits");
             await code.EvaluateAsync("code => { code.focus(); code.value = 'x'.repeat(100); code.dispatchEvent(new Event('input', { bubbles: true })); code.dispatchEvent(new Event('change', { bubbles: true })); }");
             await Assertions.Expect(message).ToHaveTextAsync("Your text didn't arrive in full. Edit it to try again.");
 

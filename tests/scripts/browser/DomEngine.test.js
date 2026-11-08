@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach, detach, invoke, release, releaseEngine, run } from '#browser/DomEngine.js';
+import { attach, describe as describeElement, detach, invoke, release, releaseEngine, run } from '#browser/DomEngine.js';
 import { attach as watch, detach as unwatch, refresh } from '#browser/DomWatcher.js';
 import { describe as describeScope } from '#input/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
@@ -60,6 +60,32 @@ describe('DomEngine', () => {
 
         expect(isAttached).toBe(true);
         expect(describeScope(pane).routes.map(route => route.action)).toEqual(['focus.next', 'focus.previous', 'focus.first', 'focus.last']);
+    });
+
+    it('describes the interactions installed on an element by capability, once they listen and until they are released', async () => {
+        pane.insertAdjacentHTML('beforeend', '<textarea id="field"></textarea>');
+        const field = pane.querySelector('#field');
+        const before = describeElement(field).capabilities;
+
+        await attach(runtimeKey, fakeOwner(), { token: '3', generation: 1, capability: 'edits', target: field, options: { sendsOnInput: true, text: '', revision: 0 } });
+        const attached = describeElement(field).capabilities;
+        detach(runtimeKey, '3', 1);
+
+        expect(before).toEqual([]);
+        expect(attached).toEqual(['edits']);
+        expect(describeElement(field).capabilities).toEqual([]);
+        expect(describeElement(null).capabilities).toEqual([]);
+    });
+
+    it('describes nothing for an attach a later generation overtook', async () => {
+        pane.insertAdjacentHTML('beforeend', '<textarea id="field"></textarea>');
+        const field = pane.querySelector('#field');
+
+        const overtaken = attach(runtimeKey, fakeOwner(), { token: '3', generation: 1, capability: 'edits', target: field, options: { sendsOnInput: true, text: '', revision: 0 } });
+        detach(runtimeKey, '3', 2);
+        await overtaken;
+
+        expect(describeElement(field).capabilities).toEqual([]);
     });
 
     it('attaches a field\'s edits with the character count the request names', async () => {

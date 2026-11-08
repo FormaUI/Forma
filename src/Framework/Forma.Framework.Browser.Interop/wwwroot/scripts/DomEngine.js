@@ -2,7 +2,7 @@
  * DomEngine — the surface an owner's .NET side calls to act on its elements
  */
 
-import { DomEngine } from './DomEngine.mjs';
+import { DomEngine, describeInstalled } from './DomEngine.mjs';
 import { DomSessionRegistry } from './DomSessionRegistry.mjs';
 
 /** @typedef {import('./DomEngine.mjs').Request} Request */
@@ -58,6 +58,14 @@ export function attach(runtimeKey, receiver, request) {
  */
 export function invoke(runtimeKey, token, generation, command, ...args) {
     return DomSessionRegistry.find(runtimeKey)?.engine?.invoke(token, generation, command, args) ?? null;
+}
+
+/**
+ * The interactions installed on `target`, by capability, once their listeners are in place.
+ * @param {Element | null} target
+ */
+export function describe(target) {
+    return { capabilities: describeInstalled(target) };
 }
 
 /** Releases one of the owner's interactions. */
