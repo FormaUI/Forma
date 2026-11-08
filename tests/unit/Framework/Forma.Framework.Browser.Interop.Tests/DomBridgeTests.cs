@@ -1,7 +1,9 @@
 namespace Forma.Framework.Browser.Interop.Tests;
 
 using Forma.Framework.Browser.Interop.Scrolling;
+using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Browser;
+using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Components;
@@ -97,6 +99,23 @@ public sealed class DomBridgeTests
                 () => Assert.True(observation.IsActive),
                 () => Assert.Equal(LogLevel.Warning, entry.Level),
                 () => Assert.Contains("DomWatcher could not be imported for attach scroll 1.1", entry.Message, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_import_an_entry_once_for_each_call_while_its_imports_fail_as_they_are_made()
+        {
+            // Arrange — a runtime whose connection is gone, failing every import at once
+            using var loggerFactory = new FakeLoggerFactory();
+            var runtime = new RecordingJSRuntime((_, _) => throw new JSDisconnectedException("The circuit is gone."));
+            await using var bridge = new DomBridge(runtime, NullLogger<DomBridge>.Instance);
+            await using var watcher = new DomWatcher(new JSEnvironment(runtime, loggerFactory.CreateLogger("Owner"), Guid.CreateVersion7()), bridge);
+            await using var observation = await WatchAsync(watcher);
+
+            // Act
+            await observation.SyncAsync(Viewport, new ScrollWatchOptions());
+
+            // Assert
+            Assert.Equal(2, runtime.Recorder.GetCalls("import").Count);
         }
     }
 

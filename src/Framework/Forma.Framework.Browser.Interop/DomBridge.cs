@@ -102,7 +102,7 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
     {
         ObjectDisposedException.ThrowIf(_isDisposed, this);
 
-        if (!_modules.TryGetValue(root, out var module) || module.ImportAsync() is { IsFaulted: true } or { IsCanceled: true })
+        if (!_modules.TryGetValue(root, out var module))
         {
             module = new JSModule(_environment, root.Path);
             _modules[root] = module;
