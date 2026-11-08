@@ -30,6 +30,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   Hybrid web view. It raised it on a timer's thread, where the search's render failed and ended the page's session.
 - A `FormaCalendar` day the keyboard focuses is drawn as any day the reader can choose. It was drawn as faintly as an
   unavailable day, its focus ring with it.
+- A composer dialog's confirming action waits for the text its fields are still receiving, such as a long inline
+  picture's address. It went on with what had arrived, so the image dialog asked for an address already entered.
 
 ## `1.0.0-preview.4`
 

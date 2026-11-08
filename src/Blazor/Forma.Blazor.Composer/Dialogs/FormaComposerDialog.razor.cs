@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Composer.Dialogs;
 
 using Forma.Blazor.Components.Feedback;
+using Forma.Blazor.Components.Inputs;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -62,4 +63,15 @@ public sealed partial class FormaComposerDialog : FormaComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
         => ArgumentNullException.ThrowIfNull(Messages);
+
+    // The confirming action sits outside the fields' edit context, so the dialog waits for their text itself.
+    private async Task ConfirmAsync()
+    {
+        if (!await _editContext.SettleEditsAsync())
+        {
+            return;
+        }
+
+        await OnConfirm.InvokeAsync();
+    }
 }

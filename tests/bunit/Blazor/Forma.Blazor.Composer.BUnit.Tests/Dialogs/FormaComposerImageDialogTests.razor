@@ -6,13 +6,16 @@
 @code {
     public sealed class Component
     {
-        private static Task FillAsync(TextFieldProbe fields, IRenderedComponent<ContainerFragment> cut, string label, string value)
+        private static AngleSharp.Dom.IElement GetField(IRenderedComponent<ContainerFragment> cut, string label)
         {
             var field = cut.FindAll("label.forma-field-label")
                 .Single(candidate => candidate.TextContent.Trim().TrimEnd('*', ' ') == label);
 
-            return fields.TypeAsync(cut.Find($"#{field.GetAttribute("for")}"), value);
+            return cut.Find($"#{field.GetAttribute("for")}");
         }
+
+        private static Task FillAsync(TextFieldProbe fields, IRenderedComponent<ContainerFragment> cut, string label, string value)
+            => fields.TypeAsync(GetField(cut, label), value);
 
         private static void Confirm(IRenderedComponent<ContainerFragment> cut)
             => cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
@@ -84,6 +87,27 @@
             // Assert
             Assert.False(inserted);
             Assert.Equal("Enter the address of the image before inserting.", cut.Find(".forma-composer-dialog-error[role=alert]").TextContent.Trim());
+        }
+
+        [Fact]
+        public async Task Should_insert_an_address_still_arriving_as_insert_is_pressed_once_it_arrives()
+        {
+            // Arrange — an inline picture's address too long for one message is on its way as the reader presses Insert
+            using var ctx = new FormaComposerImageDialogTests();
+            var fields = new TextFieldProbe(ctx);
+            ImageDialogResult? result = null;
+            var cut = ctx.Render(@<FormaComposerImageDialog Opened="true" OnInsert="value => result = value" />);
+            var address = "data:image/png;base64,iVBORw0KGgo=";
+            var paste = fields.CommitHeld(GetField(cut, "Source"), address);
+            var confirming = cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").ClickAsync(new());
+
+            // Act
+            await paste.ReleaseAsync();
+            await confirming;
+
+            // Assert
+            Assert.Equal(address, result?.Source);
+            Assert.Empty(cut.FindAll(".forma-composer-dialog-error"));
         }
 
         [Fact]

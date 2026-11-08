@@ -1,10 +1,13 @@
 namespace Forma.Tests.Blazor;
 
+using System.Text;
+
 using AngleSharp.Dom;
 
 using Bunit;
 
 using Forma.Framework.Browser.Interop;
+using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -66,6 +69,24 @@ public sealed class TextFieldProbe
     {
         await TypeAsync(field, text).ConfigureAwait(false);
         await CommitAsync(field).ConfigureAwait(false);
+    }
+
+    /// <summary>Leaves <paramref name="text"/> in <paramref name="field"/> and commits it as the browser sends a text too long for one message, its inserted text streamed and held on its way until the edit is released.</summary>
+    /// <returns>The edit, whose release lets its text arrive.</returns>
+    public HeldEdit CommitHeld(IElement field, string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+
+        var edits = GetField(field);
+        edits.Value = text;
+        var (start, removed, inserted) = Diff(edits.Sent, edits.Value);
+        edits.Sent = edits.Value;
+        var revision = ++edits.Revision;
+        var stream = new HeldStreamReference(Encoding.UTF8.GetBytes(inserted));
+        var transfer = new JSTransfer { Stream = stream, IsText = true };
+        var delivery = _context.Renderer.Dispatcher.InvokeAsync(() => edits.Receiver.EditAsync(edits.Token, revision, start, removed, transfer, isCommit: true));
+
+        return new HeldEdit(stream, delivery);
     }
 
     /// <summary>The text <paramref name="field"/> holds.</summary>
@@ -161,6 +182,51 @@ public sealed class TextFieldProbe
         var revision = ++field.Revision;
 
         return _context.Renderer.Dispatcher.InvokeAsync(() => field.Receiver.EditAsync(field.Token, revision, start, removed, InlineTransfer.Of(inserted), isCommit));
+    }
+
+    /// <summary>An edit whose text is streamed and held on its way.</summary>
+    public sealed class HeldEdit
+    {
+        private readonly HeldStreamReference _stream;
+        private readonly Task _delivery;
+
+        internal HeldEdit(HeldStreamReference stream, Task delivery)
+        {
+            _stream = stream;
+            _delivery = delivery;
+        }
+
+        /// <summary>Lets the edit's text arrive.</summary>
+        /// <returns>A task that completes once the field's edits have taken it.</returns>
+        public Task ReleaseAsync()
+        {
+            _stream.Release();
+
+            return _delivery;
+        }
+    }
+
+    // A text's stream whose reading waits until it is released, as a long paste's chunks are still on their way.
+    internal sealed class HeldStreamReference(byte[] bytes) : IJSStreamReference
+    {
+        // Plain, so the reader's continuation runs where the test releases it.
+        private readonly TaskCompletionSource _released = new();
+
+        public long Length
+            => bytes.Length;
+
+        public void Release()
+            => _released.TrySetResult();
+
+        public async ValueTask<Stream> OpenReadStreamAsync(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+        {
+            await _released.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+
+            return new MemoryStream(bytes, writable: false);
+        }
+
+        public ValueTask DisposeAsync()
+            => ValueTask.CompletedTask;
     }
 
     /// <summary>A field's edits as the browser keeps them: the text it holds, the text it last sent and the revision it stands at.</summary>
