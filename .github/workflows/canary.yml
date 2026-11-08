@@ -22,9 +22,15 @@ jobs:
 
       # The pin exists to stop the toolchain moving underneath the build. This is the one run that wants
       # it to move, and leaving the pin in place would install a newer compiler and then decline to use
-      # it — or fail outright once the pinned build is no longer published.
+      # it — or fail outright once the pinned build is no longer published. The file's test runner stays,
+      # since without it `dotnet test` runs VSTest, which lacks the options the build's test step passes.
       - name: Set the pin aside
-        run: rm global.json
+        shell: pwsh
+        run: |
+          $settings = Get-Content global.json -Raw | ConvertFrom-Json -AsHashtable
+          $settings.Remove('sdk')
+          $settings | ConvertTo-Json -Depth 10 | Set-Content global.json
+          Get-Content global.json
 
       - name: Set up the newest .NET
         uses: actions/setup-dotnet@v6
