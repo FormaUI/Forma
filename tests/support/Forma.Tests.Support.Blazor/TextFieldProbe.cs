@@ -103,6 +103,10 @@ public sealed class TextFieldProbe
         return _context.Renderer.Dispatcher.InvokeAsync(() => field.Receiver.EditAsync(field.Token, revision, start, removed, CreateBrokenTransfer(inserted), isCommit: true));
     }
 
+    /// <summary>Has <paramref name="fieldElement"/> take no text of the owner's own from then on, as a field whose script the owner's writes don't reach.</summary>
+    public void RefuseWrites(IElement fieldElement)
+        => GetField(fieldElement).RefusesWrites = true;
+
     /// <summary>The text <paramref name="fieldElement"/> holds.</summary>
     public string GetText(IElement fieldElement)
         => GetField(fieldElement).Value;
@@ -246,6 +250,8 @@ public sealed class TextFieldProbe
         public int Revision { get; set; }
 
         public bool BreaksNextReplacement { get; set; }
+
+        public bool RefusesWrites { get; set; }
     }
 
     /// <summary>Attaches a field's edits, which go on from where its previous attach left them.</summary>
@@ -283,7 +289,7 @@ public sealed class TextFieldProbe
     {
         protected override Task<int?> HandleAsync(JSRuntimeInvocation invocation)
         {
-            if (probe.FindField(invocation.Arguments[0], invocation.Arguments[1]) is not { } field)
+            if (probe.FindField(invocation.Arguments[0], invocation.Arguments[1]) is not { } field || field.RefusesWrites)
             {
                 return Task.FromResult<int?>(null);
             }

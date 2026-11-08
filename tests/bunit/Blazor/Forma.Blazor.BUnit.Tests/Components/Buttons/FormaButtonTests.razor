@@ -29,13 +29,18 @@
                 <FormaTextBox @bind-Value="model.Text" Label="Name" />
                 <FormaButton OnClick="@(() => saved = model.Text)">Save</FormaButton>
             </FakeFormHost>);
-            await fields.TypeAsync(cut.Find("input"), "Ada");
+            var typing = fields.CommitHeld(cut.Find("input"), "Ada");
+            var clicking = cut.Find("button").ClickAsync(new());
+            var isClickedAtOnce = clicking.IsCompleted;
 
             // Act
-            await cut.Find("button").ClickAsync(new());
+            await typing.ReleaseAsync();
+            await clicking;
 
             // Assert
-            Assert.Equal("Ada", saved);
+            Assert.Multiple(
+                () => Assert.False(isClickedAtOnce),
+                () => Assert.Equal("Ada", saved));
         }
 
         [Fact]

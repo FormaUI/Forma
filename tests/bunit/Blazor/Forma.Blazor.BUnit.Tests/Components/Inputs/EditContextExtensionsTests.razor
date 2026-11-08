@@ -6,7 +6,7 @@
         [Fact]
         public async Task Should_hand_a_plain_form_s_valid_submit_the_text_the_reader_typed()
         {
-            // Arrange — a form of the host's own, on its valid submit alone
+            // Arrange — a form of the host's own, on its valid submit alone, submitted while the typed text is on its way
             using var ctx = new EditContextExtensionsTests();
             var fields = new TextFieldProbe(ctx);
             var model = new FakeModel();
@@ -15,13 +15,18 @@
                 <FormaTextBox @bind-Value="model.Text" Label="Name" />
                 <button type="submit">Save</button>
             </EditForm>);
-            await fields.TypeAsync(cut.Find("input"), "Ada");
+            var typing = fields.CommitHeld(cut.Find("input"), "Ada");
+            var submitting = cut.Find("form").SubmitAsync();
+            var isSubmittedAtOnce = submitting.IsCompleted;
 
             // Act
-            await cut.Find("form").SubmitAsync();
+            await typing.ReleaseAsync();
+            await submitting;
 
             // Assert
-            Assert.Equal("Ada", submitted);
+            Assert.Multiple(
+                () => Assert.False(isSubmittedAtOnce),
+                () => Assert.Equal("Ada", submitted));
         }
 
         [Fact]
@@ -56,15 +61,42 @@
             var cut = ctx.Render(@<FakeFormHost EditContext="@form">
                 <FormaTextBox @bind-Value="model.Text" Label="Name" />
             </FakeFormHost>);
-            await fields.TypeAsync(cut.Find("input"), "Ada");
+            var typing = fields.CommitHeld(cut.Find("input"), "Ada");
+            var validating = cut.InvokeAsync(() => form.ValidateAsync());
+            var isValidatedAtOnce = validating.IsCompleted;
+
+            // Act
+            await typing.ReleaseAsync();
+            var isValid = await validating;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(isValidatedAtOnce),
+                () => Assert.True(isValid),
+                () => Assert.Equal("Ada", model.Text));
+        }
+
+        [Fact]
+        public async Task Should_find_a_form_invalid_while_a_text_the_application_wrote_did_not_reach_its_field()
+        {
+            // Arrange — the application's text written into a field whose script the write doesn't reach, which shows no message
+            using var ctx = new EditContextExtensionsTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel();
+            var form = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" />
+            </FakeFormHost>);
+            fields.RefuseWrites(cut.Find("input"));
+            cut.FindComponent<FormaTextBox>().Render(parameters => parameters.Add(p => p.Value, "Ada"));
 
             // Act
             var isValid = await cut.InvokeAsync(() => form.ValidateAsync());
 
             // Assert
             Assert.Multiple(
-                () => Assert.True(isValid),
-                () => Assert.Equal("Ada", model.Text));
+                () => Assert.False(isValid),
+                () => Assert.Empty(form.GetValidationMessages()));
         }
 
         [Fact]
