@@ -38,8 +38,9 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # A file is code unless it is prose the gate never reads; a README is code, since a check holds the root one's
-      # examples to the example hosts. Every pattern must match, so the exclusions narrow the first.
+      # A file is code unless it is prose nothing reads or packs: a README and a notices file are code, since a package
+      # carries them and a check holds the root README's examples to the example hosts. Every pattern must match, so the
+      # exclusions narrow the first.
       - name: Detect changes
         id: filter
         uses: dorny/paths-filter@ceb8a2b8f2d89434be7ff52d3de7ec3738c5cc9d # v4
@@ -48,7 +49,7 @@ jobs:
           filters: |
             code:
               - '**/*'
-              - '!**/!(README).md'
+              - '!**/!(README|THIRD-PARTY-NOTICES).md'
               - '!docs/**'
               - '!assets/**'
               - '!.github/ISSUE_TEMPLATE/**'
