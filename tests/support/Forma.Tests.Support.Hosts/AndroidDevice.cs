@@ -1,8 +1,7 @@
 namespace Forma.Tests.Hosts;
 
 using System.Diagnostics;
-using System.Net;
-using System.Net.Sockets;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 /// <summary>The Android device or emulator adb reaches: installing a build, starting an application afresh, forwarding its web view's DevTools socket to a port of this machine, and reading what the device shows and logs.</summary>
@@ -85,10 +84,8 @@ public static partial class AndroidDevice
         await LaunchAsync(package).ConfigureAwait(false);
 
         var socket = await WaitForSocketAsync(package).ConfigureAwait(false);
-        var port = GetFreePort();
-        await RunAdbAsync("forward", $"tcp:{port}", $"localabstract:{socket}").ConfigureAwait(false);
 
-        return port;
+        return await ForwardAsync(socket).ConfigureAwait(false);
     }
 
     /// <summary>Stops the application and the forwarding of its web view's socket.</summary>
@@ -185,6 +182,17 @@ public static partial class AndroidDevice
         await RunAdbAsync("shell", "am", "force-stop", ShareSheetPackage).ConfigureAwait(false);
     }
 
+    // adb chooses the port and prints it first, so no other process takes it between its choice and adb's listening on it.
+    private static async Task<int> ForwardAsync(string socket)
+    {
+        var written = await RunAdbAsync("forward", "tcp:0", $"localabstract:{socket}").ConfigureAwait(false);
+        var answer = written.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault();
+
+        return int.TryParse(answer, NumberStyles.None, CultureInfo.InvariantCulture, out var port)
+            ? port
+            : throw new InvalidOperationException($"adb didn't forward the web view's DevTools socket {socket}; it wrote:{Environment.NewLine}{written}");
+    }
+
     // Starts the application's launcher activity, asking again where adb dropped the request before the device ran it.
     private static async Task LaunchAsync(string package)
     {
@@ -233,12 +241,4 @@ public static partial class AndroidDevice
     // What adb says where the device it addresses can't be reached, as each of its versions words it.
     [GeneratedRegex(@"^(?:adb(?:\.exe)?|error): (?<reason>device offline|no devices/emulators found|device '[^']*' not found|device unauthorized|device still authorizing)", RegexOptions.Multiline)]
     private static partial Regex UnreachableDevice();
-
-    private static int GetFreePort()
-    {
-        using var listener = new TcpListener(IPAddress.Loopback, 0);
-        listener.Start();
-
-        return ((IPEndPoint)listener.LocalEndpoint).Port;
-    }
 }
