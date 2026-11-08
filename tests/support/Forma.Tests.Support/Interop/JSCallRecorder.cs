@@ -106,9 +106,10 @@ public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
     }
 
     // Continued synchronously, so the caller's continuation runs where the test answers the call, a renderer's context
-    // included, where an await leaving the context would queue it to the thread pool instead.
+    // included, where an await leaving the context would queue it to the thread pool instead; a call its token cancels ends
+    // canceled, as a runtime's call does.
     private static Task<TValue> AwaitAnswerAsync<TValue>(RecordedCall call, CancellationToken cancellationToken)
-        => call.Answer.Task.WaitAsync(cancellationToken).ContinueWith(answer => (TValue)answer.GetAwaiter().GetResult()!, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+        => call.Answer.Task.WaitAsync(cancellationToken).ContinueWith(answer => (TValue)answer.GetAwaiter().GetResult()!, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
     // A test waiting for a call, resumed apart from the caller, so the test never runs inside the code that made the call.
     private sealed record CallWaiter(string Identifier, Func<RecordedCall, bool> Predicate)

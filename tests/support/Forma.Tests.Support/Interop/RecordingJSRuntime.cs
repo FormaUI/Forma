@@ -19,5 +19,5 @@ public sealed class RecordingJSRuntime(Func<string, object?[], object?> respond)
 
     /// <inheritdoc />
     public ValueTask<TValue> InvokeAsync<TValue>(string identifier, CancellationToken cancellationToken, object?[]? args)
-        => Recorder.TakeAsync<TValue>(identifier, args);
+        => Recorder.TakeAsync<TValue>(identifier, args, cancellationToken);
 }
