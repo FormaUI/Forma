@@ -20,8 +20,8 @@ independent client takes that label from the Hebrew pack, and the coordinated cl
 
 Each application's native window shows its web view's runtime, a string of the host's own from the `.locales`
 folder its build embeds, the library component's label and its pages turning, a switch to English and to
-Hebrew, and another native window to open, its own title in the application's culture, and the application
-keeps the culture from one run to the next.
+Hebrew, and, where the platform opens one, another native window to open, its own title in the application's
+culture, and the application keeps the culture from one run to the next.
 
 ## Build
 
