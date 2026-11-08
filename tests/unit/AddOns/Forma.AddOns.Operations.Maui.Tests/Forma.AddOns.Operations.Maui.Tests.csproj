@@ -11,7 +11,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Operations.Maui\Forma.AddOns.Operations.Maui.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
-        <ProjectReference Include="..\..\..\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
+        <ProjectReference Include="..\..\..\support\Forma.Tests.Support.Maui\Forma.Tests.Support.Maui.csproj" />
     </ItemGroup>
 
 </Project>

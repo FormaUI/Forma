@@ -54,6 +54,7 @@
     <Project Path="tests\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     <Project Path="tests\support\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />
     <Project Path="tests\support\Forma.Tests.Support.Hosts\Forma.Tests.Support.Hosts.csproj" />
+    <Project Path="tests\support\Forma.Tests.Support.Maui\Forma.Tests.Support.Maui.csproj" />
     <Project Path="tests\bunit\Blazor\Forma.Blazor.BUnit.Tests\Forma.Blazor.BUnit.Tests.csproj" />
     <Project Path="tests\unit\Blazor\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
     <Project Path="tests\bunit\Blazor\Forma.Blazor.Explorer.BUnit.Tests\Forma.Blazor.Explorer.BUnit.Tests.csproj" />

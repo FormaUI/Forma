@@ -109,8 +109,8 @@ emoji or icon contracts, destinations over the share contracts, converters over 
 
 **Every assembly has one root namespace unique to it, its project name.** `Forma.Blazor` holds `Forma.Blazor.*`, and
 `Forma.Framework.Icons` holds `Forma.Framework.Icons.*`. The test support projects' are `Forma.Tests`, for the
-bUnit support `Forma.Tests.Blazor`, and for the hosts' lifecycle `Forma.Tests.Hosts`. A locale pack compiles no
-code, so it owns no namespace.
+bUnit support `Forma.Tests.Blazor`, for the hosts' lifecycle `Forma.Tests.Hosts`, and for the MAUI fakes
+`Forma.Tests.Maui`. A locale pack compiles no code, so it owns no namespace.
 
 **A folder and its namespace stay in step**, so `Forma.Blazor/Components/Symbols/` holds
 `Forma.Blazor.Components.Symbols`. The group folder a project sits in, such as `Framework/` or `Blazor/`, stays out of
@@ -391,7 +391,7 @@ features that own them.
   namespace, as `Forma.Blazor.BUnit.Tests.Support`. It moves to `tests/support/Forma.Tests.Support` once a second
   suite uses it.
 - **In `Forma.Tests.Support`**, the types sit in a folder mirroring the production area they serve, such as
-  `Interop/`, `Culture/` and `Maui/`, with `Shared/` for what no area owns and the namespace following the folder:
+  `Interop/`, `Culture/` and `Browser/`, with `Shared/` for what no area owns and the namespace following the folder:
   `Forma.Tests.Interop`, `Forma.Tests.Culture`, `Forma.Tests.Shared`. `FakeJSRuntime` and `FakeJSObjectReference`
   drive interop wrappers, `FakeLoggerFactory` reads what was logged, and `StubStringLocaleFactory` reads what strings
   were asked for. `Localization/Rooted/` stays there with one consumer, since its types' strings sit in that assembly
@@ -406,6 +406,8 @@ features that own them.
     emulator adb reaches, and connects to its web view.
   - Each host starts through one process that keeps what the host writes, for a failure to report, and on Windows
     joins a job of the checks' process, which ends the host if that process ends first.
+- **`tests/support/Forma.Tests.Support.Maui`** holds the fakes of MAUI's share sheet, file system and device that the
+  MAUI AddOn's suites share, so `Forma.Tests.Support` takes no MAUI package into the suites that reference it.
 
 ### Script tests
 

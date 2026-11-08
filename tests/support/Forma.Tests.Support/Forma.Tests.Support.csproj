@@ -27,8 +27,4 @@
         <EmbeddedResource Include="Localization\Rooted\**\*.json" />
     </ItemGroup>
 
-    <ItemGroup>
-        <PackageReference Include="Microsoft.Maui.Essentials" />
-    </ItemGroup>
-
 </Project>
