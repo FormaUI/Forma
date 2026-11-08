@@ -46,6 +46,23 @@ public sealed class JSTransferTests
             Assert.Null(text);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Should_read_a_value_other_than_a_text_as_null(bool isStreamed)
+        {
+            // Arrange
+            const string Json = """{ "tokens": [4, 5] }""";
+            await using var stream = new FakeJSStreamReference(Encoding.UTF8.GetBytes(Json));
+            var transfer = isStreamed ? CreateStreamed(stream, isText: false) : CreateInline(Json);
+
+            // Act
+            var text = await transfer.ReadTextAsync(Accepted, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Null(text);
+        }
+
         [Fact]
         public async Task Should_read_a_text_streamed_as_its_own_bytes()
         {

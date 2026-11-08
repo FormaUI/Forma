@@ -50,6 +50,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A text field with a maximum length, holding a longer text the application gave it, takes its whole text again after
   an edit was lost on its way. It refused that text as longer than it accepts, and its text couldn't follow the
   reader's edits.
+- `JSTransfer.ReadTextAsync` reads a streamed value other than a text as `null`, as it reads one carried inline. It
+  threw an `InvalidOperationException`.
 
 ## `1.0.0-preview.4`
 

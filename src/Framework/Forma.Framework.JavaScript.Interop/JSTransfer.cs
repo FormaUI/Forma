@@ -33,7 +33,7 @@ public sealed class JSTransfer
     /// <summary>Reads the text the transfer carries, at most <paramref name="maximumLength"/> bytes of UTF-8.</summary>
     /// <param name="maximumLength">The size the receiver accepts, in bytes.</param>
     /// <param name="cancellationToken">The token that cancels the read.</param>
-    /// <returns>The text, which is <see langword="null"/> where the browser sent nothing.</returns>
+    /// <returns>The text, which is <see langword="null"/> where the browser sent nothing or a value other than a text.</returns>
     /// <exception cref="JSTransferException">The text is longer than the receiver accepts, or its stream broke.</exception>
     public async ValueTask<string?> ReadTextAsync(long maximumLength, CancellationToken cancellationToken = default)
     {
@@ -50,7 +50,9 @@ public sealed class JSTransfer
 
         if (!IsText)
         {
-            return (await ReadJsonAsync(maximumLength, cancellationToken).ConfigureAwait(false)).GetString();
+            var value = await ReadJsonAsync(maximumLength, cancellationToken).ConfigureAwait(false);
+
+            return value.ValueKind is JsonValueKind.String ? value.GetString() : null;
         }
 
         return await ReadStreamAsync(maximumLength, ReadToEndAsync, cancellationToken).ConfigureAwait(false);
