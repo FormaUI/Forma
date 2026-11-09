@@ -136,6 +136,13 @@ public static partial class ComponentChecks
     public static Task WaitForLayerAsync(ILocator scope)
         => Assertions.Expect(scope).ToHaveAttributeAsync("data-forma-layer", LayerPattern(), new() { Timeout = 30000 });
 
+    /// <summary>Waits until an input inspector's listeners are attached to <paramref name="inspector"/>, which the inspector marks while they are.</summary>
+    /// <param name="inspector">The inspector's element.</param>
+    /// <returns>A task that completes once the inspector listens.</returns>
+    /// <remarks>It waits as long as a page's own waits, as every wait on a script's answer here does.</remarks>
+    public static Task WaitForInspectingAsync(ILocator inspector)
+        => Assertions.Expect(inspector).ToHaveAttributeAsync("data-forma-inspecting", string.Empty, new() { Timeout = 30000 });
+
     /// <summary>Makes a round trip through the runtime rendering the page: a press on the page's round trip, which the runtime handles after every event the page sent before it, and the count it renders in answer.</summary>
     /// <param name="page">The page.</param>
     /// <returns>A task that completes once the runtime has rendered its answer.</returns>

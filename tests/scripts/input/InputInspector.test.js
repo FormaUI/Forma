@@ -95,4 +95,27 @@ describe('InputInspector', () => {
 
         expect(report()).toHaveLength(0);
     });
+
+    it('marks its element while its listeners are attached, and clears the mark once disposed', () => {
+        const panel = document.querySelector('#panel');
+        const attached = panel.hasAttribute('data-forma-inspecting');
+
+        inspector.dispose();
+
+        expect(attached).toBe(true);
+        expect(panel.hasAttribute('data-forma-inspecting')).toBe(false);
+    });
+
+    it('keeps its element marked while another inspector attached to it still listens', () => {
+        const panel = document.querySelector('#panel');
+        const other = attach(panel, { owner: fakeOwner() });
+
+        inspector.dispose();
+        inspector.dispose();
+        const remaining = panel.hasAttribute('data-forma-inspecting');
+        other.dispose();
+
+        expect(remaining).toBe(true);
+        expect(panel.hasAttribute('data-forma-inspecting')).toBe(false);
+    });
 });

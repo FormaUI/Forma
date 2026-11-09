@@ -13,14 +13,12 @@ public sealed class DebuggingTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "input-inspector");
             await using var _ = context;
             await ComponentChecks.WaitForInputRouteAsync(page, "#scope", "check.next");
+            await ComponentChecks.WaitForInspectingAsync(page.Locator("#inspector"));
             var inside = page.Locator("#inside");
             await inside.FocusAsync();
 
-            // Act — the inspector's script attaches in its own time, so the key is pressed until it reports
-            await page.WaitForFunctionAsync(
-                "() => { if (document.querySelector('#inspector .forma-input-inspector-decision')) { return true; } document.getElementById('inside').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowDown', code: 'ArrowDown', bubbles: true })); return false; }",
-                null,
-                new() { PollingInterval = 100 });
+            // Act
+            await inside.PressAsync("ArrowDown");
 
             // Assert
             await Assertions.Expect(page.Locator("#inspector .forma-input-inspector-decision code").Filter(new() { HasText = "check.next" })).ToHaveCountAsync(1);

@@ -28,7 +28,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
 | [Plain forms](#plain-forms) | Editing numbers, dates, times and choices on a statically rendered page |
-| [Field check readiness](#field-check-readiness) | The autofill tracker and the input inspector |
+| [Field check readiness](#field-check-readiness) | The autofill tracker |
 | [The naming sweep](#the-naming-sweep) | The survey's renames after the add-on assemblies', group by group |
 | [Corrections](#corrections) | The button's secondary and danger label colors |
 
@@ -191,10 +191,7 @@ A browser check posts a plain form in `de-DE` and asserts the model the server b
 
 ## Field check readiness
 
-A field check waits for the script it drives to be ready, acts once, and waits for the result. Two scripts give a check nothing to wait on yet:
-
-- **The autofill tracker** moves onto the DOM watcher as the text observation [the DOM watcher plan](dom-watcher-engine-implementation-plan.md#capability-mapping) maps it to, keeping the stylesheet's animation signal and the opt-in class; its check waits for that observation on its input.
-- **The input inspector** marks its element while its listeners are attached, and clears the mark as they are detached.
+A field check waits for the script it drives to be ready, acts once, and waits for the result. The autofill tracker gives a check nothing to wait on yet: it moves onto the DOM watcher as the text observation [the DOM watcher plan](dom-watcher-engine-implementation-plan.md#capability-mapping) maps it to, keeping the stylesheet's animation signal and the opt-in class, and its check waits for that observation on its input.
 
 <a id="the-naming-sweep"></a>
 

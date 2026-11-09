@@ -7,21 +7,29 @@ import { resolve, stack } from './InputRouter.js';
 
 const ObservedTypes = ['keydown', 'pointerdown', 'wheel'];
 
+/** The attribute an element carries while an inspector's listeners are attached to it. */
+const InspectingAttribute = 'data-forma-inspecting';
+
+// The inspectors attached to each element, so the mark stays while any of them listens.
+const inspectorCounts = new WeakMap();
+
 /**
  * @param {Element} target The inspector's element.
  * @param {{ owner: { invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> }, wheelInterval?: number }} options
  */
 export function attach(target, options) {
-    return new InputInspector(options);
+    return new InputInspector(target, options);
 }
 
 class InputInspector {
+    #target;
     #owner;
     #wheelInterval;
     #controller = new AbortController();
     #lastWheel = 0;
 
-    constructor({ owner, wheelInterval = 100 }) {
+    constructor(target, { owner, wheelInterval = 100 }) {
+        this.#target = target;
         this.#owner = owner;
         this.#wheelInterval = wheelInterval;
         const { signal } = this.#controller;
@@ -29,10 +37,17 @@ class InputInspector {
         for (const type of ObservedTypes) {
             document.addEventListener(type, event => this.#report(event), { signal, capture: true, passive: true });
         }
+
+        countInspectors(target, 1);
     }
 
     dispose() {
+        if (this.#controller.signal.aborted) {
+            return;
+        }
+
         this.#controller.abort();
+        countInspectors(this.#target, -1);
     }
 
     #report(event) {
@@ -48,6 +63,23 @@ class InputInspector {
 
         // The owner may already have been disposed by the time the report lands.
         this.#owner.invokeMethodAsync('ReportAsync', describeDecision(resolve(event))).catch(() => {});
+    }
+}
+
+/** Counts an inspector attached to or detached from `target`, marking it while any is attached. */
+function countInspectors(target, change) {
+    if (!(target instanceof Element)) {
+        return;
+    }
+
+    const count = (inspectorCounts.get(target) ?? 0) + change;
+
+    if (count > 0) {
+        inspectorCounts.set(target, count);
+        target.setAttribute(InspectingAttribute, '');
+    } else {
+        inspectorCounts.delete(target);
+        target.removeAttribute(InspectingAttribute);
     }
 }
 

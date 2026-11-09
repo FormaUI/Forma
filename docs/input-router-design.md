@@ -448,7 +448,8 @@ route, the native control, the boundary, the ambient input, or why nothing owns 
 names what decided between rival bindings; `source` says whether the winning route's
 bindings are its defaults or the host's. A boundary is reported as owner with no action,
 so a question about an input the router deliberately left alone still has an answer, and
-`FormaInputInspector` shows the resolutions live.
+`FormaInputInspector` shows the resolutions live, its element carrying
+`data-forma-inspecting` while its listeners are attached.
 
 ## Conflict resolution matrix
 
