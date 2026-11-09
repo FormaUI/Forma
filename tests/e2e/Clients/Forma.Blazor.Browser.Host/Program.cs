@@ -81,6 +81,8 @@ app.UseAntiforgery();
 app.MapStaticAssets();
 app.MapGet("/_check/delayed", (DelayedSwitches switches) => switches.Count);
 app.MapGet("/_check/delayed-failures", (DelayedSwitches switches) => switches.Failures);
+app.MapPost("/_check/delayed/release", (DelayedSwitches switches, CancellationToken cancellationToken) => switches.ReleaseAsync(cancellationToken));
+app.MapGet("/_check/delayed/settled", (int after, DelayedSwitches switches, CancellationToken cancellationToken) => switches.WaitForSettledAsync(after, cancellationToken));
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()
     .AddInteractiveWebAssemblyRenderMode()

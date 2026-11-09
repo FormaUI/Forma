@@ -139,6 +139,27 @@ public sealed class BrowserHost : IAsyncLifetime
     public async Task<int> GetDelayedSwitchFailuresAsync(Uri address)
         => int.Parse(await _client.GetStringAsync(new Uri(address, "_check/delayed-failures")).ConfigureAwait(false), System.Globalization.CultureInfo.InvariantCulture);
 
+    /// <summary>Releases the switches a host holds, past the browser, which a check may hold offline.</summary>
+    /// <param name="address">The host asked.</param>
+    /// <param name="cancellationToken">The token that ends the wait.</param>
+    /// <returns>A task that completes once one of them has started.</returns>
+    public async Task ReleaseDelayedSwitchAsync(Uri address, CancellationToken cancellationToken)
+    {
+        using var response = await _client.PostAsync(new Uri(address, "_check/delayed/release"), content: null, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+    }
+
+    /// <summary>Waits until more of a host's delayed switches have settled than <paramref name="count"/>.</summary>
+    /// <param name="address">The host asked.</param>
+    /// <param name="count">The settled switches already counted.</param>
+    /// <param name="cancellationToken">The token that ends the wait.</param>
+    /// <returns>A task that completes once another has settled.</returns>
+    public async Task WaitForDelayedSwitchAsync(Uri address, int count, CancellationToken cancellationToken)
+    {
+        using var response = await _client.GetAsync(new Uri(address, $"_check/delayed/settled?after={count}"), cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+    }
+
     /// <summary>The WebView check host the component checks open their pages in under the WebView runtime, started as the first of them asks for it.</summary>
     /// <returns>The application.</returns>
     public Task<WebViewApplication> GetWebViewApplicationAsync()

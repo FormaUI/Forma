@@ -6,7 +6,7 @@
 @inject NavigationManager Navigation
 @inject DelayedSwitches Delayed
 
-@* What the culture checks read and press on the Server: the state, text a reader typed, the links to the other culture and to the other pages, switches at once or after a delay, a switch to a pair no route carries, the outcome of the last switch made at once, and a guard on the page's navigations that refuses each or holds it until the check lets it go. *@
+@* What the culture checks read and press on the Server: the state, text a reader typed, the links to the other culture and to the other pages, switches at once or held until the check releases them, a switch to a pair no route carries, the outcome of the last switch made at once, and a guard on the page's navigations that refuses each or holds it until the check lets it go. *@
 <output id="state">@CultureState.UICulture.Name</output>
 <output id="interactive">@RendererInfo.IsInteractive</output>
 <input id="typed" @bind="_typed" />
@@ -22,7 +22,8 @@
 <button id="switch-state" @onclick="SwitchStateAsync">Switch the state</button>
 <button id="switch-unrouted" @onclick="SwitchUnroutedAsync">Switch to a pair no route carries</button>
 <output id="switch-outcome">@_outcome</output>
-<button id="switch-later" @onclick="SwitchLater">Switch the state after a delay</button>
+<button id="switch-later" @onclick="SwitchLater">Switch the state once released</button>
+<output id="held-switch">@_heldSwitchState</output>
 <button id="guard-refuse" @onclick="GuardRefusing">Refuse every navigation</button>
 <button id="guard-hold" @onclick="GuardHolding">Hold each navigation</button>
 <button id="guard-release" @onclick="ReleaseHeldNavigation">Let the held navigation go</button>
@@ -37,6 +38,7 @@
     private string? _typed;
     private string? _outcome;
     private string _guardState = "none";
+    private string _heldSwitchState = "none";
     private readonly List<string> _outcomes = [];
     private IDisposable? _guard;
     private TaskCompletionSource? _heldNavigation;
@@ -83,16 +85,30 @@
         }
     }
 
-    // A switch made while the check holds the browser offline, which the check learns the outcome of over HTTP.
+    // A switch held from the press, which the panel shows, until the check releases it with the browser offline; the check learns over HTTP that it started and how it settled.
     private void SwitchLater()
-        => _ = Task.Run(async () =>
+    {
+        var release = Delayed.WaitForReleaseAsync();
+        _heldSwitchState = "held";
+        _ = Task.Run(async () =>
         {
-            await Task.Delay(TimeSpan.FromSeconds(2));
+            await release;
             await InvokeAsync(async () =>
             {
                 try
                 {
-                    await CultureSwitch.SwitchAsync(Hebrew);
+                    Task switching;
+
+                    try
+                    {
+                        switching = CultureSwitch.SwitchAsync(Hebrew);
+                    }
+                    finally
+                    {
+                        Delayed.RecordStart();
+                    }
+
+                    await switching;
                     Delayed.Record(isFailed: false);
                 }
                 catch (Exception ex) when (ex is InvalidOperationException or JSDisconnectedException or JSException)
@@ -101,6 +117,7 @@
                 }
             });
         });
+    }
 
     // A guard refusing every navigation, as one guarding the reader's unsaved work refuses one.
     private void GuardRefusing()

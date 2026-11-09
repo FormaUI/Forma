@@ -226,17 +226,16 @@ public sealed class CultureTests(BrowserHost host)
         var settled = await host.GetDelayedSwitchesAsync(stateAddress);
         var failed = await host.GetDelayedSwitchFailuresAsync(stateAddress);
         await page.Locator("#switch-later").ClickAsync();
+        await Assertions.Expect(page.Locator("#held-switch")).ToHaveTextAsync("held");
         await context.SetOfflineAsync(true);
 
         // Act — the server switches while the browser is offline, and the switch settles once the browser is back: accepted
         // where the coordinator was reached, failed where the circuit lost its connection
-        await Task.Delay(TimeSpan.FromSeconds(4), TestContext.Current.CancellationToken);
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(TestContext.Current.CancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(60));
+        await host.ReleaseDelayedSwitchAsync(stateAddress, timeout.Token);
         await context.SetOfflineAsync(false);
-        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(60));
-        while (await host.GetDelayedSwitchesAsync(stateAddress) == settled)
-        {
-            await Task.Delay(TimeSpan.FromMilliseconds(200), timeout.Token);
-        }
+        await host.WaitForDelayedSwitchAsync(stateAddress, settled, timeout.Token);
 
         // Assert
         var isFailed = await host.GetDelayedSwitchFailuresAsync(stateAddress) > failed;
