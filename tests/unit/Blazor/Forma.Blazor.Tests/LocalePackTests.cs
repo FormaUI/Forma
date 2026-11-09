@@ -11,7 +11,7 @@ public sealed class LocalePackTests
         var assembly = typeof(LocalePackTests).Assembly;
 
         // Act
-        var names = LocaleAssemblyLoader.GetNames(assembly);
+        var names = LocaleAssemblyLoader.GetPackNames(assembly);
 
         // Assert
         Assert.Equal(["Forma.Blazor.Locales.Hebrew", "Forma.Blazor.Locales.Spanish"], names);

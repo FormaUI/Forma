@@ -10,9 +10,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 *Unreleased*
 
 - `LocalePackLoader` is [`LocaleAssemblyLoader`](src/Framework/Forma.Framework.Localization/README.md#locale-packs),
-  for the packs and the assemblies carrying a host's files it loads, and its `Load` is `LoadPacks`. A test or a host
-  that read a pack's assembly through it calls `LocaleAssemblyLoader.LoadPacks`, and a host filtering its log by the
-  loader's category names `Forma.Framework.Localization.LocaleAssemblyLoader`.
+  for the packs and the assemblies carrying a host's files it loads; its `Load` is `LoadPacks` and its `GetNames` is
+  `GetPackNames`. A test or a host that read a pack's assembly through it calls `LocaleAssemblyLoader.LoadPacks`, one
+  that read the names of an assembly's packs calls `LocaleAssemblyLoader.GetPackNames`, and a host filtering its log by
+  the loader's category names `Forma.Framework.Localization.LocaleAssemblyLoader`.
 - On Android and iOS, the [locale packs](src/Framework/Forma.Framework.Localization/README.md#locale-packs) read are
   the ones the application's build recorded, in its order, as on every other platform. A library that recorded a pack
   for its own use was read as well, and the assembly that loaded last put its packs first, so a pack could override

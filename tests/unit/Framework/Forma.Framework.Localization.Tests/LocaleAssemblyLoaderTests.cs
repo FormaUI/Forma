@@ -74,7 +74,7 @@ public sealed class LocaleAssemblyLoaderTests
             };
 
             // Act
-            var names = LocaleAssemblyLoader.GetNames(assembly);
+            var names = LocaleAssemblyLoader.GetPackNames(assembly);
 
             // Assert
             Assert.Equal(["Contoso.Hebrew", "Contoso.Spanish"], names);

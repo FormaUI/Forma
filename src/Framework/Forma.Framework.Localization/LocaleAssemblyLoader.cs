@@ -11,7 +11,7 @@ public static class LocaleAssemblyLoader
 {
     /// <summary>The name of every pack the assembly was built against, in the order the attributes were written, each named once.</summary>
     /// <param name="assembly">The assembly whose build stamped the names.</param>
-    public static IReadOnlyList<string> GetNames(Assembly assembly)
+    public static IReadOnlyList<string> GetPackNames(Assembly assembly)
     {
         ArgumentNullException.ThrowIfNull(assembly);
 
@@ -77,7 +77,7 @@ public static class LocaleAssemblyLoader
         ArgumentNullException.ThrowIfNull(logger);
 
         var packs = new List<Assembly>();
-        foreach (var name in GetNames(assembly))
+        foreach (var name in GetPackNames(assembly))
         {
             if (TryLoad(name, reason => LocalizationLog.LocalePackNotLoaded(logger, name, reason)) is { } pack)
             {
