@@ -55,6 +55,9 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     private static readonly Type UnderlyingType = Nullable.GetUnderlyingType(typeof(TValue)) ?? typeof(TValue);
     private static readonly bool IsNullable = Nullable.GetUnderlyingType(typeof(TValue)) is not null;
 
+    // A value with an offset, which the browser's own date and time input holds no part of.
+    private static readonly bool HasOffset = UnderlyingType == typeof(DateTimeOffset);
+
     private static readonly FocusWatchOptions FocusOptions = new();
 
     private DomObservation<FocusWatchOptions, FocusState>? _focusState;

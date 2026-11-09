@@ -161,6 +161,13 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     private string? DisplayFormat
         => MinDecimalPlaces > 0 ? $"0.{new string('0', MinDecimalPlaces)}{new string('#', 28 - MinDecimalPlaces)}" : null;
 
+    // The places the number takes, as the browser's own input steps through them: whole ones, the last decimal place the field takes,
+    // or any for a fraction of any places.
+    private string PostedStep
+        => IsWhole || MaxDecimalPlaces == 0 ? "1"
+            : MaxDecimalPlaces is { } places ? $"0.{new string('0', places - 1)}1"
+            : "any";
+
     // A labeled input's width sizes the field wrapper, which is what occupies the row.
     private string? FieldStyle
         => HasLabel && Width is { } width ? $"inline-size: {width}" : null;

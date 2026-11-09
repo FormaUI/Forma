@@ -3,7 +3,29 @@
 @inherits FormaInputBase<TValue>
 
 @{
-    RenderFragment number =
+    // A statically rendered page edits the number in the browser's own input, which shows it in the reader's culture and posts it in
+    // the invariant form the server binds.
+    RenderFragment posted =
+        @<input id="@ElementId"
+                data-rid="@Context.RuntimeId"
+                class="@RootClass"
+                style="@RootStyle"
+                @attributes="AdditionalAttributes"
+                @ref="RootElement"
+                aria-describedby="@DescribedBy"
+                type="number"
+                dir="ltr"
+                name="@ControlName"
+                placeholder="@EffectivePlaceholder"
+                value="@FormValue.Format(CurrentValue)"
+                min="@FormatLimit(Min)"
+                max="@FormatLimit(Max)"
+                step="@PostedStep"
+                disabled="@Disabled"
+                readonly="@ReadOnly"
+                required="@IsRequired" />;
+
+    RenderFragment number = !RendererInfo.IsInteractive ? posted :
         @<input id="@ElementId"
                 data-rid="@Context.RuntimeId"
                 class="@RootClass"

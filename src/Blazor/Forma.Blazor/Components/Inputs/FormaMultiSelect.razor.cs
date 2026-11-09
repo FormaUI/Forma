@@ -33,6 +33,9 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    // Whether a value posts as text the server's form binding reads back, which a statically rendered page's own list needs.
+    private static readonly bool IsPostable = FormValue.IsPostable<TValue>();
+
     private string _searchText = "";
     private ElementReference _anchorElement;
 

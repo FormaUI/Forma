@@ -4,24 +4,46 @@
 
 <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Required="@IsRequired" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
-        <FormaTimeBox @ref="Box"
-                      ElementId="@ElementId"
-                      OwnerRuntimeId="@Context.RuntimeId"
-                      Text="@(_draft.Text ?? CurrentValueAsString)"
-                      Time="@Time"
-                      Suggestions="_suggestions"
-                      FormatTime="FormatTime"
-                      ListLabel="@Label"
-                      OnInput="Draft"
-                      OnChange="HandleChange"
-                      OnChoose="HandleChoose"
-                      OnTextFaultChanged="HandleTextFaultChanged"
-                      Required="@IsRequired"
-                      Disabled="@Disabled"
-                      ReadOnly="@ReadOnly"
-                      InputClass="@RootClass"
-                      InputStyle="@RootStyle"
-                      InputAttributes="AdditionalAttributes"
-                      InputDescribedBy="@DescribedBy" />
+        @if (!RendererInfo.IsInteractive)
+        {
+            @* A statically rendered page edits the time in the browser's own input, which shows it in the reader's culture and posts it in the invariant form the server binds. *@
+            <input id="@ElementId"
+                   data-rid="@Context.RuntimeId"
+                   class="@RootClass"
+                   style="@RootStyle"
+                   @attributes="AdditionalAttributes"
+                   aria-describedby="@DescribedBy"
+                   type="time"
+                   name="@ControlName"
+                   value="@FormValue.FormatTime(Time, HasSeconds)"
+                   min="@FormValue.FormatTime(Min, HasSeconds)"
+                   max="@FormValue.FormatTime(Max, HasSeconds)"
+                   step="@FormValue.FormatStep(Step)"
+                   disabled="@Disabled"
+                   readonly="@ReadOnly"
+                   required="@IsRequired" />
+        }
+        else
+        {
+            <FormaTimeBox @ref="Box"
+                          ElementId="@ElementId"
+                          OwnerRuntimeId="@Context.RuntimeId"
+                          Text="@(_draft.Text ?? CurrentValueAsString)"
+                          Time="@Time"
+                          Suggestions="_suggestions"
+                          FormatTime="FormatTime"
+                          ListLabel="@Label"
+                          OnInput="Draft"
+                          OnChange="HandleChange"
+                          OnChoose="HandleChoose"
+                          OnTextFaultChanged="HandleTextFaultChanged"
+                          Required="@IsRequired"
+                          Disabled="@Disabled"
+                          ReadOnly="@ReadOnly"
+                          InputClass="@RootClass"
+                          InputStyle="@RootStyle"
+                          InputAttributes="AdditionalAttributes"
+                          InputDescribedBy="@DescribedBy" />
+        }
     </ChildContent>
 </FormaField>

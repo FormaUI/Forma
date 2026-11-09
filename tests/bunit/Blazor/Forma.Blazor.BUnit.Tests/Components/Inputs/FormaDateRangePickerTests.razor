@@ -244,6 +244,45 @@
         }
 
         [Fact]
+        public void Should_post_its_committed_range_as_the_interval_of_its_two_dates_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new RangeModel { Range = new DateRange(new DateOnly(2025, 2, 1), new DateOnly(2025, 3, 15)) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" name="Period" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(
+                [("Period", "2025-02-01/2025-03-15")],
+                cut.FindAll("input[type=hidden]").Select(input => (input.GetAttribute("name"), input.GetAttribute("value"))));
+        }
+
+        [Fact]
+        public void Should_post_nothing_once_disabled_and_offer_neither_its_list_nor_its_clear()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new RangeModel { Range = new DateRange(new DateOnly(2025, 2, 1), new DateOnly(2025, 3, 15)) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" Disabled="true" name="Period" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("input[type=hidden]")),
+                () => Assert.True(cut.Find(".forma-date-range-picker-trigger").HasAttribute("disabled")),
+                () => Assert.Empty(cut.FindAll(".forma-date-range-picker-clear")));
+        }
+
+        [Fact]
         public void Should_offer_neither_its_calendar_nor_its_clear_once_disabled()
         {
             // Arrange
@@ -259,6 +298,23 @@
             Assert.Multiple(
                 () => Assert.True(cut.Find(".forma-date-range-picker-trigger").HasAttribute("disabled")),
                 () => Assert.Empty(cut.FindAll(".forma-date-range-picker-clear")));
+        }
+
+        [Fact]
+        public void Should_post_nothing_for_an_empty_range_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new RangeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" name="Period" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Empty(cut.FindAll("input[type=hidden]"));
         }
     }
 

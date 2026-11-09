@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using System.Globalization
 @using Forma.Framework.Browser.Interop.Behaviors
 @code {
     public sealed class Component
@@ -372,20 +373,25 @@
         }
 
         [Fact]
-        public void Should_render_its_trigger_disabled_before_the_renderer_is_interactive()
+        public void Should_choose_in_the_browser_s_own_list_before_the_renderer_is_interactive_each_chosen_option_posting_its_value()
         {
             // Arrange
             using var ctx = new FormaMultiSelectTests();
             ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
-            var model = new FakeModel();
+            var model = new FakeModel { Categories = [Options[1].Value, 42] };
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" />
+                <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="Options" Label="Categories" name="Categories" />
             </FakeFormHost>);
 
-            // Assert
-            Assert.True(cut.Find(".forma-multi-select-trigger").HasAttribute("disabled"));
+            // Assert — the value added beyond the options among the chosen
+            var list = cut.Find("select");
+            Assert.Multiple(
+                () => Assert.True(list.HasAttribute("multiple")),
+                () => Assert.Equal("Categories", list.GetAttribute("name")),
+                () => Assert.Equal([.. Options.Select(option => option.Value.ToString(CultureInfo.InvariantCulture)), "42"], cut.FindAll("option").Select(option => option.GetAttribute("value"))),
+                () => Assert.Equal([Options[1].Value.ToString(CultureInfo.InvariantCulture), "42"], cut.FindAll("option[selected]").Select(option => option.GetAttribute("value"))));
         }
     }
 }

@@ -1045,6 +1045,71 @@
         }
     }
 
+    public sealed class StaticRender
+    {
+        [Fact]
+        public void Should_edit_the_number_in_the_browser_s_own_input_holding_it_in_the_invariant_form_with_its_limits_and_places()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new Stock { Price = 1234.5m };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Price" Label="Price" Min="0" Max="99999.99m" MaxDecimalPlaces="2" name="Price" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input");
+            Assert.Equal("number", input.GetAttribute("type"));
+            Assert.Equal("Price", input.GetAttribute("name"));
+            Assert.Equal("1234.5", input.GetAttribute("value"));
+            Assert.Equal("0", input.GetAttribute("min"));
+            Assert.Equal("99999.99", input.GetAttribute("max"));
+            Assert.Equal("0.01", input.GetAttribute("step"));
+        }
+
+        [Fact]
+        public void Should_step_a_whole_number_by_ones_and_a_fraction_of_any_places_by_any()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new Stock();
+            var ratio = 0.25;
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Limit" Label="Limit" Step="5" />
+                <FormaNumberInput @bind-Value="ratio" Label="Ratio" />
+            </FakeFormHost>);
+
+            // Assert
+            var inputs = cut.FindAll("input");
+            Assert.Equal("1", inputs[0].GetAttribute("step"));
+            Assert.Equal("any", inputs[1].GetAttribute("step"));
+            Assert.Equal("0.25", inputs[1].GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_leave_a_disabled_number_out_of_its_form()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new Stock { Limit = 9 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Limit" Label="Limit" Disabled="true" name="Limit" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find("input").HasAttribute("disabled"));
+        }
+    }
+
     private sealed class Stock
     {
         public int? Count { get; set; }

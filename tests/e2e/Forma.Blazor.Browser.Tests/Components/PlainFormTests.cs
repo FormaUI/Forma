@@ -29,6 +29,46 @@ public sealed class PlainFormTests(BrowserHost host)
         await Assertions.Expect(page.Locator("#posted")).ToHaveTextAsync("Ada|s3cret|Notes on engines|True|True|7|#336699");
     }
 
+    [Theory]
+    [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+    public async Task Should_submit_the_numbers_dates_times_and_choices_its_fields_hold(string runtime)
+    {
+        // Arrange
+        var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "plain-form-values");
+        await using var _ = context;
+
+        // Act
+        await page.Locator("#post").ClickAsync();
+
+        // Assert
+        await Assertions.Expect(page.Locator("#posted")).ToHaveTextAsync("9.99|3|9|2026-03-14|09:30|2026-03-14T09:30|Open|green|2026-03-14/2026-03-20");
+    }
+
+    [Fact]
+    public async Task Should_post_numbers_dates_times_and_choices_in_the_form_the_server_binds_whatever_the_culture()
+    {
+        // Arrange — the page rendered in de-DE and read in a browser of the same culture
+        await using var context = await host.Browser.NewContextAsync(new() { BaseURL = (await host.GetComponentsAddressAsync()).ToString(), Locale = "de-DE" });
+        var page = await context.NewPageAsync();
+        await page.GotoAsync("static/plain-form-values?culture=de-DE");
+        await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync("Static False");
+        await Assertions.Expect(page.Locator("#culture")).ToHaveTextAsync("de-DE");
+        await page.Locator("#price").FillAsync("12.5");
+        await page.Locator("#quantity").FillAsync(string.Empty);
+        await page.Locator("#due").FillAsync("2026-03-20");
+        await page.Locator("#at").FillAsync("14:45");
+        await page.Locator("#start-date").FillAsync("2026-03-20T10:00");
+        await page.Locator("#status").SelectOptionAsync(new SelectOptionValue { Label = "Closed" });
+        await page.Locator("#colors").SelectOptionAsync([new SelectOptionValue { Label = "Red" }, new SelectOptionValue { Label = "Blue" }]);
+
+        // Act
+        await page.Locator("#post").ClickAsync();
+
+        // Assert — what was entered and chosen, the optional number cleared, the disabled number left out and the range kept
+        await Assertions.Expect(page.Locator("#culture")).ToHaveTextAsync("de-DE");
+        await Assertions.Expect(page.Locator("#posted")).ToHaveTextAsync("12.5|null|0|2026-03-20|14:45|2026-03-20T10:00|Closed|red,blue|2026-03-14/2026-03-20");
+    }
+
     [Fact]
     public async Task Should_post_what_the_reader_entered_in_each_field_for_the_server_to_bind()
     {

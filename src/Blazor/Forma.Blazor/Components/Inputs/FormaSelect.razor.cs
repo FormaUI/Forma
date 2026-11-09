@@ -39,6 +39,9 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
         new InputRoute(CloseAction, new KeyBinding("Tab")) { PreventDefault = false, Propagation = InputPropagation.Continue },
     ];
 
+    // Whether an option's value posts as text the server's form binding reads back, which a statically rendered page's own list needs.
+    private static readonly bool IsPostable = FormValue.IsPostable<TValue>();
+
     /// <summary>The options offered in the list.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<SelectOption<TValue>> Options { get; set; } = default!;
 

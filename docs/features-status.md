@@ -27,7 +27,6 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [Plain forms](#plain-forms) | Editing numbers, dates, times and choices on a statically rendered page |
 | [The naming sweep](#the-naming-sweep) | The survey's renames after the add-on assemblies', group by group |
 | [Corrections](#corrections) | The button's secondary and danger label colors |
 
@@ -172,19 +171,6 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
 Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.4` are published, as [the changelog](../CHANGELOG.md) lists them. `release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
 
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
-
-<a id="plain-forms"></a>
-
-## Plain forms
-
-A field on a statically rendered page posts with its form, which Blazor's form mapping binds in the invariant culture alone: the mapper hands `CultureInfo.InvariantCulture` to its form data reader, and its options carry no culture. What a reader can edit there, and what the page preserves:
-
-- **Numbers, dates and times** are edited in the browser's own `number`, `date` and `time` inputs, carrying the field's name, its limits, its decimal step and the time precision it supports. The browser and the system localize what the reader sees; the value posted is the invariant form the binder reads.
-- **Choices**, `FormaSelect` and `FormaMultiSelect`, are edited in a native `<select>` and `<select multiple>`. An option posts its value in the binder's form for the value types the binder round-trips, and its localized label is display text.
-- **A date range** keeps its static trigger disabled and posts the committed range's two ends, `{Name}.Start` and `{Name}.End`, so a plain form preserves it. Editing either end is a decision of its own, since it introduces a partial range.
-- **A field the application disables** posts nothing, as a disabled field does.
-
-A browser check posts a plain form in `de-DE` and asserts the model the server bound: a fractional number and a selection changed, several values selected, a prefilled range preserved, an optional field cleared, and a disabled field left out.
 
 <a id="the-naming-sweep"></a>
 

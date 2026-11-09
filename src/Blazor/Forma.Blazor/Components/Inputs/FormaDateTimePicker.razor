@@ -14,41 +14,66 @@
             Required="@IsRequired"
             LabelMode="FieldLabelMode.Above">
     <ChildContent>
-        <div class="forma-date-time-picker-controls">
-            <span id="@DateNameId" class="forma-date-time-picker-name" aria-hidden="true">@L["Date"]</span>
-            <FormaDateBox ElementId="@DateId"
-                          OwnerRuntimeId="@Context.RuntimeId"
-                          Date="@_date"
-                          MinDate="@MinDate"
-                          MaxDate="@MaxDate"
-                          UseNonGregorianMonths="UseNonGregorianMonths"
-                          OnChoose="HandleChooseDate"
-                          OnClear="HandleClearDate"
-                          Required="@IsRequired"
-                          Disabled="@Disabled"
-                          ReadOnly="@ReadOnly"
-                          NameId="@DateNameId"
-                          TriggerClass="@ControlClass"
-                          TriggerAttributes="DateAttributes"
-                          TriggerDescribedBy="@DescribedBy" />
-            <FormaTimeBox @ref="TimeBox"
-                          ElementId="@TimeId"
-                          OwnerRuntimeId="@Context.RuntimeId"
-                          Text="@TimeText"
-                          Time="@_time"
-                          Suggestions="_suggestions"
-                          FormatTime="FormatTime"
-                          ListLabel="@L["Time"]"
-                          OnInput="HandleInputTime"
-                          OnChange="HandleChangeTime"
-                          OnChoose="HandleChooseTime"
-                          OnTextFaultChanged="HandleTextFaultChanged"
-                          Required="@IsRequired"
-                          Disabled="@Disabled"
-                          ReadOnly="@ReadOnly"
-                          InputClass="@ControlClass"
-                          InputAttributes="TimeAttributes"
-                          InputDescribedBy="@DescribedBy" />
-        </div>
+        @if (!RendererInfo.IsInteractive)
+        {
+            @* A statically rendered page edits a date and time in the browser's own input, which shows it in the reader's culture and posts it in the invariant form the server binds; that input holds no offset, so one with an offset is shown and kept as it stands. *@
+            <input id="@DateId"
+                   class="@ControlClass"
+                   @attributes="DateAttributes"
+                   aria-labelledby="@FieldElementIds.LabelId"
+                   aria-describedby="@DescribedBy"
+                   type="datetime-local"
+                   name="@(HasOffset ? null : ControlName)"
+                   value="@FormValue.FormatClock(GetValueClock(CurrentValue), HasSeconds)"
+                   min="@FormValue.FormatClock(MinClock, HasSeconds)"
+                   max="@FormValue.FormatClock(MaxClock, HasSeconds)"
+                   step="@FormValue.FormatStep(Step)"
+                   disabled="@(Disabled || HasOffset)"
+                   readonly="@ReadOnly"
+                   required="@IsRequired" />
+            @if (HasOffset && !Disabled && ControlName is { } name)
+            {
+                <input type="hidden" name="@name" value="@FormValue.Format(CurrentValue)" />
+            }
+        }
+        else
+        {
+            <div class="forma-date-time-picker-controls">
+                <span id="@DateNameId" class="forma-date-time-picker-name" aria-hidden="true">@L["Date"]</span>
+                <FormaDateBox ElementId="@DateId"
+                              OwnerRuntimeId="@Context.RuntimeId"
+                              Date="@_date"
+                              MinDate="@MinDate"
+                              MaxDate="@MaxDate"
+                              UseNonGregorianMonths="UseNonGregorianMonths"
+                              OnChoose="HandleChooseDate"
+                              OnClear="HandleClearDate"
+                              Required="@IsRequired"
+                              Disabled="@Disabled"
+                              ReadOnly="@ReadOnly"
+                              NameId="@DateNameId"
+                              TriggerClass="@ControlClass"
+                              TriggerAttributes="DateAttributes"
+                              TriggerDescribedBy="@DescribedBy" />
+                <FormaTimeBox @ref="TimeBox"
+                              ElementId="@TimeId"
+                              OwnerRuntimeId="@Context.RuntimeId"
+                              Text="@TimeText"
+                              Time="@_time"
+                              Suggestions="_suggestions"
+                              FormatTime="FormatTime"
+                              ListLabel="@L["Time"]"
+                              OnInput="HandleInputTime"
+                              OnChange="HandleChangeTime"
+                              OnChoose="HandleChooseTime"
+                              OnTextFaultChanged="HandleTextFaultChanged"
+                              Required="@IsRequired"
+                              Disabled="@Disabled"
+                              ReadOnly="@ReadOnly"
+                              InputClass="@ControlClass"
+                              InputAttributes="TimeAttributes"
+                              InputDescribedBy="@DescribedBy" />
+            </div>
+        }
     </ChildContent>
 </FormaField>

@@ -38,6 +38,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
   it unmarked.
 - [`FormaInputInspector`](docs/component-catalog.md#formainputinspector) carries `data-forma-inspecting` on its
   element while it listens.
+- On a statically rendered page, [`FormaNumberInput`](docs/component-catalog.md#formanumberinput),
+  `FormaCurrencyInput`, `FormaDatePicker`, `FormaTimePicker` and `FormaDateTimePicker` are edited in the browser's own
+  number, date, time and date-and-time inputs, and `FormaSelect` and `FormaMultiSelect` in the browser's own list,
+  each posting its value in the invariant form Blazor's form binding reads, whatever culture the page renders in, as
+  [the render modes](docs/component-foundations-design.md#render-modes) set out. `FormaDateRangePicker` posts its
+  committed range, and a `FormaDateTimePicker` bound to a `DateTimeOffset` shows its value and posts it as it
+  stands. They drew a disabled trigger or a field with no name, so a plain form sent none of their values.
 - [`DateRange`](docs/component-catalog.md#formadaterangepicker) reads and writes itself as ISO 8601's interval of its
   two dates, `2026-03-14/2026-03-20`, the same in every culture, as `IParsable<DateRange>` and `IFormattable`, so
   Blazor's form binding reads a posted range back.

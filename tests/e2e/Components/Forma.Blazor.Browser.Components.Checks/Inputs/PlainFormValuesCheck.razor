@@ -1,0 +1,86 @@
+@page "/{Runtime}/plain-form-values"
+@using Forma.Blazor.Models
+
+@* A plain form of the fields whose values post in the invariant form the server binds, whatever culture the page renders in: the
+   values the page first renders with, the model's own defaults standing where a post sends nothing, the culture the page renders
+   in, and what the form bound, shown where the check reads them. *@
+<EditForm Model="Model" FormName="values" OnValidSubmit="@(() => _isPosted = true)">
+    <FormaNumberInput Id="price" Label="Price" TValue="decimal" MaxDecimalPlaces="2" @bind-Value="Model!.Price" />
+    <FormaNumberInput Id="quantity" Label="Quantity" TValue="int?" @bind-Value="Model!.Quantity" />
+    <FormaNumberInput Id="locked" Label="Locked" TValue="int" Disabled="true" @bind-Value="Model!.Locked" />
+    <FormaDatePicker Id="due" Label="Due" TValue="DateOnly" @bind-Value="Model!.Due" />
+    <FormaTimePicker Id="at" Label="At" TValue="TimeOnly" @bind-Value="Model!.At" />
+    <FormaDateTimePicker Id="start" Label="Start" TValue="DateTime" @bind-Value="Model!.Start" />
+    <FormaSelect Id="status" Label="Status" Options="Statuses" @bind-Value="Model!.Status" />
+    <FormaMultiSelect Id="colors" Label="Colors" Options="Colors" @bind-Value="Model!.Colors" />
+    <FormaDateRangePicker Id="period" Label="Period" @bind-Value="Model!.Period" />
+    <button id="post" type="submit">Post</button>
+</EditForm>
+<output id="culture">@CultureInfo.CurrentCulture.Name</output>
+<output id="posted">@(_isPosted ? Describe(Model!) : string.Empty)</output>
+
+@code {
+    private static readonly IReadOnlyList<SelectOption<Status>> Statuses = [new(Status.Open, "Open"), new(Status.Closed, "Closed"), new(Status.Archived, "Archived")];
+    private static readonly IReadOnlyList<SelectOption<string>> Colors = [new("red", "Red"), new("green", "Green"), new("blue", "Blue")];
+
+    private bool _isPosted;
+
+    [SupplyParameterFromForm(FormName = "values")]
+    private ValuesModel? Model { get; set; }
+
+    protected override void OnInitialized()
+        => Model ??= new()
+        {
+            Price = 9.99m,
+            Quantity = 3,
+            Locked = 9,
+            Due = new(2026, 3, 14),
+            At = new(9, 30),
+            Start = new(2026, 3, 14, 9, 30, 0),
+            Status = Status.Open,
+            Colors = ["green"],
+            Period = new(new(2026, 3, 14), new(2026, 3, 20)),
+        };
+
+    private static string Describe(ValuesModel model)
+        => string.Join(
+            '|',
+            model.Price.ToString(CultureInfo.InvariantCulture),
+            model.Quantity?.ToString(CultureInfo.InvariantCulture) ?? "null",
+            model.Locked.ToString(CultureInfo.InvariantCulture),
+            model.Due.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+            model.At.ToString("HH:mm", CultureInfo.InvariantCulture),
+            model.Start.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture),
+            model.Status,
+            string.Join(',', model.Colors),
+            model.Period is { } period ? $"{period.Start.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}/{period.End.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}" : "null");
+
+    private enum Status
+    {
+        Open,
+        Closed,
+        Archived,
+    }
+
+    // A model's own defaults differ from what the page first renders, so a field a post leaves out shows as the default.
+    private sealed class ValuesModel
+    {
+        public decimal Price { get; set; }
+
+        public int? Quantity { get; set; } = 1;
+
+        public int Locked { get; set; }
+
+        public DateOnly Due { get; set; }
+
+        public TimeOnly At { get; set; }
+
+        public DateTime Start { get; set; }
+
+        public Status Status { get; set; }
+
+        public List<string> Colors { get; set; } = [];
+
+        public DateRange? Period { get; set; }
+    }
+}

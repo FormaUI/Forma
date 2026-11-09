@@ -34,6 +34,11 @@
                     </FormaButton>
                 }
             </div>
+            @if (!RendererInfo.IsInteractive && !Disabled && CurrentValue is { } range)
+            {
+                @* A statically rendered page keeps the committed range when its form posts, as the interval of its two dates the server binds. *@
+                <input type="hidden" name="@ControlName" value="@FormValue.Format(range)" />
+            }
             <FormaPopover @ref="Popover" Alignment="PopoverAlignment.Start" Anchor="_anchorElement" OnOpenChanged="_ => { }">
                 <div class="forma-date-range-picker-popover">
                     <FormaCalendar Months="2"

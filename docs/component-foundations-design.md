@@ -289,6 +289,18 @@ click handler, keeping the look that carries its state, while a link, a native f
 a form's submit keep what the browser gives them. A component reads the render it is in from the framework's `RendererInfo`, and
 nothing it starts in a static render waits on the browser.
 
+A field posts from a plain form under the name Blazor's own inputs write for its bound value, and
+in the form Blazor's form binding reads, which is the invariant culture's alone. A field whose
+control a script draws, a number, a date, a time or a choice, draws the browser's own control
+under a static render instead, which shows the value in the reader's culture and posts the
+invariant form. A choice posts its options' values where the binding reads the value's type back
+from text, and keeps its disabled trigger otherwise. A date range keeps its committed range in a
+hidden input, as ISO 8601's interval of its two dates, which `DateRange` reads back, and a date
+and time with an offset, which the browser's control holds no part of, shows it disabled and keeps
+it in a hidden input. A field the application disables posts nothing, as a disabled control does,
+and a field that posts nothing, a choice left empty among them, leaves the model's own default in
+its place.
+
 ## What the bases do not carry
 
 - **The self reference.** `DotNetObjectReference<T>` exists only for interop callbacks

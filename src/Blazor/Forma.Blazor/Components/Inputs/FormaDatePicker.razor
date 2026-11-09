@@ -4,21 +4,41 @@
 
 <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Required="@IsRequired" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
-        <FormaDateBox @ref="Box"
-                      ElementId="@ElementId"
-                      OwnerRuntimeId="@Context.RuntimeId"
-                      Date="@Date"
-                      MinDate="MinDate"
-                      MaxDate="MaxDate"
-                      UseNonGregorianMonths="UseNonGregorianMonths"
-                      OnChoose="SelectDayAsync"
-                      OnClear="HandleClear"
-                      Required="@IsRequired"
-                      Disabled="@Disabled"
-                      NameId="@FieldElementIds.LabelId"
-                      TriggerClass="@RootClass"
-                      TriggerStyle="@RootStyle"
-                      TriggerAttributes="AdditionalAttributes"
-                      TriggerDescribedBy="@DescribedBy" />
+        @if (!RendererInfo.IsInteractive)
+        {
+            @* A statically rendered page edits the date in the browser's own input, which shows it in the reader's culture and posts it in the invariant form the server binds. *@
+            <input id="@ElementId"
+                   data-rid="@Context.RuntimeId"
+                   class="@RootClass"
+                   style="@RootStyle"
+                   @attributes="AdditionalAttributes"
+                   aria-describedby="@DescribedBy"
+                   type="date"
+                   name="@ControlName"
+                   value="@FormValue.FormatDate(Date)"
+                   min="@FormValue.FormatDate(MinDate)"
+                   max="@FormValue.FormatDate(MaxDate)"
+                   disabled="@Disabled"
+                   required="@IsRequired" />
+        }
+        else
+        {
+            <FormaDateBox @ref="Box"
+                          ElementId="@ElementId"
+                          OwnerRuntimeId="@Context.RuntimeId"
+                          Date="@Date"
+                          MinDate="MinDate"
+                          MaxDate="MaxDate"
+                          UseNonGregorianMonths="UseNonGregorianMonths"
+                          OnChoose="SelectDayAsync"
+                          OnClear="HandleClear"
+                          Required="@IsRequired"
+                          Disabled="@Disabled"
+                          NameId="@FieldElementIds.LabelId"
+                          TriggerClass="@RootClass"
+                          TriggerStyle="@RootStyle"
+                          TriggerAttributes="AdditionalAttributes"
+                          TriggerDescribedBy="@DescribedBy" />
+        }
     </ChildContent>
 </FormaField>

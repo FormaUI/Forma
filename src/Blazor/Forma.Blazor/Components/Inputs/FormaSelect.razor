@@ -5,59 +5,86 @@
 
 <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Required="@Required" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
-        <div class="forma-select-trigger-wrapper" @ref="_anchorElement">
-            <button id="@ElementId"
+        @if (!RendererInfo.IsInteractive && IsPostable)
+        {
+            @* A statically rendered page chooses in the browser's own list, each option posting its value in the invariant form the server binds. *@
+            var chosen = FindSelectedOption();
+            <select id="@ElementId"
                     data-rid="@Context.RuntimeId"
                     class="@RootClass"
                     style="@RootStyle"
                     @attributes="AdditionalAttributes"
                     @ref="RootElement"
                     aria-describedby="@DescribedBy"
-                    type="button"
-                    disabled="@IsTriggerDisabled"
-                    aria-haspopup="listbox"
-                    aria-expanded="@(IsOpen ? "true" : "false")"
-                    aria-controls="@(IsOpen ? PopoverId : null)"
-                    aria-required="@(Required ? "true" : null)"
-                    @onclick="ToggleAsync">
-                <span class="forma-select-trigger-text@(FindSelectedOption() is null ? " placeholder" : "")">@TriggerText</span>
-                <span class="forma-select-arrow" aria-hidden="true">&#9662;</span>
-            </button>
-        </div>
-        <FormaPopover @ref="Popover" Alignment="PopoverAlignment.Start"
-                    Anchor="_anchorElement"
-                    OnOpenChanged="_ => { }"
-                    OnOpened="HandleOpenedAsync"
-                    InputRoutes="ListRoutes"
-                    OnInputAction="HandleListActionAsync">
-            <div class="forma-select-popover"
-                 id="@PopoverId"
-                 role="listbox"
-                 aria-label="@Label">
-                @for (var i = 0; i < Options.Count; i++)
+                    name="@ControlName"
+                    disabled="@Disabled"
+                    required="@Required">
+                @if (chosen is null)
                 {
-                    var optionIndex = i;
-                    var option = Options[optionIndex];
-                    var selected = IsSelected(option);
-                    <button type="button"
-                            class="forma-select-option@(selected ? " selected" : "")"
-                            role="option"
-                            tabindex="-1"
-                            aria-selected="@(selected ? "true" : "false")"
-                            @ref="_optionElements[optionIndex]"
-                            @onclick="() => SelectAsync(option)">
-                        <span class="forma-select-option-label">@option.Label</span>
-                        @if (selected)
-                        {
-                            <span class="forma-select-option-check" aria-hidden="true">&#10003;</span>
-                        }
-                    </button>
+                    <option value="" selected>@TriggerText</option>
                 }
-                @if (Options.Count == 0)
+                @foreach (var option in Options)
                 {
-                    <div class="forma-select-empty">@L["No options available yet"]</div>
+                    <option value="@FormValue.Format(option.Value)" selected="@(ReferenceEquals(option, chosen))">@option.Label</option>
                 }
+            </select>
+        }
+        else
+        {
+            <div class="forma-select-trigger-wrapper" @ref="_anchorElement">
+                <button id="@ElementId"
+                        data-rid="@Context.RuntimeId"
+                        class="@RootClass"
+                        style="@RootStyle"
+                        @attributes="AdditionalAttributes"
+                        @ref="RootElement"
+                        aria-describedby="@DescribedBy"
+                        type="button"
+                        disabled="@IsTriggerDisabled"
+                        aria-haspopup="listbox"
+                        aria-expanded="@(IsOpen ? "true" : "false")"
+                        aria-controls="@(IsOpen ? PopoverId : null)"
+                        aria-required="@(Required ? "true" : null)"
+                        @onclick="ToggleAsync">
+                    <span class="forma-select-trigger-text@(FindSelectedOption() is null ? " placeholder" : "")">@TriggerText</span>
+                    <span class="forma-select-arrow" aria-hidden="true">&#9662;</span>
+                </button>
             </div>
-        </FormaPopover>
+            <FormaPopover @ref="Popover" Alignment="PopoverAlignment.Start"
+                        Anchor="_anchorElement"
+                        OnOpenChanged="_ => { }"
+                        OnOpened="HandleOpenedAsync"
+                        InputRoutes="ListRoutes"
+                        OnInputAction="HandleListActionAsync">
+                <div class="forma-select-popover"
+                     id="@PopoverId"
+                     role="listbox"
+                     aria-label="@Label">
+                    @for (var i = 0; i < Options.Count; i++)
+                    {
+                        var optionIndex = i;
+                        var option = Options[optionIndex];
+                        var selected = IsSelected(option);
+                        <button type="button"
+                                class="forma-select-option@(selected ? " selected" : "")"
+                                role="option"
+                                tabindex="-1"
+                                aria-selected="@(selected ? "true" : "false")"
+                                @ref="_optionElements[optionIndex]"
+                                @onclick="() => SelectAsync(option)">
+                            <span class="forma-select-option-label">@option.Label</span>
+                            @if (selected)
+                            {
+                                <span class="forma-select-option-check" aria-hidden="true">&#10003;</span>
+                            }
+                        </button>
+                    }
+                    @if (Options.Count == 0)
+                    {
+                        <div class="forma-select-empty">@L["No options available yet"]</div>
+                    }
+                </div>
+            </FormaPopover>
+        }
     </ChildContent>
 </FormaField>

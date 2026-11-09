@@ -450,7 +450,7 @@
         }
 
         [Fact]
-        public void Should_render_its_trigger_disabled_before_the_renderer_is_interactive()
+        public void Should_edit_the_date_in_the_browser_s_own_input_before_the_renderer_is_interactive()
         {
             // Arrange
             using var ctx = new FormaDatePickerTests();
@@ -459,11 +459,36 @@
 
             // Act
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
-                <FormaDatePicker @bind-Value="model.Date" Label="Start date" />
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" MinDate="new DateOnly(2025, 1, 1)" MaxDate="new DateOnly(2025, 12, 31)" name="Date" />
             </FakeFormHost>);
 
             // Assert
-            Assert.True(cut.Find(".forma-date-picker-trigger").HasAttribute("disabled"));
+            var input = cut.Find(".forma-date-picker-trigger");
+            Assert.Multiple(
+                () => Assert.Equal("input", input.LocalName),
+                () => Assert.Equal("date", input.GetAttribute("type")),
+                () => Assert.Equal("Date", input.GetAttribute("name")),
+                () => Assert.Equal("2025-03-15", input.GetAttribute("value")),
+                () => Assert.Equal("2025-01-01", input.GetAttribute("min")),
+                () => Assert.Equal("2025-12-31", input.GetAttribute("max")),
+                () => Assert.False(input.HasAttribute("disabled")));
+        }
+
+        [Fact]
+        public void Should_leave_a_disabled_date_out_of_its_form_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaDatePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel { Date = new DateOnly(2025, 3, 15) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" Disabled="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find("input.forma-date-picker-trigger").HasAttribute("disabled"));
         }
 
         [Fact]

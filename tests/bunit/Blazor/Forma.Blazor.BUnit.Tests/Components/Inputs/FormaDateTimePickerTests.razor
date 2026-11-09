@@ -680,6 +680,56 @@
         }
     }
 
+    public sealed class StaticRender
+    {
+        [Fact]
+        public void Should_edit_the_date_and_time_in_the_browser_s_own_input_holding_it_in_the_invariant_form()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new Booking { Reminder = new DateTime(2026, 3, 14, 9, 30, 0) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Reminder" Label="Reminder" Min="new DateTime(2026, 1, 1, 8, 0, 0)" name="Reminder" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input");
+            Assert.Multiple(
+                () => Assert.Equal("datetime-local", input.GetAttribute("type")),
+                () => Assert.Equal("Reminder", input.GetAttribute("name")),
+                () => Assert.Equal("2026-03-14T09:30", input.GetAttribute("value")),
+                () => Assert.Equal("2026-01-01T08:00", input.GetAttribute("min")),
+                () => Assert.False(input.HasAttribute("disabled")));
+        }
+
+        [Fact]
+        public void Should_show_a_date_and_time_with_an_offset_and_keep_it_as_it_stands()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new Booking { Departure = new DateTimeOffset(2026, 3, 14, 9, 30, 0, TimeSpan.FromHours(2)) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Departure" Label="Departure" name="Departure" />
+            </FakeFormHost>);
+
+            // Assert
+            var shown = cut.Find("input[type=datetime-local]");
+            var kept = cut.Find("input[type=hidden]");
+            Assert.Multiple(
+                () => Assert.Equal("2026-03-14T09:30", shown.GetAttribute("value")),
+                () => Assert.True(shown.HasAttribute("disabled")),
+                () => Assert.False(shown.HasAttribute("name")),
+                () => Assert.Equal("Departure", kept.GetAttribute("name")),
+                () => Assert.Equal("2026-03-14T09:30:00.0000000+02:00", kept.GetAttribute("value")));
+        }
+    }
+
     private static IElement GetTrigger(IRenderedComponent<IComponent> cut)
         => cut.Find(".forma-date-box-trigger");
 

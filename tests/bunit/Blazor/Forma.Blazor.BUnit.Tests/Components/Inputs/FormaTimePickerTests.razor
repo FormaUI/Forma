@@ -794,6 +794,51 @@
         }
     }
 
+    public sealed class StaticRender
+    {
+        [Fact]
+        public void Should_edit_the_time_in_the_browser_s_own_input_holding_it_in_the_invariant_form_with_its_limits_and_step()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new Shift { Start = new(14, 45) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.Start" Label="Starts" Min="new TimeOnly(8, 0)" Max="new TimeOnly(18, 0)" Step="TimeSpan.FromMinutes(15)" name="Start" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input");
+            Assert.Equal("time", input.GetAttribute("type"));
+            Assert.Equal("Start", input.GetAttribute("name"));
+            Assert.Equal("14:45", input.GetAttribute("value"));
+            Assert.Equal("08:00", input.GetAttribute("min"));
+            Assert.Equal("18:00", input.GetAttribute("max"));
+            Assert.Equal("900", input.GetAttribute("step"));
+        }
+
+        [Fact]
+        public void Should_hold_seconds_where_the_field_steps_through_them()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new Shift { Start = new(14, 45, 30) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.Start" Label="Starts" Step="TimeSpan.FromSeconds(15)" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input");
+            Assert.Equal("14:45:30", input.GetAttribute("value"));
+            Assert.Equal("15", input.GetAttribute("step"));
+        }
+    }
+
     private sealed class Shift
     {
         public TimeOnly Start { get; set; }
