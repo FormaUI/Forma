@@ -96,6 +96,7 @@ public sealed partial class InputsTests
             engine.SetResult();
 
             // Assert
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Ada Lovelace");
             await Assertions.Expect(textBox).ToHaveValueAsync("Ada Lovelace");
         }
