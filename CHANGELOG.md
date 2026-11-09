@@ -38,6 +38,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   it unmarked.
 - [`FormaInputInspector`](docs/component-catalog.md#formainputinspector) carries `data-forma-inspecting` on its
   element while it listens.
+- [`DateRange`](docs/component-catalog.md#formadaterangepicker) reads and writes itself as ISO 8601's interval of its
+  two dates, `2026-03-14/2026-03-20`, the same in every culture, as `IParsable<DateRange>` and `IFormattable`, so
+  Blazor's form binding reads a posted range back.
 - [`FormaTextBox`](docs/component-catalog.md#formatextbox), `FormaPasswordBox`, `FormaTextArea`, `FormaColorPicker`,
   `FormaCheckBox`, `FormaToggleSwitch` and `FormaSlider` post their values from a plain form rendered statically,
   under the name Blazor's own inputs write for the bound value, which the server binds back. They wrote no name, so a

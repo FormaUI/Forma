@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Tests.Models;
 
+using System.Globalization;
+
 using Forma.Blazor.Models;
 
 public sealed class DateRangeTests
@@ -84,5 +86,50 @@ public sealed class DateRangeTests
         Assert.Multiple(
             () => Assert.Equal(new DateRange(new DateOnly(2025, 3, 5), new DateOnly(2025, 3, 8)), forward),
             () => Assert.Equal(forward, backward));
+    }
+
+    [Fact]
+    public void Should_write_itself_as_the_iso_interval_of_its_two_dates_in_every_culture()
+    {
+        // Arrange
+        var range = new DateRange(new DateOnly(2025, 3, 5), new DateOnly(2025, 3, 8));
+
+        // Act
+        var text = range.ToString(null, CultureInfo.GetCultureInfo("ar-SA"));
+
+        // Assert
+        Assert.Equal("2025-03-05/2025-03-08", text);
+    }
+
+    [Fact]
+    public void Should_read_back_the_interval_it_writes()
+    {
+        // Arrange
+        var range = new DateRange(new DateOnly(2025, 3, 5), new DateOnly(2025, 3, 8));
+
+        // Act
+        var read = DateRange.Parse(range.ToString(null, CultureInfo.InvariantCulture), CultureInfo.GetCultureInfo("de-DE"));
+
+        // Assert
+        Assert.Equal(range, read);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("2025-03-05")]
+    [InlineData("2025-03-05/2025-03-08/2025-03-09")]
+    [InlineData("05.03.2025/08.03.2025")]
+    [InlineData("2025-03-08/2025-03-05")]
+    public void Should_read_no_range_from_text_other_than_an_interval_of_two_dates_in_order(string? text)
+    {
+        // Act
+        var isRead = DateRange.TryParse(text, CultureInfo.InvariantCulture, out var range);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.False(isRead),
+            () => Assert.Equal(default, range),
+            () => Assert.Throws<FormatException>(() => DateRange.Parse(text ?? string.Empty, CultureInfo.InvariantCulture)));
     }
 }
