@@ -16,12 +16,12 @@
                         aria-describedby="@DescribedBy"
                         type="button"
                         aria-expanded="@(IsOpen ? "true" : "false")"
-                        disabled="@(!RendererInfo.IsInteractive)"
+                        disabled="@(Disabled || !RendererInfo.IsInteractive)"
                         @onclick="ToggleAsync">
                     <span class="forma-date-range-picker-arrow">&#9662;</span>
                     <span class="forma-date-range-picker-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : L["Select Range"])</span>
                 </button>
-                @if (HasValue)
+                @if (HasValue && !Disabled)
                 {
                     <FormaButton Variant="ButtonVariant.Ghost"
                                  Size="ButtonSize.Mini"

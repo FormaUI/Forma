@@ -242,6 +242,24 @@
             // Assert
             Assert.True(cut.Find(".forma-date-range-picker-trigger").HasAttribute("disabled"));
         }
+
+        [Fact]
+        public void Should_offer_neither_its_calendar_nor_its_clear_once_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel { Range = new DateRange(new DateOnly(2025, 2, 1), new DateOnly(2025, 3, 15)) };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" Disabled="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(cut.Find(".forma-date-range-picker-trigger").HasAttribute("disabled")),
+                () => Assert.Empty(cut.FindAll(".forma-date-range-picker-clear")));
+        }
     }
 
     private sealed class RangeModel

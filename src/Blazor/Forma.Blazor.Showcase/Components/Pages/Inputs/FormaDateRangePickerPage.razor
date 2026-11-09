@@ -48,6 +48,13 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["Disabled"]</h2>
+        <div class="demo-box">
+            <FormaDateRangePicker @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" />
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Required in a Form"]</h2>
         <p class="description">@L["A range picker is a form input: submitting without a range shows the validation message under it, and picking both ends clears it."]</p>
         <div class="demo-box">
@@ -88,6 +95,7 @@
         public DateRange? Booking { get; set; }
         public DateRange? HebrewPeriod { get; set; }
         public DateRange? Campaign { get; set; }
+        public DateRange? Locked { get; set; } = DateRange.Between(DateOnly.FromDateTime(DateTime.Today), DateOnly.FromDateTime(DateTime.Today).AddDays(6));
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

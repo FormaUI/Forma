@@ -20,6 +20,9 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
     /// <summary>The field's label and accessible name.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
 
+    /// <summary>Whether the field is disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
     /// <summary>The earliest selectable date.</summary>
     [Parameter] public DateOnly? MinDate { get; set; }
 

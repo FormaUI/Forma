@@ -20,6 +20,9 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
     /// <summary>Whether a date that can be empty is marked as required.</summary>
     [Parameter] public bool Required { get; set; }
 
+    /// <summary>Whether the field is disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
     /// <summary>The earliest selectable date.</summary>
     [Parameter] public DateOnly? MinDate { get; set; }
 
