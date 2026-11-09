@@ -28,7 +28,6 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
 | [Plain forms](#plain-forms) | Editing numbers, dates, times and choices on a statically rendered page |
-| [Field check readiness](#field-check-readiness) | The autofill tracker |
 | [The naming sweep](#the-naming-sweep) | The survey's renames after the add-on assemblies', group by group |
 | [Corrections](#corrections) | The button's secondary and danger label colors |
 
@@ -186,12 +185,6 @@ A field on a statically rendered page posts with its form, which Blazor's form m
 - **A field the application disables** posts nothing, as a disabled field does.
 
 A browser check posts a plain form in `de-DE` and asserts the model the server bound: a fractional number and a selection changed, several values selected, a prefilled range preserved, an optional field cleared, and a disabled field left out.
-
-<a id="field-check-readiness"></a>
-
-## Field check readiness
-
-A field check waits for the script it drives to be ready, acts once, and waits for the result. The autofill tracker gives a check nothing to wait on yet: it moves onto the DOM watcher as the text observation [the DOM watcher plan](dom-watcher-engine-implementation-plan.md#capability-mapping) maps it to, keeping the stylesheet's animation signal and the opt-in class, and its check waits for that observation on its input.
 
 <a id="the-naming-sweep"></a>
 

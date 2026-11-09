@@ -70,7 +70,7 @@ it started moving.
 | `Focus` | `WatchAsync`: whether the reader is within the element, and which of its items holds the focus, named by the attribute its items carry | `AttachAsync`: where the focus goes inside the element, from Tab wrapping, regions Tab visits first, one roving Tab stop and the element taking the focus when the one holding it goes away, each selectable alone |
 | `Intersection` | `WatchAsync`: whether the element is in view of its root, or of the viewport, grown by a margin | |
 | `Scroll` | `WatchAsync`: whether the content can still move each way, how far its frozen parts reach, and its visible extent where asked for | `AttachAsync`: a wheel route moving the content along its inline axis, and buttons stepping it, both run in the browser; `StepAsync`: one step to the next stop |
-| `Text` | `WatchSelectionAsync`: the range a text field's selection spans, as the reader moves it | |
+| `Text` | `WatchSelectionAsync`: the range a text field's selection spans, as the reader moves it; `WatchAutofillAsync`: whether the browser filled the field without the reader typing | |
 
 A text field's edits are a `DomTextEdits`, made over the component's engine as it initializes, from the
 text it first shows: .NET applies the edits the field sends, in revision order, as each is typed or as
@@ -116,29 +116,30 @@ A watcher made with no bridge imports through one of its own, and its observatio
 ## Using a wrapper
 
 A component builds a wrapper from its `Context.JS`, attaches a behavior from `OnAfterRenderAsync`,
-and disposes it from `DisposeAsyncCore`. A text box that marks a value the browser filled in:
+and disposes it from `DisposeAsyncCore`. A file viewer that pans a zoomed image with the pointer:
 
 ```csharp
 using Forma.Framework.Browser.Interop.Behaviors;
 
-public sealed partial class FormaTextBox : FormaInputBase<string?>
+public sealed partial class FormaFileViewer : FormaElementBase
 {
-    private AutofillTracker _autofill = default!;
+    private PanGesture _pan = default!;
+    private ElementReference _imageFrameElement;
 
     protected override void OnInitialized()
-        => _autofill = new AutofillTracker(Context.JS);
+        => _pan = new PanGesture(Context.JS);
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            await _autofill.AttachAsync(RootElement);
+            await _pan.AttachAsync(_imageFrameElement, "file-viewer.pan", "zoomed");
         }
     }
 
     protected override async ValueTask DisposeAsyncCore()
     {
-        await _autofill.DisposeAsync();
+        await _pan.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }
@@ -160,7 +161,6 @@ A wrapper's calls report whether they ran, so a component carries on when its ci
 | Wrapper | What it does |
 | --- | --- |
 | `AnchoredPopover` | Keeps a popover positioned against its anchor while it is open. |
-| `AutofillTracker` | Marks a field the browser filled in without the user typing. |
 | `DropZone` | A drag-and-drop target, telling its owner through `HandleDropAsync` which of its targets took the drop. |
 | `FileDropZone` | Hands dropped files to the file input inside an element. |
 | `FilePreview` | Renders thumbnails of a file input's selected files into a container's images. |

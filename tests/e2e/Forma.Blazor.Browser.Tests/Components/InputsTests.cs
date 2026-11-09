@@ -147,7 +147,7 @@ public sealed partial class InputsTests
             await using var _ = context;
 
             // Act and assert
-            await ExpectAutofillAsync(page, page.Locator("#check"));
+            await ExpectAutofillAsync(page, "#check");
         }
     }
 
@@ -268,7 +268,7 @@ public sealed partial class InputsTests
             await using var _ = context;
 
             // Act and assert
-            await ExpectAutofillAsync(page, page.Locator("#check"));
+            await ExpectAutofillAsync(page, "#check");
         }
     }
 
@@ -425,14 +425,16 @@ public sealed partial class InputsTests
     }
 
     // A headless browser fills no field, so the check starts the animations the stylesheet runs as one is filled and cleared.
-    private static async Task ExpectAutofillAsync(IPage page, ILocator input)
+    private static async Task ExpectAutofillAsync(IPage page, string selector)
     {
+        var input = page.Locator(selector);
+
         // The stylesheet names its animations as the field's script reads them.
         await Assertions.Expect(input).ToHaveCSSAsync("animation-name", "forma-autofill-cancel");
         Assert.True(await page.EvaluateAsync<bool>("() => [...document.styleSheets].some(sheet => [...sheet.cssRules].some(rule => rule instanceof CSSKeyframesRule && rule.name === 'forma-autofill-start'))"));
 
-        // The script attaches in its own time, so the fill starts again until it answers.
-        await page.WaitForFunctionAsync("input => { input.dispatchEvent(new AnimationEvent('animationstart', { animationName: 'forma-autofill-start' })); return input.classList.contains('has-value'); }", await input.ElementHandleAsync());
+        await ComponentChecks.WaitForObservationAsync(page, selector, "autofill");
+        await input.EvaluateAsync("input => input.dispatchEvent(new AnimationEvent('animationstart', { animationName: 'forma-autofill-start' }))");
         await Assertions.Expect(input).ToHaveClassAsync(HasValuePattern());
 
         await input.EvaluateAsync("input => input.dispatchEvent(new AnimationEvent('animationstart', { animationName: 'forma-autofill-cancel' }))");

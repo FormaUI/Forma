@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 
@@ -16,7 +16,8 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     private const int ScoredLength = 8;
     private const int WellScoredLength = 12;
 
-    private AutofillTracker _autofill = default!;
+    private DomObservation<AutofillWatchOptions, AutofillState>? _autofillState;
+    private bool _isAutofilled;
     private ValidationMessageStore _messages = default!;
     private IReadOnlyList<string> _advice = [];
     private bool _hasForbiddenTerm;
@@ -46,6 +47,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
 
     // A password reaches the component as each character is typed, which the strength and the advice follow.
     private static readonly TextEditOptions EditOptions = new() { SendsOnInput = true };
+    private static readonly AutofillWatchOptions AutofillOptions = new();
 
     private PasswordStrength? Strength
         => !StrengthOptions.ShowMeter || string.IsNullOrEmpty(CurrentValue) ? null
@@ -201,7 +203,6 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     {
         _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
         JoinForm(_edits.SettleAsync);
-        _autofill = new AutofillTracker(Context.JS);
         _messages = new ValidationMessageStore(EditContext);
         EditContext.OnValidationRequested += HandleValidationRequested;
     }
@@ -310,14 +311,30 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
 
         if (firstRender)
         {
-            await _autofill.AttachAsync(RootElement);
+            _autofillState = await Context.DomWatcher.GetElement(RootElement).Text.WatchAutofillAsync(HandleAutofillStateAsync);
+        }
+
+        if (_autofillState is { } autofillState)
+        {
+            await autofillState.SyncAsync(RootElement, AutofillOptions);
         }
     }
+
+    private Task HandleAutofillStateAsync(AutofillState state)
+        => InvokeAsync(() =>
+        {
+            if (_isAutofilled != state.IsFilled)
+            {
+                _isAutofilled = state.IsFilled;
+                StateHasChanged();
+            }
+        });
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder
             .Add("forma-field-input")
+            .Add("has-value", _isAutofilled)
             .Add("forma-password-box");
 
     /// <inheritdoc />
@@ -345,7 +362,11 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     {
         await _edits.DisposeAsync();
 
-        await _autofill.DisposeAsync();
+        if (_autofillState is { } autofillState)
+        {
+            await autofillState.DisposeAsync();
+        }
+
         await base.DisposeAsyncCore();
     }
 }

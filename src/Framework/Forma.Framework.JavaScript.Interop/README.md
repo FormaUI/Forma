@@ -19,11 +19,18 @@ using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
 
-public sealed class AutofillTracker(IJSEnvironment js)
-    : JSInterop(js, "./_content/forma/browser/scripts/behaviors/AutofillTracker.js")
+public sealed class PanGesture(IJSEnvironment js)
+    : JSInterop(js, "./_content/forma/browser/scripts/behaviors/PanGesture.js")
 {
-    public ValueTask<bool> AttachAsync(ElementReference input)
-        => AttachCoreAsync(input);
+    public ValueTask<bool> AttachAsync(ElementReference container, string action, string whileClass)
+        => AttachCoreAsync(container, new AttachOptions { Action = action, WhileClass = whileClass });
+
+    private sealed record AttachOptions
+    {
+        public required string Action { get; init; }
+
+        public required string WhileClass { get; init; }
+    }
 }
 ```
 

@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
 
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 
@@ -11,8 +11,10 @@ using Microsoft.AspNetCore.Components;
 /// <summary>A single-line text input, bare or inside a labeled field.</summary>
 public sealed partial class FormaTextBox : FormaInputBase<string?>
 {
-    private AutofillTracker _autofill = default!;
-    private bool _isWatchingAutofill;
+    private static readonly AutofillWatchOptions AutofillOptions = new();
+
+    private DomObservation<AutofillWatchOptions, AutofillState>? _autofillState;
+    private bool _isAutofilled;
     private DomTextEdits _edits = default!;
 
     /// <summary>The placeholder text shown when the input is empty.</summary>
@@ -139,7 +141,6 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _autofill = new AutofillTracker(Context.JS);
         _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
         JoinForm(_edits.SettleAsync);
     }
@@ -150,11 +151,14 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     {
         await _edits.SyncAsync(RootElement, CurrentValueAsString, EditOptions);
 
-        if (HasLabel && !_isWatchingAutofill)
+        if (firstRender)
         {
-            // Claimed before the await, so a render arriving mid-call watches no second time.
-            _isWatchingAutofill = true;
-            _isWatchingAutofill = await _autofill.AttachAsync(RootElement);
+            _autofillState = await Context.DomWatcher.GetElement(RootElement).Text.WatchAutofillAsync(HandleAutofillStateAsync, HasLabel);
+        }
+
+        if (_autofillState is { } autofillState)
+        {
+            await autofillState.SyncAsync(RootElement, AutofillOptions, HasLabel);
         }
     }
 
@@ -162,6 +166,16 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     /// <returns>Whether the text holds them.</returns>
     internal Task<bool> SettleEditsAsync()
         => _edits.SettleAsync();
+
+    private Task HandleAutofillStateAsync(AutofillState state)
+        => InvokeAsync(() =>
+        {
+            if (_isAutofilled != state.IsFilled)
+            {
+                _isAutofilled = state.IsFilled;
+                StateHasChanged();
+            }
+        });
 
     private Task HandleTextChangedAsync(TextChange change)
     {
@@ -176,6 +190,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder
             .Add("forma-field-input", HasLabel)
+            .Add("has-value", HasLabel && _isAutofilled)
             .Add("forma-text-box", !HasLabel);
 
     /// <inheritdoc />
@@ -192,7 +207,11 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     {
         await _edits.DisposeAsync();
 
-        await _autofill.DisposeAsync();
+        if (_autofillState is { } autofillState)
+        {
+            await autofillState.DisposeAsync();
+        }
+
         await base.DisposeAsyncCore();
     }
 

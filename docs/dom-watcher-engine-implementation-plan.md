@@ -49,6 +49,7 @@ Each step is independently reviewable. The context-lifetime change stands alone;
    - **A lost connection.** On Server, a hand-over pending across a lost connection keeps the geometry where the reader left it, and completes with the accepted placement once the connection returns.
    - **The scrim close.** A click whose original target is the dialog element closes it during the click. A click on a descendant, empty space inside a content wrapper included, leaves it open, through the input router's delegation too. A dialog that doesn't opt in establishes no scrim close.
 11. **Remaining actions.** Open. Text, controls, media and browser facilities convert one at a time as consumers use them. Gate: correct capability-specific outcomes, activation requirements, resource cleanup and no automatic replay.
+   - The autofill tracker is a text observation, `autofill`, which `FormaTextBox` and `FormaPasswordBox` watch on their input, its first state read from the field's autofill state, so a fill made before the observation began is seen, and each later one from the stylesheet's animation signal; the watcher describes it, so a check waits for it before it starts a fill. Departure from the capability mapping's opt-in presentation action: the boxes render the filled class from the observed state, since Blazor writes the input's whole `class` attribute and a class the script added was lost with the next render that changed it.
 
 Every conversion step, 1, 2 and 4 through 11, passes the quality bar below.
 

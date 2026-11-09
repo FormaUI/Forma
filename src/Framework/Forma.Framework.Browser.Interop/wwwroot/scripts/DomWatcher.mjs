@@ -28,6 +28,7 @@ const Observers = {
     intersection: () => import('./scrolling/IntersectionStateObserver.mjs').then(module => module.IntersectionStateObserver),
     focus: () => import('./focus/FocusStateObserver.mjs').then(module => module.FocusStateObserver),
     selection: () => import('./text/TextSelectionObserver.mjs').then(module => module.TextSelectionObserver),
+    autofill: () => import('./text/AutofillObserver.mjs').then(module => module.AutofillObserver),
 };
 
 export class DomWatcher {

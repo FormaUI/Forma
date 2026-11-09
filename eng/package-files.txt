@@ -210,7 +210,6 @@ formaui-net.Framework.Browser.Interop
     NOTICE
     README.md
     staticwebassets/scripts/behaviors/AnchoredPopover.js
-    staticwebassets/scripts/behaviors/AutofillTracker.js
     staticwebassets/scripts/behaviors/DragGesture.js
     staticwebassets/scripts/behaviors/DropZone.js
     staticwebassets/scripts/behaviors/FileDropZone.js
@@ -259,6 +258,7 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/scrolling/ScrollInteraction.mjs
     staticwebassets/scripts/scrolling/ScrollStateObserver.mjs
     staticwebassets/scripts/StateDelivery.mjs
+    staticwebassets/scripts/text/AutofillObserver.mjs
     staticwebassets/scripts/text/CharacterCount.mjs
     staticwebassets/scripts/text/SubmissionHold.mjs
     staticwebassets/scripts/text/TextEdits.mjs

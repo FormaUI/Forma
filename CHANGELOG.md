@@ -27,6 +27,15 @@ set out. What Forma gained before its first release, month by month, is in [the 
   so a pager's steps, a dialog's Cancel and a composer's commands stay usable beside a field whose text didn't arrive.
   A host action that reads the whole form without submitting it, such as a preview, sets `ReadsForm`. A pager's page
   box and an explorer's name boxes no longer join the form around them.
+- `AutofillTracker` is removed. A field's autofill is a [DOM watcher](src/Framework/Forma.Framework.Browser.Interop/README.md#the-dom-watcher-and-engine)
+  observation, `Text.WatchAutofillAsync`, which reports whether the browser filled the field as an `AutofillState`,
+  starting from a fill made before the observation began. A component that attached `AutofillTracker` to a field
+  watches its autofill and draws its own class from the state, and an implementation of `IDomTextObservation`, which
+  now declares `WatchAutofillAsync`, implements it.
+- [`FormaTextBox`](docs/component-catalog.md#formatextbox) and `FormaPasswordBox` hold their label above a value the
+  browser filled in through every render, and over a fill made before the page became interactive. A render that
+  changed the field's classes dropped the mark that held the label up, and a fill made before the box attached left
+  it unmarked.
 - [`FormaInputInspector`](docs/component-catalog.md#formainputinspector) carries `data-forma-inspecting` on its
   element while it listens.
 - [`FormaTextBox`](docs/component-catalog.md#formatextbox), `FormaPasswordBox`, `FormaTextArea`, `FormaColorPicker`,
