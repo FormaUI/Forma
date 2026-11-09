@@ -250,17 +250,15 @@ public sealed class PickersTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "date-time-picker");
             await using var _ = context;
             var message = page.GetByText("The Start field needs a time.", new() { Exact = true });
+            await ComponentChecks.WaitForObservationAsync(page, "#check", "focus");
             await ComponentChecks.WaitForInteractionAsync(page, "#check-time", "edits");
             await page.Locator("#check-time").FillAsync(string.Empty);
             await page.Locator("#check-date").FocusAsync();
             await ComponentChecks.MakeRoundTripAsync(page);
             await Assertions.Expect(message).ToHaveCountAsync(0);
 
-            // Act — the field's focus watch attaches in its own time, so the reader leaves and comes back until it answers
-            await page.WaitForFunctionAsync(
-                "() => { if (document.body.textContent.includes('The Start field needs a time.')) { return true; } const within = document.getElementById('check-date'); (document.activeElement === within ? document.getElementById('outside') : within).focus(); return false; }",
-                null,
-                new() { PollingInterval = 100 });
+            // Act
+            await page.Locator("#outside").FocusAsync();
 
             // Assert
             await Assertions.Expect(message).ToBeVisibleAsync();

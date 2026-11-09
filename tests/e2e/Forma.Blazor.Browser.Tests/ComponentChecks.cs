@@ -116,6 +116,19 @@ public static partial class ComponentChecks
         await page.WaitForFunctionAsync("([selector, capability]) => window.formaDomEngine.describe(document.querySelector(selector)).capabilities.includes(capability)", new[] { selector, capability }).ConfigureAwait(false);
     }
 
+    /// <summary>Waits until the DOM watcher observes <paramref name="capability"/> of the element <paramref name="selector"/> finds, delivering its changes, as a field watching whether the reader is within it does once it observes.</summary>
+    /// <param name="page">The page.</param>
+    /// <param name="selector">The element's selector.</param>
+    /// <param name="capability">The capability, such as <c>focus</c>.</param>
+    /// <returns>A task that completes once the observation delivers.</returns>
+    public static async Task WaitForObservationAsync(IPage page, string selector, string capability)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        await page.EvaluateAsync("async () => { window.formaDomWatcher ??= await import(new URL('_content/forma/browser/scripts/DomWatcher.js', document.baseURI).href); }").ConfigureAwait(false);
+        await page.WaitForFunctionAsync("([selector, capability]) => window.formaDomWatcher.describe(document.querySelector(selector)).capabilities.includes(capability)", new[] { selector, capability }).ConfigureAwait(false);
+    }
+
     /// <summary>Waits until the input router has placed <paramref name="scope"/> among the page's layers, which it does as an open surface registers.</summary>
     /// <param name="scope">The surface's element.</param>
     /// <returns>A task that completes once the surface carries its layer.</returns>

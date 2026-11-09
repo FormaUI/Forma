@@ -3,12 +3,24 @@
  */
 
 import { Transfer } from '../../core/scripts/Transfer.js';
+import { CapabilityCounts } from './CapabilityCounts.mjs';
 import { RegistrationTable } from './RegistrationTable.mjs';
 import { StateDelivery } from './StateDelivery.mjs';
 
 /** @typedef {import('./DomElements.mjs').DomElements} DomElements */
 /** @typedef {{ invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> }} Receiver */
 /** @typedef {{ token: string, generation: number, capability: string, target: Element, options: object }} Request */
+
+// The capabilities observed on each element, across every owner.
+const observedCapabilities = new CapabilityCounts();
+
+/**
+ * The capabilities observed on `target`, their observers in place and delivering.
+ * @param {Element | null} target
+ */
+export function describeObserved(target) {
+    return observedCapabilities.capabilitiesOf(target);
+}
 
 /** The observer each capability observes through. */
 const Observers = {
@@ -61,6 +73,8 @@ export class DomWatcher {
         const observer = new Observer(target, options, state => delivery.offer(state));
         const hold = this.#elements.get(target).hold(() => this.#registrations.remove(token, generation));
 
+        // Counted before the install, whose refusal releases the resource and with it the count, and in the task that opens the delivery.
+        observedCapabilities.add(target, capability);
         this.#registrations.install(token, generation, {
             observer,
             delivery,
@@ -68,6 +82,7 @@ export class DomWatcher {
                 hold.dispose();
                 observer.dispose();
                 delivery.close();
+                observedCapabilities.remove(target, capability);
             },
         });
 

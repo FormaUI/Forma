@@ -164,7 +164,7 @@ _actions = await Context.DomWatcher.ListenAsync(
 
 Handlers return `Task`. Snapshot and occurrence handlers share the one notification mechanism, and adding a listener returns a disposable subscription whose lifetime is separate from its watch's or behavior's. Browser-wide facilities, such as the clipboard and downloads, are engine actions that take no element target.
 
-The engine describes what it has established on an element, by capability, once the behavior's listeners are in place, as the input router describes a scope's routes. A browser check waits on that description before it acts on the element, a field's edits before it types, rather than acting until the browser answers.
+The engine and the watcher each describe what they have established on an element, by capability, as the input router describes a scope's routes: the engine a behavior once its listeners are in place, the watcher a watch once it delivers the element's changes. A browser check waits on that description before it acts on the element, a field's edits before it types and its focus watch before the reader leaves it, rather than acting until the browser answers.
 
 ## Facts and occurrences by capability
 

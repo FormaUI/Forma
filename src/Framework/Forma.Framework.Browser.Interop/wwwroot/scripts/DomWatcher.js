@@ -3,6 +3,7 @@
  */
 
 import { DomSessionRegistry } from './DomSessionRegistry.mjs';
+import { describeObserved } from './DomWatcher.mjs';
 
 /** @typedef {import('./DomWatcher.mjs').Receiver} Receiver */
 /** @typedef {import('./DomWatcher.mjs').Request} Request */
@@ -15,6 +16,14 @@ import { DomSessionRegistry } from './DomSessionRegistry.mjs';
  */
 export function attach(runtimeKey, receiver, request) {
     return DomSessionRegistry.open(runtimeKey).openWatcher().watch(request, receiver);
+}
+
+/**
+ * The observations made of `target`, by capability, once they deliver its changes.
+ * @param {Element | null} target
+ */
+export function describe(target) {
+    return { capabilities: describeObserved(target) };
 }
 
 /** Releases one of the owner's observations. */

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { attach, detach, refresh, refreshAll, release } from '#browser/DomWatcher.js';
+import { attach, describe as describeElement, detach, refresh, refreshAll, release } from '#browser/DomWatcher.js';
 import { fakeOwner } from '#support/owner.js';
 import { sizeScroller, stubAnimationFrames, stubIntersectionObserver, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 
@@ -202,6 +202,37 @@ describe('DomWatcher', () => {
 
         expect(await overtaken).toBeNull();
         expect(watchedSizes()).toEqual([]);
+    });
+
+    it('describes the observations made of an element by capability, once they deliver and until they are released', async () => {
+        const before = describeElement(track).capabilities;
+
+        await attach(runtimeKey, receiver, { token: '2', generation: 1, capability: 'focus', target: track, options: {} });
+        const attached = describeElement(track).capabilities;
+        detach(runtimeKey, '2', 1);
+
+        expect(before).toEqual([]);
+        expect(attached).toEqual(['focus']);
+        expect(describeElement(track).capabilities).toEqual([]);
+        expect(describeElement(null).capabilities).toEqual([]);
+    });
+
+    it('describes an observation while any owner still makes it', async () => {
+        await attach(runtimeKey, receiver, request());
+        await attach('owner-2', fakeOwner(), request());
+
+        release('owner-2');
+
+        expect(describeElement(track).capabilities).toEqual(['scroll']);
+    });
+
+    it('describes nothing for an attach a later generation overtook', async () => {
+        const overtaken = attach(runtimeKey, receiver, request(1));
+
+        detach(runtimeKey, '1', 2);
+        await overtaken;
+
+        expect(describeElement(track).capabilities).toEqual([]);
     });
 
     it('observes whether the reader is within a target, sending each change', async () => {

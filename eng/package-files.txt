@@ -219,6 +219,7 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/behaviors/ReorderInteraction.js
     staticwebassets/scripts/behaviors/Scroll.js
     staticwebassets/scripts/behaviors/Wheel.js
+    staticwebassets/scripts/CapabilityCounts.mjs
     staticwebassets/scripts/components/Dialog.js
     staticwebassets/scripts/components/Frame.js
     staticwebassets/scripts/components/Splitter.js
