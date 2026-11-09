@@ -27,6 +27,9 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
+| [Plain forms](#plain-forms) | Editing numbers, dates, times and choices on a statically rendered page |
+| [Field check readiness](#field-check-readiness) | The autofill tracker and the input inspector |
+| [The naming sweep](#the-naming-sweep) | The survey's renames, group by group |
 | [Corrections](#corrections) | The button's secondary and danger label colors |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -171,6 +174,34 @@ Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.4` are published, as [
 
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
 
+<a id="plain-forms"></a>
+
+## Plain forms
+
+A field on a statically rendered page posts with its form, which Blazor's form mapping binds in the invariant culture alone: the mapper hands `CultureInfo.InvariantCulture` to its form data reader, and its options carry no culture. What a reader can edit there, and what the page preserves:
+
+- **Numbers, dates and times** are edited in the browser's own `number`, `date` and `time` inputs, carrying the field's name, its limits, its decimal step and the time precision it supports. The browser and the system localize what the reader sees; the value posted is the invariant form the binder reads.
+- **Choices**, `FormaSelect` and `FormaMultiSelect`, are edited in a native `<select>` and `<select multiple>`. An option posts its value in the binder's form for the value types the binder round-trips, and its localized label is display text.
+- **A date range** keeps its static trigger disabled and posts the committed range's two ends, `{Name}.Start` and `{Name}.End`, so a plain form preserves it. Editing either end is a decision of its own, since it introduces a partial range.
+- **A field the application disables** posts nothing, as a disabled field does.
+
+A browser check posts a plain form in `de-DE` and asserts the model the server bound: a fractional number and a selection changed, several values selected, a prefilled range preserved, an optional field cleared, and a disabled field left out.
+
+<a id="field-check-readiness"></a>
+
+## Field check readiness
+
+A field check waits for the script it drives to be ready, acts once, and waits for the result. Two scripts give a check nothing to wait on yet:
+
+- **The autofill tracker** moves onto the DOM watcher as the text observation [the DOM watcher plan](dom-watcher-engine-implementation-plan.md#capability-mapping) maps it to, keeping the stylesheet's animation signal and the opt-in class; its check waits for that observation on its input.
+- **The input inspector** marks its element while its listeners are attached, and clears the mark as they are detached.
+
+<a id="the-naming-sweep"></a>
+
+## The naming sweep
+
+A survey finds 629 names of variables, constants and properties that are a bare adjective or participle, or a count named as a plural, where the naming standard names each for the noun it holds. They land in small groups, each reviewed with its call sites; the add-on assemblies' group is approved.
+
 <a id="corrections"></a>
 
 ## Corrections
@@ -183,12 +214,7 @@ Defects found in implemented components, each fixed in a commit of its own.
 
 ## Open decisions
 
-Each needs the maintainer's decision; each is given with a proposal.
-
-- **The pack names' reader.** `LocaleAssemblyLoader.GetNames` returns the names of the packs an assembly was built against, beside `LoadPacks`, which loads them. *Proposal:* rename it `GetPackNames`, as `Load` became `LoadPacks`.
-- **The readiness of the autofill tracker and the input inspector.** Their browser checks repeat an event until the script answers, since neither script attaches through the DOM engine or the watcher, whose descriptions the other checks wait on. *Proposal:* the autofill tracker moves onto the watcher as the text observation [the DOM watcher plan](dom-watcher-engine-implementation-plan.md#capability-mapping) maps it to, and the input inspector marks its element once its listeners are in place, as a surface marks its layer; each check then waits once and acts once.
-- **Posting numbers, dates, times and choices from a plain form.** The number, date and time boxes, and the pickers built on them, show the culture's text, while Blazor's form binding reads a posted value in the invariant culture and takes no other; and the selects and the date range picker draw no native control, so a plain form posts nothing for them and the posted model keeps its own default in their place. *Proposal:* under a static render the number, date and time boxes draw the platform's own control, which shows the reader's culture and posts the invariant form, as Blazor's inputs do; and the selects and the date range picker post their bound value through a hidden input, so a plain form keeps the value they show.
-- **The naming sweep's renames.** A survey finds 629 names of variables, constants and properties that are a bare adjective or participle, or a count named as a plural, where the naming standard names each for the noun it holds. *Proposal:* each takes the noun it holds, `_selected` becoming `_selectedItems`, a Boolean takes a state phrase and a count ends in `Count`; they come to the maintainer in small groups with their call sites, as the maintainer asked, the add-on assemblies' first, and each group decided lands in a commit of its own.
+Every decision raised so far is decided.
 
 <a id="deferred"></a>
 
