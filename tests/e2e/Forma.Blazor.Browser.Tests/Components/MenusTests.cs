@@ -18,9 +18,9 @@ public sealed class MenusTests
             var menu = page.GetByRole(AriaRole.Menu);
             await trigger.ClickAsync();
             await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
             await Assertions.Expect(menu).ToBeVisibleAsync();
             await Assertions.Expect(page.Locator("#rename")).ToBeFocusedAsync();
-            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
             await page.Keyboard.PressAsync("ArrowDown");
             await page.Keyboard.PressAsync("ArrowDown");
             await Assertions.Expect(page.Locator("#delete")).ToBeFocusedAsync();
@@ -45,8 +45,8 @@ public sealed class MenusTests
             var (context, page) = await OpenAsync(host, runtime, "drop-down-menu");
             await using var _ = context;
             await page.Locator("#menu").ClickAsync();
-            await Assertions.Expect(page.Locator("#rename")).ToBeFocusedAsync();
             await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = page.GetByRole(AriaRole.Menu) }));
+            await Assertions.Expect(page.Locator("#rename")).ToBeFocusedAsync();
             await page.Keyboard.PressAsync("End");
             await Assertions.Expect(page.Locator("#pin")).ToBeFocusedAsync();
 
@@ -68,8 +68,8 @@ public sealed class MenusTests
             var (context, page) = await OpenAsync(host, runtime, "drop-down-menu");
             await using var _ = context;
             await page.Locator("#menu").ClickAsync();
-            await Assertions.Expect(page.Locator("#rename")).ToBeFocusedAsync();
             await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = page.GetByRole(AriaRole.Menu) }));
+            await Assertions.Expect(page.Locator("#rename")).ToBeFocusedAsync();
             await page.Keyboard.PressAsync("End");
             await Assertions.Expect(page.Locator("#pin")).ToBeFocusedAsync();
             await page.Keyboard.PressAsync("Enter");
@@ -99,6 +99,7 @@ public sealed class MenusTests
             await trigger.ClickAsync();
             await Assertions.Expect(trigger).ToHaveAccessibleNameAsync("More Actions");
             await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-expanded", "true");
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
             await Assertions.Expect(menu.GetByRole(AriaRole.Menuitem)).ToHaveTextAsync(OverflowCommands);
 
             // Act
@@ -162,6 +163,7 @@ public sealed class MenusTests
             await using var _ = context;
             var menu = page.GetByRole(AriaRole.Menu);
             await page.Locator("#share").ClickAsync();
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
             await Assertions.Expect(menu).ToContainTextAsync("Quarterly Report");
             await Assertions.Expect(menu.GetByRole(AriaRole.Menuitem, new() { Name = "Email", Exact = true })).ToBeVisibleAsync();
             await Assertions.Expect(menu.GetByRole(AriaRole.Menuitem, new() { Name = "Copy Link", Exact = true })).ToBeVisibleAsync();
@@ -186,6 +188,7 @@ public sealed class MenusTests
             await using var _ = context;
             var menu = page.GetByRole(AriaRole.Menu);
             await page.Locator("#share").ClickAsync();
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
             var share = menu.Locator(".forma-share-menu-primary [role=menuitem]").First;
             await Assertions.Expect(share).ToHaveTextAsync("Share");
 

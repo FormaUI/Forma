@@ -73,9 +73,9 @@ public sealed class FeedbackTests
             var dialog = page.Locator("#dialog");
             var result = page.Locator("#result");
             await page.Locator("#open").ClickAsync();
+            await WaitForLayerAsync(dialog);
             await Assertions.Expect(dialog).ToBeVisibleAsync();
             await Assertions.Expect(dialog).ToContainTextAsync("Shipped on Monday.");
-            await WaitForLayerAsync(dialog);
             await page.Keyboard.PressAsync("Escape");
             await Assertions.Expect(dialog).ToBeHiddenAsync();
             await Assertions.Expect(result).ToHaveTextAsync("1");
@@ -99,8 +99,8 @@ public sealed class FeedbackTests
             var dialog = page.Locator("#dialog");
             var result = page.Locator("#result");
             await page.Locator("#open").ClickAsync();
-            await Assertions.Expect(page.Locator("#note")).ToBeFocusedAsync();
             await WaitForLayerAsync(dialog);
+            await Assertions.Expect(page.Locator("#note")).ToBeFocusedAsync();
             await dialog.EvaluateAsync("dialog => dialog.requestClose()");
             await Assertions.Expect(dialog).ToBeHiddenAsync();
             await Assertions.Expect(result).ToHaveTextAsync("1");
@@ -129,10 +129,10 @@ public sealed class FeedbackTests
             var filters = page.Locator("#filters");
             var result = page.Locator("#result");
             await page.Locator("#details-trigger").ClickAsync();
+            await WaitForLayerAsync(details);
             await Assertions.Expect(details).ToBeVisibleAsync();
             await Assertions.Expect(details).ToHaveTextAsync("Shipped on Monday.");
             await Assertions.Expect(result).ToHaveTextAsync("Details opened");
-            await WaitForLayerAsync(details);
             await page.Keyboard.PressAsync("Escape");
             await Assertions.Expect(details).ToBeHiddenAsync();
             await Assertions.Expect(result).ToHaveTextAsync("Details closed");
