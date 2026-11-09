@@ -57,23 +57,23 @@ public sealed class OfficeResourceProvider : IResourceProvider
         await using (content.ConfigureAwait(false))
         {
             // Open XML reads the package by seeking.
-            var buffered = content.CanSeek ? null : await BufferAsync(content, cancellationToken).ConfigureAwait(false);
-            var seekable = buffered ?? content;
+            var bufferedStream = content.CanSeek ? null : await BufferAsync(content, cancellationToken).ConfigureAwait(false);
+            var seekableStream = bufferedStream ?? content;
 
             try
             {
-                var html = await converter.ConvertAsync(seekable, cancellationToken).ConfigureAwait(false);
+                var html = await converter.ConvertAsync(seekableStream, cancellationToken).ConfigureAwait(false);
 
                 return new MarkupResourceInfo(source, _sanitizer.Sanitize(html))
                 {
-                    Size = seekable.Length,
+                    Size = seekableStream.Length,
                 };
             }
             finally
             {
-                if (buffered is not null)
+                if (bufferedStream is not null)
                 {
-                    await buffered.DisposeAsync().ConfigureAwait(false);
+                    await bufferedStream.DisposeAsync().ConfigureAwait(false);
                 }
             }
         }

@@ -11,8 +11,8 @@ using OfficeIMO.Excel;
 internal sealed class WorkbookConverter(IStringLocale locale) : IOfficeConverter
 {
     // The limits hold a runaway used range to markup a viewer can render.
-    private const int MaxColumns = 50;
-    private const int MaxRows = 500;
+    private const int MaxColumnCount = 50;
+    private const int MaxRowCount = 500;
 
     /// <inheritdoc />
     public string Extension
@@ -65,8 +65,8 @@ internal sealed class WorkbookConverter(IStringLocale locale) : IOfficeConverter
         }
 
         var (firstRow, firstColumn, lastRow, lastColumn) = sheet.GetRangeBounds(usedRange);
-        var rowLimit = Math.Min(lastRow, firstRow + MaxRows - 1);
-        var columnLimit = Math.Min(lastColumn, firstColumn + MaxColumns - 1);
+        var rowLimit = Math.Min(lastRow, firstRow + MaxRowCount - 1);
+        var columnLimit = Math.Min(lastColumn, firstColumn + MaxColumnCount - 1);
 
         markup.Append("<table><thead>");
         AppendRow(markup, sheet, firstRow, firstColumn, columnLimit, heading: true);

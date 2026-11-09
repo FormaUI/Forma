@@ -30,7 +30,7 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
     private ExplorerItemOptions _itemOptions = ExplorerItemOptions.ReadOnly;
     private CatalogConstraints _constraints = CatalogConstraints.None;
     private readonly ParameterState<ExplorerPluginOptions?> _optionsParameter = new();
-    private IReadOnlyList<ICatalogItem> _selected = [];
+    private IReadOnlyList<ICatalogItem> _selectedItems = [];
 
     string IComposerInsertionDialog.Title
         => L["Browse Files"].Value;
@@ -80,25 +80,25 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
     {
         _messages.Clear();
 
-        if (_selected.Count == 0)
+        if (_selectedItems.Count == 0)
         {
             _messages.Add(L["Choose a file before inserting."].Value);
 
             return ValueTask.FromResult<ComposerInsertion?>(null);
         }
 
-        if (_selected[0].Resource is not { } chosen)
+        if (_selectedItems[0].Resource is not { } resource)
         {
             return ValueTask.FromResult<ComposerInsertion?>(null);
         }
 
-        var kind = GetKind(chosen);
+        var kind = GetKind(resource);
 
-        var renderable = kind is not "file";
-        var embed = renderable && Options.InsertMode is MediaInsertMode.Embed or MediaInsertMode.Both;
-        var link = !renderable || Options.InsertMode is MediaInsertMode.Link or MediaInsertMode.Both;
+        var canEmbed = kind is not "file";
+        var embed = canEmbed && Options.InsertMode is MediaInsertMode.Embed or MediaInsertMode.Both;
+        var link = !canEmbed || Options.InsertMode is MediaInsertMode.Link or MediaInsertMode.Both;
 
-        return ValueTask.FromResult<ComposerInsertion?>(new ResourceInsertion { Source = chosen.Source, Name = chosen.Name, Kind = kind, Embed = embed, Link = link });
+        return ValueTask.FromResult<ComposerInsertion?>(new ResourceInsertion { Source = resource.Source, Name = resource.Name, Kind = kind, Embed = embed, Link = link });
     }
 
     private static string GetKind(ResourceInfo resource)
@@ -110,26 +110,26 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
             _ => "file",
         };
 
-    private void HandleSelectedChanged(IReadOnlyList<ICatalogItem> selected)
+    private void HandleSelectedChanged(IReadOnlyList<ICatalogItem> selectedItems)
     {
-        _selected = selected;
+        _selectedItems = selectedItems;
 
-        if (selected.Count > 0)
+        if (selectedItems.Count > 0)
         {
             _messages.Clear();
         }
     }
 
     // The inner provider's items narrowed to the resources the filter accepts.
-    private sealed class FilteredItems(ICatalogProvider inner, CatalogResourceFilter filter) : ICatalogProvider
+    private sealed class FilteredItems(ICatalogProvider innerProvider, CatalogResourceFilter filter) : ICatalogProvider
     {
         public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
         {
-            var page = await inner.GetItemsAsync(query, cancellationToken).ConfigureAwait(false);
-            var accepted = page.Items.Where(item => item.Resource is { } resource && filter.Accepts(resource)).ToList();
+            var page = await innerProvider.GetItemsAsync(query, cancellationToken).ConfigureAwait(false);
+            var acceptedItems = page.Items.Where(item => item.Resource is { } resource && filter.Accepts(resource)).ToList();
 
             // The inner total counts rejected items too, so it is kept only when the filter rejected none.
-            return new CatalogPage(accepted, accepted.Count == page.Items.Count ? page.TotalCount : null);
+            return new CatalogPage(acceptedItems, acceptedItems.Count == page.Items.Count ? page.TotalCount : null);
         }
     }
 }

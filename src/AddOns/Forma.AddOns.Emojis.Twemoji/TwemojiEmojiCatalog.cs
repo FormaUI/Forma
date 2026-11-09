@@ -56,13 +56,13 @@ public sealed class TwemojiEmojiCatalog : IEmojiCatalog
                 return true;
             }
 
-            var next = text.IndexOf(' ', index, StringComparison.Ordinal);
-            if (next < 0)
+            var nextSpaceIndex = text.IndexOf(' ', index, StringComparison.Ordinal);
+            if (nextSpaceIndex < 0)
             {
                 return false;
             }
 
-            index = next + 1;
+            index = nextSpaceIndex + 1;
         }
 
         return false;

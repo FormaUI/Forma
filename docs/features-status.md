@@ -29,7 +29,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [Release](#release) | A locale pack proven from a feed |
 | [Plain forms](#plain-forms) | Editing numbers, dates, times and choices on a statically rendered page |
 | [Field check readiness](#field-check-readiness) | The autofill tracker and the input inspector |
-| [The naming sweep](#the-naming-sweep) | The survey's renames, group by group |
+| [The naming sweep](#the-naming-sweep) | The survey's renames after the add-on assemblies', group by group |
 | [Corrections](#corrections) | The button's secondary and danger label colors |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -200,7 +200,7 @@ A field check waits for the script it drives to be ready, acts once, and waits f
 
 ## The naming sweep
 
-A survey finds 629 names of variables, constants and properties that are a bare adjective or participle, or a count named as a plural, where the naming standard names each for the noun it holds. They land in small groups, each reviewed with its call sites; the add-on assemblies' group is approved.
+A survey finds 629 names of variables, constants and properties that are a bare adjective or participle, or a count named as a plural, where the naming standard names each for the noun it holds. They land in small groups, each reviewed with its call sites; the add-on assemblies' group has landed, and the next group comes for review.
 
 <a id="corrections"></a>
 

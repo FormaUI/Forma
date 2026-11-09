@@ -29,7 +29,7 @@ internal static class EmojiAssetLoader
 
     private const string ResourceFolder = "Forma.Framework.Emojis.Twemoji._assets";
 
-    private static readonly ConcurrentDictionary<string, IReadOnlyList<EmojiAsset>> Loaded = new(StringComparer.Ordinal);
+    private static readonly ConcurrentDictionary<string, IReadOnlyList<EmojiAsset>> AssetsByGroup = new(StringComparer.Ordinal);
 
     /// <summary>Whether a group of this identifier exists in the catalog.</summary>
     public static bool IsKnownGroup(string groupId)
@@ -37,7 +37,7 @@ internal static class EmojiAssetLoader
 
     /// <summary>Returns the emoji of the group with this identifier.</summary>
     public static IReadOnlyList<EmojiAsset> LoadGroup(string groupId)
-        => IsKnownGroup(groupId) ? Loaded.GetOrAdd(groupId, LoadGroupCore) : [];
+        => IsKnownGroup(groupId) ? AssetsByGroup.GetOrAdd(groupId, LoadGroupCore) : [];
 
     /// <summary>Returns every emoji in the catalog.</summary>
     public static IReadOnlyList<EmojiAsset> LoadAll()
@@ -50,19 +50,19 @@ internal static class EmojiAssetLoader
         using var stream = typeof(EmojiAssetLoader).GetTypeInfo().Assembly.GetManifestResourceStream(resourceName)
             ?? throw new InvalidOperationException($"The emoji catalog resource '{resourceName}' is missing; regenerate it with scripts/Get-TwemojiPack.ps1.");
 
-        var raw = JsonSerializer.Deserialize(stream, EmojiCatalogJsonContext.Default.RawCatalog)
+        var rawCatalog = JsonSerializer.Deserialize(stream, EmojiCatalogJsonContext.Default.RawCatalog)
             ?? throw new InvalidOperationException($"The emoji catalog resource '{resourceName}' could not be read.");
 
         return
         [
-            .. raw.Emoji.Select((entry, position) => new EmojiAsset
+            .. rawCatalog.Emoji.Select((entry, position) => new EmojiAsset
             {
                 Emoji = entry.C,
                 Name = entry.N,
                 Keywords = entry.K,
                 GroupId = groupId,
                 SpriteId = entry.S,
-                ChunkIndex = position / raw.ChunkSize,
+                ChunkIndex = position / rawCatalog.ChunkSize,
             })
         ];
     }

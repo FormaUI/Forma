@@ -10,7 +10,7 @@ using OfficeIMO.PowerPoint;
 /// <summary>Converts a PowerPoint presentation into markup, one section per slide.</summary>
 internal sealed class PresentationConverter(IStringLocale locale) : IOfficeConverter
 {
-    private const int MaxSlides = 200;
+    private const int MaxSlideCount = 200;
 
     /// <inheritdoc />
     public string Extension
@@ -28,9 +28,9 @@ internal sealed class PresentationConverter(IStringLocale locale) : IOfficeConve
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            if (number == MaxSlides)
+            if (number == MaxSlideCount)
             {
-                markup.Append("<p>").Append(WebUtility.HtmlEncode(locale["Showing the first {MaxSlides} slides.", MaxSlides].Value)).Append("</p>");
+                markup.Append("<p>").Append(WebUtility.HtmlEncode(locale["Showing the first {MaxSlides} slides.", MaxSlideCount].Value)).Append("</p>");
 
                 break;
             }
