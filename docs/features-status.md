@@ -183,7 +183,12 @@ Defects found in implemented components, each fixed in a commit of its own.
 
 ## Open decisions
 
-Every decision raised so far is decided and carried out.
+Each needs the maintainer's decision; each is given with a proposal.
+
+- **The pack names' reader.** `LocaleAssemblyLoader.GetNames` returns the names of the packs an assembly was built against, beside `LoadPacks`, which loads them. *Proposal:* rename it `GetPackNames`, as `Load` became `LoadPacks`.
+- **The readiness of the autofill tracker and the input inspector.** Their browser checks repeat an event until the script answers, since neither script attaches through the DOM engine or the watcher, whose descriptions the other checks wait on. *Proposal:* the autofill tracker moves onto the watcher as the text observation [the DOM watcher plan](dom-watcher-engine-implementation-plan.md#capability-mapping) maps it to, and the input inspector marks its element once its listeners are in place, as a surface marks its layer; each check then waits once and acts once.
+- **Posting numbers, dates, times and choices from a plain form.** The number, date and time boxes, and the pickers built on them, show the culture's text, while Blazor's form binding reads a posted value in the invariant culture and takes no other; and the selects and the date range picker draw no native control, so a plain form posts nothing for them and the posted model keeps its own default in their place. *Proposal:* under a static render the number, date and time boxes draw the platform's own control, which shows the reader's culture and posts the invariant form, as Blazor's inputs do; and the selects and the date range picker post their bound value through a hidden input, so a plain form keeps the value they show.
+- **The naming sweep's renames.** A survey finds 629 names of variables, constants and properties that are a bare adjective or participle, or a count named as a plural, where the naming standard names each for the noun it holds. *Proposal:* each takes the noun it holds, `_selected` becoming `_selectedItems`, a Boolean takes a state phrase and a count ends in `Count`; they come to the maintainer in small groups with their call sites, as the maintainer asked, the add-on assemblies' first, and each group decided lands in a commit of its own.
 
 <a id="deferred"></a>
 
