@@ -27,6 +27,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
+| [Corrections](#corrections) | The button's secondary and danger label colors |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -169,6 +170,14 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
 Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.4` are published, as [the changelog](../CHANGELOG.md) lists them. `release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
 
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
+
+<a id="corrections"></a>
+
+## Corrections
+
+Defects found in implemented components, each fixed in a commit of its own.
+
+- **The button's secondary and danger label colors.** `FormaButton`'s secondary and danger variants draw their label in `--button-primary-text-color` at rest, on hover and on press, and in their own `--button-secondary-text-color` and `--button-danger-text-color` only while busy. The default theme sets all three to white, so the difference shows where a theme gives a secondary or danger label a color of its own. The fix gives each variant its own text color in every state, with a browser check that sets the three apart.
 
 <a id="open-decisions"></a>
 
