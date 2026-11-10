@@ -1,10 +1,13 @@
 @page "/{Runtime}/data-tree"
 @using Forma.Blazor.Components.DataView
 
-@* A tree of a folder holding two more beside a file, the folder opened from its disclosure or by the keys, the node activated shown where the check reads it. *@
-<FormaDataView Id="check" TItem="Node" Items="Nodes" ItemKey="@(node => node.Id)" ItemName="@(node => node.Name)" ParentKey="@(node => node.ParentId)" HasChildren="@(node => node.IsFolder)" EnablePagination="false" OnItemClick="@(node => _activated = node.Name)">
+@* A tree of a folder holding two more beside a file, the folder opened from its disclosure or by the keys, the node activated shown
+   where the check reads it; a button after the tree, which Shift+Tab leaves for it, and one that takes Contracts out of its nodes. *@
+<FormaDataView Id="check" TItem="Node" Items="_nodes" ItemKey="@(node => node.Id)" ItemName="@(node => node.Name)" ParentKey="@(node => node.ParentId)" HasChildren="@(node => node.IsFolder)" EnablePagination="false" OnItemClick="@(node => _activated = node.Name)">
     <FormaDataTree TItem="Node" aria-label="Folders" />
 </FormaDataView>
+<button id="after" type="button" data-check-scaffold>After</button>
+<button id="remove-contracts" type="button" data-check-scaffold @onclick="@(() => _nodes = Nodes.Where(node => node.Id != 4))">Remove Contracts</button>
 <output id="activated">@_activated</output>
 
 @code {
@@ -16,6 +19,7 @@
         new(4, 1, "Contracts", true),
     }.AsQueryable();
 
+    private IQueryable<Node> _nodes = Nodes;
     private string? _activated;
 
     internal sealed record Node(int Id, int? ParentId, string Name, bool IsFolder);

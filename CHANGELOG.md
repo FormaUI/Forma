@@ -38,6 +38,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   it unmarked.
 - [`FormaInputInspector`](docs/component-catalog.md#formainputinspector) carries `data-forma-inspecting` on its
   element while it listens.
+- Tab returns into a [`FormaDataTree`](docs/data-view-design.md#the-tree) at the node last focused in it, and into a
+  sidebar at its current node, each falling back to the current node and then the first. A node Tab returns to that is
+  removed or closed over while the focus is elsewhere hands the return to the node taking its place, and the page's
+  focus stays where it is. A tree whose rows carry the focus returned it to the current node or the first.
 - A secondary or danger [`FormaButton`](docs/component-catalog.md#formabutton) draws its label in its own
   `--button-secondary-text-color` or `--button-danger-text-color` at rest, under the pointer and pressed. It drew it in
   `--button-primary-text-color` there, so a theme giving those labels a color of their own showed it only while busy.

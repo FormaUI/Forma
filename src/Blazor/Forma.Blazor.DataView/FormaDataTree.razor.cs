@@ -412,18 +412,25 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private bool IsCurrent(TItem node)
         => View.CurrentItem is { } current && IsSame(current, node);
 
-    // The current node is the tab stop while it shows; the first visible node otherwise.
+    // A plain tree's tab stop is the node last focused in it while that node shows, and a sidebar's the current node, the page the reader
+    // is on; either falls back to the current node, then the first visible node.
     private void SettleTabStop()
     {
-        if (!KeepsFocus)
+        if (!KeepsFocus || _visibleRows.Count == 0)
         {
             _tabStopKey = null;
             return;
         }
 
+        if (!SelectsCurrent && _lastFocusedKey is { } last && _visibleRows.Exists(row => Equals(GetRowKey(row), last)))
+        {
+            _tabStopKey = last;
+            return;
+        }
+
         var current = View.CurrentItem is { } item ? _visibleRows.FindIndex(row => IsSame(row.Node, item)) : -1;
 
-        _tabStopKey = _visibleRows.Count == 0 ? null : GetRowKey(_visibleRows[Math.Max(current, 0)]);
+        _tabStopKey = GetRowKey(_visibleRows[Math.Max(current, 0)]);
     }
 
     // The nodes this render draws, the focus handed on where the node holding it went away.
@@ -439,9 +446,11 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             _pendingFocusKey = null;
         }
 
+        // The node Tab returns to moves where the focus would have gone had it stayed on that node, which leaves the page's focus alone.
         if (_lastFocusedKey is { } last && !remaining.Contains(last))
         {
-            _lastFocusedKey = null;
+            var gone = _visibleRows.FindIndex(row => Equals(GetRowKey(row), last));
+            _lastFocusedKey = gone >= 0 ? FindHeirKey(_visibleRows, gone, remaining) : null;
         }
 
         if (_heirKey is { } heir && !remaining.Contains(heir))
@@ -463,15 +472,31 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             return;
         }
 
-        var previous = _visibleRows;
-        var gone = previous.FindIndex(row => IsSame(row.Node, focused));
+        var gone = _visibleRows.FindIndex(row => IsSame(row.Node, focused));
 
         if (gone < 0)
         {
             return;
         }
 
-        // The top of the branch that went, and the nearest of its ancestors that remains.
+        _focusedNode = default;
+        _unreportedMoves.Clear();
+
+        if (FindHeirKey(_visibleRows, gone, remaining) is { } heir)
+        {
+            _pendingFocusKey = _heirKey = heir;
+        }
+        else if (rows.Count == 0)
+        {
+            _holdsFocus = true;
+            _focusesSelf = true;
+        }
+    }
+
+    // The key of the row taking the focus from the row at gone, found from the top of the branch that went, below the nearest of its
+    // ancestors that remains.
+    private object? FindHeirKey(List<VisibleNode> previous, int gone, HashSet<object> remaining)
+    {
         var parent = GetParentRow(previous, gone);
 
         while (parent >= 0 && !remaining.Contains(GetRowKey(previous[parent])))
@@ -480,18 +505,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             parent = GetParentRow(previous, gone);
         }
 
-        _focusedNode = default;
-        _unreportedMoves.Clear();
-
-        if (FindHeir(previous, gone, parent, remaining) is { } heir)
-        {
-            _pendingFocusKey = _heirKey = GetRowKey(previous[heir]);
-        }
-        else if (rows.Count == 0)
-        {
-            _holdsFocus = true;
-            _focusesSelf = true;
-        }
+        return FindHeir(previous, gone, parent, remaining) is { } heir ? GetRowKey(previous[heir]) : null;
     }
 
     // The row taking the focus from the branch at this one: its parent where the parent closed over it, else a sibling that remains, the

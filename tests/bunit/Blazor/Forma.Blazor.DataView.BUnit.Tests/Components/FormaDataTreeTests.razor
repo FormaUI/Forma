@@ -724,9 +724,9 @@
         }
 
         [Fact]
-        public async Task Should_keep_the_tab_stop_and_the_focused_node_drawn_when_a_virtualizing_tree_scrolls_them_away()
+        public async Task Should_keep_the_node_tab_returns_to_drawn_when_a_virtualizing_tree_scrolls_it_away()
         {
-            // Arrange — a hundred nodes of twenty pixels, the first the tab stop and the third holding the focus
+            // Arrange — a hundred nodes of twenty pixels, the third focused and then the focus gone elsewhere on the page
             using var ctx = new FormaDataTreeTests();
             var probe = new DomProbe<FocusState>(ctx);
             var cut = ctx.Render(
@@ -735,14 +735,15 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count > 0);
             await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[2]);
+            await ReportFocusAsync(probe, cut, null);
 
             // Act — scrolled a thousand pixels in, two hundred tall
             await ReportViewportAsync(ctx, cut, 1000, 200, 20);
 
-            // Assert — the nodes from 49 to 62 around the viewport, and the first and the third kept where they stand
+            // Assert — the nodes from 49 to 62 around the viewport, and the third kept where it stands as the tab stop
             Assert.Multiple(
-                () => Assert.Equal(["Leaf 1", "Leaf 3", .. Enumerable.Range(49, 14).Select(id => $"Leaf {id}")], Names(cut)),
-                () => Assert.Equal("0", cut.Find(".forma-data-tree-node").GetAttribute("tabindex")));
+                () => Assert.Equal(["Leaf 3", .. Enumerable.Range(49, 14).Select(id => $"Leaf {id}")], Names(cut)),
+                () => Assert.Equal("Leaf 3", GetTabStop(cut)));
         }
 
         [Fact]
@@ -977,6 +978,146 @@
         }
     }
 
+    public sealed class ReturnPoint
+    {
+        [Fact]
+        public async Task Should_return_a_plain_tree_to_the_node_last_focused_in_it()
+        {
+            // Arrange — Reports focused under the open Documents
+            using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var cut = await RenderOpenDocumentsAsync(ctx, probe, hasMarkers: false);
+            await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[1]);
+
+            // Act — the focus gone elsewhere on the page
+            await ReportFocusAsync(probe, cut, null);
+
+            // Assert
+            Assert.Equal("Reports", GetTabStop(cut));
+        }
+
+        [Fact]
+        public void Should_enter_a_plain_tree_first_at_its_current_node()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            var pictures = CreateEntries().Single(entry => entry.Id == 2);
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItem="pictures">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Assert
+            Assert.Equal("Pictures", GetTabStop(cut));
+        }
+
+        [Fact]
+        public void Should_enter_a_plain_tree_first_at_its_first_node_where_none_is_current()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Assert
+            Assert.Equal("Documents", GetTabStop(cut));
+        }
+
+        [Fact]
+        public async Task Should_return_a_sidebar_to_its_current_node_whatever_was_focused_in_it()
+        {
+            // Arrange — Documents current, and Pictures focused without being chosen
+            using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var documents = CreateEntries().Single(entry => entry.Id == 1);
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItem="documents">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count >= 2);
+            await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node").Single(node => node.TextContent.Contains("Pictures", StringComparison.Ordinal)));
+
+            // Act — the focus gone elsewhere on the page
+            await ReportFocusAsync(probe, cut, null);
+
+            // Assert
+            Assert.Equal("Documents", GetTabStop(cut));
+        }
+
+        [Fact]
+        public async Task Should_move_only_the_return_point_to_the_ancestor_closed_over_it_while_the_focus_is_elsewhere()
+        {
+            // Arrange — Q1.pdf focused under the open Reports, then the focus gone elsewhere on the page
+            using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var cut = await RenderOpenDocumentsAsync(ctx, probe, hasMarkers: false);
+            cut.FindAll("button.forma-data-tree-disclosure-button")[1].Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 5);
+            await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[2]);
+            await ReportFocusAsync(probe, cut, null);
+            var focuses = CountFocuses(ctx);
+
+            // Act — Reports closed from its disclosure
+            cut.FindAll("button.forma-data-tree-disclosure-button")[1].Click();
+
+            // Assert — the page's focus left where it is
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
+            Assert.Multiple(
+                () => Assert.Equal("Reports", GetTabStop(cut)),
+                () => Assert.Equal(focuses, CountFocuses(ctx)));
+        }
+
+        [Fact]
+        public async Task Should_move_only_the_return_point_to_the_next_sibling_of_a_node_removed_while_the_focus_is_elsewhere()
+        {
+            // Arrange — Reports focused under the open Documents, then the focus gone elsewhere on the page
+            using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var cut = await RenderOpenDocumentsAsync(ctx, probe, hasMarkers: false);
+            await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[1]);
+            await ReportFocusAsync(probe, cut, null);
+            var focuses = CountFocuses(ctx);
+
+            // Act
+            Replace(cut, entry => entry.Id is not (3 or 6));
+
+            // Assert — the page's focus left where it is
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
+            Assert.Multiple(
+                () => Assert.Equal("Notes.txt", GetTabStop(cut)),
+                () => Assert.Equal(focuses, CountFocuses(ctx)));
+        }
+
+        [Fact]
+        public async Task Should_select_nothing_as_the_return_point_moves()
+        {
+            // Arrange — Reports' marker focused under the open Documents, then the focus gone elsewhere on the page
+            using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var cut = await RenderOpenDocumentsAsync(ctx, probe);
+            await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[1]);
+            await ReportFocusAsync(probe, cut, null);
+
+            // Act
+            Replace(cut, entry => entry.Id is not (3 or 6));
+
+            // Assert
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
+            Assert.Empty(cut.FindAll("[role=treeitem][aria-selected=true]"));
+        }
+
+        private static int CountFocuses(FormaDataTreeTests ctx)
+            => ctx.JSInterop.Invocations.Count(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
+    }
+
     public sealed class Drawing
     {
         // A thumbnail that says each time a node draws it, so what a change draws again can be read.
@@ -1103,11 +1244,11 @@
 
     private sealed record Entry(int Id, int? ParentId, string Name, bool IsFolder);
 
-    // Documents opened, in a tree whose markers carry the focus.
-    private static async Task<IRenderedComponent<IComponent>> RenderOpenDocumentsAsync(FormaDataTreeTests ctx, DomProbe<FocusState> probe)
+    // Documents opened, in a tree whose markers carry the focus, or whose rows do where it has no markers.
+    private static async Task<IRenderedComponent<IComponent>> RenderOpenDocumentsAsync(FormaDataTreeTests ctx, DomProbe<FocusState> probe, bool hasMarkers = true)
     {
         var cut = ctx.Render(
-            @<FormaDataView Items="CreateEntries()" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+            @<FormaDataView Items="CreateEntries()" EnablePagination="false" EnableCheckedSelection="hasMarkers" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
                 <FormaDataTree TItem="Entry" />
             </FormaDataView>);
         cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
@@ -1130,6 +1271,10 @@
 
     private static List<string> Names(IRenderedComponent<IComponent> cut)
         => [.. cut.FindAll(".forma-data-tree-node-name").Select(name => name.TextContent)];
+
+    // The node Tab enters the tree at: the one row in the tab order.
+    private static string? GetTabStop(IRenderedComponent<IComponent> cut)
+        => cut.FindAll(".forma-data-tree-node").Single(node => node.GetAttribute("tabindex") == "0").QuerySelector(".forma-data-tree-node-name")?.TextContent;
 
     // The node whose marker the tree last focused, or the tree itself.
     private static string? LastFocused(FormaDataTreeTests ctx, IRenderedComponent<IComponent> cut)

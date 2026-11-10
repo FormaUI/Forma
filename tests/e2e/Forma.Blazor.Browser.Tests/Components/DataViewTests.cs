@@ -308,6 +308,110 @@ public sealed class DataViewTests
             await Assertions.Expect(reports).ToHaveCountAsync(0);
             await Assertions.Expect(folder).ToBeFocusedAsync();
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_take_tab_first_to_its_first_node_and_back_to_the_node_last_focused_in_it(string runtime)
+        {
+            // Arrange — the tree watching where the focus is
+            var (context, page) = await OpenAsync(host, runtime, "data-tree");
+            await using var _ = context;
+            var after = page.Locator("#after");
+            var reports = page.GetByRole(AriaRole.Treeitem, new() { Name = "Reports", Exact = true });
+            await WaitForObservationAsync(page, "#check .forma-data-tree", "focus");
+
+            // Act — entered from the button after it
+            await after.FocusAsync();
+            await page.Keyboard.PressAsync("Shift+Tab");
+
+            // Assert
+            await Assertions.Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Documents", Exact = true })).ToBeFocusedAsync();
+
+            // Act — Reports focused, the focus taken out of the tree, and the tree entered again
+            await page.GetByRole(AriaRole.Button, new() { Name = "Open Documents", Exact = true }).ClickAsync();
+            await reports.FocusAsync();
+            await Assertions.Expect(reports).ToHaveAttributeAsync("tabindex", "0", new() { Timeout = 30000 });
+            await after.FocusAsync();
+            await page.Keyboard.PressAsync("Shift+Tab");
+
+            // Assert
+            await Assertions.Expect(reports).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator("#activated")).ToBeEmptyAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_leave_the_page_s_focus_where_it_is_and_take_tab_to_the_node_in_place_of_one_removed_while_the_focus_was_elsewhere(string runtime)
+        {
+            // Arrange — Contracts focused inside the open Documents
+            var (context, page) = await OpenAsync(host, runtime, "data-tree");
+            await using var _ = context;
+            var remove = page.Locator("#remove-contracts");
+            var contracts = page.GetByRole(AriaRole.Treeitem, new() { Name = "Contracts", Exact = true });
+            await WaitForObservationAsync(page, "#check .forma-data-tree", "focus");
+            await page.GetByRole(AriaRole.Button, new() { Name = "Open Documents", Exact = true }).ClickAsync();
+            await contracts.FocusAsync();
+            await Assertions.Expect(contracts).ToHaveAttributeAsync("tabindex", "0", new() { Timeout = 30000 });
+
+            // Act — Contracts taken away by a button outside the tree, which holds the focus
+            await remove.ClickAsync();
+            await Assertions.Expect(contracts).ToHaveCountAsync(0);
+
+            // Assert — the page's focus where it was, and Tab back into the tree at Reports, the sibling before Contracts
+            await Assertions.Expect(remove).ToBeFocusedAsync();
+            await page.Locator("#after").FocusAsync();
+            await page.Keyboard.PressAsync("Shift+Tab");
+            await Assertions.Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Reports", Exact = true })).ToBeFocusedAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_leave_the_page_s_focus_where_it_is_and_take_tab_to_the_folder_closed_over_the_node_last_focused_while_the_focus_was_elsewhere(string runtime)
+        {
+            // Arrange — Reports focused inside the open Documents, then the focus taken out of the tree
+            var (context, page) = await OpenAsync(host, runtime, "data-tree");
+            await using var _ = context;
+            var after = page.Locator("#after");
+            var reports = page.GetByRole(AriaRole.Treeitem, new() { Name = "Reports", Exact = true });
+            await WaitForObservationAsync(page, "#check .forma-data-tree", "focus");
+            await page.GetByRole(AriaRole.Button, new() { Name = "Open Documents", Exact = true }).ClickAsync();
+            await reports.FocusAsync();
+            await Assertions.Expect(reports).ToHaveAttributeAsync("tabindex", "0", new() { Timeout = 30000 });
+            await after.FocusAsync();
+
+            // Act — Documents closed by a press that leaves the focus where it is, as a pointer press on the disclosure does
+            await page.GetByRole(AriaRole.Button, new() { Name = "Close Documents", Exact = true }).DispatchEventAsync("click");
+            await Assertions.Expect(reports).ToHaveCountAsync(0);
+
+            // Assert — the page's focus where it was, and Tab back into the tree at Documents
+            await Assertions.Expect(after).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Shift+Tab");
+            await Assertions.Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Documents", Exact = true })).ToBeFocusedAsync();
+        }
+    }
+
+    public sealed class DataTreeSidebar(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_take_tab_back_to_its_current_node_whatever_was_focused_in_it(string runtime)
+        {
+            // Arrange — Readme.txt focused without being chosen, then the focus taken out of the sidebar
+            var (context, page) = await OpenAsync(host, runtime, "data-tree-sidebar");
+            await using var _ = context;
+            var after = page.Locator("#after");
+            await WaitForObservationAsync(page, "#check .forma-data-tree", "focus");
+            await page.GetByRole(AriaRole.Treeitem, new() { Name = "Readme.txt", Exact = true }).FocusAsync();
+            await MakeRoundTripAsync(page);
+            await after.FocusAsync();
+
+            // Act
+            await page.Keyboard.PressAsync("Shift+Tab");
+
+            // Assert — Documents, still the current node
+            await Assertions.Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Documents", Exact = true })).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator("#current")).ToHaveTextAsync("Documents");
+        }
     }
 
     public sealed class DataSortMenu(BrowserHost host)

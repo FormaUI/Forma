@@ -1,0 +1,24 @@
+@page "/{Runtime}/data-tree-sidebar"
+@using Forma.Blazor.Components.DataView
+
+@* A sidebar over a folder holding two more beside a file, choosing its current node, Documents to begin with, shown where the check
+   reads it; and a button after the sidebar, which Shift+Tab leaves for it. *@
+<FormaDataView Id="check" TItem="Node" Items="Nodes" ItemKey="@(node => node.Id)" ItemName="@(node => node.Name)" ParentKey="@(node => node.ParentId)" HasChildren="@(node => node.IsFolder)" EnablePagination="false" CurrentItem="_current" CurrentItemChanged="@((Node? node) => _current = node)">
+    <FormaDataTree TItem="Node" aria-label="Folders" SelectsCurrent="true" />
+</FormaDataView>
+<button id="after" type="button" data-check-scaffold>After</button>
+<output id="current">@_current?.Name</output>
+
+@code {
+    private static readonly IQueryable<Node> Nodes = new Node[]
+    {
+        new(1, null, "Documents", true),
+        new(2, null, "Readme.txt", false),
+        new(3, 1, "Reports", true),
+        new(4, 1, "Contracts", true),
+    }.AsQueryable();
+
+    private Node? _current = Nodes.First();
+
+    internal sealed record Node(int Id, int? ParentId, string Name, bool IsFolder);
+}
