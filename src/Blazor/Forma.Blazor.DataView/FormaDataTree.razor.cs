@@ -75,9 +75,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private readonly List<object> _unreportedMoves = [];
     private bool _isCompanion;
     private bool _areRootsRequested;
-    private bool _isRevealing;
     private object? _tabStopKey;
-    private object? _currentKey;
     private object? _pendingFocusKey;
     private object? _lastFocusedKey;
     private bool _holdsFocus;
@@ -808,61 +806,8 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             : SelectsCurrent ? IsCurrent(node) ? "true" : "false"
             : null;
 
-    private async Task HandleViewChangedAsync()
-    {
-        await InvokeAsync(StateHasChanged);
-
-        // The reveal follows a change of the current node alone, so a node closed over the current one stays closed.
-        var currentKey = View.CurrentItem is { } current ? View.ItemKey(current) : null;
-        var hasChanged = !Equals(currentKey, _currentKey);
-        _currentKey = currentKey;
-
-        if (SelectsCurrent && hasChanged && !_isRevealing && View.CurrentItem is { } node)
-        {
-            await RevealAsync(node);
-        }
-    }
-
-    // A sidebar shows a node that became current: the ancestors of one it does not show are opened, from the root down, as far as the data view knows them.
-    private async Task RevealAsync(TItem node)
-    {
-        if (GetVisibleNodes().Any(candidate => IsSame(candidate, node)))
-        {
-            return;
-        }
-
-        List<TItem> ancestors = [];
-        var step = node;
-
-        while (View.TryGetParent(step, out var parent) && parent is not null)
-        {
-            ancestors.Add(parent);
-            step = parent;
-        }
-
-        // Only a chain that reaches a root, one the data view has seen whole, opens.
-        if (ancestors.Count == 0 || !View.Roots.Any(root => IsSame(root, step)))
-        {
-            return;
-        }
-
-        _isRevealing = true;
-
-        try
-        {
-            for (var index = ancestors.Count - 1; index >= 0; index--)
-            {
-                if (!View.IsOpen(ancestors[index]))
-                {
-                    await Interaction.OpenNodeAsync(ancestors[index]);
-                }
-            }
-        }
-        finally
-        {
-            _isRevealing = false;
-        }
-    }
+    private Task HandleViewChangedAsync()
+        => InvokeAsync(StateHasChanged);
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

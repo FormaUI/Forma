@@ -292,6 +292,20 @@ children the first time it opens and keeping them, with a busy state on the node
 they load. The sort applies within a level. A source without parentage is one level,
 and the tree has nothing to show for it.
 
+The open nodes are the engine's, so they hold through a refresh, a new source and a change
+of view, and a tree placed anew finds them as they were. `InitialOpenKeys` names the nodes
+that start open, by their keys: each opens once, as the level holding it first loads, so the
+source is asked for the branches on the way to the named nodes alone, never the whole
+hierarchy, and a named node the reader closes stays closed. A node that becomes current,
+from the host or from the reader, is revealed: once the engine knows the ancestors that
+reach it from a root, from the levels already loaded, it opens them from the top down. The
+reveal waits for a path still loading and gives way to a node the reader closes before it
+lands; it follows a change of the current node alone, so a node the reader closes over the
+current one afterwards stays closed. A host that opens on a node deep in the hierarchy names
+the ancestors on the way to it, since the engine learns a node's parent only from a level
+that holds it. The content at the roots can list more than the roots, so only the content of
+a node tells the engine whose children its items are.
+
 ### Grouping
 
 `GroupBy` names a key the items fold under: a group is a heading the view draws over its
@@ -495,7 +509,8 @@ starting with it. A selected node takes the selected tint and `aria-selected`; t
 selection is the engine's, so a node selected in the tree is the same item selected in
 the grid. Choosing a node can also make it the current node, `SelectsCurrent`, which is
 what a sidebar does, and `NodeFilter` narrows the tree to the items it admits, the
-folders alone for a sidebar over a source that holds files too. The tree announces itself
+folders alone for a sidebar over a source that holds files too. The tree draws the nodes
+the engine holds open, so a node that becomes current shows in it as the engine reveals it. The tree announces itself
 as a tree with each node's level, its
 open state and whether it has children, and virtualizes over the visible nodes with a
 row as its unit: the nodes then stand in one run, each saying its level, how many

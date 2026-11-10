@@ -26,11 +26,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 {
     private const string DescendingOrder = "desc";
 
-    // What the host gives that never changes how an item is drawn: the content around the views, the selection the host holds
-    // and reads, and the callbacks.
+    // What the host gives that never changes how an item is drawn: the content around the views, the nodes that start open, the
+    // selection the host holds and reads, and the callbacks.
     private static readonly string[] _parametersLeftOut =
     [
-        nameof(ChildContent), nameof(Status), nameof(EmptyContent), nameof(LoadingContent),
+        nameof(ChildContent), nameof(Status), nameof(EmptyContent), nameof(LoadingContent), nameof(InitialOpenKeys),
         nameof(SelectedItems), nameof(SelectedItemsChanged), nameof(OnSelectionRejected), nameof(OnItemClick),
         nameof(ViewChanged), nameof(CurrentItemChanged), nameof(PageChanged), nameof(TotalItemCountChanged),
         nameof(Id), nameof(Class), nameof(Style),
@@ -53,6 +53,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private readonly Dictionary<object, NodeState> _nodes = [];
     private readonly Dictionary<object, TItem?> _parents = [];
     private TItem? _currentItem;
+    private HashSet<object>? _pendingOpenKeys;
+    private bool _revealsCurrent;
+    private bool _isRevealing;
     private object? _loadedParentKey;
     private object? _loadedSortToken;
     private string? _activeViewKey;
@@ -148,6 +151,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>Raised with the node the reader moved into, or null for the roots.</summary>
     [Parameter] public EventCallback<TItem?> CurrentItemChanged { get; set; }
+
+    /// <summary>The keys of the nodes that start open, as <see cref="ItemKey"/> reads them.</summary>
+    /// <remarks>A named node opens once, as the level holding it first loads, so only the branches on the way to it are asked for, and a node the reader closes stays closed.</remarks>
+    [Parameter] public IReadOnlyCollection<object>? InitialOpenKeys { get; set; }
 
     /// <summary>The views that present the items; one of them shows.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
@@ -517,6 +524,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         _selectionInteraction = new SelectionInteraction(Context.JS);
         _heightReservation = new HeightReservation(Context.JS);
+        _pendingOpenKeys = InitialOpenKeys is { Count: > 0 } keys ? [.. keys] : null;
     }
 
     /// <inheritdoc />
@@ -578,7 +586,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         if (_currentItemParameter.Update(CurrentItem))
         {
-            _currentItem = CurrentItem;
+            SetCurrentItem(CurrentItem);
         }
 
         if (!_isAddressRead)
@@ -635,6 +643,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         {
             await LoadAsync();
         }
+
+        await RevealCurrentAsync();
     }
 
     /// <inheritdoc />
@@ -1105,11 +1115,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         node.Item = parent;
         node.IsLoading = true;
         await NotifyStateAsync(isItemStateOnly: true);
+        List<TItem> children;
 
         try
         {
             var answer = await AskForChildrenAsync(parent, CancellationToken.None);
-            node.Children = [.. answer.Items];
+            children = node.Children = [.. answer.Items];
             node.IsStale = false;
             RecordParent(answer.Items, parent);
         }
@@ -1119,6 +1130,92 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         await NotifyStateAsync(isItemStateOnly: true);
+
+        // An answer for a state a new source replaced is asked for again, and opens what it holds then.
+        if (_nodes.TryGetValue(key, out var live) && ReferenceEquals(live, node))
+        {
+            await OpenNamedNodesAsync(children);
+        }
+
+        await RevealCurrentAsync();
+    }
+
+    // The nodes the host named open as the level holding them first loads, each once, so only the branches on the way to them are asked for.
+    private Task OpenNamedNodesAsync(IReadOnlyList<TItem> children)
+    {
+        if (_pendingOpenKeys is not { Count: > 0 } keys)
+        {
+            return Task.CompletedTask;
+        }
+
+        List<Task> loads = [];
+
+        foreach (var child in children)
+        {
+            if (keys.Remove(ItemKey(child)) && CanOpen(child))
+            {
+                GetNodeState(child).IsOpen = true;
+                loads.Add(LoadChildrenCoreAsync(child));
+            }
+        }
+
+        return Task.WhenAll(loads);
+    }
+
+    // The current node shows in the tree once the data view knows the ancestors that reach it from a root, which then open from the top down.
+    private async Task RevealCurrentAsync()
+    {
+        if (!_revealsCurrent || _isRevealing)
+        {
+            return;
+        }
+
+        List<TItem> ancestors = [];
+        HashSet<object> visited = [];
+        var step = _currentItem;
+
+        while (step is not null)
+        {
+            // A path not yet loaded waits for the level holding it, and a source whose parents run in a circle reaches no root at all.
+            if (!visited.Add(ItemKey(step)))
+            {
+                _revealsCurrent = false;
+                return;
+            }
+
+            if (!_parents.TryGetValue(ItemKey(step), out var parent))
+            {
+                return;
+            }
+
+            if (parent is not null)
+            {
+                ancestors.Add(parent);
+            }
+
+            step = parent;
+        }
+
+        _revealsCurrent = false;
+        _isRevealing = true;
+
+        try
+        {
+            for (var index = ancestors.Count - 1; index >= 0; index--)
+            {
+                if (!IsOpen(ancestors[index]))
+                {
+                    await OpenNodeAsync(ancestors[index]);
+                }
+            }
+        }
+        finally
+        {
+            _isRevealing = false;
+        }
+
+        // A node that became current while the last one was being revealed is revealed in turn.
+        await RevealCurrentAsync();
     }
 
     /// <inheritdoc />
@@ -1146,7 +1243,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return Task.CompletedTask;
         }
 
+        // A node the reader closes outranks a reveal still waiting for the path to the current node.
         state.IsOpen = false;
+        _revealsCurrent = false;
 
         return NotifyStateAsync(isItemStateOnly: true);
     }
@@ -1160,12 +1259,24 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
-        _currentItem = item;
+        SetCurrentItem(item);
         await CurrentItemChanged.InvokeAsync(item);
+        await RevealCurrentAsync();
 
         // A node's children are a set of their own, which starts on its first page.
         await MoveToPageAsync(1);
         await LoadAsync();
+    }
+
+    // A node that becomes current is revealed in the tree, as far as the data view knows the way to it.
+    private void SetCurrentItem(TItem? item)
+    {
+        if (!Equals(GetNodeKey(item), GetNodeKey(_currentItem)))
+        {
+            _revealsCurrent = item is not null;
+        }
+
+        _currentItem = item;
     }
 
     /// <inheritdoc />
@@ -1567,7 +1678,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         return source.Where(Expression.Lambda<Func<TItem, bool>>(comparison, parentKey.Parameters[0]));
     }
 
-    /// <summary>What the data view keeps of a node the tree has opened or asked about: the node, its children once answered and whether they came from a source since replaced, and whether it is open or still loading.</summary>
+    /// <summary>What the data view keeps of a node the tree has opened or asked about: the node, its children once answered and whether they came, or were coming, from a source since replaced, and whether it is open or still loading.</summary>
     private sealed class NodeState
     {
         public TItem? Item { get; set; }
@@ -1717,7 +1828,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         // The children a tree keeps were sorted and read from the source as it was, so a refresh, a new source or a new sort asks
         // again; the nodes the reader opened stay open, and their children go on showing until the answer comes. A fresh state per
-        // node leaves an answer still on its way from the source as it was nowhere to land.
+        // node leaves an answer still on its way from the source as it was nowhere to land, and the node it was for is asked again.
         object sortToken = (_sortName, _sortDirection);
         var areNodesStale = asksNodesAgain || !ReferenceEquals(_loadedSource, source) || !Equals(_loadedSortToken, sortToken);
 
@@ -1725,7 +1836,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         {
             foreach (var (key, node) in _nodes.ToList())
             {
-                _nodes[key] = new NodeState { Item = node.Item, Children = node.Children, IsStale = node.Children is not null, IsOpen = node.IsOpen };
+                _nodes[key] = new NodeState { Item = node.Item, Children = node.Children, IsStale = node.Children is not null || node.IsLoading, IsOpen = node.IsOpen };
             }
 
             _loadedSortToken = sortToken;
@@ -1873,7 +1984,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         var page = await FetchSliceAsync(startIndex, count, includesGroupSizes, cancellationToken);
 
-        if (HasHierarchy && !cancellationToken.IsCancellationRequested)
+        // The content at the roots can list more than the roots, every file beside a tree of folders, so only a node's content names a parent.
+        if (HasHierarchy && _currentItem is not null && !cancellationToken.IsCancellationRequested)
         {
             RecordParent(page.Items, _currentItem);
         }

@@ -101,6 +101,14 @@ set out. What Forma gained before its first release, month by month, is in [the 
   positions it read, `ReadCount`, whether more follow, `HasMore`, and how many positions the source holds,
   `PositionCount`, which the paginator counts pages in. `IDataView` declares `IsVirtualizing`, `ItemCount` and
   `MoreContent`, and `IDataViewInteraction` declares `LoadMoreAsync`.
+- [`FormaDataView`](docs/data-view-design.md#hierarchy) takes `InitialOpenKeys`, the keys of the nodes that start
+  open, each opened once as the level holding it first loads, so a provider is asked for the branches on the way to
+  them alone and a named node the reader closes stays closed. A node that becomes current is revealed in any tree,
+  plain or a sidebar, its ancestors opened once the data view knows the path from a root, which also reveals a
+  current node the host names on load once the levels holding it arrive; it revealed only in a sidebar, and only
+  where the way to the node was loaded as it became current. A node open while its children were on their way when
+  the source changed is asked again; it stayed open with nothing under it. The content at the roots no longer
+  overwrites the parent a tree learned for an item it lists.
 - [`ExplorerContentProvider`](src/Framework/Forma.Framework.Explorer/README.md) answers a location's content, its
   child folders before its files, in either sort direction, under the grouping's leading group of folders, and
   `ExplorerGrouping.Define` leads every grouping with that group. Its slices split at the count of matching folders,

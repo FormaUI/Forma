@@ -414,6 +414,32 @@ public sealed class DataViewTests
         }
     }
 
+    public sealed class DataTreeOpen(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_open_the_named_folder_on_load_over_the_current_node_and_keep_it_closed_through_a_refresh(string runtime)
+        {
+            // Arrange — Documents named open, and Reports, inside it, current
+            var (context, page) = await OpenAsync(host, runtime, "data-tree-open");
+            await using var _ = context;
+            var documents = page.GetByRole(AriaRole.Treeitem, new() { Name = "Documents", Exact = true });
+            await Assertions.Expect(documents).ToHaveAttributeAsync("aria-expanded", "true");
+            await Assertions.Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Reports", Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
+            await Assertions.Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Pictures", Exact = true })).ToHaveAttributeAsync("aria-expanded", "false");
+
+            // Act
+            await page.GetByRole(AriaRole.Button, new() { Name = "Close Documents", Exact = true }).ClickAsync();
+            await Assertions.Expect(documents).ToHaveAttributeAsync("aria-expanded", "false");
+            await page.Locator("#refresh").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#refreshes")).ToHaveTextAsync("1");
+            await Assertions.Expect(documents).ToHaveAttributeAsync("aria-expanded", "false");
+            await Assertions.Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Reports", Exact = true })).ToHaveCountAsync(0);
+        }
+    }
+
     public sealed class DataListAppend(BrowserHost host)
     {
         [Theory]

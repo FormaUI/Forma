@@ -125,6 +125,20 @@ whether the request reads the content the other views show, `Content`, or the ch
 shows, `Children`, so a provider answers each its own way, even at the roots, as a file browser
 lists every file beside a tree of folders.
 
+`InitialOpenKeys` names the nodes that start open, by the keys `ItemKey` reads, so a tree reopens
+the branches its reader left open; each opens once, as the level holding it loads, and only those
+branches are asked for. A node that becomes current opens the ancestors that reach it, so a host
+opening on a node deep in the hierarchy names those ancestors too:
+
+```razor
+<FormaDataView TItem="Entry" ItemsProvider="ProvideAsync" ItemKey="@(entry => entry.Id)"
+               HasChildren="@(entry => entry.IsFolder)" InitialOpenKeys="_openFolderIds"
+               @bind-CurrentItem="_folder">
+    <FormaDataTree TItem="Entry" SelectsCurrent="true" />
+    <FormaDataGrid TItem="Entry">...</FormaDataGrid>
+</FormaDataView>
+```
+
 ## Items from a provider
 
 `ItemsProvider` stands in for `Items` where the store answers one slice at a time. It receives a

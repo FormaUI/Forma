@@ -1,0 +1,35 @@
+@page "/{Runtime}/data-tree-open"
+@using Forma.Blazor.Components.DataView
+
+@* A sidebar over two folders, Documents named to start open and Reports, inside it, the current node to begin with; and a button
+   that refreshes the data view, counting each refresh where the check reads it. *@
+<FormaDataView @ref="_dataView" Id="check" TItem="Node" Items="Nodes" ItemKey="@(node => node.Id)" ItemName="@(node => node.Name)" ParentKey="@(node => node.ParentId)" HasChildren="@(node => node.IsFolder)" EnablePagination="false" InitialOpenKeys="OpenKeys" CurrentItem="_current" CurrentItemChanged="@((Node? node) => _current = node)">
+    <FormaDataTree TItem="Node" aria-label="Folders" SelectsCurrent="true" />
+</FormaDataView>
+<button id="refresh" type="button" data-check-scaffold @onclick="RefreshAsync">Refresh</button>
+<output id="refreshes">@_refreshes</output>
+
+@code {
+    private static readonly IQueryable<Node> Nodes = new Node[]
+    {
+        new(1, null, "Documents", true),
+        new(2, null, "Pictures", true),
+        new(3, 1, "Reports", true),
+        new(4, 1, "Contracts", true),
+        new(5, 2, "Holidays", true),
+    }.AsQueryable();
+
+    private static readonly object[] OpenKeys = [1];
+
+    private FormaDataView<Node> _dataView = default!;
+    private Node? _current = Nodes.Single(node => node.Id == 3);
+    private int _refreshes;
+
+    private async Task RefreshAsync()
+    {
+        await _dataView.RefreshDataAsync();
+        _refreshes++;
+    }
+
+    internal sealed record Node(int Id, int? ParentId, string Name, bool IsFolder);
+}

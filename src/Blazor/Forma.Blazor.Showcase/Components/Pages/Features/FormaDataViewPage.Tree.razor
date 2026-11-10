@@ -2,7 +2,7 @@
 @rendermode InteractiveServer
 
 <h1>FormaDataView</h1>
-<p class="description">@L["This tab shows the tree as a view of the data view over a folder hierarchy: the folders as nodes under their parents, opened and closed from their disclosures and the keyboard, and standing beside the grid as a sidebar whose chosen folder the grid shows the contents of."]</p>
+<p class="description">@L["This tab shows the tree as a view of the data view over a folder hierarchy: the folders as nodes under their parents, opened and closed from their disclosures and the keyboard, open on load where the host names them, and standing beside the grid as a sidebar whose chosen folder the grid shows the contents of."]</p>
 
 <div class="demo-section">
     <h2>@L["A Folder Tree Beside a Grid"]</h2>
@@ -26,6 +26,29 @@
                 </FormaDataGrid>
             </ChildContent>
             <Status>@L["Showing: {Folder}", _currentFolder?.Name ?? L["the roots"].Value]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Folders Open on Load"]</h2>
+    <p class="description">@L["The host names Documents and Pictures to start open, and Holidays, inside Pictures, as the current folder, the way an explorer reopens the branches its reader left open. Each opens once, so a folder closed now stays closed as the grid sorts."]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView TItem="ShowcaseEntry" Items="DataViewShowcaseFolders.All" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.Parent)" HasChildren="@(entry => entry.IsFolder)" InitialOpenKeys="OpenOnLoadKeys" @bind-CurrentItem="_openedFolder">
+            <ChildContent>
+                <FormaDataTree TItem="ShowcaseEntry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" aria-label="@L["Folders"]">
+                    <ThumbnailTemplate Context="entry"><FormaIcon Icon="@entry.Glyph" Size="IconSize.Small" /></ThumbnailTemplate>
+                </FormaDataTree>
+                <FormaDataGrid TItem="ShowcaseEntry">
+                    <Columns>
+                        <FormaTemplateColumn Title="@L["Name"]" Context="entry">
+                            <span class="demo-entry"><FormaIcon Icon="@entry.Glyph" Size="IconSize.Small" /> @entry.Name</span>
+                        </FormaTemplateColumn>
+                        <FormaPropertyColumn Property="@(entry => entry.Kind)" Title="@L["Kind"]" Sortable="true" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["Showing: {Folder}", _openedFolder?.Name ?? L["the roots"].Value]</Status>
         </FormaDataView>
     </div>
 </div>
@@ -79,7 +102,11 @@
     // How long a change to the source waits after its button is pressed, time enough to put the focus back on a node.
     private static readonly TimeSpan ChangeDelay = TimeSpan.FromSeconds(3);
 
+    // Documents and Pictures, the folders that start open.
+    private static readonly object[] OpenOnLoadKeys = [1, 2];
+
     private ShowcaseEntry? _currentFolder;
+    private ShowcaseEntry? _openedFolder = DataViewShowcaseFolders.All.Single(entry => entry.Id == 10);
     private IQueryable<ShowcaseEntry> _changingEntries = DataViewShowcaseFolders.All;
     private FormaDataView<ShowcaseEntry> _changingView = default!;
     private bool _changingSelects;
