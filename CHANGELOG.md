@@ -51,6 +51,18 @@ set out. What Forma gained before its first release, month by month, is in [the 
   A provider that read the host's current folder reads `query.FolderKey` instead, which keeps the folder the slice was
   asked for when the host moves on before the answer; one that ordered tied items its own way orders them by key; and
   code constructing a query passes the folder first.
+- A [`CatalogPage`](src/Framework/Forma.Framework.Catalog/README.md#providers) says how many store positions its
+  slice read, `ReadCount`, whether another slice follows, `HasMore`, and, from a store that applied the query's new
+  `Filter` and left hidden items out, how many items the whole query lists, `ListedCount`. `FormaExplorer` reads by
+  store position through a slice it leaves out whole, appended or paged, and an appending explorer says "Showing X of
+  Y" only from a `ListedCount`, and "Showing X" otherwise. It counted Y as the store's total less the items left out
+  so far, which counted what the slices not yet read would leave out as listed. `CatalogProviderItems.FetchedCount`
+  is `ReadCount`, and `WasFull` and `ListedTotal` give way to `HasMore` and `ListedCount`.
+- [`CatalogConstraints`](src/Framework/Forma.Framework.Catalog/README.md#requests-and-constraints) takes
+  `AcceptedUploadKinds`, the kinds an upload may add where they differ from the kinds the catalog lists. The
+  composer's stored-files dialog lists every kind its `AcceptedResourceKinds` names however few its
+  `AcceptedUploadKinds` allows; it listed only the kinds both named, and offered nothing past the first slice it had
+  filtered.
 - On a statically rendered page, [`FormaNumberInput`](docs/component-catalog.md#formanumberinput),
   `FormaCurrencyInput`, `FormaDatePicker`, `FormaTimePicker` and `FormaDateTimePicker` are edited in the browser's own
   number, date, time and date-and-time inputs, and `FormaSelect` and `FormaMultiSelect` in the browser's own list,

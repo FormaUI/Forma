@@ -5,27 +5,28 @@ namespace Forma.Framework.Catalog.Queries;
 public sealed class CatalogProviderItems : IDisposable
 {
     private List<ICatalogItem> _items = [];
-    private int _fetchedCount;
-    private int _unlistedCount;
+    private int _readCount;
+    private bool _hasLeftItemsOut;
+    private int? _listedCount;
     private CancellationTokenSource? _fetchCancellation;
 
     /// <summary>The items fetched from the provider.</summary>
     public IReadOnlyList<ICatalogItem> Items
         => _items;
 
-    /// <summary>How many items the provider has returned.</summary>
-    public int FetchedCount
-        => _fetchedCount;
+    /// <summary>How many store positions the fetched slices read.</summary>
+    public int ReadCount
+        => _readCount;
 
-    /// <summary>How many items the provider reports in total.</summary>
+    /// <summary>How many items the provider reports the store matched, each a position a slice can read.</summary>
     public int? Total { get; private set; }
 
-    /// <summary>The reported total less the unlisted items.</summary>
-    public int? ListedTotal
-        => Total is { } total ? Math.Max(total - _unlistedCount, _items.Count) : null;
+    /// <summary>How many items of the whole query are listed, kept while the provider guarantees it and no slice held an item left out.</summary>
+    public int? ListedCount
+        => _hasLeftItemsOut ? null : _listedCount;
 
-    /// <summary>Whether the last page came back full.</summary>
-    public bool WasFull { get; private set; }
+    /// <summary>Whether the store holds positions past the slices read.</summary>
+    public bool HasMore { get; private set; }
 
     /// <summary>Whether a fetch is running.</summary>
     public bool IsFetching { get; private set; }
@@ -67,23 +68,27 @@ public sealed class CatalogProviderItems : IDisposable
             }
 
             List<ICatalogItem> kept = [.. listed];
-            var unlisted = page.Items.Count - kept.Count;
+            var read = page.ReadCount ?? page.Items.Count;
+            var leftOut = kept.Count < page.Items.Count;
 
             if (append)
             {
                 _items = [.. _items, .. kept];
-                _fetchedCount += page.Items.Count;
-                _unlistedCount += unlisted;
+                _readCount += read;
+                _hasLeftItemsOut |= leftOut;
             }
             else
             {
                 _items = kept;
-                _fetchedCount = page.Items.Count;
-                _unlistedCount = unlisted;
+                _readCount = query.Skip + read;
+                _hasLeftItemsOut = leftOut;
             }
 
             Total = page.TotalCount;
-            WasFull = page.Items.Count >= query.Take;
+            _listedCount = page.ListedCount;
+
+            // A slice that read nothing ends the run, so a provider that makes no progress is never asked again.
+            HasMore = read > 0 && (page.HasMore ?? (page.TotalCount is { } total ? _readCount < total : read >= query.Take));
         }
         catch (OperationCanceledException)
         {

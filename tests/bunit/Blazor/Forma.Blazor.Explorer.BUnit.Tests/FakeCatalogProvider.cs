@@ -20,6 +20,9 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
     /// <summary>Whether the provider reports the total count of the resources that match.</summary>
     public bool ReportsTotal { get; set; } = true;
 
+    /// <summary>Whether the provider guarantees how many items the whole query lists.</summary>
+    public bool ReportsListedCount { get; set; }
+
     /// <summary>The sources of the resources the provider returns as hidden items.</summary>
     public ISet<string> HiddenSources { get; } = new HashSet<string>(StringComparer.Ordinal);
 
@@ -48,7 +51,10 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
 
         return new CatalogPage(
             [.. ordered.Skip(query.Skip).Take(query.Take).Select(ToItem)],
-            ReportsTotal ? ordered.Count : null);
+            ReportsTotal ? ordered.Count : null)
+        {
+            ListedCount = ReportsListedCount ? ordered.Count(resource => !HiddenSources.Contains(resource.Source)) : null
+        };
     }
 
     private ICatalogItem ToItem(ResourceInfo resource)

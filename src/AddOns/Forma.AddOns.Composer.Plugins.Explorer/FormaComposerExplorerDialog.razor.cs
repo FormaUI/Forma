@@ -23,10 +23,9 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
     /// <summary>The options configuring what the dialog browses, takes in, and inserts.</summary>
     [Parameter] public ExplorerPluginOptions Options { get; set; } = ExplorerPluginOptions.Default;
 
-    private readonly ICatalogProvider? _registeredItemsProvider = itemsProvider;
+    private readonly ICatalogProvider? _itemsProvider = itemsProvider;
     private readonly IFileStore? _store = store;
     private readonly List<string> _messages = [];
-    private ICatalogProvider? _itemsProvider;
     private ExplorerItemOptions _itemOptions = ExplorerItemOptions.ReadOnly;
     private CatalogConstraints _constraints = CatalogConstraints.None;
     private readonly ParameterState<ExplorerPluginOptions?> _optionsParameter = new();
@@ -59,21 +58,15 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
 
         ArgumentNullException.ThrowIfNull(Options);
 
-        // The explorer reloads when handed a different provider object, so these are rebuilt only when the options change.
+        // The explorer reads its constraints again when handed different ones, so these are rebuilt only when the options change.
         if (!_optionsParameter.Update(Options))
         {
             return;
         }
 
-        _itemsProvider = _registeredItemsProvider is null
-            ? null
-            : CatalogResourceFilter.Parse(Options.AcceptedResourceKinds) is { } filter
-                ? new FilteredItems(_registeredItemsProvider, filter)
-                : _registeredItemsProvider;
-
         _itemOptions = ExplorerItemOptions.ReadOnly with { AllowUpload = Options.AllowUpload && _store is not null };
 
-        _constraints = new() { AcceptedResourceKinds = Options.AcceptedUploadKinds ?? Options.AcceptedResourceKinds };
+        _constraints = new() { AcceptedResourceKinds = Options.AcceptedResourceKinds, AcceptedUploadKinds = Options.AcceptedUploadKinds };
     }
 
     ValueTask<ComposerInsertion?> IComposerInsertionDialog.TryConfirmAsync(CancellationToken cancellationToken)
@@ -117,19 +110,6 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
         if (selectedItems.Count > 0)
         {
             _messages.Clear();
-        }
-    }
-
-    // The inner provider's items narrowed to the resources the filter accepts.
-    private sealed class FilteredItems(ICatalogProvider innerProvider, CatalogResourceFilter filter) : ICatalogProvider
-    {
-        public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
-        {
-            var page = await innerProvider.GetItemsAsync(query, cancellationToken).ConfigureAwait(false);
-            var acceptedItems = page.Items.Where(item => item.Resource is { } resource && filter.Accepts(resource)).ToList();
-
-            // The inner total counts rejected items too, so it is kept only when the filter rejected none.
-            return new CatalogPage(acceptedItems, acceptedItems.Count == page.Items.Count ? page.TotalCount : null);
         }
     }
 }

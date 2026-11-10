@@ -33,6 +33,26 @@ public sealed class CatalogProviderItemsTests
             => ValueTask.FromResult(new CatalogPage(items, total ?? items.Count));
     }
 
+    // Answers the positions a query asks for from the items it holds, recording where each slice began.
+    private sealed class PositionProvider(IReadOnlyList<ICatalogItem> items, bool? hasMore = null, int? listedCount = null, bool reportsTotal = true) : ICatalogProvider
+    {
+        public List<int> Skips { get; } = [];
+
+        public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
+        {
+            Skips.Add(query.Skip);
+
+            return ValueTask.FromResult(new CatalogPage([.. items.Skip(query.Skip).Take(query.Take)], reportsTotal ? items.Count : null)
+            {
+                HasMore = hasMore,
+                ListedCount = listedCount
+            });
+        }
+    }
+
+    private static CatalogQuery CreateQuery(int skip, int take)
+        => new(null, skip, take, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+
     private static CatalogItem CreateHiddenItem(string name)
         => new() { Key = name, Name = name, Visibility = CatalogItemVisibility.Hidden };
 
@@ -53,30 +73,87 @@ public sealed class CatalogProviderItemsTests
         // Assert
         Assert.Multiple(
             () => Assert.Equal(["shown"], providerItems.Items.Select(item => item.Name)),
-            () => Assert.Equal(2, providerItems.FetchedCount),
+            () => Assert.Equal(2, providerItems.ReadCount),
             () => Assert.Equal(6, providerItems.Total),
-            () => Assert.Equal(5, providerItems.ListedTotal));
+            () => Assert.Null(providerItems.ListedCount));
     }
 
     [Fact]
-    public async Task Should_count_what_it_fetched_and_left_out_across_appended_slices()
+    public async Task Should_read_on_by_store_position_through_a_slice_the_filter_rejects_whole()
     {
-        // Arrange
+        // Arrange — two accepted files, two rejected, and one more accepted
         using var providerItems = new CatalogProviderItems();
-        var provider = new ItemProvider([CatalogItem.For(CreateResource("shown")), CreateHiddenItem("hidden")], total: 6);
-        var firstPage = new CatalogQuery(null, 0, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
-        var secondPage = new CatalogQuery(null, 2, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
-        await providerItems.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, append: false, TestContext.Current.CancellationToken);
+        var provider = new PositionProvider(
+        [
+            CatalogItem.For(new ImageResourceInfo("/media/a.png")),
+            CatalogItem.For(new ImageResourceInfo("/media/b.png")),
+            CatalogItem.For(new FileResourceInfo("/media/x.txt")),
+            CatalogItem.For(new FileResourceInfo("/media/y.txt")),
+            CatalogItem.For(new ImageResourceInfo("/media/c.png"))
+        ]);
+        var filter = CatalogResourceFilter.Parse("contentType:image");
+        await providerItems.FetchAsync(provider, onStateChanged: () => { }, CreateQuery(0, 2), filter, append: false, TestContext.Current.CancellationToken);
 
         // Act
-        await providerItems.FetchAsync(provider, onStateChanged: () => { }, secondPage, filter: null, append: true, TestContext.Current.CancellationToken);
+        await providerItems.FetchAsync(provider, onStateChanged: () => { }, CreateQuery(providerItems.ReadCount, 2), filter, append: true, TestContext.Current.CancellationToken);
+        var afterRejected = (providerItems.Items.Count, providerItems.ReadCount, providerItems.HasMore);
+        await providerItems.FetchAsync(provider, onStateChanged: () => { }, CreateQuery(providerItems.ReadCount, 2), filter, append: true, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(2, providerItems.Items.Count),
-            () => Assert.Equal(4, providerItems.FetchedCount),
-            () => Assert.Equal(4, providerItems.ListedTotal),
-            () => Assert.True(providerItems.WasFull));
+            () => Assert.Equal((2, 4, true), afterRejected),
+            () => Assert.Equal(["a.png", "b.png", "c.png"], providerItems.Items.Select(item => item.Name)),
+            () => Assert.Equal([0, 2, 4], provider.Skips),
+            () => Assert.False(providerItems.HasMore),
+            () => Assert.Null(providerItems.ListedCount));
+    }
+
+    [Fact]
+    public async Task Should_keep_the_listed_count_a_provider_guarantees_until_a_slice_holds_an_item_left_out()
+    {
+        // Arrange — a provider claiming three listed items, whose second slice holds a hidden one
+        using var providerItems = new CatalogProviderItems();
+        var provider = new PositionProvider(
+            [CatalogItem.For(CreateResource("one")), CatalogItem.For(CreateResource("two")), CreateHiddenItem("hidden")],
+            listedCount: 3);
+        await providerItems.FetchAsync(provider, onStateChanged: () => { }, CreateQuery(0, 2), filter: null, append: false, TestContext.Current.CancellationToken);
+        var guaranteed = providerItems.ListedCount;
+
+        // Act
+        await providerItems.FetchAsync(provider, onStateChanged: () => { }, CreateQuery(providerItems.ReadCount, 2), filter: null, append: true, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(3, guaranteed),
+            () => Assert.Null(providerItems.ListedCount));
+    }
+
+    [Fact]
+    public async Task Should_end_the_run_at_a_slice_that_read_nothing_whatever_the_provider_says_follows()
+    {
+        // Arrange
+        using var providerItems = new CatalogProviderItems();
+        var provider = new PositionProvider([], hasMore: true);
+
+        // Act
+        await providerItems.FetchAsync(provider, onStateChanged: () => { }, CreateQuery(0, 2), filter: null, append: false, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.False(providerItems.HasMore);
+    }
+
+    [Fact]
+    public async Task Should_take_whether_more_follows_from_the_provider_over_the_counts()
+    {
+        // Arrange — a store that cannot count, saying another slice follows a short one
+        using var providerItems = new CatalogProviderItems();
+        var provider = new PositionProvider([CatalogItem.For(CreateResource("one"))], hasMore: true, reportsTotal: false);
+
+        // Act
+        await providerItems.FetchAsync(provider, onStateChanged: () => { }, CreateQuery(0, 2), filter: null, append: false, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.True(providerItems.HasMore);
     }
 
     [Fact]
@@ -94,8 +171,8 @@ public sealed class CatalogProviderItemsTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(2, providerItems.FetchedCount),
-            () => Assert.Equal(5, providerItems.ListedTotal));
+            () => Assert.Equal(["shown"], providerItems.Items.Select(item => item.Name)),
+            () => Assert.Equal(2, providerItems.ReadCount));
     }
 
     [Fact]
@@ -108,7 +185,7 @@ public sealed class CatalogProviderItemsTests
         Assert.Multiple(
             () => Assert.Empty(providerItems.Items),
             () => Assert.Null(providerItems.Total),
-            () => Assert.False(providerItems.WasFull),
+            () => Assert.False(providerItems.HasMore),
             () => Assert.False(providerItems.IsFetching));
     }
 
@@ -127,7 +204,7 @@ public sealed class CatalogProviderItemsTests
         Assert.Multiple(
             () => Assert.Equal(["one", "two"], providerItems.Items.Select(resource => resource.Name)),
             () => Assert.Equal(3, providerItems.Total),
-            () => Assert.True(providerItems.WasFull));
+            () => Assert.True(providerItems.HasMore));
     }
 
     [Fact]
@@ -146,7 +223,7 @@ public sealed class CatalogProviderItemsTests
         // Assert
         Assert.Multiple(
             () => Assert.Equal(["one", "two", "three"], providerItems.Items.Select(resource => resource.Name)),
-            () => Assert.False(providerItems.WasFull));
+            () => Assert.False(providerItems.HasMore));
     }
 
     [Fact]

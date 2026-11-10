@@ -8,8 +8,11 @@ public sealed record CatalogConstraints
     /// <summary>The constraints with no limits.</summary>
     public static CatalogConstraints None { get; } = new();
 
-    /// <summary>The resource kinds the catalog accepts, as <c>globs:*.jpg;*.pdf</c> or <c>contentType:image;video</c>; null accepts any.</summary>
+    /// <summary>The resource kinds the catalog lists and accepts, as <c>globs:*.jpg;*.pdf</c> or <c>contentType:image;video</c>; null accepts any.</summary>
     public string? AcceptedResourceKinds { get; init; }
+
+    /// <summary>The resource kinds an upload may add, in the same syntax, where null is <see cref="AcceptedResourceKinds"/>.</summary>
+    public string? AcceptedUploadKinds { get; init; }
 
     /// <summary>The maximum folder depth, where a top-level folder is at depth one.</summary>
     public int MaxFolderDepth { get; init; }

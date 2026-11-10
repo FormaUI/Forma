@@ -188,6 +188,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private CatalogCollectionView _collection = default!;
 
+    // The kinds an upload may add, where null is the kinds the explorer lists.
+    private CatalogResourceFilter? _uploadFilter;
+
     private readonly CatalogProviderItems _providerItems = new();
 
     private readonly ExplorerQueryParameters _queryParameters = new();
@@ -288,8 +291,8 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     /// <summary>How many items match the current search and sort, where null means the provider cannot say.</summary>
     /// <remarks>
-    /// Pages are cut in the provider's own count, so paging reads the provider's reported total; appended slices
-    /// count the items they list.
+    /// Pages are cut in the store's own positions, so paging reads the provider's reported total; appended slices
+    /// are counted against how many items the whole query lists, which only a provider that guarantees it gives.
     /// </remarks>
     private int? MatchingCount
     {
@@ -300,12 +303,13 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
                 return _collection.MatchingCount;
             }
 
-            return IsInfiniteScrolling ? _providerItems.ListedTotal : _providerItems.Total;
+            return IsInfiniteScrolling ? _providerItems.ListedCount : _providerItems.Total;
         }
     }
 
+    // Pages are cut in the store's positions, whether they replace one another or are appended.
     private int PageCount
-        => MatchingCount is { } total ? Math.Max(1, (int)Math.Ceiling(total / (double)PageSize)) : 1;
+        => (IsProviderMode ? _providerItems.Total : MatchingCount) is { } total ? Math.Max(1, (int)Math.Ceiling(total / (double)PageSize)) : 1;
 
     private bool HasMorePages
     {
@@ -321,8 +325,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
                 return _collection.HasMorePages;
             }
 
-            // The last slice's own fill decides, counted in the provider's items rather than the listed ones.
-            return _providerItems.WasFull && (_providerItems.Total is not { } total || _providerItems.FetchedCount < total);
+            return _providerItems.HasMore;
         }
     }
 
@@ -350,6 +353,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _showsDetailsHeader = Options.ShowDetailsHeader;
 
         _paramStateTracker.Track(() => Constraints.AcceptedResourceKinds, accepted => _collection.Filter = CatalogResourceFilter.Parse(accepted));
+        _paramStateTracker.Track(() => Constraints.AcceptedUploadKinds, accepted => _uploadFilter = CatalogResourceFilter.Parse(accepted));
         _paramStateTracker.Track(() => CurrentPage, page => _collection.PageNumber = page);
         _paramStateTracker.Track(() => ViewMode, mode => _viewMode = mode);
         _paramStateTracker.Track(() => GroupField, field =>
@@ -435,11 +439,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         var query = new CatalogQuery(
             CurrentFolder?.Key,
-            append ? _providerItems.FetchedCount : (EffectivePage - 1) * PageSize,
+            append ? _providerItems.ReadCount : (EffectivePage - 1) * PageSize,
             PageSize,
             string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery,
             _collection.SortField,
-            _collection.SortDirection);
+            _collection.SortDirection)
+        {
+            Filter = _collection.Filter
+        };
 
         // FetchAsync can resume off the renderer, so its state change is dispatched back onto it.
         return _providerItems.FetchAsync(provider, onStateChanged: () => InvokeAsync(StateHasChanged), query, _collection.Filter, append, cancellationToken);
@@ -1036,7 +1043,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     {
         _rejectionMessage = null;
 
-        if (_collection.Filter is { } filter
+        if ((_uploadFilter ?? _collection.Filter) is { } filter
             && files.FirstOrDefault(file => !filter.Accepts(file.Name, file.ContentType)) is { } refused)
         {
             await RejectAsync(

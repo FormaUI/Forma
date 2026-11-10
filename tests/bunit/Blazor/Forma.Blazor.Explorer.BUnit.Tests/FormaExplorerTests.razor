@@ -2373,7 +2373,10 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             var provider = new FakeCatalogProvider([.. Enumerable.Range(1, 50)
-                .Select(i => new ImageResourceInfo($"https://example.com/{i:D4}.jpg"))]);
+                .Select(i => new ImageResourceInfo($"https://example.com/{i:D4}.jpg"))])
+            {
+                ReportsListedCount = true
+            };
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider"
                                                 PageSize="10"
                                                 Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
@@ -2400,10 +2403,10 @@
                                                 PageSize="2"
                                                 Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
 
-            // Assert - the hidden item is left out, and the progress counts against what will be listed
+            // Assert - the hidden item is left out, and the store's total, which counts it, is never shown as what is listed
             Assert.Multiple(
                 () => Assert.Equal(["0002.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
-                () => Assert.Equal("Showing 1 of 3", cut.Find(".forma-explorer-scroll-status").TextContent.Trim()));
+                () => Assert.Equal("Showing 1", cut.Find(".forma-explorer-scroll-status").TextContent.Trim()));
 
             // Act
             cut.Find(".forma-explorer-load-more-button").Click();
@@ -2412,8 +2415,58 @@
             Assert.Multiple(
                 () => Assert.Equal(2, provider.Queries[^1].Skip),
                 () => Assert.Equal(["0002.jpg", "0003.jpg", "0004.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
-                () => Assert.Equal("Showing 3 of 3", cut.Find(".forma-explorer-scroll-status").TextContent.Trim()),
+                () => Assert.Equal("Showing 3", cut.Find(".forma-explorer-scroll-status").TextContent.Trim()),
                 () => Assert.Empty(cut.FindAll(".forma-explorer-scroll-sentinel")));
+        }
+
+        [Fact]
+        public void Should_append_through_a_slice_the_store_answered_with_hidden_items_alone()
+        {
+            // Arrange - two shown files, two hidden ones, and one more shown
+            using var ctx = new FormaExplorerTests();
+            var provider = new FakeCatalogProvider([.. new[] { "a", "b", "c", "d", "e" }
+                .Select(name => new ImageResourceInfo($"https://example.com/{name}.jpg"))]);
+            provider.HiddenSources.UnionWith(["https://example.com/c.jpg", "https://example.com/d.jpg"]);
+            var pages = new List<int>();
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider"
+                                                PageSize="2"
+                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })"
+                                                OnPageChanged="@(page => pages.Add(page))" />);
+
+            // Act
+            cut.Find(".forma-explorer-load-more-button").Click();
+            var afterHidden = cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim()).ToList();
+            cut.Find(".forma-explorer-load-more-button").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["a.jpg", "b.jpg"], afterHidden),
+                () => Assert.Equal([0, 2, 4], provider.Queries.Select(query => query.Skip)),
+                () => Assert.Equal([2, 3], pages),
+                () => Assert.Equal(["a.jpg", "b.jpg", "e.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
+                () => Assert.Equal("Showing 3", cut.Find(".forma-explorer-scroll-status").TextContent.Trim()),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-load-more-button")));
+        }
+
+        [Fact]
+        public void Should_page_past_a_page_the_store_answered_with_hidden_items_alone()
+        {
+            // Arrange - two shown files, two hidden ones, and one more shown
+            using var ctx = new FormaExplorerTests();
+            var provider = new FakeCatalogProvider([.. new[] { "a", "b", "c", "d", "e" }
+                .Select(name => new ImageResourceInfo($"https://example.com/{name}.jpg"))]);
+            provider.HiddenSources.UnionWith(["https://example.com/c.jpg", "https://example.com/d.jpg"]);
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" PageSize="2" />);
+
+            // Act
+            cut.Find(".forma-explorer-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            var hiddenPage = cut.FindAll(".forma-explorer-item").Count;
+            cut.Find(".forma-explorer-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, hiddenPage),
+                () => Assert.Equal(["e.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())));
         }
 
         [Fact]

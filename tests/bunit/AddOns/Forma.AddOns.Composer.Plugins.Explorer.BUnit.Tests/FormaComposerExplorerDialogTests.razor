@@ -122,6 +122,22 @@
         }
 
         [Fact]
+        public void Should_list_every_kind_the_limit_names_when_fewer_may_be_uploaded()
+        {
+            // Arrange
+            using var ctx = new FormaComposerExplorerDialogTests();
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture, Clip, Report));
+            var options = new ExplorerPluginOptions { AcceptedResourceKinds = "contentType:image;video", AcceptedUploadKinds = "contentType:image" };
+
+            // Act
+            var cut = ctx.Render(@<FormaComposerExplorerDialog Options="options" />);
+
+            // Assert
+            var names = cut.FindAll(".forma-explorer-item-name").Select(item => item.TextContent.Trim()).ToList();
+            Assert.Equal(["podium.png", "finish.mp4"], names);
+        }
+
+        [Fact]
         public async Task Should_ask_for_a_choice_when_confirmed_empty()
         {
             // Arrange

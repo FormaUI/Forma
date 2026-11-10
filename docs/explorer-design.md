@@ -45,9 +45,13 @@ callback, and an upload goes into the host's `IFileStore`.
   slices neither repeat nor skip a file. The provider supplies any other filter the host
   applies itself. A page's total is optional, so a store that cannot count cheaply leaves it
   out and the explorer drops its pager rather than demanding a number.
-- **Hidden items count in the store's total.** A store that returns hidden items counts
-  them; the explorer pages and asks for the next slice in the store's own count, and
-  reports the appended slices' progress against the total less the items it left out.
+- **Pages are cut in the store's positions.** A store that returns hidden items counts
+  them, and the explorer passes the kinds it lists in the query for a store that applies
+  them before paging; the explorer pages and asks for the next slice in the store's own
+  positions, so a short slice, or one it leaves out whole, still moves the next one on and
+  never ends the collection. It says how many items there are only where the store
+  guarantees the count of what the whole query lists, since what one slice left out says
+  nothing of the slices not yet read; otherwise it says how many it shows.
 - **Two options records, split by what they govern.** The item options gate every mutating
   capability per caller: the item and folder capabilities the explorer permits,
   intersected with what each item itself supports, and whether uploading is allowed. The
@@ -57,7 +61,8 @@ callback, and an upload goes into the host's `IFileStore`.
   debounce, and selecting on open for a caller that exists only to choose, which starts in
   selection mode with the toggle out of the toolbar.
 - **Constraints are ceilings the explorer refuses to cross.** The constraints name
-  the resource kinds it lists and accepts, and the most top-level folders, subfolders,
+  the resource kinds it lists and accepts, the kinds an upload may add where they differ,
+  and the most top-level folders, subfolders,
   nesting depth, items per folder, items and bytes it holds; an upload, a new folder or a
   drop that would cross one is refused, announced in an alert region under the header and
   reported through `OnRejected` with its reason.

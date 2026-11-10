@@ -1,11 +1,19 @@
 namespace Forma.Framework.Catalog.Queries;
 
-
 /// <summary>The page of catalog items a provider returns for a <see cref="CatalogQuery"/>.</summary>
 /// <param name="Items">The slice of the catalog items that should be processed.</param>
-/// <param name="TotalCount">The total count of matching items.</param>
+/// <param name="TotalCount">How many items the store matched for the query, each a position a slice can read.</param>
 public sealed record CatalogPage(IReadOnlyList<ICatalogItem> Items, int? TotalCount)
 {
     /// <summary>The page with no items.</summary>
     public static CatalogPage Empty { get; } = new([], 0);
+
+    /// <summary>How many store positions the slice read, where null is one for each of its items.</summary>
+    public int? ReadCount { get; init; }
+
+    /// <summary>Whether the store holds positions past the slice, where null leaves it to <see cref="TotalCount"/> or to whether the slice read all it was asked for.</summary>
+    public bool? HasMore { get; init; }
+
+    /// <summary>How many items of the whole query are listed, which a store gives where it applied the query's filter and left hidden items out before paging.</summary>
+    public int? ListedCount { get; init; }
 }

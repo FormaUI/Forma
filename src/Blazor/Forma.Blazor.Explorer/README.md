@@ -197,8 +197,9 @@ items, `AllowedFolderCapabilities` on folders, and `AllowUpload`. An item offers
 it supports it and the options permit it. `ExplorerItemOptions.Default` permits every operation,
 and `ExplorerItemOptions.ReadOnly` permits browsing and selection.
 
-`Constraints` is a `CatalogConstraints` of the ceilings the explorer keeps, each unlimited at zero,
-and a refusal is announced in the explorer and raised through `OnRejected`:
+`Constraints` is a `CatalogConstraints` of the kinds the explorer lists and accepts, the kinds an
+upload may add where they differ, and the ceilings it keeps, each unlimited at zero; a refusal is
+announced in the explorer and raised through `OnRejected`:
 
 ```razor
 <FormaExplorer Items="_items"

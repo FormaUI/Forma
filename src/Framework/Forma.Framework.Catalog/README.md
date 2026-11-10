@@ -85,9 +85,17 @@ A collection too large to hold in memory is answered one slice at a time by an `
 `Direction`, and returns a `CatalogPage` of the slice's `Items` and a `TotalCount`. `FolderKey` names
 the folder the slice was asked for when it was asked, null for every folder's items, so a provider
 answers from the query alone. Items the sort ties stand in the ascending ordinal order of their keys,
-in either direction, so neighboring slices neither repeat nor skip one. The kinds accepted are the
-provider's own to apply. A null `TotalCount` suits a store that cannot count cheaply, and a slice
-shorter than `Take` then ends the collection.
+in either direction, so neighboring slices neither repeat nor skip one.
+
+`Skip` and `Take` count the store's positions, and `TotalCount` how many positions the query
+matched, so a slice holding a hidden item, or one the surface's filter rejects, still moves the next
+slice on by every position it read. A page whose items stand for more positions than it returns,
+because the provider left some out itself, says how many it read in `ReadCount`. The query's
+`Filter` names the kinds the surface lists, for a store that applies it before paging; one that does,
+and leaves hidden items out too, gives the count of what the whole query lists in `ListedCount`,
+which is the only count a surface shows as how many items there are. A null `TotalCount` suits a
+store that cannot count cheaply: `HasMore` then says whether another slice follows, and without it a
+slice that read fewer positions than `Take` ends the collection.
 
 ```csharp
 using Forma.Framework.Catalog;
@@ -123,8 +131,9 @@ Each change the reader asks a surface for comes back to the host as a record in
 | `CatalogFolderDeleteRequest` | `Folder` |
 | `CatalogFolderDropRequest` | `SourceFolder`, `TargetFolder` |
 
-`CatalogConstraints` holds the ceilings a collection keeps, each unlimited at zero:
-`AcceptedResourceKinds`, `MaxFolderDepth`, `MaxFolderRootCount`, `MaxSubfolderCount`,
+`CatalogConstraints` holds the kinds a collection lists and accepts, `AcceptedResourceKinds`, the
+kinds an upload may add where they differ, `AcceptedUploadKinds`, and the ceilings it keeps, each
+unlimited at zero: `MaxFolderDepth`, `MaxFolderRootCount`, `MaxSubfolderCount`,
 `MaxFolderItemCount`, `MaxItemCount` and `MaxTotalBytes`. A surface reports a refusal as a
 `CatalogRejection` of its `Reason`, the `Allowed` ceiling and a localized `Message`.
 
@@ -144,7 +153,7 @@ A component that browses a catalog keeps its state in the types this package pro
 | Type | What it is |
 | --- | --- |
 | `CatalogCollectionView` | A held collection filtered by kind, searched by name, sorted and cut to the visible page. |
-| `CatalogProviderItems` | The items fetched from a provider, one slice replacing the last or slices appended, with the fetch in flight. |
+| `CatalogProviderItems` | The items fetched from a provider, one slice replacing the last or slices appended, with the store positions read, whether more follow and the fetch in flight. |
 | `CatalogFolderTree` | The folder items indexed by key and by parent. |
 | `CatalogHistory` | The folders visited, with a cursor moving back and forward. |
 | `CatalogSelection` | The selected items, folders or other items one kind at a time, capped by a limit; `ICatalogSelectionView` is its read-only view. |
