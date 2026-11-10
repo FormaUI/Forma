@@ -208,7 +208,11 @@ it is cleared. `CheckedSelectionOptions.Maximum` blocks further selection once r
 muting the remaining items and reporting the blocked attempt through
 `OnSelectionRejected`, while a full clear is always allowed; `Minimum` blocks unchecking an
 item below the floor, but not a plain-click or range replacement or the master clear, which
-reset the selection rather than remove from it. The options' caption swaps the master box
+reset the selection rather than remove from it. A maximum of one makes the selection a
+choice that a new one replaces: checking a second item chooses it in place of the first in
+one change, a range chooses the item it reached, an item that cannot be chosen leaving the
+choice as it is, the master control is not drawn, and a request of several items through
+the selection methods is refused whole. The options' caption swaps the master box
 for a static label or an interactive toggle. The selection pairs with the selection
 toolbar above the data view, which the page composes.
 

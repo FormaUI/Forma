@@ -1023,11 +1023,11 @@
         [Fact]
         public async Task Should_draw_again_the_rows_that_can_no_longer_be_pressed_when_the_selection_reaches_its_limit()
         {
-            // Arrange — with one box to check, the rows that are not checked cannot take another
+            // Arrange — with two boxes to check and one checked, the rows that are not checked cannot take a third once the second is
             using var ctx = new FormaDataGridTests();
             var drawn = new Dictionary<int, int>();
             var cut = ctx.Render(
-                @<FormaDataView Items="CreateItems(4)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })">
+                @<FormaDataView Items="CreateItems(4)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 2 })" SelectedItems="CreateItems(4).Skip(1).Take(1).ToArray()">
                     <FormaDataGrid>
                         <Columns>
                             <FormaTemplateColumn Title="Item"><ChildContent Context="item">@Draw(drawn, item)</ChildContent></FormaTemplateColumn>
@@ -1040,8 +1040,8 @@
             // Act
             await cut.FindAll("tbody input[type=checkbox]")[0].ClickAsync(new MouseEventArgs());
 
-            // Assert
-            Assert.Equal([1, 2, 3, 4], DrawnSince(drawn, before));
+            // Assert — the row checked and the two that can no longer be, the one checked before standing as it was
+            Assert.Equal([1, 3, 4], DrawnSince(drawn, before));
         }
 
         [Fact]
@@ -2257,7 +2257,7 @@
             var rejections = new List<SelectionRejected>();
 
             var cut = ctx.Render(
-                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableItemSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="CreateItems(1).ToArray()" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)" OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableItemSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 2 })" SelectedItems="CreateItems(2).ToArray()" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)" OnSelectionRejected="@((SelectionRejected args) => rejections.Add(args))">
                     <FormaDataGrid>
                         <Columns>
                             <FormaPropertyColumn Property="@(item => item.Title)" />
@@ -2266,7 +2266,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 3);
             var grid = cut.FindComponent<FormaDataView<GridItem>>().Instance;
-            var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[1].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
+            var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[2].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
 
             // Act
             await cut.InvokeAsync(() => grid.HandleSelectAsync(token, additive: true));
@@ -2275,7 +2275,7 @@
             Assert.Null(changedTo);
             var rejection = Assert.Single(rejections);
             Assert.Equal(SelectionBoundary.Maximum, rejection.Boundary);
-            Assert.Equal(1, rejection.Limit);
+            Assert.Equal(2, rejection.Limit);
         }
 
         [Fact]
@@ -2286,7 +2286,7 @@
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1 })" SelectedItems="CreateItems(1).ToArray()">
+                @<FormaDataView Items="CreateItems(3)" PageSize="10" EnableCheckedSelection="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 2 })" SelectedItems="CreateItems(2).ToArray()">
                     <FormaDataGrid>
                         <Columns>
                             <FormaPropertyColumn Property="@(item => item.Title)" />
@@ -2298,7 +2298,7 @@
 
             // Assert
             Assert.DoesNotContain("forma-data-grid-row-disabled", rows[0].ClassName);
-            Assert.Contains("forma-data-grid-row-disabled", rows[1].ClassName);
+            Assert.DoesNotContain("forma-data-grid-row-disabled", rows[1].ClassName);
             Assert.Contains("forma-data-grid-row-disabled", rows[2].ClassName);
         }
 

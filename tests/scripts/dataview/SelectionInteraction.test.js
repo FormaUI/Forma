@@ -116,13 +116,13 @@ describe('SelectionInteraction', () => {
             }
         });
 
-        it('extends backwards in the order the items are rendered', () => {
+        it('extends backwards from the anchor to the item reached', () => {
             attachSelection(grid, { owner });
 
             click(cellOf(3));
             click(cellOf(1), { shiftKey: true });
 
-            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', { value: [1, 2, 3] }, false);
+            selected().toHaveBeenLastCalledWith('HandleRangeSelectAsync', { value: [3, 2, 1] }, false);
         });
 
         it('selects rather than extends when nothing anchored the range', () => {

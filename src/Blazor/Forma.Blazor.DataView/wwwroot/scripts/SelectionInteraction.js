@@ -398,9 +398,10 @@ class SelectionInteraction {
             return [this.#tokenOf(to)];
         }
 
-        const [start, end] = fromIndex <= toIndex ? [fromIndex, toIndex] : [toIndex, fromIndex];
+        // From the anchor to the item reached, which a selection of one item at most chooses alone.
+        const tokens = all.slice(Math.min(fromIndex, toIndex), Math.max(fromIndex, toIndex) + 1).map(marker => this.#tokenOf(marker));
 
-        return all.slice(start, end + 1).map(marker => this.#tokenOf(marker));
+        return fromIndex <= toIndex ? tokens : tokens.reverse();
     }
 
     #focusMarker(marker, all) {

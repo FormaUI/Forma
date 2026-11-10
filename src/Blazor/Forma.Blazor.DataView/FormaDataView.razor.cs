@@ -383,7 +383,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <inheritdoc />
     public bool HasMasterControl
-        => CheckedSelectionOptions.SelectAllMode != SelectAllMode.None && (!IsVirtualizing || HoldsSet);
+        => CheckedSelectionOptions.SelectAllMode != SelectAllMode.None && !_selectionBounds.IsSingle && (!IsVirtualizing || HoldsSet);
 
     /// <inheritdoc />
     public bool HasMasterMenu
@@ -455,6 +455,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool OffersSet
         => EnableCheckedSelection
             && CheckedSelectionOptions.SelectAllMode == SelectAllMode.FromPager
+            && !_selectionBounds.IsSingle
             && CanOfferSet
             && AllSelected
             && _totalItemCount is { } total
@@ -989,6 +990,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
+        // Checking a second item of a selection that holds one at most chooses it in place of the first, in one change.
+        if (selected && _selectionBounds.IsSingle)
+        {
+            await ReplaceSelectionAsync(CreateSelection([item]));
+            return;
+        }
+
         if (!CanToggle(item))
         {
             await RejectSelectionAsync(selected ? SelectionBoundary.Maximum : SelectionBoundary.Minimum);
@@ -1117,7 +1125,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             }
         }
 
-        await SelectRangeAsync(range, additive);
+        await SelectRangeAsync(range, additive, range.Count > 0 ? range[^1] : default);
     }
 
     /// <summary>Replaces or extends the selection with the items the active view reaches between two positions in its order.</summary>
@@ -1136,9 +1144,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         var range = await positions.ReadAsync(Math.Min(fromPosition, toPosition), Math.Max(fromPosition, toPosition), CancellationToken.None);
 
         // The positions were read against the order as it stood; a new one leaves them naming other items.
-        if (order == _orderVersion)
+        if (order == _orderVersion && range.Count > 0)
         {
-            await SelectRangeAsync(range, additive);
+            await SelectRangeAsync(range, additive, toPosition >= fromPosition ? range[^1] : range[0]);
         }
     }
 
@@ -1178,9 +1186,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             {
                 var range = await positions.ReadAsync(Math.Min(anchor, position), Math.Max(anchor, position), CancellationToken.None);
 
-                if (IsCurrent())
+                if (IsCurrent() && range.Count > 0)
                 {
-                    await SelectRangeAsync(range, additive: false);
+                    await SelectRangeAsync(range, additive: false, position >= anchor ? range[^1] : range[0]);
                 }
             }
 
@@ -1204,9 +1212,20 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
     }
 
-    // A range select is a whole-set replacement, so it is judged as a master select-all is, over the items in it that can be selected.
-    private async Task SelectRangeAsync(IEnumerable<TItem> range, bool additive)
+    // A range select is a whole-set replacement, so it is judged as a master select-all is, over the items in it that can be selected;
+    // where the selection holds one item at most, the range chooses the item it reached, and one that cannot be chosen leaves the selection.
+    private async Task SelectRangeAsync(IReadOnlyList<TItem> range, bool additive, TItem? reached)
     {
+        if (_selectionBounds.IsSingle)
+        {
+            if (reached is not null && IsSelectable(reached) && !(_selectedSet.Count == 1 && IsSelected(reached)))
+            {
+                await ReplaceSelectionAsync(CreateSelection([reached]));
+            }
+
+            return;
+        }
+
         var updated = CreateSelection(additive ? _selectedSet : []);
         updated.UnionWith(range.Where(IsSelectable));
 
@@ -1254,9 +1273,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         builder.CloseComponent();
     }
 
-    // A selected item can be cleared, and an unselected one added while it can be selected and the maximum allows.
+    // A selected item can be cleared, and an unselected one added while it can be selected and the maximum allows, or chosen in place
+    // of the last where the selection holds one item at most.
     private bool CanSelect(TItem item)
-        => IsSelected(item) || (IsSelectable(item) && _selectionBounds.CanAdd(_selectedSet.Count));
+        => IsSelected(item) || (IsSelectable(item) && (_selectionBounds.IsSingle || _selectionBounds.CanAdd(_selectedSet.Count)));
 
     // A box keeps both bounds, checking stopping at the maximum and unchecking at the minimum; a plain press or a range replaces
     // the whole selection and passes the minimum.

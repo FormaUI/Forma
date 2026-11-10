@@ -22,6 +22,10 @@ internal readonly record struct SelectionBounds(int? Minimum, int? Maximum)
         }
     }
 
+    /// <summary>Whether the selection holds one item at most, so a new choice replaces the last.</summary>
+    public bool IsSingle
+        => Maximum == 1;
+
     /// <summary>Whether one more item can be selected on top of <paramref name="currentCount"/>.</summary>
     public bool CanAdd(int currentCount)
         => Maximum is null || currentCount < Maximum.Value;

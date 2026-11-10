@@ -589,6 +589,121 @@
         private sealed record Entry(int Id, int? ParentId, string Name, bool IsFolder);
     }
 
+    public sealed class MaximumOfOne
+    {
+        private static readonly Entry[] Entries = [new(1, "Atlas", false), new(2, "Hammer", false), new(3, "Folder", true), new(4, "Nails", false)];
+
+        private static readonly CheckedSelectionOptions One = new() { Maximum = 1 };
+
+        private static int GetToken(IRenderedComponent<IComponent> cut, string name)
+            => int.Parse(cut.FindAll("tbody tr").Single(row => row.TextContent.Contains(name, StringComparison.Ordinal)).GetAttribute("data-item")!, CultureInfo.InvariantCulture);
+
+        private IRenderedComponent<IComponent> Render(FormaDataViewTests ctx, List<IReadOnlyList<Entry>> changes, List<SelectionRejected> rejections, bool isChecked)
+            => ctx.Render(
+                @<FormaDataView TItem="Entry" Items="Entries.AsQueryable()" EnablePagination="false" EnableCheckedSelection="isChecked" EnableItemSelection="@(!isChecked)" CheckedSelectionOptions="One"
+                                ItemKey="@(entry => entry.Id)" CanSelectItem="@(entry => !entry.IsFolder)"
+                                SelectedItemsChanged="@((IReadOnlyList<Entry> selected) => changes.Add(selected))" OnSelectionRejected="@((SelectionRejected rejected) => rejections.Add(rejected))">
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+
+        [Fact]
+        public async Task Should_replace_the_choice_with_a_second_item_checked_in_one_change_and_offer_no_select_all()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            List<IReadOnlyList<Entry>> changes = [];
+            var cut = Render(ctx, changes, [], isChecked: true);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(Entries[0], true));
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(Entries[1], true));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, changes.Count),
+                () => Assert.Equal(["Hammer"], changes[^1].Select(entry => entry.Name)),
+                () => Assert.Empty(cut.FindAll(".forma-data-grid-master input[type=checkbox]")),
+                () => Assert.Empty(cut.FindAll("tbody tr.forma-data-grid-row-disabled")));
+        }
+
+        [Fact]
+        public async Task Should_choose_the_item_a_range_reaches_and_keep_the_choice_where_it_reaches_one_that_cannot_be_chosen()
+        {
+            // Arrange - Atlas chosen
+            using var ctx = new FormaDataViewTests();
+            List<IReadOnlyList<Entry>> changes = [];
+            var cut = Render(ctx, changes, [], isChecked: false);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            var atlas = GetToken(cut, "Atlas");
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(atlas, additive: false));
+
+            // Act - a range from Atlas to Hammer, then from Hammer to the folder
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectAsync(InlineTransfer.Of(new[] { atlas, GetToken(cut, "Hammer") }), additive: false));
+            var reached = changes[^1].Select(entry => entry.Name).ToList();
+            var count = changes.Count;
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectAsync(InlineTransfer.Of(new[] { GetToken(cut, "Hammer"), GetToken(cut, "Folder") }), additive: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Hammer"], reached),
+                () => Assert.Equal(count, changes.Count));
+        }
+
+        [Fact]
+        public async Task Should_refuse_a_request_of_several_items_whole()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            List<IReadOnlyList<Entry>> changes = [];
+            List<SelectionRejected> rejections = [];
+            var cut = Render(ctx, changes, rejections, isChecked: true);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.SelectAsync([Entries[0], Entries[1]]));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(changes),
+                () => Assert.Single(rejections));
+        }
+
+        [Fact]
+        public async Task Should_offer_no_whole_set_in_the_footer_once_its_one_choice_fills_the_page()
+        {
+            // Arrange - pager mode, and the one item on the page that can be chosen
+            using var ctx = new FormaDataViewTests();
+            var entries = Enumerable.Range(1, 25).Select(id => new Entry(id, $"Entry {id}", false)).ToArray();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="entries.AsQueryable()" PageSize="10" EnableCheckedSelection="true" ItemKey="@(entry => entry.Id)" CanSelectItem="@(entry => entry.Id == 1)"
+                                CheckedSelectionOptions="@(new CheckedSelectionOptions { Maximum = 1, SelectAllMode = SelectAllMode.FromPager })">
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 10);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(entries[0], true));
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-data-view-select-set"));
+        }
+
+        private sealed record Entry(int Id, string Name, bool IsFolder);
+    }
+
     public sealed class Source
     {
         private static List<Product> CreateProducts(int count)

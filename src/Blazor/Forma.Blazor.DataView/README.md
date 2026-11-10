@@ -170,7 +170,8 @@ answers a request whose `IncludesGroupSizes` is set with `GroupSizes`, which
 `EnableItemSelection` selects by pointer and keyboard on the items themselves. Both report through
 `SelectedItems` and `SelectedItemsChanged`, bound as `@bind-SelectedItems`. `ItemKey` identifies an
 item across reloads. `CheckedSelectionOptions` sets a `Minimum` and a `Maximum`, reported through
-`OnSelectionRejected` when a change would cross one, and its `SelectAllMode` sets what the master
+`OnSelectionRejected` when a change would cross one, a `Maximum` of one making each choice replace the
+last, and its `SelectAllMode` sets what the master
 control reaches: `Direct` selects the whole set at one press, `FromMenu` the items on screen with a
 menu offering the page and the set, `FromPager` the items on screen with the footer offering the set,
 and `None` leaves the master control out.

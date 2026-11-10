@@ -85,6 +85,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - [`FormaDataView`](docs/data-view-design.md#extending-the-data-view) takes `ItemAttributes`, the attributes and
   handlers a host gives the row, card, list item or node a view draws for an item, so the whole item can be a drag
   source or a drop target; the view's own attributes win. `IDataView` declares it.
+- A [`FormaDataView`](docs/data-view-design.md#selection) whose `CheckedSelectionOptions.Maximum` is one replaces
+  its choice: checking a second item chooses it in one change, a Shift range chooses the item it reached, and no
+  master control is drawn. It refused the second item and muted the rest. A Shift range reaches the data view's
+  owner in order from its anchor to the item reached.
 - [`ExplorerContentProvider`](src/Framework/Forma.Framework.Explorer/README.md) answers a location's content, its
   child folders before its files, in either sort direction, under the grouping's leading group of folders, and
   `ExplorerGrouping.Define` leads every grouping with that group. Its slices split at the count of matching folders,
