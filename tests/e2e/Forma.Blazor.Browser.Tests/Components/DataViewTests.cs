@@ -581,6 +581,107 @@ public sealed class DataViewTests
             => await page.WaitForFunctionAsync($"name => ({FocusedItem})() === name", name);
     }
 
+    public sealed class DataViewItemFocus(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_focus_open_and_check_the_list_s_items_apart_from_their_selection(string runtime)
+            => CheckAsync(runtime, "list", "ArrowDown");
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_focus_open_and_check_the_cards_apart_from_their_selection(string runtime)
+            => CheckAsync(runtime, "cards", "ArrowRight");
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_focus_open_and_check_the_grid_s_rows_apart_from_their_selection(string runtime)
+            => CheckAsync(runtime, "grid", "ArrowDown");
+
+        // The name of the item the focus stands on, by its own element or its box, where the focus stands on neither a control nor outside.
+        private const string FocusedItem = """
+            () => {
+                const focused = document.activeElement;
+                const root = focused?.closest('[data-item-root]');
+                return root && (focused === root || focused.matches('[data-row-key]')) ? root.getAttribute('data-name') : null;
+            }
+            """;
+
+        // With no selection on, Tab enters at the first item and leaves after it, the key moving on focuses the next alone, and Enter and a
+        // press open; the selection mode's switch keeps the focus on its item, a key moves among the boxes, Space checks one, Enter still
+        // opens and a press checks; and the switch back hands the focus to the item again.
+        private async Task CheckAsync(string runtime, string view, string next)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-item-focus");
+            await using var _ = context;
+            var items = page.Locator($"#{view} [data-item-root]");
+            var opened = page.Locator($"#opened-{view}");
+            var selected = page.Locator($"#selected-{view}");
+            await Assertions.Expect(items).ToHaveCountAsync(20);
+            await WaitForInputScopeAsync(page, $"#{view} .forma-data-view-region");
+            await page.Locator($"#before-{view}").FocusAsync();
+
+            // Act — in past whatever a view draws before its items, then out
+            Assert.Equal("Row 1", await TabIntoItemsAsync(page));
+            await page.Keyboard.PressAsync("Tab");
+            await Assertions.Expect(page.Locator($"#after-{view}")).ToBeFocusedAsync();
+
+            // Act — back in, on to the second item, opened from the keyboard, and the third opened by a press
+            await page.Keyboard.PressAsync("Shift+Tab");
+            await WaitForFocusedItemAsync(page, "Row 1");
+            await page.Keyboard.PressAsync(next);
+            await WaitForFocusedItemAsync(page, "Row 2");
+            await Assertions.Expect(opened).ToHaveTextAsync(string.Empty);
+            await page.Keyboard.PressAsync("Enter");
+            await Assertions.Expect(opened).ToHaveTextAsync("Row 2");
+            await items.Nth(2).GetByText("Row 3", new() { Exact = true }).ClickAsync();
+            await Assertions.Expect(opened).ToHaveTextAsync("Row 3");
+            await WaitForFocusedItemAsync(page, "Row 3");
+            await Assertions.Expect(selected).ToHaveTextAsync("0");
+
+            // Act — the selection mode on, the focus staying on the third item's box, then the fourth's checked from the keyboard and opened
+            await page.Locator($"#select-{view}").ClickAsync();
+            await Assertions.Expect(items.Nth(2).Locator("input[type=checkbox]")).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync(next);
+            await WaitForFocusedItemAsync(page, "Row 4");
+            await page.Keyboard.PressAsync("Space");
+            await Assertions.Expect(selected).ToHaveTextAsync("1");
+            await page.Keyboard.PressAsync("Enter");
+            await Assertions.Expect(opened).ToHaveTextAsync("Row 4");
+
+            // Act — the selection mode off and on again, the focus staying on the fourth item, then the fifth checked by a press
+            await page.Locator($"#select-{view}").ClickAsync();
+            await Assertions.Expect(items.Nth(3)).ToBeFocusedAsync();
+            await page.Locator($"#select-{view}").ClickAsync();
+            await Assertions.Expect(items.Nth(3).Locator("input[type=checkbox]")).ToBeFocusedAsync();
+            await items.Nth(4).GetByText("Row 5", new() { Exact = true }).ClickAsync();
+
+            // Assert — the press checked the fifth and opened nothing
+            await Assertions.Expect(selected).ToHaveTextAsync("2");
+            await Assertions.Expect(opened).ToHaveTextAsync("Row 4");
+        }
+
+        // Presses Tab until the focus stands on an item, a view drawing a few controls of its own before them.
+        private static async Task<string?> TabIntoItemsAsync(IPage page)
+        {
+            for (var press = 0; press < 4; press++)
+            {
+                await page.Keyboard.PressAsync("Tab");
+
+                if (await page.EvaluateAsync<string?>(FocusedItem) is { } item)
+                {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+
+        private static async Task WaitForFocusedItemAsync(IPage page, string name)
+            => await page.WaitForFunctionAsync($"name => ({FocusedItem})() === name", name);
+    }
+
     public sealed class DataListAppend(BrowserHost host)
     {
         [Theory]

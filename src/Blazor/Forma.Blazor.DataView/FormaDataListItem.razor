@@ -10,7 +10,9 @@
      aria-posinset="@(Position is null || View.IsGrouped ? null : Position + 1)"
      data-item-position="@Position"
      data-item="@Token"
-     data-item-root>
+     data-row-key="@(View.FocusesItems && View.CanFocus(Item) ? Token : null)"
+     data-item-root
+     @onfocusin="@(View.FocusesItems ? List.GetFocusHandler(Item) : default)">
     @if (List.HasSelection)
     {
         <span class="forma-data-list-item-lead" data-item-control>

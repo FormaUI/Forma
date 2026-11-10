@@ -1,0 +1,74 @@
+@page "/{Runtime}/data-view-item-focus"
+@using Forma.Blazor.Components.DataView
+
+@* Twenty items in a list, in cards and in a grid, each a data view whose items take the focus with no selection on, a press or Enter
+   opening an item; a selection mode draws boxes a press or Space checks, Enter still opening the item. The mode's switch keeps the focus
+   where it is, and the item last opened and how many are selected are written where the check reads them. *@
+@foreach (var view in Views)
+{
+    <button id="before-@view" type="button" data-check-scaffold>Before the @view</button>
+    <FormaDataView Id="@view"
+                   TItem="Row"
+                   Items="Rows"
+                   ItemKey="@(row => row.Id)"
+                   ItemName="@(row => row.Name)"
+                   ItemAttributes="NameOf"
+                   EnablePagination="false"
+                   EnableItemFocus="true"
+                   EnableCheckedSelection="@_selecting.Contains(view)"
+                   CheckedSelectionOptions="ChecksOnPress"
+                   SelectedItems="@GetSelected(view)"
+                   SelectedItemsChanged="@((IReadOnlyList<Row> items) => _selected[view] = items)"
+                   OnItemClick="@((Row row) => _opened[view] = row.Name)">
+        @if (view == "list")
+        {
+            <FormaDataList TItem="Row" />
+        }
+        else if (view == "cards")
+        {
+            <FormaDataCards TItem="Row" Dense="true" />
+        }
+        else
+        {
+            <FormaDataGrid TItem="Row">
+                <Columns>
+                    <FormaPropertyColumn TItem="Row" TValue="string" Property="@(row => row.Name)" Title="Name" />
+                </Columns>
+            </FormaDataGrid>
+        }
+    </FormaDataView>
+    <button id="after-@view" type="button" data-check-scaffold>After the @view</button>
+    <button id="select-@view" type="button" data-check-scaffold @onmousedown:preventDefault="true" @onclick="() => Toggle(view)">Select in the @view</button>
+    <output id="opened-@view">@_opened.GetValueOrDefault(view)</output>
+    <output id="selected-@view">@GetSelected(view).Count</output>
+}
+
+@code {
+    private static readonly string[] Views = ["list", "cards", "grid"];
+
+    private static readonly IQueryable<Row> Rows = Enumerable.Range(1, 20).Select(id => new Row(id, $"Row {id}")).ToArray().AsQueryable();
+
+    private static readonly CheckedSelectionOptions ChecksOnPress = new() { ChecksOnPress = true };
+
+    private readonly HashSet<string> _selecting = [];
+    private readonly Dictionary<string, string> _opened = [];
+    private readonly Dictionary<string, IReadOnlyList<Row>> _selected = [];
+
+    // The name each item's element carries, which the check reads the focused item by in every view.
+    private static IReadOnlyDictionary<string, object>? NameOf(Row row)
+        => new Dictionary<string, object> { ["data-name"] = row.Name };
+
+    private IReadOnlyList<Row> GetSelected(string view)
+        => _selected.GetValueOrDefault(view) ?? [];
+
+    // The switch is pressed without taking the focus, so the item holding it keeps it as the mode changes.
+    private void Toggle(string view)
+    {
+        if (!_selecting.Remove(view))
+        {
+            _selecting.Add(view);
+        }
+    }
+
+    internal sealed record Row(int Id, string Name);
+}

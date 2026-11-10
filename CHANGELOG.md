@@ -109,6 +109,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
   view's own arrangement. `IDataView` declares `Layout`. `IDataViewInteraction.UnregisterView` takes the
   registration a view made, rather than its key, so a view drawn afresh under the same key keeps its registration;
   it lost it as the one it replaced went, which left the data view with no view to show.
+- [`FormaDataView`](docs/data-view-design.md#accessibility-keyboard-and-direction) takes `EnableItemFocus`, which gives
+  the items of a list, cards or a grid the focus where no selection is on: one tab stop, the arrows moving the focus
+  alone, and Enter and a press activating the item. `CheckedSelectionOptions.ChecksOnPress` has a press check an
+  item's box rather than activate it, as a selection mode does, Enter still activating it, and turning a selection
+  on or off keeps the focus on the item it stood on. `IDataView` declares `FocusesItems`. A selection turned on or
+  off redraws every view's items; a view drew its old markers until something else changed.
 - A sidebar [`FormaDataTree`](docs/data-view-design.md#the-tree) takes `RootsItem`, an item of the host's that
   stands for the roots first among the top-level nodes, current while the roots are, so choosing it takes the
   reader back to them; a sidebar offered no way back to the roots of its own once a node was current.

@@ -132,6 +132,9 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>Whether items are selected through pointer and keyboard gestures on themselves.</summary>
     bool EnableItemSelection { get; }
 
+    /// <summary>Whether the items take the focus themselves, no selection drawing markers to carry it.</summary>
+    bool FocusesItems { get; }
+
     /// <summary>The checked selection's bounds and the caption of its master control.</summary>
     CheckedSelectionOptions CheckedSelectionOptions { get; }
 

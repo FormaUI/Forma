@@ -450,6 +450,115 @@ describe('SelectionInteraction', () => {
         });
     });
 
+    describe('over items that are their own markers', () => {
+        /** @type {HTMLElement} */
+        let list;
+        const itemOf = key => document.querySelector(`[data-item="${key}"]`);
+        const settle = () => new Promise(resolve => setTimeout(resolve));
+        const nextFrame = () => new Promise(resolve => requestAnimationFrame(() => resolve()));
+        const options = extra => ({ owner, itemSelector: '[data-item]', itemKeyAttribute: 'data-item', selects: false, moves: true, ...extra });
+
+        beforeEach(() => {
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="list">
+                    <div data-item="1" data-row-key="1"><span class="name">One</span></div>
+                    <div data-item="2" data-row-key="2"><span class="name">Two</span></div>
+                    <div data-item="3" data-row-key="3"><span class="name">Three</span></div>
+                </div>`);
+            list = document.querySelector('#list');
+        });
+
+        it('stands as one tab stop on the first item, the arrows moving the focus alone', () => {
+            attachSelection(list, options());
+            itemOf(1).focus();
+
+            const event = press(itemOf(1), 'ArrowDown');
+
+            expect([1, 2, 3].map(key => itemOf(key).tabIndex)).toEqual([-1, 0, -1]);
+            expect(document.activeElement).toBe(itemOf(2));
+            expect(event.defaultPrevented).toBe(true);
+            selected().not.toHaveBeenCalled();
+        });
+
+        it('activates the item pressed and the item Enter is pressed on', () => {
+            attachSelection(list, options());
+
+            click(itemOf(2).querySelector('.name'));
+            press(itemOf(3), 'Enter');
+
+            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 2], ['HandleActivateAsync', 3]]);
+        });
+
+        it('hands the focus to the box its item draws once the item stops being its own marker', async () => {
+            attachSelection(list, options());
+            itemOf(2).focus();
+
+            itemOf(2).removeAttribute('data-row-key');
+            itemOf(2).insertAdjacentHTML('afterbegin', '<input type="checkbox" data-row-key="2" />');
+            await settle();
+
+            const box = itemOf(2).querySelector('input');
+            expect(document.activeElement).toBe(box);
+            expect(box.tabIndex).toBe(0);
+        });
+
+        it('takes the focus back onto the item once the box holding it goes and the item is its own marker again', async () => {
+            [1, 2, 3].forEach(key => {
+                itemOf(key).removeAttribute('data-row-key');
+                itemOf(key).insertAdjacentHTML('afterbegin', `<input type="checkbox" data-row-key="${key}" />`);
+            });
+            attachSelection(list, options());
+            itemOf(2).querySelector('input').focus();
+
+            // The box holding the focus leaves, and the focus falls to nothing, as the browser drops it from an element removed.
+            itemOf(2).querySelector('input').dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+            [1, 2, 3].forEach(key => {
+                itemOf(key).querySelector('input').remove();
+                itemOf(key).setAttribute('data-row-key', `${key}`);
+            });
+            document.body.focus();
+            await settle();
+            await nextFrame();
+
+            expect(document.activeElement).toBe(itemOf(2));
+        });
+
+        it('checks the box of the item a press lands on where a press checks, Enter still activating it', () => {
+            [1, 2, 3].forEach(key => {
+                itemOf(key).removeAttribute('data-row-key');
+                itemOf(key).insertAdjacentHTML('afterbegin', `<input type="checkbox" data-row-key="${key}" />`);
+            });
+            const checked = [];
+            list.querySelectorAll('input').forEach(box => box.addEventListener('click', () => checked.push(Number(box.dataset.rowKey))));
+            attachSelection(list, options({ checksOnPress: true }));
+
+            click(itemOf(2).querySelector('.name'));
+            press(itemOf(3).querySelector('input'), 'Enter');
+
+            expect(checked).toEqual([2]);
+            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 3]]);
+        });
+
+        it('turns a press from activating to checking and back without attaching again', () => {
+            [1, 2, 3].forEach(key => {
+                itemOf(key).removeAttribute('data-row-key');
+                itemOf(key).insertAdjacentHTML('afterbegin', `<input type="checkbox" data-row-key="${key}" />`);
+            });
+            const checked = [];
+            list.querySelectorAll('input').forEach(box => box.addEventListener('click', () => checked.push(Number(box.dataset.rowKey))));
+            const handle = attachSelection(list, options());
+
+            click(itemOf(1).querySelector('.name'));
+            handle.setChecksOnPress(true);
+            click(itemOf(2).querySelector('.name'));
+            handle.setChecksOnPress(false);
+            click(itemOf(3).querySelector('.name'));
+
+            expect(checked).toEqual([2]);
+            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 1], ['HandleActivateAsync', 3]]);
+        });
+    });
+
     describe('gathering its items\' controls', () => {
         const settle = () => new Promise(resolve => setTimeout(resolve));
         const item = key => `<tr data-item-root><td><span data-row-key="${key}" tabindex="-1">Row</span></td><td><button class="open">Open</button><button class="more" data-item-actions>More</button><input type="text" class="field" /></td></tr>`;

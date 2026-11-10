@@ -24,7 +24,7 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
     /// <param name="itemRootSelector">The selector naming the element each item is drawn as, whose controls are the item's.</param>
     /// <param name="actionsSelector">The selector naming the control within an item that opens its actions, which Shift+F10 and the Menu key on the item press.</param>
     /// <param name="gathersControls">Whether Tab reaches the active item's controls alone, every other item's standing out of the Tab sequence.</param>
-    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, bool moves = true, string? positionAttribute = null, bool seeks = false, string? itemRootSelector = null, string? actionsSelector = null, bool gathersControls = false)
+    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, bool moves = true, string? positionAttribute = null, bool seeks = false, string? itemRootSelector = null, string? actionsSelector = null, bool gathersControls = false, bool checksOnPress = false)
         where TOwner : class
     {
         ArgumentNullException.ThrowIfNull(owner);
@@ -43,6 +43,7 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
             ItemRootSelector = itemRootSelector,
             ActionsSelector = actionsSelector,
             GathersControls = gathersControls,
+            ChecksOnPress = checksOnPress,
         });
     }
 
@@ -55,6 +56,11 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
     /// <summary>Lets go of a move asked of the owner, which it can no longer answer.</summary>
     public ValueTask<bool> CancelSeekAsync()
         => InvokeAsync("cancelSeek");
+
+    /// <summary>Has a press check the box of the item it lands on where <paramref name="checksOnPress"/>, or activate the item, the focus left where it is.</summary>
+    /// <param name="checksOnPress">Whether a press checks.</param>
+    public ValueTask<bool> SetChecksOnPressAsync(bool checksOnPress)
+        => InvokeAsync("setChecksOnPress", checksOnPress);
 
     /// <summary>The options the script attaches with.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
@@ -82,5 +88,8 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
         public required string? ActionsSelector { get; init; }
 
         public required bool GathersControls { get; init; }
+
+        /// <summary>Whether a press on an item checks its box rather than activating it.</summary>
+        public required bool ChecksOnPress { get; init; }
     }
 }

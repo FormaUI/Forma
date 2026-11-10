@@ -63,6 +63,22 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Thumbnails a Press Opens"]</h2>
+    <p class="description">@L["The thumbnails take the focus with no selection on: Tab enters them once, the arrows move the focus alone, and Enter or a press opens a thumbnail. Select draws a box on each, a press or Space checks it, Enter still opens, and the focus stays on its thumbnail as the mode changes."]</p>
+    <div class="demo-box demo-row demo-controls">
+        <FormaButton Variant="ButtonVariant.Secondary" @onmousedown:preventDefault="true" OnClick="() => _isChoosing = !_isChoosing">@(_isChoosing ? L["Done"] : L["Select"])</FormaButton>
+        <span class="demo-status">@(_openedProduct is { } opened ? L["Opened: {Name}", opened.Name] : null)</span>
+    </div>
+    <div class="demo-box">
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" EnableItemFocus="true" EnableCheckedSelection="_isChoosing" CheckedSelectionOptions="ChecksOnPress" @bind-SelectedItems="_chosenProducts" OnItemClick="@((ShowcaseProduct product) => _openedProduct = product)">
+            <FormaDataCards TItem="ShowcaseProduct" Dense="true" CardSize="@CssLength.FromRem(7)">
+                <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
+            </FormaDataCards>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["A Hundred Thousand Thumbnails"]</h2>
     <p class="description">@L["The cards virtualizing over a hundred thousand products grouped by category, as a gallery browses its media: the rows hold as many thumbnails as the width packs, each heading counts its whole group and folds it, and only the rows near the viewport are drawn."]</p>
     <div class="demo-box demo-box-bounded">
@@ -104,6 +120,14 @@
     private string? _lastCommand;
 
     private bool _isNarrow;
+
+    private static readonly CheckedSelectionOptions ChecksOnPress = new() { ChecksOnPress = true };
+
+    private bool _isChoosing;
+
+    private IReadOnlyList<ShowcaseProduct> _chosenProducts = [];
+
+    private ShowcaseProduct? _openedProduct;
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType

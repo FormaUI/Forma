@@ -99,6 +99,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool _isAttachedToMove;
     private bool _isAttachedToSeek;
     private bool _isAttachedToGather;
+    private bool _isAttachedToCheckOnPress;
+
+    // Which markers the views drew the items with last: either selection's, or the items' own where they take the focus.
+    private (bool Checked, bool Pointer, bool Focus)? _drawnMarkers;
     private int _orderVersion;
     private SelectionBounds _selectionBounds;
     private int _readCount;
@@ -240,6 +244,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>Whether items are selected through pointer and keyboard gestures on themselves.</summary>
     [Parameter] public bool EnableItemSelection { get; set; }
+
+    /// <summary>Whether the items take the focus where neither selection draws markers: one tab stop the arrows move from item to item, Enter and a press activating the item.</summary>
+    [Parameter] public bool EnableItemFocus { get; set; }
 
     /// <summary>The items selected.</summary>
     [Parameter] public IReadOnlyList<TItem> SelectedItems { get; set; } = [];
@@ -487,7 +494,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     // Either kind of selection draws a marker on every item, which the keys move among.
     private bool HasMarkers
-        => EnableItemSelection || EnableCheckedSelection;
+        => EnableItemSelection || EnableCheckedSelection || EnableItemFocus;
+
+    /// <inheritdoc />
+    public bool FocusesItems
+        => EnableItemFocus && !EnableItemSelection && !EnableCheckedSelection;
+
+    // Under checked selection alone a press can check the item's box rather than activate the item.
+    private bool ChecksOnPress
+        => EnableCheckedSelection && !EnableItemSelection && CheckedSelectionOptions.ChecksOnPress;
 
     // Selecting the page adds what is not yet selected on it to what is selected, on this page or another.
     private bool CanSelectPage
@@ -685,7 +700,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         {
             await LoadAsync();
         }
+        else if (_drawnMarkers is { } drawn && drawn != (EnableCheckedSelection, EnableItemSelection, EnableItemFocus))
+        {
+            // A selection turned on or off changes which element of every item carries the focus, which each view draws again.
+            await NotifyStateAsync();
+        }
 
+        _drawnMarkers = (EnableCheckedSelection, EnableItemSelection, EnableItemFocus);
         await RevealCurrentAsync();
     }
 
@@ -699,13 +720,20 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         // The behavior answers every press on an item: under item selection a press selects and a double press activates, and
-        // otherwise a press activates, as Enter on an item's marker does either way; the keys move among the markers either kind
-        // of selection draws, selecting under item selection alone. A change of selection since it attached lets it go, so it
+        // otherwise a press activates, or checks the item's box where a press checks, as Enter on an item's marker activates either
+        // way; the keys move among the markers either kind of selection draws, or the items themselves where they take the focus,
+        // selecting under item selection alone. A change of selection since it attached lets it go, so it
         // attaches again as the selection now is.
         if (_selectionInteraction.IsAttached && (_isAttachedToSelect != EnableItemSelection || _isAttachedToMove != HasMarkers || _isAttachedToSeek != (ActivePositions is not null) || _isAttachedToGather != GathersControls))
         {
             await _selectionInteraction.DetachAsync();
             _isSelectionAttached = false;
+        }
+        else if (_selectionInteraction.IsAttached && _isAttachedToCheckOnPress != ChecksOnPress)
+        {
+            // A press checking or activating changes nothing else, so the behavior keeps the focus and the tab stop it holds.
+            _isAttachedToCheckOnPress = ChecksOnPress;
+            await _selectionInteraction.SetChecksOnPressAsync(ChecksOnPress);
         }
 
         if (!_isSelectionAttached)
@@ -716,11 +744,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _isAttachedToMove = HasMarkers;
             _isAttachedToSeek = ActivePositions is not null;
             _isAttachedToGather = GathersControls;
+            _isAttachedToCheckOnPress = ChecksOnPress;
             _selfReference ??= DotNetObjectReference.Create(this);
 
             // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
             await InputRouter.ConfigureAsync();
-            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, _isAttachedToMove, PositionAttribute, _isAttachedToSeek, ItemRootSelector, ItemActionsSelector, _isAttachedToGather);
+            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, _isAttachedToMove, PositionAttribute, _isAttachedToSeek, ItemRootSelector, ItemActionsSelector, _isAttachedToGather, _isAttachedToCheckOnPress);
         }
 
         // Only a paged data view that does not virtualize holds a height for a short page.

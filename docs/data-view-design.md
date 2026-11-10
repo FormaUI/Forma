@@ -178,7 +178,9 @@ library's default sentence.
 ### Selection
 
 Checked selection, `EnableCheckedSelection`, gives every item a box the view draws, and a
-master control the view places, the grid in its header cell. The master
+master control the view places, the grid in its header cell. A press on an item activates
+it, or checks its box where the checked selection options say `ChecksOnPress`, as a
+selection mode does, Enter still activating it. The master
 control is a tri-state box: unchecked with nothing selected on the page, indeterminate with
 some, checked with all. What pressing it reaches is `SelectAllMode` in the checked
 selection options:
@@ -631,8 +633,11 @@ compact density, and whatever a template places in an item.
 Sorting, selecting, paging, folding, revealing a column, switching views and opening the
 columns menu are all reachable from the keyboard: Tab reaches the header buttons, the item
 markers and the items' own controls, all of them or the active item's alone, the arrows move focus among the items while either kind
-of selection draws their markers, in the directions the view gives them, and the paginator's
-own keys page. The markers stand as one tab stop, the one last focused or the first drawn
+of selection draws their markers, or among the items themselves where they take the focus
+with no selection on, `EnableItemFocus`, in the directions the view gives them, and the
+paginator's own keys page. Items that take the focus themselves are activated by Enter and
+a press, and a selection turned on or off hands the focus to the element of the same item
+that carries it now, so the reader keeps their place. The markers stand as one tab stop, the one last focused or the first drawn
 until one is, and a box in the list, the cards and the tree is named for its item. Home and
 End reach the ends of the collection in a view of one column, and a row's ends in the cards,
 where Ctrl+Home and Ctrl+End reach the collection's. Under checked selection alone the

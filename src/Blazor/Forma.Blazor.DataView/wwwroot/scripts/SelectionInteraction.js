@@ -37,9 +37,15 @@
  * Enter on an item's marker activates the item, a route like the moves, so the form a host wraps
  * the list in never takes it as a submission. The presses are routes too: where the list selects,
  * a press selects, a shift-press stops the browser extending its own text selection across the
- * items, and a double press activates; where it does not, a press activates. A press on a native
- * control inside an item is the control's, as is one on a part of the item a caller names as its
- * own controls, a box's cell or a card's actions.
+ * items, and a double press activates; where it does not, a press activates, or checks the item's
+ * box where the list checks on a press, as a selection mode does. A press on a native control
+ * inside an item is the control's, as is one on a part of the item a caller names as its own
+ * controls, a box's cell or a card's actions.
+ *
+ * An item that draws no marker of its own can be its own marker, so a list with no selection still
+ * stands as one tab stop the keys move through. Where the marker holding the focus stops being one
+ * while its item stays, as an item does when the box drawn inside it takes over, the focus moves to
+ * the marker the item draws now.
  */
 
 import { Controls } from '../../forma/core/scripts/Controls.js';
@@ -70,6 +76,7 @@ const SeekPatience = 3000;
  *   controlSelector?: string | null,
  *   selects?: boolean,
  *   moves?: boolean,
+ *   checksOnPress?: boolean,
  *   positionAttribute?: string | null,
  *   seeks?: boolean,
  *   itemRootSelector?: string | null,
@@ -181,6 +188,7 @@ class SelectionInteraction {
     #controlSelector;
     #positionAttribute;
     #selects;
+    #checksOnPress;
     #seeks;
     #registration;
     #tabStop = null;
@@ -200,7 +208,7 @@ class SelectionInteraction {
     #actionsReturn = null;
     #suppressesContextMenu = false;
 
-    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, moves = selects, positionAttribute = null, seeks = false, itemRootSelector = null, actionsSelector = null, gathersControls = false }) {
+    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, moves = selects, checksOnPress = false, positionAttribute = null, seeks = false, itemRootSelector = null, actionsSelector = null, gathersControls = false }) {
         this.#target = target;
         this.#owner = owner;
         this.#keyAttribute = keyAttribute;
@@ -210,6 +218,7 @@ class SelectionInteraction {
         this.#controlSelector = controlSelector;
         this.#positionAttribute = positionAttribute;
         this.#selects = selects;
+        this.#checksOnPress = checksOnPress && !selects;
         this.#seeks = seeks && positionAttribute !== null;
         this.#itemRootSelector = itemRootSelector;
         this.#actionsSelector = itemRootSelector === null ? null : actionsSelector;
@@ -253,7 +262,7 @@ class SelectionInteraction {
                 { type: 'keydown', key: 'Enter', when: event => this.#focusedMarker(event) !== null },
                 { type: selects ? 'dblclick' : 'click', button: 0, when: event => this.#pressedItem(event) !== null },
             ],
-            handle: event => this.#activate(event),
+            handle: event => event.type === 'click' && this.#checksOnPress ? this.#check(event) : this.#activate(event),
         };
 
         // The menu keys on an item press the opener of its actions; a key pressed in a control inside the item is the control's own.
@@ -290,7 +299,10 @@ class SelectionInteraction {
                 }
             }, { signal });
 
-            const drawing = new MutationObserver(() => this.#settleTabStop());
+            const drawing = new MutationObserver(() => {
+                this.#followFocus();
+                this.#settleTabStop();
+            });
             drawing.observe(target, { childList: true, subtree: true });
             signal.addEventListener('abort', () => drawing.disconnect());
             this.#settleTabStop();
@@ -396,6 +408,14 @@ class SelectionInteraction {
         this.#cancelSeek();
     }
 
+    /**
+     * Has a press check the box of the item it lands on, or activate the item again, keeping the focus and the tab stop as they are.
+     * @param {boolean} checks Whether a press checks.
+     */
+    setChecksOnPress(checks) {
+        this.#checksOnPress = checks && !this.#selects;
+    }
+
     #markers() {
         return [...this.#target.querySelectorAll(this.#markerSelector)];
     }
@@ -439,7 +459,7 @@ class SelectionInteraction {
     #tokenOfItem(item) {
         const value = this.#itemKeyAttribute
             ? item.getAttribute(this.#itemKeyAttribute)
-            : item.querySelector(this.#markerSelector)?.getAttribute(this.#keyAttribute);
+            : this.#ownMarker(item)?.getAttribute(this.#keyAttribute);
 
         return value == null || value === '' ? null : Number(value);
     }
@@ -449,8 +469,40 @@ class SelectionInteraction {
         tell(this.#owner, 'HandleActivateAsync', token);
     }
 
+    // A press checks or unchecks the box of the item it lands on, as a press on the box itself does.
+    #check(event) {
+        const item = this.#pressedItem(event);
+        const box = item ? this.#markerIn(item) : null;
+
+        if (box && box !== item) {
+            box.click();
+        }
+    }
+
+    // The marker holding the focus can stop being one while its item stays; the focus moves to the marker the item draws now.
+    #followFocus() {
+        const held = this.#tabStop;
+
+        if (!held?.isConnected || held.matches(this.#markerSelector) || held !== this.#target.ownerDocument.activeElement) {
+            return;
+        }
+
+        const marker = this.#markerIn(held);
+
+        if (marker) {
+            this.#focusMarker(marker, this.#markers());
+        }
+    }
+
     #markerIn(node) {
-        return node?.closest(this.#itemSelector)?.querySelector(this.#markerSelector) ?? null;
+        const item = node?.closest(this.#itemSelector);
+
+        return item ? this.#ownMarker(item) : null;
+    }
+
+    // An item's marker is the one drawn inside it, or the item itself where it is its own.
+    #ownMarker(item) {
+        return item.matches(this.#markerSelector) ? item : item.querySelector(this.#markerSelector);
     }
 
     #itemOf(marker) {
@@ -482,10 +534,12 @@ class SelectionInteraction {
         marker.focus();
     }
 
-    // The marker last focused stays the one tab stop while it is drawn, and the first drawn marker stands in for it otherwise.
+    // The marker last focused stays the one tab stop while it is drawn, the marker its item draws now where it stopped being one, and
+    // the first drawn marker stands in for it otherwise.
     #settleTabStop() {
         const all = this.#markers();
-        const stop = this.#tabStop?.isConnected && this.#target.contains(this.#tabStop) ? this.#tabStop : all[0];
+        const last = this.#tabStop?.isConnected && this.#target.contains(this.#tabStop) ? this.#tabStop : null;
+        const stop = (last && (all.includes(last) ? last : this.#markerIn(last))) ?? all[0];
 
         for (const marker of all) {
             const tabIndex = marker === stop ? 0 : -1;
@@ -559,7 +613,7 @@ class SelectionInteraction {
     #focusItemOf(event) {
         const { target } = event;
         const root = target instanceof Element ? target.closest(this.#itemRootSelector) : null;
-        const marker = root && this.#target.contains(root) ? root.querySelector(this.#markerSelector) : null;
+        const marker = root && this.#target.contains(root) ? this.#ownMarker(root) : null;
 
         if (marker && marker !== this.#tabStop && !target.matches(this.#markerSelector)) {
             this.#tabStop = marker;
@@ -740,7 +794,7 @@ class SelectionInteraction {
 
     /** The marker nearest an item still drawn that no longer carries one, the next before the previous. */
     #nearestMarker(item) {
-        if (!item.isConnected || !this.#target.contains(item) || item.querySelector(this.#markerSelector)) {
+        if (!item.isConnected || !this.#target.contains(item) || this.#markerIn(item)) {
             return null;
         }
 
@@ -752,7 +806,7 @@ class SelectionInteraction {
     }
 
     #markerAt(position) {
-        return this.#target.querySelector(`[${this.#positionAttribute}="${position}"]`)?.querySelector(this.#markerSelector) ?? null;
+        return this.#markerIn(this.#target.querySelector(`[${this.#positionAttribute}="${position}"]`));
     }
 
     #cancelSeek() {

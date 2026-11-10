@@ -87,6 +87,12 @@
 }
 
 /* The marker carries the focus but cannot show it, so the card draws the ring. */
+/* An item that takes the focus itself rings inward, its own outline surviving forced colors. */
+.forma-data-card[data-row-key]:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-color);
+    outline-offset: calc(-1 * var(--focus-ring-width));
+}
+
 .forma-data-card:has(::deep .forma-data-card-marker:focus-visible) {
     outline: none;
     box-shadow: var(--focus-ring-inset);

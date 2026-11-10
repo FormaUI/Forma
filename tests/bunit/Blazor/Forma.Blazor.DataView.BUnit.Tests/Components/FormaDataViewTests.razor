@@ -87,6 +87,119 @@
         private sealed record Product(int Id, string Name);
     }
 
+    public sealed class ItemFocus
+    {
+        private static IQueryable<Product> CreateProducts() => Enumerable.Range(1, 3)
+            .Select(id => new Product(id, $"Product {id}"))
+            .AsQueryable();
+
+        private static BunitJSModuleInterop SetUpSelection(FormaDataViewTests ctx)
+        {
+            var selection = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.DataView/scripts/SelectionInteraction.js");
+            selection.SetupModule("attach", _ => true);
+
+            return selection;
+        }
+
+        [Fact]
+        public void Should_make_each_card_item_and_row_its_own_marker_where_the_items_take_the_focus_with_no_selection()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            SetUpSelection(ctx);
+
+            // Act — a list, cards and a grid, each its own data view taking the focus on its items
+            var list = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" EnableItemFocus="true" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            var cards = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" EnableItemFocus="true" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" Dense="true" />
+                </FormaDataView>);
+            var grid = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" EnableItemFocus="true" ItemName="@(product => product.Name)">
+                    <FormaDataGrid TItem="Product">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(product => product.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+
+            // Assert — the item element carries the key the script moves by, and no box is drawn to carry it instead
+            Assert.Multiple(
+                () => Assert.All(list.FindAll(".forma-data-list-item"), item => Assert.Equal(item.GetAttribute("data-item"), item.GetAttribute("data-row-key"))),
+                () => Assert.All(cards.FindAll(".forma-data-card"), card => Assert.Equal(card.GetAttribute("data-item"), card.GetAttribute("data-row-key"))),
+                () => Assert.All(grid.FindAll("tbody tr.forma-data-grid-row"), row => Assert.Equal(row.GetAttribute("data-item"), row.GetAttribute("data-row-key"))),
+                () => Assert.Empty(list.FindAll("input[type=checkbox]")),
+                () => Assert.Empty(cards.FindAll("input[type=checkbox]")),
+                () => Assert.Empty(grid.FindAll("input[type=checkbox]")));
+        }
+
+        [Fact]
+        public void Should_have_the_script_move_the_focus_without_selecting_where_the_items_take_the_focus()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var selection = SetUpSelection(ctx);
+
+            // Act
+            ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" EnableItemFocus="true" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+
+            // Assert
+            var options = selection.Invocations.Single(invocation => invocation.Identifier == "attach").Arguments[1]!;
+            Assert.Multiple(
+                () => Assert.Equal(true, InteropPayload.GetValue(options, "moves")),
+                () => Assert.Equal(false, InteropPayload.GetValue(options, "selects")),
+                () => Assert.Equal(false, InteropPayload.GetValue(options, "checksOnPress")));
+        }
+
+        [Fact]
+        public void Should_hand_the_focus_to_the_boxes_once_checked_selection_turns_on_and_have_a_press_check_them()
+        {
+            // Arrange — the items taking the focus themselves, then a selection mode drawing boxes that a press checks
+            using var ctx = new FormaDataViewTests();
+            var selection = SetUpSelection(ctx);
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" EnableItemFocus="true" CheckedSelectionOptions="@(new CheckedSelectionOptions { ChecksOnPress = true })" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" Dense="true" />
+                </FormaDataView>);
+
+            // Act
+            cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.EnableCheckedSelection, true));
+
+            // Assert — the boxes carry the key now, the cards no longer, and the script, attached once, now checks on a press
+            Assert.Multiple(
+                () => Assert.All(cut.FindAll(".forma-data-card"), card => Assert.Null(card.GetAttribute("data-row-key"))),
+                () => Assert.Equal(3, cut.FindAll(".forma-data-card [data-row-key]").Count),
+                () => Assert.Single(selection.Invocations, invocation => invocation.Identifier == "attach"),
+                () => Assert.Equal([true], selection.Invocations.Where(invocation => invocation.Identifier == "setChecksOnPress").Select(invocation => invocation.Arguments[0])));
+        }
+
+        [Fact]
+        public void Should_leave_a_press_activating_under_checked_selection_unless_it_checks()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var selection = SetUpSelection(ctx);
+
+            // Act
+            ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+
+            // Assert
+            var options = selection.Invocations.Single(invocation => invocation.Identifier == "attach").Arguments[1]!;
+            Assert.Equal(false, InteropPayload.GetValue(options, "checksOnPress"));
+        }
+
+        private sealed record Product(int Id, string Name);
+    }
+
     public sealed class Announcement
     {
         private static IQueryable<Product> CreateProducts(int count, int firstId = 1) => Enumerable.Range(firstId, count)

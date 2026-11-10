@@ -10,7 +10,9 @@
      aria-posinset="@(Position is null || View.IsGrouped ? null : Position + 1)"
      data-item-position="@Position"
      data-item="@Token"
-     data-item-root>
+     data-row-key="@(View.FocusesItems && View.CanFocus(Item) ? Token : null)"
+     data-item-root
+     @onfocusin="@(View.FocusesItems ? Cards.GetFocusHandler(Item) : default)">
     <div class="forma-data-card-thumbnail">
         @if (Cards.ThumbnailTemplate is { } thumbnail)
         {

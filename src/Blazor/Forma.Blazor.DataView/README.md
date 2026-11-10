@@ -222,6 +222,20 @@ control reaches: `Direct` selects the whole set at one press, `FromMenu` the ite
 menu offering the page and the set, `FromPager` the items on screen with the footer offering the set,
 and `None` leaves the master control out.
 
+`EnableItemFocus` gives the items the focus where no selection is on: the collection is one tab stop,
+the arrows move the focus from item to item without selecting or opening anything, and Enter and a
+press activate the item, raising `OnItemClick`. A selection mode turns checked selection on over it,
+its `ChecksOnPress` having a press check the item's box while Enter still activates it, and the
+switch keeps the focus on the item it stood on:
+
+```razor
+<FormaDataView Items="_files" EnableItemFocus="true" EnableCheckedSelection="_isSelecting"
+               CheckedSelectionOptions="@(new CheckedSelectionOptions { ChecksOnPress = true })"
+               @bind-SelectedItems="_chosen" OnItemClick="Open">
+    <FormaDataCards Dense="true" />
+</FormaDataView>
+```
+
 Four rules, each a function of the item, say what an item may do. `IsItemDisabled` mutes an item and
 takes it out of every selection and activation, `CanSelectItem` keeps an item from being selected
 while it still activates, `CanActivateItem` keeps it from activating or becoming the current node,

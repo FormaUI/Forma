@@ -23,3 +23,9 @@
         background: var(--forma-data-grid-row-hover-bg-color, var(--hover-bg-color));
     }
 }
+
+/* A row that takes the focus itself rings inward, its own outline surviving forced colors. */
+.forma-data-grid-row[data-row-key]:focus-visible {
+    outline: var(--focus-ring-width) solid var(--focus-color);
+    outline-offset: calc(-1 * var(--focus-ring-width));
+}
