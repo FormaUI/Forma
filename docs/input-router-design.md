@@ -187,12 +187,15 @@ hidden rule.
 A handler is a script function, `handle(event, { action, owner, binding })`, or the router
 invokes the .NET owner with the resolved action: `HandleInputActionAsync(action, input)`,
 where the input is described by its family so the owner reads it as the matching record.
-The record carries the input, never the element it landed on, so a route whose action
-depends on which element was pressed — which item of a list — is handled in script, which
-tells its owner which one. The handler runs from whichever listener resolved the event —
-the document's for a key, an outer scope's for a press that an inner scope owns — so it
-takes the owning element from the routing it is given, never from `event.currentTarget`; a
-gesture that captures the pointer captures it on `owner`.
+The record carries the input, never the element it landed on. A registration whose
+profile names an item attribute is also told the item the input landed on: the value of
+that attribute on the nearest element under the input that carries it, within the
+registration's own element, so a route whose action depends on which item of a list was
+pressed reads it from the record rather than from where the focus last was. The handler
+runs from whichever listener resolved the event — the document's for a key, an outer
+scope's for a press that an inner scope owns — so it takes the owning element from the
+routing it is given, never from `event.currentTarget`; a gesture that captures the
+pointer captures it on `owner`.
 
 A consumed input prevents its default and stops at the scope by class default — a key or a
 wheel turn does both, a key release stops without preventing, a press and a click do neither,

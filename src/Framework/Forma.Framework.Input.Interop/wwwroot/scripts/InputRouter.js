@@ -450,8 +450,23 @@ class Registration {
         if (route.handle) {
             route.handle(event, { event, action: route.action, owner: this.element, binding });
         } else {
-            observe(this.owner?.invokeMethodAsync('HandleInputActionAsync', route.action, describeInput(event)));
+            const input = describeInput(event);
+            const item = this.#itemAt(event);
+            observe(this.owner?.invokeMethodAsync('HandleInputActionAsync', route.action, item === null ? input : { ...input, item }));
         }
+    }
+
+    /** The item the input landed on: the attribute the profile names, read from the nearest element at its target that carries it. */
+    #itemAt(event) {
+        const attribute = this.profile.itemAttribute;
+
+        if (!attribute || !(event.target instanceof Element)) {
+            return null;
+        }
+
+        const holder = event.target.closest(`[${CSS.escape(attribute)}]`);
+
+        return holder && this.element.contains(holder) ? holder.getAttribute(attribute) : null;
     }
 }
 

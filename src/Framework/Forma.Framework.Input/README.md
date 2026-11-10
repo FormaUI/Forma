@@ -129,6 +129,7 @@ elsewhere, which still reaches whatever was pressed:
 | `Escape`, `CloseRequest` | A `DismissBehavior`, `Dismiss`, `Cancel` or `Ignore`, for Escape and a platform close request while the element is foremost; `null` takes the host's policy. |
 | `PressAway` | A `PressAwayBehavior` while the element is foremost: `Dismiss` closes it and swallows the press, `PassThrough` closes it and lets the press reach what was pressed, `Ignore` keeps it open; `null` takes the host's policy. |
 | `Boundary` | The event types that stop at the element when none of its routes matches. |
+| `ItemAttribute` | The attribute naming the item an input lands on, whose value the input carries as `Item`. |
 
 A dismissal reaches the owner as the behavior declared, with the `DismissReason` that raised it:
 `Escape`, `PressAway` or `CloseRequest`.
@@ -173,6 +174,8 @@ The input arrives as the `InputInfo` of its family, each carrying the DOM event'
 `PointerType`, `Button`, `Buttons`, `ClientX`, `ClientY` and `Modifiers`; `InputWheelInfo` with
 `DeltaX`, `DeltaY`, `DeltaMode` and `Modifiers`; and `InputDropInfo` with the `Data` kinds, `ClientX`
 and `ClientY`. `ModifierKeys` says which of `Control`, `Alt`, `Shift`, `Meta` and `Primary` were held.
+Where the profile names an `ItemAttribute`, every family carries `Item`, that attribute's value on the
+nearest element under the input that holds it, so a press on a list's row names the row pressed.
 
 ## License
 

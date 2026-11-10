@@ -25,6 +25,9 @@ public sealed record InputProfile
     /// <summary>The event types the scope stops from reaching the scopes around it when no route of its own matches.</summary>
     public IReadOnlyList<string> Boundary { get; init; } = [];
 
+    /// <summary>The attribute naming the item an input lands on, read from the nearest element at the input's target that carries it.</summary>
+    public string? ItemAttribute { get; init; }
+
     /// <summary>The routes the registration contributes.</summary>
     [JsonPropertyName("routes")]
     public IReadOnlyList<InputRoute> InputRoutes { get; init; } = [];

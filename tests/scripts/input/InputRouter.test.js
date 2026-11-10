@@ -512,6 +512,25 @@ describe('InputRouter clicks', () => {
 
         expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleInputActionAsync', 'test.choose', expect.objectContaining({ family: 'pointer', type: 'click' }));
     });
+
+    it('names the item a click landed on to a .NET owner, by the attribute its profile names', () => {
+        const owner = { invokeMethodAsync: vi.fn().mockResolvedValue(undefined) };
+        document.querySelector('#row').setAttribute('data-test-item', '7');
+        scope(grid(), { itemAttribute: 'data-test-item', routes: [{ action: 'test.choose', bindings: [clickBinding()] }] }, owner);
+
+        click(cell());
+
+        expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleInputActionAsync', 'test.choose', expect.objectContaining({ family: 'pointer', item: '7' }));
+    });
+
+    it('names no item for a click that landed on nothing carrying the attribute', () => {
+        const owner = { invokeMethodAsync: vi.fn().mockResolvedValue(undefined) };
+        scope(grid(), { itemAttribute: 'data-test-item', routes: [{ action: 'test.choose', bindings: [clickBinding()] }] }, owner);
+
+        click(cell());
+
+        expect(owner.invokeMethodAsync.mock.calls[0][2]).not.toHaveProperty('item');
+    });
 });
 
 describe('InputRouter host bindings', () => {

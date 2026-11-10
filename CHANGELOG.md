@@ -179,6 +179,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   shows its document and takes no typing. It showed an empty canvas that took typing nowhere. Its disabled and read-only
   states reach assistive technology as `aria-disabled="true"` and `aria-readonly="true"`, which a bare attribute
   didn't.
+- An [`InputProfile`](src/Framework/Forma.Framework.Input/README.md#what-an-action-carries) takes `ItemAttribute`,
+  and the `InputInfo` an action carries names, as `Item`, that attribute's value on the nearest element under the
+  input that holds it, so an owner learns which item of a list a press landed on.
 - A text field whose edit the [input router](docs/input-router-design.md#a-fields-pending-edit) commits ahead of
   an action it routes reports its change once. The browser reported the same edit again as the field lost the
   focus, so a field's change handlers, `OnChange` among them, ran twice for one edit.
