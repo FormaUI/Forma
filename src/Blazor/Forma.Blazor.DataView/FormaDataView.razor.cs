@@ -885,6 +885,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         builder.AddComponentParameter(2, nameof(FormaDataViewMore.IsFailed), _isAppendFailed);
         builder.AddComponentParameter(3, nameof(FormaDataViewMore.IsAutomatic), AppendMode == DataViewAppendMode.Automatic);
         builder.AddComponentParameter(4, nameof(FormaDataViewMore.OnLoadMore), EventCallback.Factory.Create(this, LoadMoreAsync));
+        builder.AddComponentParameter(5, nameof(FormaDataViewMore.ItemCount), _items.Count);
         builder.CloseComponent();
     }
 

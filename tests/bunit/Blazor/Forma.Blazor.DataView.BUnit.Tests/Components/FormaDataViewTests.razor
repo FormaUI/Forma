@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using System.Globalization
+@using Forma.Framework.Browser.Interop.Scrolling
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
@@ -1114,6 +1115,61 @@
                 () => Assert.Equal(["a", "b", "c", "d"], slice.Items.Select(entry => entry.Name)),
                 () => Assert.Equal([(0, 2), (2, 2)], source.Requests));
         }
+
+        [Fact]
+        public async Task Should_ask_the_watch_to_measure_the_end_again_when_the_items_change_under_it()
+        {
+            // Arrange — the first page shown, its end out of view as the watch attaches
+            using var ctx = new FormaDataViewTests();
+            var probe = new DomProbe<IntersectionState>(ctx);
+            var positions = Shown("a", "b", "c", "d", "e");
+            var source = new Source(positions);
+            var cut = RenderAutomatic(ctx, source);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            cut.WaitForState(() => engine.Instance.ItemCount == 2);
+            await probe.ReportAsync(new IntersectionState(IsIntersecting: false));
+
+            // Act — b leaves the source, and the items shown are read again, the watch left as it was
+            positions[1] = ("b", false);
+            await engine.InvokeAsync(() => engine.Instance.RefreshDataAsync());
+
+            // Assert — the end the fewer items can leave in view measured again
+            Assert.Multiple(
+                () => Assert.Equal(1, engine.Instance.ItemCount),
+                () => Assert.Single(probe.Observations),
+                () => Assert.Single(probe.Watcher.Invocations, invocation => invocation.Identifier == "refresh"));
+        }
+
+        [Fact]
+        public async Task Should_leave_the_end_to_the_watch_attached_again_after_a_page_that_took_a_while()
+        {
+            // Arrange — a source holding the second page back, so the watch is off while it comes
+            using var ctx = new FormaDataViewTests();
+            var probe = new DomProbe<IntersectionState>(ctx);
+            var source = new Source(Shown("a", "b", "c", "d", "e"));
+            var cut = RenderAutomatic(ctx, source);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            cut.WaitForState(() => engine.Instance.ItemCount == 2);
+            var gate = source.Gate = new TaskCompletionSource();
+
+            // Act — the end in view, the page let through, and the end, measured as the watch attaches again, out of view
+            await probe.ReportAsync(new IntersectionState(IsIntersecting: true));
+            await cut.ReleaseAsync(gate.SetResult);
+            await probe.ReportAsync(new IntersectionState(IsIntersecting: false));
+
+            // Assert — the watch attached again is asked for nothing more, so no page is read ahead
+            Assert.Multiple(
+                () => Assert.Equal(4, engine.Instance.ItemCount),
+                () => Assert.Equal(2, probe.Observations.Count),
+                () => Assert.DoesNotContain(probe.Watcher.Invocations, invocation => invocation.Identifier == "refresh"),
+                () => Assert.Equal([(0, 2), (2, 2)], source.Requests));
+        }
+
+        private static IRenderedComponent<IComponent> RenderAutomatic(FormaDataViewTests ctx, Source source)
+            => ctx.Render(
+                @<FormaDataView TItem="Entry" ItemsProvider="source.ProvideAsync" PageSize="2" AppendMode="DataViewAppendMode.Automatic" ItemKey="@(entry => entry.Name)" ItemName="@(entry => entry.Name)">
+                    <FormaDataList TItem="Entry" />
+                </FormaDataView>);
 
         private sealed record Entry(string Name);
     }

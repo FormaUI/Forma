@@ -3,7 +3,7 @@
 @using Forma.Blazor.Components.Buttons
 
 <div class="forma-data-view-more" @ref="_element">
-    <FormaButton Variant="ButtonVariant.Ghost" Busy="Busy" BusyText="@L["Loading More"]" OnClick="@(() => OnLoadMore.InvokeAsync())">@(IsFailed ? L["Try Again"] : L["Load More"])</FormaButton>
+    <FormaButton Variant="ButtonVariant.Ghost" Busy="Busy" BusyText="@L["Loading More"]" OnClick="LoadMoreAsync">@(IsFailed ? L["Try Again"] : L["Load More"])</FormaButton>
     @if (IsFailed)
     {
         <span class="forma-data-view-more-failure" role="alert">@L["More items could not be loaded."]</span>
