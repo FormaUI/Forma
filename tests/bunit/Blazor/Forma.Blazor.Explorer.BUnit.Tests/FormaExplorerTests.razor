@@ -2626,7 +2626,7 @@
         }
 
         [Fact]
-        public void Should_name_the_folder_each_request_was_made_for_whatever_folder_the_host_holds_when_it_answers()
+        public async Task Should_name_the_folder_each_request_was_made_for_whatever_folder_the_host_holds_when_it_answers()
         {
             // Arrange - a request for Covers held while the host moves to Races
             using var ctx = new FormaExplorerTests();
@@ -2642,7 +2642,7 @@
 
             // Act - the move reaches the store once the request it supersedes is canceled
             explorer.Render(parameters => parameters.Add(p => p.CurrentFolder, races));
-            cut.WaitForState(() => provider.Queries.Count == 2);
+            await provider.WhenAskedForAsync("races").WaitAsync(TestContext.Current.CancellationToken);
             provider.Gate.SetResult();
 
             // Assert

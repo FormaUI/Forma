@@ -10,6 +10,7 @@ using Forma.Framework.Resources;
 public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) : ICatalogProvider
 {
     private readonly List<ResourceInfo> _resources = [.. resources];
+    private readonly Dictionary<string, TaskCompletionSource> _askedFolders = new(StringComparer.Ordinal);
 
     /// <summary>Every query the provider was asked, in order.</summary>
     public List<CatalogQuery> Queries { get; } = [];
@@ -32,10 +33,38 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
     /// <summary>The sources of the resources the provider returns as hidden items.</summary>
     public ISet<string> HiddenSources { get; } = new HashSet<string>(StringComparer.Ordinal);
 
+    /// <summary>Completes once the provider has been asked for the files of the folder <paramref name="folderKey"/> names.</summary>
+    /// <param name="folderKey">The folder's key.</param>
+    public Task WhenAskedForAsync(string folderKey)
+    {
+        lock (_askedFolders)
+        {
+            if (!_askedFolders.TryGetValue(folderKey, out var asked))
+            {
+                _askedFolders[folderKey] = asked = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            }
+
+            if (Queries.Exists(query => query.FolderKey == folderKey))
+            {
+                asked.TrySetResult();
+            }
+
+            return asked.Task;
+        }
+    }
+
     /// <inheritdoc />
     public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
-        Queries.Add(query);
+        lock (_askedFolders)
+        {
+            Queries.Add(query);
+
+            if (query.FolderKey is { } asked && _askedFolders.TryGetValue(asked, out var waiting))
+            {
+                waiting.TrySetResult();
+            }
+        }
 
         if (Gate is { } gate && (GatedFolderKey is null || GatedFolderKey == query.FolderKey))
         {
