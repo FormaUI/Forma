@@ -60,6 +60,7 @@ public sealed partial class RenderModeInventoryTests
     [GeneratedRegex(@"\[(Theory|Fact)\]")]
     private static partial Regex NextCheck();
 
-    [GeneratedRegex("\"(?<text>[^\"]+)\"")]
+    // A raw string literal is passed over whole, so its quotes pair with none of the plain literals after it.
+    [GeneratedRegex("\"\"\"[\\s\\S]*?\"\"\"|\"(?<text>[^\"]+)\"")]
     private static partial Regex StringLiteral();
 }
