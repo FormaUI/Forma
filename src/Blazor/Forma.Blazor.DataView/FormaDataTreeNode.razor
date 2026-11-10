@@ -4,7 +4,7 @@
 
 @{
     var key = View.ItemKey(Item);
-    var canOpen = View.CanOpen(Item);
+    var canOpen = Tree.CanOpen(Item);
     var isOpen = canOpen && View.IsOpen(Item);
     var isLoading = View.IsLoadingChildren(Item);
     var name = View.ItemName(Item);

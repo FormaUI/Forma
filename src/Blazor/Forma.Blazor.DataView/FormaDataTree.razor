@@ -56,7 +56,7 @@
     {
         foreach (var node in nodes)
         {
-            var children = View.CanOpen(node) && View.IsOpen(node) ? GetChildren(node) : [];
+            var children = CanOpen(node) && View.IsOpen(node) ? GetChildren(node) : [];
             var childrenId = GetNodeChildrenId(node);
 
             @* The row is the tree item, since it is what carries the focus; the list item around it holds the row and the children's group. *@

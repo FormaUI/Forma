@@ -56,13 +56,13 @@
 
 <div class="demo-section">
     <h2>@L["A Tree the Host Places"]</h2>
-    <p class="description">@L["The host arranges the data view itself: the folder tree in a sidebar the splitter resizes, and beside it the grid with the footer beneath it. Where the box is narrow the host stacks the sidebar above the grid, and the current folder, the open folders and the selection stay as they were."]</p>
+    <p class="description">@L["The host arranges the data view itself: the folder tree in a sidebar the splitter resizes, All Files first among its folders to take the grid back to the top level, and beside it the grid with the footer beneath it. Where the box is narrow the host stacks the sidebar above the grid, and the current folder, the open folders and the selection stay as they were."]</p>
     <div class="demo-box demo-box-bounded">
         <FormaDataView TItem="ShowcaseEntry" Items="DataViewShowcaseFolders.All" PageSize="3" Layout="DataViewLayout.Host" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.Parent)" HasChildren="@(entry => entry.IsFolder)" EnableItemSelection="true" @bind-CurrentItem="_placedFolder">
             <ChildContent>
                 <div class="demo-host-arrangement" style="@PlacedSidebarStyle">
                     <div class="demo-host-sidebar">
-                        <FormaDataTree TItem="ShowcaseEntry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" aria-label="@L["Folders"]">
+                        <FormaDataTree TItem="ShowcaseEntry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" RootsItem="AllFiles" aria-label="@L["Folders"]">
                             <ThumbnailTemplate Context="entry"><FormaIcon Icon="@entry.Glyph" Size="IconSize.Small" /></ThumbnailTemplate>
                         </FormaDataTree>
                     </div>
@@ -136,6 +136,10 @@
 
     // Documents and Pictures, the folders that start open.
     private static readonly object[] OpenOnLoadKeys = [1, 2];
+
+    // The row the placed sidebar stands for the top level, named in the reader's language.
+    private ShowcaseEntry AllFiles
+        => new(0, null, L["All Files"], true, "Folder", Glyph.FolderTree);
 
     private ShowcaseEntry? _currentFolder;
     private ShowcaseEntry? _openedFolder = DataViewShowcaseFolders.All.Single(entry => entry.Id == 10);

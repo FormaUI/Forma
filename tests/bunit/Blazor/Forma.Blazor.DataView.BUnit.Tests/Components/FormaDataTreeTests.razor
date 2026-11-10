@@ -18,6 +18,9 @@
         new Entry(6, 3, "Q1.pdf", false),
     }.AsQueryable();
 
+    // The item a sidebar stands for the roots, a folder of its own that is none of the entries.
+    private static readonly Entry Everything = new(0, null, "Everything", true);
+
     // Leaves at the root, named from one.
     private static IQueryable<Entry> CreateLeaves(int count)
         => Enumerable.Range(1, count).Select(id => new Entry(id, null, $"Leaf {id}", false)).AsQueryable();
@@ -565,6 +568,83 @@
                 () => Assert.Equal("0", cut.Find(".forma-data-tree-node").GetAttribute("tabindex")),
                 () => Assert.Equal("-1", cut.FindAll(".forma-data-tree-node")[1].GetAttribute("tabindex")),
                 () => Assert.Empty(cut.FindAll(".forma-data-tree-node input")));
+        }
+
+        [Fact]
+        public void Should_stand_the_roots_item_first_among_the_top_level_nodes_and_current_while_the_roots_are()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+
+            // Act — a sidebar standing Everything for the roots, which the item could open were it a node of its own
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" RootsItem="Everything" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
+
+            // Assert — first, at the top level, current and the tab stop, and never opening
+            var roots = cut.FindAll("[role=treeitem]")[0];
+            Assert.Multiple(
+                () => Assert.Equal(["Everything", "Documents", "Pictures"], Names(cut)),
+                () => Assert.Equal("1", roots.GetAttribute("aria-level")),
+                () => Assert.Equal("true", roots.GetAttribute("aria-selected")),
+                () => Assert.Equal("false", cut.FindAll("[role=treeitem]")[1].GetAttribute("aria-selected")),
+                () => Assert.Null(roots.GetAttribute("aria-expanded")),
+                () => Assert.Empty(roots.QuerySelectorAll("button.forma-data-tree-disclosure-button")),
+                () => Assert.Equal("Everything", GetTabStop(cut)));
+        }
+
+        [Fact]
+        public async Task Should_make_the_roots_current_when_the_row_standing_for_them_is_chosen()
+        {
+            // Arrange — a sidebar over a grid, Documents current
+            using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
+            var moves = new List<string?>();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItemChanged="@((Entry? entry) => moves.Add(entry?.Name))">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" RootsItem="Everything" />
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
+            await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[1]);
+            await router.ClickAsync("tree.choose");
+            cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
+
+            // Act — a press on Everything
+            await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[0]);
+            await router.ClickAsync("tree.choose");
+            cut.WaitForState(() => !cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
+
+            // Assert — the roots current, their row selected, the grid showing them
+            Assert.Multiple(
+                () => Assert.Equal(["Documents", null], moves),
+                () => Assert.Equal(["Documents", "Pictures"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList()),
+                () => Assert.Equal("true", cut.FindAll("[role=treeitem]")[0].GetAttribute("aria-selected")),
+                () => Assert.Equal("false", cut.FindAll("[role=treeitem]")[1].GetAttribute("aria-selected")));
+        }
+
+        [Fact]
+        public void Should_draw_no_row_for_the_roots_in_a_tree_that_does_not_choose_the_current_node()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" RootsItem="Everything" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Assert
+            Assert.Equal(["Documents", "Pictures"], Names(cut));
         }
 
         [Fact]

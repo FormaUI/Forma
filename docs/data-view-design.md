@@ -533,7 +533,10 @@ starting with it. A selected node takes the selected tint and `aria-selected`; t
 selection is the engine's, so a node selected in the tree is the same item selected in
 the grid. Choosing a node can also make it the current node, `SelectsCurrent`, which is
 what a sidebar does, and `NodeFilter` narrows the tree to the items it admits, the
-folders alone for a sidebar over a source that holds files too. The tree draws the nodes
+folders alone for a sidebar over a source that holds files too. A sidebar takes the reader
+back to the roots through an item of the host's standing for them, `RootsItem`, first
+among the top-level nodes: it never opens, it is current while the roots are, and choosing
+it makes them current, as an explorer's All Media does. The tree draws the nodes
 the engine holds open, so a node that becomes current shows in it as the engine reveals it. The tree announces itself
 as a tree with each node's level, its
 open state and whether it has children, and virtualizes over the visible nodes with a

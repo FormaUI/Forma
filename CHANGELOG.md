@@ -109,6 +109,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   view's own arrangement. `IDataView` declares `Layout`. `IDataViewInteraction.UnregisterView` takes the
   registration a view made, rather than its key, so a view drawn afresh under the same key keeps its registration;
   it lost it as the one it replaced went, which left the data view with no view to show.
+- A sidebar [`FormaDataTree`](docs/data-view-design.md#the-tree) takes `RootsItem`, an item of the host's that
+  stands for the roots first among the top-level nodes, current while the roots are, so choosing it takes the
+  reader back to them; a sidebar offered no way back to the roots of its own once a node was current.
 - [`FormaDataView`](docs/data-view-design.md#hierarchy) raises `OnCurrentItemChanging` before a move into a node
   changes anything, with a `DataViewCurrentItemChange` naming the node and the one before it, whose `Refuse()`
   leaves the current node, the page and the items as they were; a move made while the host is still answering

@@ -143,6 +143,10 @@ fills the data view's region, so each of its places scrolls within itself:
 </FormaDataView>
 ```
 
+A sidebar's `RootsItem` is an item of the host's, under a key of its own, that stands for the roots,
+drawn first among the top-level nodes: it never opens, it shows as current while the roots are, and
+choosing it makes them current again, as a file browser's All Files row does.
+
 `OnCurrentItemChanging` is raised before a move into a node changes anything, with the node and the
 one before it, and its handler calls `Refuse()` to keep the reader where they are, as a host that
 checks a folder may be opened does.

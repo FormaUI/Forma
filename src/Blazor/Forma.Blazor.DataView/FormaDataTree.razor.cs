@@ -54,6 +54,9 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     /// <summary>The filter admitting the items the tree shows, where null admits every item.</summary>
     [Parameter] public Func<TItem, bool>? NodeFilter { get; set; }
 
+    /// <summary>The item a sidebar shows first among its top-level nodes for the roots, current while they are, which makes them current when chosen.</summary>
+    [Parameter] public TItem? RootsItem { get; set; }
+
     [CascadingParameter] private IDataView<TItem> View { get; set; } = default!;
 
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
@@ -118,6 +121,10 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
     private bool IsVirtualizing
         => View.IsVirtualizing;
+
+    // The roots stand as a row of their own only where choosing a node makes it current.
+    private TItem? RootsRow
+        => SelectsCurrent ? RootsItem : default;
 
     /// <inheritdoc />
     public ValueTask ScrollToItemAsync(int index, CancellationToken cancellationToken)
@@ -287,7 +294,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     }
 
     private IReadOnlyList<TItem> GetRoots()
-        => Admit(View.Roots);
+        => RootsRow is { } roots ? [roots, .. Admit(View.Roots)] : Admit(View.Roots);
 
     private IReadOnlyList<TItem> GetChildren(TItem parent)
         => Admit(View.GetChildren(parent));
@@ -306,9 +313,17 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         await (View.IsOpen(node) ? Interaction.CloseNodeAsync(node) : Interaction.OpenNodeAsync(node));
     }
 
+    /// <summary>Whether the node opens, which the row standing for the roots never does.</summary>
+    internal bool CanOpen(TItem node)
+        => !IsRootsRow(node) && View.CanOpen(node);
+
     // Choosing a node, by a press on its row or Enter, makes it current where the tree drives the other views, and activates it otherwise; a row with a marker leaves both to the selection.
     private Task HandleNodeClickAsync(TItem node)
-        => SelectsCurrent ? Interaction.MakeCurrentAsync(node) : Interaction.ActivateAsync(node);
+        => SelectsCurrent ? MakeCurrentAsync(node) : Interaction.ActivateAsync(node);
+
+    // The row standing for the roots makes them current.
+    private Task MakeCurrentAsync(TItem node)
+        => Interaction.MakeCurrentAsync(IsRootsRow(node) ? default : node);
 
     // The keys act on the node holding the focus, whether on its row or on its marker: the inline arrows open and close, or step into a node and back out; the vertical keys walk the visible nodes; Enter chooses; a letter jumps to the next node starting with it.
     private async Task HandleActionAsync(string action, InputInfo input)
@@ -320,7 +335,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
         switch (action)
         {
-            case OpenAction when View.CanOpen(node) && !View.IsOpen(node):
+            case OpenAction when CanOpen(node) && !View.IsOpen(node):
                 await Interaction.OpenNodeAsync(node);
                 break;
             case OpenAction when GetChildren(node) is { Count: > 0 } children:
@@ -408,7 +423,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
         else if (SelectsCurrent)
         {
-            await Interaction.MakeCurrentAsync(node);
+            await MakeCurrentAsync(node);
         }
 
         await FocusNodeAsync(node);
@@ -417,8 +432,12 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private bool IsSame(TItem node, TItem other)
         => Equals(View.ItemKey(node), View.ItemKey(other));
 
+    // The row standing for the roots is current while they are.
     private bool IsCurrent(TItem node)
-        => View.CurrentItem is { } current && IsSame(current, node);
+        => IsRootsRow(node) ? View.CurrentItem is null : View.CurrentItem is { } current && IsSame(current, node);
+
+    private bool IsRootsRow(TItem node)
+        => RootsRow is { } roots && IsSame(roots, node);
 
     // A plain tree's tab stop is the node last focused in it while that node shows, and a sidebar's the current node, the page the reader
     // is on; either falls back to the current node, then the first visible node.
@@ -444,7 +463,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             return;
         }
 
-        var current = View.CurrentItem is { } item ? focusable.FindIndex(row => IsSame(row.Node, item)) : -1;
+        var current = focusable.FindIndex(row => IsCurrent(row.Node));
 
         _tabStopKey = GetRowKey(focusable[Math.Max(current, 0)]);
     }
@@ -630,7 +649,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     internal int GetNodeState(TItem node)
     {
         var key = View.ItemKey(node);
-        var canOpen = View.CanOpen(node);
+        var canOpen = CanOpen(node);
 
         var own = (IsCurrent(node) ? 1 : 0)
             | (canOpen ? 2 : 0)
@@ -704,7 +723,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
                 var node = nodes[index];
                 visible.Add(new VisibleNode(node, depth, index + 1, nodes.Count, visible.Count));
 
-                if (View.CanOpen(node) && View.IsOpen(node))
+                if (CanOpen(node) && View.IsOpen(node))
                 {
                     Collect(GetChildren(node), depth + 1);
                 }
