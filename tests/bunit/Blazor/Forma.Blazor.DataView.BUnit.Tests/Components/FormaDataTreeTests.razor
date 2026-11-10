@@ -4,6 +4,7 @@
 @using Forma.Framework.Browser.Interop.Focus
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
+@using Forma.Framework.Input.Pointer
 @using Microsoft.AspNetCore.Components.Web
 
 @code {
@@ -556,7 +557,7 @@
 
             // Act — a press on the row, which the press has focused
             await ReportFocusAsync(probe, cut, cut.Find(".forma-data-tree-node"));
-            await router.ClickAsync("tree.choose");
+            await PressNodeAsync(router, cut, 0);
             cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
 
             // Assert — the current node is the selected node of a single-select tree and its tab stop
@@ -614,12 +615,12 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
             await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[1]);
-            await router.ClickAsync("tree.choose");
+            await PressNodeAsync(router, cut, 1);
             cut.WaitForState(() => cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
 
             // Act — a press on Everything
             await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[0]);
-            await router.ClickAsync("tree.choose");
+            await PressNodeAsync(router, cut, 0);
             cut.WaitForState(() => !cut.Markup.Contains("Notes.txt", StringComparison.Ordinal));
 
             // Assert — the roots current, their row selected, the grid showing them
@@ -645,6 +646,60 @@
 
             // Assert
             Assert.Equal(["Documents", "Pictures"], Names(cut));
+        }
+
+        [Fact]
+        public async Task Should_choose_the_node_a_press_landed_on_before_the_focus_it_moved_is_reported()
+        {
+            // Arrange — a sidebar whose rows hold no focus the browser has reported
+            using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
+            Entry? current = null;
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            await ReportFocusAsync(probe, cut, null);
+
+            // Act — a press on Pictures, its route naming the row it landed on
+            await PressNodeAsync(router, cut, 1);
+
+            // Assert
+            Assert.Equal("Pictures", current?.Name);
+        }
+
+        [Fact]
+        public async Task Should_choose_a_sidebar_node_after_the_grid_beside_it_drew_twice_on_its_own()
+        {
+            // Arrange — a sidebar over a grid, Documents open, the rows the sidebar drew left as they were while the grid draws twice
+            using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
+            Entry? current = null;
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            await ReportFocusAsync(probe, cut, null);
+            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
+            var grid = cut.FindComponent<FormaDataGrid<Entry>>();
+            grid.Render();
+            grid.Render();
+
+            // Act — a press on Reports, named by the token its row still carries
+            await PressNodeAsync(router, cut, 1);
+
+            // Assert
+            Assert.Equal("Reports", current?.Name);
         }
 
         [Fact]
@@ -1869,6 +1924,10 @@
 
         return cut.InvokeAsync(() => (Task)report.Invoke(virtualizer, [offset, viewport, itemSize])!);
     }
+
+    // Presses a node's row the way the input router reports it, naming the row by the token it carries.
+    private static Task PressNodeAsync(InputRouterProbe router, IRenderedComponent<IComponent> cut, int index)
+        => router.RouteAsync("tree.choose", new InputPointerInfo { Type = "click", Item = cut.FindAll(".forma-data-tree-node")[index].GetAttribute("data-tree-node") });
 
     // Presses a row the way the selection behavior reports it, by the token the row carries.
     private static Task PressRowAsync(IRenderedComponent<IComponent> cut, int index)

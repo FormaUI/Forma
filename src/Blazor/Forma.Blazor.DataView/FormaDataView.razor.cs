@@ -1046,6 +1046,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         ArgumentNullException.ThrowIfNull(registration);
 
         _registrations.Remove(registration);
+        _itemTokens.EndPasses(registration.Viewport);
     }
 
     /// <inheritdoc />
@@ -1087,8 +1088,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         => IsVirtualizing ? ActiveViewport as IDataViewPositions<TItem> : null;
 
     /// <inheritdoc />
-    public void BeginItemPass()
-        => _itemTokens.BeginPass();
+    public void BeginItemPass(IDataViewViewport view)
+        => _itemTokens.BeginPass(view);
 
     /// <inheritdoc />
     public bool IsSelected(TItem item)
@@ -1121,6 +1122,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     public int GetItemToken(TItem item)
         => _itemTokens.GetToken(ItemKey(item), item);
+
+    /// <inheritdoc />
+    public int GetItemToken(TItem item, IDataViewViewport view)
+        => _itemTokens.GetToken(ItemKey(item), item, view);
 
     /// <inheritdoc />
     public Task ToggleGroupAsync(DataViewGroup<TItem> group)

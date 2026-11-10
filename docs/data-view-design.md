@@ -614,7 +614,9 @@ its design.
   are stylesheet work; script is for measurement, the selection gestures the keyboard and
   pointer need, and nothing else.
 - **Nothing allocates per keystroke or per pointer move.** A gesture resolves to an item
-  through the item token table and reports once when it settles.
+  through the item token table and reports once when it settles. The table keeps an item's
+  token while any view draws it, so one view's renders never leave the items another drew
+  unnamed.
 
 ## Accessibility, keyboard and direction
 

@@ -182,6 +182,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - An [`InputProfile`](src/Framework/Forma.Framework.Input/README.md#what-an-action-carries) takes `ItemAttribute`,
   and the `InputInfo` an action carries names, as `Item`, that attribute's value on the nearest element under the
   input that holds it, so an owner learns which item of a list a press landed on.
+- A press on a row of a sidebar [`FormaDataTree`](docs/data-view-design.md#the-tree) chooses the node pressed. A grid
+  beside the tree that drew twice on its own retired the tokens the tree's rows carried, so the press, and the report
+  of the focus it moved, named a node the tree no longer knew and chose nothing; and a press whose focus report
+  reached the tree after it chose the node before. `IDataViewInteraction.BeginItemPass` and
+  `IDataView.GetItemToken` take the view drawing the items, whose passes retire only the tokens it drew.
 - A text field whose edit the [input router](docs/input-router-design.md#a-fields-pending-edit) commits ahead of
   an action it routes reports its change once. The browser reported the same edit again as the field lost the
   focus, so a field's change handlers, `OnChange` among them, ran twice for one edit.

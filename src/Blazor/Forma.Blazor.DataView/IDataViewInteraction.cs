@@ -18,8 +18,9 @@ public interface IDataViewInteraction<TItem>
     /// <remarks>A view drawn afresh under its key registers before the one it replaces is disposed, so the registration it made stands until it removes it, whatever the one it replaced removes.</remarks>
     void UnregisterView(DataViewRegistration registration);
 
-    /// <summary>Starts a pass over the items a view is about to draw.</summary>
-    void BeginItemPass();
+    /// <summary>Starts a pass over the items <paramref name="view"/> is about to draw, letting go of the tokens its pass before last drew that nothing else holds.</summary>
+    /// <param name="view">The view drawing.</param>
+    void BeginItemPass(IDataViewViewport view);
 
     /// <summary>Sorts by <paramref name="sort"/> under <paramref name="name"/>, in <paramref name="direction"/>.</summary>
     /// <param name="name">The name the sort is known and written to the address by.</param>

@@ -209,6 +209,11 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <param name="item">The item on screen.</param>
     int GetItemToken(TItem item);
 
+    /// <summary>The token the selection behavior knows <paramref name="item"/> by, drawn by <paramref name="view"/> in its item passes.</summary>
+    /// <param name="item">The item on screen.</param>
+    /// <param name="view">The view drawing it.</param>
+    int GetItemToken(TItem item, IDataViewViewport view);
+
     /// <summary>Reads one slice of the items.</summary>
     /// <param name="startIndex">The index of the first item asked for.</param>
     /// <param name="count">How many items are asked for.</param>

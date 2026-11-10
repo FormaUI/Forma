@@ -3,39 +3,74 @@ namespace Forma.Blazor.Components.DataView;
 using System.Diagnostics.CodeAnalysis;
 
 /// <summary>The opaque tokens the selection behavior names items on screen by.</summary>
-/// <remarks>Tokens live in two generations: each pass retires the current one, a key seen again keeps its token from the retired generation, and a token resolves through both.</remarks>
+/// <remarks>
+/// A view that renews what it draws in passes, as a grid scrolled through a long set does, holds the keys it drew in its last two passes,
+/// and each pass lets go of the keys its pass before last drew; a key drawn outside every pass is held while the table lasts. A token stays
+/// while anything holds its key, so a key drawn again keeps its token, and one view's passes never retire a token another view drew.
+/// </remarks>
 /// <typeparam name="TItem">The item the handle stands for.</typeparam>
 internal sealed class ItemTokenTable<TItem>
     where TItem : notnull
 {
-    private Dictionary<object, int> _tokensByKey = [];
-    private Dictionary<object, int> _retiredTokensByKey = [];
-    private Dictionary<int, TItem> _itemsByToken = [];
-    private Dictionary<int, TItem> _retiredItemsByToken = [];
+    private readonly Dictionary<object, int> _tokensByKey = [];
+    private readonly Dictionary<int, TItem> _itemsByToken = [];
+    private readonly HashSet<object> _heldKeys = [];
+    private readonly Dictionary<object, Pass> _passes = [];
     private int _nextToken;
 
-    /// <summary>Retires the current generation of tokens and starts a fresh pass.</summary>
-    public void BeginPass()
+    /// <summary>Starts a pass of <paramref name="view"/>, letting go of the keys its pass before last drew that nothing else holds.</summary>
+    /// <param name="view">The view drawing.</param>
+    public void BeginPass(object view)
     {
-        (_retiredTokensByKey, _tokensByKey) = (_tokensByKey, _retiredTokensByKey);
-        (_retiredItemsByToken, _itemsByToken) = (_itemsByToken, _retiredItemsByToken);
-        _tokensByKey.Clear();
-        _itemsByToken.Clear();
-    }
-
-    /// <summary>The token for <paramref name="key"/>.</summary>
-    /// <param name="key">The item's key.</param>
-    /// <param name="item">The item the token stands for.</param>
-    public int GetToken(object key, TItem item)
-    {
-        if (!_tokensByKey.TryGetValue(key, out var token)
-            && !_retiredTokensByKey.TryGetValue(key, out token))
+        if (!_passes.TryGetValue(view, out var pass))
         {
-            token = _nextToken++;
+            _passes[view] = new Pass();
+            return;
         }
 
-        _tokensByKey[key] = token;
+        var released = pass.Retired;
+        pass.Retired = pass.Current;
+        pass.Current = [];
+        ReleaseUnheld(released);
+    }
+
+    /// <summary>Ends the passes of <paramref name="view"/>, letting go of the keys they drew that nothing else holds.</summary>
+    /// <param name="view">The view that went.</param>
+    public void EndPasses(object view)
+    {
+        if (_passes.Remove(view, out var pass))
+        {
+            ReleaseUnheld([.. pass.Current, .. pass.Retired]);
+        }
+    }
+
+    /// <summary>The token for <paramref name="key"/>, drawn by <paramref name="view"/> in its passes, or outside every pass where null.</summary>
+    /// <param name="key">The item's key.</param>
+    /// <param name="item">The item the token stands for.</param>
+    /// <param name="view">The view drawing it in its passes.</param>
+    public int GetToken(object key, TItem item, object? view = null)
+    {
+        if (!_tokensByKey.TryGetValue(key, out var token))
+        {
+            token = _nextToken++;
+            _tokensByKey[key] = token;
+        }
+
         _itemsByToken[token] = item;
+
+        if (view is null)
+        {
+            _heldKeys.Add(key);
+        }
+        else
+        {
+            if (!_passes.TryGetValue(view, out var pass))
+            {
+                _passes[view] = pass = new Pass();
+            }
+
+            pass.Current.Add(key);
+        }
 
         return token;
     }
@@ -44,6 +79,27 @@ internal sealed class ItemTokenTable<TItem>
     /// <param name="token">The token to resolve.</param>
     /// <param name="item">The item the token stands for.</param>
     public bool TryGetItem(int token, [MaybeNullWhen(false)] out TItem item)
-        => _itemsByToken.TryGetValue(token, out item)
-            || _retiredItemsByToken.TryGetValue(token, out item);
+        => _itemsByToken.TryGetValue(token, out item);
+
+    private void ReleaseUnheld(IEnumerable<object> keys)
+    {
+        foreach (var key in keys)
+        {
+            if (!IsHeld(key) && _tokensByKey.Remove(key, out var token))
+            {
+                _itemsByToken.Remove(token);
+            }
+        }
+    }
+
+    private bool IsHeld(object key)
+        => _heldKeys.Contains(key) || _passes.Values.Any(pass => pass.Current.Contains(key) || pass.Retired.Contains(key));
+
+    /// <summary>The keys a view drew in its pass under way and the one before.</summary>
+    private sealed class Pass
+    {
+        public HashSet<object> Current { get; set; } = [];
+
+        public HashSet<object> Retired { get; set; } = [];
+    }
 }

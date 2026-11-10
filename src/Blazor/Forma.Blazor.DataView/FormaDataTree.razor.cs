@@ -13,6 +13,7 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Click;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
+using Forma.Framework.Input.Pointer;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -225,7 +226,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             routes.Add(new InputRoute(ChooseAction, new KeyBinding("Enter"), new ClickBinding { Button = 0 }));
         }
 
-        return new InputProfile { InputRoutes = routes };
+        return new InputProfile { InputRoutes = routes, ItemAttribute = FocusOptions.ItemAttribute };
     }
 
     /// <inheritdoc />
@@ -328,7 +329,9 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     // The keys act on the node holding the focus, whether on its row or on its marker: the inline arrows open and close, or step into a node and back out; the vertical keys walk the visible nodes; Enter chooses; a letter jumps to the next node starting with it.
     private async Task HandleActionAsync(string action, InputInfo input)
     {
-        if (_focusedNode is not { } node)
+        // A press acts on the node it landed on, and on none where it landed on none, since the report of the focus it moved can arrive after
+        // it; a key acts on the node holding the focus, which the tree moves ahead of the browser's reports.
+        if ((input is InputPointerInfo ? GetPressedNode(input) : _focusedNode) is not { } node)
         {
             return;
         }
@@ -677,6 +680,12 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
             StateHasChanged();
         });
+
+    // The node a press landed on, named by the token its row carries.
+    private TItem? GetPressedNode(InputInfo input)
+        => input.Item is { } item && int.TryParse(item, NumberStyles.None, CultureInfo.InvariantCulture, out var token) && TryGetVisibleNode(token, out var node)
+            ? node
+            : default;
 
     private bool TryGetVisibleNode(int token, [MaybeNullWhen(false)] out TItem node)
     {
