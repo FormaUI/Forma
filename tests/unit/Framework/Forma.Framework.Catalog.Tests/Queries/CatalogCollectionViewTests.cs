@@ -75,6 +75,34 @@ public sealed class CatalogCollectionViewTests
     private static CatalogItem CreateItem(string name, CatalogItemVisibility visibility)
         => new() { Key = name, Name = name, Visibility = visibility, Resource = CreateFile(name) };
 
+    [Theory]
+    [InlineData(CatalogSortDirection.Ascending)]
+    [InlineData(CatalogSortDirection.Descending)]
+    public void Should_order_the_items_the_sort_ties_by_their_keys_ascending_in_either_direction(CatalogSortDirection direction)
+    {
+        // Arrange — three items of one size, given out of key order, and a larger one
+        var view = new CatalogCollectionView(GetTypeNameKindLabel, () => CultureInfo.InvariantCulture)
+        {
+            Source =
+            [
+                new CatalogItem { Key = "b", Name = "Second", Resource = CreateFile("second.png", size: 10) },
+                new CatalogItem { Key = "large", Name = "Large", Resource = CreateFile("large.png", size: 20) },
+                new CatalogItem { Key = "a", Name = "First", Resource = CreateFile("first.png", size: 10) },
+                new CatalogItem { Key = "B", Name = "Capital", Resource = CreateFile("capital.png", size: 10) }
+            ],
+            PageSize = 24,
+            SortField = CatalogSortField.Size
+        };
+
+        // Act
+        view.SortDirection = direction;
+
+        // Assert
+        Assert.Equal(
+            direction == CatalogSortDirection.Ascending ? ["B", "a", "b", "large"] : ["large", "B", "a", "b"],
+            view.MatchingItems.Select(item => item.Key));
+    }
+
     [Fact]
     public void Should_search_names_case_insensitively()
     {

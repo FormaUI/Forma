@@ -33,6 +33,9 @@ internal sealed class ShowcaseImageLibrary : ICatalogProvider
 
         var descending = query.Direction == CatalogSortDirection.Descending;
 
+        // The sort is stable, so the images it ties keep the order of their keys.
+        matching = matching.OrderBy(image => image.Source, StringComparer.Ordinal);
+
         matching = (query.SortBy, descending) switch
         {
             (CatalogSortField.Size, false) => matching.OrderBy(image => image.Size ?? 0),

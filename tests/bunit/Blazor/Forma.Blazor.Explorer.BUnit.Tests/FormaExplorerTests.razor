@@ -2329,7 +2329,7 @@
 
             // Assert
             Assert.Equal(10, cut.FindAll(".forma-explorer-item").Count);
-            Assert.Equal(new CatalogQuery(0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending), Assert.Single(provider.Queries));
+            Assert.Equal(new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending), Assert.Single(provider.Queries));
             Assert.NotNull(cut.Find(".forma-explorer-pagination"));
         }
 
@@ -2488,6 +2488,29 @@
             Assert.True(provider.Queries.Count >= 2);
             Assert.Equal(5, cut.FindAll(".forma-explorer-item").Count);
             Assert.Empty(cut.FindAll(".forma-explorer-scroll[aria-busy='true']"));
+        }
+
+        [Fact]
+        public void Should_name_the_folder_each_request_was_made_for_whatever_folder_the_host_holds_when_it_answers()
+        {
+            // Arrange - a request for Covers held while the host moves to Races
+            using var ctx = new FormaExplorerTests();
+            var folders = CatalogItem.ForAll([new FolderResourceInfo("covers") { Name = "Covers" }, new FolderResourceInfo("races") { Name = "Races" }]);
+            var covers = (ICatalogFolderItem)folders[0];
+            var races = (ICatalogFolderItem)folders[1];
+            var provider = new FakeCatalogProvider([new ImageResourceInfo("https://example.com/a.jpg")])
+            {
+                Gate = new TaskCompletionSource()
+            };
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" Folders="folders" CurrentFolder="covers" />);
+            var explorer = cut.FindComponent<FormaExplorer>();
+
+            // Act
+            explorer.Render(parameters => parameters.Add(p => p.CurrentFolder, races));
+            provider.Gate.SetResult();
+
+            // Assert
+            Assert.Equal(["covers", "races"], provider.Queries.Select(query => query.FolderKey));
         }
 
         [Fact]

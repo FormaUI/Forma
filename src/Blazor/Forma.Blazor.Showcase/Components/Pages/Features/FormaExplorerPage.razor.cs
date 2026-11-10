@@ -13,13 +13,6 @@ using Forma.Framework.Resources;
 /// <summary>Showcase page demonstrating the FormaExplorer component.</summary>
 public sealed partial class FormaExplorerPage
 {
-    // Answers queries from the folder the page holds.
-    private sealed class FolderScopedProvider(SampleMediaStore store, Func<string?> folder) : ICatalogProvider
-    {
-        public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
-            => store.GetPageAsync(folder(), query, cancellationToken);
-    }
-
     private readonly ExplorerItemOptions _fixedFolderOptions = new()
     {
         AllowedFolderCapabilities = CatalogItemCapabilities.Drag
@@ -240,12 +233,12 @@ public sealed partial class FormaExplorerPage
 
         foreach (var key in new[] { "full", "phone", "readonly", "fixedfolders", "nosidebar", "nomenu" })
         {
-            _providers[key] = new FolderScopedProvider(_mediaStore, () => GetCurrentFolder(key)?.Key);
+            _providers[key] = _mediaStore;
         }
 
-        _providers["library"] = new FolderScopedProvider(_libraryStore, () => GetCurrentFolder("library")?.Key);
-        _providers["paged"] = new FolderScopedProvider(_flatStore, () => null);
-        _providers["infinite"] = new FolderScopedProvider(_flatStore, () => null);
+        _providers["library"] = _libraryStore;
+        _providers["paged"] = _flatStore;
+        _providers["infinite"] = _flatStore;
     }
 
     private SampleMediaStore Store(IReadOnlyList<SampleResource> resources)

@@ -37,11 +37,14 @@ callback, and an upload goes into the host's `IFileStore`.
   holds and filters, sorts and pages itself, right for a few hundred items.
   `ItemsProvider` answers one `CatalogQuery` at a time and the explorer holds only
   the items it is showing, so a collection far too large to enumerate stays browsable.
-- **The query carries only what the explorer owns.** The slice, the search box and the
-  sort. The folder is the host's own `CurrentFolder` parameter, which the host's provider
-  already has, and the provider supplies any other filter the host applies itself. A
-  page's total is optional, so a store that cannot count cheaply leaves it out and the
-  explorer drops its pager rather than demanding a number.
+- **The query names its location.** The folder whose files it asks for, captured when the
+  request is issued, null for All Media, with the slice, the search box and the sort, so a
+  provider answers from the query alone, whichever folder the host has moved to by the time
+  it answers. Files the sort ties stand in the ascending ordinal order
+  of their keys in either direction, a rule held items and providers share, so neighboring
+  slices neither repeat nor skip a file. The provider supplies any other filter the host
+  applies itself. A page's total is optional, so a store that cannot count cheaply leaves it
+  out and the explorer drops its pager rather than demanding a number.
 - **Hidden items count in the store's total.** A store that returns hidden items counts
   them; the explorer pages and asks for the next slice in the store's own count, and
   reports the appended slices' progress against the total less the items it left out.

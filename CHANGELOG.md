@@ -45,6 +45,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A secondary or danger [`FormaButton`](docs/component-catalog.md#formabutton) draws its label in its own
   `--button-secondary-text-color` or `--button-danger-text-color` at rest, under the pointer and pressed. It drew it in
   `--button-primary-text-color` there, so a theme giving those labels a color of their own showed it only while busy.
+- A [`CatalogQuery`](src/Framework/Forma.Framework.Catalog/README.md#providers) names the folder its slice was asked
+  for, `FolderKey`, its first parameter, null for every folder's items, captured when the explorer asks; and items the
+  sort ties stand in the ascending ordinal order of their keys in either direction, in the explorer's held items too.
+  A provider that read the host's current folder reads `query.FolderKey` instead, which keeps the folder the slice was
+  asked for when the host moves on before the answer; one that ordered tied items its own way orders them by key; and
+  code constructing a query passes the folder first.
 - On a statically rendered page, [`FormaNumberInput`](docs/component-catalog.md#formanumberinput),
   `FormaCurrencyInput`, `FormaDatePicker`, `FormaTimePicker` and `FormaDateTimePicker` are edited in the browser's own
   number, date, time and date-and-time inputs, and `FormaSelect` and `FormaMultiSelect` in the browser's own list,

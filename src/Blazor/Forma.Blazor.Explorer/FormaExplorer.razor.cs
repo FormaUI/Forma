@@ -412,7 +412,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return;
         }
 
-        // The folder is watched for change rather than sent to the provider, and a move invalidates the items shown.
+        // A move to another folder invalidates the items shown.
         var moved = _queryParameters.Update(ItemsProvider, CurrentFolder?.Key, PageSize);
 
         if (!moved)
@@ -434,6 +434,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
 
         var query = new CatalogQuery(
+            CurrentFolder?.Key,
             append ? _providerItems.FetchedCount : (EffectivePage - 1) * PageSize,
             PageSize,
             string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery,

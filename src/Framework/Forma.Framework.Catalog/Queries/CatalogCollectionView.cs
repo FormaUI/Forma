@@ -190,6 +190,9 @@ public sealed class CatalogCollectionView
                 query = query.Where(item => item.Name.Contains(_searchQuery, StringComparison.OrdinalIgnoreCase));
             }
 
+            // The sort is stable, so the items it ties keep the order of their keys.
+            query = query.OrderBy(item => item.Key, StringComparer.Ordinal);
+
             query = (_sortField, _sortDirection) switch
             {
                 (CatalogSortField.Name, CatalogSortDirection.Ascending) => query.OrderBy(item => item.Name, StringComparer.OrdinalIgnoreCase),

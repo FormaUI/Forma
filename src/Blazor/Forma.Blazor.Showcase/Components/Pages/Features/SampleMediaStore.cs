@@ -8,7 +8,7 @@ using Forma.Framework.Explorer.Items;
 using Forma.Framework.Resources;
 
 /// <summary>An in-memory media store answering after a set latency.</summary>
-public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, TimeSpan latency)
+public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, TimeSpan latency) : ICatalogProvider
 {
     private readonly List<SampleResource> _resources = [.. resources];
 
@@ -21,15 +21,15 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
     /// <summary>Raised once a slice has been answered.</summary>
     public Func<Task>? Queried { get; set; }
 
-    /// <summary>Answers one slice of the folder, where null is all media.</summary>
-    public async ValueTask<CatalogPage> GetPageAsync(string? folder, CatalogQuery query, CancellationToken cancellationToken)
+    /// <inheritdoc />
+    public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
         QueryCount++;
         LastQuery = query;
 
         await Task.Delay(latency, cancellationToken).ConfigureAwait(false);
 
-        IEnumerable<SampleResource> matching = folder is null
+        IEnumerable<SampleResource> matching = query.FolderKey is not { } folder
             ? _resources
             : _resources.Where(resource => resource.Folder == folder);
 
@@ -39,6 +39,9 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
         }
 
         var descending = query.Direction == CatalogSortDirection.Descending;
+
+        // The sort is stable, so the resources it ties keep the order of their keys.
+        matching = matching.OrderBy(resource => resource.Resource.Source, StringComparer.Ordinal);
 
         matching = (query.SortBy, descending) switch
         {

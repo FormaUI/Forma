@@ -81,21 +81,24 @@ public sealed class PhotoItem(Photo photo) : ICatalogItem
 ## Providers
 
 A collection too large to hold in memory is answered one slice at a time by an `ICatalogProvider`.
-`GetItemsAsync` receives a `CatalogQuery` of `Skip`, `Take`, `Search`, `SortBy` and `Direction`,
-and returns a `CatalogPage` of the slice's `Items` and a `TotalCount`. The folder being browsed and
-the kinds accepted are the provider's own to apply. A null `TotalCount` suits a store that cannot
-count cheaply, and a slice shorter than `Take` then ends the collection.
+`GetItemsAsync` receives a `CatalogQuery` of `FolderKey`, `Skip`, `Take`, `Search`, `SortBy` and
+`Direction`, and returns a `CatalogPage` of the slice's `Items` and a `TotalCount`. `FolderKey` names
+the folder the slice was asked for when it was asked, null for every folder's items, so a provider
+answers from the query alone. Items the sort ties stand in the ascending ordinal order of their keys,
+in either direction, so neighboring slices neither repeat nor skip one. The kinds accepted are the
+provider's own to apply. A null `TotalCount` suits a store that cannot count cheaply, and a slice
+shorter than `Take` then ends the collection.
 
 ```csharp
 using Forma.Framework.Catalog;
 using Forma.Framework.Catalog.Queries;
 
-public sealed class PhotoItemsProvider(IPhotoStore store, Func<string?> currentFolderKey) : ICatalogProvider
+public sealed class PhotoItemsProvider(IPhotoStore store) : ICatalogProvider
 {
     public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
         var photos = await store.ListAsync(
-            currentFolderKey(), query.Search, query.SortBy, query.Direction, query.Skip, query.Take, cancellationToken);
+            query.FolderKey, query.Search, query.SortBy, query.Direction, query.Skip, query.Take, cancellationToken);
 
         return new CatalogPage([.. photos.Select(photo => new PhotoItem(photo))], TotalCount: null);
     }

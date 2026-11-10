@@ -45,7 +45,7 @@ public sealed class CatalogProviderItemsTests
         // Arrange
         using var providerItems = new CatalogProviderItems();
         var provider = new ItemProvider([CatalogItem.For(CreateResource("shown")), CreateHiddenItem("hidden")], total: 6);
-        var query = new CatalogQuery(0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var query = new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
 
         // Act
         await providerItems.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, append: false, TestContext.Current.CancellationToken);
@@ -64,8 +64,8 @@ public sealed class CatalogProviderItemsTests
         // Arrange
         using var providerItems = new CatalogProviderItems();
         var provider = new ItemProvider([CatalogItem.For(CreateResource("shown")), CreateHiddenItem("hidden")], total: 6);
-        var firstPage = new CatalogQuery(0, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
-        var secondPage = new CatalogQuery(2, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var firstPage = new CatalogQuery(null, 0, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var secondPage = new CatalogQuery(null, 2, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
         await providerItems.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, append: false, TestContext.Current.CancellationToken);
 
         // Act
@@ -85,7 +85,7 @@ public sealed class CatalogProviderItemsTests
         // Arrange
         using var providerItems = new CatalogProviderItems();
         var provider = new ItemProvider([CatalogItem.For(CreateResource("shown")), CreateHiddenItem("hidden")], total: 6);
-        var query = new CatalogQuery(0, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var query = new CatalogQuery(null, 0, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
         await providerItems.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, append: false, TestContext.Current.CancellationToken);
         await providerItems.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, append: true, TestContext.Current.CancellationToken);
 
@@ -118,7 +118,7 @@ public sealed class CatalogProviderItemsTests
         // Arrange
         using var providerItems = new CatalogProviderItems();
         var provider = new FakeProvider([CreateResource("one"), CreateResource("two"), CreateResource("three")]);
-        var query = new CatalogQuery(0, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var query = new CatalogQuery(null, 0, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
 
         // Act
         await providerItems.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, append: false, TestContext.Current.CancellationToken);
@@ -136,8 +136,8 @@ public sealed class CatalogProviderItemsTests
         // Arrange
         using var providerItems = new CatalogProviderItems();
         var provider = new FakeProvider([CreateResource("one"), CreateResource("two"), CreateResource("three")]);
-        var firstPage = new CatalogQuery(0, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
-        var secondPage = new CatalogQuery(2, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var firstPage = new CatalogQuery(null, 0, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var secondPage = new CatalogQuery(null, 2, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
         await providerItems.FetchAsync(provider, onStateChanged: () => { }, firstPage, filter: null, append: false, TestContext.Current.CancellationToken);
 
         // Act
@@ -155,7 +155,7 @@ public sealed class CatalogProviderItemsTests
         // Arrange
         using var providerItems = new CatalogProviderItems();
         var provider = new FakeProvider([new ImageResourceInfo("/media/photo.png"), new FileResourceInfo("/media/notes.txt")]);
-        var query = new CatalogQuery(0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var query = new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
         var filter = CatalogResourceFilter.Parse("contentType:image");
 
         // Act
@@ -172,7 +172,7 @@ public sealed class CatalogProviderItemsTests
         using var providerItems = new CatalogProviderItems();
         var gate = new TaskCompletionSource();
         var provider = new FakeProvider([CreateResource("one")], gate);
-        var query = new CatalogQuery(0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var query = new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
         var changes = new List<bool>();
 
         // Act
@@ -195,7 +195,7 @@ public sealed class CatalogProviderItemsTests
         var firstGate = new TaskCompletionSource();
         var firstProvider = new FakeProvider([CreateResource("stale")], firstGate);
         var secondProvider = new FakeProvider([CreateResource("fresh")]);
-        var query = new CatalogQuery(0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var query = new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
 
         // Act
         var stale = providerItems.FetchAsync(firstProvider, onStateChanged: () => { }, query, filter: null, append: false, TestContext.Current.CancellationToken);
@@ -215,7 +215,7 @@ public sealed class CatalogProviderItemsTests
         using var caller = new CancellationTokenSource();
         var gate = new TaskCompletionSource();
         var provider = new FakeProvider([CreateResource("late")], gate);
-        var query = new CatalogQuery(0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
+        var query = new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending);
 
         // Act
         var fetch = providerItems.FetchAsync(provider, onStateChanged: () => { }, query, filter: null, append: false, caller.Token);
