@@ -20,7 +20,6 @@
     font-weight: 600;
     line-height: var(--line-height-target);
     white-space: nowrap;
-    color: var(--button-primary-text-color);
     border: 1px solid transparent;
     border-radius: var(--forma-button-radius, var(--radius-sm));
     overflow: hidden;
@@ -70,10 +69,12 @@
 /* ---------- variants ---------- */
 .forma-button-primary {
     background-color: var(--button-primary-color);
+    color: var(--button-primary-text-color);
 }
 
 .forma-button-secondary {
     background-color: var(--button-secondary-color);
+    color: var(--button-secondary-text-color);
 }
 
 .forma-button-tertiary {
@@ -83,6 +84,7 @@
 
 .forma-button-danger {
     background-color: var(--button-danger-color);
+    color: var(--button-danger-text-color);
 }
 
 /* Hooks for a composing component's own state. */

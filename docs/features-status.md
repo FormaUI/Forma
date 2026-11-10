@@ -28,7 +28,6 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
 | [The naming sweep](#the-naming-sweep) | The survey's renames after the add-on assemblies', group by group |
-| [Corrections](#corrections) | The button's secondary and danger label colors |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -177,14 +176,6 @@ Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.4` are published, as [
 ## The naming sweep
 
 A survey finds 629 names of variables, constants and properties that are a bare adjective or participle, or a count named as a plural, where the naming standard names each for the noun it holds. They land in small groups, each reviewed with its call sites; the add-on assemblies' group has landed, and the next group comes for review.
-
-<a id="corrections"></a>
-
-## Corrections
-
-Defects found in implemented components, each fixed in a commit of its own.
-
-- **The button's secondary and danger label colors.** `FormaButton`'s secondary and danger variants draw their label in `--button-primary-text-color` at rest, on hover and on press, and in their own `--button-secondary-text-color` and `--button-danger-text-color` only while busy. The default theme sets all three to white, so the difference shows where a theme gives a secondary or danger label a color of its own. The fix gives each variant its own text color in every state, with a browser check that sets the three apart.
 
 <a id="open-decisions"></a>
 

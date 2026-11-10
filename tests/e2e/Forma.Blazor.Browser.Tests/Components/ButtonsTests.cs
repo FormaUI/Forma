@@ -20,6 +20,29 @@ public sealed class ButtonsTests
             // Assert
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("2");
         }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_draw_each_variant_s_label_in_its_own_color_at_rest_under_the_pointer_and_pressed(string runtime)
+        {
+            // Arrange — a theme giving the primary, secondary and danger labels each a color of its own
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "button");
+            await using var _ = context;
+            (string Id, string Color)[] variants = [("primary", "rgb(250, 250, 250)"), ("secondary", "rgb(17, 34, 51)"), ("danger", "rgb(255, 238, 0)")];
+
+            foreach (var (id, color) in variants)
+            {
+                var button = page.Locator($"#{id}");
+
+                // Act and assert
+                await Assertions.Expect(button).ToHaveCSSAsync("color", color);
+                await button.HoverAsync();
+                await Assertions.Expect(button).ToHaveCSSAsync("color", color);
+                await page.Mouse.DownAsync();
+                await Assertions.Expect(button).ToHaveCSSAsync("color", color);
+                await page.Mouse.UpAsync();
+            }
+        }
     }
 
     public sealed class CloseButton(BrowserHost host)

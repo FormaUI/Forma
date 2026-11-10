@@ -38,6 +38,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   it unmarked.
 - [`FormaInputInspector`](docs/component-catalog.md#formainputinspector) carries `data-forma-inspecting` on its
   element while it listens.
+- A secondary or danger [`FormaButton`](docs/component-catalog.md#formabutton) draws its label in its own
+  `--button-secondary-text-color` or `--button-danger-text-color` at rest, under the pointer and pressed. It drew it in
+  `--button-primary-text-color` there, so a theme giving those labels a color of their own showed it only while busy.
 - On a statically rendered page, [`FormaNumberInput`](docs/component-catalog.md#formanumberinput),
   `FormaCurrencyInput`, `FormaDatePicker`, `FormaTimePicker` and `FormaDateTimePicker` are edited in the browser's own
   number, date, time and date-and-time inputs, and `FormaSelect` and `FormaMultiSelect` in the browser's own list,
