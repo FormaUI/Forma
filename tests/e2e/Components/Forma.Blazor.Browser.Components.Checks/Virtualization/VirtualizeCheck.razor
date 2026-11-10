@@ -1,6 +1,8 @@
 @page "/{Runtime}/virtualize"
 
-@* A thousand items in a box that scrolls, drawn only around its viewport, and a thousand more opening on the three hundredth, which buttons scroll to others. *@
+@* A thousand items in a box that scrolls, drawn only around its viewport; a thousand more opening on the three hundredth, which buttons
+   scroll to others; and a thousand items with a checkbox each, as a list and as the rows of a table, each pinning the item that last
+   took the focus. *@
 <div id="check" style="block-size: 200px; overflow-y: auto">
     <FormaVirtualize TItem="int" Items="Items" ItemKey="@(item => item)" ItemSize="40">
         <ItemContent Context="item">
@@ -17,9 +19,47 @@
 </div>
 <FormaButton Id="to-700" OnClick="@(() => Opened.ScrollToIndexAsync(700, ScrollAlignment.Start))">To 700</FormaButton>
 <FormaButton Id="to-302" OnClick="@(() => Opened.ScrollToIndexAsync(302, ScrollAlignment.Start))">To 302</FormaButton>
+<div id="pinned" style="block-size: 200px; overflow-y: auto">
+    <FormaVirtualize TItem="Entry" Items="_entries" ItemKey="@(entry => entry.Id)" ItemSize="40" PinnedKeys="Pin(_focusedEntry)">
+        <ItemContent Context="entry">
+            <div style="block-size: 40px" @onfocusin="() => _focusedEntry = entry.Id">
+                <FormaCheckBox Id="@($"pinned-{entry.Id}")" @bind-Value="entry.IsDone">Item @entry.Id</FormaCheckBox>
+            </div>
+        </ItemContent>
+    </FormaVirtualize>
+</div>
+<div id="pinned-rows" style="block-size: 200px; overflow-y: auto">
+    <table>
+        <tbody>
+            <FormaVirtualize TItem="Entry" Items="_rows" ItemKey="@(row => row.Id)" ItemSize="40" SpacerElement="tr" PinnedKeys="Pin(_focusedRow)">
+                <ItemContent Context="row">
+                    <tr style="block-size: 40px" @onfocusin="() => _focusedRow = row.Id">
+                        <td>Row @row.Id</td>
+                        <td><FormaCheckBox Id="@($"row-{row.Id}")" aria-label="@($"Row {row.Id} done")" @bind-Value="row.IsDone" /></td>
+                    </tr>
+                </ItemContent>
+            </FormaVirtualize>
+        </tbody>
+    </table>
+</div>
 
 @code {
     private static readonly int[] Items = [.. Enumerable.Range(0, 1000)];
 
+    private readonly Entry[] _entries = [.. Enumerable.Range(0, 1000).Select(id => new Entry(id))];
+    private readonly Entry[] _rows = [.. Enumerable.Range(0, 1000).Select(id => new Entry(id))];
+    private int? _focusedEntry;
+    private int? _focusedRow;
+
     private FormaVirtualize<int> Opened { get; set; } = default!;
+
+    private static IReadOnlyCollection<object> Pin(int? key)
+        => key is { } pinned ? [pinned] : [];
+
+    private sealed class Entry(int id)
+    {
+        public int Id { get; } = id;
+
+        public bool IsDone { get; set; }
+    }
 }
