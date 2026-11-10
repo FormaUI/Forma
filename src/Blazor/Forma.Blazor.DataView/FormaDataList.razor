@@ -26,7 +26,7 @@
         else if (IsVirtualizing)
         {
             <div class="forma-data-list-rows" role="list" aria-label="@_collectionName.Label" aria-labelledby="@_collectionName.LabelledBy">
-                @if (View.TotalItemCount == 0)
+                @if (View.ItemCount == 0)
                 {
                     <div class="forma-data-list-state" role="none">@View.EmptyContent</div>
                 }
@@ -100,5 +100,6 @@
                 }
             </div>
         }
+        @View.MoreContent
     </div>
 }

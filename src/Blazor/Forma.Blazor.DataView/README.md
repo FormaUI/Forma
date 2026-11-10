@@ -60,7 +60,9 @@ first, as shown under "Reading from a database".
 
 `Items` is an `IQueryable<TItem>`, which the engine sorts, counts and pages. A new queryable is a
 new set, which the data view reads again, so a page holds its queryable in a field. `PageSize` sets the
-page, and `EnablePagination="false"` shows every item in one scroll region. `AddressOptions` writes
+page, `EnablePagination="false"` shows every item in one scroll region, and `AppendMode` appends each
+page to the items from a Load More action after them, `Manual`, and as the reader reaches their end,
+`Automatic`. `AddressOptions` writes
 the sort, the page and the active view to the address under its prefix, so a link reproduces them
 and two data views on one page keep theirs apart.
 

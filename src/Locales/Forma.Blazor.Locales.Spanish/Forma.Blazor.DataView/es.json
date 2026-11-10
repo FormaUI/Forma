@@ -5,7 +5,13 @@
     "Loading": "Cargando",
     "Loaded": "Cargado",
     "[$ plural; one: # item; other: # items; $]": "[$ plural; one: # elemento; other: # elementos; $]",
-    "Select all {Count}": "Seleccionar los {Count}"
+    "Select all {Count}": "Seleccionar los {Count}",
+    "Load More": "Cargar Más",
+    "Loading More": "Cargando Más",
+    "Try Again": "Intentar de Nuevo",
+    "More items could not be loaded.": "No se pudieron cargar más elementos.",
+    "Showing {Shown} of {Total}": "Mostrando {Shown} de {Total}",
+    "[$ plural; one: Showing # item; other: Showing # items; $]": "[$ plural; one: Mostrando # elemento; other: Mostrando # elementos; $]"
   },
   "FormaDataGrid": {
     "Select All": "Seleccionar Todo",

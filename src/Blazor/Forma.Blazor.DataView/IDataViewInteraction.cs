@@ -64,6 +64,9 @@ public interface IDataViewInteraction<TItem>
     /// <summary>Selects or clears what the master control reaches in the selection options' mode.</summary>
     Task ToggleMasterAsync();
 
+    /// <summary>Appends the next page where the data view appends, a page already being asked for answering every call.</summary>
+    Task LoadMoreAsync();
+
     /// <summary>Selects every item on screen that can be selected, subject to the selection bounds.</summary>
     Task SelectPageAsync();
 

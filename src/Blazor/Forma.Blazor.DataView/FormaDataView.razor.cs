@@ -13,6 +13,7 @@ using Forma.Framework.Input.Interop;
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Rendering;
 using Microsoft.AspNetCore.Components.Web.Virtualization;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,6 +96,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool _isAttachedToSeek;
     private int _orderVersion;
     private SelectionBounds _selectionBounds;
+    private int _readCount;
+    private int? _positionCount;
+    private bool _hasMore;
+    private Task? _appending;
+    private bool _isLoadingMore;
+    private bool _isAppendFailed;
 
     /// <summary>The items to show, sorted, counted and paged by the data view itself.</summary>
     /// <remarks>A new queryable is a new set, which the data view reads again.</remarks>
@@ -172,6 +179,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>How many items a page holds.</summary>
     [Parameter] public int PageSize { get; set; }
+
+    /// <summary>How the next page arrives: through the paginator, or appended after the items from a Load More action, and also as the reader reaches their end.</summary>
+    [Parameter] public DataViewAppendMode AppendMode { get; set; }
 
     /// <summary>The page showing, counted from one.</summary>
     [Parameter] public int Page { get; set; } = 1;
@@ -438,9 +448,23 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool MasterReachesSet
         => CheckedSelectionOptions.SelectAllMode == SelectAllMode.Direct || IsVirtualizing;
 
-    // A virtualizing view fetches its own slices, so the engine holds no page of items.
-    private bool IsVirtualizing
-        => Virtualize && !EnablePagination;
+    /// <inheritdoc />
+    /// <remarks>A view virtualizes where paging is off or the pages are appended; appended, it lays out the items loaded.</remarks>
+    public bool IsVirtualizing
+        => Virtualize && (!EnablePagination || IsAppending);
+
+    /// <inheritdoc />
+    public int? ItemCount
+        => IsAppending ? _hasLoaded ? _items.Count : null : _totalItemCount;
+
+    /// <inheritdoc />
+    public RenderFragment? MoreContent
+        => IsAppending && _hasLoaded && (_hasMore || _isAppendFailed) ? RenderMore : null;
+
+    // The pages arrive one after another, appended to the items rather than taking their place.
+    private bool IsAppending
+        => EnablePagination && AppendMode != DataViewAppendMode.Off;
+
 
     // Either kind of selection draws a marker on every item, which the keys move among.
     private bool HasMarkers
@@ -455,7 +479,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         => _items.Where(IsSelectable);
 
     private bool ShowsPaginator
-        => EnablePagination && _totalItemCount is { } total && total > PageSize;
+        => EnablePagination && !IsAppending && PagedCount is { } total && total > PageSize;
+
+    // The pages are cut in the source's positions, where its slices leave some out.
+    private int? PagedCount
+        => _positionCount ?? _totalItemCount;
 
     // The offer to select the whole set, once the page is selected and the set holds more than it.
     private bool OffersSet
@@ -468,10 +496,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             && _selectedSet.Count < total;
 
     private bool HasFooter
-        => Status is not null || ShowsPaginator || OffersSet;
+        => Status is not null || ShowsPaginator || OffersSet || IsAppending;
 
     private int StartIndex
-        => EnablePagination ? (_page - 1) * PageSize : 0;
+        => EnablePagination && !IsAppending ? (_page - 1) * PageSize : 0;
 
     private int? SliceSize
         => EnablePagination ? PageSize : null;
@@ -643,7 +671,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         // Only a paged data view that does not virtualize holds a height for a short page.
-        if (EnablePagination && !Virtualize)
+        if (EnablePagination && !Virtualize && !IsAppending)
         {
             if (!_heightReservation.IsAttached)
             {
@@ -688,8 +716,130 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     }
 
     /// <inheritdoc />
+    /// <remarks>While the data view appends, a slice is read from the items loaded.</remarks>
     public ValueTask<DataViewPage<TItem>> LoadSliceAsync(int startIndex, int count, CancellationToken cancellationToken)
-        => LoadSliceCoreAsync(startIndex, count, cancellationToken);
+        => IsAppending
+            ? ValueTask.FromResult(new DataViewPage<TItem>([.. _items.Skip(startIndex).Take(count)], _items.Count))
+            : LoadSliceCoreAsync(startIndex, count, cancellationToken);
+
+    /// <inheritdoc />
+    public Task LoadMoreAsync()
+    {
+        if (!IsAppending || !_hasLoaded || (!_hasMore && !_isAppendFailed))
+        {
+            return Task.CompletedTask;
+        }
+
+        // The action and the reader reaching the end share one request for the page they ask for, while it is on its way.
+        if (_appending is { IsCompleted: false } pending)
+        {
+            return pending;
+        }
+
+        return _appending = AppendAsync();
+    }
+
+    // Appends the next page of the run the last load started; a new run cancels it, so its late answer adds nothing, and a failure keeps
+    // the items shown and offers the page again.
+    private async Task AppendAsync()
+    {
+        var run = _loadCancellation;
+        var token = run?.Token ?? CancellationToken.None;
+        _isAppendFailed = false;
+        _isLoadingMore = true;
+        await NotifyStateAsync();
+
+        try
+        {
+            await ReadOnAsync(run, token);
+        }
+        catch (OperationCanceledException) when (token.IsCancellationRequested)
+        {
+            return;
+        }
+        catch (Exception exception) when (exception is not OutOfMemoryException)
+        {
+            DataViewLog.AppendFailed(Context.Logger, exception, Context.RuntimeId);
+
+            if (ReferenceEquals(_loadCancellation, run))
+            {
+                _isAppendFailed = true;
+            }
+        }
+        finally
+        {
+            if (ReferenceEquals(_loadCancellation, run))
+            {
+                _isLoadingMore = false;
+            }
+        }
+
+        if (!ReferenceEquals(_loadCancellation, run))
+        {
+            return;
+        }
+
+        if (IsVirtualizing && ActiveViewport is { } viewport)
+        {
+            await viewport.RefreshAsync();
+        }
+
+        AnnounceSettled();
+        await NotifyStateAsync();
+    }
+
+    // Reads the next page, and on past a page that read positions it left out whole, so an empty page never ends the run while the
+    // source holds more; a page that read nothing ends it.
+    private async Task ReadOnAsync(CancellationTokenSource? run, CancellationToken token)
+    {
+        do
+        {
+            var page = await LoadSliceCoreAsync(_readCount, PageSize, token, includesGroupSizes: GroupBy is not null);
+
+            if (token.IsCancellationRequested || !ReferenceEquals(_loadCancellation, run))
+            {
+                return;
+            }
+
+            _items = [.. _items, .. page.Items];
+            TakeProgress(page, append: true);
+            _groups = CreateGroups(_items, page.GroupSizes);
+            await SetTotalItemCountAsync(page.TotalCount);
+
+            if (page.Items.Count > 0)
+            {
+                return;
+            }
+        }
+        while (_hasMore);
+    }
+
+    // Takes how far into the source a page read and whether more follows.
+    private void TakeProgress(DataViewPage<TItem> page, bool append)
+    {
+        var read = page.ReadCount ?? page.Items.Count;
+        _readCount = append ? _readCount + read : StartIndex + read;
+        _positionCount = page.PositionCount;
+        var total = page.PositionCount ?? page.TotalCount;
+        _hasMore = read > 0 && (page.HasMore ?? (total is { } count ? _readCount < count : read >= PageSize));
+    }
+
+    // The action after the items, which reads the next page, or offers it again where the last attempt failed.
+    private void RenderMore(RenderTreeBuilder builder)
+    {
+        builder.OpenComponent<FormaDataViewMore>(0);
+        builder.AddComponentParameter(1, nameof(FormaDataViewMore.Busy), _isLoadingMore);
+        builder.AddComponentParameter(2, nameof(FormaDataViewMore.IsFailed), _isAppendFailed);
+        builder.AddComponentParameter(3, nameof(FormaDataViewMore.IsAutomatic), AppendMode == DataViewAppendMode.Automatic);
+        builder.AddComponentParameter(4, nameof(FormaDataViewMore.OnLoadMore), EventCallback.Factory.Create(this, LoadMoreAsync));
+        builder.CloseComponent();
+    }
+
+    // What the footer's status says while the data view appends: how many items show, of how many where the source counts what shows.
+    private void RenderAppendStatus(RenderTreeBuilder builder)
+        => builder.AddContent(0, _totalItemCount is { } total
+            ? L["Showing {Shown} of {Total}", _items.Count, total].Value
+            : L["[$ plural; one: Showing # item; other: Showing # items; $]", _items.Count].Value);
 
     /// <inheritdoc />
     public async Task SortByAsync(string name, DataViewSort<TItem> sort, DataViewSortDirection direction)
@@ -1307,10 +1457,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await base.DisposeAsyncCore();
     }
 
-    private void RenderDefaultEmpty(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+    private void RenderDefaultEmpty(RenderTreeBuilder builder)
         => builder.AddContent(0, L["No items."]);
 
-    private void RenderDefaultLoading(Microsoft.AspNetCore.Components.Rendering.RenderTreeBuilder builder)
+    private void RenderDefaultLoading(RenderTreeBuilder builder)
     {
         builder.OpenComponent<FormaSpinner>(0);
         builder.AddComponentParameter(1, nameof(FormaSpinner.Label), L["Loading"].Value);
@@ -1467,6 +1617,19 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             ? [.. sizes.Where(size => size.Count > 0).Select(size => grouping.CreateGroup(size.Key, [], Context.CultureState) with { Count = size.Count })]
             : [];
 
+    // The groups of the items shown, each counting its whole group where the source says how many each holds.
+    private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<TItem> items, IReadOnlyList<DataViewGroupSize>? sizes)
+    {
+        var groups = CreateGroups(items);
+
+        if (sizes is null)
+        {
+            return groups;
+        }
+
+        return [.. groups.Select(group => sizes.FirstOrDefault(size => Equals(size.Key, group.Key)) is { } size ? group with { Count = size.Count } : group)];
+    }
+
     private List<DataViewGroup<TItem>> CreateGroups(IReadOnlyList<TItem> items)
     {
         if (GroupBy is not { } grouping || items.Count == 0)
@@ -1572,10 +1735,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         try
         {
-            // A virtualizing view fetches its own slices, so the engine asks for the count alone, with the size of each group where it groups.
-            var page = IsVirtualizing
+            // A virtualizing view fetches its own slices, so the engine asks for the count alone, with the size of each group where it groups;
+            // an appending one lays out the pages loaded, so the engine reads the first.
+            var page = IsVirtualizing && !IsAppending
                 ? await LoadSliceCoreAsync(0, 0, cancellation.Token, includesGroupSizes: GroupBy is not null)
-                : await LoadSliceCoreAsync(StartIndex, SliceSize, cancellation.Token);
+                : await LoadSliceCoreAsync(StartIndex, SliceSize, cancellation.Token, includesGroupSizes: GroupBy is not null);
 
             if (cancellation.IsCancellationRequested)
             {
@@ -1583,9 +1747,23 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             }
 
             _items = page.Items;
-            _groups = IsVirtualizing ? CreateGroups(page.GroupSizes) : CreateGroups(page.Items);
+            TakeProgress(page, append: false);
+            _isAppendFailed = false;
+            _isLoadingMore = false;
+            _groups = IsVirtualizing && !IsAppending ? CreateGroups(page.GroupSizes) : CreateGroups(_items, page.GroupSizes);
             _hasLoaded = true;
             await SetTotalItemCountAsync(page.TotalCount);
+
+            // A first page that read positions it left out whole reads on, so the run never opens empty while the source holds more.
+            if (IsAppending && _items.Count == 0 && _hasMore)
+            {
+                await ReadOnAsync(cancellation, cancellation.Token);
+
+                if (cancellation.IsCancellationRequested)
+                {
+                    return;
+                }
+            }
 
             // A virtualizing view fetches its own slices, so it is asked to fetch them again.
             if (IsVirtualizing && ActiveViewport is { } viewport)
@@ -1594,7 +1772,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             }
 
             // A page past the last, because the rows on it went away, gives way to the last page that exists.
-            if (EnablePagination && _page > 1 && _items.Count == 0 && page.TotalCount is { } total)
+            if (EnablePagination && !IsAppending && _page > 1 && _items.Count == 0 && PagedCount is { } total)
             {
                 await MoveToPageAsync(Math.Max(1, (total + PageSize - 1) / PageSize));
                 await LoadAsync(asksNodesAgain: areNodesStale);
@@ -1666,7 +1844,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         {
             var answer = await provider(request);
 
-            return includesGroupSizes && answer.GroupSizes is null
+            // A page that counts its groups only where it can is asked for their sizes too; the virtualizing count asks and requires them.
+            return includesGroupSizes && count == 0 && answer.GroupSizes is null
                 ? throw new InvalidOperationException(
                     $"A grouped data view that virtualizes asks its {nameof(ItemsProvider)} for the size of each group; answer a request whose {nameof(DataViewRequest<>.IncludesGroupSizes)} is set with {nameof(DataViewPage<>.GroupSizes)}.")
                 : answer;

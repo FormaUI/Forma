@@ -24,6 +24,7 @@
             <div class="forma-data-grid-shell">
                 <FormaFreezePane Options="PaneOptions" class="forma-data-grid-pane" FrozenExtentChanged="HandleFrozenExtentChanged">
                     <FormaDataGridTable TItem="TItem" Grid="this" Id="@Id" Class="@RootClass" Style="@RootStyle" @attributes="AdditionalAttributes" @ref="Table" />
+                    @View.MoreContent
                 </FormaFreezePane>
             </div>
         }

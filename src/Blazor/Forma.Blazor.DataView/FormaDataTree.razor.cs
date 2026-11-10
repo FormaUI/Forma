@@ -118,7 +118,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         => !HasSelection;
 
     private bool IsVirtualizing
-        => View.Virtualize && !View.EnablePagination;
+        => View.IsVirtualizing;
 
     /// <inheritdoc />
     public ValueTask ScrollToItemAsync(int index, CancellationToken cancellationToken)

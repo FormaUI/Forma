@@ -2,7 +2,7 @@
 @rendermode InteractiveServer
 
 <h1>FormaDataView</h1>
-<p class="description">@L["This tab shows the states the data view draws around its items: nothing to show, a source still answering, a page that gives way when its items go, a selection its bounds refuse, and a tree node asking for its children."]</p>
+<p class="description">@L["This tab shows the states the data view draws around its items: nothing to show, a source still answering, pages appended as the reader goes, a page that gives way when its items go, a selection its bounds refuse, and a tree node asking for its children."]</p>
 
 <div class="demo-section">
     <h2>@L["Nothing to Show"]</h2>
@@ -39,6 +39,24 @@
                 <Columns>
                     <FormaPropertyColumn Property="@(product => product.Name)" Title="@L["Name"]" Sortable="true" />
                     <FormaPropertyColumn Property="@(product => product.Price)" Title="@L["Price"]" Format="C0" Sortable="true" />
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Pages Appended as You Go"]</h2>
+    <p class="description">@L["A slow provider's pages appended after the items: from Load More, and as the box scrolls to the end of them. A page that fails leaves the items shown and offers itself again."]</p>
+    <div class="demo-box demo-row demo-controls">
+        <FormaButton Variant="ButtonVariant.Secondary" OnClick="FailNextPage">@L["Fail the Next Page"]</FormaButton>
+    </div>
+    <div class="demo-box" style="block-size: 16rem">
+        <FormaDataView TItem="ShowcaseProduct" ItemsProvider="ProvideAppendedAsync" PageSize="3" AppendMode="DataViewAppendMode.Automatic">
+            <FormaDataGrid TItem="ShowcaseProduct">
+                <Columns>
+                    <FormaPropertyColumn Property="@(product => product.Name)" Title="@L["Name"]" />
+                    <FormaPropertyColumn Property="@(product => product.Price)" Title="@L["Price"]" Format="C0" />
                 </Columns>
             </FormaDataGrid>
         </FormaDataView>
@@ -103,6 +121,7 @@
     private IQueryable<ShowcaseProduct>? _shelfItems;
 
     private FormaDataView<ShowcaseProduct>? _slowDataView;
+    private bool _failsNextPage;
     private FormaDataView<ShowcaseProduct>? _shelfDataView;
     private IReadOnlyList<ShowcaseProduct> _bounded = [DataViewShowcaseProducts.All.First()];
     private string? _refusal;
@@ -124,6 +143,24 @@
 
         return new DataViewPage<ShowcaseProduct>([.. request.Count is { } count ? slice.Take(count) : slice], DataViewShowcaseProducts.All.Count());
     }
+
+    // Answers a page after a delay, or fails the one the reader asked to fail.
+    private async ValueTask<DataViewPage<ShowcaseProduct>> ProvideAppendedAsync(DataViewRequest<ShowcaseProduct> request)
+    {
+        await Task.Delay(SlowAnswer, request.CancellationToken);
+
+        if (_failsNextPage && request.StartIndex > 0)
+        {
+            _failsNextPage = false;
+
+            throw new InvalidOperationException("The showcase failed this page on purpose.");
+        }
+
+        return await ProvideSlowlyAsync(request);
+    }
+
+    private void FailNextPage()
+        => _failsNextPage = true;
 
     // Answers a node's children, or the roots at the top level, after a delay.
     private static async ValueTask<DataViewPage<ShowcaseEntry>> ProvideFolderSlowlyAsync(DataViewRequest<ShowcaseEntry> request)

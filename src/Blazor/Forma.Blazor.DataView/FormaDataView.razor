@@ -30,14 +30,14 @@
         <div class="forma-data-view-footer">
             @if (ShowsPaginator)
             {
-                <FormaPagination TotalItems="@(TotalItemCount ?? 0)"
+                <FormaPagination TotalItems="@(PagedCount ?? 0)"
                                  PageSize="PageSize"
                                  CurrentPage="@_page"
                                  Options="PaginationOptions"
                                  OnPageChanged="HandlePageChangedAsync" />
             }
 
-            <div class="forma-data-view-status" role="status">@Status</div>
+            <div class="forma-data-view-status" role="status">@(Status ?? (IsAppending && _items.Count > 0 ? RenderAppendStatus : null))</div>
 
             @if (OffersSet)
             {

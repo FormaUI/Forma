@@ -149,7 +149,7 @@
                 <td colspan="@Grid.ColumnCount" class="forma-data-grid-state-cell">@View.LoadingContent</td>
             </tr>
         }
-        else if (View.Virtualize && !View.EnablePagination && View.TotalItemCount != 0)
+        else if (View.IsVirtualizing && View.ItemCount != 0)
         {
             @* A row is one item, or a group's heading where the data view groups. *@
             <FormaVirtualize @ref="Virtualizer"

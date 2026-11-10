@@ -84,6 +84,15 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>The name of the active sort, where null means the items stand in the source's own order.</summary>
     string? SortName { get; }
 
+    /// <summary>Whether a view renders only the items near the scroll viewport, which it reads a slice at a time.</summary>
+    bool IsVirtualizing { get; }
+
+    /// <summary>How many items a view lays out: the whole set's where the data view counts it, the items loaded so far while it appends.</summary>
+    int? ItemCount { get; }
+
+    /// <summary>What a view draws after its items while the data view appends: the action loading the next page, which the reader reaching the end also starts.</summary>
+    RenderFragment? MoreContent { get; }
+
     /// <summary>Whether a sort always applies, so a header turns a sort's direction rather than clearing it.</summary>
     bool RequiresSort { get; }
 

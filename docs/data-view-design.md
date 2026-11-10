@@ -160,7 +160,11 @@ count, the sort and a cancellation token, which can apply its sort to a queryabl
 provider holds or hand over the sorted properties for a query the provider writes itself,
 and that returns a **page**: the items and the total, or no total where the store cannot
 count cheaply, in which case the engine drops its pager and pages by the items it
-received. A request superseded by a newer one is canceled rather than ignored, and the
+received. A request names the source's positions it starts at and reads, and a page says
+how many positions it read where its slice leaves some out, whether more follow where it
+cannot count, and how many positions the source holds where that differs from how many
+items it shows; the pages are cut in positions, so a short or empty page is a page, and only
+a total of what shows is shown as one. A request superseded by a newer one is canceled rather than ignored, and the
 newest answer is the one shown. `RefreshDataAsync` asks the source again for the items
 being shown, a tree's open nodes among them, which is how a host reports that the records
 changed; a page that no longer exists, because the last items on it were deleted, gives way
@@ -255,6 +259,16 @@ A page change scrolls the items back to their top. Turning paging off shows ever
 one scroll region and returns to the first page, so a page number left behind means
 nothing later.
 
+`AppendMode` appends the pages instead: each one joins the items after the last, from a
+Load More action the views draw after their items, and, `Automatic`, as the reader reaches
+the end of them. The action and the reader reaching the end share one request for the page
+on its way. A page that fails leaves the items shown and offers itself again, and a new
+source, sort, grouping or current node starts the run again, canceling a page still on its
+way so its late answer adds nothing. A page that read positions it left out whole reads on,
+so the run never stops at an empty page while the source holds more, and a page that read
+nothing ends it. The footer says how many items show, and of how many only where the
+source counts what shows.
+
 Where the caller gives `AddressOptions` a prefix, the sort, the page and the active view
 are written to the address as `{prefix}-sort`, `{prefix}-order`, `{prefix}-page` and
 `{prefix}-view`, read back on navigation, and dropped from the address when they return to
@@ -302,7 +316,8 @@ the height of its items, and inside a bounded shell the items scroll while the p
 parts and the footer stay put. A paged data view holds its region at the height of a full
 page, so a short last page does not shrink it.
 
-`Virtualize` is for the bounded case with paging off: the engine renders only the items
+`Virtualize` is for the bounded case with paging off or appended, appended over the items
+loaded so far, reading on by the source's positions: the engine renders only the items
 near the viewport through `FormaVirtualize`, in units the view names,
 a row for the grid and the list, a row of cards for the cards, with `ItemHeight` the
 estimate of that unit's height until the virtualizer has measured the units it drew, and

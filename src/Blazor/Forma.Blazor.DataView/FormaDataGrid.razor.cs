@@ -100,7 +100,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     private bool _isRefreshWanted;
 
     private bool IsVirtualizing
-        => View.Virtualize && !View.EnablePagination;
+        => View.IsVirtualizing;
 
     /// <summary>Whether the grid is the view showing.</summary>
     internal bool IsActive

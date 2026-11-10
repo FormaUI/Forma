@@ -414,6 +414,51 @@ public sealed class DataViewTests
         }
     }
 
+    public sealed class DataListAppend(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_append_the_next_page_from_its_action_until_none_is_left(string runtime)
+        {
+            // Arrange — twelve items, five at a time
+            var (context, page) = await OpenAsync(host, runtime, "data-list-append");
+            await using var _ = context;
+            var manual = page.Locator("#manual");
+            var names = manual.Locator(".forma-data-list-item-name");
+            await Assertions.Expect(names).ToHaveCountAsync(5);
+
+            // Act
+            await manual.Locator(".forma-data-view-more button").ClickAsync();
+            await Assertions.Expect(names).ToHaveCountAsync(10);
+            await manual.Locator(".forma-data-view-more button").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(names).ToHaveCountAsync(12);
+            await Assertions.Expect(manual.Locator(".forma-data-view-more")).ToHaveCountAsync(0);
+            await Assertions.Expect(manual.Locator(".forma-data-view-status")).ToHaveTextAsync("Showing 12 of 12");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_append_the_next_page_as_its_box_scrolls_to_the_end_of_its_items(string runtime)
+        {
+            // Arrange — sixty rows, ten at a time, in a box showing a few, its end watched and every page asked for answered
+            var (context, page) = await OpenAsync(host, runtime, "data-list-append");
+            await using var _ = context;
+            var names = page.Locator("#automatic tbody tr.forma-data-grid-row");
+            var more = page.Locator("#automatic .forma-data-view-more");
+            await WaitForObservationAsync(page, "#automatic .forma-data-view-more", "intersection");
+            await Assertions.Expect(more.Locator("button")).Not.ToHaveAttributeAsync("aria-busy", "true");
+            var shown = await names.CountAsync();
+
+            // Act — the end of the items scrolled into view, through whichever box holds it
+            await more.ScrollIntoViewIfNeededAsync();
+
+            // Assert — a page at least, and more where the end of the items stays in view after it
+            await Assertions.Expect(names.Nth(shown + 9)).ToBeAttachedAsync();
+        }
+    }
+
     public sealed class DataSortMenu(BrowserHost host)
     {
         [Theory]

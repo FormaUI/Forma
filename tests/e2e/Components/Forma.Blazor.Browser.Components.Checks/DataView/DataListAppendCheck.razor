@@ -1,0 +1,24 @@
+@page "/{Runtime}/data-list-append"
+@using Forma.Blazor.Components.DataView
+
+@* Twelve items in a list, appended five at a time from the action after them, and sixty rows of a grid, appended ten at a time as the short box they scroll in reaches its end. *@
+<FormaDataView Id="manual" TItem="Row" Items="Few" ItemKey="@(row => row.Name)" ItemName="@(row => row.Name)" PageSize="5" AppendMode="DataViewAppendMode.Manual">
+    <FormaDataList TItem="Row" />
+</FormaDataView>
+<div id="box" style="inline-size: 320px; block-size: 160px; overflow-y: auto">
+    <FormaDataView Id="automatic" TItem="Row" Items="Many" ItemKey="@(row => row.Name)" ItemName="@(row => row.Name)" PageSize="10" AppendMode="DataViewAppendMode.Automatic">
+        <FormaDataGrid TItem="Row">
+            <Columns>
+                <FormaPropertyColumn Property="@(row => row.Name)" Title="Name" />
+            </Columns>
+        </FormaDataGrid>
+    </FormaDataView>
+</div>
+
+@code {
+    private static readonly IQueryable<Row> Few = Enumerable.Range(1, 12).Select(index => new Row($"Item {index}")).ToArray().AsQueryable();
+
+    private static readonly IQueryable<Row> Many = Enumerable.Range(1, 60).Select(index => new Row($"Row {index}")).ToArray().AsQueryable();
+
+    internal sealed record Row(string Name);
+}

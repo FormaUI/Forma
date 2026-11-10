@@ -49,7 +49,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
         => View.ActiveViewKey == ViewKey;
 
     private bool IsVirtualizing
-        => View.Virtualize && !View.EnablePagination;
+        => View.IsVirtualizing;
 
     private string PlaceholderStyle
         => string.Create(CultureInfo.InvariantCulture, $"block-size: {View.ItemHeight}px");

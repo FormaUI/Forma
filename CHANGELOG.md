@@ -94,6 +94,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
   turns its direction rather than clearing it, and a cleared sort returns to the default. A column's
   `IsDefaultSortColumn` is gone; a grid that opened by a column names that column's sort as the data view's
   `DefaultSort`, by the column's sort name.
+- [`FormaDataView`](docs/data-view-design.md#sorting-paging-and-the-address) takes `AppendMode`, which appends each
+  page to the items from a Load More action its views draw after them, and as the reader reaches their end where it
+  is `Automatic`: one request answers both, a failed page is offered again, a new run drops a late page, a page that
+  read positions it left out whole reads on, and the footer says how many items show. A `DataViewPage` says how many
+  positions it read, `ReadCount`, whether more follow, `HasMore`, and how many positions the source holds,
+  `PositionCount`, which the paginator counts pages in. `IDataView` declares `IsVirtualizing`, `ItemCount` and
+  `MoreContent`, and `IDataViewInteraction` declares `LoadMoreAsync`.
 - [`ExplorerContentProvider`](src/Framework/Forma.Framework.Explorer/README.md) answers a location's content, its
   child folders before its files, in either sort direction, under the grouping's leading group of folders, and
   `ExplorerGrouping.Define` leads every grouping with that group. Its slices split at the count of matching folders,

@@ -5,7 +5,13 @@
     "Loading": "טוען",
     "Loaded": "הטעינה הושלמה",
     "[$ plural; one: # item; other: # items; $]": "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]",
-    "Select all {Count}": "בחר את כל ה-{Count}"
+    "Select all {Count}": "בחר את כל ה-{Count}",
+    "Load More": "טעינת עוד",
+    "Loading More": "טוען עוד",
+    "Try Again": "נסה שוב",
+    "More items could not be loaded.": "לא ניתן היה לטעון פריטים נוספים.",
+    "Showing {Shown} of {Total}": "מוצגים {Shown} מתוך {Total}",
+    "[$ plural; one: Showing # item; other: Showing # items; $]": "[$ plural; one: מוצג פריט אחד; two: מוצגים שני פריטים; other: מוצגים # פריטים; $]"
   },
   "FormaDataGrid": {
     "Select All": "בחר הכל",

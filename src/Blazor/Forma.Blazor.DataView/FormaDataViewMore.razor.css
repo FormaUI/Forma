@@ -1,0 +1,19 @@
+/* ============================================================
+   FormaDataViewMore — CSS isolation
+   The action after an appending data view's items, and why the
+   last page it asked for did not arrive.
+   ============================================================ */
+
+.forma-data-view-more {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding-block: var(--space-3);
+}
+
+.forma-data-view-more-failure {
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-sm);
+}

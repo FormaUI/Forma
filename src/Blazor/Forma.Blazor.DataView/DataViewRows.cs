@@ -133,16 +133,16 @@ internal sealed class DataViewRows<TItem>(
     /// <returns>Whether the rows changed.</returns>
     public bool Update()
     {
-        List<(object? Key, int Count, bool IsFolded)> shape = [.. _view.Groups.Select(group => (group.Key, group.Count, _view.IsFolded(group)))];
+        List<(object? Key, int Count, bool IsFolded)> shape = [.. _view.Groups.Select(group => (group.Key, GetLaidOutCount(group), _view.IsFolded(group)))];
 
-        if (_isLaidOut && _shapeTotal == _view.TotalItemCount && _shapeColumns == _columns && shape.SequenceEqual(_shape))
+        if (_isLaidOut && _shapeTotal == _view.ItemCount && _shapeColumns == _columns && shape.SequenceEqual(_shape))
         {
             return false;
         }
 
         _isLaidOut = true;
         _shape = shape;
-        _shapeTotal = _view.TotalItemCount;
+        _shapeTotal = _view.ItemCount;
         _shapeColumns = _columns;
         _segments = [];
         var row = 0;
@@ -153,19 +153,19 @@ internal sealed class DataViewRows<TItem>(
 
             foreach (var group in _view.Groups)
             {
-                var segment = new Segment(row, group, firstItem, group.Count, _view.IsFolded(group));
+                var segment = new Segment(row, group, firstItem, GetLaidOutCount(group), _view.IsFolded(group));
                 _segments.Add(segment);
                 row += segment.GetRowCount(_columns);
-                firstItem += group.Count;
+                firstItem += GetLaidOutCount(group);
             }
         }
-        else if (_view.TotalItemCount is { } total and > 0)
+        else if (_view.ItemCount is { } total and > 0)
         {
             var segment = new Segment(0, null, 0, total, false);
             _segments.Add(segment);
             row = segment.GetRowCount(_columns);
         }
-        else if (_view.TotalItemCount is null)
+        else if (_view.ItemCount is null)
         {
             // A source that cannot count is read as far as it answers; the rows end where a slice comes back short.
             var segment = new Segment(0, null, 0, UncountedItems, false);
@@ -224,7 +224,7 @@ internal sealed class DataViewRows<TItem>(
         var items = await FetchAsync(rows, request.CancellationToken);
         List<DataViewRow<TItem>> answered = [.. rows.Select(row => new DataViewRow<TItem>(row.Group, row.Group is null ? Slice(items, row.FirstItem, row.ItemCount) : [], row.FirstItem))];
 
-        if (_view.TotalItemCount is not null || _view.IsGrouped)
+        if (_view.ItemCount is not null || _view.IsGrouped)
         {
             return Answer(answered, RowCount);
         }
@@ -253,6 +253,10 @@ internal sealed class DataViewRows<TItem>(
 
         return Answer(filled, _publishedRows);
     }
+
+    // A group lays out the items it holds where it holds them, as an appending view's do, and its whole count where it holds none.
+    private static int GetLaidOutCount(DataViewGroup<TItem> group)
+        => group.Items.Count > 0 ? group.Items.Count : group.Count;
 
     // The rows answered are kept to find the focused row's neighbors in; the view draws again where those changed, since it
     // hands the pinned keys to the virtualization as it draws.
@@ -330,7 +334,7 @@ internal sealed class DataViewRows<TItem>(
         => ((_knownItems + _columns - 1) / _columns) + (_isExhausted ? 0 : _continuationRows);
 
     private bool IsUncounted
-        => _view.TotalItemCount is null && !_view.IsGrouped;
+        => _view.ItemCount is null && !_view.IsGrouped;
 
     private bool Publish()
     {
@@ -360,7 +364,7 @@ internal sealed class DataViewRows<TItem>(
     /// <param name="last">Whether the last is asked for rather than the first.</param>
     public int? GetEdgePosition(bool last)
     {
-        if (_view.TotalItemCount is null && !_view.IsGrouped)
+        if (_view.ItemCount is null && !_view.IsGrouped)
         {
             return _knownItems == 0 ? null : last ? _knownItems - 1 : 0;
         }

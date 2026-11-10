@@ -64,7 +64,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
         => View.ActiveViewKey == ViewKey;
 
     private bool IsVirtualizing
-        => View.Virtualize && !View.EnablePagination;
+        => View.IsVirtualizing;
 
     private string PlaceholderStyle
         => string.Create(CultureInfo.InvariantCulture, $"block-size: {View.ItemHeight}px");
