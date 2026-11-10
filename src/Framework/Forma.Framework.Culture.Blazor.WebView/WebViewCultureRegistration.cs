@@ -12,7 +12,9 @@ using Microsoft.Extensions.Logging;
 /// <remarks>
 /// The registration holds the synchronization context the first component initialized in, the web view's UI thread, and posts each
 /// pair to it with the caller's flow suppressed, so the cultures stay on the thread for every event it dispatches after, and the
-/// document follows the pair from there, in the order the coordinator accepted them. The document starts from the accepted pair
+/// document follows the pair from there, in the order the coordinator accepted them; a pair accepted before the document's registration
+/// started, which reaches a web view with no context of its own on the switching thread, is followed once it starts, the latest of any
+/// such pairs alone. The document starts from the accepted pair
 /// under a policy that follows the coordinator, as a standalone app's page starts. A web view whose thread no longer takes work,
 /// or whose document can't follow or leaves a follow unanswered for a minute, the time Blazor Server gives a call into script by
 /// default, leaves the coordinator, as one never disposed after its native window closed does, whose document answers nothing.
@@ -37,8 +39,11 @@ internal sealed class WebViewCultureRegistration(
 {
     private static readonly TimeSpan FollowTimeout = TimeSpan.FromMinutes(1);
 
+    private readonly Lock _documentLock = new();
     private SynchronizationContext? _context;
     private bool _isStarted;
+    private bool _isDocumentStarted;
+    private (CultureInfo Culture, CultureInfo UICulture)? _waitingPair;
     private volatile bool _isReleased;
 
     /// <inheritdoc />
@@ -65,6 +70,8 @@ internal sealed class WebViewCultureRegistration(
             Policy = CulturePublication.GetPolicyAttributes(policy, addressing?.GetMap(new Uri(navigation.BaseUri).AbsolutePath), follows: true, isWebView: true),
             Direction = uiCulture.TextInfo.IsRightToLeft ? "rtl" : "ltr",
         });
+
+        StartFollowing();
     }
 
     /// <summary>Sets the cultures of <paramref name="culture"/> and <paramref name="uiCulture"/> on the web view's UI thread.</summary>
@@ -76,7 +83,7 @@ internal sealed class WebViewCultureRegistration(
         => Post(() =>
         {
             SetCultures(culture, uiCulture);
-            _ = FollowDocumentAsync(culture, uiCulture);
+            FollowDocument(culture, uiCulture);
         });
 
     /// <inheritdoc />
@@ -120,6 +127,37 @@ internal sealed class WebViewCultureRegistration(
         {
             CultureWebViewLog.ThreadStopped(logger, exception);
             Release();
+        }
+    }
+
+    // A pair handed over before the document's registration started waits for it, the latest in place of any before it, and each is
+    // handed to the document under the lock, so the document follows them in the order the coordinator accepted them.
+    private void FollowDocument(CultureInfo culture, CultureInfo uiCulture)
+    {
+        lock (_documentLock)
+        {
+            if (!_isDocumentStarted)
+            {
+                _waitingPair = (culture, uiCulture);
+
+                return;
+            }
+
+            _ = FollowDocumentAsync(culture, uiCulture);
+        }
+    }
+
+    private void StartFollowing()
+    {
+        lock (_documentLock)
+        {
+            _isDocumentStarted = true;
+
+            if (_waitingPair is { } pair)
+            {
+                _waitingPair = null;
+                _ = FollowDocumentAsync(pair.Culture, pair.UICulture);
+            }
         }
     }
 

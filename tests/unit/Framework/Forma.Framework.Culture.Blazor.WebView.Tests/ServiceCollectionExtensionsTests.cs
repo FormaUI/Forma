@@ -210,6 +210,32 @@ public sealed class ServiceCollectionExtensionsTests
         }
 
         [Fact]
+        public async Task Should_have_a_web_view_with_no_context_follow_a_switch_accepted_before_its_document_registered()
+        {
+            // Arrange — on a thread with no synchronization context, the application switches to Hebrew as the web view's start reads
+            // the culture addresses, after the web view registered with the application and before its document registered
+            await using var provider = CreateServices(services =>
+            {
+                services.AddSingleton<ICultureAddressing>(provider => new SwitchingAddressing(provider.GetRequiredService<CultureRouter>(), provider));
+                AddRouting(services);
+            });
+            var addressing = (SwitchingAddressing)provider.GetRequiredService<ICultureAddressing>();
+            // The coordinator reads the map once as it is made, ahead of the switch armed here.
+            _ = provider.GetRequiredService<ICultureSwitch>();
+            addressing.IsArmed = true;
+            var browser = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
+
+            // Act
+            await using var webView = await Task.Run(() => OpenWebView(provider, browser));
+            await addressing.Switch!;
+            var english = CultureInfo.GetCultureInfo("en-US");
+            await SwitchAsync(provider, english, english);
+
+            // Assert — the document followed the switch it missed, and stayed to follow the next
+            Assert.Equal([("he", "he"), ("en-US", "en-US")], browser.Followed);
+        }
+
+        [Fact]
         public async Task Should_apply_a_switch_to_the_state_and_the_process_s_defaults_and_have_every_web_view_s_document_follow_it()
         {
             // Arrange
@@ -627,5 +653,30 @@ public sealed class ServiceCollectionExtensionsTests
     private sealed class WebViewDocument
     {
         public FakeCultureCoordinatorBrowser Browser { get; set; } = default!;
+    }
+
+    /// <summary>Culture routing's addresses, which, once armed, switch the application to Hebrew as a web view's start reads their map.</summary>
+    private sealed class SwitchingAddressing(CultureRouter router, IServiceProvider services) : ICultureAddressing
+    {
+        public bool IsArmed { get; set; }
+
+        public Task? Switch { get; private set; }
+
+        public bool CanAddress(CultureInfo culture, CultureInfo uiCulture)
+            => router.CanAddress(culture, uiCulture);
+
+        public string GetDocumentBase(string root, CultureInfo culture, CultureInfo uiCulture)
+            => router.GetDocumentBase(root, culture, uiCulture);
+
+        public CultureRouteMap GetMap(string root)
+        {
+            if (IsArmed)
+            {
+                IsArmed = false;
+                Switch = services.GetRequiredService<ICultureSwitch>().SwitchAsync(Hebrew, Hebrew);
+            }
+
+            return router.GetMap(root);
+        }
     }
 }
