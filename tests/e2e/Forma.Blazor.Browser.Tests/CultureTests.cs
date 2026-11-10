@@ -109,6 +109,7 @@ public sealed class CultureTests(BrowserHost host)
         await page.Locator("#guard-refuse").ClickAsync();
         await Assertions.Expect(page.Locator("#guard-state")).ToHaveTextAsync("refusing");
         await page.Locator("#switch-state").ClickAsync();
+        await Assertions.Expect(page.Locator("#guard-state")).ToHaveTextAsync("refused");
         await page.Locator("#guard-end").ClickAsync();
         await Assertions.Expect(page.Locator("#guard-state")).ToHaveTextAsync("none");
 

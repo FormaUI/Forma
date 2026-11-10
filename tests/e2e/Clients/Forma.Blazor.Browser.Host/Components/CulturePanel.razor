@@ -6,7 +6,7 @@
 @inject NavigationManager Navigation
 @inject DelayedSwitches Delayed
 
-@* What the culture checks read and press on the Server: the state, text a reader typed, the links to the other culture and to the other pages, switches at once or held until the check releases them, a switch to a pair no route carries, the outcome of the last switch made at once, and a guard on the page's navigations that refuses each or holds it until the check lets it go. *@
+@* What the culture checks read and press on the Server: the state, text a reader typed, the links to the other culture and to the other pages, switches at once or held until the check releases them, a switch to a pair no route carries, the outcome of the last switch made at once, and a guard on the page's navigations that refuses each, showing that it did, or holds it until the check lets it go. *@
 <output id="state">@CultureState.UICulture.Name</output>
 <output id="interactive">@RendererInfo.IsInteractive</output>
 <input id="typed" @bind="_typed" />
@@ -119,13 +119,15 @@
         });
     }
 
-    // A guard refusing every navigation, as one guarding the reader's unsaved work refuses one.
+    // A guard refusing every navigation, as one guarding the reader's unsaved work refuses one, and showing that it refused one.
     private void GuardRefusing()
     {
         EndGuard();
         _guard = Navigation.RegisterLocationChangingHandler(context =>
         {
             context.PreventNavigation();
+            _guardState = "refused";
+            StateHasChanged();
 
             return ValueTask.CompletedTask;
         });
