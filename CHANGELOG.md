@@ -108,6 +108,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   view's own arrangement. `IDataView` declares `Layout`. `IDataViewInteraction.UnregisterView` takes the
   registration a view made, rather than its key, so a view drawn afresh under the same key keeps its registration;
   it lost it as the one it replaced went, which left the data view with no view to show.
+- In a [`FormaDataView`](docs/data-view-design.md#the-views), a list's items, the cards and a tree's nodes draw in
+  their views' styles: a row stands on the target step, a node is indented by its depth, a selected, current,
+  disabled or hovered item shows it, and a group heading over the list's or the cards' groups reads from its start
+  with its count in the supporting tone. They drew unstyled, each drawn outside its view's style scope.
 - [`FormaDataView`](docs/data-view-design.md#hierarchy) takes `InitialOpenKeys`, the keys of the nodes that start
   open, each opened once as the level holding it first loads, so a provider is asked for the branches on the way to
   them alone and a named node the reader closes stays closed. A node that becomes current is revealed in any tree,

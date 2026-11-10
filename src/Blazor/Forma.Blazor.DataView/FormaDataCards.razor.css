@@ -1,10 +1,8 @@
 /* ============================================================
    FormaDataCards — CSS isolation
    Cards packed across the width at the size the view is given,
-   each a thumbnail, a name, the caller's information and its
-   actions, with its selection drawn in the tint and a check
-   beside color; at the compact density the thumbnail and the
-   name alone.
+   grouped under their headings or a row at a time while
+   virtualizing, and the empty and loading states.
    ============================================================ */
 
 .forma-data-cards {
@@ -47,134 +45,6 @@
 
 .forma-data-cards-heading-row {
     padding-block-end: var(--space-2);
-}
-
-.forma-data-card {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid var(--border-subtle-color);
-    border-radius: var(--radius-md);
-    background: var(--forma-data-card-bg-color, var(--input-bg-color));
-    overflow: hidden;
-    cursor: default;
-}
-
-@media (hover: hover) {
-    .forma-data-card:not(.forma-data-card-disabled):hover {
-        border-color: var(--border-emphasis-color);
-        background: var(--forma-data-card-hover-bg-color, var(--hover-bg-color));
-    }
-}
-
-/* A selected card takes the tint and an emphasized border; the check in its corner says so without color. */
-.forma-data-card-selected {
-    border-color: var(--primary-color);
-    background: var(--forma-data-card-selected-bg-color, var(--primary-subtle-color));
-}
-
-.forma-data-card-selected .forma-data-card-name {
-    color: var(--primary-color);
-    font-weight: 700;
-}
-
-.forma-data-card-disabled {
-    color: var(--disabled-text-color);
-    cursor: not-allowed;
-}
-
-/* The thumbnail is a square at the top of the card; dense, it is the card's target, so it stands on the touch step at least. */
-.forma-data-card-thumbnail {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 1;
-    inline-size: 100%;
-    min-block-size: var(--target-size-touch);
-    background: var(--forma-data-card-thumbnail-bg-color, var(--hover-bg-color));
-    overflow: hidden;
-}
-
-/* The box or the check stands in the thumbnail's leading corner. */
-.forma-data-card-lead {
-    position: absolute;
-    inset-block-start: var(--space-2);
-    inset-inline-start: var(--space-2);
-    z-index: 1;
-    display: flex;
-    align-items: center;
-}
-
-/* The marker is collapsed yet focusable, so focusing it scrolls to its card; the box is FormaCheckBox's, reached with ::deep and named
-   by its element as well, so the rule outweighs the box's own size. */
-::deep input.forma-data-card-marker {
-    inline-size: 0;
-    block-size: 0;
-    margin: 0;
-    border: 0;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.forma-data-card-check {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: var(--target-size-sm);
-    block-size: var(--target-size-sm);
-    border-radius: var(--radius-sm);
-    background: var(--primary-color);
-    color: var(--primary-fg-color);
-}
-
-/* The marker carries the focus but cannot show it, so the card draws the ring. */
-.forma-data-card:has(::deep .forma-data-card-marker:focus-visible) {
-    outline: none;
-    box-shadow: var(--focus-ring-inset);
-}
-
-.forma-data-card-info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-1);
-    padding-inline: var(--space-2);
-    padding-block: var(--space-2);
-}
-
-/* Isolated but not self-directed: deriving direction from the name would align a Latin one against the reading direction. */
-.forma-data-card-name {
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    color: var(--text-primary-color);
-    unicode-bidi: isolate;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.forma-data-card-detail {
-    font-size: var(--font-size-xs);
-    color: var(--text-secondary-color);
-}
-
-/* The actions stand in a bar across the card's end. */
-.forma-data-card-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    padding-inline: var(--space-1);
-    padding-block: var(--space-1);
-    border-block-start: 1px solid var(--border-subtle-color);
-}
-
-/* Dense, the info is the name alone on one tight line. */
-.forma-data-cards-dense .forma-data-card-info {
-    padding-block: var(--space-1);
-}
-
-.forma-data-cards-dense .forma-data-card-name {
-    font-size: var(--font-size-xs);
 }
 
 /* The empty and loading states speak in the supporting tone. */

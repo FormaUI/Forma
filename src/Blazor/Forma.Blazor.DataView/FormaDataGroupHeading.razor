@@ -3,8 +3,11 @@
 @typeparam TItem where TItem : notnull
 
 
-<FormaButton Variant="ButtonVariant.Ghost" class="forma-data-group-heading" aria-expanded="@(IsFolded ? "false" : "true")" OnClick="OnToggle">
-    <FormaIcon Icon="@(IsFolded ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" Class="forma-data-group-chevron" />
-    <span class="forma-data-group-name" id="@NameId">@Group.DisplayName</span>
-    <span class="forma-data-group-count">@Group.Count.ToString("N0", Context.CultureState.Culture)</span>
-</FormaButton>
+@* The line is the heading's own element, which its stylesheet's rules reach the button from. *@
+<div class="forma-data-group-heading-line">
+    <FormaButton Variant="ButtonVariant.Ghost" class="forma-data-group-heading" aria-expanded="@(IsFolded ? "false" : "true")" OnClick="OnToggle">
+        <FormaIcon Icon="@(IsFolded ? Glyph.ChevronRight : Glyph.ChevronDown)" Size="IconSize.Small" Class="forma-data-group-chevron" />
+        <span class="forma-data-group-name" id="@NameId">@Group.DisplayName</span>
+        <span class="forma-data-group-count">@Group.Count.ToString("N0", Context.CultureState.Culture)</span>
+    </FormaButton>
+</div>

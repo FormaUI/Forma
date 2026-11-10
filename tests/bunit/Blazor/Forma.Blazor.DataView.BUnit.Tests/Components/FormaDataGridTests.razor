@@ -133,6 +133,27 @@
         }.AsQueryable();
 
         [Fact]
+        public void Should_draw_its_table_rows_and_headers_under_the_grid_s_style_scope()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" Items="CreateProducts()" EnablePagination="false">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-row").Count == 6);
+
+            // Assert
+            Assert.All(cut.FindAll(".forma-data-grid-shell, table, tr.forma-data-grid-row, th"), part => Assert.True(part.HasAttribute("b-forma-data-grid"), part.ClassName));
+        }
+
+        [Fact]
         public void Should_draw_a_heading_with_the_name_and_count_over_each_group()
         {
             // Arrange

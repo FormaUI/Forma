@@ -76,6 +76,23 @@
         }
 
         [Fact]
+        public void Should_draw_each_node_and_its_parts_under_the_tree_s_style_scope()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+
+            // Assert
+            Assert.All(cut.FindAll("[role=treeitem], .forma-data-tree-disclosure, .forma-data-tree-node-name"), part => Assert.True(part.HasAttribute("b-forma-data-tree"), part.ClassName));
+        }
+
+        [Fact]
         public void Should_draw_the_roots_disabled_as_it_renders_before_the_renderer_is_interactive()
         {
             // Arrange

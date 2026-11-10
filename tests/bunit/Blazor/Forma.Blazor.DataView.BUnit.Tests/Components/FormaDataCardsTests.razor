@@ -15,6 +15,23 @@
         }.AsQueryable();
 
         [Fact]
+        public void Should_draw_each_card_and_its_parts_under_the_cards_style_scope()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.All(cut.FindAll("[role=listitem], .forma-data-card-thumbnail, .forma-data-card-name"), part => Assert.True(part.HasAttribute("b-forma-data-cards"), part.ClassName));
+        }
+
+        [Fact]
         public void Should_draw_a_card_per_item_with_its_thumbnail_its_name_its_detail_and_its_actions()
         {
             // Arrange

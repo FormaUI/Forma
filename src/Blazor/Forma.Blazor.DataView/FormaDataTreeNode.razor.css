@@ -1,0 +1,144 @@
+/* ============================================================
+   FormaDataTreeNode — CSS isolation
+   One node: its row on the target step indented by its depth,
+   its disclosure, its marker, its thumbnail and its name; the
+   selected node in the tint with its name emphasized, the
+   current node marked at its start. Shares the tree's scope
+   with the tree that holds it.
+   ============================================================ */
+
+/* A row stands on the small target step, in from its start by one indent per level; dense, on the line of its name alone. */
+.forma-data-tree-node {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    min-block-size: var(--target-size-sm);
+    padding-inline-start: calc(var(--forma-data-tree-depth) * var(--forma-data-tree-indent));
+    padding-inline-end: var(--space-1);
+    border-radius: var(--radius-sm);
+    cursor: default;
+}
+
+.forma-data-tree-dense .forma-data-tree-node {
+    min-block-size: calc(var(--font-size-sm) * var(--line-height-target) + 2 * var(--space-1));
+}
+
+@media (pointer: coarse) {
+    .forma-data-tree-node,
+    .forma-data-tree-dense .forma-data-tree-node {
+        min-block-size: var(--target-size-touch);
+    }
+
+    .forma-data-tree-disclosure {
+        inline-size: var(--target-size-touch);
+        block-size: var(--target-size-touch);
+    }
+}
+
+@media (hover: hover) {
+    .forma-data-tree-node:not(.forma-data-tree-node-disabled):hover {
+        background: var(--forma-data-tree-node-hover-bg-color, var(--hover-bg-color));
+    }
+}
+
+/* A selected node and the current node take the tint and their name's weight; the current node is also marked by a bar at its start beside color. */
+.forma-data-tree-node-selected,
+.forma-data-tree-node-current {
+    background: var(--forma-data-tree-node-selected-bg-color, var(--primary-subtle-color));
+}
+
+.forma-data-tree-node-selected .forma-data-tree-node-name,
+.forma-data-tree-node-current .forma-data-tree-node-name {
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.forma-data-tree-node-current::before {
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: 0;
+    inline-size: 3px;
+    background: var(--primary-color);
+}
+
+.forma-data-tree-node-disabled {
+    color: var(--disabled-text-color);
+    cursor: not-allowed;
+}
+
+/* The disclosure is one small target, or the spinner, or the room either would take, so names line up down a level. */
+.forma-data-tree-disclosure {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--target-size-sm);
+    block-size: var(--target-size-sm);
+    flex-shrink: 0;
+}
+
+/* The button fills its slot, so a press anywhere in it is the button's rather than the row's. */
+::deep .forma-data-tree-disclosure-button {
+    inline-size: 100%;
+    block-size: 100%;
+}
+
+::deep .forma-data-tree-loading .forma-spinner {
+    inline-size: var(--icon-size-sm);
+    block-size: var(--icon-size-sm);
+}
+
+/* The lead holds the box, or the collapsed marker that carries the focus. */
+.forma-data-tree-node-lead {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+/* Holding the collapsed marker alone, the lead stands out of the row's flow, so the row is laid out as it is with no selection. */
+.forma-data-tree-node-lead-collapsed {
+    position: absolute;
+}
+
+/* The marker is collapsed yet focusable; the box is FormaCheckBox's, reached with ::deep and named by its element as well, so the
+   rule outweighs the box's own size. */
+::deep input.forma-data-tree-node-marker {
+    inline-size: 0;
+    block-size: 0;
+    margin: 0;
+    border: 0;
+    opacity: 0;
+    pointer-events: none;
+}
+
+/* The row draws the ring, whether it carries the focus itself or a marker that cannot show it does. */
+.forma-data-tree-node:focus-visible,
+.forma-data-tree-node:has(::deep .forma-data-tree-node-marker:focus-visible) {
+    outline: none;
+    box-shadow: var(--focus-ring-inset);
+}
+
+.forma-data-tree-node-thumbnail {
+    display: flex;
+    flex-shrink: 0;
+}
+
+/* Isolated but not self-directed: deriving direction from the name would align a Latin one against the reading direction. */
+.forma-data-tree-node-name {
+    flex: 1;
+    min-inline-size: 0;
+    font-size: var(--font-size-sm);
+    font-weight: 500;
+    color: var(--text-primary-color);
+    unicode-bidi: isolate;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forma-data-tree-node-detail {
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+}

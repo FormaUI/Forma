@@ -42,6 +42,23 @@
         }
 
         [Fact]
+        public void Should_draw_each_item_and_its_parts_under_the_list_s_style_scope()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.All(cut.FindAll("[role=listitem], .forma-data-list-item-name"), part => Assert.True(part.HasAttribute("b-forma-data-list"), part.ClassName));
+        }
+
+        [Fact]
         public void Should_name_an_item_by_its_own_text_when_no_name_is_given()
         {
             // Arrange
@@ -287,6 +304,27 @@
 
             // Assert — the count, then the rows on screen, each asked for once
             Assert.Equal([(0, 0), (0, 3)], requests);
+        }
+
+        [Fact]
+        public void Should_stand_each_group_s_heading_on_a_line_that_carries_the_heading_s_style_scope()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)" GroupBy="@(DataViewGrouping<Product>.By(product => product.Category))">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-list-item").Count == 3);
+
+            // Assert — the button's own root carries the button's scope, so the heading's rules reach it from the line
+            var lines = cut.FindAll(".forma-data-group-heading-line");
+            Assert.Multiple(
+                () => Assert.Equal(2, lines.Count),
+                () => Assert.All(lines, line => Assert.Contains(line.Attributes, attribute => attribute.Name.StartsWith("b-", StringComparison.Ordinal))),
+                () => Assert.All(lines, line => Assert.NotNull(line.QuerySelector(":scope > .forma-data-group-heading"))));
         }
 
         [Fact]

@@ -1,12 +1,17 @@
 /* ============================================================
    FormaDataGroupHeading — CSS isolation
-   The heading over a group: the library's button, read from its
-   start, with the chevron that folds the group and the count in
-   the supporting tone.
+   The heading over a group: the library's button across the
+   line it stands on, read from its start, with the chevron that
+   folds the group and the count in the supporting tone.
    ============================================================ */
+
+.forma-data-group-heading-line {
+    display: flex;
+}
 
 /* Named with the button's own class, so this rule outranks the button's centering whatever order the bundles load in. */
 ::deep .forma-button.forma-data-group-heading {
+    flex: 1 1 auto;
     justify-content: flex-start;
     gap: var(--space-2);
     padding-inline: var(--space-1);
