@@ -4,7 +4,7 @@
 @using Forma.Framework.Catalog.Requests
 @using Forma.Framework.Resources
 
-@* Two folders and a file in each, every file listed until a folder opens, the folder open and what is dropped on a folder named where the check reads them. *@
+@* Two folders and a file in each, the folders and every file listed until a folder opens, the folder open and what is dropped on a folder named where the check reads them. *@
 <FormaExplorer Id="check" Items="_items" Folders="Folders" CurrentFolder="_currentFolder" OnFolderChanged="OpenFolder" OnDrop="Drop" />
 <output id="result">@(_currentFolder?.Name)</output>
 <output id="dropped">@_dropped</output>

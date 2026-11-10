@@ -15,6 +15,11 @@
 
 @code {
     /// <summary>Drops what is being dragged on the row, as the sidebar's drop zone tells it from the row's key.</summary>
+    // The item a view draws under the name, wherever the location's folders, drawn before its files, put it.
+    private static AngleSharp.Dom.IElement ItemNamed<TComponent>(Bunit.IRenderedComponent<TComponent> cut, string name)
+        where TComponent : Microsoft.AspNetCore.Components.IComponent
+        => cut.FindAll(".forma-explorer-item").Single(item => item.QuerySelector(".forma-explorer-item-name")?.TextContent == name);
+
     private static Task DropOnAsync<TComponent>(Bunit.IRenderedComponent<TComponent> cut, AngleSharp.Dom.IElement row)
         where TComponent : class, Microsoft.AspNetCore.Components.IComponent
         => cut.InvokeAsync(() => cut.FindComponent<FormaExplorerSidebar>().Instance.HandleDropAsync(row.GetAttribute("data-drop-key")));
@@ -620,7 +625,7 @@
                                                 OnDrop="@(req => { dropRequest = req; return Task.CompletedTask; })" />);
 
             // Act - Start drag on item, then drop on folder in sidebar
-            cut.Find(".forma-explorer-item").DragStart();
+            ItemNamed(cut, "photo.jpg").DragStart();
             await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
 
             // Assert
@@ -645,7 +650,7 @@
             var asked = provider.Queries.Count;
 
             // Act
-            cut.Find(".forma-explorer-item").DragStart();
+            ItemNamed(cut, "photo.jpg").DragStart();
             await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
 
             // Assert
@@ -1151,11 +1156,11 @@
                                                 Folders="@(CatalogItem.ForAll([folder]))"
                                                 OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.FindAll(".forma-explorer-item-open")[0].Click();
-            cut.FindAll(".forma-explorer-item-open")[1].Click();
+            ItemNamed(cut, "a.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
+            ItemNamed(cut, "b.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
 
             // Act
-            cut.FindAll(".forma-explorer-item")[0].DragStart();
+            ItemNamed(cut, "a.jpg").DragStart();
             await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
 
             // Assert
@@ -1269,7 +1274,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="@(CatalogItem.ForAll([folder]))" ItemOptions="ExplorerItemOptions.Default" />);
 
             // Assert
-            cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
+            ItemNamed(cut, "cover.jpg").QuerySelector(".forma-explorer-action-bar .forma-dropdown-menu-trigger")!.Click();
             var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
             Assert.Equal(["Preview", "Rename", "Delete"], labels);
             Assert.Single(cut.FindAll(".forma-explorer-new-folder-tool"));
@@ -1650,7 +1655,7 @@
         }
 
         [Fact]
-        public void Should_group_held_items_and_a_providers_alike_across_page_boundaries()
+        public async Task Should_group_held_items_and_a_providers_alike_across_page_boundaries()
         {
             // Arrange - two files the name ties, told apart by their keys, and two either side of the start of the day
             using var ctx = new FormaExplorerTests();
@@ -1671,8 +1676,8 @@
             var provided = ctx.Render(@<FormaExplorer ItemsProvider="provider" GroupField="ExplorerGroupField.DateModified" PageSize="2" />);
 
             // Act - midnight passes after the first page, and each explorer reads its pages one at a time
-            var heldPages = ReadGroupedPages(held, clock, 3);
-            var providedPages = ReadGroupedPages(provided, clock, 3);
+            var heldPages = await ReadGroupedPagesAsync(held, clock, 3);
+            var providedPages = await ReadGroupedPagesAsync(provided, clock, 3);
 
             // Assert
             Assert.Multiple(
@@ -1722,7 +1727,9 @@
         }
 
         // Reads the headings and the items of each page in turn, the clock passing midnight once the first page is read.
-        private static List<List<string>> ReadGroupedPages(IRenderedComponent<ContainerFragment> cut, FakeTimeProvider clock, int count)
+        // Each press's own task says when its page has arrived, since a page asked for supersedes the one before it, whose cancellation resumes
+        // off the renderer.
+        private static async Task<List<List<string>>> ReadGroupedPagesAsync(IRenderedComponent<ContainerFragment> cut, FakeTimeProvider clock, int count)
         {
             List<List<string>> pages = [];
 
@@ -1739,7 +1746,7 @@
 
                 if (page < count - 1)
                 {
-                    cut.Find(".forma-explorer-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+                    await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
                 }
             }
 
@@ -1924,14 +1931,14 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="@(CatalogItem.ForAll([folder]))" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.Find(".forma-explorer-item-open").Click();
-            Assert.NotEmpty(cut.FindAll(".forma-explorer-item-select.is-checked"));
+            ItemNamed(cut, "cover.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
+            Assert.NotEmpty(ItemNamed(cut, "cover.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
 
             // Act
             cut.Find(".forma-explorer-folder-select").Click();
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-explorer-item-select.is-checked"));
+            Assert.Empty(ItemNamed(cut, "cover.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
             Assert.NotEmpty(cut.FindAll(".forma-explorer-folder-select.is-checked"));
             Assert.Equal("1 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim());
         }
@@ -1949,11 +1956,11 @@
             Assert.NotEmpty(cut.FindAll(".forma-explorer-folder-select.is-checked"));
 
             // Act
-            cut.Find(".forma-explorer-item-open").Click();
+            ItemNamed(cut, "cover.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-explorer-folder-select.is-checked"));
-            Assert.NotEmpty(cut.FindAll(".forma-explorer-item-select.is-checked"));
+            Assert.NotEmpty(ItemNamed(cut, "cover.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
             Assert.Equal("1 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim());
         }
 
@@ -2200,7 +2207,7 @@
             await DropOnAsync(cut, rows[0]);
 
             // Act - drag a media item onto a real folder
-            cut.Find(".forma-explorer-item").DragStart();
+            ItemNamed(cut, "a.jpg").DragStart();
             await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[2]);
 
             // Assert
@@ -2222,7 +2229,7 @@
                                                 OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
-            cut.Find(".forma-explorer-item").DragStart();
+            ItemNamed(cut, "a.jpg").DragStart();
             await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[0]);
 
             // Assert
@@ -2275,7 +2282,7 @@
         }
 
         [Fact]
-        public void Should_append_the_next_page_instead_of_replacing_it_when_infinite_scrolling()
+        public async Task Should_append_the_next_page_instead_of_replacing_it_when_infinite_scrolling()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2286,19 +2293,19 @@
                 new ImageResourceInfo("https://example.com/c.jpg")
             ];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" PageSize="2" Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
-            Assert.Empty(cut.FindAll(".forma-explorer-pagination"));
+            Assert.Empty(cut.FindAll(".forma-explorer-footer nav.forma-pagination"));
             Assert.Equal(2, cut.FindAll(".forma-explorer-item").Count);
 
             // Act
-            cut.Find(".forma-explorer-load-more-button").Click();
+            await cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(3, cut.FindAll(".forma-explorer-item").Count);
-            Assert.Empty(cut.FindAll(".forma-explorer-scroll-sentinel"));
+            Assert.Empty(cut.FindAll(".forma-data-view-more"));
         }
 
         [Fact]
-        public void Should_report_how_much_of_the_collection_is_shown_while_infinite_scrolling()
+        public async Task Should_report_how_much_of_the_collection_is_shown_while_infinite_scrolling()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2313,19 +2320,19 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" PageSize="2" Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
 
             // Assert
-            var status = cut.Find(".forma-explorer-scroll-status");
+            var status = cut.Find(".forma-data-view-status");
             Assert.Equal("status", status.GetAttribute("role"));
             Assert.Equal("Showing 2 of 3", status.TextContent.Trim());
 
             // Act
-            cut.Find(".forma-explorer-load-more-button").Click();
+            await cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
 
             // Assert
-            Assert.Equal("Showing 3 of 3", cut.Find(".forma-explorer-scroll-status").TextContent.Trim());
+            Assert.Equal("Showing 3 of 3", cut.Find(".forma-data-view-status").TextContent.Trim());
         }
 
         [Fact]
-        public void Should_replace_the_load_more_button_with_a_sentinel_when_scrolling_automatically()
+        public void Should_watch_the_end_of_the_items_and_still_offer_the_next_page_when_scrolling_automatically()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2341,78 +2348,57 @@
                                                 PageSize="2"
                                                 Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Automatic })" />);
 
-            // Assert
-            Assert.NotNull(cut.Find(".forma-explorer-scroll-sentinel"));
-            Assert.Empty(cut.FindAll(".forma-explorer-load-more-button"));
+            // Assert - the end is watched, and the action stays for a reader who does not scroll to it
+            Assert.NotNull(cut.Find(".forma-data-view-more"));
+            Assert.Single(cut.FindAll(".forma-data-view-more button"));
             Assert.Empty(cut.FindAll(".forma-spinner"));
         }
 
         [Fact]
-        public async Task Should_load_the_next_page_as_the_sentinel_comes_into_view_and_measure_it_afresh()
+        public async Task Should_load_the_next_page_as_the_end_of_the_items_comes_into_view_and_measure_it_afresh()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
             var probe = new DomProbe<IntersectionState>(ctx);
-            IReadOnlyList<ResourceInfo> resources =
-            [
-                new ImageResourceInfo("https://example.com/a.jpg"),
-                new ImageResourceInfo("https://example.com/b.jpg"),
-                new ImageResourceInfo("https://example.com/c.jpg")
-            ];
+            IReadOnlyList<ResourceInfo> resources = [.. new[] { "a", "b", "c", "d", "e" }.Select(name => new ImageResourceInfo($"https://example.com/{name}.jpg"))];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))"
                                                 PageSize="2"
                                                 Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Automatic })" />);
 
-            // Act — the page can leave the sentinel in view, which the observation alone would never report.
+            // Act — the page can leave the end in view, which the observation alone would never report.
             await probe.ReportAsync(new IntersectionState(IsIntersecting: true));
 
-            // Assert
+            // Assert — the watch is asked to measure the end afresh once the page is drawn
             Assert.Multiple(
-                () => Assert.Equal(3, cut.FindAll(".forma-explorer-item").Count),
+                () => Assert.Equal(4, cut.FindAll(".forma-explorer-item").Count),
+                () => Assert.Single(probe.Observations),
                 () => Assert.Single(probe.Watcher.Invocations, invocation => invocation.Identifier == "refresh"));
         }
 
-        // A press turned away renders nothing, so its task, not a render, says it has settled.
+        // The provider resumes off the renderer, so each press's own task says when it has settled.
         [Fact(Timeout = 10_000)]
-        public async Task Should_ignore_a_second_load_while_the_first_page_is_still_arriving()
+        public async Task Should_ask_once_for_a_page_a_second_press_asks_for_while_the_first_is_still_arriving()
         {
-            // Arrange
+            // Arrange - the store holds the second page back
             using var ctx = new FormaExplorerTests();
-            IReadOnlyList<ResourceInfo> resources =
-            [
-                new ImageResourceInfo("https://example.com/a.jpg"),
-                new ImageResourceInfo("https://example.com/b.jpg"),
-                new ImageResourceInfo("https://example.com/c.jpg"),
-                new ImageResourceInfo("https://example.com/d.jpg"),
-                new ImageResourceInfo("https://example.com/e.jpg"),
-                new ImageResourceInfo("https://example.com/f.jpg")
-            ];
-            var pending = new TaskCompletionSource();
-            var requested = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-            var pages = new List<int>();
-            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))"
+            var provider = new FakeCatalogProvider([.. new[] { "a", "b", "c", "d", "e", "f" }
+                .Select(name => new ImageResourceInfo($"https://example.com/{name}.jpg"))]);
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider"
                                                 PageSize="2"
-                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })"
-                                                OnPageChanged="@(page => { pages.Add(page); requested.TrySetResult(); return pending.Task; })" />);
+                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
+            cut.WaitForState(() => cut.FindAll(".forma-explorer-item").Count == 2);
+            provider.Gate = new TaskCompletionSource();
 
-            // Act - a second press lands while the host is still fetching the first
-            var first = cut.Find(".forma-explorer-load-more-button").ClickAsync(new MouseEventArgs());
-            var second = cut.Find(".forma-explorer-load-more-button").ClickAsync(new MouseEventArgs());
-            await requested.Task.WaitAsync(TestContext.Current.CancellationToken);
-            await second.WaitAsync(TestContext.Current.CancellationToken);
+            // Act - a second press lands while the first page is still on its way
+            var first = cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
+            var second = cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
+            provider.Gate.SetResult();
+            await Task.WhenAll(first, second).WaitAsync(TestContext.Current.CancellationToken);
 
-            // Assert - the guard turned the second press away while the first was still parked
+            // Assert - one request answered both presses
             Assert.Multiple(
-                () => Assert.False(first.IsCompleted),
-                () => Assert.Equal([2], pages));
-
-            // Act
-            pending.SetResult();
-            await first;
-            await cut.Find(".forma-explorer-load-more-button").ClickAsync(new MouseEventArgs());
-
-            // Assert
-            Assert.Equal([2, 3], pages);
+                () => Assert.Equal([0, 2], provider.Queries.Select(query => query.Skip)),
+                () => Assert.Equal(["a.jpg", "b.jpg", "c.jpg", "d.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())));
         }
 
         [Fact]
@@ -2429,11 +2415,11 @@
             // Assert
             Assert.Equal(10, cut.FindAll(".forma-explorer-item").Count);
             Assert.Equal(new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending), Assert.Single(provider.Queries));
-            Assert.NotNull(cut.Find(".forma-explorer-pagination"));
+            Assert.NotNull(cut.Find(".forma-explorer-footer nav.forma-pagination"));
         }
 
         [Fact]
-        public void Should_ask_the_provider_for_the_next_slice_when_the_page_changes()
+        public async Task Should_ask_the_provider_for_the_next_slice_when_the_page_changes()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2442,7 +2428,7 @@
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" PageSize="10" />);
 
             // Act
-            cut.Find(".forma-explorer-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(10, provider.Queries[^1].Skip);
@@ -2467,7 +2453,7 @@
         }
 
         [Fact]
-        public void Should_accumulate_provider_slices_while_infinite_scrolling()
+        public async Task Should_accumulate_provider_slices_while_infinite_scrolling()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2482,16 +2468,16 @@
             Assert.Equal(10, cut.FindAll(".forma-explorer-item").Count);
 
             // Act
-            cut.Find(".forma-explorer-load-more-button").Click();
+            await cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(20, cut.FindAll(".forma-explorer-item").Count);
             Assert.Equal(10, provider.Queries[^1].Skip);
-            Assert.Equal("Showing 20 of 50", cut.Find(".forma-explorer-scroll-status").TextContent.Trim());
+            Assert.Equal("Showing 20 of 50", cut.Find(".forma-data-view-status").TextContent.Trim());
         }
 
         [Fact]
-        public void Should_ask_the_provider_for_the_next_slice_past_the_items_it_hid()
+        public async Task Should_ask_the_provider_for_the_next_slice_past_the_items_it_hid()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2505,21 +2491,21 @@
             // Assert - the hidden item is left out, and the store's total, which counts it, is never shown as what is listed
             Assert.Multiple(
                 () => Assert.Equal(["0002.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
-                () => Assert.Equal("Showing 1", cut.Find(".forma-explorer-scroll-status").TextContent.Trim()));
+                () => Assert.Equal("Showing 1 item", cut.Find(".forma-data-view-status").TextContent.Trim()));
 
             // Act
-            cut.Find(".forma-explorer-load-more-button").Click();
+            await cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
 
             // Assert - the next slice starts where the provider's last one ended, and nothing more is offered
             Assert.Multiple(
                 () => Assert.Equal(2, provider.Queries[^1].Skip),
                 () => Assert.Equal(["0002.jpg", "0003.jpg", "0004.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
-                () => Assert.Equal("Showing 3", cut.Find(".forma-explorer-scroll-status").TextContent.Trim()),
-                () => Assert.Empty(cut.FindAll(".forma-explorer-scroll-sentinel")));
+                () => Assert.Equal("Showing 3 items", cut.Find(".forma-data-view-status").TextContent.Trim()),
+                () => Assert.Empty(cut.FindAll(".forma-data-view-more")));
         }
 
         [Fact]
-        public void Should_append_through_a_slice_the_store_answered_with_hidden_items_alone()
+        public async Task Should_append_through_a_slice_the_store_answered_with_hidden_items_alone()
         {
             // Arrange - two shown files, two hidden ones, and one more shown
             using var ctx = new FormaExplorerTests();
@@ -2532,23 +2518,20 @@
                                                 Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })"
                                                 OnPageChanged="@(page => pages.Add(page))" />);
 
-            // Act
-            cut.Find(".forma-explorer-load-more-button").Click();
-            var afterHidden = cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim()).ToList();
-            cut.Find(".forma-explorer-load-more-button").Click();
+            // Act - the slice of hidden items is read through on the way to the next one shown
+            await cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(["a.jpg", "b.jpg"], afterHidden),
                 () => Assert.Equal([0, 2, 4], provider.Queries.Select(query => query.Skip)),
-                () => Assert.Equal([2, 3], pages),
+                () => Assert.Empty(pages),
                 () => Assert.Equal(["a.jpg", "b.jpg", "e.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
-                () => Assert.Equal("Showing 3", cut.Find(".forma-explorer-scroll-status").TextContent.Trim()),
-                () => Assert.Empty(cut.FindAll(".forma-explorer-load-more-button")));
+                () => Assert.Equal("Showing 3 items", cut.Find(".forma-data-view-status").TextContent.Trim()),
+                () => Assert.Empty(cut.FindAll(".forma-data-view-more button")));
         }
 
         [Fact]
-        public void Should_page_past_a_page_the_store_answered_with_hidden_items_alone()
+        public async Task Should_page_past_a_page_the_store_answered_with_hidden_items_alone()
         {
             // Arrange - two shown files, two hidden ones, and one more shown
             using var ctx = new FormaExplorerTests();
@@ -2558,9 +2541,9 @@
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" PageSize="2" />);
 
             // Act
-            cut.Find(".forma-explorer-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
             var hiddenPage = cut.FindAll(".forma-explorer-item").Count;
-            cut.Find(".forma-explorer-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Multiple(
@@ -2569,7 +2552,7 @@
         }
 
         [Fact]
-        public void Should_keep_a_selection_made_on_a_slice_the_provider_no_longer_returns()
+        public async Task Should_keep_a_selection_made_on_a_slice_the_provider_no_longer_returns()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2584,7 +2567,7 @@
             Assert.Single(selected);
 
             // Act - page away from the slice holding the selected resource
-            cut.Find(".forma-explorer-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
             cut.Find(".forma-explorer-item-open").Click();
 
             // Assert
@@ -2657,8 +2640,9 @@
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" Folders="folders" CurrentFolder="covers" />);
             var explorer = cut.FindComponent<FormaExplorer>();
 
-            // Act
+            // Act - the move reaches the store once the request it supersedes is canceled
             explorer.Render(parameters => parameters.Add(p => p.CurrentFolder, races));
+            cut.WaitForState(() => provider.Queries.Count == 2);
             provider.Gate.SetResult();
 
             // Assert
@@ -2666,7 +2650,30 @@
         }
 
         [Fact]
-        public void Should_page_normally_when_infinite_scrolling_is_off()
+        public void Should_show_only_the_folder_moved_to_when_the_folder_left_answers_late()
+        {
+            // Arrange - Covers' files held while the host moves to Races, whose files arrive at once
+            using var ctx = new FormaExplorerTests();
+            var folders = CatalogItem.ForAll([new FolderResourceInfo("covers") { Name = "Covers" }, new FolderResourceInfo("races") { Name = "Races" }]);
+            var provider = new FakeCatalogProvider([]) { Gate = new TaskCompletionSource(), GatedFolderKey = "covers" };
+            provider.FolderResources["covers"] = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            provider.FolderResources["races"] = [new ImageResourceInfo("https://example.com/race.jpg")];
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" Folders="folders" CurrentFolder="@((ICatalogFolderItem)folders[0])" />);
+            var explorer = cut.FindComponent<FormaExplorer>();
+
+            // Act - the move supersedes the request for Covers, whose answer comes after Races'
+            explorer.Render(parameters => parameters.Add(p => p.CurrentFolder, (ICatalogFolderItem)folders[1]));
+            cut.WaitForState(() => cut.FindAll(".forma-explorer-item").Count == 1);
+            provider.Gate.SetResult();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["covers", "races"], provider.Queries.Select(query => query.FolderKey)),
+                () => Assert.Equal(["race.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())));
+        }
+
+        [Fact]
+        public async Task Should_page_normally_when_infinite_scrolling_is_off()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2682,13 +2689,13 @@
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-scroll"));
-            Assert.NotNull(cut.Find(".forma-explorer-pagination"));
-            Assert.Empty(cut.FindAll(".forma-explorer-scroll-sentinel"));
-            Assert.Empty(cut.FindAll(".forma-explorer-scroll-status"));
+            Assert.NotNull(cut.Find(".forma-explorer-footer nav.forma-pagination"));
+            Assert.Empty(cut.FindAll(".forma-data-view-more"));
+            Assert.Equal(string.Empty, cut.Find(".forma-data-view-status").TextContent.Trim());
             Assert.Equal(2, cut.FindAll(".forma-explorer-item").Count);
 
             // Act
-            cut.Find(".forma-explorer-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Single(cut.FindAll(".forma-explorer-item"));
@@ -2710,7 +2717,8 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" PageSize="2" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-explorer-scroll .forma-explorer-pagination"));
+            Assert.Empty(cut.FindAll(".forma-explorer-scroll nav.forma-pagination"));
+            Assert.Single(cut.FindAll(".forma-explorer-footer nav.forma-pagination"));
         }
 
         // Chooses a sort field from the sort menu, completing once the new slice is fetched.

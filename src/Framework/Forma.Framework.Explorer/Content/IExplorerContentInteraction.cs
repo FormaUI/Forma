@@ -27,12 +27,6 @@ public interface IExplorerContentInteraction
     /// <summary>Shows or hides the details view's column header.</summary>
     Task SetDetailsHeaderVisibleAsync(bool isVisible);
 
-    /// <summary>Appends the next page to the shown items.</summary>
-    Task RequestNextPageAsync();
-
-    /// <summary>Shows the page.</summary>
-    Task ChangePageAsync(int page);
-
     /// <summary>Refreshes the explorer's content.</summary>
     Task RefreshAsync();
 }

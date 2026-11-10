@@ -1,8 +1,9 @@
 @namespace Forma.Blazor.Components.Explorer
 @inherits FormaComponentBase
+@using Forma.Blazor.Components.DataView
 
 <div class="forma-explorer-content">
-    <div class="forma-explorer-scroll @(View.IsFetching ? "is-busy" : "")" @ref="_scrollElement" aria-busy="@(View.IsFetching ? "true" : "false")">
+    <div class="forma-explorer-scroll @(View.IsFetching ? "is-busy" : "")" aria-busy="@(View.IsFetching ? "true" : "false")">
         @if (View.VisibleItems.Count == 0)
         {
             <div class="forma-explorer-empty" role="status">
@@ -41,48 +42,12 @@
             }
         }
 
-        @if (IsInfiniteScrolling && View.Paging.HasMorePages)
+        @* The next page is the data view's to load, from its action after the items and as the reader reaches their end. *@
+        @if (View.VisibleItems.Count > 0)
         {
-            <div class="forma-explorer-scroll-sentinel" @ref="_sentinelElement">
-                @if (Configuration.Options.InfiniteScroll == ExplorerInfiniteScrollMode.Automatic)
-                {
-                    @if (_isLoadingPage)
-                    {
-                        <FormaSpinner Label="@L["Loading more media"]" />
-                    }
-                }
-                else
-                {
-                    <FormaButton Variant="ButtonVariant.Ghost" class="forma-explorer-load-more-button" OnClick="LoadNextPageAsync">
-                        <span class="forma-explorer-load-more-icon" aria-hidden="true"><FormaIcon Icon="Glyph.ChevronDown" /></span>
-                        @L["Load More"]
-                    </FormaButton>
-                }
-            </div>
+            @Content.MoreContent
         }
     </div>
 
-    @if (IsInfiniteScrolling && View.VisibleItems.Count > 0)
-    {
-        <div class="forma-explorer-scroll-status" role="status">
-            @if (View.MatchingCount is { } total)
-            {
-                @L["Showing {Shown} of {Total}", View.VisibleItems.Count, total]
-            }
-            else
-            {
-                @L["Showing {Shown}", View.VisibleItems.Count]
-            }
-        </div>
-    }
-
-    @if (View.MatchingCount is not null && View.Paging.PageCount > 1 && !IsInfiniteScrolling)
-    {
-        <div class="forma-explorer-pagination">
-            <FormaPagination TotalItems="View.MatchingCount ?? 0"
-                             PageSize="View.Paging.PageSize"
-                             CurrentPage="View.Paging.EffectivePage"
-                             OnPageChanged="HandlePageChangedAsync" />
-        </div>
-    }
+    <FormaDataViewFooter class="forma-explorer-footer" />
 </div>

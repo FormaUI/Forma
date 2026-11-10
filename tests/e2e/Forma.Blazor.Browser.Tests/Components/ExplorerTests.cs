@@ -5,9 +5,9 @@ public sealed class ExplorerTests
 {
     public sealed class Explorer(BrowserHost host)
     {
-        private static readonly string[] AllFileNames = ["cover.txt", "lap-times.txt"];
+        private static readonly string[] RootItemNames = ["Covers", "Races", "cover.txt", "lap-times.txt"];
 
-        private static readonly string[] RacesFileNames = ["lap-times.txt"];
+        private static readonly string[] RacesItemNames = ["lap-times.txt"];
 
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
@@ -19,14 +19,14 @@ public sealed class ExplorerTests
             var names = page.Locator("#check .forma-explorer-item-name");
             var sidebar = page.Locator("#check .forma-explorer-sidebar");
             var races = sidebar.Locator("[role=treeitem]", new() { HasText = "Races" });
-            await Assertions.Expect(names).ToHaveTextAsync(AllFileNames);
+            await Assertions.Expect(names).ToHaveTextAsync(RootItemNames);
             await Assertions.Expect(races).ToHaveAttributeAsync("aria-selected", "false");
 
             // Act
             await sidebar.GetByRole(AriaRole.Button, new() { Name = "Races", Exact = true }).ClickAsync();
 
             // Assert
-            await Assertions.Expect(names).ToHaveTextAsync(RacesFileNames);
+            await Assertions.Expect(names).ToHaveTextAsync(RacesItemNames);
             await Assertions.Expect(races).ToHaveAttributeAsync("aria-selected", "true");
             await Assertions.Expect(sidebar.Locator("[role=treeitem]", new() { HasText = "All Media" })).ToHaveAttributeAsync("aria-selected", "false");
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Races");
@@ -83,19 +83,19 @@ public sealed class ExplorerTests
             // Arrange
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer-scroll");
             await using var _ = context;
-            var status = page.Locator("#check .forma-explorer-scroll-status");
+            var status = page.Locator("#check .forma-data-view-status");
 
             // The explorer loads its next page while its end lies within 200px of the list's, and how many pages that takes
             // depends on when its tiles reach their height, so the list is read once its end lies beyond that, no page loading.
             await page.WaitForFunctionAsync(
-                "() => { const scroll = document.querySelector('#check .forma-explorer-scroll'); const sentinel = scroll?.querySelector('.forma-explorer-scroll-sentinel'); return sentinel !== null && sentinel !== undefined && sentinel.querySelector('[role=status], .forma-spinner') === null && sentinel.getBoundingClientRect().top - scroll.getBoundingClientRect().bottom > 200; }",
+                "() => { const scroll = document.querySelector('#check .forma-explorer-scroll'); const more = scroll?.querySelector('.forma-data-view-more'); return more !== null && more !== undefined && more.querySelector('[role=status], .forma-spinner') === null && more.getBoundingClientRect().top - scroll.getBoundingClientRect().bottom > 200; }",
                 null,
                 new() { PollingInterval = 100 });
             await Assertions.Expect(status).Not.ToHaveTextAsync("Showing 12 of 12");
 
             // Act — the list scrolled to its end each time a page arrives, until the last has
             await page.WaitForFunctionAsync(
-                "() => { const scroll = document.querySelector('#check .forma-explorer-scroll'); scroll.scrollTop = scroll.scrollHeight; return document.querySelector('#check .forma-explorer-scroll-status')?.textContent.trim() === 'Showing 12 of 12'; }",
+                "() => { const scroll = document.querySelector('#check .forma-explorer-scroll'); scroll.scrollTop = scroll.scrollHeight; return document.querySelector('#check .forma-data-view-status')?.textContent.trim() === 'Showing 12 of 12'; }",
                 null,
                 new() { PollingInterval = 200 });
 

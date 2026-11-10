@@ -17,6 +17,12 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
     /// <summary>The gate each fetch waits on until it is released, where null means a fetch answers at once.</summary>
     public TaskCompletionSource? Gate { get; set; }
 
+    /// <summary>The key of the folder whose fetches alone wait on <see cref="Gate"/>, where null holds every fetch.</summary>
+    public string? GatedFolderKey { get; set; }
+
+    /// <summary>The resources each folder holds, by the folder's key, where a folder it does not name holds the resources the provider was made with.</summary>
+    public Dictionary<string, IReadOnlyList<ResourceInfo>> FolderResources { get; } = new(StringComparer.Ordinal);
+
     /// <summary>Whether the provider reports the total count of the resources that match.</summary>
     public bool ReportsTotal { get; set; } = true;
 
@@ -31,12 +37,12 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
     {
         Queries.Add(query);
 
-        if (Gate is { } gate)
+        if (Gate is { } gate && (GatedFolderKey is null || GatedFolderKey == query.FolderKey))
         {
             await gate.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
         }
 
-        IEnumerable<ResourceInfo> matching = _resources;
+        IEnumerable<ResourceInfo> matching = query.FolderKey is { } folderKey && FolderResources.TryGetValue(folderKey, out var held) ? held : _resources;
 
         if (query.Search is { Length: > 0 } search)
         {

@@ -55,9 +55,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   slice read, `ReadCount`, whether another slice follows, `HasMore`, and, from a store that applied the query's new
   `Filter` and left hidden items out, how many items the whole query lists, `ListedCount`. `FormaExplorer` reads by
   store position through a slice it leaves out whole, appended or paged, and an appending explorer says "Showing X of
-  Y" only from a `ListedCount`, and "Showing X" otherwise. It counted Y as the store's total less the items left out
-  so far, which counted what the slices not yet read would leave out as listed. `CatalogProviderItems.FetchedCount`
-  is `ReadCount`, and `WasFull` and `ListedTotal` give way to `HasMore` and `ListedCount`.
+  Y" only from a `ListedCount`, and "Showing X items" otherwise. It counted Y as the store's total less the items
+  left out so far, which counted what the slices not yet read would leave out as listed.
+  `CatalogProviderItems.FetchedCount` is `ReadCount`, and `WasFull` and `ListedTotal` give way to `HasMore` and
+  `ListedCount`.
 - [`CatalogConstraints`](src/Framework/Forma.Framework.Catalog/README.md#requests-and-constraints) takes
   `AcceptedUploadKinds`, the kinds an upload may add where they differ from the kinds the catalog lists. The
   composer's stored-files dialog lists every kind its `AcceptedResourceKinds` names however few its
@@ -135,6 +136,16 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `ExplorerGrouping.Define` leads every grouping with that group. Its slices split at the count of matching folders,
   so a slice of folders alone asks the file provider nothing. [`CatalogListProvider`](src/Framework/Forma.Framework.Catalog/README.md#building-a-surface)
   answers queries from a list it holds as a held collection is shaped.
+- [`FormaExplorer`](docs/explorer-design.md#the-parts) shows its content through a `FormaDataView`: a location lists
+  its child folders before its files, All Media leading with the top-level folders; its pager, its Load More action
+  and its status are the data view's, under `.forma-explorer-footer`, the action staying beside the watch of the end
+  where `InfiniteScroll` is `Automatic`; and a page appended raises no `OnPageChanged`. A move into another folder
+  clears the selection, and the history records the move only once it lands, so Back or Forward onto a folder that
+  can't be opened leaves the history where it was. It listed files alone, kept the selection across folders, and drew
+  its own `.forma-explorer-pagination`, `.forma-explorer-load-more-button`, `.forma-explorer-scroll-sentinel` and
+  `.forma-explorer-scroll-status`, which a stylesheet addressing them now finds as the data view's `.forma-pagination`,
+  `.forma-data-view-more` and `.forma-data-view-status`. `IExplorerContentView.Paging`, `ExplorerPagingInfo`, and
+  `IExplorerContentInteraction.RequestNextPageAsync` and `ChangePageAsync` are gone, the paging being the data view's.
 - On a statically rendered page, [`FormaNumberInput`](docs/component-catalog.md#formanumberinput),
   `FormaCurrencyInput`, `FormaDatePicker`, `FormaTimePicker` and `FormaDateTimePicker` are edited in the browser's own
   number, date, time and date-and-time inputs, and `FormaSelect` and `FormaMultiSelect` in the browser's own list,

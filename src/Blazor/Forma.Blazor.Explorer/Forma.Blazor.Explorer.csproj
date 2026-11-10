@@ -19,6 +19,11 @@
         <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />
     </ItemGroup>
 
+    <!-- The data view the content and the sidebar are, a package this one depends on. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
+    </ItemGroup>
+
     <!-- The catalog model the component browses and the engine it drives, each a package this one depends on. -->
     <ItemGroup>
         <ProjectReference Include="..\..\Framework\Forma.Framework.Catalog\Forma.Framework.Catalog.csproj" />

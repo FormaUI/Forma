@@ -1,7 +1,7 @@
 /* ============================================================
    FormaExplorerContentArea — CSS isolation
    The pane the views render in: the scrolling media, the empty
-   state, the infinite-scroll sentinel and the pager
+   state, and the data view's next page and footer
    ============================================================ */
 
 /* Fills the backdrop the explorer gives it; the views inside reach its edges, so a header strip runs the backdrop's width. */
@@ -51,73 +51,10 @@
     font-size: var(--font-size-sm);
 }
 
-/* --- Pagination --- */
-/* The pager sits inside the card's inset. */
-.forma-explorer-pagination {
-    display: flex;
+/* --- Footer --- */
+/* The data view's footer, its pager and status, sits inside the card's inset beneath the media. */
+::deep .forma-explorer-footer {
     margin-block-start: var(--space-2);
     padding-inline: var(--space-3);
     padding-block-end: var(--space-3);
-}
-
-.forma-explorer-pagination ::deep .forma-pagination {
-    flex: 1;
-    justify-content: space-between;
-}
-
-/* --- Infinite Scroll --- */
-.forma-explorer-scroll-status {
-    text-align: center;
-    font-size: var(--font-size-xs);
-    color: var(--text-secondary-color);
-}
-
-/* The sentinel, holding the automatic mode's spinner or the manual mode's button. */
-.forma-explorer-scroll-sentinel {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-block-size: calc(var(--target-size-md) + var(--space-2));
-    padding-block-end: var(--space-2);
-}
-
-
-.forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-block-size: var(--target-size-md);
-    padding-inline: var(--space-3);
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-pill);
-    background: var(--input-bg-color);
-    color: var(--text-secondary-color);
-    font-size: var(--font-size-sm);
-    touch-action: manipulation;
-    transition: color 0.15s ease, border-color 0.15s ease, background-color 0.15s ease;
-}
-
-@media (hover: hover) {
-    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button:hover {
-        border-color: var(--primary-color);
-        background: var(--hover-bg-color);
-        color: var(--primary-color);
-    }
-}
-
-.forma-explorer-load-more-icon {
-    font-size: var(--font-size-xs);
-    transition: translate 0.15s ease;
-}
-
-@media (hover: hover) {
-    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button:hover .forma-explorer-load-more-icon {
-        translate: 0 2px;
-    }
-}
-
-@media (pointer: coarse) {
-    .forma-explorer-scroll-sentinel ::deep .forma-explorer-load-more-button {
-        min-block-size: var(--target-size-touch);
-    }
 }

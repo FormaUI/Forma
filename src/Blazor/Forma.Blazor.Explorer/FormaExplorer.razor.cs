@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Explorer;
 
 using System.Globalization;
 
+using Forma.Blazor.Components.DataView;
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Files;
 using Forma.Framework.Catalog;
@@ -197,9 +198,33 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // The grouped field, direction and culture the groups were defined for.
     private (ExplorerGroupField Field, CatalogSortDirection Direction, CultureInfo UICulture)? _groupingBasis;
 
-    private readonly CatalogProviderItems _providerItems = new();
+    // The key an item goes by across reloads, and whether it opens as a folder, the same delegates on every render.
+    private static readonly Func<ICatalogItem, object> ItemKeyOf = static item => item.Key;
 
-    private readonly ExplorerQueryParameters _queryParameters = new();
+    private static readonly Func<ICatalogItem, bool> OpensAsFolder = static item => item is ICatalogFolderItem;
+
+    // What the data view reads the content from, and the provider it is handed, made again when the items, the provider or the folders
+    // the explorer is given change, which the data view reads as a new source.
+    private ExplorerDataViewSource _source = default!;
+
+    private DataViewItemsProvider<ICatalogItem> _contentProvider = default!;
+
+    private (IReadOnlyList<ICatalogItem>? Items, ICatalogProvider? Provider, IReadOnlyList<ICatalogItem>? Folders) _contentBasis;
+
+    // The files of the items the explorer holds, kept while the items are.
+    private CatalogListProvider? _heldProvider;
+
+    private IReadOnlyList<ICatalogItem>? _heldItems;
+
+    private FormaDataView<ICatalogItem>? _dataView;
+
+    // Whether the move under way steps through the history rather than visiting, and whether it reached the folder it stepped to.
+    private bool _isHistoryMove;
+
+    private bool _hasHistoryMoveLanded;
+
+    // The grouping, the sort and the kinds listed the content was last asked in, which the host can change as well as the reader.
+    private (ExplorerGroupField GroupField, CatalogSortField SortField, CatalogSortDirection Direction, CatalogResourceFilter? Filter)? _queriedBasis;
 
     private IReadOnlyList<ExplorerItemAction>? _actions;
 
@@ -258,9 +283,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
-    private int EffectivePage
-        => Math.Clamp(_collection.PageNumber, 1, PageCount);
-
     private ExplorerRenameAction<ICatalogItem>? PendingRename
         => _itemManager.PendingAction as ExplorerRenameAction<ICatalogItem>;
 
@@ -301,59 +323,23 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// are counted against how many items the whole query lists, which only a provider that guarantees it gives.
     /// </remarks>
     private int? MatchingCount
-    {
-        get
+        => ContentView?.TotalItemCount;
+
+    // The content the data view holds, which it reads from the source once it has drawn.
+    private IDataView<ICatalogItem>? ContentView
+        => _dataView;
+
+    private DataViewAppendMode AppendMode
+        => Options.InfiniteScroll switch
         {
-            if (!IsProviderMode)
-            {
-                return _collection.MatchingCount;
-            }
-
-            return IsInfiniteScrolling ? _providerItems.ListedCount : _providerItems.Total;
-        }
-    }
-
-    // Pages are cut in the store's positions, whether they replace one another or are appended.
-    private int PageCount
-        => (IsProviderMode ? _providerItems.Total : MatchingCount) is { } total ? Math.Max(1, (int)Math.Ceiling(total / (double)PageSize)) : 1;
-
-    private bool HasMorePages
-    {
-        get
-        {
-            if (!IsInfiniteScrolling)
-            {
-                return EffectivePage < PageCount;
-            }
-
-            if (!IsProviderMode)
-            {
-                return _collection.HasMorePages;
-            }
-
-            return _providerItems.HasMore;
-        }
-    }
-
-    private bool IsInfiniteScrolling
-        => Options.InfiniteScroll != ExplorerInfiniteScrollMode.Off;
+            ExplorerInfiniteScrollMode.Automatic => DataViewAppendMode.Automatic,
+            ExplorerInfiniteScrollMode.Manual => DataViewAppendMode.Manual,
+            _ => DataViewAppendMode.Off,
+        };
 
     /// <summary>The items on screen.</summary>
     private IReadOnlyList<ICatalogItem> VisibleItems
-    {
-        get
-        {
-            if (IsProviderMode)
-            {
-                return _providerItems.Items;
-            }
-
-            // The held items stand in the groups in force, which reading them defines again where they changed.
-            _ = Grouping;
-
-            return _collection.VisibleItems;
-        }
-    }
+        => ContentView?.Items ?? [];
 
     /// <summary>The groups of the browsing sequence under way, defined again when the grouped field, the direction or the culture changes.</summary>
     private CatalogGrouping? Grouping
@@ -381,33 +367,26 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             Clock.LocalTimeZone,
             Context.CultureState.Culture.DateTimeFormat.FirstDayOfWeek);
         _groupingBasis = (_groupField, _collection.SortDirection, Context.CultureState.UICulture);
-        _collection.Grouping = _grouping;
     }
 
     private string GetKindLabel(CatalogItemKind kind)
         => ExplorerItemLocalization.GetKindLabel(L, kind);
 
-    // Kind groups stand in the order of their labels in the reader's culture, so a provider is asked again in the new order.
+    // Kind groups stand in the order of their labels in the reader's culture, so the content is asked for again in the new order.
     private Task HandleCultureChangedAsync()
-        => IsDisposed || !IsProviderMode || _groupField != ExplorerGroupField.Kind
+        => IsDisposed || _groupField != ExplorerGroupField.Kind
             ? Task.CompletedTask
-            : InvokeAsync(() =>
-            {
-                _collection.PageNumber = 1;
-                StartSequence();
-
-                return QueryAsync(append: false);
-            });
+            : InvokeAsync(RestartContentAsync);
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
         Context.CultureState.Subscribe(HandleCultureChangedAsync);
+        _source = new ExplorerDataViewSource(() => FolderTree, GetFileProvider, CreateContentQuery, () => _collection.Filter);
 
         _collection = new CatalogCollectionView(item => GetKindLabel(item.GetKind()), () => Context.CultureState.UICulture)
         {
             PageNumber = CurrentPage,
-            PageSize = PageSize,
             SortField = SortField,
             SortDirection = SortDirection,
         };
@@ -459,14 +438,17 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
                 $"{nameof(FormaExplorer)} requires exactly one of {nameof(Items)} or {nameof(ItemsProvider)}.");
         }
 
-        _collection.Source = Items ?? [];
-        _collection.PageSize = PageSize;
-        _collection.IsAppending = IsInfiniteScrolling;
-        _collection.Invalidate();
         _folderTree = null;
         _breadcrumbs = null;
 
         _paramStateTracker.Apply();
+
+        // A new list, provider or set of folders is a new source, which the data view asks again, keeping what the reader did.
+        if (_contentProvider is null || !ReferenceEquals(_contentBasis.Items, Items) || !ReferenceEquals(_contentBasis.Provider, ItemsProvider) || !ReferenceEquals(_contentBasis.Folders, Folders))
+        {
+            _contentBasis = (Items, ItemsProvider, Folders);
+            _contentProvider = _source.ProvideAsync;
+        }
 
         _selection.SelectionLimit = Options.MaxSelection;
 
@@ -477,67 +459,86 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
     {
-        if (!IsProviderMode)
+        // A grouping, a sort or kinds listed that the host sets order or narrow the store's answer anew, so the content starts again; the
+        // first parameters are the ones the data view first asks in.
+        if (_queriedBasis is null)
         {
-            return;
+            _queriedBasis = QueryBasis;
         }
-
-        // A move to another folder, or a new grouping the store orders by, invalidates the items shown.
-        var moved = _queryParameters.Update(ItemsProvider, CurrentFolder?.Key, PageSize, _groupField);
-
-        if (!moved)
+        else if (_queriedBasis != QueryBasis)
         {
-            return;
+            await RestartContentAsync();
         }
-
-        _collection.PageNumber = 1;
-        StartSequence();
-
-        await QueryAsync(append: false);
     }
 
-    /// <summary>Fetches a slice from the provider.</summary>
-    private Task QueryAsync(bool append, CancellationToken cancellationToken = default)
+    /// <inheritdoc />
+    protected override void OnAfterRender(bool firstRender)
     {
-        if (ItemsProvider is not { } provider)
+        // The data view announces what it holds as it changes, which the explorer's own parts draw from.
+        if (firstRender && _dataView is IDataView<ICatalogItem> content)
         {
-            return Task.CompletedTask;
+            content.Subscribe(HandleContentChangedAsync);
+        }
+    }
+
+    private Task HandleContentChangedAsync()
+        => InvokeAsync(StateHasChanged);
+
+    // The files of the location, the host's provider's or the items the explorer holds.
+    private ICatalogProvider GetFileProvider()
+    {
+        if (ItemsProvider is { } provider)
+        {
+            return provider;
         }
 
-        var query = new CatalogQuery(
-            CurrentFolder?.Key,
-            append ? _providerItems.ReadCount : (EffectivePage - 1) * PageSize,
-            PageSize,
-            string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery,
-            _collection.SortField,
-            _collection.SortDirection)
+        var items = Items ?? [];
+
+        if (_heldProvider is null || !ReferenceEquals(_heldItems, items))
+        {
+            _heldItems = items;
+            _heldProvider = new CatalogListProvider(items, item => GetKindLabel(item.GetKind()), () => Context.CultureState.UICulture);
+        }
+
+        return _heldProvider;
+    }
+
+    // The query for a location's content, read as the data view asks, so it carries the search, the sort and the groups in force.
+    private CatalogQuery CreateContentQuery(string? folderKey, int skip, int take)
+        => new(folderKey, skip, take, string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery, _collection.SortField, _collection.SortDirection)
         {
             Filter = _collection.Filter,
             Grouping = Grouping,
-            IncludesGroupSizes = Grouping is not null
+            IncludesGroupSizes = Grouping is not null,
         };
 
-        // FetchAsync can resume off the renderer, so its state change is dispatched back onto it.
-        return _providerItems.FetchAsync(provider, onStateChanged: () => InvokeAsync(StateHasChanged), query, _collection.Filter, append, cancellationToken);
-    }
+    private (ExplorerGroupField GroupField, CatalogSortField SortField, CatalogSortDirection Direction, CatalogResourceFilter? Filter) QueryBasis
+        => (_groupField, _collection.SortField, _collection.SortDirection, _collection.Filter);
 
     /// <summary>Reads the items shown again.</summary>
     private Task RefreshProviderAsync()
     {
         StartSequence();
 
-        if (!IsProviderMode)
+        return _dataView?.RefreshDataAsync() ?? Task.CompletedTask;
+    }
+
+    // A new search, sort or grouping starts a browsing sequence of its own on the first page; a move back to the first page reads it
+    // there, and a data view on that page already reads it again.
+    private Task RestartContentAsync()
+    {
+        _queriedBasis = QueryBasis;
+        StartSequence();
+
+        if (_collection.PageNumber != 1)
         {
+            _collection.PageNumber = 1;
+            StateHasChanged();
+
             return Task.CompletedTask;
         }
 
-        // An append would stack a second copy of what is already shown, so a refresh always starts the items again.
-        if (IsInfiniteScrolling)
-        {
-            _collection.PageNumber = 1;
-        }
-
-        return QueryAsync(append: false);
+        return _dataView?.RefreshDataAsync() ?? Task.CompletedTask;
     }
 
     private int RootFolderCount
@@ -695,7 +696,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     ExplorerGroupField IExplorerContentView.GroupField => _groupField;
 
     IReadOnlyList<ExplorerItemGroup> IExplorerContentView.VisibleGroups
-        => ExplorerGrouping.GroupBy(VisibleItems, Grouping, GetKindLabel, IsProviderMode ? _providerItems.GroupSizes : _collection.GroupSizes);
+        => ExplorerGrouping.GroupBy(VisibleItems, Grouping, GetKindLabel, _source.GroupSizes);
 
     bool IExplorerContentView.IsCollapsed(ExplorerItemGroup group)
     {
@@ -710,11 +711,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     IReadOnlyList<ICatalogItem> IExplorerContentView.VisibleItems => VisibleItems;
 
-    bool IExplorerContentView.IsFetching => _providerItems.IsFetching;
+    bool IExplorerContentView.IsFetching => ContentView?.IsBusy ?? true;
 
     int? IExplorerContentView.MatchingCount => MatchingCount;
-
-    ExplorerPagingInfo IExplorerContentView.Paging => new(PageSize, PageCount, EffectivePage, HasMorePages);
 
     string IExplorerSearchView.SearchQuery => _collection.SearchQuery;
 
@@ -767,12 +766,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     Task IExplorerContentInteraction.SetDetailsHeaderVisibleAsync(bool isVisible)
         => RunAsync(() => HandleDetailsHeaderVisibleChangedAsync(isVisible));
-
-    Task IExplorerContentInteraction.RequestNextPageAsync()
-        => RunAsync(HandleNextPageAsync);
-
-    Task IExplorerContentInteraction.ChangePageAsync(int page)
-        => RunAsync(() => HandlePageChangedAsync(page));
 
     Task IExplorerSearchInteraction.SetSearchQueryAsync(string query)
         => RunAsync(() => HandleSearchQueryChangedAsync(query));
@@ -884,11 +877,63 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         if (CanGoBack)
         {
             _history.GoBack();
-            var folder = FolderTree.Find(_history.Current);
-            _collection.PageNumber = 1;
 
-            await OnFolderChanged.InvokeAsync(folder);
+            if (!await MoveThroughHistoryAsync())
+            {
+                _history.GoForward();
+            }
         }
+    }
+
+    // A step back or forward moves into the folder at the history's cursor without visiting it, and reports whether it got there.
+    private async Task<bool> MoveThroughHistoryAsync()
+    {
+        _isHistoryMove = true;
+        _hasHistoryMoveLanded = false;
+
+        try
+        {
+            await MoveToFolderAsync(FolderTree.Find(_history.Current));
+        }
+        finally
+        {
+            _isHistoryMove = false;
+        }
+
+        return _hasHistoryMoveLanded;
+    }
+
+    // Every move goes through the data view's change of location, which the explorer accepts or refuses before anything changes.
+    private Task MoveToFolderAsync(ICatalogFolderItem? folder)
+        => _dataView is { } view ? view.MakeCurrentAsync(folder) : Task.CompletedTask;
+
+    // A file, or a folder the reader may not open, is refused before the location changes.
+    private void HandleCurrentItemChanging(DataViewCurrentItemChange<ICatalogItem> change)
+    {
+        if (change.Item is { } item && (item is not ICatalogFolderItem folder || !folder.Permits(ItemOptions, CatalogItemCapabilities.Open)))
+        {
+            change.Refuse();
+        }
+    }
+
+    // A move that succeeded clears the selection, records the visit unless it stepped through the history, and starts the location's sequence.
+    private async Task HandleCurrentItemChangedAsync(ICatalogItem? item)
+    {
+        var folder = item as ICatalogFolderItem;
+
+        if (_isHistoryMove)
+        {
+            _hasHistoryMoveLanded = true;
+        }
+        else
+        {
+            _history.Visit(folder?.Key);
+        }
+
+        _collection.PageNumber = 1;
+        StartSequence();
+        await ClearSelectionAsync();
+        await OnFolderChanged.InvokeAsync(folder);
     }
 
     private Task ApplyCreateFolderAsync(ICatalogFolderItem? parent, string name)
@@ -918,28 +963,19 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
-    private async Task HandleFolderSelectedAsync(ICatalogFolderItem? folder)
-    {
-        if (CurrentFolder?.Key == folder?.Key || (folder is not null && !folder.Permits(ItemOptions, CatalogItemCapabilities.Open)))
-        {
-            return;
-        }
-
-        _history.Visit(folder?.Key);
-        _collection.PageNumber = 1;
-
-        await OnFolderChanged.InvokeAsync(folder);
-    }
+    private Task HandleFolderSelectedAsync(ICatalogFolderItem? folder)
+        => MoveToFolderAsync(folder);
 
     private async Task HandleForwardAsync()
     {
         if (CanGoForward)
         {
             _history.GoForward();
-            var folder = FolderTree.Find(_history.Current);
-            _collection.PageNumber = 1;
 
-            await OnFolderChanged.InvokeAsync(folder);
+            if (!await MoveThroughHistoryAsync())
+            {
+                _history.GoBack();
+            }
         }
     }
 
@@ -974,24 +1010,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         await RefreshProviderAsync();
     }
 
-    private async Task HandleNextPageAsync()
-    {
-        if (!IsInfiniteScrolling || !HasMorePages)
-        {
-            return;
-        }
-
-        _collection.PageNumber = EffectivePage + 1;
-
-        await QueryAsync(append: true);
-        await OnPageChanged.InvokeAsync(_collection.PageNumber);
-    }
-
     private async Task HandlePageChangedAsync(int page)
     {
         _collection.PageNumber = page;
 
-        await QueryAsync(append: false);
         await OnPageChanged.InvokeAsync(page);
     }
 
@@ -1049,25 +1071,22 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private async Task HandleSearchQueryChangedAsync(string query)
     {
         _collection.SearchQuery = query;
-        _collection.PageNumber = 1;
-        StartSequence();
 
+        // Held items are filtered at once; a provider is asked once the reader pauses, the debouncer resuming off the renderer.
         if (!IsProviderMode)
         {
+            await RestartContentAsync();
             return;
         }
 
-        // The debouncer resumes off the renderer, so the query is dispatched back onto it.
-        await SearchDebouncer.DebounceAsync(token => InvokeAsync(() => QueryAsync(append: false, token)), Options.SearchDebounceDelay);
+        await SearchDebouncer.DebounceAsync(_ => InvokeAsync(RestartContentAsync), Options.SearchDebounceDelay);
     }
 
-    private async Task HandleSortDirectionChangedAsync(CatalogSortDirection direction)
+    private Task HandleSortDirectionChangedAsync(CatalogSortDirection direction)
     {
         _collection.SortDirection = direction;
-        _collection.PageNumber = 1;
-        StartSequence();
 
-        await QueryAsync(append: false);
+        return RestartContentAsync();
     }
 
     private async Task HandleSortFieldChangedAsync(CatalogSortField field)
@@ -1084,10 +1103,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             _collection.SortDirection = CatalogSortDirection.Ascending;
         }
 
-        _collection.PageNumber = 1;
-        StartSequence();
-
-        await QueryAsync(append: false);
+        await RestartContentAsync();
     }
 
     private async Task HandleUpAsync()
@@ -1146,12 +1162,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         _groupField = field;
         _collapsedGroups.Clear();
-        _collection.PageNumber = 1;
-        StartSequence();
 
-        // The store orders by the groups, so a provider is asked for the items again, once, whether or not the host binds the field back.
-        _queryParameters.Update(ItemsProvider, CurrentFolder?.Key, PageSize, _groupField);
-        await QueryAsync(append: false);
+        // The store orders by the groups, so the content is asked for again, once, whether or not the host binds the field back.
+        await RestartContentAsync();
         await GroupFieldChanged.InvokeAsync(field);
     }
 
@@ -1194,6 +1207,11 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return ChangeSelectionAsync(selection => selection.Toggle(item));
         }
 
+        if (item is ICatalogFolderItem folder)
+        {
+            return MoveToFolderAsync(folder);
+        }
+
         if (item.Resource is { } resource && item.Permits(ItemOptions, CatalogItemCapabilities.View))
         {
             OpenPreview(resource);
@@ -1232,7 +1250,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     protected override ValueTask DisposeAsyncCore()
     {
         Context.CultureState.Unsubscribe(HandleCultureChangedAsync);
-        _providerItems.Dispose();
+        (_dataView as IDataView<ICatalogItem>)?.Unsubscribe(HandleContentChangedAsync);
         SearchDebouncer.Cancel();
 
         return base.DisposeAsyncCore();

@@ -1,6 +1,7 @@
 @namespace Forma.Blazor.Components.Explorer
 @inherits FormaElementBase
 @using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.DataView
 @using Forma.Blazor.Components.Feedback
 @using Forma.Blazor.Components.Files
 @using Forma.Framework.Files
@@ -56,7 +57,21 @@
         </div>
     }
 
-    <!-- Main Layout: Sidebar & Content -->
+    <!-- Main Layout: Sidebar & Content, the one data view the explorer arranges -->
+    <FormaDataView @ref="_dataView"
+                   TItem="ICatalogItem"
+                   Class="forma-explorer-data-view"
+                   ItemsProvider="_contentProvider"
+                   ItemKey="ItemKeyOf"
+                   HasChildren="OpensAsFolder"
+                   CurrentItem="CurrentFolder"
+                   OnCurrentItemChanging="HandleCurrentItemChanging"
+                   CurrentItemChanged="HandleCurrentItemChangedAsync"
+                   PageSize="PageSize"
+                   Page="_collection.PageNumber"
+                   PageChanged="HandlePageChangedAsync"
+                   AppendMode="AppendMode"
+                   Layout="DataViewLayout.Host">
     <FormaStackLayout Orientation="StackOrientation.Horizontal" class="@BodyCssClass" style="@SidebarSizeStyle">
         @if (ShowsSidebar)
         {
@@ -85,6 +100,7 @@
             <FormaExplorerContentArea />
         </FormaBackdrop>
     </FormaStackLayout>
+    </FormaDataView>
 </FormaStackLayout>
 </FormaBackdrop>
 

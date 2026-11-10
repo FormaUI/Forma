@@ -35,12 +35,9 @@ public interface IExplorerContentView
     /// <summary>Whether the group's items are folded away.</summary>
     bool IsCollapsed(ExplorerItemGroup group);
 
-    /// <summary>Whether a provider fetch is in flight.</summary>
+    /// <summary>Whether the content is being read.</summary>
     bool IsFetching { get; }
 
     /// <summary>How many items match the current query, or null when unknown.</summary>
     int? MatchingCount { get; }
-
-    /// <summary>How the currently shown items are paged.</summary>
-    ExplorerPagingInfo Paging { get; }
 }
