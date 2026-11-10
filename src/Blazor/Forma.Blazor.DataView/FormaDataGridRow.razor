@@ -3,7 +3,7 @@
 @typeparam TItem where TItem : notnull
 
 @* A row being edited carries no token, which takes it out of every press and selection gesture. *@
-<tr @attributes="View.ItemAttributes?.Invoke(Item)" class="@RowClass" aria-selected="@AriaSelected" aria-rowindex="@(Position + 1)" data-item="@(Grid.IsEditing(Item) ? null : Token)" data-item-position="@Position">
+<tr @attributes="View.ItemAttributes?.Invoke(Item)" class="@RowClass" aria-selected="@AriaSelected" aria-rowindex="@(Position + 1)" data-item="@(Grid.IsEditing(Item) ? null : Token)" data-item-root="@(!Grid.IsEditing(Item))" data-item-position="@Position">
     @if (Grid.HasSelectionColumn)
     {
         <td class="@Grid.SelectionCellClass" data-item-control>

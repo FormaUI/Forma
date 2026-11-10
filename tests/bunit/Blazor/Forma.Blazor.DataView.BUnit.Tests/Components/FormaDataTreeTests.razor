@@ -93,6 +93,28 @@
         }
 
         [Fact]
+        public void Should_mark_each_node_as_the_element_its_controls_belong_to_with_a_selection_or_without()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+
+            // Act
+            var plain = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            var selecting = ctx.Render(
+                @<FormaDataView Items="CreateEntries()" EnablePagination="false" EnableItemSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            plain.WaitForState(() => plain.FindAll("[role=treeitem]").Count == 2);
+            selecting.WaitForState(() => selecting.FindAll("[role=treeitem]").Count == 2);
+
+            // Assert
+            Assert.All(plain.FindAll("[role=treeitem]").Concat(selecting.FindAll("[role=treeitem]")), node => Assert.True(node.HasAttribute("data-item-root")));
+        }
+
+        [Fact]
         public void Should_draw_the_roots_disabled_as_it_renders_before_the_renderer_is_interactive()
         {
             // Arrange

@@ -26,6 +26,14 @@
  * marker, so Tab still leaves the list, and the page, from its last item. A press or a Tab that a host
  * handles while keeping the focus where it was explains nothing once it has ended.
  *
+ * Where the list gathers its items' controls, Tab reaches the controls of the active items alone: the
+ * item holding a collection's tab stop, one per collection the list holds, a tree beside a grid, and
+ * the item holding the focus, every other item's controls standing out of the Tab sequence until it is
+ * active, so Tab enters a collection once and leaves it after one item's controls. A press on another
+ * item's control makes that item active. Shift+F10 and the Menu key on an item, its marker or itself,
+ * press the control the item names as the opener of its actions, and the focus comes back to where the
+ * key was pressed once the actions hand it back to their opener.
+ *
  * Enter on an item's marker activates the item, a route like the moves, so the form a host wraps
  * the list in never takes it as a submission. The presses are routes too: where the list selects,
  * a press selects, a shift-press stops the browser extending its own text selection across the
@@ -63,7 +71,10 @@ const SeekPatience = 3000;
  *   selects?: boolean,
  *   moves?: boolean,
  *   positionAttribute?: string | null,
- *   seeks?: boolean
+ *   seeks?: boolean,
+ *   itemRootSelector?: string | null,
+ *   actionsSelector?: string | null,
+ *   gathersControls?: boolean
  * }} options
  */
 export function attach(target, options) {
@@ -182,8 +193,14 @@ class SelectionInteraction {
     #held = null;
     #readerMoved = false;
     #moveStart = null;
+    #itemRootSelector;
+    #actionsSelector;
+    #gathersControls;
+    #gathered = new Map();
+    #actionsReturn = null;
+    #suppressesContextMenu = false;
 
-    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, moves = selects, positionAttribute = null, seeks = false }) {
+    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, moves = selects, positionAttribute = null, seeks = false, itemRootSelector = null, actionsSelector = null, gathersControls = false }) {
         this.#target = target;
         this.#owner = owner;
         this.#keyAttribute = keyAttribute;
@@ -194,6 +211,9 @@ class SelectionInteraction {
         this.#positionAttribute = positionAttribute;
         this.#selects = selects;
         this.#seeks = seeks && positionAttribute !== null;
+        this.#itemRootSelector = itemRootSelector;
+        this.#actionsSelector = itemRootSelector === null ? null : actionsSelector;
+        this.#gathersControls = gathersControls && itemRootSelector !== null;
 
         // Each key moves plain, with Shift extending the range, or with the primary modifier moving alone; one that
         // would move nothing matches nothing, so a press at the end of the list keeps its default.
@@ -236,7 +256,19 @@ class SelectionInteraction {
             handle: event => this.#activate(event),
         };
 
-        this.#registration = register(target, { routes: [...routes, ...selection, activation] });
+        // The menu keys on an item press the opener of its actions; a key pressed in a control inside the item is the control's own.
+        const actions = this.#actionsSelector
+            ? [{
+                action: 'selection.actions',
+                bindings: [
+                    { type: 'keydown', key: 'F10', modifiers: { shift: true }, when: event => this.#actionsOpener(event) !== null },
+                    { type: 'keydown', key: 'ContextMenu', when: event => this.#actionsOpener(event) !== null },
+                ],
+                handle: event => this.#openActions(event),
+            }]
+            : [];
+
+        this.#registration = register(target, { routes: [...routes, ...selection, activation, ...actions] });
 
         // A render may draw the focused item's element afresh, which drops the focus to nothing; with neither a press nor Tab to
         // explain the loss, the focus goes back to the item's marker once the render has drawn it again. Both are observed rather
@@ -293,12 +325,48 @@ class SelectionInteraction {
                 requestAnimationFrame(() => this.#restore(held));
             }
         }, { signal });
+
+        if (this.#actionsSelector) {
+            target.addEventListener('focusin', event => this.#returnFromActions(event), { signal });
+
+            // The browser raises its own menu for the keys as well, which the actions opened in its place stand for; a press
+            // or another key is the reader's next move, whose own menu is the browser's again.
+            ownerDocument.addEventListener('contextmenu', event => {
+                if (this.#suppressesContextMenu) {
+                    this.#suppressesContextMenu = false;
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            }, { capture: true, signal });
+            ownerDocument.addEventListener('pointerdown', () => this.#suppressesContextMenu = false, { capture: true, signal });
+            ownerDocument.addEventListener('keydown', event => {
+                if (event.key !== 'F10' && event.key !== 'ContextMenu') {
+                    this.#suppressesContextMenu = false;
+                }
+            }, { capture: true, signal });
+        }
+
+        // Every render may draw items, move the tab stop or enable a control, so the controls Tab reaches are settled again after each,
+        // and as the focus moves; the tab indexes the gathering itself wrote settle nothing new.
+        if (this.#gathersControls) {
+            target.addEventListener('focusin', event => this.#focusItemOf(event), { signal });
+
+            const gathering = new MutationObserver(records => {
+                if (!records.every(record => record.type === 'attributes' && this.#gathered.has(record.target))) {
+                    this.#gatherControls();
+                }
+            });
+            gathering.observe(target, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex', 'disabled'] });
+            signal.addEventListener('abort', () => gathering.disconnect());
+            this.#gatherControls();
+        }
     }
 
     dispose() {
         this.#cancelSeek();
         this.#listening.abort();
         this.#registration.dispose();
+        this.#releaseControls();
     }
 
     /**
@@ -425,6 +493,145 @@ class SelectionInteraction {
             if (marker.tabIndex !== tabIndex) {
                 marker.tabIndex = tabIndex;
             }
+        }
+    }
+
+    /** The opener of the actions of the item the key was pressed on, its marker or itself; a key in a control inside the item is the control's. */
+    #actionsOpener(event) {
+        const { target } = event;
+
+        if (!(target instanceof Element) || !this.#target.contains(target)) {
+            return null;
+        }
+
+        const root = target.closest(this.#itemRootSelector);
+
+        if (!root || !this.#target.contains(root) || (target !== root && !target.matches(this.#markerSelector))) {
+            return null;
+        }
+
+        const opener = root.querySelector(this.#actionsSelector);
+
+        return opener && !opener.matches(':disabled, [aria-disabled="true"]') ? opener : null;
+    }
+
+    #openActions(event) {
+        const opener = this.#actionsOpener(event);
+
+        if (!opener) {
+            return;
+        }
+
+        event.preventDefault();
+        this.#actionsReturn = { opener, origin: event.target };
+        this.#suppressesContextMenu = true;
+        opener.click();
+    }
+
+    // The actions hand the focus back to their opener as they close, which passes it on to where the key was pressed; the focus
+    // reaching a marker or another item first means the reader went elsewhere.
+    #returnFromActions(event) {
+        const pending = this.#actionsReturn;
+        const { target } = event;
+
+        if (!pending || !(target instanceof Element)) {
+            return;
+        }
+
+        if (target === pending.opener) {
+            this.#actionsReturn = null;
+
+            if (pending.origin.isConnected) {
+                pending.origin.focus();
+            }
+
+            return;
+        }
+
+        const root = target.closest(this.#itemRootSelector);
+
+        if (target.matches(this.#markerSelector) || (root && root !== pending.opener.closest(this.#itemRootSelector))) {
+            this.#actionsReturn = null;
+        }
+    }
+
+    // A control of another item taking the focus makes that item the one Tab reaches the controls of, its marker the tab stop.
+    #focusItemOf(event) {
+        const { target } = event;
+        const root = target instanceof Element ? target.closest(this.#itemRootSelector) : null;
+        const marker = root && this.#target.contains(root) ? root.querySelector(this.#markerSelector) : null;
+
+        if (marker && marker !== this.#tabStop && !target.matches(this.#markerSelector)) {
+            this.#tabStop = marker;
+            this.#settleTabStop();
+        }
+
+        this.#gatherControls();
+    }
+
+    /** The items whose controls Tab reaches: each holding a collection's tab stop, by its marker or itself, and the one holding the focus. */
+    #activeRoots(roots) {
+        const active = new Set(roots.filter(root => root.getAttribute('tabindex') === '0' || root.querySelector(`${this.#markerSelector}[tabindex="0"]`) !== null));
+        const focused = this.#target.ownerDocument.activeElement;
+        const focusedRoot = focused instanceof Element && this.#target.contains(focused) ? focused.closest(this.#itemRootSelector) : null;
+
+        if (focusedRoot) {
+            active.add(focusedRoot);
+        }
+
+        return active;
+    }
+
+    // Every item's controls but the active ones' leave the Tab sequence, each keeping the tab index it had to return to; while no item
+    // holds a tab stop, Tab has no item to enter by, so every item's controls stay in the sequence.
+    #gatherControls() {
+        const roots = [...this.#target.querySelectorAll(this.#itemRootSelector)];
+        const active = this.#activeRoots(roots);
+
+        for (const [control, tabIndex] of this.#gathered) {
+            const root = control.isConnected ? control.closest(this.#itemRootSelector) : null;
+
+            if (!control.isConnected) {
+                this.#gathered.delete(control);
+            } else if (active.size === 0 || root === null || active.has(root)) {
+                this.#gathered.delete(control);
+                this.#restoreTabIndex(control, tabIndex);
+            }
+        }
+
+        if (active.size === 0) {
+            return;
+        }
+
+        for (const root of roots) {
+            if (active.has(root)) {
+                continue;
+            }
+
+            for (const control of root.querySelectorAll(Controls.Focusable)) {
+                if (control !== root && !control.matches(this.#markerSelector) && control.closest(this.#itemRootSelector) === root && !this.#gathered.has(control)) {
+                    this.#gathered.set(control, control.getAttribute('tabindex'));
+                    control.tabIndex = -1;
+                }
+            }
+        }
+    }
+
+    #releaseControls() {
+        for (const [control, tabIndex] of this.#gathered) {
+            if (control.isConnected) {
+                this.#restoreTabIndex(control, tabIndex);
+            }
+        }
+
+        this.#gathered.clear();
+    }
+
+    #restoreTabIndex(control, tabIndex) {
+        if (tabIndex === null) {
+            control.removeAttribute('tabindex');
+        } else {
+            control.setAttribute('tabindex', tabIndex);
         }
     }
 

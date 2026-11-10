@@ -108,6 +108,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
   view's own arrangement. `IDataView` declares `Layout`. `IDataViewInteraction.UnregisterView` takes the
   registration a view made, rather than its key, so a view drawn afresh under the same key keeps its registration;
   it lost it as the one it replaced went, which left the data view with no view to show.
+- [`FormaDataView`](docs/data-view-design.md#accessibility-keyboard-and-direction) takes `TabOrder`, whose
+  `ActiveItem` takes every item's own controls out of the Tab sequence but the active item's, the one holding the
+  focus or a collection's tab stop, so Tab enters a collection of hundreds of items once and leaves it after one
+  item's controls; `EveryItem`, the default, keeps every control in the sequence. Shift+F10 and the Menu key on an
+  item press the control inside it that carries `data-item-actions`, and the focus comes back to the item as its
+  actions close. A grid row being edited keeps its editors in the sequence.
 - In a [`FormaDataView`](docs/data-view-design.md#the-views), a list's items, the cards and a tree's nodes draw in
   their views' styles: a row stands on the target step, a node is indented by its depth, a selected, current,
   disabled or hovered item shows it, and a group heading over the list's or the cards' groups reads from its start

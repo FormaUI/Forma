@@ -474,6 +474,113 @@ public sealed class DataViewTests
         }
     }
 
+    public sealed class DataViewTabOrder(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_leave_two_hundred_items_after_one_item_s_controls_and_run_an_item_s_commands_from_the_keyboard_in_the_list(string runtime)
+            => CheckAsync(runtime, "list", "ArrowDown");
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_leave_two_hundred_items_after_one_item_s_controls_and_run_an_item_s_commands_from_the_keyboard_in_the_cards(string runtime)
+            => CheckAsync(runtime, "cards", "ArrowRight");
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_leave_two_hundred_items_after_one_item_s_controls_and_run_an_item_s_commands_from_the_keyboard_in_the_grid(string runtime)
+            => CheckAsync(runtime, "grid", "ArrowDown");
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_leave_two_hundred_items_after_one_item_s_controls_and_run_an_item_s_commands_from_the_keyboard_in_the_tree(string runtime)
+            => CheckAsync(runtime, "tree", "ArrowDown");
+
+        // Tab enters the view's items at the first and leaves the view after that item's Open button and its actions; the key moving on reaches
+        // the second item, whose Open button Tab then reaches and Enter runs, and Shift+F10 on it opens its actions, whose Rename runs
+        // and hands the focus back to the item.
+        private async Task CheckAsync(string runtime, string view, string next)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-tab-order");
+            await using var _ = context;
+            var items = page.Locator($"#{view} [data-item-root]");
+            await Assertions.Expect(items).ToHaveCountAsync(200);
+            await WaitForInputScopeAsync(page, $"#{view} .forma-data-view-region");
+
+            if (view == "tree")
+            {
+                await WaitForInputRouteAsync(page, "#tree .forma-data-tree", "tree.next");
+            }
+
+            await page.Locator($"#before-{view}").FocusAsync();
+
+            // Act — into the view past the controls a view draws before its items, a grid's header, then through the first item's and out
+            var first = await TabIntoItemsAsync(page);
+            await page.Keyboard.PressAsync("Tab");
+            await Assertions.Expect(items.Nth(0).GetByRole(AriaRole.Button, new() { Name = "Open Item 1", Exact = true })).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Tab");
+            await Assertions.Expect(items.Nth(0).GetByRole(AriaRole.Button, new() { Name = "Actions for Item 1", Exact = true })).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Tab");
+            await Assertions.Expect(page.Locator($"#after-{view}")).ToBeFocusedAsync();
+
+            // Act — back in, on to the second item, its Open button run from the keyboard
+            await page.Keyboard.PressAsync("Shift+Tab");
+            await page.Keyboard.PressAsync("Shift+Tab");
+            await page.Keyboard.PressAsync("Shift+Tab");
+            await page.Keyboard.PressAsync(next);
+            await WaitForFocusedItemAsync(page, "Item 2");
+            await page.Keyboard.PressAsync("Tab");
+            await Assertions.Expect(items.Nth(1).GetByRole(AriaRole.Button, new() { Name = "Open Item 2", Exact = true })).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Enter");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Opened Item 2");
+
+            // Act — the second item's actions opened with Shift+F10 and its Rename run
+            await page.Keyboard.PressAsync("Shift+Tab");
+            await page.Keyboard.PressAsync("Shift+F10");
+            var menu = page.GetByRole(AriaRole.Menu);
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
+            await menu.GetByRole(AriaRole.Menuitem, new() { Name = "Rename", Exact = true }).PressAsync("Enter");
+
+            // Assert
+            Assert.Equal("Item 1", first);
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Renamed Item 2");
+            await WaitForFocusedItemAsync(page, "Item 2");
+        }
+
+        // The name of the item the focus stands on, by its marker or itself, where the focus stands on neither an item's control nor outside.
+        private const string FocusedItem = """
+            () => {
+                const focused = document.activeElement;
+                const root = focused?.closest('[data-item-root]');
+                const isStop = focused === root || focused?.matches('[data-row-key]');
+                return root && isStop ? root.querySelector('.forma-data-list-item-name, .forma-data-card-name, .forma-data-tree-node-name, td:nth-child(2)')?.textContent?.trim() ?? null : null;
+            }
+            """;
+
+        private static Task<string?> FocusedItemAsync(IPage page)
+            => page.EvaluateAsync<string?>(FocusedItem);
+
+        // Presses Tab until the focus stands on an item, a view drawing a few controls of its own before them.
+        private static async Task<string?> TabIntoItemsAsync(IPage page)
+        {
+            for (var press = 0; press < 4; press++)
+            {
+                await page.Keyboard.PressAsync("Tab");
+
+                if (await FocusedItemAsync(page) is { } item)
+                {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+
+        private static async Task WaitForFocusedItemAsync(IPage page, string name)
+            => await page.WaitForFunctionAsync($"name => ({FocusedItem})() === name", name);
+    }
+
     public sealed class DataListAppend(BrowserHost host)
     {
         [Theory]

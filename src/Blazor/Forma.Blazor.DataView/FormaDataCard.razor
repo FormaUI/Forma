@@ -9,7 +9,8 @@
      aria-setsize="@(Position is null || View.IsGrouped ? null : View.TotalItemCount)"
      aria-posinset="@(Position is null || View.IsGrouped ? null : Position + 1)"
      data-item-position="@Position"
-     data-item="@Token">
+     data-item="@Token"
+     data-item-root>
     <div class="forma-data-card-thumbnail">
         @if (Cards.ThumbnailTemplate is { } thumbnail)
         {

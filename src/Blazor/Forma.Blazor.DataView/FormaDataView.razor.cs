@@ -97,6 +97,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool _isAttachedToSelect;
     private bool _isAttachedToMove;
     private bool _isAttachedToSeek;
+    private bool _isAttachedToGather;
     private int _orderVersion;
     private SelectionBounds _selectionBounds;
     private int _readCount;
@@ -183,6 +184,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>Who arranges the views and the footer: the data view, or the host inside it.</summary>
     [Parameter] public DataViewLayout Layout { get; set; }
+
+    /// <summary>Which items' own controls Tab reaches: every item's, or the active item's alone.</summary>
+    /// <remarks>The active item is the one holding the focus, or else the one holding the collection's tab stop; Shift+F10 and the Menu key on an item press the control inside it that carries <c>data-item-actions</c>, whatever the order.</remarks>
+    [Parameter] public DataViewTabOrder TabOrder { get; set; }
 
     /// <summary>Whether the items are shown a page at a time, or all in one scroll region.</summary>
     [Parameter] public bool EnablePagination { get; set; } = true;
@@ -692,7 +697,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         // otherwise a press activates, as Enter on an item's marker does either way; the keys move among the markers either kind
         // of selection draws, selecting under item selection alone. A change of selection since it attached lets it go, so it
         // attaches again as the selection now is.
-        if (_selectionInteraction.IsAttached && (_isAttachedToSelect != EnableItemSelection || _isAttachedToMove != HasMarkers || _isAttachedToSeek != (ActivePositions is not null)))
+        if (_selectionInteraction.IsAttached && (_isAttachedToSelect != EnableItemSelection || _isAttachedToMove != HasMarkers || _isAttachedToSeek != (ActivePositions is not null) || _isAttachedToGather != GathersControls))
         {
             await _selectionInteraction.DetachAsync();
             _isSelectionAttached = false;
@@ -705,11 +710,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _isAttachedToSelect = EnableItemSelection;
             _isAttachedToMove = HasMarkers;
             _isAttachedToSeek = ActivePositions is not null;
+            _isAttachedToGather = GathersControls;
             _selfReference ??= DotNetObjectReference.Create(this);
 
             // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
             await InputRouter.ConfigureAsync();
-            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, _isAttachedToMove, PositionAttribute, _isAttachedToSeek);
+            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, _isAttachedToMove, PositionAttribute, _isAttachedToSeek, ItemRootSelector, ItemActionsSelector, _isAttachedToGather);
         }
 
         // Only a paged data view that does not virtualize holds a height for a short page.
@@ -1754,6 +1760,17 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private const string SeekExtend = "extend";
 
     private const string ControlSelector = "[" + ControlAttribute + "]";
+
+    /// <summary>The attribute the element a view draws for an item carries, its row, card, list item or node, whose controls are the item's.</summary>
+    internal const string ItemRootAttribute = "data-item-root";
+
+    private const string ItemRootSelector = "[" + ItemRootAttribute + "]";
+
+    // The attribute a host gives the control inside an item that opens the item's actions.
+    private const string ItemActionsSelector = "[data-item-actions]";
+
+    private bool GathersControls
+        => TabOrder == DataViewTabOrder.ActiveItem;
 
     // The items arrive with each group's members standing together, so a group is a run of one key.
     // A virtualizing view fetches the items as it scrolls, so its groups are the whole set's, known by their sizes alone.

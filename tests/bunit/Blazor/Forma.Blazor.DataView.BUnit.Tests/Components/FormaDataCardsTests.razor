@@ -32,6 +32,23 @@
         }
 
         [Fact]
+        public void Should_mark_each_card_as_the_element_its_controls_belong_to()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.All(cut.FindAll("[role=listitem]"), card => Assert.True(card.HasAttribute("data-item-root")));
+        }
+
+        [Fact]
         public void Should_draw_a_card_per_item_with_its_thumbnail_its_name_its_detail_and_its_actions()
         {
             // Arrange

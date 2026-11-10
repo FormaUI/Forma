@@ -9,7 +9,8 @@
      aria-setsize="@(Position is null || View.IsGrouped ? null : View.TotalItemCount)"
      aria-posinset="@(Position is null || View.IsGrouped ? null : Position + 1)"
      data-item-position="@Position"
-     data-item="@Token">
+     data-item="@Token"
+     data-item-root>
     @if (List.HasSelection)
     {
         <span class="forma-data-list-item-lead" data-item-control>

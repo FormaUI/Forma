@@ -1,0 +1,58 @@
+@page "/{Runtime}/data-view-tab-order"
+@using Forma.Blazor.Components.DataView
+
+@* Two hundred items in each view, a list, cards, a grid and a tree, every item with an Open button and a menu of its actions, Tab
+   reaching the active item's alone; a button before and after each view, and the command last run written where the check reads it. *@
+<button id="before-list" type="button" data-check-scaffold>Before the List</button>
+<FormaDataView Id="list" TItem="Row" Items="Rows" ItemKey="@(row => row.Id)" ItemName="@(row => row.Name)" EnablePagination="false" EnableItemSelection="true" TabOrder="DataViewTabOrder.ActiveItem">
+    <FormaDataList TItem="Row">
+        <ItemTemplate Context="row">@Commands(row)</ItemTemplate>
+    </FormaDataList>
+</FormaDataView>
+<button id="after-list" type="button" data-check-scaffold>After the List</button>
+
+<button id="before-cards" type="button" data-check-scaffold>Before the Cards</button>
+<FormaDataView Id="cards" TItem="Row" Items="Rows" ItemKey="@(row => row.Id)" ItemName="@(row => row.Name)" EnablePagination="false" EnableItemSelection="true" TabOrder="DataViewTabOrder.ActiveItem">
+    <FormaDataCards TItem="Row">
+        <ActionsTemplate Context="row">@Commands(row)</ActionsTemplate>
+    </FormaDataCards>
+</FormaDataView>
+<button id="after-cards" type="button" data-check-scaffold>After the Cards</button>
+
+<button id="before-grid" type="button" data-check-scaffold>Before the Grid</button>
+<FormaDataView Id="grid" TItem="Row" Items="Rows" ItemKey="@(row => row.Id)" ItemName="@(row => row.Name)" EnablePagination="false" EnableItemSelection="true" TabOrder="DataViewTabOrder.ActiveItem">
+    <FormaDataGrid TItem="Row">
+        <Columns>
+            <FormaPropertyColumn TItem="Row" TValue="string" Property="@(row => row.Name)" Title="Name" />
+            <FormaTemplateColumn TItem="Row" Title="Commands" Context="row">@Commands(row)</FormaTemplateColumn>
+        </Columns>
+    </FormaDataGrid>
+</FormaDataView>
+<button id="after-grid" type="button" data-check-scaffold>After the Grid</button>
+
+<button id="before-tree" type="button" data-check-scaffold>Before the Tree</button>
+<FormaDataView Id="tree" TItem="Row" Items="Rows" ItemKey="@(row => row.Id)" ItemName="@(row => row.Name)" ParentKey="@(row => row.ParentId)" HasChildren="@(_ => false)" EnablePagination="false" TabOrder="DataViewTabOrder.ActiveItem">
+    <FormaDataTree TItem="Row" aria-label="Rows">
+        <ItemTemplate Context="row">@Commands(row)</ItemTemplate>
+    </FormaDataTree>
+</FormaDataView>
+<button id="after-tree" type="button" data-check-scaffold>After the Tree</button>
+
+<output id="result">@_lastCommand</output>
+
+@code {
+    private static readonly IQueryable<Row> Rows = Enumerable.Range(1, 200).Select(id => new Row(id, null, $"Item {id}")).ToArray().AsQueryable();
+
+    private string? _lastCommand;
+
+    // An item's Open button and the menu of its actions, which Shift+F10 and the Menu key on the item open.
+    private RenderFragment Commands(Row row) =>
+        @<span class="commands">
+            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" aria-label="@($"Open {row.Name}")" OnClick="@(() => _lastCommand = $"Opened {row.Name}")">Open</FormaButton>
+            <FormaOverflowMenu Label="@($"Actions for {row.Name}")" data-item-actions>
+                <FormaDropDownMenuItem OnClick="@(() => _lastCommand = $"Renamed {row.Name}")">Rename</FormaDropDownMenuItem>
+            </FormaOverflowMenu>
+        </span>;
+
+    internal sealed record Row(int Id, int? ParentId, string Name);
+}

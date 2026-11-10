@@ -227,6 +227,28 @@ and `CanFocusItem` draws it without a marker, so the keys pass over it:
 </FormaDataView>
 ```
 
+`TabOrder="DataViewTabOrder.ActiveItem"` takes every item's own controls out of the Tab sequence but the
+active item's, the one holding the focus or the collection's tab stop, so Tab enters a collection of
+hundreds of items once and leaves it after one item's controls. A control inside an item that carries
+`data-item-actions` opens the item's actions, which Shift+F10 and the Menu key on the item press, the
+focus coming back to the item as they close:
+
+```razor
+<FormaDataView Items="_files" EnableItemSelection="true" TabOrder="DataViewTabOrder.ActiveItem">
+    <FormaDataCards>
+        <ActionsTemplate Context="file">
+            <FormaButton OnClick="() => Open(file)">Open</FormaButton>
+            <FormaOverflowMenu Label="@($"Actions for {file.Name}")" data-item-actions>
+                <FormaDropDownMenuItem OnClick="() => Rename(file)">Rename</FormaDropDownMenuItem>
+            </FormaOverflowMenu>
+        </ActionsTemplate>
+    </FormaDataCards>
+</FormaDataView>
+```
+
+A grid whose rows hold editors, links or controls its callers reach directly keeps the default,
+`EveryItem`, and a row being edited keeps its editors in the Tab sequence either way.
+
 `ItemAttributes` gives the element a view draws for an item attributes and handlers of the host's, a
 drag source's among them, under the view's own, which win:
 

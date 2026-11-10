@@ -21,7 +21,10 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
     /// <param name="moves">Whether the arrows, Home and End move the focus among the markers, which then stand as one tab stop.</param>
     /// <param name="positionAttribute">The attribute an item carries its position in the owner's order in.</param>
     /// <param name="seeks">Whether the owner holds more items than the page draws, so a move to the list's ends is asked of it and a range runs by position.</param>
-    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, bool moves = true, string? positionAttribute = null, bool seeks = false)
+    /// <param name="itemRootSelector">The selector naming the element each item is drawn as, whose controls are the item's.</param>
+    /// <param name="actionsSelector">The selector naming the control within an item that opens its actions, which Shift+F10 and the Menu key on the item press.</param>
+    /// <param name="gathersControls">Whether Tab reaches the active item's controls alone, every other item's standing out of the Tab sequence.</param>
+    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, bool moves = true, string? positionAttribute = null, bool seeks = false, string? itemRootSelector = null, string? actionsSelector = null, bool gathersControls = false)
         where TOwner : class
     {
         ArgumentNullException.ThrowIfNull(owner);
@@ -37,6 +40,9 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
             Moves = moves,
             PositionAttribute = positionAttribute,
             Seeks = seeks,
+            ItemRootSelector = itemRootSelector,
+            ActionsSelector = actionsSelector,
+            GathersControls = gathersControls,
         });
     }
 
@@ -70,5 +76,11 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
         public required string? PositionAttribute { get; init; }
 
         public required bool Seeks { get; init; }
+
+        public required string? ItemRootSelector { get; init; }
+
+        public required string? ActionsSelector { get; init; }
+
+        public required bool GathersControls { get; init; }
     }
 }

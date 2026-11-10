@@ -26,6 +26,7 @@
      tabindex="@(View.CanFocus(Item) ? Tree.GetNodeTabIndex(key) : null)"
      data-focus-heir="@Tree.GetHeirMark(key, marker: false)"
      data-item="@(Tree.HasSelection ? Token : null)"
+     data-item-root
      data-item-position="@Position"
      data-tree-node="@Token"
      @ref="Tree.NodeElements[key]">

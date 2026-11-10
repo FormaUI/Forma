@@ -619,7 +619,7 @@ compact density, and whatever a template places in an item.
 
 Sorting, selecting, paging, folding, revealing a column, switching views and opening the
 columns menu are all reachable from the keyboard: Tab reaches the header buttons, the item
-markers and the items' own controls, the arrows move focus among the items while either kind
+markers and the items' own controls, all of them or the active item's alone, the arrows move focus among the items while either kind
 of selection draws their markers, in the directions the view gives them, and the paginator's
 own keys page. The markers stand as one tab stop, the one last focused or the first drawn
 until one is, and a box in the list, the cards and the tree is named for its item. Home and
@@ -640,6 +640,22 @@ item that cannot take the focus draws no marker, so the keys pass over it and th
 never rests on it; a focused item that loses its marker hands the focus to the nearest item
 that carries one, the next before the previous, and the tree's keys, type-ahead and tab stop
 pass over such a node as they do over one the tree no longer shows.
+
+`TabOrder` says which items' own controls Tab reaches. Every item's do by default,
+`EveryItem`, which a grid whose rows hold editors, links or controls its callers reach
+directly keeps. Under `ActiveItem` only the active items' controls stand in the Tab
+sequence: the item holding the focus, and the item holding each collection's tab stop,
+one per collection, so a sidebar's node and a grid's row beside it each keep theirs; every other
+item's controls stand out of it, so a collection of hundreds of items is entered at one
+Tab stop and left after one item's controls, and a press on another item's control makes
+that item the active one. A view that draws no tab stop leaves every control in the
+sequence, since Tab would have no item to enter by, and a row being edited stays out of
+the gathering, its editors in the sequence. Whatever the order, Shift+F10 and the Menu key
+on an item, its marker or itself, press the control inside it that carries
+`data-item-actions`, the opener of the item's actions, which a pointer and a touch reach
+where it stands; the browser's own menu the key raises gives way to it, and the focus
+comes back to the item as the actions hand it back to their opener. A key pressed in a
+control inside the item stays the control's, a field's own menu among them.
 
 Every offset, alignment and border is logical, so the same stylesheet serves both
 directions; a numeric cell reads as a number in either, cards pack from the inline start,

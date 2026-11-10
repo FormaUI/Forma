@@ -6,6 +6,59 @@
 @using Microsoft.Extensions.Time.Testing
 
 @code {
+    public sealed class TabOrder
+    {
+        private static IQueryable<Product> CreateProducts() => Enumerable.Range(1, 3)
+            .Select(id => new Product(id, $"Product {id}"))
+            .AsQueryable();
+
+        [Fact]
+        public void Should_have_the_script_gather_every_item_s_controls_but_the_active_item_s()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var selection = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.DataView/scripts/SelectionInteraction.js");
+            selection.SetupModule("attach", _ => true);
+
+            // Act
+            ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" EnableItemSelection="true" TabOrder="DataViewTabOrder.ActiveItem" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+
+            // Assert
+            var options = selection.Invocations.Single(invocation => invocation.Identifier == "attach").Arguments[1]!;
+            Assert.Multiple(
+                () => Assert.Equal(true, InteropPayload.GetValue(options, "gathersControls")),
+                () => Assert.Equal("[data-item-root]", InteropPayload.GetValue(options, "itemRootSelector")),
+                () => Assert.Equal("[data-item-actions]", InteropPayload.GetValue(options, "actionsSelector")));
+        }
+
+        [Fact]
+        public void Should_attach_again_when_the_tab_order_changes()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var selection = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.DataView/scripts/SelectionInteraction.js");
+            selection.SetupModule("attach", _ => true);
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" EnableItemSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+
+            // Act
+            cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.TabOrder, DataViewTabOrder.ActiveItem));
+
+            // Assert — every item's controls in the Tab sequence, then the active item's alone
+            var gathers = selection.Invocations.Where(invocation => invocation.Identifier == "attach")
+                .Select(invocation => InteropPayload.GetValue(invocation.Arguments[1]!, "gathersControls"))
+                .ToList();
+            Assert.Equal([false, true], gathers);
+        }
+
+        private sealed record Product(int Id, string Name);
+    }
+
     public sealed class Announcement
     {
         private static IQueryable<Product> CreateProducts(int count, int firstId = 1) => Enumerable.Range(firstId, count)

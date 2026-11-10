@@ -59,6 +59,23 @@
         }
 
         [Fact]
+        public void Should_mark_each_item_s_element_as_the_one_its_controls_belong_to()
+        {
+            // Arrange
+            using var ctx = new FormaDataListTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.All(cut.FindAll("[role=listitem]"), item => Assert.True(item.HasAttribute("data-item-root")));
+        }
+
+        [Fact]
         public void Should_name_an_item_by_its_own_text_when_no_name_is_given()
         {
             // Arrange

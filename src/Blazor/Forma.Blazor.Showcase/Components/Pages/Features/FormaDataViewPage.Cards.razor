@@ -3,7 +3,7 @@
 @using Forma.Framework.Css
 
 <h1>FormaDataView</h1>
-<p class="description">@L["This tab shows the cards as a view of the data view: each product a card with its thumbnail, its name, its price and an action bar the page templates, packed across the width and grouped by category."]</p>
+<p class="description">@L["This tab shows the cards as a view of the data view: each product a card with its thumbnail, its name, its price and an action bar the page templates, packed across the width and grouped by category, and the action bars behind the cards' one Tab stop."]</p>
 
 <div class="demo-section">
     <h2>@L["The Cards View"]</h2>
@@ -24,6 +24,28 @@
                 </FormaDataCards>
             </ChildContent>
             <Status>@L["{Selected} checked; last opened: {Name}", _checkedProducts.Count, _lastAction ?? L["nothing yet"].Value]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Commands Behind One Tab Stop"]</h2>
+    <p class="description">@L["Each card's Open button and its menu of actions stand behind the cards' one Tab stop: Tab enters at a card, reaches that card's commands alone and leaves after them, however many cards there are. Shift+F10 or the Menu key on a card opens its actions, and the focus comes back to the card as they close."]</p>
+    <div class="demo-box">
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" EnableItemSelection="true" TabOrder="DataViewTabOrder.ActiveItem">
+            <ChildContent>
+                <FormaDataCards TItem="ShowcaseProduct" CardSize="@CssLength.FromRem(11)">
+                    <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
+                    <ItemTemplate Context="product">@product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
+                    <ActionsTemplate Context="product">
+                        <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" OnClick="@(() => _lastCommand = L["Opened {Name}", product.Name].Value)">@L["Open"]</FormaButton>
+                        <FormaOverflowMenu Label="@L["Actions for {Name}", product.Name]" data-item-actions>
+                            <FormaDropDownMenuItem OnClick="@(() => _lastCommand = L["Renamed {Name}", product.Name].Value)">@L["Rename"]</FormaDropDownMenuItem>
+                        </FormaOverflowMenu>
+                    </ActionsTemplate>
+                </FormaDataCards>
+            </ChildContent>
+            <Status>@L["Last command: {Command}", _lastCommand ?? L["nothing yet"].Value]</Status>
         </FormaDataView>
     </div>
 </div>
@@ -78,6 +100,8 @@
     private IReadOnlyList<ShowcaseProduct> _selectedProducts = [];
 
     private string? _lastAction;
+
+    private string? _lastCommand;
 
     private bool _isNarrow;
 

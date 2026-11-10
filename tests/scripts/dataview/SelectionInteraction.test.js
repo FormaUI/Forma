@@ -450,6 +450,159 @@ describe('SelectionInteraction', () => {
         });
     });
 
+    describe('gathering its items\' controls', () => {
+        const settle = () => new Promise(resolve => setTimeout(resolve));
+        const item = key => `<tr data-item-root><td><span data-row-key="${key}" tabindex="-1">Row</span></td><td><button class="open">Open</button><button class="more" data-item-actions>More</button><input type="text" class="field" /></td></tr>`;
+        const controlsOf = key => [...cellOf(key).closest('tr').querySelectorAll('.open, .more, .field')];
+        const reachable = key => controlsOf(key).map(control => control.tabIndex >= 0);
+        const gather = (options = {}) => attachSelection(grid, { owner, itemRootSelector: '[data-item-root]', actionsSelector: '[data-item-actions]', gathersControls: true, ...options });
+
+        beforeEach(() => {
+            grid.querySelector('tbody').innerHTML = [1, 2, 3, 4].map(item).join('');
+        });
+
+        it('takes every item\'s controls but the tab stop\'s out of the Tab sequence', () => {
+            gather();
+
+            expect([1, 2, 3, 4].map(key => reachable(key).every(Boolean))).toEqual([true, false, false, false]);
+            expect(cellOf(2).tabIndex).toBe(-1);
+        });
+
+        it('hands the controls to the item the focus moves to', () => {
+            gather();
+
+            cellOf(3).focus();
+
+            expect([1, 2, 3, 4].map(key => reachable(key).every(Boolean))).toEqual([false, false, true, false]);
+        });
+
+        it('makes the item whose control takes the focus the one, its marker the tab stop', () => {
+            gather();
+
+            controlsOf(2)[0].focus();
+
+            expect([1, 2, 3, 4].map(key => reachable(key).every(Boolean))).toEqual([false, true, false, false]);
+            expect(cellOf(2).tabIndex).toBe(0);
+        });
+
+        it('takes the controls of an item a render adds out of the Tab sequence', async () => {
+            gather();
+
+            const drawn = document.createElement('template');
+            drawn.innerHTML = `<table><tbody>${item(5)}</tbody></table>`;
+            grid.querySelector('tbody').append(drawn.content.querySelector('tr'));
+            await settle();
+
+            expect(reachable(5)).toEqual([false, false, false]);
+        });
+
+        it('takes a control another item enables out of the Tab sequence', async () => {
+            controlsOf(3)[0].disabled = true;
+            gather();
+
+            controlsOf(3)[0].disabled = false;
+            await settle();
+
+            expect(controlsOf(3)[0].tabIndex).toBe(-1);
+        });
+
+        it('gives each control back the tab index it had once let go', () => {
+            controlsOf(2)[0].setAttribute('tabindex', '2');
+            const handle = gather();
+
+            handle.dispose();
+
+            expect(controlsOf(2)[0].getAttribute('tabindex')).toBe('2');
+            expect(controlsOf(3)[0].hasAttribute('tabindex')).toBe(false);
+        });
+
+        it('keeps the controls of the item each collection\'s tab stop holds in the Tab sequence, a tree\'s row beside a list\'s marker', () => {
+            const container = document.createElement('div');
+            const tree = document.createElement('div');
+            tree.innerHTML = '<div data-item-root tabindex="-1"><button class="node-more">More</button></div><div data-item-root tabindex="0"><button class="node-more">More</button></div>';
+            grid.before(container);
+            container.append(tree, grid);
+            attachSelection(container, { owner, itemRootSelector: '[data-item-root]', gathersControls: true });
+
+            expect([...tree.querySelectorAll('.node-more')].map(control => control.tabIndex)).toEqual([-1, 0]);
+            expect([1, 2, 3, 4].map(key => reachable(key).every(Boolean))).toEqual([true, false, false, false]);
+        });
+
+        it('leaves every item\'s controls in the Tab sequence while no item holds the tab stop', () => {
+            gather({ selects: false });
+
+            expect([1, 2, 3, 4].map(key => reachable(key).every(Boolean))).toEqual([true, true, true, true]);
+        });
+
+        it('presses the opener of an item\'s actions on Shift+F10 and the Menu key on its marker', () => {
+            gather();
+            const opener = controlsOf(1)[1];
+            let presses = 0;
+            opener.addEventListener('click', () => presses++);
+            cellOf(1).focus();
+
+            const shifted = press(cellOf(1), 'F10', { shiftKey: true });
+            press(cellOf(1), 'ContextMenu');
+
+            expect(presses).toBe(2);
+            expect(shifted.defaultPrevented).toBe(true);
+        });
+
+        it('leaves the menu keys to a control inside the item', () => {
+            gather();
+            const opener = controlsOf(1)[1];
+            let presses = 0;
+            opener.addEventListener('click', () => presses++);
+            const field = controlsOf(1)[2];
+            field.focus();
+
+            const event = press(field, 'F10', { shiftKey: true });
+
+            expect(presses).toBe(0);
+            expect(event.defaultPrevented).toBe(false);
+        });
+
+        it('takes the browser\'s own menu the key raises, and leaves the next to it', () => {
+            gather();
+            cellOf(1).focus();
+            press(cellOf(1), 'F10', { shiftKey: true });
+
+            const raised = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+            document.body.dispatchEvent(raised);
+            const next = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+            document.body.dispatchEvent(next);
+
+            expect(raised.defaultPrevented).toBe(true);
+            expect(next.defaultPrevented).toBe(false);
+        });
+
+        it('brings the focus back to the marker once the actions hand it back to their opener', () => {
+            gather();
+            const opener = controlsOf(1)[1];
+            const menu = document.createElement('button');
+            document.body.append(menu);
+            opener.addEventListener('click', () => menu.focus());
+            cellOf(1).focus();
+
+            press(cellOf(1), 'ContextMenu');
+            opener.focus();
+
+            expect(document.activeElement).toBe(cellOf(1));
+        });
+
+        it('leaves the focus on the opener once the reader has gone to another item', () => {
+            gather();
+            const opener = controlsOf(1)[1];
+            cellOf(1).focus();
+
+            press(cellOf(1), 'ContextMenu');
+            cellOf(2).focus();
+            controlsOf(1)[1].focus();
+
+            expect(document.activeElement).toBe(opener);
+        });
+    });
+
     describe('across a packed layout', () => {
         const card = key => `<div class="card"><span data-row-key="${key}" tabindex="-1">Card</span></div>`;
         const pack = (columns, { width = 100, height = 100 } = {}) => {

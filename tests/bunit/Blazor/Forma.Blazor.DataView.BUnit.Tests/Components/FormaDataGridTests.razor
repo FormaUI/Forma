@@ -2966,6 +2966,33 @@
         }
 
         [Fact]
+        public void Should_leave_the_row_being_edited_out_of_the_items_whose_controls_the_data_view_gathers()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var employees = CreateEmployees();
+            var cut = ctx.Render(
+                @<FormaDataView Items="employees.AsQueryable()" PageSize="10" TabOrder="DataViewTabOrder.ActiveItem">
+                    <FormaDataGrid TItem="Employee" EnableInlineEditing="true" CloneForEdit="Clone">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(employee => employee.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.Markup.Contains("Bob", StringComparison.Ordinal));
+            var grid = cut.FindComponent<FormaDataGrid<Employee>>();
+
+            // Act
+            cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
+
+            // Assert — the editors stay in the Tab sequence while every other row's controls are gathered
+            var rows = cut.FindAll("tbody tr.forma-data-grid-row");
+            Assert.Multiple(
+                () => Assert.False(rows[0].HasAttribute("data-item-root")),
+                () => Assert.All(rows.Skip(1), row => Assert.True(row.HasAttribute("data-item-root"))));
+        }
+
+        [Fact]
         public void Should_pick_the_editor_from_the_property_type()
         {
             // Arrange
