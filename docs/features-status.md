@@ -2,11 +2,11 @@
 
 ## Current state
 
-**Forma has 66 implemented components and 8 in progress. It runs statically, under Interactive Server, WebAssembly and Auto, and in Blazor Hybrid on WPF, Windows Forms and MAUI on Windows. Every component is checked statically, under each interactive render mode and in a WPF web view, every call it makes to a script and every call back among it; each Blazor Hybrid host's setup is checked from its example; and an inventory holds every component to every render mode.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
+**Forma has 67 implemented components and 7 in progress. It runs statically, under Interactive Server, WebAssembly and Auto, and in Blazor Hybrid on WPF, Windows Forms and MAUI on Windows. Every component is checked statically, under each interactive render mode and in a WPF web view, every call it makes to a script and every call back among it; each Blazor Hybrid host's setup is checked from its example; and an inventory holds every component to every render mode.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build) and the [open decisions](#open-decisions).
 
 | Measure | Now |
 | --- | --- |
-| Components | 66 implemented and 8 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
+| Components | 67 implemented and 7 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
 | Packages | Every project under `src/` but the Showcase, released from `main` by `release.yml` to nuget.org and the organization's GitHub feed, the latest published release `1.0.0-preview.4` |
 | Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid implemented on WPF, Windows Forms and MAUI on Windows, every component checked in a web view and each host's application set up as the README says; an inventory holds every component to a check page in every render mode |
 
@@ -20,7 +20,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 
 | Work | State |
 | --- | --- |
-| [Components to build](#components-to-build) | `FormaVirtualize` awaits approval; the data view's steps 11 and 13; then the roadmap |
+| [Components to build](#components-to-build) | The data view's steps 11 and 13; then the roadmap |
 | [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | The component suite on iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
@@ -58,7 +58,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | Symbols: icons, emoji and the emoji picker | [Catalog](component-catalog.md#formaicon), [glyph artwork specification](glyph-artwork-specification.md) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
 | Windows: managed windows and the rest area | [Catalog](component-catalog.md#formawindow), [window design](window-design.md) | Implemented; the launch bar [planned](#components-to-build) | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | Input scopes and the input inspector | [Catalog](component-catalog.md#formainputscope), [input router design](input-router-design.md) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
-| Virtualization, `FormaVirtualize` | [Virtualization design](virtualization-design.md) | Built; awaits approval | [September 2026](../FEATURE-HISTORY.md#2026-09) |
+| Virtualization, `FormaVirtualize` | [Virtualization design](virtualization-design.md) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 
 ### Products
 
@@ -118,7 +118,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## Components to build
 
-`FormaVirtualize` is built and awaits approval, after which it moves into the catalog. The data view, with its views and controls, is finished once two steps of [its plan](data-view-implementation-plan.md) land: the explorer's content moving onto it, and a tree's tab stop returning to the node last focused. Its third open step, the gallery's browsing on it, is built with the gallery and stays open until the gallery starts. [The roadmap](component-roadmap.md) orders what follows: the category selector; the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
+The data view, with its views and controls, is finished once two steps of [its plan](data-view-implementation-plan.md) land: the explorer's content moving onto it, and a tree's tab stop returning to the node last focused. Its third open step, the gallery's browsing on it, is built with the gallery and stays open until the gallery starts. [The roadmap](component-roadmap.md) orders what follows: the category selector; the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
 
 <a id="blazor-hybrid-on-phones-and-macs"></a>
 

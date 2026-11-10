@@ -116,7 +116,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) moves through its items in the order the page holds them, a group's, those added later and those the page reorders among them.
 - [`FormaSplitter`](docs/component-catalog.md#formasplitter) follows a drag in the browser, ending it wherever the pointer is let go, and Escape returns the size the drag started from.
 - [`FormaImagePicker`](docs/component-catalog.md#formaimagepicker) previews an image chosen before its script attached, and attaches the preview again on a later render after an attach failed.
-- Every component that attaches a script claims the attach before awaiting it, so a render arriving meanwhile attaches nothing a second time, and [`FormaVirtualize`](docs/component-roadmap.md#formavirtualize)'s list, as a time picker's, opens where it should on a slow connection.
+- Every component that attaches a script claims the attach before awaiting it, so a render arriving meanwhile attaches nothing a second time, and [`FormaVirtualize`](docs/component-catalog.md#formavirtualize)'s list, as a time picker's, opens where it should on a slow connection.
 - [`FormaIcon`](docs/component-catalog.md#formaicon) is decorative unless its `Label` names it, a brand mark as every other icon, so a share menu's network, a tab or a toggle button is named once.
 - [`FormaDialog`](docs/component-catalog.md#formadialog) is named by its title.
 - [`FormaTextBox`](docs/component-catalog.md#formatextbox) and [`FormaPasswordBox`](docs/component-catalog.md#formapasswordbox) hold their label above a value the browser fills.
@@ -205,7 +205,7 @@ Until the first release, a month may break what the one before it allowed, and e
 - [`FormaFreezePane`](docs/component-catalog.md#formafreezepane): a region frozen beside one that scrolls, resized at its edge.
 - [`FormaDateRangePicker`](docs/component-catalog.md#formadaterangepicker) and `FormaCalendar`: a range of dates chosen over two months.
 - [`FormaInputScope`](docs/component-catalog.md#formainputscope) and [`FormaInputInspector`](docs/component-catalog.md#formainputinspector): a region the input router routes to, and what it routes, shown live.
-- [`FormaVirtualize`](docs/component-roadmap.md#formavirtualize): a long list drawn as the run around the viewport, as the [virtualization design](docs/virtualization-design.md) sets out.
+- [`FormaVirtualize`](docs/component-catalog.md#formavirtualize): a long list drawn as the run around the viewport, as the [virtualization design](docs/virtualization-design.md) sets out.
 - [`FormaCheckBox`](docs/component-catalog.md#formacheckbox) is a form input; [`FormaField`](docs/component-catalog.md#formafield) shows the messages of the input it holds.
 - [`FormaToolbar`](docs/component-catalog.md#formatoolbar) routes its shortcuts through the input router and moves among its items with the arrow keys, as the [toolbar design](docs/toolbar-design.md) sets out.
 - [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu) takes labeled sections and skips disabled items, [`FormaShareMenu`](docs/component-catalog.md#formasharemenu) shares to LinkedIn, Messenger and Mastodon and connects accounts, as the [share design](docs/share-design.md) sets out, and [`FormaBreadcrumb`](docs/component-catalog.md#formabreadcrumb) opens its segments' menus as drop-down menus.

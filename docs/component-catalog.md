@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**66 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**67 components implemented, 7 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -81,8 +81,8 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaEmoji
 │   ├── ✅ FormaEmojiPicker
 │   └── ✅ FormaIcon
-├── (0 / 1) Virtualization/
-│   └── ◐ FormaVirtualize
+├── (1 / 1) Virtualization/
+│   └── ✅ FormaVirtualize
 └── (2 / 2) Windows/
     ├── ✅ FormaRestArea
     └── ✅ FormaWindow
@@ -675,6 +675,15 @@ Plays a video by its address, from the services its providers know. Its design i
 |---|---|
 | **Old pattern** | CKEditor's **YouTube embed** toolbar button and the raw `<iframe>` markup it pasted into the body |
 | **Used in** | Video embeds in articles, a live broadcast player, video listings and a home page's featured video; `FormaFileViewer` for a video |
+
+### `FormaVirtualize`
+
+Forma's virtualization: the part of a long collection around the viewport, and the items its owner pins. Its design is [virtualization-design.md](virtualization-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The framework's list virtualization, which keeps no item rendered outside its range, so an item holding the focus is removed as it scrolls away |
+| **Used in** | The data view's tree, grid, list and cards, and the list of times `FormaTimePicker` and `FormaDateTimePicker` open |
 
 ### `FormaVisibility`
 
