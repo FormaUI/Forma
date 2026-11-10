@@ -82,6 +82,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   cannot be activated never becomes the current node, and one that cannot take the focus draws no marker, the keys
   passing over it and a focus it loses going to the nearest item that has one. `IDataView` declares `IsDisabled`,
   `IsSelectable`, `CanActivate`, `CanFocus` and `IsMuted`, which a host's own view implementing it implements.
+- [`FormaDataView`](docs/data-view-design.md#extending-the-data-view) takes `ItemAttributes`, the attributes and
+  handlers a host gives the row, card, list item or node a view draws for an item, so the whole item can be a drag
+  source or a drop target; the view's own attributes win. `IDataView` declares it.
 - [`ExplorerContentProvider`](src/Framework/Forma.Framework.Explorer/README.md) answers a location's content, its
   child folders before its files, in either sort direction, under the grouping's leading group of folders, and
   `ExplorerGrouping.Define` leads every grouping with that group. Its slices split at the count of matching folders,

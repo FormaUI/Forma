@@ -2,7 +2,8 @@
 @inherits FormaComponentBase
 @typeparam TItem where TItem : notnull
 
-<div class="@List.GetItemClass(Item)"
+<div @attributes="View.ItemAttributes?.Invoke(Item)"
+     class="@List.GetItemClass(Item)"
      role="listitem"
      aria-selected="@List.GetAriaSelected(Item)"
      aria-setsize="@(Position is null || View.IsGrouped ? null : View.TotalItemCount)"

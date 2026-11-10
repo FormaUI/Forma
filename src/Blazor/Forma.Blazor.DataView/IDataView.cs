@@ -153,6 +153,9 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>The class the caller gives an item.</summary>
     Func<TItem, string?>? ItemClass { get; }
 
+    /// <summary>The attributes and event handlers the caller gives the element a view draws for an item.</summary>
+    Func<TItem, IReadOnlyDictionary<string, object>?>? ItemAttributes { get; }
+
     /// <summary>What a view shows in place of its items while the source has not answered yet.</summary>
     RenderFragment LoadingContent { get; }
 

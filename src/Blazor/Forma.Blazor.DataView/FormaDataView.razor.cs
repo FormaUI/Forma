@@ -148,6 +148,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>The class an item's row, card or node carries, from its item.</summary>
     [Parameter] public Func<TItem, string?>? ItemClass { get; set; }
 
+    /// <summary>The attributes and event handlers the caller gives the element a view draws for an item, its row, card, list item or node.</summary>
+    /// <remarks>The view's own attributes win over the caller's, so the item keeps its identity, focus, selection and accessibility; the caller's class goes through <see cref="ItemClass"/>.</remarks>
+    [Parameter] public Func<TItem, IReadOnlyDictionary<string, object>?>? ItemAttributes { get; set; }
+
     /// <summary>What shows in place of the items when the source answers with none, where null shows the library's own sentence.</summary>
     [Parameter] public RenderFragment? EmptyContent { get; set; }
 

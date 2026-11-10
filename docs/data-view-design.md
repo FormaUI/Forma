@@ -504,12 +504,16 @@ it.
 
 ## Extending the data view
 
-The data view is extended in three ways. A view of the host's own registers with the
+The data view is extended in four ways. A view of the host's own registers with the
 engine and reads the contract pair, and a column of the host's own derives from
 `FormaColumnBase`. A template replaces one part of what a view draws: an item's template,
 a column's header, cell, placeholder and edit template, a column's options surface, a
-card's action bar, the empty and loading content, and the status region. And the options
-records grow without a new parameter each time a concern gains a setting.
+card's action bar, the empty and loading content, and the status region. The host attaches
+attributes and handlers to the element every view draws for an item, its row, card, list
+item or node, through `ItemAttributes`, so the whole item can be a drag source or a drop
+target; the view's own attributes win, so the item keeps its identity, focus, selection,
+keys and accessibility, and the host decides what is dragged and where it may land. And
+the options records grow without a new parameter each time a concern gains a setting.
 
 ## Efficiency
 

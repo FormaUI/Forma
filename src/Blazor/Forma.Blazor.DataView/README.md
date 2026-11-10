@@ -188,6 +188,20 @@ and `CanFocusItem` draws it without a marker, so the keys pass over it:
 </FormaDataView>
 ```
 
+`ItemAttributes` gives the element a view draws for an item attributes and handlers of the host's, a
+drag source's among them, under the view's own, which win:
+
+```razor
+<FormaDataView Items="_entries" ItemKey="@(entry => entry.Id)"
+               ItemAttributes="@(entry => new Dictionary<string, object>
+               {
+                   ["draggable"] = "true",
+                   ["ondragstart"] = EventCallback.Factory.Create<DragEventArgs>(this, () => _dragged = entry),
+               })">
+    <FormaDataCards />
+</FormaDataView>
+```
+
 ## Inline editing
 
 With `EnableInlineEditing` and a `CloneForEdit` that copies an item, the grid edits one row at a

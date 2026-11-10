@@ -11,7 +11,8 @@
     var nameId = Tree.GetNodeNameId(Item);
 }
 
-<div class="@Tree.GetNodeClass(Item)"
+<div @attributes="View.ItemAttributes?.Invoke(Item)"
+     class="@Tree.GetNodeClass(Item)"
      style="@(FormaDataTree<TItem>.GetNodeStyle(Depth))"
      role="treeitem"
      aria-level="@Depth"

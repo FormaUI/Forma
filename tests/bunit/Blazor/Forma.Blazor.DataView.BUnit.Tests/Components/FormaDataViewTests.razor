@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using System.Globalization
+@using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
 @using Microsoft.Extensions.Time.Testing
 
@@ -532,6 +533,60 @@
         }
 
         private sealed record Entry(int Id, int? ParentId, string Name, string Kind);
+    }
+
+    public sealed class ItemAttributes
+    {
+        private static readonly Entry[] Entries = [new(1, null, "Covers", true), new(2, 1, "Cover.png", false)];
+
+        [Theory]
+        [InlineData("grid", "tbody tr")]
+        [InlineData("list", "[role=listitem]")]
+        [InlineData("cards", "[role=listitem]")]
+        [InlineData("tree", "[role=treeitem]")]
+        public async Task Should_attach_a_host_s_attributes_and_handlers_to_an_item_keeping_its_own(string view, string selector)
+        {
+            // Arrange - a host making every item draggable, and naming attributes the view owns
+            using var ctx = new FormaDataViewTests();
+            List<string> dragged = [];
+            Func<Entry, IReadOnlyDictionary<string, object>?> attributes = entry => new Dictionary<string, object>
+            {
+                ["draggable"] = "true",
+                ["data-host"] = entry.Name,
+                ["ondragstart"] = EventCallback.Factory.Create<DragEventArgs>(this, () => dragged.Add(entry.Name)),
+                ["aria-selected"] = "host",
+                ["data-item"] = "host",
+                ["class"] = "host",
+            };
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="Entries.AsQueryable()" EnablePagination="false" EnableItemSelection="true" View="@view"
+                                ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" ItemName="@(entry => entry.Name)" ItemAttributes="attributes">
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                    <FormaDataList TItem="Entry" />
+                    <FormaDataCards TItem="Entry" />
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(selector).Count > 0);
+            var item = cut.FindAll(selector)[0];
+
+            // Act
+            await item.TriggerEventAsync("ondragstart", new DragEventArgs());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Covers"], dragged),
+                () => Assert.Equal("true", item.GetAttribute("draggable")),
+                () => Assert.Equal("Covers", item.GetAttribute("data-host")),
+                () => Assert.Equal("false", item.GetAttribute("aria-selected")),
+                () => Assert.NotEqual("host", item.GetAttribute("data-item")),
+                () => Assert.DoesNotContain("host", item.ClassList));
+        }
+
+        private sealed record Entry(int Id, int? ParentId, string Name, bool IsFolder);
     }
 
     public sealed class Source
