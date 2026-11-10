@@ -4,7 +4,7 @@ namespace Forma.Blazor.Components.DataView;
 /// <typeparam name="TItem">The item the provider answers with.</typeparam>
 /// <param name="StartIndex">The index of the first item asked for.</param>
 /// <param name="Count">How many items are asked for.</param>
-/// <param name="Parent">The node whose children are asked for.</param>
+/// <param name="Parent">The node whose content or children are asked for, where null is the roots.</param>
 /// <param name="Grouping">The grouping that orders the items.</param>
 /// <param name="Sort">The sort to apply.</param>
 /// <param name="SortDirection">Whether <paramref name="Sort"/> applies as written or reversed.</param>
@@ -18,6 +18,9 @@ public readonly record struct DataViewRequest<TItem>(
     DataViewSortDirection SortDirection,
     CancellationToken CancellationToken)
 {
+    /// <summary>Whether the request asks for the content the views beside the tree show or for the children the tree shows, which a provider tells apart even at the roots.</summary>
+    public DataViewRequestKind Kind { get; init; }
+
     /// <summary>Whether the answer carries the size of every group in <see cref="DataViewPage{TItem}.GroupSizes"/>.</summary>
     public bool IncludesGroupSizes { get; init; }
 

@@ -245,8 +245,12 @@ state in memory alone. Two data views on one page take two prefixes.
 ### Hierarchy
 
 A source has parentage when a set names a `ParentKey` beside its `ItemKey`, or when a
-provider takes the node whose children it is asked for in the request. `HasChildren` says
-whether an item can open; absent, a node opens until its children come back empty. The engine then
+provider takes the node whose children it is asked for in the request. A provider's request
+says which question it answers: the content the flat views show at the current node, or the
+children the tree shows of a node, so a source that lists more beside a tree than under it,
+every file at the roots beside a tree of folders, tells them apart even at the roots; a set
+answers both with the items its parent key names. `HasChildren` says whether an item can
+open; absent, a node opens until its children come back empty. The engine then
 holds a current node, `CurrentItem` with `CurrentItemChanged`, null for the roots, and the
 flat views show its children, sorted, paged and grouped as any set is; activating a node
 that has children in a flat view makes it current, which is how the explorer opens a

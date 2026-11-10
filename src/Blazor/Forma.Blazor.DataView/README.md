@@ -114,7 +114,10 @@ choose the view and the sort, inside the data view or, given its reference, besi
 
 `View` and `ViewChanged` name the active view by its key: `grid`, `list`, `cards` or `tree`. A tree
 reads the hierarchy from `ParentKey`, and `CurrentItem` names the node whose children the other
-views show.
+views show. A provider is asked with the node in the request's `Parent`, and its `Kind` says
+whether the request reads the content the other views show, `Content`, or the children a tree
+shows, `Children`, so a provider answers each its own way, even at the roots, as a file browser
+lists every file beside a tree of folders.
 
 ## Items from a provider
 

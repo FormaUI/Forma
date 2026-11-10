@@ -1238,7 +1238,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     // A node's children come sorted as the data view is, whole and ungrouped, since the tree shows a level at a time.
     private async ValueTask<DataViewPage<TItem>> AskForChildrenAsync(TItem? parent, CancellationToken cancellationToken)
     {
-        var request = new DataViewRequest<TItem>(0, null, parent, null, _sort, _sortDirection, cancellationToken);
+        var request = new DataViewRequest<TItem>(0, null, parent, null, _sort, _sortDirection, cancellationToken)
+        {
+            Kind = DataViewRequestKind.Children,
+        };
 
         if (ItemsProvider is { } provider)
         {
@@ -1528,6 +1531,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         // The views without a tree show the current node's children, which over a set means the items naming it as parent.
         var request = new DataViewRequest<TItem>(startIndex, count, _currentItem, GroupBy, _sort, _sortDirection, cancellationToken)
         {
+            Kind = DataViewRequestKind.Content,
             IncludesGroupSizes = includesGroupSizes,
         };
 

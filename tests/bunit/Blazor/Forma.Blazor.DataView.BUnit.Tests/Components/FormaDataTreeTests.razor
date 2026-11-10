@@ -611,6 +611,40 @@
             Assert.Contains(asked, parent => parent is null);
             Assert.Contains(asked, parent => parent?.Name == "Documents");
         }
+
+        [Fact]
+        public void Should_tell_a_provider_the_content_beside_the_tree_apart_from_the_tree_s_roots()
+        {
+            // Arrange - the content at the roots is every file, and the tree's roots the top folders alone
+            using var ctx = new FormaDataTreeTests();
+            var asked = new List<(string? Parent, DataViewRequestKind Kind)>();
+            DataViewItemsProvider<Entry> provider = request =>
+            {
+                asked.Add((request.Parent?.Name, request.Kind));
+                var parentId = request.Parent?.Id;
+                var entries = request.Kind == DataViewRequestKind.Content && parentId is null
+                    ? CreateEntries().Where(entry => !entry.IsFolder)
+                    : CreateEntries().Where(entry => entry.ParentId == parentId && entry.IsFolder);
+                var items = request.ApplySorting(entries).ToArray();
+
+                return ValueTask.FromResult(new DataViewPage<Entry>(items, items.Length));
+            };
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" ItemName="@(entry => entry.Name)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" />
+                    <FormaDataList TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2 && cut.FindAll(".forma-data-list-item-name").Count == 3);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains((null, DataViewRequestKind.Content), asked),
+                () => Assert.Contains((null, DataViewRequestKind.Children), asked),
+                () => Assert.Equal(["Documents", "Pictures"], cut.FindAll(".forma-data-tree-node-name").Select(node => node.TextContent)),
+                () => Assert.Equal(["Beach.jpg", "Notes.txt", "Q1.pdf"], cut.FindAll(".forma-data-list-item-name").Select(node => node.TextContent).Order(StringComparer.Ordinal)));
+        }
     }
 
     public sealed class Hierarchy
