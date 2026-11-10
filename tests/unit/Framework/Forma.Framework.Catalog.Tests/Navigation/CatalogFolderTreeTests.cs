@@ -76,8 +76,11 @@ public sealed class CatalogFolderTreeTests
         // Act
         var tree = new CatalogFolderTree([Photos, repeated]);
 
-        // Assert
-        Assert.Equal(Photos, tree.Find("/photos"));
+        // Assert — the first is the folder by that key, and the second stands nowhere in the tree
+        Assert.Multiple(
+            () => Assert.Equal(Photos, tree.Find("/photos")),
+            () => Assert.Equal([Photos], tree.GetChildren(null)),
+            () => Assert.Equal([Photos], tree.GetListedChildren(null)));
     }
 
     [Fact]

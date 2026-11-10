@@ -36,8 +36,11 @@ public sealed class CatalogFolderTree
                 continue;
             }
 
-            // The first folder with a repeated key wins.
-            _foldersByKey.TryAdd(folderItem.Key, folderItem);
+            // The first folder with a repeated key wins, and the later ones stand nowhere in the tree.
+            if (!_foldersByKey.TryAdd(folderItem.Key, folderItem))
+            {
+                continue;
+            }
 
             var isListed = folderItem.Visibility != CatalogItemVisibility.Hidden;
 

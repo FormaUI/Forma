@@ -139,6 +139,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `ExplorerGrouping.Define` leads every grouping with that group. Its slices split at the count of matching folders,
   so a slice of folders alone asks the file provider nothing. [`CatalogListProvider`](src/Framework/Forma.Framework.Catalog/README.md#building-a-surface)
   answers queries from a list it holds as a held collection is shaped.
+- A [`CatalogFolderTree`](src/Framework/Forma.Framework.Catalog/README.md#building-a-surface) leaves out a folder whose
+  key an earlier folder holds, as it found only the first by that key; it listed both among their parent's children,
+  so a surface drew two folders for one key.
 - [`FormaExplorer`](docs/explorer-design.md#the-parts) shows its content through a `FormaDataView`: a location lists
   its child folders before its files, All Media leading with the top-level folders; its pager, its Load More action
   and its status are the data view's, under `.forma-explorer-footer`, the action staying beside the watch of the end
