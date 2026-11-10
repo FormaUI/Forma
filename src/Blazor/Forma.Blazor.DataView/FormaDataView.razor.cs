@@ -32,7 +32,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     [
         nameof(ChildContent), nameof(Status), nameof(EmptyContent), nameof(LoadingContent), nameof(InitialOpenKeys),
         nameof(SelectedItems), nameof(SelectedItemsChanged), nameof(OnSelectionRejected), nameof(OnItemClick),
-        nameof(ViewChanged), nameof(CurrentItemChanged), nameof(PageChanged), nameof(TotalItemCountChanged),
+        nameof(ViewChanged), nameof(CurrentItemChanged), nameof(OnCurrentItemChanging), nameof(PageChanged), nameof(TotalItemCountChanged),
         nameof(Id), nameof(Class), nameof(Style),
     ];
 
@@ -56,6 +56,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private HashSet<object>? _pendingOpenKeys;
     private bool _revealsCurrent;
     private bool _isRevealing;
+    private int _currentChangeCount;
     private object? _loadedParentKey;
     private object? _loadedSortToken;
     private string? _activeViewKey;
@@ -152,6 +153,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>Raised with the node the reader moved into, or null for the roots.</summary>
     [Parameter] public EventCallback<TItem?> CurrentItemChanged { get; set; }
+
+    /// <summary>Raised before a move into a node changes anything, with the change, which the handler can refuse.</summary>
+    [Parameter] public EventCallback<DataViewCurrentItemChange<TItem>> OnCurrentItemChanging { get; set; }
 
     /// <summary>The keys of the nodes that start open, as <see cref="ItemKey"/> reads them.</summary>
     /// <remarks>A named node opens once, as the level holding it first loads, so only the branches on the way to it are asked for, and a node the reader closes stays closed.</remarks>
@@ -623,6 +627,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         if (_currentItemParameter.Update(CurrentItem))
         {
+            _currentChangeCount++;
             SetCurrentItem(CurrentItem);
         }
 
@@ -1293,10 +1298,24 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     public async Task MakeCurrentAsync(TItem? item)
     {
-        // The one place the current node changes, which refuses a node that cannot be activated before anything changes.
+        // The one place the current node changes, which refuses a node that cannot be activated, and one the host refuses, before anything changes.
         if (Equals(GetNodeKey(item), GetNodeKey(_currentItem)) || (item is not null && !CanActivate(item)))
         {
             return;
+        }
+
+        // A move made, or a node the host set, while the host was still answering supersedes the change it answered.
+        var changeCount = ++_currentChangeCount;
+
+        if (OnCurrentItemChanging.HasDelegate)
+        {
+            var change = new DataViewCurrentItemChange<TItem>(item, _currentItem);
+            await OnCurrentItemChanging.InvokeAsync(change);
+
+            if (change.IsRefused || changeCount != _currentChangeCount)
+            {
+                return;
+            }
         }
 
         SetCurrentItem(item);

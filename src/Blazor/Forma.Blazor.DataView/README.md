@@ -143,6 +143,10 @@ fills the data view's region, so each of its places scrolls within itself:
 </FormaDataView>
 ```
 
+`OnCurrentItemChanging` is raised before a move into a node changes anything, with the node and the
+one before it, and its handler calls `Refuse()` to keep the reader where they are, as a host that
+checks a folder may be opened does.
+
 `InitialOpenKeys` names the nodes that start open, by the keys `ItemKey` reads, so a tree reopens
 the branches its reader left open; each opens once, as the level holding it loads, and only those
 branches are asked for. A node that becomes current opens the ancestors that reach it, so a host

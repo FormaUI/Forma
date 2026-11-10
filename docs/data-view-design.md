@@ -287,10 +287,16 @@ open; absent, a node opens until its children come back empty. The engine then
 holds a current node, `CurrentItem` with `CurrentItemChanged`, null for the roots, and the
 flat views show its children, sorted, paged and grouped as any set is; activating a node
 that has children in a flat view makes it current, which is how the explorer opens a
-folder. The tree shows the hierarchy from the roots, asking the source for a node's
-children the first time it opens and keeping them, with a busy state on the node while
-they load. The sort applies within a level. A source without parentage is one level,
-and the tree has nothing to show for it.
+folder. Every move into a node, a view's activation, a sidebar's choice or the host's own
+call of `MakeCurrentAsync`, passes one point before anything changes:
+`OnCurrentItemChanging` hands the host the node and the one before it, and a host that
+refuses leaves the current node, the page and the items as they were; a move made, or a
+node the host sets as `CurrentItem`, while the host is still answering supersedes the one
+it answers, so a slow answer never lands after the reader has gone elsewhere. The tree
+shows the hierarchy from the roots, asking the source for a node's children the first
+time it opens and keeping them, with a busy state on the node while they load. The sort
+applies within a level. A source without parentage is one level, and the tree has nothing
+to show for it.
 
 The open nodes are the engine's, so they hold through a refresh, a new source and a change
 of view, and a tree placed anew finds them as they were. `InitialOpenKeys` names the nodes

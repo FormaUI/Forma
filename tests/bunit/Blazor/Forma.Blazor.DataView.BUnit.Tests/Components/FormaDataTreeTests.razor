@@ -832,6 +832,68 @@
         }
 
         [Fact]
+        public async Task Should_leave_the_current_node_where_it_was_when_the_host_refuses_the_move()
+        {
+            // Arrange — the host refuses every move, telling which node and the one before it
+            using var ctx = new FormaDataTreeTests();
+            var asked = new List<(string? To, string? From)>();
+            var moved = new List<Entry?>();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)"
+                               OnCurrentItemChanging="@((DataViewCurrentItemChange<Entry> change) => { asked.Add((change.Item?.Name, change.Previous?.Name)); change.Refuse(); })"
+                               CurrentItemChanged="@((Entry? entry) => moved.Add(entry))">
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
+
+            // Act — into Documents
+            await PressRowAsync(cut, 0);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([("Documents", null)], asked),
+                () => Assert.Empty(moved),
+                () => Assert.Equal(["Documents", "Pictures"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList()));
+        }
+
+        [Fact]
+        public async Task Should_let_a_later_move_supersede_a_change_the_host_is_still_answering()
+        {
+            // Arrange — the host takes its time over Documents and answers Pictures at once
+            using var ctx = new FormaDataTreeTests();
+            var held = new TaskCompletionSource();
+            Entry? current = null;
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)"
+                               OnCurrentItemChanging="@((DataViewCurrentItemChange<Entry> change) => change.Item?.Id == 1 ? held.Task : Task.CompletedTask)"
+                               CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            var entries = CreateEntries().ToList();
+
+            // Act — into Documents, held, then into Pictures, then Documents' answer
+            var documents = engine.InvokeAsync(() => engine.Instance.MakeCurrentAsync(entries.Single(entry => entry.Id == 1)));
+            await engine.InvokeAsync(() => engine.Instance.MakeCurrentAsync(entries.Single(entry => entry.Id == 2)));
+            await cut.ReleaseAsync(held.SetResult);
+            await documents;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Pictures", current?.Name),
+                () => Assert.Equal(["Beach.jpg"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList()));
+        }
+
+        [Fact]
         public void Should_show_the_children_of_the_node_the_host_names()
         {
             // Arrange
