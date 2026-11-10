@@ -128,14 +128,15 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
         if (HasSelection)
         {
             builder.Add("forma-data-list-item-selected", View.IsSelected(item));
-            builder.Add("forma-data-list-item-disabled", !View.CanInteractWith(item));
+            builder.Add("forma-data-list-item-disabled", View.IsMuted(item));
         }
 
         return builder.ToStringOrNull();
     }
 
+    // An item that cannot be selected says nothing of it, so it is never announced as an unselected choice.
     internal string? GetAriaSelected(TItem item)
-        => HasSelection ? View.IsSelected(item) ? "true" : "false" : null;
+        => HasSelection && View.IsSelectable(item) ? View.IsSelected(item) ? "true" : "false" : null;
 
     private string GetGroupNameId(int index)
         => $"{ElementId}-group-{index}";

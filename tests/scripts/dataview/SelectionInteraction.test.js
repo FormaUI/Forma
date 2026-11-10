@@ -715,6 +715,34 @@ describe('SelectionInteraction', () => {
             expect(document.activeElement).toBe(cellOf(2));
         });
 
+        // A render taking the focused item's marker away, as one that can no longer take the focus draws none, leaving the item drawn.
+        const unmark = key => {
+            const marker = cellOf(key);
+            marker.dispatchEvent(new FocusEvent('focusout', { bubbles: true, relatedTarget: null }));
+            marker.remove();
+            document.body.focus();
+        };
+
+        it('hands the focus to the next item that carries a marker when the focused one loses its own', async () => {
+            attachSelection(grid, options());
+            cellOf(2).focus();
+
+            unmark(2);
+            await nextFrame();
+
+            expect(document.activeElement).toBe(cellOf(3));
+        });
+
+        it('hands the focus to the previous item that carries a marker when the last one loses its own', async () => {
+            attachSelection(grid, options());
+            cellOf(4).focus();
+
+            unmark(4);
+            await nextFrame();
+
+            expect(document.activeElement).toBe(cellOf(3));
+        });
+
         it('leaves the focus where a press sent it', async () => {
             attachSelection(grid, options());
             cellOf(2).focus();

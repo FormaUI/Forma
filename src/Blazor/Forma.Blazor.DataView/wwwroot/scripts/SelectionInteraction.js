@@ -486,7 +486,7 @@ class SelectionInteraction {
     }
 
     #hold(marker) {
-        this.#held = marker ? { token: this.#tokenOf(marker), position: this.#positionOf(marker) } : null;
+        this.#held = marker ? { token: this.#tokenOf(marker), position: this.#positionOf(marker), item: this.#itemOf(marker) } : null;
         this.#readerMoved = false;
         this.#moveStart = null;
     }
@@ -520,13 +520,27 @@ class SelectionInteraction {
         }
 
         const find = () => this.#target.querySelector(`[${this.#keyAttribute}="${held.token}"]`)
-            ?? (held.position === null ? null : this.#markerAt(held.position));
+            ?? (held.position === null ? null : this.#markerAt(held.position))
+            ?? this.#nearestMarker(held.item);
 
         this.#whenDrawn(find, marker => {
             if (this.#held === held && !this.#readerMoved && this.#isFocusLost()) {
                 this.#focusMarker(marker, this.#markers());
             }
         });
+    }
+
+    /** The marker nearest an item still drawn that no longer carries one, the next before the previous. */
+    #nearestMarker(item) {
+        if (!item.isConnected || !this.#target.contains(item) || item.querySelector(this.#markerSelector)) {
+            return null;
+        }
+
+        const all = this.#markers();
+
+        return all.find(marker => item.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_FOLLOWING)
+            ?? all.findLast(marker => item.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_PRECEDING)
+            ?? null;
     }
 
     #markerAt(position) {

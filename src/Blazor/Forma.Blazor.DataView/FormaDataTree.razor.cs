@@ -338,11 +338,11 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             case PreviousAction:
                 await StepAsync(node, -1);
                 break;
-            case FirstAction:
-                await MoveToAsync(GetVisibleNodes()[0]);
+            case FirstAction when GetFocusableNodes() is { Count: > 0 } focusable:
+                await MoveToAsync(focusable[0]);
                 break;
-            case LastAction:
-                await MoveToAsync(GetVisibleNodes()[^1]);
+            case LastAction when GetFocusableNodes() is { Count: > 0 } focusable:
+                await MoveToAsync(focusable[^1]);
                 break;
             case ChooseAction:
                 await HandleNodeClickAsync(node);
@@ -355,7 +355,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    // Type-ahead: the next visible node after the focused one whose name starts with the letter, wrapping round to the first.
+    // Type-ahead: the next visible node after the focused one whose name starts with the letter and that can take the focus, wrapping round to the first.
     private async Task JumpToAsync(TItem from, string letter)
     {
         var visible = GetVisibleNodes();
@@ -365,7 +365,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         {
             var candidate = visible[(start + step) % visible.Count];
 
-            if (Context.CultureState.Culture.CompareInfo.IsPrefix(View.ItemName(candidate), letter, CompareOptions.IgnoreCase))
+            if (View.CanFocus(candidate) && Context.CultureState.Culture.CompareInfo.IsPrefix(View.ItemName(candidate), letter, CompareOptions.IgnoreCase))
             {
                 await MoveToAsync(candidate);
                 return;
@@ -373,13 +373,21 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
     }
 
-    // The visible node a step away from this one, the ends holding.
+    // The nearest visible node that can take the focus a step away from this one, the ends holding.
     private Task StepAsync(TItem from, int step)
     {
         var visible = GetVisibleNodes();
         var index = visible.FindIndex(candidate => IsSame(candidate, from));
 
-        return MoveToAsync(visible[Math.Clamp(index + step, 0, visible.Count - 1)]);
+        for (var next = index + step; next >= 0 && next < visible.Count; next += step)
+        {
+            if (View.CanFocus(visible[next]))
+            {
+                return MoveToAsync(visible[next]);
+            }
+        }
+
+        return Task.CompletedTask;
     }
 
     // Moving to a node selects it alone where a marker carries the focus, and makes it current in a sidebar; the focus lands on the marker or the row.
@@ -422,22 +430,30 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             return;
         }
 
-        if (!SelectsCurrent && _lastFocusedKey is { } last && _visibleRows.Exists(row => Equals(GetRowKey(row), last)))
+        var focusable = _visibleRows.FindAll(row => View.CanFocus(row.Node));
+
+        if (focusable.Count == 0)
+        {
+            _tabStopKey = null;
+            return;
+        }
+
+        if (!SelectsCurrent && _lastFocusedKey is { } last && focusable.Exists(row => Equals(GetRowKey(row), last)))
         {
             _tabStopKey = last;
             return;
         }
 
-        var current = View.CurrentItem is { } item ? _visibleRows.FindIndex(row => IsSame(row.Node, item)) : -1;
+        var current = View.CurrentItem is { } item ? focusable.FindIndex(row => IsSame(row.Node, item)) : -1;
 
-        _tabStopKey = GetRowKey(_visibleRows[Math.Max(current, 0)]);
+        _tabStopKey = GetRowKey(focusable[Math.Max(current, 0)]);
     }
 
-    // The nodes this render draws, the focus handed on where the node holding it went away.
+    // The nodes this render draws, the focus handed on where the node holding it went away or can no longer take it.
     private void SettleRows()
     {
         var rows = GetVisibleRows();
-        HashSet<object> remaining = [.. rows.Select(GetRowKey)];
+        HashSet<object> remaining = [.. rows.Where(row => View.CanFocus(row.Node)).Select(GetRowKey)];
 
         HandFocusOn(rows, remaining);
 
@@ -609,21 +625,22 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     internal string? GetNodeTabIndex(object key)
         => KeepsFocus ? Equals(_tabStopKey, key) ? "0" : "-1" : null;
 
-    // A node is drawn by these, one bit each: the two the other views share, then whether it is the current node, can open, is open, is
+    // A node is drawn by these, one bit each: those the other views share, then above them whether it is the current node, can open, is open, is
     // loading its children, is the tab stop or a row that is not, and takes the focus when the node holding it goes away, by its row or by its box.
     internal int GetNodeState(TItem node)
     {
         var key = View.ItemKey(node);
         var canOpen = View.CanOpen(node);
 
-        return DataViewItemGate.GetState(View, node)
-            | (IsCurrent(node) ? 4 : 0)
-            | (canOpen ? 8 : 0)
-            | (canOpen && View.IsOpen(node) ? 16 : 0)
-            | (View.IsLoadingChildren(node) ? 32 : 0)
-            | (KeepsFocus ? Equals(_tabStopKey, key) ? 64 : 128 : 0)
-            | (GetHeirMark(key, marker: false) is not null ? 256 : 0)
-            | (GetHeirMark(key, marker: true) is not null ? 512 : 0);
+        var own = (IsCurrent(node) ? 1 : 0)
+            | (canOpen ? 2 : 0)
+            | (canOpen && View.IsOpen(node) ? 4 : 0)
+            | (View.IsLoadingChildren(node) ? 8 : 0)
+            | (KeepsFocus ? Equals(_tabStopKey, key) ? 16 : 32 : 0)
+            | (GetHeirMark(key, marker: false) is not null ? 64 : 0)
+            | (GetHeirMark(key, marker: true) is not null ? 128 : 0);
+
+        return DataViewItemGate.GetState(View, node) | (own << DataViewItemGate.SharedBitCount);
     }
 
     // A node taking the focus draws the tree again, which pins the node it holds.
@@ -668,6 +685,9 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
     private List<TItem> GetVisibleNodes()
         => GetVisibleRows().ConvertAll(row => row.Node);
+
+    private List<TItem> GetFocusableNodes()
+        => GetVisibleNodes().FindAll(View.CanFocus);
 
     // The nodes a reader can see, from the roots down through every open node, each with its level and its place among its siblings.
     private List<VisibleNode> GetVisibleRows()
@@ -766,7 +786,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         if (HasSelection)
         {
             builder.Add("forma-data-tree-node-selected", View.IsSelected(node));
-            builder.Add("forma-data-tree-node-disabled", !View.CanInteractWith(node));
+            builder.Add("forma-data-tree-node-disabled", View.IsMuted(node));
         }
 
         return builder.ToStringOrNull();
@@ -784,7 +804,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
     // A tree with a selection tells each node's part in it; a sidebar is a single-select tree whose selected node is the current one.
     internal string? GetAriaSelected(TItem node)
-        => HasSelection ? View.IsSelected(node) ? "true" : "false"
+        => HasSelection ? View.IsSelectable(node) ? View.IsSelected(node) ? "true" : "false" : null
             : SelectsCurrent ? IsCurrent(node) ? "true" : "false"
             : null;
 

@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using System.Globalization
 @using Microsoft.Extensions.DependencyInjection
 @using Microsoft.Extensions.Time.Testing
 
@@ -385,6 +386,152 @@
         }
 
         private sealed record Product(int Id, string Name);
+    }
+
+    public sealed class Eligibility
+    {
+        private static readonly Entry[] Entries =
+        [
+            new(1, null, "Archive", "folder"),
+            new(2, null, "Locked", "locked"),
+            new(3, null, "Notes", "file"),
+            new(4, null, "Ghost", "ghost"),
+            new(5, 1, "Old", "file"),
+        ];
+
+        private static int GetToken(IRenderedComponent<IComponent> cut, string name)
+            => int.Parse(cut.FindAll("[role=listitem]").Single(item => item.QuerySelector(".forma-data-list-item-name")!.TextContent == name).GetAttribute("data-item")!, CultureInfo.InvariantCulture);
+
+        private IRenderedComponent<IComponent> Render(FormaDataViewTests ctx, List<string> activated, bool isChecked = false)
+            => ctx.Render(
+                @<FormaDataView Items="Entries.AsQueryable()" EnablePagination="false" EnableItemSelection="@(!isChecked)" EnableCheckedSelection="isChecked"
+                                ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" ItemName="@(entry => entry.Name)" HasChildren="@(entry => entry.Kind == "folder")"
+                                IsItemDisabled="@(entry => entry.Kind == "locked")" CanSelectItem="@(entry => entry.Kind != "folder")" CanFocusItem="@(entry => entry.Kind != "ghost")"
+                                OnItemClick="@((Entry entry) => activated.Add(entry.Name))">
+                    <FormaDataList TItem="Entry" />
+                </FormaDataView>);
+
+        [Fact]
+        public async Task Should_neither_select_nor_activate_a_disabled_item_by_any_path()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            List<string> activated = [];
+            var cut = Render(ctx, activated);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            var locked = Entries[1];
+            var token = GetToken(cut, "Locked");
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(token, additive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(token, additive: true));
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(locked, true));
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectAsync(InlineTransfer.Of(new[] { token }), additive: false));
+            await engine.InvokeAsync(() => engine.Instance.SelectAsync([locked]));
+            await engine.InvokeAsync(() => engine.Instance.HandleActivateAsync(token));
+            await engine.InvokeAsync(() => engine.Instance.ActivateAsync(locked));
+            var selectedBySingles = engine.Instance.SelectedCount;
+            await engine.InvokeAsync(() => engine.Instance.SelectAllAsync());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, selectedBySingles),
+                () => Assert.Empty(activated),
+                () => Assert.Equal(["Notes", "Ghost"], cut.FindAll("[aria-selected=true] .forma-data-list-item-name").Select(name => name.TextContent)),
+                () => Assert.Contains("forma-data-list-item-disabled", cut.FindAll("[role=listitem]")[1].ClassList));
+        }
+
+        [Fact]
+        public async Task Should_activate_an_item_that_cannot_be_chosen_and_draw_it_unmuted()
+        {
+            // Arrange - a file selected beside a folder that cannot be
+            using var ctx = new FormaDataViewTests();
+            var cut = Render(ctx, []);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(GetToken(cut, "Notes"), additive: false));
+            var archive = GetToken(cut, "Archive");
+
+            // Act - a press on the folder, then Enter on it
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(archive, additive: false));
+            var item = cut.FindAll("[role=listitem]")[0];
+            var (ariaSelected, isMuted) = (item.GetAttribute("aria-selected"), item.ClassList.Contains("forma-data-list-item-disabled"));
+            var selected = cut.FindAll("[aria-selected=true] .forma-data-list-item-name").Select(name => name.TextContent).ToList();
+            await engine.InvokeAsync(() => engine.Instance.HandleActivateAsync(archive));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Notes"], selected),
+                () => Assert.Null(ariaSelected),
+                () => Assert.False(isMuted),
+                () => Assert.Equal("Archive", ((IDataView<Entry>)engine.Instance).CurrentItem?.Name));
+        }
+
+        [Fact]
+        public void Should_draw_no_marker_for_an_item_that_cannot_take_the_focus()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+
+            // Act
+            var cut = Render(ctx, [], isChecked: true);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+
+            // Assert
+            Assert.Equal([true, true, true, false], cut.FindAll("[role=listitem]").Select(item => item.QuerySelector("[data-row-key]") is not null));
+        }
+
+        [Fact]
+        public async Task Should_leave_the_current_node_and_the_selection_when_a_node_that_cannot_be_activated_is_made_current()
+        {
+            // Arrange - a folder that cannot be activated, and a file selected beside it
+            using var ctx = new FormaDataViewTests();
+            Entry? current = null;
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="Entries.AsQueryable()" EnablePagination="false" EnableItemSelection="true"
+                                ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" ItemName="@(entry => entry.Name)" HasChildren="@(entry => entry.Kind == "folder")"
+                                CanActivateItem="@(entry => entry.Kind != "folder")" CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataList TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(GetToken(cut, "Notes"), additive: false));
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.MakeCurrentAsync(Entries[0]));
+            await engine.InvokeAsync(() => engine.Instance.ActivateAsync(Entries[0]));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(current),
+                () => Assert.Null(((IDataView<Entry>)engine.Instance).CurrentItem),
+                () => Assert.Equal(4, cut.FindAll("[role=listitem]").Count),
+                () => Assert.Equal(["Notes"], cut.FindAll("[aria-selected=true] .forma-data-list-item-name").Select(name => name.TextContent)));
+        }
+
+        [Fact]
+        public void Should_disable_the_master_box_over_a_page_where_nothing_can_be_selected()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="Entries.AsQueryable()" EnablePagination="true" PageSize="10" EnableCheckedSelection="true" ItemKey="@(entry => entry.Id)" CanSelectItem="@(_ => false)">
+                    <FormaDataGrid TItem="Entry">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(entry => entry.Name)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 5);
+
+            // Assert
+            Assert.True(cut.Find(".forma-data-grid-master input[type=checkbox]").HasAttribute("disabled"));
+        }
+
+        private sealed record Entry(int Id, int? ParentId, string Name, string Kind);
     }
 
     public sealed class Source

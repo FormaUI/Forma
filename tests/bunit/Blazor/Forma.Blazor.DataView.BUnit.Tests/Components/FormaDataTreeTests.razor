@@ -558,6 +558,36 @@
         }
 
         [Fact]
+        public async Task Should_pass_over_a_node_that_cannot_take_the_focus_with_the_arrows_and_the_ends()
+        {
+            // Arrange — three roots, the middle one unable to take the focus, and a sidebar's rows carrying it
+            using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
+            Entry? current = null;
+            var entries = new[] { new Entry(1, null, "Documents", true), new Entry(2, null, "Hidden", true), new Entry(3, null, "Pictures", true) }.AsQueryable();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="entries" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" CanFocusItem="@(entry => entry.Name != "Hidden")" CurrentItemChanged="@((Entry? entry) => current = entry)">
+                    <FormaDataTree TItem="Entry" SelectsCurrent="true" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
+            await ReportFocusAsync(probe, cut, cut.Find(".forma-data-tree-node"));
+
+            // Act — down from Documents, then End and Home from Pictures
+            await router.RouteAsync("tree.next", "ArrowDown");
+            var downTo = current?.Name;
+            await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[2]);
+            await router.RouteAsync("tree.previous", "ArrowUp");
+            var upTo = current?.Name;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Pictures", downTo),
+                () => Assert.Equal("Documents", upTo),
+                () => Assert.Null(cut.FindAll(".forma-data-tree-node")[1].GetAttribute("tabindex")));
+        }
+
+        [Fact]
         public async Task Should_reveal_the_node_a_view_beside_it_moved_into()
         {
             // Arrange — the sidebar shows the roots closed while the grid moves two levels down

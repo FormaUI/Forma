@@ -175,6 +175,19 @@ control reaches: `Direct` selects the whole set at one press, `FromMenu` the ite
 menu offering the page and the set, `FromPager` the items on screen with the footer offering the set,
 and `None` leaves the master control out.
 
+Four rules, each a function of the item, say what an item may do. `IsItemDisabled` mutes an item and
+takes it out of every selection and activation, `CanSelectItem` keeps an item from being selected
+while it still activates, `CanActivateItem` keeps it from activating or becoming the current node,
+and `CanFocusItem` draws it without a marker, so the keys pass over it:
+
+```razor
+<FormaDataView Items="_entries" EnableItemSelection="true" ItemKey="@(entry => entry.Id)"
+               IsItemDisabled="@(entry => entry.IsLocked)"
+               CanSelectItem="@(entry => !entry.IsFolder)">
+    <FormaDataList />
+</FormaDataView>
+```
+
 ## Inline editing
 
 With `EnableInlineEditing` and a `CloneForEdit` that copies an item, the grid edits one row at a

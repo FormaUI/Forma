@@ -76,6 +76,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`DataViewRequest`](src/Blazor/Forma.Blazor.DataView/README.md#items-from-a-provider) says whether it reads the
   content the views beside a tree show at the current node, or a node's children for the tree, in its `Kind`, so a
   provider tells the two apart even at the roots.
+- [`FormaDataView`](docs/data-view-design.md#selection) takes `IsItemDisabled`, `CanSelectItem`, `CanActivateItem`
+  and `CanFocusItem`, rules each view draws and every path applies: a disabled item is muted and neither selected
+  nor activated, one that cannot be selected still activates and says nothing of whether it is selected, one that
+  cannot be activated never becomes the current node, and one that cannot take the focus draws no marker, the keys
+  passing over it and a focus it loses going to the nearest item that has one. `IDataView` declares `IsDisabled`,
+  `IsSelectable`, `CanActivate`, `CanFocus` and `IsMuted`, which a host's own view implementing it implements.
 - [`ExplorerContentProvider`](src/Framework/Forma.Framework.Explorer/README.md) answers a location's content, its
   child folders before its files, in either sort direction, under the grouping's leading group of folders, and
   `ExplorerGrouping.Define` leads every grouping with that group. Its slices split at the count of matching folders,

@@ -12,17 +12,21 @@
     @if (List.HasSelection)
     {
         <span class="forma-data-list-item-lead" data-item-control>
-            <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
-                <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-list-item-marker")"
-                               data-row-key="@Token"
-                               aria-label="@L["Select {Name}", View.ItemName(Item)]"
-                               aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
-                               Value="@View.IsSelected(Item)"
-                               PreventDefault="true"
-                               OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
-                               @onfocusin="List.GetFocusHandler(Item)"
-                               ValueExpression="() => ItemSelection" />
-            </label>
+            @* An item that cannot take the focus draws no marker; the selection behavior acts only on items that carry one. *@
+            @if (View.CanFocus(Item))
+            {
+                <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
+                    <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-list-item-marker")"
+                                   data-row-key="@Token"
+                                   aria-label="@L["Select {Name}", View.ItemName(Item)]"
+                                   aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
+                                   Value="@View.IsSelected(Item)"
+                                   PreventDefault="true"
+                                   OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
+                                   @onfocusin="List.GetFocusHandler(Item)"
+                                   ValueExpression="() => ItemSelection" />
+                </label>
+            }
             @if (!View.EnableCheckedSelection && View.IsSelected(Item))
             {
                 <FormaIcon Icon="Glyph.Check" Size="IconSize.Small" Class="forma-data-list-item-check" />

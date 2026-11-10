@@ -64,10 +64,10 @@ public interface IDataViewInteraction<TItem>
     /// <summary>Selects or clears what the master control reaches in the selection options' mode.</summary>
     Task ToggleMasterAsync();
 
-    /// <summary>Selects every item on screen, subject to the selection bounds.</summary>
+    /// <summary>Selects every item on screen that can be selected, subject to the selection bounds.</summary>
     Task SelectPageAsync();
 
-    /// <summary>Selects every item of the set where the data view holds it, else every item on screen, subject to the selection bounds.</summary>
+    /// <summary>Selects every item of the set that can be selected where the data view holds it, else every such item on screen, subject to the selection bounds.</summary>
     Task SelectAllAsync();
 
     /// <summary>Clears the selection.</summary>

@@ -212,6 +212,17 @@ reset the selection rather than remove from it. The options' caption swaps the m
 for a static label or an interactive toggle. The selection pairs with the selection
 toolbar above the data view, which the page composes.
 
+Each item answers four rules the host gives, `IsItemDisabled`, `CanSelectItem`,
+`CanActivateItem` and `CanFocusItem`, so a picker can let a reader open a folder it will not
+let them choose. A disabled item is drawn muted and is neither selected nor activated. An
+item that cannot be selected keeps every other state: it activates, takes the focus and is
+drawn as it is, its box unable to act and nothing said of whether it is selected, so it is
+never announced as an unchosen choice. Every path applies the rules: a press, a key, a range,
+select-all and the selection methods select only the items that can be, a press on one that
+cannot leaving the selection as it is; activation refuses an item that cannot be activated;
+and the current node changes at one point, which refuses such a node before anything
+changes, the selection included.
+
 ### Sorting, paging and the address
 
 The engine holds one sort, `DataViewSort`, a first key and any number of further keys, each
@@ -565,7 +576,11 @@ reaches them however far they lie: the move names the end it wants, the view scr
 item into range, and the focus lands on it once it is drawn, so the outcome is the one a
 view drawing every item gives; a move the reader leaves, or one whose order or view changes
 before it lands, lets the focus go. Over a source that cannot count, End reaches the last
-item the source has answered, and the view reads one slice further as it scrolls there.
+item the source has answered, and the view reads one slice further as it scrolls there. An
+item that cannot take the focus draws no marker, so the keys pass over it and the tab stop
+never rests on it; a focused item that loses its marker hands the focus to the nearest item
+that carries one, the next before the previous, and the tree's keys, type-ahead and tab stop
+pass over such a node as they do over one the tree no longer shows.
 
 Every offset, alignment and border is logical, so the same stylesheet serves both
 directions; a numeric cell reads as a number in either, cards pack from the inline start,

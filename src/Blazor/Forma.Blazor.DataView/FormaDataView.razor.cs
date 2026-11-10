@@ -122,6 +122,20 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <remarks>An item with children opens in the tree and, activated in another view, becomes the current node.</remarks>
     [Parameter] public Func<TItem, bool>? HasChildren { get; set; }
 
+    /// <summary>Whether an item is disabled: drawn muted, and neither selected nor activated by any gesture or method.</summary>
+    [Parameter] public Func<TItem, bool>? IsItemDisabled { get; set; }
+
+    /// <summary>Whether an item can be selected, where null lets every item that is not disabled be.</summary>
+    /// <remarks>An item that cannot be selected keeps every other state: it activates, takes the focus and is drawn as it is.</remarks>
+    [Parameter] public Func<TItem, bool>? CanSelectItem { get; set; }
+
+    /// <summary>Whether an item can be activated, where null lets every item that is not disabled be.</summary>
+    [Parameter] public Func<TItem, bool>? CanActivateItem { get; set; }
+
+    /// <summary>Whether an item can take the focus, where null lets every item take it.</summary>
+    /// <remarks>An item that cannot take the focus draws no marker, so the keys pass over it and the tab stop never rests on it.</remarks>
+    [Parameter] public Func<TItem, bool>? CanFocusItem { get; set; }
+
     /// <summary>The node whose children the views without a tree show, where null shows the roots.</summary>
     [Parameter] public TItem? CurrentItem { get; set; }
 
@@ -351,7 +365,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     public bool AllSelected
         => MasterReachesSet
             ? _totalItemCount is > 0 && _selectedSet.Count >= _totalItemCount
-            : _items.Count > 0 && PageSelectedCount == _items.Count;
+            : SelectableItems.Any() && SelectableItems.All(IsSelected);
 
     /// <inheritdoc />
     public bool PartiallySelected
@@ -361,7 +375,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     public bool IsMasterControlDisabled
         => MasterReachesSet
             ? _selectedSet.Count == 0 && !CanSelectAll
-            : PageSelectedCount == 0 && !CanSelectPage;
+            : PageSelectedCount == 0 && (!SelectableItems.Any() || !CanSelectPage);
 
     /// <inheritdoc />
     public bool HasMasterControl
@@ -424,7 +438,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     // Selecting the page adds what is not yet selected on it to what is selected, on this page or another.
     private bool CanSelectPage
-        => _selectionBounds.CanSelectAll(_selectedSet.Count + _items.Count - PageSelectedCount);
+        => _selectionBounds.CanSelectAll(_selectedSet.Count + SelectableItems.Count(item => !IsSelected(item)));
+
+    // The items on screen that can be selected, which the master control reaches.
+    private IEnumerable<TItem> SelectableItems
+        => _items.Where(IsSelectable);
 
     private bool ShowsPaginator
         => EnablePagination && _totalItemCount is { } total && total > PageSize;
@@ -679,7 +697,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         var whole = await LoadSliceCoreAsync(0, null, CancellationToken.None);
-        await ReplaceSelectionAsync(CreateSelection(whole.Items));
+        var selectable = CreateSelection(whole.Items.Where(IsSelectable));
+
+        if (!_selectionBounds.CanSelectAll(selectable.Count))
+        {
+            await RejectSelectionAsync(SelectionBoundary.Maximum);
+            return;
+        }
+
+        await ReplaceSelectionAsync(selectable);
     }
 
     /// <inheritdoc />
@@ -692,7 +718,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         var updated = CreateSelection(_selectedSet);
-        updated.UnionWith(_items);
+        updated.UnionWith(_items.Where(IsSelectable));
         await ReplaceSelectionAsync(updated);
     }
 
@@ -715,14 +741,14 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         return ReplaceSelectionAsync(updated);
     }
 
-    /// <summary>Adds <paramref name="items"/> to the selection, subject to the selection bounds.</summary>
+    /// <summary>Adds those of <paramref name="items"/> that can be selected to the selection, subject to the selection bounds.</summary>
     /// <param name="items">The items to select.</param>
     public async Task SelectAsync(IEnumerable<TItem> items)
     {
         ArgumentNullException.ThrowIfNull(items);
 
         var updated = CreateSelection(_selectedSet);
-        updated.UnionWith(items);
+        updated.UnionWith(items.Where(IsSelectable));
 
         if (!_selectionBounds.CanSelectAll(updated.Count))
         {
@@ -812,6 +838,26 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     public bool IsSelected(TItem item)
         => _selectedSet.Contains(item);
+
+    /// <inheritdoc />
+    public bool IsDisabled(TItem item)
+        => IsItemDisabled?.Invoke(item) ?? false;
+
+    /// <inheritdoc />
+    public bool IsSelectable(TItem item)
+        => !IsDisabled(item) && (CanSelectItem?.Invoke(item) ?? true);
+
+    /// <inheritdoc />
+    public bool CanActivate(TItem item)
+        => !IsDisabled(item) && (CanActivateItem?.Invoke(item) ?? true);
+
+    /// <inheritdoc />
+    public bool CanFocus(TItem item)
+        => CanFocusItem?.Invoke(item) ?? true;
+
+    /// <inheritdoc />
+    public bool IsMuted(TItem item)
+        => IsDisabled(item) || (IsSelectable(item) && !CanInteractWith(item));
 
     /// <inheritdoc />
     public bool CanInteractWith(TItem item)
@@ -909,7 +955,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     public async Task MakeCurrentAsync(TItem? item)
     {
-        if (Equals(GetNodeKey(item), GetNodeKey(_currentItem)))
+        // The one place the current node changes, which refuses a node that cannot be activated before anything changes.
+        if (Equals(GetNodeKey(item), GetNodeKey(_currentItem)) || (item is not null && !CanActivate(item)))
         {
             return;
         }
@@ -933,7 +980,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     public async Task ToggleSelectionAsync(TItem item, bool selected)
     {
-        if (selected == IsSelected(item))
+        if (selected == IsSelected(item) || (selected && !IsSelectable(item)))
         {
             return;
         }
@@ -969,9 +1016,16 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <inheritdoc />
     public Task ActivateAsync(TItem item)
-        => HasHierarchy && HasChildren is { } hasChildren && hasChildren(item)
+    {
+        if (!CanActivate(item))
+        {
+            return Task.CompletedTask;
+        }
+
+        return HasHierarchy && HasChildren is { } hasChildren && hasChildren(item)
             ? MakeCurrentAsync(item)
             : OnItemClick.InvokeAsync(item);
+    }
 
     /// <inheritdoc />
     public void Subscribe(Func<Task> callback)
@@ -1001,9 +1055,14 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await SelectAloneAsync(item);
     }
 
-    // A plain press selects the item alone, subject to the bounds.
+    // A plain press selects the item alone, subject to the bounds; one landing on an item that cannot be selected leaves the selection as it is.
     private async Task SelectAloneAsync(TItem item)
     {
+        if (!IsSelectable(item))
+        {
+            return;
+        }
+
         if (!CanSelect(item))
         {
             await RejectSelectionAsync(SelectionBoundary.Maximum);
@@ -1141,11 +1200,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
     }
 
-    // A range select is a whole-set replacement, so it is judged as a master select-all is.
+    // A range select is a whole-set replacement, so it is judged as a master select-all is, over the items in it that can be selected.
     private async Task SelectRangeAsync(IEnumerable<TItem> range, bool additive)
     {
         var updated = CreateSelection(additive ? _selectedSet : []);
-        updated.UnionWith(range);
+        updated.UnionWith(range.Where(IsSelectable));
 
         if (!_selectionBounds.CanSelectAll(updated.Count))
         {
@@ -1191,9 +1250,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         builder.CloseComponent();
     }
 
-    // A selected item can be cleared, and an unselected one added while the maximum allows.
+    // A selected item can be cleared, and an unselected one added while it can be selected and the maximum allows.
     private bool CanSelect(TItem item)
-        => IsSelected(item) || _selectionBounds.CanAdd(_selectedSet.Count);
+        => IsSelected(item) || (IsSelectable(item) && _selectionBounds.CanAdd(_selectedSet.Count));
 
     // A box keeps both bounds, checking stopping at the maximum and unchecking at the minimum; a plain press or a range replaces
     // the whole selection and passes the minimum.

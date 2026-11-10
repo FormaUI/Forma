@@ -41,12 +41,19 @@ internal struct DataViewItemGate
         IsRecorded = true;
     }
 
-    /// <summary>The state bits shared by every view's items: whether the item is selected and whether its own selection control can act.</summary>
+    /// <summary>How many bits the shared state takes, which a view's own bits stand above.</summary>
+    public const int SharedBitCount = 5;
+
+    /// <summary>The state bits shared by every view's items: whether the item is selected, whether its own selection control can act, whether it is drawn muted, whether it can be selected, and whether it can take the focus.</summary>
     /// <typeparam name="TItem">The item.</typeparam>
     /// <param name="view">The view the item is shown by.</param>
     /// <param name="item">The item.</param>
     /// <returns>The bits.</returns>
     public static int GetState<TItem>(IDataView<TItem> view, TItem item)
         where TItem : notnull
-        => (view.IsSelected(item) ? 1 : 0) | (view.CanInteractWith(item) ? 2 : 0);
+        => (view.IsSelected(item) ? 1 : 0)
+            | (view.CanInteractWith(item) ? 2 : 0)
+            | (view.IsMuted(item) ? 4 : 0)
+            | (view.IsSelectable(item) ? 8 : 0)
+            | (view.CanFocus(item) ? 16 : 0);
 }

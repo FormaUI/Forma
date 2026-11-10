@@ -38,8 +38,9 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
     private string? RowClass
         => Grid.GetRowClass(Item);
 
+    // A row that cannot be selected says nothing of it, so it is never announced as an unselected choice.
     private string? AriaSelected
-        => View.EnableCheckedSelection || View.EnableItemSelection
+        => (View.EnableCheckedSelection || View.EnableItemSelection) && View.IsSelectable(Item)
             ? View.IsSelected(Item) ? "true" : "false"
             : null;
 
@@ -76,6 +77,6 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
     }
 
     private int GetState()
-        => DataViewItemGate.GetState(View, Item) | (Grid.IsEditing(Item) ? 4 : 0);
+        => DataViewItemGate.GetState(View, Item) | (Grid.IsEditing(Item) ? 1 << DataViewItemGate.SharedBitCount : 0);
 
 }

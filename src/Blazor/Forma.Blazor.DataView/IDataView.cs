@@ -167,6 +167,26 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <param name="item">The item to judge.</param>
     bool CanInteractWith(TItem item);
 
+    /// <summary>Whether <paramref name="item"/> is disabled, neither selected nor activated.</summary>
+    /// <param name="item">The item to judge.</param>
+    bool IsDisabled(TItem item);
+
+    /// <summary>Whether <paramref name="item"/> can be selected: it is not disabled, and the host lets it be.</summary>
+    /// <param name="item">The item to judge.</param>
+    bool IsSelectable(TItem item);
+
+    /// <summary>Whether <paramref name="item"/> can be activated: it is not disabled, and the host lets it be.</summary>
+    /// <param name="item">The item to judge.</param>
+    bool CanActivate(TItem item);
+
+    /// <summary>Whether <paramref name="item"/> can take the focus, which a view draws a marker for.</summary>
+    /// <param name="item">The item to judge.</param>
+    bool CanFocus(TItem item);
+
+    /// <summary>Whether <paramref name="item"/> is drawn muted: it is disabled, or it can be selected and the selection's maximum blocks it.</summary>
+    /// <param name="item">The item to judge.</param>
+    bool IsMuted(TItem item);
+
     /// <summary>The token the selection behavior knows <paramref name="item"/> by while it stays on screen.</summary>
     /// <param name="item">The item on screen.</param>
     int GetItemToken(TItem item);

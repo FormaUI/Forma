@@ -7,8 +7,8 @@
     @if (Grid.HasSelectionColumn)
     {
         <td class="@Grid.SelectionCellClass" data-item-control>
-            @* The editing row drops its marker; the selection behavior acts only on rows that carry one. *@
-            @if (!Grid.IsEditing(Item))
+            @* The editing row and a row that cannot take the focus draw no marker; the selection behavior acts only on rows that carry one. *@
+            @if (!Grid.IsEditing(Item) && View.CanFocus(Item))
             {
                 <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
                     <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-grid-row-marker")"

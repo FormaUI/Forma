@@ -22,7 +22,7 @@
      aria-disabled="@(RendererInfo.IsInteractive ? null : "true")"
      aria-labelledby="@nameId"
      aria-owns="@OwnsId"
-     tabindex="@Tree.GetNodeTabIndex(key)"
+     tabindex="@(View.CanFocus(Item) ? Tree.GetNodeTabIndex(key) : null)"
      data-focus-heir="@Tree.GetHeirMark(key, marker: false)"
      data-item="@(Tree.HasSelection ? Token : null)"
      data-item-position="@Position"
@@ -46,7 +46,7 @@
     {
         <span class="forma-data-tree-disclosure" aria-hidden="true"></span>
     }
-    @if (Tree.HasSelection)
+    @if (Tree.HasSelection && View.CanFocus(Item))
     {
         <span class="forma-data-tree-node-lead @(View.EnableCheckedSelection ? null : "forma-data-tree-node-lead-collapsed")" data-item-control>
             <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">

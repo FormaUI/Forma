@@ -602,7 +602,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         if (HasSelectionColumn)
         {
             builder.Add("forma-data-grid-row-selected", View.IsSelected(item));
-            builder.Add("forma-data-grid-row-disabled", !View.CanInteractWith(item));
+            builder.Add("forma-data-grid-row-disabled", View.IsMuted(item));
         }
 
         builder.Add("forma-data-grid-row-editing", _editSession.IsEditing(item));
