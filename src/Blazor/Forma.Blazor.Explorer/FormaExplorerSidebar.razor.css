@@ -1,6 +1,6 @@
 /* ============================================================
    FormaExplorerSidebar — CSS isolation
-   Hierarchical folder tree with drop targets and action buttons
+   The data view's folder tree, with drop targets and action buttons
    ============================================================ */
 
 /* Fills the backdrop the explorer gives it. */
@@ -15,7 +15,6 @@
 /* The tree is a section of the sidebar and ends in the line between sections, drawn across the card; the sash
    below stands on that line. */
 .forma-explorer-folder-tree {
-    list-style: none;
     padding: 0 var(--space-2) var(--space-2);
     margin: 0 calc(-1 * var(--space-2));
     display: flex;
@@ -30,192 +29,65 @@
     border-block-end: 1px solid var(--border-color);
 }
 
-/* Row rules reach FormaExplorerFolderNode's rows through ::deep. */
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-branch {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-row {
-    position: relative;
-    display: flex;
-    align-items: center;
-    margin-block-end: var(--space-1);
-    border-radius: var(--radius-sm);
-    background: transparent;
-    transition: background-color 0.15s ease;
-}
-
-@media (hover: hover) {
-    .forma-explorer-folder-tree ::deep .forma-explorer-folder-row:not(.is-disabled):hover {
-        background: var(--hover-bg-color);
-    }
-
-    .forma-explorer-folder-tree ::deep .forma-explorer-folder-row:hover .forma-explorer-folder-actions,
-    .forma-explorer-folder-tree ::deep .forma-explorer-folder-row:focus-within .forma-explorer-folder-actions,
-    .forma-explorer-folder-tree ::deep .forma-explorer-folder-row:has(.forma-dropdown-menu) .forma-explorer-folder-actions {
-        opacity: 1;
-    }
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-active {
-    font-weight: 600;
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-active .forma-explorer-folder-name {
-    color: var(--primary-color);
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-selected {
-    background: var(--primary-subtle-color);
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-selected .forma-explorer-folder-name {
-    color: var(--primary-color);
-    font-weight: 700;
-}
-
-/* A disabled folder: the disabled control colors, and a pointer that says so. */
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-disabled {
-    cursor: not-allowed;
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-disabled .forma-explorer-folder-name,
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-disabled .forma-explorer-folder-icon,
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-disabled .forma-explorer-folder-count {
-    color: var(--disabled-text-color);
-}
-
-/* A folder the reader cannot enter. */
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-target:disabled {
-    cursor: not-allowed;
-}
-
-/* An invisible folder keeps its row in the tree. */
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-row.is-invisible {
-    visibility: hidden;
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-select {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: var(--forma-explorer-check-size);
-    block-size: var(--forma-explorer-check-size);
-    min-inline-size: var(--target-size-sm);
-    min-block-size: var(--target-size-sm);
-    flex-shrink: 0;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border-emphasis-color);
-    background: var(--input-bg-color);
-    color: transparent;
-    cursor: pointer;
-    font-size: var(--forma-explorer-check-glyph-size);
-    touch-action: manipulation;
-    transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-select:disabled {
-    cursor: default;
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-select.is-checked {
-    background: var(--primary-color);
-    border-color: var(--primary-color);
-    color: var(--forma-explorer-check-fg-color);
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-twisty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    inline-size: var(--target-size-sm);
-    min-inline-size: var(--target-size-sm);
-    block-size: var(--target-size-sm);
-    flex-shrink: 0;
-    margin-inline-start: calc(var(--forma-explorer-folder-depth, 0) * var(--space-3));
-    padding: 0;
-    border: none;
-    border-radius: var(--radius-sm);
-    background: transparent;
-    color: var(--quiet-text-color);
-    font-size: var(--font-size-xs);
-    cursor: pointer;
-    touch-action: manipulation;
-    transition: color 0.15s ease;
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-twisty.is-empty,
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-twisty:disabled {
-    cursor: default;
-}
-
-@media (hover: hover) {
-    .forma-explorer-folder-tree ::deep .forma-explorer-folder-twisty:not(.is-empty, :disabled):hover {
-        color: var(--primary-color);
-    }
-}
-
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-target {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: var(--space-1);
-    min-inline-size: 0;
-    min-block-size: var(--target-size-sm);
-    padding-inline: var(--space-1);
-    padding-block: 0;
-    border: none;
-    background: transparent;
-    color: var(--text-primary-color);
-    font-size: var(--font-size-sm);
-    cursor: pointer;
-    text-align: start;
-    touch-action: manipulation;
-}
-
+/* The data view's tree draws the rows; the explorer adds a folder's glyph, its count and its actions to each, and its state. */
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-icon {
     display: inline-flex;
     font-size: var(--font-size-sm);
     color: var(--primary-color);
-    flex-shrink: 0;
 }
 
-/* Isolated in the reading direction: a direction derived from the name would align a Latin one to the edge the splitter moves. */
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-name {
-    flex: 1;
-    unicode-bidi: isolate;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.forma-explorer-folder-tree ::deep .forma-data-tree-node .forma-data-tree-node-detail {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    margin-inline-start: auto;
 }
 
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-count {
+.forma-explorer-folder-count {
     flex-shrink: 0;
     min-inline-size: 1.5rem;
     text-align: end;
-    padding-inline-end: var(--space-2);
     font-size: var(--font-size-xs);
     color: var(--text-secondary-color);
     font-weight: normal;
 }
 
-.forma-explorer-folder-tree ::deep .forma-explorer-folder-actions {
+/* A folder's actions show on the row the pointer is over or the focus is in, and stay shown while their menu is open. */
+.forma-explorer-folder-actions {
     display: flex;
     align-items: center;
-    gap: var(--space-1);
     opacity: 0;
     transition: opacity 0.15s ease;
 }
 
-@media (hover: none) {
-    .forma-explorer-folder-tree ::deep .forma-explorer-folder-actions {
+@media (hover: hover) {
+    .forma-explorer-folder-tree ::deep .forma-data-tree-node:hover .forma-explorer-folder-actions,
+    .forma-explorer-folder-tree ::deep .forma-data-tree-node:focus-within .forma-explorer-folder-actions,
+    .forma-explorer-folder-tree ::deep .forma-data-tree-node:has(.forma-dropdown-menu) .forma-explorer-folder-actions {
         opacity: 1;
     }
+}
+
+@media (hover: none) {
+    .forma-explorer-folder-actions {
+        opacity: 1;
+    }
+}
+
+/* A disabled folder: the disabled control colors, and a pointer that says so. */
+.forma-explorer-folder-tree ::deep .forma-data-tree-node.is-disabled {
+    cursor: not-allowed;
+}
+
+.forma-explorer-folder-tree ::deep .forma-data-tree-node.is-disabled .forma-data-tree-node-name,
+.forma-explorer-folder-tree ::deep .forma-data-tree-node.is-disabled .forma-explorer-folder-icon,
+.forma-explorer-folder-tree ::deep .forma-data-tree-node.is-disabled .forma-explorer-folder-count {
+    color: var(--disabled-text-color);
+}
+
+/* An invisible folder keeps its row in the tree. */
+.forma-explorer-folder-tree ::deep .forma-data-tree-node.is-invisible {
+    visibility: hidden;
 }
 
 .forma-explorer-sidebar-toolbar {
@@ -270,10 +142,8 @@
     }
 }
 
-/* Controls in the tree ring inward. */
-::deep .forma-explorer-sidebar-tool:focus-visible,
-.forma-explorer-folder-target:focus-visible,
-.forma-explorer-folder-twisty:focus-visible {
+/* The tools ring inward. */
+::deep .forma-explorer-sidebar-tool:focus-visible {
     outline: none;
     box-shadow: var(--focus-ring-inset);
 }

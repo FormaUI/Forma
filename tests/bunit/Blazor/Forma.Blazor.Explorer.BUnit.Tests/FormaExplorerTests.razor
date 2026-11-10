@@ -1,6 +1,7 @@
 @inherits FormaBunitContext
 @using System.Globalization
 @using Forma.Framework.Input.Keyboard
+@using Forma.Framework.Input.Pointer
 @using Forma.Framework.Resources
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Explorer
@@ -14,12 +15,37 @@
 @using Bunit.Rendering
 
 @code {
-    /// <summary>Drops what is being dragged on the row, as the sidebar's drop zone tells it from the row's key.</summary>
     // The item a view draws under the name, wherever the location's folders, drawn before its files, put it.
     private static AngleSharp.Dom.IElement ItemNamed<TComponent>(Bunit.IRenderedComponent<TComponent> cut, string name)
         where TComponent : Microsoft.AspNetCore.Components.IComponent
         => cut.FindAll(".forma-explorer-item").Single(item => item.QuerySelector(".forma-explorer-item-name")?.TextContent == name);
 
+    // The sidebar's rows, the row standing for every item first.
+    private static IReadOnlyList<AngleSharp.Dom.IElement> GetFolderRows<TComponent>(Bunit.IRenderedComponent<TComponent> cut)
+        where TComponent : Microsoft.AspNetCore.Components.IComponent
+        => cut.FindAll(".forma-explorer-sidebar .forma-data-tree-node");
+
+    // The names the sidebar's rows show, in order.
+    private static List<string> GetFolderNames<TComponent>(Bunit.IRenderedComponent<TComponent> cut)
+        where TComponent : Microsoft.AspNetCore.Components.IComponent
+        => [.. GetFolderRows(cut).Select(row => row.QuerySelector(".forma-data-tree-node-name")!.TextContent.Trim())];
+
+    // The sidebar's row showing the name.
+    private static AngleSharp.Dom.IElement GetFolderRow<TComponent>(Bunit.IRenderedComponent<TComponent> cut, string name)
+        where TComponent : Microsoft.AspNetCore.Components.IComponent
+        => GetFolderRows(cut).Single(row => row.QuerySelector(".forma-data-tree-node-name")?.TextContent.Trim() == name);
+
+    // Reports the focus outside the sidebar's tree, which routes no press until it knows where the focus is.
+    private static Task ReportFocusAsync<TComponent>(DomProbe<FocusState> probe, Bunit.IRenderedComponent<TComponent> cut)
+        where TComponent : Microsoft.AspNetCore.Components.IComponent
+        => probe.ReportAsync(cut.Find(".forma-explorer-sidebar .forma-data-tree").GetAttribute("data-rid")!, new FocusState(IsWithin: false));
+
+    // Presses the sidebar's row showing the name, as the input router reports a press by the token the row carries.
+    private static Task PressFolderAsync<TComponent>(InputRouterProbe router, Bunit.IRenderedComponent<TComponent> cut, string name)
+        where TComponent : Microsoft.AspNetCore.Components.IComponent
+        => router.RouteAsync("tree.choose", new InputPointerInfo { Type = "click", Item = GetFolderRow(cut, name).GetAttribute("data-tree-node") });
+
+    /// <summary>Drops what is being dragged on the row, as the sidebar's drop zone tells it from the row's key.</summary>
     private static Task DropOnAsync<TComponent>(Bunit.IRenderedComponent<TComponent> cut, AngleSharp.Dom.IElement row)
         where TComponent : class, Microsoft.AspNetCore.Components.IComponent
         => cut.InvokeAsync(() => cut.FindComponent<FormaExplorerSidebar>().Instance.HandleDropAsync(row.GetAttribute("data-drop-key")));
@@ -306,8 +332,7 @@
             explorer.Render(parameters => parameters.Add(p => p.Folders, CatalogItem.ForAll(folders)));
 
             // Assert
-            var names = cut.FindAll(".forma-explorer-folder-name").Select(node => node.TextContent.Trim());
-            Assert.Contains("Covers", names);
+            Assert.Contains("Covers", GetFolderNames(cut));
         }
 
         [Fact]
@@ -321,8 +346,8 @@
             var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="@(CatalogItem.ForAll(folders))" />);
 
             // Assert
-            var folderRow = cut.FindAll(".forma-explorer-folder-row")[1];
-            Assert.Equal("Races", folderRow.QuerySelector(".forma-explorer-folder-name")!.TextContent.Trim());
+            var folderRow = GetFolderRows(cut)[1];
+            Assert.Equal("Races", folderRow.QuerySelector(".forma-data-tree-node-name")!.TextContent.Trim());
             Assert.Null(folderRow.QuerySelector(".forma-explorer-folder-count"));
         }
 
@@ -578,16 +603,18 @@
 
             // Assert
             var options = Assert.Single(zone.Invocations, invocation => invocation.Identifier == "attach").Arguments[1]!;
-            var rows = cut.FindAll(".forma-explorer-folder-row");
+            var allMedia = GetFolderRow(cut, "All Media");
+            var races = GetFolderRow(cut, "Races");
+            var sealedFolder = GetFolderRow(cut, "Sealed");
             Assert.Multiple(
                 () => Assert.Equal("explorer.drop", InteropPayload.GetValue(options, "action")),
                 () => Assert.Equal("[data-drop-target]", InteropPayload.GetValue(options, "targets")),
                 () => Assert.Equal("move", InteropPayload.GetValue(options, "dropEffect")),
-                () => Assert.Equal("true", rows[0].GetAttribute("data-drop-target")),
-                () => Assert.Null(rows[0].GetAttribute("data-drop-key")),
-                () => Assert.Equal("races", rows[1].GetAttribute("data-drop-key")),
-                () => Assert.Equal("true", rows[1].GetAttribute("data-drop-target")),
-                () => Assert.Null(rows[2].GetAttribute("data-drop-target")));
+                () => Assert.Equal("true", allMedia.GetAttribute("data-drop-target")),
+                () => Assert.Null(allMedia.GetAttribute("data-drop-key")),
+                () => Assert.Equal("races", races.GetAttribute("data-drop-key")),
+                () => Assert.Equal("true", races.GetAttribute("data-drop-target")),
+                () => Assert.Null(sealedFolder.GetAttribute("data-drop-target")));
         }
 
         [Fact]
@@ -601,11 +628,11 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll([item]))"
                                                 Folders="@(CatalogItem.ForAll([folder]))"
                                                 OnDrop="@(req => { dropRequest = req; return Task.CompletedTask; })" />);
-            cut.Find(".forma-explorer-item").DragStart();
+            ItemNamed(cut, "photo.jpg").DragStart();
 
             // Act
             await cut.InvokeAsync(() => cut.FindComponent<FormaExplorerSidebar>().Instance.HandleDropAsync("gone"));
-            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
+            await DropOnAsync(cut, GetFolderRow(cut, "Vacation"));
 
             // Assert
             Assert.Null(dropRequest);
@@ -626,7 +653,7 @@
 
             // Act - Start drag on item, then drop on folder in sidebar
             ItemNamed(cut, "photo.jpg").DragStart();
-            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
+            await DropOnAsync(cut, GetFolderRow(cut, "Vacation"));
 
             // Assert
             Assert.NotNull(dropRequest);
@@ -651,7 +678,7 @@
 
             // Act
             ItemNamed(cut, "photo.jpg").DragStart();
-            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
+            await DropOnAsync(cut, GetFolderRow(cut, "Vacation"));
 
             // Assert
             cut.WaitForAssertion(() => Assert.True(provider.Queries.Count > asked));
@@ -671,8 +698,8 @@
                                                 OnFolderDrop="@(req => { folderDropRequest = req; return Task.CompletedTask; })" />);
 
             // Act - Start drag on source folder, drop on target folder
-            cut.FindAll(".forma-explorer-folder-row")[1].DragStart();
-            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[2]);
+            GetFolderRow(cut, "Subfolder").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "ParentFolder"));
 
             // Assert
             Assert.NotNull(folderDropRequest);
@@ -1024,7 +1051,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="items" Folders="folders" />);
 
             // Assert
-            var rootRow = cut.FindAll(".forma-explorer-folder-row")[0];
+            var rootRow = GetFolderRow(cut, "All Media");
             Assert.Equal("1", rootRow.QuerySelector(".forma-explorer-folder-count")!.TextContent.Trim());
         }
 
@@ -1088,10 +1115,12 @@
         }
 
         [Fact]
-        public void Should_not_enter_a_folder_that_cannot_be_opened()
+        public async Task Should_not_enter_a_folder_that_cannot_be_opened()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
             IReadOnlyList<ICatalogItem> folders =
             [
                 new CatalogFolderItem { Key = "sealed", Name = "Sealed", Capabilities = CatalogItemCapabilities.Drag | CatalogItemCapabilities.Drop }
@@ -1100,15 +1129,16 @@
             var cut = ctx.Render(@<FormaExplorer Items="[]"
                                                 Folders="folders"
                                                 OnFolderChanged="@(_ => { navigated = true; return Task.CompletedTask; })" />);
+            await ReportFocusAsync(probe, cut);
 
             // Act
-            var target = cut.FindAll(".forma-explorer-folder-target")[1];
-            target.Click();
+            await PressFolderAsync(router, cut, "Sealed");
 
             // Assert
             Assert.Multiple(
-                () => Assert.True(target.HasAttribute("disabled")),
-                () => Assert.False(navigated));
+                () => Assert.False(navigated),
+                () => Assert.Equal("true", GetFolderRow(cut, "All Media").GetAttribute("aria-selected")),
+                () => Assert.Equal("false", GetFolderRow(cut, "Sealed").GetAttribute("aria-selected")));
         }
 
         [Fact]
@@ -1127,8 +1157,8 @@
                                                 OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
-            cut.Find(".forma-explorer-item").DragStart();
-            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
+            ItemNamed(cut, "photo.jpg").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "Sealed"));
 
             // Assert
             Assert.Null(request);
@@ -1161,7 +1191,7 @@
 
             // Act
             ItemNamed(cut, "a.jpg").DragStart();
-            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[1]);
+            await DropOnAsync(cut, GetFolderRow(cut, "Races"));
 
             // Assert
             Assert.NotNull(request);
@@ -1212,24 +1242,27 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(["All Media", "Shown"], cut.FindAll(".forma-explorer-folder-name").Select(node => node.TextContent.Trim())),
+                () => Assert.Equal(["All Media", "Shown"], GetFolderNames(cut)),
                 () => Assert.Equal(["Shown"], cut.FindAll(".forma-dropdown-menu-item").Select(node => node.TextContent.Trim())));
         }
 
         [Fact]
-        public void Should_navigate_to_a_folder_that_has_no_resource()
+        public async Task Should_navigate_to_a_folder_that_has_no_resource()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
             var ghost = new CatalogFolderItem { Key = "ghost", Name = "Ghost", Capabilities = CatalogItemCapabilities.Open };
             IReadOnlyList<ICatalogItem> folders = [ghost];
             ICatalogFolderItem? activeFolder = null;
             var cut = ctx.Render(@<FormaExplorer Items="[]"
                                                 Folders="folders"
                                                 OnFolderChanged="@(f => { activeFolder = f; return Task.CompletedTask; })" />);
+            await ReportFocusAsync(probe, cut);
 
             // Act
-            cut.FindAll(".forma-explorer-folder-target")[1].Click();
+            await PressFolderAsync(router, cut, "Ghost");
 
             // Assert
             Assert.Same(ghost, activeFolder);
@@ -1347,7 +1380,7 @@
         }
 
         [Fact]
-        public void Should_replace_the_folder_actions_trigger_with_the_checkbox_in_select_mode()
+        public void Should_keep_the_folder_actions_in_the_sidebar_and_the_checkbox_in_the_content_in_select_mode()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1355,15 +1388,16 @@
             var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="@(CatalogItem.ForAll([folder]))" />);
 
             // Assert
-            Assert.Single(cut.FindAll(".forma-explorer-folder-actions"));
-            Assert.Empty(cut.FindAll(".forma-explorer-folder-select"));
+            Assert.Single(cut.FindAll(".forma-explorer-sidebar .forma-explorer-folder-actions"));
+            Assert.Empty(ItemNamed(cut, "Races").QuerySelectorAll(".forma-explorer-item-select"));
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-explorer-folder-actions"));
-            Assert.Single(cut.FindAll(".forma-explorer-folder-select"));
+            Assert.Single(cut.FindAll(".forma-explorer-sidebar .forma-explorer-folder-actions"));
+            Assert.Empty(cut.FindAll(".forma-explorer-sidebar input[type=checkbox]"));
+            Assert.Single(ItemNamed(cut, "Races").QuerySelectorAll(".forma-explorer-item-select"));
         }
 
         [Fact]
@@ -1935,12 +1969,87 @@
             Assert.NotEmpty(ItemNamed(cut, "cover.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
 
             // Act
-            cut.Find(".forma-explorer-folder-select").Click();
+            ItemNamed(cut, "Races").QuerySelector(".forma-explorer-item-open")!.Click();
 
             // Assert
             Assert.Empty(ItemNamed(cut, "cover.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
-            Assert.NotEmpty(cut.FindAll(".forma-explorer-folder-select.is-checked"));
+            Assert.NotEmpty(ItemNamed(cut, "Races").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
             Assert.Equal("1 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim());
+        }
+
+        [Fact]
+        public void Should_draw_a_disclosure_in_the_sidebar_only_on_a_folder_that_holds_folders()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var folders = CatalogItem.ForAll([new FolderResourceInfo("races") { Name = "Races" }, new FolderResourceInfo("2026") { Name = "2026", Parent = "races" }, new FolderResourceInfo("covers") { Name = "Covers" }]);
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="folders" />);
+
+            // Assert — Races opens; 2026 and Covers hold no folders, nor does the row standing for every item open
+            Assert.Multiple(
+                () => Assert.NotNull(GetFolderRow(cut, "Races").QuerySelector("button.forma-data-tree-disclosure-button")),
+                () => Assert.Null(GetFolderRow(cut, "2026").QuerySelector("button.forma-data-tree-disclosure-button")),
+                () => Assert.Null(GetFolderRow(cut, "Covers").QuerySelector("button.forma-data-tree-disclosure-button")),
+                () => Assert.Null(GetFolderRow(cut, "All Media").QuerySelector("button.forma-data-tree-disclosure-button")));
+        }
+
+        [Fact]
+        public void Should_keep_the_selection_and_the_history_while_a_sidebar_branch_closes_and_opens()
+        {
+            // Arrange — two files selected at the top level, Races open in the sidebar over 2026
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg"), new ImageResourceInfo("https://example.com/b.jpg")];
+            var folders = CatalogItem.ForAll([new FolderResourceInfo("races") { Name = "Races" }, new FolderResourceInfo("2026") { Name = "2026", Parent = "races" }]);
+            var moves = 0;
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="folders" OnFolderChanged="@(_ => moves++)" />);
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            ItemNamed(cut, "a.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
+            ItemNamed(cut, "b.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
+            Assert.Contains("2026", GetFolderNames(cut));
+
+            // Act — the branch closed from its row, then opened again
+            GetFolderRow(cut, "Races").QuerySelector("button.forma-data-tree-disclosure-button")!.Click();
+            Assert.DoesNotContain("2026", GetFolderNames(cut));
+            GetFolderRow(cut, "Races").QuerySelector("button.forma-data-tree-disclosure-button")!.Click();
+
+            // Assert — the selection and the history as they were, the reader where they were
+            Assert.Multiple(
+                () => Assert.Contains("2026", GetFolderNames(cut)),
+                () => Assert.Equal("2 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim()),
+                () => Assert.Equal(0, moves),
+                () => Assert.Equal("true", GetFolderRow(cut, "All Media").GetAttribute("aria-selected")),
+                () => Assert.NotNull(cut.Find(".forma-explorer-nav-button[aria-label='Back']").GetAttribute("disabled")));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_location_and_the_selection_while_the_sidebar_is_resized_hidden_and_shown()
+        {
+            // Arrange — the reader in Races with its file selected
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/race.jpg")];
+            var folders = CatalogItem.ForAll([new FolderResourceInfo("races") { Name = "Races" }, new FolderResourceInfo("covers") { Name = "Covers" }]);
+            var races = (ICatalogFolderItem)folders[0];
+            var moves = 0;
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="folders" CurrentFolder="races" OnFolderChanged="@(_ => moves++)" />);
+            var explorer = cut.FindComponent<FormaExplorer>();
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            ItemNamed(cut, "race.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
+            var splitter = cut.FindComponents<FormaSplitter>().Single(component => component.Find("[role=separator]").ClassList.Contains("forma-explorer-splitter"));
+
+            // Act — the sidebar widened, hidden, then shown again
+            await splitter.InvokeAsync(() => splitter.Instance.ValueChanged.InvokeAsync(splitter.Instance.Value + 2));
+            explorer.Render(parameters => parameters.Add(p => p.Options, ExplorerOptions.Default with { ShowSidebar = false }));
+            Assert.Empty(cut.FindAll(".forma-explorer-sidebar"));
+            explorer.Render(parameters => parameters.Add(p => p.Options, ExplorerOptions.Default));
+
+            // Assert — still in Races, its row current again, the file still selected
+            Assert.Multiple(
+                () => Assert.Equal(0, moves),
+                () => Assert.Equal("true", GetFolderRow(cut, "Races").GetAttribute("aria-selected")),
+                () => Assert.Equal("1 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim()),
+                () => Assert.NotEmpty(ItemNamed(cut, "race.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked")));
         }
 
         [Fact]
@@ -1952,14 +2061,14 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="@(CatalogItem.ForAll([folder]))" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.Find(".forma-explorer-folder-select").Click();
-            Assert.NotEmpty(cut.FindAll(".forma-explorer-folder-select.is-checked"));
+            ItemNamed(cut, "Races").QuerySelector(".forma-explorer-item-open")!.Click();
+            Assert.NotEmpty(ItemNamed(cut, "Races").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
 
             // Act
             ItemNamed(cut, "cover.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-explorer-folder-select.is-checked"));
+            Assert.Empty(ItemNamed(cut, "Races").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
             Assert.NotEmpty(ItemNamed(cut, "cover.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
             Assert.Equal("1 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim());
         }
@@ -1975,7 +2084,7 @@
                                                 Folders="@(CatalogItem.ForAll([folder]))"
                                                 OnFolderDelete="@(req => { request = req; return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.Find(".forma-explorer-folder-select").Click();
+            ItemNamed(cut, "Races").QuerySelector(".forma-explorer-item-open")!.Click();
 
             // Act
             cut.Find(".forma-explorer-delete-button").Click();
@@ -2084,20 +2193,20 @@
                 new FolderResourceInfo("2026") { Name = "2026", Parent = "races" }
             ];
             var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="@(CatalogItem.ForAll(folders))" />);
-            Assert.Contains(cut.FindAll(".forma-explorer-folder-name"), n => n.TextContent.Trim() == "2026");
+            Assert.Contains("2026", GetFolderNames(cut));
 
             // Act
             cut.Find(".forma-explorer-collapse-all-tool").Click();
 
             // Assert
-            Assert.DoesNotContain(cut.FindAll(".forma-explorer-folder-name"), n => n.TextContent.Trim() == "2026");
+            Assert.DoesNotContain("2026", GetFolderNames(cut));
             Assert.Empty(cut.FindAll(".forma-explorer-collapse-all-tool"));
 
             // Act
             cut.Find(".forma-explorer-expand-all-tool").Click();
 
             // Assert
-            Assert.Contains(cut.FindAll(".forma-explorer-folder-name"), n => n.TextContent.Trim() == "2026");
+            Assert.Contains("2026", GetFolderNames(cut));
             Assert.Empty(cut.FindAll(".forma-explorer-expand-all-tool"));
         }
 
@@ -2115,7 +2224,7 @@
             Assert.NotNull(cut.Find(".forma-explorer-collapse-all-tool"));
 
             // Act
-            cut.Find("button.forma-explorer-folder-twisty").Click();
+            GetFolderRow(cut, "Races").QuerySelector("button.forma-data-tree-disclosure-button")!.Click();
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-expand-all-tool"));
@@ -2179,8 +2288,8 @@
                                                 OnFolderDrop="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
-            cut.FindAll(".forma-explorer-folder-row")[1].DragStart();
-            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[2]);
+            GetFolderRow(cut, "Races").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "2026"));
 
             // Assert
             Assert.Null(request);
@@ -2202,13 +2311,12 @@
                                                 OnDrop="@(req => { itemRequest = req; return Task.CompletedTask; })" />);
 
             // Act - drag a folder onto the root, which cannot receive it
-            var rows = cut.FindAll(".forma-explorer-folder-row");
-            rows[1].DragStart();
-            await DropOnAsync(cut, rows[0]);
+            GetFolderRow(cut, "Races").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "All Media"));
 
             // Act - drag a media item onto a real folder
             ItemNamed(cut, "a.jpg").DragStart();
-            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[2]);
+            await DropOnAsync(cut, GetFolderRow(cut, "Covers"));
 
             // Assert
             Assert.Null(folderRequest);
@@ -2230,7 +2338,7 @@
 
             // Act
             ItemNamed(cut, "a.jpg").DragStart();
-            await DropOnAsync(cut, cut.FindAll(".forma-explorer-folder-row")[0]);
+            await DropOnAsync(cut, GetFolderRow(cut, "All Media"));
 
             // Assert
             Assert.NotNull(request);
@@ -2251,9 +2359,8 @@
                                                 OnFolderDrop="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
-            var rows = cut.FindAll(".forma-explorer-folder-row");
-            rows[2].DragStart();
-            await DropOnAsync(cut, rows[0]);
+            GetFolderRow(cut, "2026").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "All Media"));
 
             // Assert
             Assert.NotNull(request);
@@ -2273,9 +2380,8 @@
                                                 OnFolderDrop="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
-            var rows = cut.FindAll(".forma-explorer-folder-row");
-            rows[1].DragStart();
-            await DropOnAsync(cut, rows[0]);
+            GetFolderRow(cut, "Races").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "All Media"));
 
             // Assert
             Assert.Null(request);
@@ -2789,7 +2895,7 @@
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            cut.Find(".forma-explorer-folder-select").Click();
+            ItemNamed(cut, "photos").QuerySelector(".forma-explorer-item-open")!.Click();
 
             // Assert
             Assert.Multiple(

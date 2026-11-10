@@ -52,18 +52,17 @@ disabled item.
 ## How the explorer's parts use it
 
 `FormaExplorer` implements `IExplorerView` and `IExplorerInteraction` and cascades both to its
-parts, and the sidebar cascades its own contracts to its folder nodes. Each part takes the narrower
-contract it needs as a cascading parameter:
+parts, which stand inside the data view the explorer browses through, its sidebar being that data
+view's tree. Each part takes the narrower contract it needs as a cascading parameter:
 
 | Contract | What a part reads or asks |
 | --- | --- |
 | `IExplorerConfigurationView` | The options in force, and whether the sidebar shows. |
 | `IExplorerLocationView`, `IExplorerLocationInteraction` | The current folder, the breadcrumbs, the folder tree and whether back, forward and up are open; moving between folders. |
-| `IExplorerContentView`, `IExplorerContentInteraction` | The items and groups shown, the view mode, sort, grouping, details columns and paging; changing them and refreshing. |
+| `IExplorerContentView`, `IExplorerContentInteraction` | The items and groups shown, the view mode, sort, grouping and details columns; changing them and refreshing. |
 | `IExplorerSearchView`, `IExplorerSearchInteraction` | The search text and placeholder; changing the search text. |
 | `IExplorerSelectionInteraction` | Toggling an item, toggling selection mode and clearing; parts read the selection as an `ICatalogSelectionView`. |
 | `IExplorerItemView`, `IExplorerItemInteraction` | The item actions, item options and pending confirmation; activating, dragging, renaming, deleting and confirming. |
-| `IExplorerSidebarView`, `IExplorerSidebarInteraction` | The folders under a parent, which are expanded and which is current; expanding, choosing, creating, renaming, deleting and dragging folders. |
 
 The state behind those contracts is held in:
 

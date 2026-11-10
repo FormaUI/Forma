@@ -1,13 +1,11 @@
 @namespace Forma.Blazor.Components.Explorer
 @inherits FormaComponentBase
+@using Forma.Blazor.Components.DataView
 @using Forma.Blazor.Components.Layout
-@using Forma.Framework.Explorer.Items
+@using Forma.Blazor.Components.Menus
 @using Forma.Framework.Catalog
-@using Forma.Framework.Explorer.Navigation
-@using Forma.Framework.Catalog.Navigation
+@using Forma.Framework.Explorer.Items
 
-<CascadingValue Value="(IExplorerSidebarView)this" IsFixed="true">
-<CascadingValue Value="(IExplorerSidebarInteraction)this" IsFixed="true">
 <aside class="forma-explorer-sidebar" aria-labelledby="@TitleId">
     <div class="forma-explorer-sidebar-toolbar">
         <span class="forma-explorer-sidebar-title" id="@TitleId">@L["Folders"]</span>
@@ -30,34 +28,65 @@
                          class="@(IsFullyCollapsed ? "forma-explorer-sidebar-tool forma-explorer-expand-all-tool" : "forma-explorer-sidebar-tool forma-explorer-collapse-all-tool")"
                          Disabled="@(!HasExpandableFolders)"
                          aria-label="@(IsFullyCollapsed ? L["Expand All Folders"] : L["Collapse All Folders"])"
-                         OnClick="ToggleAll">
+                         OnClick="ToggleAllAsync">
                 <FormaIcon Icon="@(IsFullyCollapsed ? Glyph.ExpandPlus : Glyph.CollapseMinus)" />
             </FormaButton>
         </div>
     </div>
 
-    <ul class="forma-explorer-folder-tree" role="tree" style="@TreeSizeStyle" @ref="_tree">
-        <li role="treeitem" aria-selected="@(CurrentFolder is null ? "true" : "false")">
-            <div class="forma-explorer-folder-row @(CurrentFolder is null ? "is-active" : "")"
-                 style="--forma-explorer-folder-depth: 0"
-                 data-drop-target="true">
-                <span class="forma-explorer-folder-twisty is-empty" aria-hidden="true"></span>
-                <button type="button"
-                        class="forma-explorer-folder-target"
-                        disabled="@(!RendererInfo.IsInteractive)"
-                        @onclick="() => SelectFolderAsync(null)">
-                    <span class="forma-explorer-folder-icon" aria-hidden="true"><FormaIcon Icon="@(CurrentFolder is null ? Glyph.FolderOpen : Glyph.Folder)" Size="IconSize.Small" /></span>
-                    <span class="forma-explorer-folder-name">@L["All Media"]</span>
-                </button>
-                <span class="forma-explorer-folder-count">@TotalCount</span>
-            </div>
-        </li>
-
-        @foreach (var item in GetChildren(null))
-        {
-            <FormaExplorerFolderNode Item="item" Depth="0" />
-        }
-    </ul>
+    <div class="forma-explorer-folder-tree" style="@TreeSizeStyle" @ref="_tree">
+        <FormaDataTree TItem="ICatalogItem" SelectsCurrent="true" NodeFilter="IsFolder" RootsItem="AllMedia" Dense="true" aria-labelledby="@TitleId">
+            <ThumbnailTemplate Context="item">
+                <span class="forma-explorer-folder-icon"><FormaIcon Icon="@(IsCurrent(item) ? Glyph.FolderOpen : Glyph.Folder)" Size="IconSize.Small" /></span>
+            </ThumbnailTemplate>
+            <ItemTemplate Context="item">
+                @if (item is ICatalogFolderItem folder)
+                {
+                    var allowed = GetActions(folder);
+                    if (folder.Count is { } count)
+                    {
+                        <span class="forma-explorer-folder-count">@count</span>
+                    }
+                    @if (allowed != CatalogItemCapabilities.None)
+                    {
+                        <span class="forma-explorer-folder-actions">
+                            <FormaOverflowMenu Label="@L["Actions for {Name}", folder.Name]"
+                                               Orientation="MenuOrientation.Vertical"
+                                               TriggerOptions="ButtonOptions.MiniGhostIcon"
+                                               data-item-actions>
+                                <HeaderContent>
+                                    <span title="@folder.Name">@folder.Name</span>
+                                </HeaderContent>
+                                <ChildContent>
+                                    @if (allowed.HasFlag(CatalogItemCapabilities.Create))
+                                    {
+                                        <FormaDropDownMenuItem data-action="folder-create" OnClick="() => CreateFolderAsync(folder)">
+                                            <FormaIcon Icon="Glyph.FolderAdd" Size="IconSize.Small" />
+                                            <span>@L["New Folder"]</span>
+                                        </FormaDropDownMenuItem>
+                                    }
+                                    @if (allowed.HasFlag(CatalogItemCapabilities.Rename))
+                                    {
+                                        <FormaDropDownMenuItem data-action="folder-rename" OnClick="() => ItemInteraction.RequestRename(folder)">
+                                            <FormaIcon Icon="Glyph.Pen" Size="IconSize.Small" />
+                                            <span>@L["Rename Folder"]</span>
+                                        </FormaDropDownMenuItem>
+                                    }
+                                    @if (allowed.HasFlag(CatalogItemCapabilities.Delete))
+                                    {
+                                        <FormaDropDownMenuItem data-action="folder-delete" IsDestructive="true" OnClick="() => OnFolderDelete.InvokeAsync(folder)">
+                                            <FormaIcon Icon="Glyph.Delete" Size="IconSize.Small" />
+                                            <span>@L["Delete Folder"]</span>
+                                        </FormaDropDownMenuItem>
+                                    }
+                                </ChildContent>
+                            </FormaOverflowMenu>
+                        </span>
+                    }
+                }
+            </ItemTemplate>
+        </FormaDataTree>
+    </div>
 
     <FormaSplitter Class="forma-explorer-sidebar-sash"
                    Orientation="SplitterOrientation.Horizontal"
@@ -67,5 +96,3 @@
                    Max="MaxTreeHeight"
                    Label="@L["Resize Folder List"]" />
 </aside>
-</CascadingValue>
-</CascadingValue>

@@ -21,15 +21,39 @@ public sealed class ExplorerTests
             var races = sidebar.Locator("[role=treeitem]", new() { HasText = "Races" });
             await Assertions.Expect(names).ToHaveTextAsync(RootItemNames);
             await Assertions.Expect(races).ToHaveAttributeAsync("aria-selected", "false");
+            await ComponentChecks.WaitForInputRouteAsync(page, "#check .forma-data-tree", "tree.choose");
 
             // Act
-            await sidebar.GetByRole(AriaRole.Button, new() { Name = "Races", Exact = true }).ClickAsync();
+            await races.Locator(".forma-data-tree-node-name").ClickAsync();
 
             // Assert
             await Assertions.Expect(names).ToHaveTextAsync(RacesItemNames);
             await Assertions.Expect(races).ToHaveAttributeAsync("aria-selected", "true");
             await Assertions.Expect(sidebar.Locator("[role=treeitem]", new() { HasText = "All Media" })).ToHaveAttributeAsync("aria-selected", "false");
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Races");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_list_every_item_again_once_all_media_is_chosen_in_its_sidebar(string runtime)
+        {
+            // Arrange — Races opened from the sidebar
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer");
+            await using var _ = context;
+            var names = page.Locator("#check .forma-explorer-item-name");
+            var sidebar = page.Locator("#check .forma-explorer-sidebar");
+            var allMedia = sidebar.Locator("[role=treeitem]", new() { HasText = "All Media" });
+            await ComponentChecks.WaitForInputRouteAsync(page, "#check .forma-data-tree", "tree.choose");
+            await sidebar.Locator("[role=treeitem]", new() { HasText = "Races" }).Locator(".forma-data-tree-node-name").ClickAsync();
+            await Assertions.Expect(names).ToHaveTextAsync(RacesItemNames);
+
+            // Act
+            await allMedia.Locator(".forma-data-tree-node-name").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(names).ToHaveTextAsync(RootItemNames);
+            await Assertions.Expect(allMedia).ToHaveAttributeAsync("aria-selected", "true");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync(string.Empty);
         }
 
         [Theory]

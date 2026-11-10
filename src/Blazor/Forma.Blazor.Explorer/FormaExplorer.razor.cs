@@ -198,10 +198,23 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // The grouped field, direction and culture the groups were defined for.
     private (ExplorerGroupField Field, CatalogSortDirection Direction, CultureInfo UICulture)? _groupingBasis;
 
-    // The key an item goes by across reloads, and whether it opens as a folder, the same delegates on every render.
+    // The key an item goes by across reloads, the same delegate on every render.
     private static readonly Func<ICatalogItem, object> ItemKeyOf = static item => item.Key;
 
-    private static readonly Func<ICatalogItem, bool> OpensAsFolder = static item => item is ICatalogFolderItem;
+    // The name an item goes by in the data view's views and their accessible names, the same delegate on every render.
+    private static readonly Func<ICatalogItem, string> ItemNameOf = static item => item.Name;
+
+    // A disabled item is drawn muted and cannot be chosen, the same delegate on every render.
+    private static readonly Func<ICatalogItem, bool> IsItemDisabled = static item => item.IsDisabled;
+
+    // The classes an item's row carries for its state.
+    private static readonly Func<ICatalogItem, string?> GetItemClass = static item => item.GetStateClasses();
+
+    // Whether an item is a folder holding folders, the children the sidebar's tree opens on, made once and reading the folders in force.
+    private Func<ICatalogItem, bool> _holdsFolders = default!;
+
+    // The folders that start open in the sidebar, every one holding folders, made again for a new set of folders.
+    private (CatalogFolderTree Tree, IReadOnlyCollection<object> Keys)? _openFolderKeys;
 
     // What the data view reads the content from, and the provider it is handed, made again when the items, the provider or the folders
     // the explorer is given change, which the data view reads as a new source.
@@ -235,6 +248,51 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>The folder list indexed as a tree.</summary>
     private CatalogFolderTree FolderTree
         => _folderTree ??= new CatalogFolderTree(Folders);
+
+    // Every folder holding folders starts open, as the explorer's tree always has.
+    private IReadOnlyCollection<object> OpenFolderKeys
+    {
+        get
+        {
+            if (_openFolderKeys is not { } open || !ReferenceEquals(open.Tree, FolderTree))
+            {
+                open = (FolderTree, [.. FolderTree.GetExpandableFolders().Select(folder => (object)folder.Key)]);
+                _openFolderKeys = open;
+            }
+
+            return open.Keys;
+        }
+    }
+
+    // A folder's row is dragged where the folder may be moved and takes a drop where items may land in it, named by its key; the row
+    // standing for every item takes a drop on the root and names none.
+    private Dictionary<string, object>? GetItemAttributes(ICatalogItem item)
+    {
+        if (item.Key == FormaExplorerSidebar.AllMediaKey)
+        {
+            return new Dictionary<string, object>(StringComparer.Ordinal) { ["data-drop-target"] = "true" };
+        }
+
+        if (item is not ICatalogFolderItem folder)
+        {
+            return null;
+        }
+
+        var allowed = folder.GetCapabilities(ItemOptions);
+        Dictionary<string, object> attributes = new(StringComparer.Ordinal)
+        {
+            ["draggable"] = allowed.HasFlag(CatalogItemCapabilities.Drag) ? "true" : "false",
+            ["data-drop-key"] = folder.Key,
+            ["ondragstart"] = EventCallback.Factory.Create(this, () => _itemManager.BeginDrag(folder)),
+        };
+
+        if (allowed.HasFlag(CatalogItemCapabilities.Drop))
+        {
+            attributes["data-drop-target"] = "true";
+        }
+
+        return attributes;
+    }
 
     private IReadOnlyList<ICatalogFolderItem> Breadcrumbs
         => _breadcrumbs ??= CurrentFolder is { } current ? BuildBreadcrumbs(FolderTree, current) : [];
@@ -383,6 +441,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     {
         Context.CultureState.Subscribe(HandleCultureChangedAsync);
         _source = new ExplorerDataViewSource(() => FolderTree, GetFileProvider, CreateContentQuery, () => _collection.Filter);
+        _holdsFolders = item => item is ICatalogFolderItem folder && FolderTree.GetListedChildren(folder.Key).Count > 0;
 
         _collection = new CatalogCollectionView(item => GetKindLabel(item.GetKind()), () => Context.CultureState.UICulture)
         {

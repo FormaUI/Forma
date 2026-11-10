@@ -63,7 +63,8 @@
                    Class="forma-explorer-data-view"
                    ItemsProvider="_contentProvider"
                    ItemKey="ItemKeyOf"
-                   HasChildren="OpensAsFolder"
+                   ItemName="ItemNameOf"
+                   HasChildren="_holdsFolders"
                    CurrentItem="CurrentFolder"
                    OnCurrentItemChanging="HandleCurrentItemChanging"
                    CurrentItemChanged="HandleCurrentItemChangedAsync"
@@ -71,19 +72,21 @@
                    Page="_collection.PageNumber"
                    PageChanged="HandlePageChangedAsync"
                    AppendMode="AppendMode"
+                   InitialOpenKeys="OpenFolderKeys"
+                   IsItemDisabled="IsItemDisabled"
+                   ItemClass="GetItemClass"
+                   ItemAttributes="GetItemAttributes"
                    Layout="DataViewLayout.Host">
     <FormaStackLayout Orientation="StackOrientation.Horizontal" class="@BodyCssClass" style="@SidebarSizeStyle">
         @if (ShowsSidebar)
         {
             <FormaBackdrop Variant="BackdropVariant.Raised" class="forma-explorer-sidebar-backdrop">
-                <FormaExplorerSidebar CurrentFolder="CurrentFolder"
-                                     ItemOptions="ItemOptions"
+                <FormaExplorerSidebar ItemOptions="ItemOptions"
                                      Folders="Folders"
                                      FolderTree="FolderTree"
                                      TotalCount="ListedItemCount"
                                      OnFolderDelete="_itemManager.RequestFolderDelete"
-                                     OnFolderCreate="OpenFolderDialogAsync"
-                                     OnFolderSelected="HandleFolderSelectedAsync" />
+                                     OnFolderCreate="OpenFolderDialogAsync" />
             </FormaBackdrop>
 
             <FormaSplitter Class="forma-explorer-splitter"

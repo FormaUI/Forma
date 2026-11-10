@@ -107,7 +107,10 @@ with hidden folders left out, in either sort direction, under one leading group 
 folders while grouping is on; All Media leads with the top-level folders, so a top-level
 folder is chosen there like any other. A slice's positions split at how many folders
 match, so a slice of folders alone asks the store for no files, and the rest ask from the
-store's first position. The sidebar's width is set by a splitter, with a new-folder and a
+store's first position. The sidebar chooses where the reader is and never selects: All
+Media stands first among its folders and takes the reader back to every item, every
+folder holding folders starts open, and a folder is selected in the content, where it is
+listed beside the files. The sidebar's width is set by a splitter, with a new-folder and a
 collapse-all tool over it. Grouping, selection, and the paged or infinite collection are
 the data view's. Below a tablet's width the sidebar stacks above the content. Each item carries its depiction and its
 operations, which a checkbox replaces while selecting.

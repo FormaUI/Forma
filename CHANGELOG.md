@@ -142,6 +142,14 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`CatalogFolderTree`](src/Framework/Forma.Framework.Catalog/README.md#building-a-surface) leaves out a folder whose
   key an earlier folder holds, as it found only the first by that key; it listed both among their parent's children,
   so a surface drew two folders for one key.
+- [`FormaExplorer`](docs/explorer-design.md#the-parts)'s sidebar is the data view's tree over its folders, with All
+  Media first among them, and chooses where the reader is without selecting: a folder is selected in the content,
+  where it is listed beside the files, and the sidebar's rows draw no selection box. Every folder holding folders
+  still starts open, and a folder's count, actions, drag and drop are where they were. `IExplorerSidebarView`,
+  `IExplorerSidebarInteraction` and `FormaExplorerFolderNode` are gone, and a stylesheet addressing the sidebar's
+  `.forma-explorer-folder-row`, `.forma-explorer-folder-target`, `.forma-explorer-folder-twisty` or
+  `.forma-explorer-folder-name` finds the tree's `.forma-data-tree-node`, its disclosure and
+  `.forma-data-tree-node-name`.
 - [`FormaExplorer`](docs/explorer-design.md#the-parts) shows its content through a `FormaDataView`: a location lists
   its child folders before its files, All Media leading with the top-level folders; its pager, its Load More action
   and its status are the data view's, under `.forma-explorer-footer`, the action staying beside the watch of the end
