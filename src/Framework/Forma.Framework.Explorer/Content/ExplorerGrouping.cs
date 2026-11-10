@@ -20,7 +20,8 @@ public static class ExplorerGrouping
 
     /// <summary>The groups <paramref name="field"/> bands catalog items into, defined against <paramref name="now"/>, where <see cref="ExplorerGroupField.None"/> has none.</summary>
     /// <remarks>
-    /// The groups stand in band order, kinds in the order of their labels in <paramref name="uiCulture"/>, and the whole
+    /// The folders' group leads in either direction, since an explorer lists a location's folders before its files; the
+    /// other groups stand in band order, kinds in the order of their labels in <paramref name="uiCulture"/>, and their
     /// order reverses for a descending direction. A date band holds the days of <paramref name="timeZone"/> it names, from
     /// the instant its first day begins to the instant the band after it in time begins, so the definition stays the same
     /// for every slice read against it.
@@ -68,7 +69,11 @@ public static class ExplorerGrouping
             groups.Reverse();
         }
 
-        return new CatalogGrouping(catalogField, groups);
+        var folderGroup = groups.OfType<CatalogKindGroup>().FirstOrDefault(group => group.Kind == CatalogItemKind.Folder)
+            ?? new CatalogKindGroup(KindKeyPrefix + CatalogItemKind.Folder, CatalogItemKind.Folder);
+        groups.Remove(folderGroup);
+
+        return new CatalogGrouping(catalogField, [folderGroup, .. groups]);
     }
 
     /// <summary>Gathers the items into the groups of <paramref name="grouping"/> that hold any, in the order the groups stand.</summary>

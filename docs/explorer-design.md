@@ -101,9 +101,15 @@ holding navigation, actions, view mode, sorting and grouping.
 The content area and the folder-tree sidebar are one data view over the catalog: the
 thumbnail, list and details views are its cards, list and grid over the current folder,
 drawn through the explorer's item template, and the sidebar is its tree over the folders,
-its width set by a splitter, with a new-folder and a collapse-all tool over it. Grouping,
-selection, and the paged or infinite collection are the data view's. Below a tablet's
-width the sidebar stacks above the content. Each item carries its depiction and its
+which the explorer holds whole, so it browses its files by remote slices while holding
+every folder. A location's content is its child folders before its files, searched and
+with hidden folders left out, in either sort direction, under one leading group of
+folders while grouping is on; All Media leads with the top-level folders, so a top-level
+folder is chosen there like any other. A slice's positions split at how many folders
+match, so a slice of folders alone asks the store for no files, and the rest ask from the
+store's first position. The sidebar's width is set by a splitter, with a new-folder and a
+collapse-all tool over it. Grouping, selection, and the paged or infinite collection are
+the data view's. Below a tablet's width the sidebar stacks above the content. Each item carries its depiction and its
 operations, which a checkbox replaces while selecting.
 
 Three surfaces stay on `FormaExplorer` rather than on the region they appear over, because

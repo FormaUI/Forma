@@ -73,6 +73,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `ExplorerGrouping.GroupBy` takes the definition `ExplorerGrouping.Define` builds, an `ExplorerItemGroup` carries its
   `Key` and its whole `Count`, and a kind group's key is its `CatalogItemKind`, which `GetKind` reads from an item,
   where it was its label.
+- [`ExplorerContentProvider`](src/Framework/Forma.Framework.Explorer/README.md) answers a location's content, its
+  child folders before its files, in either sort direction, under the grouping's leading group of folders, and
+  `ExplorerGrouping.Define` leads every grouping with that group. Its slices split at the count of matching folders,
+  so a slice of folders alone asks the file provider nothing. [`CatalogListProvider`](src/Framework/Forma.Framework.Catalog/README.md#building-a-surface)
+  answers queries from a list it holds as a held collection is shaped.
 - On a statically rendered page, [`FormaNumberInput`](docs/component-catalog.md#formanumberinput),
   `FormaCurrencyInput`, `FormaDatePicker`, `FormaTimePicker` and `FormaDateTimePicker` are edited in the browser's own
   number, date, time and date-and-time inputs, and `FormaSelect` and `FormaMultiSelect` in the browser's own list,
