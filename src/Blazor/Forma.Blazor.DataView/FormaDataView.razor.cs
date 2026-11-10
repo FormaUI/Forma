@@ -21,7 +21,7 @@ using Microsoft.JSInterop;
 
 /// <summary>The collection component: an engine that manages a set of items and the state around them, sorted, paged, selected and kept in the address, handing what is on screen to the view that presents it.</summary>
 /// <typeparam name="TItem">The item the data view manages.</typeparam>
-public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<TItem>, IDataViewInteraction<TItem>, IDataViewSwitcher, IDataViewSorter<TItem>
+public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<TItem>, IDataViewInteraction<TItem>, IDataViewSwitcher, IDataViewSorter<TItem>, IDataViewFooter
     where TItem : notnull
 {
     private const string DescendingOrder = "desc";
@@ -180,6 +180,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>Content shown in the footer, beside the page navigation.</summary>
     [Parameter] public RenderFragment? Status { get; set; }
+
+    /// <summary>Who arranges the views and the footer: the data view, or the host inside it.</summary>
+    [Parameter] public DataViewLayout Layout { get; set; }
 
     /// <summary>Whether the items are shown a page at a time, or all in one scroll region.</summary>
     [Parameter] public bool EnablePagination { get; set; } = true;
@@ -502,8 +505,37 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             && _totalItemCount is { } total
             && _selectedSet.Count < total;
 
-    private bool HasFooter
+    /// <inheritdoc />
+    bool IDataViewFooter.HasContent
         => Status is not null || ShowsPaginator || OffersSet || IsAppending;
+
+    /// <inheritdoc />
+    bool IDataViewFooter.ShowsPaginator
+        => ShowsPaginator;
+
+    /// <inheritdoc />
+    int IDataViewFooter.PagedCount
+        => PagedCount ?? 0;
+
+    /// <inheritdoc />
+    int IDataViewFooter.CurrentPage
+        => _page;
+
+    /// <inheritdoc />
+    RenderFragment? IDataViewFooter.StatusContent
+        => Status ?? (IsAppending && _items.Count > 0 ? RenderAppendStatus : null);
+
+    /// <inheritdoc />
+    bool IDataViewFooter.OffersSet
+        => OffersSet;
+
+    /// <inheritdoc />
+    int IDataViewFooter.SetCount
+        => TotalItemCount ?? 0;
+
+    /// <inheritdoc />
+    Task IDataViewFooter.MoveToPageAsync(int page)
+        => HandlePageChangedAsync(page);
 
     private int StartIndex
         => EnablePagination && !IsAppending ? (_page - 1) * PageSize : 0;
@@ -991,16 +1023,17 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         ArgumentNullException.ThrowIfNull(registration);
 
-        UnregisterView(registration.Key);
+        // A view registering under a key takes it over from the one registered there before.
+        _registrations.RemoveAll(existing => existing.Key == registration.Key);
         _registrations.Add(registration);
     }
 
     /// <inheritdoc />
-    public void UnregisterView(string key)
+    public void UnregisterView(DataViewRegistration registration)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(key);
+        ArgumentNullException.ThrowIfNull(registration);
 
-        _registrations.RemoveAll(registration => registration.Key == key);
+        _registrations.Remove(registration);
     }
 
     /// <inheritdoc />
@@ -1026,10 +1059,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await NotifyStateAsync();
     }
 
-    // A companion view stands beside the active view, so the region lays them out across rather than down.
+    // A companion view stands beside the active view, so the region lays them out across rather than down; a host arranging the
+    // views itself is given the region whole.
     private string RegionClass
-        => _registrations.Any(registration => registration.IsCompanion)
-            ? "forma-data-view-region forma-data-view-region-companions"
+        => Layout == DataViewLayout.Host ? "forma-data-view-region forma-data-view-region-host"
+            : _registrations.Any(registration => registration.IsCompanion) ? "forma-data-view-region forma-data-view-region-companions"
             : "forma-data-view-region";
 
     // The viewport of the view showing, which the engine scrolls and asks to fetch again.

@@ -37,19 +37,11 @@
     }
 }
 
-/* Page navigation at the inline start, status at the inline end, stacking when narrow. */
-.forma-data-view-footer {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: var(--space-3);
-}
-
-/* The auto margin holds the status at the inline end, with or without page navigation. */
-.forma-data-view-status {
-    margin-inline-start: auto;
-    color: var(--text-secondary-color);
-    font-size: var(--font-size-sm);
+/* The host's arrangement fills the region at its height, so each of its places scrolls within itself; a track with no
+   minimum lets the arrangement shrink below its content. */
+.forma-data-view-region-host {
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
 }
 
 /* The announcement is visually hidden and stays in the accessibility tree. */

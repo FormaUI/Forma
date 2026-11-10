@@ -93,6 +93,9 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>What a view draws after its items while the data view appends: the action loading the next page, which the reader reaching the end also starts.</summary>
     RenderFragment? MoreContent { get; }
 
+    /// <summary>Who arranges the views and the footer: the data view, or the host inside it.</summary>
+    DataViewLayout Layout { get; }
+
     /// <summary>Whether a sort always applies, so a header turns a sort's direction rather than clearing it.</summary>
     bool RequiresSort { get; }
 

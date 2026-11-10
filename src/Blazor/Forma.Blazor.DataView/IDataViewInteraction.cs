@@ -13,9 +13,10 @@ public interface IDataViewInteraction<TItem>
     /// <param name="key">The view's key.</param>
     Task SwitchViewAsync(string key);
 
-    /// <summary>Removes a view registered under <paramref name="key"/>.</summary>
-    /// <param name="key">The view's key.</param>
-    void UnregisterView(string key);
+    /// <summary>Removes the registration a view made.</summary>
+    /// <param name="registration">The registration the view made.</param>
+    /// <remarks>A view drawn afresh under its key registers before the one it replaces is disposed, so the registration it made stands until it removes it, whatever the one it replaced removes.</remarks>
+    void UnregisterView(DataViewRegistration registration);
 
     /// <summary>Starts a pass over the items a view is about to draw.</summary>
     void BeginItemPass();

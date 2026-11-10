@@ -1,0 +1,28 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaElementBase
+
+@if (Footer.HasContent)
+{
+    <div id="@Id"
+         data-rid="@Context.RuntimeId"
+         class="@RootClass"
+         style="@RootStyle"
+         @attributes="AdditionalAttributes"
+         @ref="RootElement">
+        @if (Footer.ShowsPaginator)
+        {
+            <FormaPagination TotalItems="Footer.PagedCount"
+                             PageSize="Footer.PageSize"
+                             CurrentPage="Footer.CurrentPage"
+                             Options="Footer.PaginationOptions"
+                             OnPageChanged="Footer.MoveToPageAsync" />
+        }
+
+        <div class="forma-data-view-status" role="status">@Footer.StatusContent</div>
+
+        @if (Footer.OffersSet)
+        {
+            <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-view-select-set" OnClick="Footer.SelectAllAsync">@L["Select all {Count}", Footer.SetCount]</FormaButton>
+        }
+    </div>
+}

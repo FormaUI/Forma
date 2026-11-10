@@ -125,6 +125,24 @@ whether the request reads the content the other views show, `Content`, or the ch
 shows, `Children`, so a provider answers each its own way, even at the roots, as a file browser
 lists every file beside a tree of folders.
 
+`Layout="DataViewLayout.Host"` hands the arrangement to the host: it places the views, a sidebar tree
+among them, inside the data view's content wherever it wants them, and `FormaDataViewFooter` where the
+paginator and the status belong, the data view drawing no footer of its own. The host's arrangement
+fills the data view's region, so each of its places scrolls within itself:
+
+```razor
+<FormaDataView TItem="Entry" Items="_entries" Layout="DataViewLayout.Host" ...>
+    <div class="arrangement">
+        <aside class="sidebar"><FormaDataTree TItem="Entry" SelectsCurrent="true" /></aside>
+        <FormaSplitter @bind-Value="_sidebarWidth" Min="10" Max="24" Label="Resize Folders" />
+        <div class="content">
+            <FormaDataGrid TItem="Entry">...</FormaDataGrid>
+            <FormaDataViewFooter />
+        </div>
+    </div>
+</FormaDataView>
+```
+
 `InitialOpenKeys` names the nodes that start open, by the keys `ItemKey` reads, so a tree reopens
 the branches its reader left open; each opens once, as the level holding it loads, and only those
 branches are asked for. A node that becomes current opens the ancestors that reach it, so a host

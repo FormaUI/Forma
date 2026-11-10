@@ -1,0 +1,58 @@
+@page "/{Runtime}/data-tree-host"
+@using Forma.Blazor.Components.DataView
+
+@* A data view the host arranges: its sidebar tree beside the content, sized by a splitter, and the content's grid and list under a
+   switch with the footer beneath them; a button that stacks the sidebar above the content, drawing every part afresh; and the
+   current folder, the sidebar's width and the items selected shown where the check reads them. *@
+<FormaDataView Id="check" TItem="Node" Items="Nodes" Layout="DataViewLayout.Host" ItemKey="@(node => node.Id)" ItemName="@(node => node.Name)" ParentKey="@(node => node.ParentId)" HasChildren="@(node => node.IsFolder)" EnablePagination="false" EnableItemSelection="true" CurrentItem="_current" CurrentItemChanged="@((Node? node) => _current = node)" @bind-SelectedItems="_selectedNodes" Status="@((RenderFragment)(builder => builder.AddContent(0, $"{_selectedNodes.Count} selected")))">
+    <div @key="_isStacked" id="arrangement" style="@ArrangementStyle">
+        <div id="sidebar" style="@SidebarStyle">
+            <FormaDataTree TItem="Node" aria-label="Folders" SelectsCurrent="true" NodeFilter="@(node => node.IsFolder)" />
+        </div>
+        @if (!_isStacked)
+        {
+            <FormaSplitter Id="splitter" Label="Folders Width" @bind-Value="_sidebarWidth" Min="8" Max="24" />
+        }
+        <div id="content" style="display: flex; flex-direction: column; flex: 1 1 auto; min-block-size: 0; min-inline-size: 0;">
+            <FormaDataViewSwitch Id="switch" />
+            <FormaDataGrid TItem="Node">
+                <Columns>
+                    <FormaPropertyColumn TItem="Node" TValue="string" Property="@(node => node.Name)" Title="Name" />
+                </Columns>
+            </FormaDataGrid>
+            <FormaDataList TItem="Node" />
+            <FormaDataViewFooter Id="footer" />
+        </div>
+    </div>
+</FormaDataView>
+<button id="stack" type="button" data-check-scaffold @onclick="() => _isStacked = true">Stack</button>
+<output id="current">@_current?.Name</output>
+<output id="width">@_sidebarWidth.ToString(CultureInfo.InvariantCulture)</output>
+
+@code {
+    private static readonly IQueryable<Node> Nodes = new Node[]
+    {
+        new(1, null, "Documents", true),
+        new(2, null, "Pictures", true),
+        new(3, 1, "Reports", true),
+        new(4, 1, "Contracts", true),
+        new(5, 3, "Q1.pdf", false),
+        new(6, 3, "Q2.pdf", false),
+    }.AsQueryable();
+
+    private Node? _current;
+    private IReadOnlyList<Node> _selectedNodes = [];
+    private double _sidebarWidth = 12;
+    private bool _isStacked;
+
+    private string ArrangementStyle
+        => $"display: flex; flex-direction: {(_isStacked ? "column" : "row")}; block-size: 24rem;";
+
+    // One unit of the splitter's value spans its default sixteen pixels; stacked, the sidebar keeps to a band above the content.
+    private string SidebarStyle
+        => _isStacked
+            ? "flex: none; display: flex; flex-direction: column; max-block-size: 8rem;"
+            : string.Create(CultureInfo.InvariantCulture, $"flex: none; display: flex; flex-direction: column; inline-size: {_sidebarWidth * 16}px;");
+
+    internal sealed record Node(int Id, int? ParentId, string Name, bool IsFolder);
+}

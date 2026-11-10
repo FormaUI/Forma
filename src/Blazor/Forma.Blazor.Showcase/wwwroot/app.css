@@ -455,6 +455,44 @@ body {
     opacity: 0.5;
 }
 
+/* A data view the host arranges: its tree in a sidebar the splitter sizes, beside the content with the footer beneath it. */
+.demo-host-arrangement {
+    display: flex;
+}
+
+.demo-host-sidebar {
+    display: flex;
+    flex-direction: column;
+    flex: none;
+    inline-size: var(--demo-host-sidebar-size);
+    background: var(--backdrop-inset-bg-color);
+}
+
+.demo-host-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    gap: var(--space-3);
+    min-inline-size: 0;
+    min-block-size: 0;
+}
+
+/* The data view is the container the host reads; narrow, the sidebar stacks above the content as a band of rows. */
+@container (max-width: 36rem) {
+    .demo-host-arrangement {
+        flex-direction: column;
+    }
+
+    .demo-host-sidebar {
+        inline-size: auto;
+        max-block-size: 8rem;
+    }
+
+    .demo-host-splitter {
+        display: none;
+    }
+}
+
 /* A bounded content area a grid fills, its rows scrolling inside it. */
 .demo-box-bounded {
     box-sizing: border-box;

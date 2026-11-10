@@ -1,0 +1,109 @@
+@inherits FormaBunitContext
+@using Microsoft.AspNetCore.Components.Web
+
+@code {
+    // Five products, named from one.
+    private static IQueryable<Product> CreateProducts() => Enumerable.Range(1, 5)
+        .Select(id => new Product(id, $"Product {id}"))
+        .AsQueryable();
+
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_draw_the_paginator_and_the_status_where_the_host_places_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewFooterTests();
+
+            // Act — the footer beneath the list, inside the host's own content
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" PageSize="2" Layout="DataViewLayout.Host" ItemName="@(product => product.Name)" Status="@((RenderFragment)(builder => builder.AddContent(0, "Five products")))">
+                    <div class="content">
+                        <FormaDataList TItem="Product" />
+                        <FormaDataViewFooter class="placed" />
+                    </div>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 2);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(cut.FindAll(".forma-data-view-footer")),
+                () => Assert.Single(cut.FindAll(".content > .forma-data-view-footer.placed nav.forma-pagination")),
+                () => Assert.Equal("Five products", cut.Find(".content .forma-data-view-status").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_move_the_items_to_the_page_chosen_in_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewFooterTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" PageSize="2" Layout="DataViewLayout.Host" ItemName="@(product => product.Name)">
+                    <div class="content">
+                        <FormaDataList TItem="Product" />
+                        <FormaDataViewFooter />
+                    </div>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 2);
+
+            // Act
+            await cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal(["Product 3", "Product 4"], cut.FindAll(".forma-data-list-item-name").Select(name => name.TextContent).ToList());
+        }
+
+        [Fact]
+        public void Should_say_what_a_status_the_host_changes_says()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewFooterTests();
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" PageSize="2" Layout="DataViewLayout.Host" ItemName="@(product => product.Name)" Status="@((RenderFragment)(builder => builder.AddContent(0, "Before")))">
+                    <div class="content">
+                        <FormaDataList TItem="Product" />
+                        <FormaDataViewFooter />
+                    </div>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 2);
+
+            // Act
+            cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.Status, (RenderFragment)(builder => builder.AddContent(0, "After"))));
+
+            // Assert
+            Assert.Equal("After", cut.Find(".forma-data-view-status").TextContent);
+        }
+
+        [Fact]
+        public void Should_leave_the_footer_to_the_host_under_the_host_s_layout()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewFooterTests();
+
+            // Act — a status and a second page, and no footer placed
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" PageSize="2" Layout="DataViewLayout.Host" ItemName="@(product => product.Name)" Status="@((RenderFragment)(builder => builder.AddContent(0, "Five products")))">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 2);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-data-view-footer"));
+        }
+
+        [Fact]
+        public void Should_refuse_to_stand_outside_a_data_view()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewFooterTests();
+
+            // Act
+            var exception = Record.Exception(() => ctx.Render(@<FormaDataViewFooter />));
+
+            // Assert
+            Assert.IsType<InvalidOperationException>(exception);
+        }
+    }
+
+    private sealed record Product(int Id, string Name);
+}

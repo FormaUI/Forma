@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**67 components implemented, 7 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**67 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -93,13 +93,14 @@ src/Blazor/
 ├── (2 / 2) Forma.Blazor.Composer/RichTextEditor/
 │   ├── ✅ FormaCompactRichTextEditor
 │   └── ✅ FormaStandardRichTextEditor
-├── (0 / 7) Forma.Blazor.DataView/
+├── (0 / 8) Forma.Blazor.DataView/
 │   ├── ◐ FormaDataCards
 │   ├── ◐ FormaDataGrid
 │   ├── ◐ FormaDataList
 │   ├── ◐ FormaDataSortMenu
 │   ├── ◐ FormaDataTree
 │   ├── ◐ FormaDataView
+│   ├── ◐ FormaDataViewFooter
 │   └── ◐ FormaDataViewSwitch
 ├── (1 / 1) Forma.Blazor.Explorer/
 │   └── ✅ FormaExplorer

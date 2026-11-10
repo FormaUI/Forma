@@ -62,6 +62,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
+    private DataViewRegistration _dataViewRegistration = default!;
     private readonly Dictionary<object, ElementReference> _nodeElements = [];
     private readonly Dictionary<object, FormaCheckBox> _nodeMarkers = [];
     private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
@@ -162,7 +163,8 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
         _isCompanion = SelectsCurrent;
         _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
-        Interaction.RegisterView(new DataViewRegistration(ViewKey, () => L["Tree"], Glyph.FolderTree, this) { IsCompanion = _isCompanion });
+        _dataViewRegistration = new DataViewRegistration(ViewKey, () => L["Tree"], Glyph.FolderTree, this) { IsCompanion = _isCompanion };
+        Interaction.RegisterView(_dataViewRegistration);
         View.Subscribe(HandleViewChangedAsync);
     }
 
@@ -817,14 +819,14 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         builder
             .Add("forma-data-tree")
             .Add("forma-data-tree-dense", Dense)
-            .Add("forma-data-tree-companion", _isCompanion);
+            .Add("forma-data-tree-companion", _isCompanion && View.Layout == DataViewLayout.BuiltIn);
     }
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
         View.Unsubscribe(HandleViewChangedAsync);
-        Interaction.UnregisterView(ViewKey);
+        Interaction.UnregisterView(_dataViewRegistration);
 
         if (_focusState is { } focusState)
         {

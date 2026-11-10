@@ -9,40 +9,27 @@
      style="@RootStyle"
      @attributes="AdditionalAttributes"
      @ref="RootElement">
-    @* Fixed: the engine announces its changes through the view contract, so the cascade never has to change value under a view. *@
+    @* Fixed: the engine announces its changes through the view contract, so the cascade never has to change value under a view; the
+       footer's is not, so a footer draws again whenever the data view does, a status the host changes among it. *@
     <CascadingValue TValue="IDataView<TItem>" Value="this" IsFixed="true">
         <CascadingValue TValue="IDataViewInteraction<TItem>" Value="this" IsFixed="true">
             <CascadingValue TValue="IDataViewSwitcher" Value="this" IsFixed="true">
                 <CascadingValue TValue="IDataViewSorter<TItem>" Value="this" IsFixed="true">
-                    <div class="@RegionClass" aria-busy="@(_isBusy ? "true" : null)" @ref="_regionElement">
-                        @ChildContent
-                    </div>
+                    <CascadingValue TValue="IDataViewFooter" Value="this">
+                        <div class="@RegionClass" aria-busy="@(_isBusy ? "true" : null)" @ref="_regionElement">
+                            @ChildContent
+                        </div>
+
+                        @* Present from the first render, so a screen reader is already listening when the first announcement arrives. *@
+                        <div class="forma-data-view-announcement" role="status">@_announcement</div>
+
+                        @if (Layout == DataViewLayout.BuiltIn)
+                        {
+                            <FormaDataViewFooter />
+                        }
+                    </CascadingValue>
                 </CascadingValue>
             </CascadingValue>
         </CascadingValue>
     </CascadingValue>
-
-    @* Present from the first render, so a screen reader is already listening when the first announcement arrives. *@
-    <div class="forma-data-view-announcement" role="status">@_announcement</div>
-
-    @if (HasFooter)
-    {
-        <div class="forma-data-view-footer">
-            @if (ShowsPaginator)
-            {
-                <FormaPagination TotalItems="@(PagedCount ?? 0)"
-                                 PageSize="PageSize"
-                                 CurrentPage="@_page"
-                                 Options="PaginationOptions"
-                                 OnPageChanged="HandlePageChangedAsync" />
-            }
-
-            <div class="forma-data-view-status" role="status">@(Status ?? (IsAppending && _items.Count > 0 ? RenderAppendStatus : null))</div>
-
-            @if (OffersSet)
-            {
-                <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" class="forma-data-view-select-set" OnClick="SelectAllAsync">@L["Select all {Count}", TotalItemCount ?? 0]</FormaButton>
-            }
-        </div>
-    }
 </div>

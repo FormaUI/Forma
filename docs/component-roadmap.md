@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**28 components not yet implemented, 7 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 21 not yet started, and the 7 in progress stand in the catalog's structure until then.
+**29 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 21 not yet started, and the 8 in progress stand in the catalog's structure until then.
 
 ## Components Structure
 
@@ -45,7 +45,7 @@ The components still to build, in the order dependency and reuse suggest. What i
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaDataView`, `FormaDataGrid`, `FormaDataList`, `FormaDataCards`, `FormaDataTree`, `FormaDataSortMenu`, `FormaDataViewSwitch` | The engine every collection surface shares, with its views and controls; in progress — see [the data view design](data-view-design.md) |
+| 1 | `FormaDataView`, `FormaDataGrid`, `FormaDataList`, `FormaDataCards`, `FormaDataTree`, `FormaDataSortMenu`, `FormaDataViewSwitch`, `FormaDataViewFooter` | The engine every collection surface shares, with its views and controls; in progress — see [the data view design](data-view-design.md) |
 | 2 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
 | 3 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
 | 4 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
@@ -138,6 +138,15 @@ The collection component: an engine that manages a set of items and the state ar
 |---|---|
 | **Old pattern** | The same browsing built three times: `asp:GridView` over a repository data source on every list page, the explorer's content area, and the gallery's planned engine |
 | **Used in** | Every list page under `FormaDataGrid`, the explorer's content area, and the gallery |
+
+### `FormaDataViewFooter`
+
+A data view's footer, its page navigation and its status, which a host arranging the data view itself places. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The explorer's footer beneath its content area, which pages and counts its own items |
+| **Used in** | The explorer, beneath its content beside its sidebar, and any page that arranges a data view itself |
 
 ### `FormaDataViewSwitch`
 

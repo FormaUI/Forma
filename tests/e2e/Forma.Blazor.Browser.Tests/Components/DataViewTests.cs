@@ -440,6 +440,40 @@ public sealed class DataViewTests
         }
     }
 
+    public sealed class DataTreeHost(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_keep_the_current_folder_the_open_folders_the_selection_and_the_view_as_the_host_resizes_and_stacks_its_sidebar(string runtime)
+        {
+            // Arrange — Documents opened and Reports chosen in the sidebar, the list shown and Q1.pdf selected in it
+            var (context, page) = await OpenAsync(host, runtime, "data-tree-host");
+            await using var _ = context;
+            await WaitForInputScopeAsync(page, "#check .forma-data-view-region");
+            await WaitForInputRouteAsync(page, "#check .forma-data-tree", "tree.choose");
+            await page.GetByRole(AriaRole.Button, new() { Name = "Open Documents", Exact = true }).ClickAsync();
+            await page.GetByRole(AriaRole.Treeitem, new() { Name = "Reports", Exact = true }).Locator(".forma-data-tree-node-name").ClickAsync();
+            await Assertions.Expect(page.Locator("#current")).ToHaveTextAsync("Reports");
+            await page.Locator("#switch").GetByRole(AriaRole.Button, new() { Name = "List", Exact = true }).ClickAsync();
+            await page.Locator("#check [role=listitem]", new() { HasText = "Q1.pdf" }).Locator(".forma-data-list-item-name").ClickAsync();
+            await Assertions.Expect(page.Locator("#footer .forma-data-view-status")).ToHaveTextAsync("1 selected");
+
+            // Act — the sidebar widened from the keyboard, then stacked above the content
+            await WaitForInputScopeAsync(page, "#splitter");
+            await page.Locator("#splitter").PressAsync("ArrowRight");
+            await Assertions.Expect(page.Locator("#width")).ToHaveTextAsync("13");
+            await page.Locator("#stack").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#arrangement")).ToHaveCSSAsync("flex-direction", "column");
+            await Assertions.Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Documents", Exact = true })).ToHaveAttributeAsync("aria-expanded", "true");
+            await Assertions.Expect(page.GetByRole(AriaRole.Treeitem, new() { Name = "Reports", Exact = true })).ToHaveAttributeAsync("aria-selected", "true");
+            await Assertions.Expect(page.Locator("#switch").GetByRole(AriaRole.Button, new() { Name = "List", Exact = true })).ToHaveAttributeAsync("aria-pressed", "true");
+            await Assertions.Expect(page.Locator("#check [role=listitem]", new() { HasText = "Q1.pdf" })).ToHaveAttributeAsync("aria-selected", "true");
+            await Assertions.Expect(page.Locator("#content > #footer .forma-data-view-status")).ToHaveTextAsync("1 selected");
+        }
+    }
+
     public sealed class DataListAppend(BrowserHost host)
     {
         [Theory]

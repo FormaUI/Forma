@@ -22,6 +22,24 @@
     private static IQueryable<Entry> CreateLeaves(int count)
         => Enumerable.Range(1, count).Select(id => new Entry(id, null, $"Leaf {id}", false)).AsQueryable();
 
+    // A host's own arrangement of a sidebar tree beside, or above, its content: a grid and a list with a footer beneath them, drawn
+    // afresh whenever it changes between the two.
+    private static RenderFragment CreateArrangement(bool stacked) =>
+        @<div @key="stacked" class="@(stacked ? "stacked" : "beside")">
+            <div class="sidebar">
+                <FormaDataTree TItem="Entry" SelectsCurrent="true" NodeFilter="@(entry => entry.IsFolder)" />
+            </div>
+            <div class="content">
+                <FormaDataGrid TItem="Entry">
+                    <Columns>
+                        <FormaPropertyColumn TItem="Entry" TValue="string" Property="@(entry => entry.Name)" />
+                    </Columns>
+                </FormaDataGrid>
+                <FormaDataList TItem="Entry" />
+                <FormaDataViewFooter />
+            </div>
+        </div>;
+
     // Answers the entries under the request's parent, or the roots for none, at once.
     private static ValueTask<DataViewPage<Entry>> ProvideEntriesAsync(DataViewRequest<Entry> request)
     {
@@ -1263,6 +1281,79 @@
             Assert.Multiple(
                 () => Assert.Equal("true", cut.Find("[role=treeitem]").GetAttribute("aria-expanded")),
                 () => Assert.Equal("Reports", GetTabStop(cut)));
+        }
+    }
+
+    public sealed class HostLayout
+    {
+        [Fact]
+        public void Should_fill_the_place_the_host_gives_it_rather_than_stand_as_the_data_view_s_sidebar()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" Layout="DataViewLayout.Host" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    @CreateArrangement(stacked: false)
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2 && cut.FindAll("tbody tr.forma-data-grid-row").Count == 2);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("forma-data-view-region forma-data-view-region-host", cut.Find(".forma-data-view-region").ClassName),
+                () => Assert.DoesNotContain("forma-data-tree-companion", cut.Find(".forma-data-tree").ClassName, StringComparison.Ordinal),
+                () => Assert.Single(cut.FindAll(".beside > .sidebar > .forma-data-tree")));
+        }
+
+        [Fact]
+        public void Should_draw_the_host_s_arrangement_with_its_tree_and_footer_as_it_renders_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaDataTreeTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" Layout="DataViewLayout.Host" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)" Status="@((RenderFragment)(builder => builder.AddContent(0, "The roots")))">
+                    @CreateArrangement(stacked: false)
+                </FormaDataView>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Documents", "Pictures"], Names(cut)),
+                () => Assert.Equal("The roots", cut.Find(".content > .forma-data-view-footer .forma-data-view-status").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_current_node_the_open_nodes_the_selection_and_the_active_view_when_the_host_places_its_parts_anew()
+        {
+            // Arrange — beside each other: Documents open, Reports current, the list showing and Q1.pdf selected in it
+            using var ctx = new FormaDataTreeTests();
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" Layout="DataViewLayout.Host" EnableItemSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    @CreateArrangement(stacked: false)
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            var entries = CreateEntries().ToList();
+            await engine.InvokeAsync(() => engine.Instance.OpenNodeAsync(entries.Single(entry => entry.Id == 1)));
+            await engine.InvokeAsync(() => engine.Instance.MakeCurrentAsync(entries.Single(entry => entry.Id == 3)));
+            await engine.InvokeAsync(() => engine.Instance.SwitchViewAsync("list"));
+            await engine.InvokeAsync(() => engine.Instance.SelectItemAsync(entries.Single(entry => entry.Id == 6)));
+            var treeBefore = cut.FindComponent<FormaDataTree<Entry>>().Instance;
+
+            // Act — stacked, every part drawn afresh
+            engine.Render(parameters => parameters.Add(view => view.ChildContent, CreateArrangement(stacked: true)));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotSame(treeBefore, cut.FindComponent<FormaDataTree<Entry>>().Instance),
+                () => Assert.Single(cut.FindAll(".stacked > .sidebar > .forma-data-tree")),
+                () => Assert.Equal("true", cut.Find("[role=treeitem]").GetAttribute("aria-expanded")),
+                () => Assert.Equal("Reports", cut.Find(".forma-data-tree-node-current .forma-data-tree-node-name").TextContent),
+                () => Assert.Empty(cut.FindAll("tbody tr.forma-data-grid-row")),
+                () => Assert.Equal(["Q1.pdf"], cut.FindAll("[role=listitem][aria-selected=true] .forma-data-list-item-name").Select(name => name.TextContent).ToList()));
         }
     }
 

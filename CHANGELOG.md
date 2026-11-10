@@ -101,6 +101,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
   positions it read, `ReadCount`, whether more follow, `HasMore`, and how many positions the source holds,
   `PositionCount`, which the paginator counts pages in. `IDataView` declares `IsVirtualizing`, `ItemCount` and
   `MoreContent`, and `IDataViewInteraction` declares `LoadMoreAsync`.
+- [`FormaDataView`](docs/data-view-design.md#the-views) takes `Layout`, which hands the arrangement of its views and
+  footer to the host under `Host`: the host places the views, a sidebar tree among them, inside the data view's
+  content, and the footer where it places the new `FormaDataViewFooter`, the data view drawing none of its own; its
+  arrangement fills the data view's region, so each of its places scrolls within itself. `BuiltIn` keeps the data
+  view's own arrangement. `IDataView` declares `Layout`. `IDataViewInteraction.UnregisterView` takes the
+  registration a view made, rather than its key, so a view drawn afresh under the same key keeps its registration;
+  it lost it as the one it replaced went, which left the data view with no view to show.
 - [`FormaDataView`](docs/data-view-design.md#hierarchy) takes `InitialOpenKeys`, the keys of the nodes that start
   open, each opened once as the level holding it first loads, so a provider is asked for the branches on the way to
   them alone and a named node the reader closes stays closed. A node that becomes current is revealed in any tree,

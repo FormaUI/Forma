@@ -360,7 +360,8 @@ draws an item afresh when the group it stands in changes.
 ### The footer and the states
 
 The footer holds the paginator at the inline start and the status region at the inline
-end, wrapping when narrow. It is skipped when there is nothing to put in it, and the
+end, wrapping when narrow, and draws again whenever the data view does, so a status the
+host changes shows at once wherever the footer stands. It is skipped when there is nothing to put in it, and the
 paginator alone hides while everything fits on one page. The status region is a live
 region, so a count written into it is announced. The empty state and the loading state
 fill the region the items would, the empty one showing the caller's `EmptyContent` or the
@@ -390,6 +391,23 @@ an item. A view draws the item's selected,
 disabled and focused states with a channel beside color each, and gives every target the
 floor. A selection box stands at the center of a target the size of the floor, so a press
 near the box still reaches it; the grid keeps its box on the column's leading edge.
+
+A view registers under its key and lets go of the registration it made, so a view drawn
+afresh under the same key, which registers before the one it replaces goes, keeps its
+place.
+
+`Layout` says who arranges the views and the footer. The data view's own arrangement,
+`BuiltIn`, lays a companion view, a sidebar tree, beside the active view at a width of its
+own, stacks it above the view where the data view is narrow, and draws the footer beneath
+both. Under `Host` the host arranges them inside the data view's content, as an explorer
+places its folder tree in a sidebar it sizes with a splitter and its footer beneath its
+content: the region gives the host's arrangement its own height, so each of the host's
+places scrolls within itself; a companion fills the place it is given; and the footer
+stands where the host places `FormaDataViewFooter`, the data view drawing none of its own.
+The parts stay connected wherever the host puts them, since they are declared inside the
+data view, and what the reader did, the current node, the open nodes, the selection and
+the active view, is the engine's, so the host resizing or stacking its arrangement, or
+drawing its parts afresh in another one, keeps it all.
 
 ### The grid
 

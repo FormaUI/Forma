@@ -42,6 +42,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
 
     private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
+    private DataViewRegistration _dataViewRegistration = default!;
     private CollectionName _collectionName = CollectionName.None;
     private DataViewRows<TItem> _rows = default!;
     private GridColumns _gridColumns = default!;
@@ -130,7 +131,8 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 
         _rows = new DataViewRows<TItem>(View, () => _virtualizer, InvokeAsync, StateHasChanged);
         _gridColumns = new GridColumns(Context.JS);
-        Interaction.RegisterView(new DataViewRegistration(ViewKey, () => L["Cards"], Glyph.GridView, this));
+        _dataViewRegistration = new DataViewRegistration(ViewKey, () => L["Cards"], Glyph.GridView, this);
+        Interaction.RegisterView(_dataViewRegistration);
         View.Subscribe(HandleViewChangedAsync);
     }
 
@@ -235,7 +237,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     protected override async ValueTask DisposeAsyncCore()
     {
         View.Unsubscribe(HandleViewChangedAsync);
-        Interaction.UnregisterView(ViewKey);
+        Interaction.UnregisterView(_dataViewRegistration);
         await _gridColumns.DisposeAsync();
         _selfReference?.Dispose();
         await base.DisposeAsyncCore();

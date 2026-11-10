@@ -1,0 +1,19 @@
+/* ============================================================
+   FormaDataViewFooter — CSS isolation
+   Page navigation at the inline start and the status at the
+   inline end, stacking when narrow.
+   ============================================================ */
+
+.forma-data-view-footer {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+/* The auto margin holds the status at the inline end, with or without page navigation. */
+.forma-data-view-status {
+    margin-inline-start: auto;
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-sm);
+}

@@ -33,6 +33,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
 
     private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
+    private DataViewRegistration _dataViewRegistration = default!;
     private CollectionName _collectionName = CollectionName.None;
     private DataViewRows<TItem> _rows = default!;
     private FormaVirtualize<DataViewRow<TItem>>? _virtualizer;
@@ -96,7 +97,8 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
         }
 
         _rows = new DataViewRows<TItem>(View, () => _virtualizer, InvokeAsync, StateHasChanged);
-        Interaction.RegisterView(new DataViewRegistration(ViewKey, () => L["List"], Glyph.List, this));
+        _dataViewRegistration = new DataViewRegistration(ViewKey, () => L["List"], Glyph.List, this);
+        Interaction.RegisterView(_dataViewRegistration);
         View.Subscribe(HandleViewChangedAsync);
     }
 
@@ -175,7 +177,7 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
     protected override ValueTask DisposeAsyncCore()
     {
         View.Unsubscribe(HandleViewChangedAsync);
-        Interaction.UnregisterView(ViewKey);
+        Interaction.UnregisterView(_dataViewRegistration);
 
         return base.DisposeAsyncCore();
     }

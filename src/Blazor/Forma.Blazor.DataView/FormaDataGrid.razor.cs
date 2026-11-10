@@ -30,6 +30,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
     private readonly List<FormaColumnBase<TItem>> _columns = [];
     private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
+    private DataViewRegistration _dataViewRegistration = default!;
     private string _rowSignature = string.Empty;
     private int _rowRevision;
     private readonly Dictionary<FormaColumnBase<TItem>, FormaDataGridColumnHeader<TItem>> _headers = [];
@@ -366,7 +367,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             throw new InvalidOperationException($"{nameof(FormaDataGrid<TItem>)} must be declared inside a {nameof(FormaDataView<TItem>)}.");
         }
 
-        Interaction.RegisterView(new DataViewRegistration(ViewKey, () => L["Grid"], Glyph.DetailsView, this));
+        _dataViewRegistration = new DataViewRegistration(ViewKey, () => L["Grid"], Glyph.DetailsView, this);
+        Interaction.RegisterView(_dataViewRegistration);
         _rows = new DataViewRows<TItem>(View, () => Table?.Virtualizer, InvokeAsync, StateHasChanged);
         _columnFit = new ColumnFit(Context.JS);
         View.Subscribe(HandleViewChangedAsync);
@@ -786,7 +788,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     protected override async ValueTask DisposeAsyncCore()
     {
         View.Unsubscribe(HandleViewChangedAsync);
-        Interaction.UnregisterView(ViewKey);
+        Interaction.UnregisterView(_dataViewRegistration);
         await _columnFit.DisposeAsync();
         _selfReference?.Dispose();
         await base.DisposeAsyncCore();
