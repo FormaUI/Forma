@@ -6,6 +6,33 @@
 @using Microsoft.Extensions.Time.Testing
 
 @code {
+    public sealed class PageGivingWay
+    {
+        [Fact]
+        public void Should_stay_on_a_page_whose_positions_the_source_read_and_left_out_whole()
+        {
+            // Arrange — six positions two to a page, the second page's two left out by the source
+            using var ctx = new FormaDataViewTests();
+            var moves = new List<int>();
+            DataViewItemsProvider<Product> provider = request => ValueTask.FromResult(request.StartIndex == 2
+                ? new DataViewPage<Product>([], null) { ReadCount = 2, PositionCount = 6 }
+                : new DataViewPage<Product>([.. Enumerable.Range(request.StartIndex + 1, 2).Select(id => new Product(id, $"Product {id}"))], null) { PositionCount = 6 });
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" ItemsProvider="provider" PageSize="2" Page="2" PageChanged="@((int page) => moves.Add(page))" ItemName="@(product => product.Name)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("[role=listitem]")),
+                () => Assert.Empty(moves));
+        }
+
+        private sealed record Product(int Id, string Name);
+    }
+
     public sealed class TabOrder
     {
         private static IQueryable<Product> CreateProducts() => Enumerable.Range(1, 3)

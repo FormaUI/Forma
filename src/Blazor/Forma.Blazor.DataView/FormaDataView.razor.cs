@@ -1952,8 +1952,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
                 await viewport.RefreshAsync();
             }
 
-            // A page past the last, because the rows on it went away, gives way to the last page that exists.
-            if (EnablePagination && !IsAppending && _page > 1 && _items.Count == 0 && PagedCount is { } total)
+            // A page past the last, because the rows on it went away, gives way to the last page that exists; one whose positions the
+            // source read and left out whole is a page, and stays.
+            if (EnablePagination && !IsAppending && _page > 1 && _items.Count == 0 && (page.ReadCount ?? 0) == 0 && PagedCount is { } total)
             {
                 await MoveToPageAsync(Math.Max(1, (total + PageSize - 1) / PageSize));
                 await LoadAsync(asksNodesAgain: areNodesStale);
