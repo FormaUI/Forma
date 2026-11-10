@@ -16,4 +16,7 @@ public sealed record CatalogPage(IReadOnlyList<ICatalogItem> Items, int? TotalCo
 
     /// <summary>How many items of the whole query are listed, which a store gives where it applied the query's filter and left hidden items out before paging.</summary>
     public int? ListedCount { get; init; }
+
+    /// <summary>How many items each group of the query's grouping holds across the whole query, in the order the groups stand.</summary>
+    public IReadOnlyList<CatalogGroupSize>? GroupSizes { get; init; }
 }

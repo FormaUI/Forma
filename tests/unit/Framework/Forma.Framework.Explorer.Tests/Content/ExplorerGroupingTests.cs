@@ -15,14 +15,17 @@ public sealed class ExplorerGroupingTests
 {
     private static readonly DateTimeOffset Now = new(2026, 9, 16, 12, 0, 0, TimeSpan.Zero);
 
-    private static string GetTypeNameKindLabel(ICatalogItem item)
-        => item.Resource?.GetType().Name ?? string.Empty;
+    private static string GetKindName(CatalogItemKind kind)
+        => kind.ToString();
 
     private static FileResourceInfo CreateFile(string name, long? size = null, DateTimeOffset? modifiedAt = null)
         => new($"/media/{name}") { Size = size, ModifiedAt = modifiedAt };
 
+    private static CatalogGrouping? Define(ExplorerGroupField field, CatalogSortDirection direction = CatalogSortDirection.Ascending, TimeZoneInfo? timeZone = null)
+        => ExplorerGrouping.Define(field, direction, GetKindName, CultureInfo.InvariantCulture, Now, timeZone ?? TimeZoneInfo.Utc, DayOfWeek.Monday);
+
     private static IReadOnlyList<ExplorerItemGroup> Group(ExplorerGroupField field, CatalogSortDirection direction = CatalogSortDirection.Ascending, params ResourceInfo[] resources)
-        => ExplorerGrouping.GroupBy(CatalogItem.ForAll(resources), field, direction, GetTypeNameKindLabel, CultureInfo.InvariantCulture, Now, DayOfWeek.Monday);
+        => ExplorerGrouping.GroupBy(CatalogItem.ForAll(resources), Define(field, direction), GetKindName);
 
     [Fact]
     public void Should_yield_no_groups_when_nothing_groups_the_items()
@@ -31,7 +34,9 @@ public sealed class ExplorerGroupingTests
         var groups = Group(ExplorerGroupField.None, resources: [CreateFile("a.png")]);
 
         // Assert
-        Assert.Empty(groups);
+        Assert.Multiple(
+            () => Assert.Null(Define(ExplorerGroupField.None)),
+            () => Assert.Empty(groups));
     }
 
     [Fact]
@@ -111,9 +116,82 @@ public sealed class ExplorerGroupingTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(["FileResourceInfo", "ImageResourceInfo"], groups.Select(group => group.KindLabel)),
+            () => Assert.Equal(["File", "Image"], groups.Select(group => group.KindLabel)),
             () => Assert.Equal(2, groups[1].Items.Count),
-            () => Assert.Equal("kind:ImageResourceInfo", groups[1].Key));
+            () => Assert.Equal("Kind.Image", groups[1].Key));
+    }
+
+    [Fact]
+    public void Should_key_a_kind_group_by_its_kind_whatever_its_label()
+    {
+        // Act
+        var english = ExplorerGrouping.Define(ExplorerGroupField.Kind, CatalogSortDirection.Ascending, kind => kind.ToString(), CultureInfo.InvariantCulture, Now, TimeZoneInfo.Utc, DayOfWeek.Monday);
+        var reversed = ExplorerGrouping.Define(ExplorerGroupField.Kind, CatalogSortDirection.Ascending, kind => new string([.. kind.ToString().Reverse()]), CultureInfo.InvariantCulture, Now, TimeZoneInfo.Utc, DayOfWeek.Monday);
+
+        // Assert — the labels order the groups, and the keys stay the kinds'
+        Assert.Multiple(
+            () => Assert.Equal(english!.Groups.Select(group => group.Key).Order(StringComparer.Ordinal), reversed!.Groups.Select(group => group.Key).Order(StringComparer.Ordinal)),
+            () => Assert.NotEqual(english!.Groups.Select(group => group.Key), reversed!.Groups.Select(group => group.Key)));
+    }
+
+    [Fact]
+    public void Should_bound_the_date_bands_by_the_instants_the_time_zones_days_begin()
+    {
+        // Arrange — noon on the 16th in UTC is ten at night there, ten hours ahead
+        var zone = TimeZoneInfo.CreateCustomTimeZone("Ten Ahead", TimeSpan.FromHours(10), "Ten Ahead", "Ten Ahead");
+
+        // Act
+        var grouping = Define(ExplorerGroupField.DateModified, timeZone: zone)!;
+        var today = (CatalogDateGroup)grouping.Groups.Single(group => group.Key == nameof(ExplorerGroupBand.DateToday));
+        var yesterday = (CatalogDateGroup)grouping.Groups.Single(group => group.Key == nameof(ExplorerGroupBand.DateYesterday));
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(new DateTimeOffset(2026, 9, 16, 0, 0, 0, TimeSpan.FromHours(10)), today.From),
+            () => Assert.Null(today.Before),
+            () => Assert.Equal(new DateTimeOffset(2026, 9, 15, 0, 0, 0, TimeSpan.FromHours(10)), yesterday.From),
+            () => Assert.Equal(today.From, yesterday.Before));
+    }
+
+    [Fact]
+    public void Should_band_a_date_by_the_day_it_falls_on_in_the_time_zone()
+    {
+        // Arrange — an hour before noon UTC is today in UTC, and nine at night there, ten hours ahead
+        var zone = TimeZoneInfo.CreateCustomTimeZone("Ten Ahead", TimeSpan.FromHours(10), "Ten Ahead", "Ten Ahead");
+        var items = CatalogItem.ForAll([CreateFile("late.png", modifiedAt: new DateTimeOffset(2026, 9, 15, 15, 0, 0, TimeSpan.Zero))]);
+
+        // Act — the 15th at three in the afternoon UTC is the 16th at one in the morning ten hours ahead
+        var utc = ExplorerGrouping.GroupBy(items, Define(ExplorerGroupField.DateModified, timeZone: TimeZoneInfo.Utc), GetKindName);
+        var ahead = ExplorerGrouping.GroupBy(items, Define(ExplorerGroupField.DateModified, timeZone: zone), GetKindName);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(ExplorerGroupBand.DateYesterday, Assert.Single(utc).Band),
+            () => Assert.Equal(ExplorerGroupBand.DateToday, Assert.Single(ahead).Band));
+    }
+
+    [Fact]
+    public void Should_leave_a_band_empty_whose_days_a_newer_band_holds()
+    {
+        // Act — the 3rd of September 2026 is a Thursday, so last week began in August, before the month did
+        var grouping = ExplorerGrouping.Define(ExplorerGroupField.DateModified, CatalogSortDirection.Ascending, GetKindName, CultureInfo.InvariantCulture, new DateTimeOffset(2026, 9, 3, 12, 0, 0, TimeSpan.Zero), TimeZoneInfo.Utc, DayOfWeek.Monday)!;
+        var earlierThisMonth = (CatalogDateGroup)grouping.Groups.Single(group => group.Key == nameof(ExplorerGroupBand.DateEarlierThisMonth));
+
+        // Assert
+        Assert.Equal(earlierThisMonth.From, earlierThisMonth.Before);
+    }
+
+    [Fact]
+    public void Should_count_each_group_by_the_whole_result_where_its_size_is_given()
+    {
+        // Arrange
+        var items = CatalogItem.ForAll([CreateFile("apple.png"), CreateFile("kite.png")]);
+
+        // Act
+        var groups = ExplorerGrouping.GroupBy(items, Define(ExplorerGroupField.Name), GetKindName, [new CatalogGroupSize(nameof(ExplorerGroupBand.NameAToH), 12)]);
+
+        // Assert
+        Assert.Equal([12, 1], groups.Select(group => group.Count));
     }
 
     [Fact]

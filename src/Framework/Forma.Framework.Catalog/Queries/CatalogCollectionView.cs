@@ -16,8 +16,10 @@ public sealed class CatalogCollectionView
     private string _searchQuery = string.Empty;
     private CatalogSortField _sortField = CatalogSortField.Name;
     private CatalogSortDirection _sortDirection = CatalogSortDirection.Ascending;
+    private CatalogGrouping? _grouping;
 
     private List<ICatalogItem>? _matchingItems;
+    private IReadOnlyList<CatalogGroupSize>? _groupSizes;
     private CultureInfo? _matchedUICulture;
     private List<ICatalogItem>? _visibleItems;
     private List<ICatalogItem>? _visibleItemsSource;
@@ -107,6 +109,31 @@ public sealed class CatalogCollectionView
                 _sortDirection = value;
                 _matchingItems = null;
             }
+        }
+    }
+
+    /// <summary>The groups the matching items gather into, which order them before the sort does.</summary>
+    public CatalogGrouping? Grouping
+    {
+        get => _grouping;
+        set
+        {
+            if (!Equals(_grouping, value))
+            {
+                _grouping = value;
+                _matchingItems = null;
+            }
+        }
+    }
+
+    /// <summary>How many matching items each group of <see cref="Grouping"/> holds, in the order the groups stand.</summary>
+    public IReadOnlyList<CatalogGroupSize> GroupSizes
+    {
+        get
+        {
+            var matching = MatchingList;
+
+            return _groupSizes ??= _grouping?.CountGroups(matching) ?? [];
         }
     }
 
@@ -208,7 +235,14 @@ public sealed class CatalogCollectionView
                 _ => query
             };
 
+            // The grouping orders last, so the sort and the keys order the items within each group.
+            if (_grouping is { } grouping)
+            {
+                query = query.OrderBy(grouping.IndexOf);
+            }
+
             _matchingItems = [.. query];
+            _groupSizes = null;
             _matchedUICulture = uiCulture;
 
             return _matchingItems;

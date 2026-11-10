@@ -191,6 +191,12 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // The kinds an upload may add, where null is the kinds the explorer lists.
     private CatalogResourceFilter? _uploadFilter;
 
+    // The groups of the browsing sequence under way, defined against the moment it started.
+    private CatalogGrouping? _grouping;
+
+    // The grouped field, direction and culture the groups were defined for.
+    private (ExplorerGroupField Field, CatalogSortDirection Direction, CultureInfo UICulture)? _groupingBasis;
+
     private readonly CatalogProviderItems _providerItems = new();
 
     private readonly ExplorerQueryParameters _queryParameters = new();
@@ -334,12 +340,71 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     /// <summary>The items on screen.</summary>
     private IReadOnlyList<ICatalogItem> VisibleItems
-        => IsProviderMode ? _providerItems.Items : _collection.VisibleItems;
+    {
+        get
+        {
+            if (IsProviderMode)
+            {
+                return _providerItems.Items;
+            }
+
+            // The held items stand in the groups in force, which reading them defines again where they changed.
+            _ = Grouping;
+
+            return _collection.VisibleItems;
+        }
+    }
+
+    /// <summary>The groups of the browsing sequence under way, defined again when the grouped field, the direction or the culture changes.</summary>
+    private CatalogGrouping? Grouping
+    {
+        get
+        {
+            if (_groupingBasis != (_groupField, _collection.SortDirection, Context.CultureState.UICulture))
+            {
+                StartSequence();
+            }
+
+            return _grouping;
+        }
+    }
+
+    // A browsing sequence defines its groups once, so a slice read after midnight lands in the groups of the first.
+    private void StartSequence()
+    {
+        _grouping = ExplorerGrouping.Define(
+            _groupField,
+            _collection.SortDirection,
+            GetKindLabel,
+            Context.CultureState.UICulture,
+            Clock.GetUtcNow(),
+            Clock.LocalTimeZone,
+            Context.CultureState.Culture.DateTimeFormat.FirstDayOfWeek);
+        _groupingBasis = (_groupField, _collection.SortDirection, Context.CultureState.UICulture);
+        _collection.Grouping = _grouping;
+    }
+
+    private string GetKindLabel(CatalogItemKind kind)
+        => ExplorerItemLocalization.GetKindLabel(L, kind);
+
+    // Kind groups stand in the order of their labels in the reader's culture, so a provider is asked again in the new order.
+    private Task HandleCultureChangedAsync()
+        => IsDisposed || !IsProviderMode || _groupField != ExplorerGroupField.Kind
+            ? Task.CompletedTask
+            : InvokeAsync(() =>
+            {
+                _collection.PageNumber = 1;
+                StartSequence();
+
+                return QueryAsync(append: false);
+            });
 
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _collection = new CatalogCollectionView(item => item.GetLocalizedLabels(L).KindLabel, () => Context.CultureState.UICulture)
+        Context.CultureState.Subscribe(HandleCultureChangedAsync);
+
+        _collection = new CatalogCollectionView(item => GetKindLabel(item.GetKind()), () => Context.CultureState.UICulture)
         {
             PageNumber = CurrentPage,
             PageSize = PageSize,
@@ -365,6 +430,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _paramStateTracker.Track(() => Options.ShowDetailsHeader, shows => _showsDetailsHeader = shows);
         _paramStateTracker.Track(() => SortField, field => _collection.SortField = field);
         _paramStateTracker.Track(() => SortDirection, direction => _collection.SortDirection = direction);
+        _paramStateTracker.Track(() => Items, _ => StartSequence());
 
         // Resynced only when the host supplies a different list, so an unrelated parent render cannot discard the selection.
         _paramStateTracker.Track(() => Selected, AdoptSelection);
@@ -416,8 +482,8 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return;
         }
 
-        // A move to another folder invalidates the items shown.
-        var moved = _queryParameters.Update(ItemsProvider, CurrentFolder?.Key, PageSize);
+        // A move to another folder, or a new grouping the store orders by, invalidates the items shown.
+        var moved = _queryParameters.Update(ItemsProvider, CurrentFolder?.Key, PageSize, _groupField);
 
         if (!moved)
         {
@@ -425,6 +491,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
 
         _collection.PageNumber = 1;
+        StartSequence();
 
         await QueryAsync(append: false);
     }
@@ -445,7 +512,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             _collection.SortField,
             _collection.SortDirection)
         {
-            Filter = _collection.Filter
+            Filter = _collection.Filter,
+            Grouping = Grouping,
+            IncludesGroupSizes = Grouping is not null
         };
 
         // FetchAsync can resume off the renderer, so its state change is dispatched back onto it.
@@ -455,6 +524,8 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Reads the items shown again.</summary>
     private Task RefreshProviderAsync()
     {
+        StartSequence();
+
         if (!IsProviderMode)
         {
             return Task.CompletedTask;
@@ -624,14 +695,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     ExplorerGroupField IExplorerContentView.GroupField => _groupField;
 
     IReadOnlyList<ExplorerItemGroup> IExplorerContentView.VisibleGroups
-        => ExplorerGrouping.GroupBy(
-            VisibleItems,
-            _groupField,
-            _collection.SortDirection,
-            item => item.GetLocalizedLabels(L).KindLabel,
-            Context.CultureState.UICulture,
-            Clock.GetLocalNow(),
-            Context.CultureState.Culture.DateTimeFormat.FirstDayOfWeek);
+        => ExplorerGrouping.GroupBy(VisibleItems, Grouping, GetKindLabel, IsProviderMode ? _providerItems.GroupSizes : _collection.GroupSizes);
 
     bool IExplorerContentView.IsCollapsed(ExplorerItemGroup group)
     {
@@ -986,6 +1050,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     {
         _collection.SearchQuery = query;
         _collection.PageNumber = 1;
+        StartSequence();
 
         if (!IsProviderMode)
         {
@@ -1000,6 +1065,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     {
         _collection.SortDirection = direction;
         _collection.PageNumber = 1;
+        StartSequence();
 
         await QueryAsync(append: false);
     }
@@ -1019,6 +1085,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
 
         _collection.PageNumber = 1;
+        StartSequence();
 
         await QueryAsync(append: false);
     }
@@ -1079,7 +1146,12 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         _groupField = field;
         _collapsedGroups.Clear();
+        _collection.PageNumber = 1;
+        StartSequence();
 
+        // The store orders by the groups, so a provider is asked for the items again, once, whether or not the host binds the field back.
+        _queryParameters.Update(ItemsProvider, CurrentFolder?.Key, PageSize, _groupField);
+        await QueryAsync(append: false);
         await GroupFieldChanged.InvokeAsync(field);
     }
 
@@ -1159,6 +1231,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <inheritdoc />
     protected override ValueTask DisposeAsyncCore()
     {
+        Context.CultureState.Unsubscribe(HandleCultureChangedAsync);
         _providerItems.Dispose();
         SearchDebouncer.Cancel();
 

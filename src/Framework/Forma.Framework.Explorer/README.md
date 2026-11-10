@@ -72,7 +72,7 @@ The state behind those contracts is held in:
 | `ExplorerItemManager` | The item actions, pending confirmations and drag state shared by every region that lists items. |
 | `ExplorerItemAction` | One operation offered on an item: its icon, label, required capabilities and what it runs. |
 | `ExplorerPendingAction` | A confirmation awaiting the reader: `ExplorerRenameAction<T>`, `ExplorerCreateFolderAction` or `ExplorerBatchAction<T>`. |
-| `ExplorerGrouping`, `ExplorerItemGroup` | The shown items gathered into groups by an `ExplorerGroupField`, each group the items sharing an `ExplorerGroupBand`, such as names from A to H or sizes up to 1 MB. |
+| `ExplorerGrouping`, `ExplorerItemGroup` | The groups an `ExplorerGroupField` bands the items into, defined once for a browsing sequence as a `CatalogGrouping` a store applies, and the shown items gathered into them, each group the items sharing an `ExplorerGroupBand`, such as names from A to H or sizes up to 1 MB, counted across the whole result. |
 | `ExplorerPreview` | The resource shown full-size, and the siblings a viewer steps through. |
 
 ## License

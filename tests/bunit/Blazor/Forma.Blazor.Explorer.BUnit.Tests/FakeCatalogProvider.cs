@@ -43,9 +43,17 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
             matching = matching.Where(resource => resource.Name.Contains(search, StringComparison.OrdinalIgnoreCase));
         }
 
+        // The sorts are stable, so the keys order what the sort ties, and the groups order before the sort.
+        matching = matching.OrderBy(resource => resource.Source, StringComparer.Ordinal);
+
         matching = query.Direction == CatalogSortDirection.Descending
             ? matching.OrderByDescending(resource => resource.Name, StringComparer.OrdinalIgnoreCase)
             : matching.OrderBy(resource => resource.Name, StringComparer.OrdinalIgnoreCase);
+
+        if (query.Grouping is { } grouping)
+        {
+            matching = matching.OrderBy(resource => grouping.IndexOf(ToItem(resource)));
+        }
 
         var ordered = matching.ToList();
 
@@ -53,7 +61,8 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
             [.. ordered.Skip(query.Skip).Take(query.Take).Select(ToItem)],
             ReportsTotal ? ordered.Count : null)
         {
-            ListedCount = ReportsListedCount ? ordered.Count(resource => !HiddenSources.Contains(resource.Source)) : null
+            ListedCount = ReportsListedCount ? ordered.Count(resource => !HiddenSources.Contains(resource.Source)) : null,
+            GroupSizes = query.IncludesGroupSizes && query.Grouping is { } counted ? counted.CountGroups(ordered.Select(ToItem)) : null
         };
     }
 

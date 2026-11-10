@@ -63,6 +63,16 @@ set out. What Forma gained before its first release, month by month, is in [the 
   composer's stored-files dialog lists every kind its `AcceptedResourceKinds` names however few its
   `AcceptedUploadKinds` allows; it listed only the kinds both named, and offered nothing past the first slice it had
   filtered.
+- A [`CatalogQuery`](src/Framework/Forma.Framework.Catalog/README.md#providers) carries the `Grouping` its items
+  gather into, groups whose keys hold in every culture and on every day and whose rules a store applies without the
+  reader's culture or clock, and a page answers `IncludesGroupSizes` with `GroupSizes`. `FormaExplorer` groups the
+  whole result rather than the items it has loaded: held items and a provider's order by the groups before the sort,
+  a heading counts its whole group, the groups are defined once for each browsing sequence, so a page read after
+  midnight joins the groups of the page before it, and dates are banded by the days of the `TimeProvider`'s time zone.
+  A group heading counted the items on its page, and a provider's items were grouped a page at a time.
+  `ExplorerGrouping.GroupBy` takes the definition `ExplorerGrouping.Define` builds, an `ExplorerItemGroup` carries its
+  `Key` and its whole `Count`, and a kind group's key is its `CatalogItemKind`, which `GetKind` reads from an item,
+  where it was its label.
 - On a statically rendered page, [`FormaNumberInput`](docs/component-catalog.md#formanumberinput),
   `FormaCurrencyInput`, `FormaDatePicker`, `FormaTimePicker` and `FormaDateTimePicker` are edited in the browser's own
   number, date, time and date-and-time inputs, and `FormaSelect` and `FormaMultiSelect` in the browser's own list,

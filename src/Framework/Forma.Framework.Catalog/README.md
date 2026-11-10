@@ -31,6 +31,9 @@ class library. Its types are used directly, without registration.
 | `ParentKey` | On a folder, the key of the folder it sits inside; null is the top level. |
 | `Count` | On a folder, how many items it holds. |
 
+`GetKind` reads what an item is as a `CatalogItemKind`, `Folder`, `Image`, `Video`, `Audio`, `Archive`,
+`Document`, `File` or `Unknown`, the same in every culture.
+
 `CatalogItem` and `CatalogFolderItem` implement both with init-only members. `CatalogItem.For`,
 `ForAll` and `ForFolder` build them from resources, with the capabilities each kind supports:
 
@@ -112,6 +115,17 @@ public sealed class PhotoItemsProvider(IPhotoStore store) : ICatalogProvider
     }
 }
 ```
+
+A query's `Grouping` gathers the items into groups that order them before the sort does, so a group
+whose items span two slices is one group in both. It names the field, `CatalogGroupField`, and the
+groups in the order they stand, each a key the same in every culture and on every day and a rule a
+store can apply without the reader's culture or clock: `CatalogNameGroup` for the names beginning
+with a range of characters, `CatalogSizeGroup` and `CatalogDateGroup` for a range of sizes or of
+instants, `CatalogKindGroup` for one kind, `CatalogMissingGroup` for the items holding no size or no
+date, and `CatalogRemainderGroup` for whatever the others leave. An item falls in the first group that
+admits it, and items stand in their groups' order, then the sort's, then their keys'. A query with
+`IncludesGroupSizes` asks the page for how many items each group holds across the whole query, in
+`GroupSizes`; `CatalogGrouping.CountGroups` counts them for a provider that holds its items.
 
 `CatalogResourceFilter.Parse` reads an accepted-kinds pattern, `globs:*.jpg;*.pdf` or
 `contentType:image;video`, and its `Accepts` answers for one resource.

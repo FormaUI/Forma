@@ -25,6 +25,9 @@ public sealed class CatalogProviderItems : IDisposable
     public int? ListedCount
         => _hasLeftItemsOut ? null : _listedCount;
 
+    /// <summary>How many items each group of the query's grouping holds across the whole query, as the provider last said.</summary>
+    public IReadOnlyList<CatalogGroupSize>? GroupSizes { get; private set; }
+
     /// <summary>Whether the store holds positions past the slices read.</summary>
     public bool HasMore { get; private set; }
 
@@ -86,6 +89,7 @@ public sealed class CatalogProviderItems : IDisposable
 
             Total = page.TotalCount;
             _listedCount = page.ListedCount;
+            GroupSizes = page.GroupSizes ?? (append ? GroupSizes : null);
 
             // A slice that read nothing ends the run, so a provider that makes no progress is never asked again.
             HasMore = read > 0 && (page.HasMore ?? (page.TotalCount is { } total ? _readCount < total : read >= query.Take));

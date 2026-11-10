@@ -3,7 +3,6 @@ namespace Forma.Blazor.Components.Explorer;
 using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Items;
 using Forma.Framework.Localization;
-using Forma.Framework.Resources;
 
 /// <summary>Produces localized presentation labels for an explorer item.</summary>
 internal readonly struct ExplorerItemLocalization
@@ -24,16 +23,20 @@ internal readonly struct ExplorerItemLocalization
 
     /// <summary>The localized name of the item's kind.</summary>
     internal string KindLabel
-        => _item switch
+        => GetKindLabel(_locale, _item.GetKind());
+
+    /// <summary>The localized name of <paramref name="kind"/>.</summary>
+    internal static string GetKindLabel(IStringLocale locale, CatalogItemKind kind)
+        => kind switch
         {
-            ICatalogFolderItem => _locale["Folder"].Value,
-            { Resource: ImageResourceInfo } => _locale["Image"].Value,
-            { Resource: VideoResourceInfo } => _locale["Video"].Value,
-            { Resource: AudioResourceInfo } => _locale["Audio"].Value,
-            { Resource: ArchiveResourceInfo } => _locale["Archive"].Value,
-            { Resource: DocumentResourceInfo } => _locale["Document"].Value,
-            { Resource: FileResourceInfo } => _locale["File"].Value,
-            _ => _locale["Unknown"].Value
+            CatalogItemKind.Folder => locale["Folder"].Value,
+            CatalogItemKind.Image => locale["Image"].Value,
+            CatalogItemKind.Video => locale["Video"].Value,
+            CatalogItemKind.Audio => locale["Audio"].Value,
+            CatalogItemKind.Archive => locale["Archive"].Value,
+            CatalogItemKind.Document => locale["Document"].Value,
+            CatalogItemKind.File => locale["File"].Value,
+            _ => locale["Unknown"].Value
         };
 
     /// <summary>The accessible label for the item's actions menu.</summary>

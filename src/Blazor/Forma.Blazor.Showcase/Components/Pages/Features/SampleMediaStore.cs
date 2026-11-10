@@ -57,10 +57,19 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
             _ => matching.OrderBy(resource => resource.Resource.Name, StringComparer.OrdinalIgnoreCase)
         };
 
+        // The groups order before the sort, which the stable sort keeps within each group.
+        if (query.Grouping is { } grouping)
+        {
+            matching = matching.OrderBy(resource => grouping.IndexOf(CatalogItem.For(resource.Resource)));
+        }
+
         var ordered = matching.ToList();
         var page = new CatalogPage(
             CatalogItem.ForAll(ordered.Skip(query.Skip).Take(query.Take).Select(resource => resource.Resource)),
-            ordered.Count);
+            ordered.Count)
+        {
+            GroupSizes = query.IncludesGroupSizes ? query.Grouping?.CountGroups(CatalogItem.ForAll(ordered.Select(resource => resource.Resource))) : null
+        };
 
         if (Queried is { } queried)
         {

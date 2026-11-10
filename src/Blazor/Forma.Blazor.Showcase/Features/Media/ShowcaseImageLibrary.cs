@@ -48,10 +48,19 @@ internal sealed class ShowcaseImageLibrary : ICatalogProvider
             _ => matching.OrderBy(image => image.Name, StringComparer.OrdinalIgnoreCase)
         };
 
+        // The groups order before the sort, which the stable sort keeps within each group.
+        if (query.Grouping is { } grouping)
+        {
+            matching = matching.OrderBy(image => grouping.IndexOf(CatalogItem.For(image)));
+        }
+
         var ordered = matching.ToList();
 
         return ValueTask.FromResult(new CatalogPage(
             CatalogItem.ForAll(ordered.Skip(query.Skip).Take(query.Take)),
-            ordered.Count));
+            ordered.Count)
+        {
+            GroupSizes = query.IncludesGroupSizes ? query.Grouping?.CountGroups(CatalogItem.ForAll(ordered)) : null
+        });
     }
 }

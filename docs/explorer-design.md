@@ -115,7 +115,15 @@ panel, whose completion re-reads the items and reports what was uploaded.
 The details view keeps every column it is configured with, its headers sorting, its name
 column resized by dragging the frozen edge; the columns menu adds or removes the optional
 columns and hides the header. Grouping by name, size, type or date folds under headings,
-a folded group staying folded across views and opening on a new grouping.
+a folded group staying folded across views and opening on a new grouping. The groups are
+the whole result's, never the items loaded: the explorer defines them once for each
+browsing sequence, which a new location, search, sort or grouping starts, as rules a store
+applies without the reader's culture or clock: dates by the instants the days of the
+reader's time zone begin, counted from the week's first day of the reader's culture;
+sizes and names by bands with exact bounds and a band for the rest; kinds by their own
+identity, in the order of their labels in the reader's culture. Held items group by the
+same definition, a provider is handed it in the query, and a heading counts its whole
+group, so a page read after midnight lands in the groups of the page before it.
 
 Typing in the search box filters a held collection at once and is debounced before a
 provider is asked; a superseded query is canceled rather than merely ignored, and a
