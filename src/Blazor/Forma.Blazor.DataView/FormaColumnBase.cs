@@ -15,7 +15,7 @@ public abstract class FormaColumnBase<TItem> : FormaComponentBase
     // What a column is given that only its header or its sort reads, which no cell is drawn by.
     private static readonly string[] _headerParameters =
     [
-        nameof(Title), nameof(SortName), nameof(Sortable), nameof(SortBy), nameof(InitialSortDirection), nameof(IsDefaultSortColumn),
+        nameof(Title), nameof(SortName), nameof(Sortable), nameof(SortBy), nameof(InitialSortDirection),
         nameof(HeaderTemplate), nameof(ColumnOptions), nameof(PlaceholderTemplate),
     ];
 
@@ -56,9 +56,6 @@ public abstract class FormaColumnBase<TItem> : FormaComponentBase
 
     /// <summary>The direction the first press of the header sorts in.</summary>
     [Parameter] public DataViewSortDirection InitialSortDirection { get; set; }
-
-    /// <summary>Whether the grid opens sorted by this column.</summary>
-    [Parameter] public bool IsDefaultSortColumn { get; set; }
 
     /// <summary>Content rendered in the header cell in place of the title, given the column.</summary>
     [Parameter] public RenderFragment<FormaColumnBase<TItem>>? HeaderTemplate { get; set; }

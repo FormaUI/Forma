@@ -127,24 +127,24 @@
         [Fact]
         public void Should_leave_a_sort_the_address_names_for_the_menu_when_the_grid_has_no_column_for_it()
         {
-            // Arrange — the grid opens by name unless asked otherwise, and has no column for price
+            // Arrange — the data view opens by name unless asked otherwise, and the grid has no column for price
             using var ctx = new FormaDataSortMenuTests();
             var navigation = ctx.Services.GetRequiredService<NavigationManager>();
             navigation.NavigateTo(navigation.GetUriWithQueryParameters(new Dictionary<string, object?> { ["shop-sort"] = "price", ["shop-order"] = "asc" }));
 
             // Act
             var cut = ctx.Render(
-                @<FormaDataView Items="CreateProducts()" EnablePagination="false" AddressOptions='@(new DataViewAddressOptions("shop"))'>
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" AddressOptions='@(new DataViewAddressOptions("shop"))' DefaultSort="@(new DataViewSortOption<Product>("Name", "Name", DataViewSort<Product>.ByAscending(product => product.Name)))">
                     <FormaDataSortMenu TItem="Product" Sorts="Sorts" />
                     <FormaDataGrid TItem="Product">
                         <Columns>
-                            <FormaPropertyColumn Property="@(product => product.Name)" Title="Name" IsDefaultSortColumn="true" />
+                            <FormaPropertyColumn Property="@(product => product.Name)" Title="Name" />
                         </Columns>
                     </FormaDataGrid>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3 && cut.Find("tbody tr.forma-data-grid-row td").TextContent == "Wrench");
 
-            // Assert — the menu applied the price, ascending, and the grid's default did not overtake it
+            // Assert — the menu applied the price, ascending, and the data view's default did not overtake it
             Assert.Equal(["Wrench", "Hammer", "Atlas"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent).ToList());
         }
 

@@ -84,6 +84,9 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>The name of the active sort, where null means the items stand in the source's own order.</summary>
     string? SortName { get; }
 
+    /// <summary>Whether a sort always applies, so a header turns a sort's direction rather than clearing it.</summary>
+    bool RequiresSort { get; }
+
     /// <summary>Whether the active sort applies as written or reversed.</summary>
     DataViewSortDirection SortDirection { get; }
 

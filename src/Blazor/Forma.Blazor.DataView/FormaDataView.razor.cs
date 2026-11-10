@@ -148,6 +148,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>The class an item's row, card or node carries, from its item.</summary>
     [Parameter] public Func<TItem, string?>? ItemClass { get; set; }
 
+    /// <summary>The sort the data view opens in, where the address names none, before any view has drawn.</summary>
+    [Parameter] public DataViewSortOption<TItem>? DefaultSort { get; set; }
+
+    /// <summary>Whether a sort always applies, so a header turns a sort's direction rather than clearing it and a cleared sort returns to <see cref="DefaultSort"/>.</summary>
+    [Parameter] public bool RequiresSort { get; set; }
+
     /// <summary>The attributes and event handlers the caller gives the element a view draws for an item, its row, card, list item or node.</summary>
     /// <remarks>The view's own attributes win over the caller's, so the item keeps its identity, focus, selection and accessibility; the caller's class goes through <see cref="ItemClass"/>.</remarks>
     [Parameter] public Func<TItem, IReadOnlyDictionary<string, object>?>? ItemAttributes { get; set; }
@@ -551,8 +557,35 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         {
             _isAddressRead = true;
             ReadAddress();
+            ApplyDefaultSort();
         }
     }
+
+    // The default sort applies before the first load, so the first answer comes sorted whatever view draws it; a sort the address names
+    // wins, applied at once where it is the default's own and otherwise left for a view that knows it.
+    private void ApplyDefaultSort()
+    {
+        if (DefaultSort is not { } defaultSort || _sortName is not null)
+        {
+            return;
+        }
+
+        if (_requestedSortName is null)
+        {
+            (_sortName, _sort, _sortDirection) = (defaultSort.Name, defaultSort.Sort, defaultSort.InitialDirection);
+        }
+        else if (string.Equals(_requestedSortName, defaultSort.Name, StringComparison.Ordinal))
+        {
+            (_sortName, _sort, _sortDirection) = (defaultSort.Name, defaultSort.Sort, _requestedSortDirection);
+            _requestedSortName = null;
+        }
+    }
+
+    // Whether the sort applied is the default as it opens, which the address leaves out.
+    private bool IsDefaultSortApplied
+        => DefaultSort is { } defaultSort
+            && string.Equals(_sortName, defaultSort.Name, StringComparison.Ordinal)
+            && _sortDirection == defaultSort.InitialDirection;
 
     /// <inheritdoc />
     protected override async Task OnParametersSetAsync()
@@ -677,6 +710,17 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     public async Task ClearSortAsync()
     {
+        // A data view that requires a sort returns to its default rather than to the source's order, and keeps its sort without one.
+        if (RequiresSort)
+        {
+            if (DefaultSort is { } defaultSort)
+            {
+                await SortByAsync(defaultSort.Name, defaultSort.Sort, defaultSort.InitialDirection);
+            }
+
+            return;
+        }
+
         _sortName = null;
         _sort = null;
         _sortDirection = DataViewSortDirection.Ascending;
@@ -1732,8 +1776,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         var parameters = new Dictionary<string, object?>(StringComparer.Ordinal)
         {
             [options.GetParameterName(options.PageName)] = EnablePagination && _page > 1 ? _page : null,
-            [options.GetParameterName(options.SortName)] = _sortName,
-            [options.GetParameterName(options.OrderName)] = _sortName is not null && _sortDirection == DataViewSortDirection.Descending ? DescendingOrder : null,
+            [options.GetParameterName(options.SortName)] = IsDefaultSortApplied ? null : _sortName,
+            [options.GetParameterName(options.OrderName)] = _sortName is not null && !IsDefaultSortApplied && _sortDirection == DataViewSortDirection.Descending ? DescendingOrder : null,
             [options.GetParameterName(options.ViewName)] = ActiveViewKey is { } view && view != _registrations[0].Key ? view : null,
         };
 

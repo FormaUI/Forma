@@ -89,6 +89,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   its choice: checking a second item chooses it in one change, a Shift range chooses the item it reached, and no
   master control is drawn. It refused the second item and muted the rest. A Shift range reaches the data view's
   owner in order from its anchor to the item reached.
+- [`FormaDataView`](docs/data-view-design.md#sorting-paging-and-the-address) takes `DefaultSort`, the sort it opens
+  in before any view draws, which the address leaves out, and `RequiresSort`, which keeps a sort applied: a header
+  turns its direction rather than clearing it, and a cleared sort returns to the default. A column's
+  `IsDefaultSortColumn` is gone; a grid that opened by a column names that column's sort as the data view's
+  `DefaultSort`, by the column's sort name.
 - [`ExplorerContentProvider`](src/Framework/Forma.Framework.Explorer/README.md) answers a location's content, its
   child folders before its files, in either sort direction, under the grouping's leading group of folders, and
   `ExplorerGrouping.Define` leads every grouping with that group. Its slices split at the count of matching folders,

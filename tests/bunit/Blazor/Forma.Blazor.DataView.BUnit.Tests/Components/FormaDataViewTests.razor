@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using System.Globalization
+@using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
 @using Microsoft.Extensions.Time.Testing
@@ -702,6 +703,89 @@
         }
 
         private sealed record Entry(int Id, string Name, bool IsFolder);
+    }
+
+    public sealed class DefaultSort
+    {
+        private static readonly Product[] Products = [new(1, "Wrench"), new(2, "Atlas"), new(3, "Hammer")];
+
+        private static readonly DataViewSortOption<Product> ByName = new("Name", "Name", DataViewSort<Product>.ByAscending(product => product.Name));
+
+        private IRenderedComponent<IComponent> Render(FormaDataViewTests ctx, string view, bool requiresSort = false)
+            => ctx.Render(
+                @<FormaDataView TItem="Product" Items="Products.AsQueryable()" EnablePagination="false" View="@view" ItemName="@(product => product.Name)"
+                                AddressOptions='@(new DataViewAddressOptions("shop"))' DefaultSort="ByName" RequiresSort="requiresSort">
+                    <FormaDataCards TItem="Product" />
+                    <FormaDataGrid TItem="Product">
+                        <Columns>
+                            <FormaPropertyColumn Property="@(product => product.Name)" Title="Name" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+
+        [Fact]
+        public void Should_open_sorted_by_its_default_before_a_grid_has_drawn_and_mark_it_on_the_grid_s_header()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            var cut = Render(ctx, "cards");
+            cut.WaitForState(() => cut.FindAll(".forma-data-card-name").Count == 3);
+            var cards = cut.FindAll(".forma-data-card-name").Select(name => name.TextContent).ToList();
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            engine.Render(parameters => parameters.Add(view => view.View, "grid"));
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Atlas", "Hammer", "Wrench"], cards),
+                () => Assert.Equal("ascending", cut.Find("thead th").GetAttribute("aria-sort")),
+                () => Assert.DoesNotContain("shop-sort", navigation.Uri, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_open_by_a_sort_the_address_names_over_its_default()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            navigation.NavigateTo(navigation.GetUriWithQueryParameters(new Dictionary<string, object?> { ["shop-sort"] = "Name", ["shop-order"] = "desc" }));
+
+            // Act
+            var cut = Render(ctx, "cards");
+            cut.WaitForState(() => cut.FindAll(".forma-data-card-name").Count == 3);
+
+            // Assert
+            Assert.Equal(["Wrench", "Hammer", "Atlas"], cut.FindAll(".forma-data-card-name").Select(name => name.TextContent));
+        }
+
+        [Fact]
+        public async Task Should_turn_a_required_sort_from_its_header_and_return_a_cleared_one_to_the_default()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var cut = Render(ctx, "grid", requiresSort: true);
+            cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "ascending");
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act — two presses of the sorted header, then a cleared sort
+            cut.Find("thead button").Click();
+            cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "descending");
+            cut.Find("thead button").Click();
+            var afterTwo = cut.Find("thead th").GetAttribute("aria-sort");
+            await engine.InvokeAsync(() => engine.Instance.SortByAsync("Name", ByName.Sort, DataViewSortDirection.Descending));
+            await engine.InvokeAsync(() => engine.Instance.ClearSortAsync());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("ascending", afterTwo),
+                () => Assert.Equal("ascending", cut.Find("thead th").GetAttribute("aria-sort")),
+                () => Assert.Equal(["Atlas", "Hammer", "Wrench"], cut.FindAll("tbody tr.forma-data-grid-row td").Select(cell => cell.TextContent)));
+        }
+
+        private sealed record Product(int Id, string Name);
     }
 
     public sealed class Source

@@ -44,7 +44,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     private double? _frozenExtent;
 
     private bool _isCollectingColumns;
-    private bool _isDefaultSortApplied;
+    private bool _isInitialSortApplied;
 
     /// <summary>The data view the grid presents.</summary>
     internal IDataView<TItem> DataView
@@ -421,10 +421,10 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // The address's sort and the default sort column are only known once the columns have registered, which the first render does.
-        if (!_isDefaultSortApplied)
+        // A sort the address names by a column's name is only known once the columns have registered, which the first render does.
+        if (!_isInitialSortApplied)
         {
-            _isDefaultSortApplied = true;
+            _isInitialSortApplied = true;
             await ApplyInitialSortAsync();
         }
 
@@ -575,7 +575,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     internal int GetColumnIndex(FormaColumnBase<TItem> column)
         => _columns.IndexOf(column);
 
-    // Cycles a header press: ascending, then descending, then the source's own order.
+    // Cycles a header press: the column's first direction, then the other, then the source's own order, or the first direction again where
+    // the data view requires a sort.
     internal Task SortByColumnCoreAsync(FormaColumnBase<TItem> column)
     {
         if (column.SortBy is not { } sort)
@@ -588,9 +589,12 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             return Interaction.SortByAsync(column.SortName!, sort, column.InitialSortDirection);
         }
 
-        return View.SortDirection == column.InitialSortDirection
-            ? Interaction.SortByAsync(column.SortName!, sort, column.InitialSortDirection.Reverse())
-            : Interaction.ClearSortAsync();
+        if (View.SortDirection == column.InitialSortDirection)
+        {
+            return Interaction.SortByAsync(column.SortName!, sort, column.InitialSortDirection.Reverse());
+        }
+
+        return View.RequiresSort ? Interaction.SortByAsync(column.SortName!, sort, column.InitialSortDirection) : Interaction.ClearSortAsync();
     }
 
     internal string? GetRowClass(TItem item)
@@ -685,7 +689,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         _isCollectingColumns = true;
     }
 
-    // The address names the sort it asked for by the column's name; a name no column carries is left for a sort menu beside the grid to apply. Where the address asked for nothing, the default sort column opens the grid sorted.
+    // The address names the sort it asked for by the column's name; a name no column carries is left for a sort menu beside the grid to apply.
     private async Task ApplyInitialSortAsync()
     {
         if (View.RequestedSortName is { } requestedName)
@@ -695,13 +699,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             if (requested is { SortBy: { } requestedSort })
             {
                 await Interaction.SortByAsync(requested.SortName!, requestedSort, View.RequestedSortDirection);
-                return;
             }
-        }
-
-        if (View.SortName is null && View.RequestedSortName is null && _columns.FirstOrDefault(column => column.IsDefaultSortColumn && column.SortBy is not null) is { SortBy: { } defaultSort } defaultColumn)
-        {
-            await Interaction.SortByAsync(defaultColumn.SortName!, defaultSort, defaultColumn.InitialSortDirection);
         }
     }
 

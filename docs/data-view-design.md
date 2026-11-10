@@ -233,7 +233,11 @@ The engine holds one sort, `DataViewSort`, a first key and any number of further
 ascending or descending, applied to a set or handed to a provider. A view offers it as the
 presentation allows: the grid through its column headers, the list and the cards through
 the sort menu the page composes over `SortByAsync`. A data view opens sorted by its default
-sort, which the grid takes from its default sort column.
+sort, `DefaultSort`, which applies before any view draws, so a data view showing cards opens
+in the order its grid would and the grid's header marks the sort once it draws; a sort the
+address names wins over it, and the address leaves the default out. A data view that
+`RequiresSort` keeps a sort applied: the grid's header and the sort menu turn its direction
+rather than clearing it, and clearing it returns to the default.
 
 A sort goes by a **sort name**, apart from any label a reader sees, so a link means the same
 sort in every culture: the address carries it, and a sort menu's option names a column's
@@ -370,8 +374,7 @@ an **alignment**, start, center or end, logical in both directions, with numbers
 to the end by default in a property column whose type is numeric; a **priority**, an
 integer where a lower number leaves first when the width runs out and the highest priority
 never leaves; a **frozen** flag; and a **sort**, either none or a `DataViewSort` the
-engine applies. A column declares its **initial sort direction**, and one column may be
-the **default sort column** the grid opens sorted by. A column may carry a **header
+engine applies. A column declares its **initial sort direction**. A column may carry a **header
 template** in place of its title, a **column options** fragment the grid opens from a
 button in the header cell as the library's popover, a **placeholder template** drawn in a
 virtualized cell whose row has not loaded yet, a **class** for its cells, a **width** on
@@ -395,9 +398,9 @@ that carries the row's focus and selection semantics for pointer selection witho
 checkboxes.
 
 **Sorting by header.** A sortable column's header is a button. Pressing it cycles
-ascending, descending, then off, announced through `aria-sort` and drawn with a glyph
-beside the title; one column sorts at a time, and `SortByColumnAsync` sorts by a column on
-request, as a header press does.
+ascending, descending, then off, or back to ascending where the data view requires a sort,
+announced through `aria-sort` and drawn with a glyph beside the title; one column sorts at
+a time, and `SortByColumnAsync` sorts by a column on request, as a header press does.
 
 **Fitting a width.** The grid measures its own inline size and the widths its columns
 want, and decides which columns fit in priority order. A column that does not fit is

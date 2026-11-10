@@ -112,6 +112,10 @@ choose the view and the sort, inside the data view or, given its reference, besi
 }
 ```
 
+`DefaultSort` names the sort the data view opens in, one of the sort options, before any view has
+drawn, so cards open in the order a grid would; a sort the address names wins. `RequiresSort` keeps a
+sort applied, a header turning its direction rather than clearing it.
+
 `View` and `ViewChanged` name the active view by its key: `grid`, `list`, `cards` or `tree`. A tree
 reads the hierarchy from `ParentKey`, and `CurrentItem` names the node whose children the other
 views show. A provider is asked with the node in the request's `Parent`, and its `Kind` says
