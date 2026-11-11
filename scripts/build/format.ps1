@@ -3,12 +3,12 @@
 
 <#
 .SYNOPSIS
-Verify formatting (dotnet format --verify-no-changes).
+Check every C# file's whitespace, line endings, final newline and charset (dotnet format whitespace --folder).
 
 .DESCRIPTION
 Inner-loop wrapper that runs the format check by delegating to the Forma.Build module. This is the same
-check build.ps1 runs, and it is the slowest part of the gate, so running it alone is worth doing after a
-change that only moved text around.
+check build.ps1 runs after its build, which holds the code style itself; the check reads text alone, so it takes
+seconds.
 
 .EXAMPLE
 ./scripts/build/format.ps1

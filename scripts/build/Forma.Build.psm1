@@ -1172,11 +1172,15 @@ function Get-WaitLogSummary {
 
 <#
 .SYNOPSIS
-Checks that every file is formatted as .editorconfig asks.
+Checks that every C# file's whitespace, line endings, final newline and charset are as .editorconfig asks.
 
 .DESCRIPTION
-The check reads source text rather than running anything, so it reaches every file the solution compiles,
-including the one the glyph pack includes from scripts/cs.
+The build holds the code to the rest of .editorconfig: it enforces the code style, and the formatting rule among
+it, as warnings it fails on, so the code a build passes is laid out as the rules ask. What no compiler reports is
+the text around it, the line endings, the final newline and the charset, which this check reads from the source
+text without compiling anything. It reaches every C# file the repository tracks, the task programs and the one
+the glyph pack includes from scripts/cs among them, and leaves out what git ignores, which holds no source of the
+repository's; generated code is the formatter's to skip. The gate runs it after the build it relies on.
 
 .PARAMETER Context
 The build context.
@@ -1191,10 +1195,23 @@ function Test-SolutionFormat {
         [Parameter(Mandatory)] [psobject] $Context
     )
 
-    $solution = $Context.Solution
+    $root = $Context.RepositoryRoot
 
-    Invoke-BuildStep -Name 'format' -Target $solution -Description 'dotnet format --verify-no-changes' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
-        dotnet format $solution --verify-no-changes
+    Invoke-BuildStep -Name 'format' -Target $root -Description 'dotnet format whitespace --folder --verify-no-changes, past what git ignores' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+        # The folders git ignores, but the build's own, whose generated code the formatter skips, and which are too
+        # many to name on one command line.
+        $ignored = @(git -C $root ls-files --others --ignored --exclude-standard --directory |
+                Where-Object { $_ -notmatch '(^|/)(bin|obj)/$' } |
+                ForEach-Object { $_.TrimEnd('/') })
+        $exclude = @(if ($ignored.Count -gt 0) { '--exclude'; $ignored })
+
+        Push-Location -LiteralPath $root
+        try {
+            dotnet format whitespace . --folder --verify-no-changes @exclude
+        }
+        finally {
+            Pop-Location
+        }
     }.GetNewClosure()
 }
 

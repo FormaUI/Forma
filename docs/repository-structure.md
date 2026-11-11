@@ -565,12 +565,14 @@ meets it makes it a plain check.
 | `./build.ps1 -Clean` | Deletes build output, alone or before a run |
 
 The gate covers every command below but the last. It also builds the task programs written in C#, which no other
-step reaches, and checks each task script's shape:
+step reaches, and checks each task script's shape. The build holds the code to the code style, warnings failing
+it, so the format check reads only what no compiler reports, each tracked C# file's whitespace, line endings,
+final newline and charset, without compiling:
 
 ```powershell
 dotnet build Forma.slnx
 dotnet test Forma.slnx
-dotnet format Forma.slnx --verify-no-changes
+dotnet format whitespace . --folder --verify-no-changes --exclude <what git ignores>
 dotnet tool restore
 dotnet locali --path Forma.slnx --severity warning
 npm test --prefix tests/scripts
