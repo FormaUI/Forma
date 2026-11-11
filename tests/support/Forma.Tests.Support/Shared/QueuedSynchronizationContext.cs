@@ -32,10 +32,10 @@ public sealed class QueuedSynchronizationContext : SynchronizationContext
     /// <returns>The scope.</returns>
     public IDisposable MakeCurrent()
     {
-        var previous = Current;
+        var previousContext = Current;
         SetSynchronizationContext(this);
 
-        return new CurrentScope(previous);
+        return new CurrentScope(previousContext);
     }
 
     private bool TryTake(out SendOrPostCallback callback, out object? state)
@@ -54,9 +54,9 @@ public sealed class QueuedSynchronizationContext : SynchronizationContext
         return false;
     }
 
-    private sealed class CurrentScope(SynchronizationContext? previous) : IDisposable
+    private sealed class CurrentScope(SynchronizationContext? previousContext) : IDisposable
     {
         public void Dispose()
-            => SetSynchronizationContext(previous);
+            => SetSynchronizationContext(previousContext);
     }
 }

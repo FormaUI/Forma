@@ -6,7 +6,7 @@ using Forma.Framework.Culture;
 public sealed class FakeCultureScopeStart : ICultureScopeStart
 {
     /// <summary>How often the scope's part was started.</summary>
-    public int Starts { get; private set; }
+    public int StartCount { get; private set; }
 
     /// <summary>What each start runs, as a render mode's own start registers the scope.</summary>
     public Action? OnStart { get; init; }
@@ -14,7 +14,7 @@ public sealed class FakeCultureScopeStart : ICultureScopeStart
     /// <inheritdoc />
     public void Start()
     {
-        Starts++;
+        StartCount++;
         OnStart?.Invoke();
     }
 }

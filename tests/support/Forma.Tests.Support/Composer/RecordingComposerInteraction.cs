@@ -26,7 +26,7 @@ public sealed class RecordingComposerInteraction : IComposerInteraction
     public bool TakesInsertions { get; set; } = true;
 
     /// <summary>How many re-renders were requested.</summary>
-    public int RenderRequests { get; private set; }
+    public int RenderRequestCount { get; private set; }
 
     /// <summary>The settling of the edits joined through <see cref="JoinEdits"/>, while joined.</summary>
     public Func<Task<bool>>? JoinedEdits { get; private set; }
@@ -48,7 +48,7 @@ public sealed class RecordingComposerInteraction : IComposerInteraction
     /// <inheritdoc />
     public Task RequestRenderAsync()
     {
-        RenderRequests++;
+        RenderRequestCount++;
         return Task.CompletedTask;
     }
 

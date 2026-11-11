@@ -9,7 +9,7 @@ using Forma.Framework.Culture;
 public sealed class TestCultureSwitch(ICultureStateIntegration integration) : ICultureSwitch
 {
     private readonly string _documentKey = $"test-{Guid.CreateVersion7()}";
-    private readonly Queue<TaskCompletionSource> _held = [];
+    private readonly Queue<TaskCompletionSource> _heldReleases = [];
     private int _number;
 
     /// <summary>The pairs requested, in the order they were requested.</summary>
@@ -27,8 +27,8 @@ public sealed class TestCultureSwitch(ICultureStateIntegration integration) : IC
     {
         ArgumentNullException.ThrowIfNull(culture);
 
-        var accepted = new AcceptedCulture(culture, uiCulture ?? culture, new CultureVersion(_documentKey, ++_number));
-        Requests.Add((accepted.Culture, accepted.UICulture));
+        var acceptedCulture = new AcceptedCulture(culture, uiCulture ?? culture, new CultureVersion(_documentKey, ++_number));
+        Requests.Add((acceptedCulture.Culture, acceptedCulture.UICulture));
 
         if (Failure is { } failure)
         {
@@ -37,27 +37,27 @@ public sealed class TestCultureSwitch(ICultureStateIntegration integration) : IC
 
         if (!IsHolding)
         {
-            return integration.ApplyAsync(accepted);
+            return integration.ApplyAsync(acceptedCulture);
         }
 
         var release = new TaskCompletionSource();
-        _held.Enqueue(release);
+        _heldReleases.Enqueue(release);
 
-        return AcceptOnReleaseAsync(release.Task, accepted);
+        return AcceptOnReleaseAsync(release.Task, acceptedCulture);
     }
 
     /// <summary>Accepts every held switch, in the order they were requested, each applied where the release runs.</summary>
     public void Release()
     {
-        while (_held.TryDequeue(out var release))
+        while (_heldReleases.TryDequeue(out var release))
         {
             release.SetResult();
         }
     }
 
-    private async Task AcceptOnReleaseAsync(Task release, AcceptedCulture accepted)
+    private async Task AcceptOnReleaseAsync(Task release, AcceptedCulture acceptedCulture)
     {
         await release.ConfigureAwait(false);
-        await integration.ApplyAsync(accepted).ConfigureAwait(false);
+        await integration.ApplyAsync(acceptedCulture).ConfigureAwait(false);
     }
 }

@@ -177,9 +177,9 @@ public sealed class FakeCultureCoordinatorBrowser
             return outcome;
         }
 
-        foreach (var live in Accept(culture, uiCulture))
+        foreach (var liveRegistration in Accept(culture, uiCulture))
         {
-            _ = DeliverAsync(live);
+            _ = DeliverAsync(liveRegistration);
         }
 
         return "accepted";
@@ -206,9 +206,9 @@ public sealed class FakeCultureCoordinatorBrowser
 
         if (route.Culture != Accepted.Culture || route.UICulture != Accepted.UICulture)
         {
-            foreach (var live in Accept(route.Culture, route.UICulture))
+            foreach (var liveRegistration in Accept(route.Culture, route.UICulture))
             {
-                _ = DeliverAsync(live);
+                _ = DeliverAsync(liveRegistration);
             }
         }
 
@@ -222,9 +222,9 @@ public sealed class FakeCultureCoordinatorBrowser
 
         if (culture != Accepted.Culture || uiCulture != Accepted.UICulture)
         {
-            foreach (var live in Accept(culture, uiCulture).Where(other => other != registration))
+            foreach (var liveRegistration in Accept(culture, uiCulture).Where(other => other != registration))
             {
-                _ = DeliverAsync(live);
+                _ = DeliverAsync(liveRegistration);
             }
         }
 

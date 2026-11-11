@@ -17,15 +17,15 @@ using Microsoft.Playwright;
 public static partial class AndroidDevice
 {
     private const string ShareSheetPackage = "com.android.intentresolver";
-    private const int LaunchAttempts = 3;
-    private const int ShareSheetDismissals = 10;
+    private const int LaunchAttemptCount = 3;
+    private const int ShareSheetDismissalCount = 10;
 
     private static readonly TimeSpan StartTimeout = TimeSpan.FromMinutes(3);
     private static readonly TimeSpan ShareSheetPoll = TimeSpan.FromMilliseconds(500);
     private static readonly TimeSpan CommandTimeout = TimeSpan.FromMinutes(5);
-    private static readonly SemaphoreSlim Installing = new(1, 1);
-    private static readonly HashSet<string> Installed = new(StringComparer.Ordinal);
-    private static readonly Lazy<Task<bool>> Attached = new(async () => (await RunAdbCoreAsync("get-state").ConfigureAwait(false)).Trim() == "device");
+    private static readonly SemaphoreSlim InstallLock = new(1, 1);
+    private static readonly HashSet<string> InstalledBuilds = new(StringComparer.Ordinal);
+    private static readonly Lazy<Task<bool>> IsAttached = new(async () => (await RunAdbCoreAsync("get-state").ConfigureAwait(false)).Trim() == "device");
 
     /// <summary>The build of an application the environment variable <paramref name="variable"/> names for the run to check.</summary>
     /// <param name="variable">The variable's name.</param>
@@ -58,9 +58,9 @@ public static partial class AndroidDevice
         ArgumentNullException.ThrowIfNull(playwright);
 
         var browser = await playwright.Chromium.ConnectOverCDPAsync($"http://127.0.0.1:{port}/").ConfigureAwait(false);
-        var started = Stopwatch.StartNew();
+        var stopwatch = Stopwatch.StartNew();
 
-        while (started.Elapsed < timeout)
+        while (stopwatch.Elapsed < timeout)
         {
             // A snapshot, since the page opening meanwhile adds itself to these lists.
             if (browser.Contexts.ToArray().SelectMany(context => context.Pages.ToArray()).FirstOrDefault(page => page.Url.StartsWith("https://0.0.0.", StringComparison.Ordinal)) is { } page)
@@ -80,7 +80,7 @@ public static partial class AndroidDevice
     /// <returns><see langword="true"/> where one was attached.</returns>
     /// <remarks>The first answer stands for the run, so a device that drops off adb for a moment later fails the check that reaches for it.</remarks>
     public static Task<bool> IsAttachedAsync()
-        => Attached.Value;
+        => IsAttached.Value;
 
     /// <summary>Installs the build once for the run, quieting the error dialogs an emulator under load shows for its own apps.</summary>
     /// <param name="build">The application's signed package.</param>
@@ -89,11 +89,11 @@ public static partial class AndroidDevice
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(build);
 
-        await Installing.WaitAsync().ConfigureAwait(false);
+        await InstallLock.WaitAsync().ConfigureAwait(false);
 
         try
         {
-            if (Installed.Contains(build))
+            if (InstalledBuilds.Contains(build))
             {
                 return;
             }
@@ -106,11 +106,11 @@ public static partial class AndroidDevice
                 throw new InvalidOperationException($"adb didn't install {build}:{Environment.NewLine}{output}");
             }
 
-            Installed.Add(build);
+            InstalledBuilds.Add(build);
         }
         finally
         {
-            Installing.Release();
+            InstallLock.Release();
         }
     }
 
@@ -176,16 +176,16 @@ public static partial class AndroidDevice
     /// <exception cref="AndroidDeviceUnreachableException">adb couldn't reach the device, which the exception says with the devices adb lists.</exception>
     public static async Task<string> RunAdbAsync(params string[] arguments)
     {
-        var written = await RunAdbCoreAsync(arguments).ConfigureAwait(false);
+        var output = await RunAdbCoreAsync(arguments).ConfigureAwait(false);
 
-        if (UnreachableDevice().Match(written) is { Success: true } unreachable)
+        if (UnreachableDevice().Match(output) is { Success: true } unreachableMatch)
         {
             var devices = await RunAdbCoreAsync("devices", "-l").ConfigureAwait(false);
 
-            throw new AndroidDeviceUnreachableException($"adb {string.Join(' ', arguments)} couldn't reach the device: {unreachable.Groups["reason"].Value}. adb lists:{Environment.NewLine}{devices.Trim()}");
+            throw new AndroidDeviceUnreachableException($"adb {string.Join(' ', arguments)} couldn't reach the device: {unreachableMatch.Groups["reason"].Value}. adb lists:{Environment.NewLine}{devices.Trim()}");
         }
 
-        return written;
+        return output;
     }
 
     // Runs adb and returns what it wrote, whatever it says about the device.
@@ -225,7 +225,7 @@ public static partial class AndroidDevice
     // emulator whose share sheet is stopped while it shows can crash.
     private static async Task CloseShareSheetAsync()
     {
-        for (var attempt = 0; attempt < ShareSheetDismissals && IsShareSheet(await GetFocusedWindowAsync().ConfigureAwait(false)); attempt++)
+        for (var attempt = 0; attempt < ShareSheetDismissalCount && IsShareSheet(await GetFocusedWindowAsync().ConfigureAwait(false)); attempt++)
         {
             await RunAdbAsync("shell", "input", "keyevent", "KEYCODE_BACK").ConfigureAwait(false);
             await Task.Delay(ShareSheetPoll).ConfigureAwait(false);
@@ -237,20 +237,20 @@ public static partial class AndroidDevice
     // adb chooses the port and prints it first, so no other process takes it between its choice and adb's listening on it.
     private static async Task<int> ForwardAsync(string socket)
     {
-        var written = await RunAdbAsync("forward", "tcp:0", $"localabstract:{socket}").ConfigureAwait(false);
-        var answer = written.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault();
+        var output = await RunAdbAsync("forward", "tcp:0", $"localabstract:{socket}").ConfigureAwait(false);
+        var answer = output.Split('\n', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).FirstOrDefault();
 
         return int.TryParse(answer, NumberStyles.None, CultureInfo.InvariantCulture, out var port)
             ? port
-            : throw new InvalidOperationException($"adb didn't forward the web view's DevTools socket {socket}; it wrote:{Environment.NewLine}{written}");
+            : throw new InvalidOperationException($"adb didn't forward the web view's DevTools socket {socket}; it wrote:{Environment.NewLine}{output}");
     }
 
     // Starts the application's launcher activity, asking again where adb dropped the request before the device ran it.
     private static async Task LaunchAsync(string package)
     {
-        var written = new List<string>();
+        var outputs = new List<string>();
 
-        for (var attempt = 0; attempt < LaunchAttempts; attempt++)
+        for (var attempt = 0; attempt < LaunchAttemptCount; attempt++)
         {
             var output = await RunAdbAsync("shell", "monkey", "-p", package, "-c", "android.intent.category.LAUNCHER", "1").ConfigureAwait(false);
 
@@ -259,18 +259,18 @@ public static partial class AndroidDevice
                 return;
             }
 
-            written.Add(output);
+            outputs.Add(output);
         }
 
-        throw new InvalidOperationException($"adb didn't start {package} in {LaunchAttempts} attempts; it wrote:{Environment.NewLine}{string.Join(Environment.NewLine, written)}");
+        throw new InvalidOperationException($"adb didn't start {package} in {LaunchAttemptCount} attempts; it wrote:{Environment.NewLine}{string.Join(Environment.NewLine, outputs)}");
     }
 
     // The web view opens its socket once the application's first web view initializes, which an emulator's first start takes a while for.
     private static async Task<string> WaitForSocketAsync(string package)
     {
-        var started = Stopwatch.StartNew();
+        var stopwatch = Stopwatch.StartNew();
 
-        while (started.Elapsed < StartTimeout)
+        while (stopwatch.Elapsed < StartTimeout)
         {
             var process = (await RunAdbAsync("shell", "pidof", package).ConfigureAwait(false)).Trim();
 

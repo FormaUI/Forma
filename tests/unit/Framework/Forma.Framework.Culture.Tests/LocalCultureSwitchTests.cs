@@ -27,10 +27,10 @@ public sealed class LocalCultureSwitchTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(["de-DE/he", "he/he"], state.Applied.Select(accepted => $"{accepted.Culture.Name}/{accepted.UICulture.Name}")),
-            () => Assert.Equal([1, 2], state.Applied.Select(accepted => accepted.Version.Number)),
-            () => Assert.Single(state.Applied.Select(accepted => accepted.Version.DocumentKey).Distinct()),
-            () => Assert.NotEqual(CultureVersion.Initial.DocumentKey, state.Applied[0].Version.DocumentKey));
+            () => Assert.Equal(["de-DE/he", "he/he"], state.AppliedCultures.Select(accepted => $"{accepted.Culture.Name}/{accepted.UICulture.Name}")),
+            () => Assert.Equal([1, 2], state.AppliedCultures.Select(accepted => accepted.Version.Number)),
+            () => Assert.Single(state.AppliedCultures.Select(accepted => accepted.Version.DocumentKey).Distinct()),
+            () => Assert.NotEqual(CultureVersion.Initial.DocumentKey, state.AppliedCultures[0].Version.DocumentKey));
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public sealed class LocalCultureSwitchTests
         await new LocalCultureSwitch(state).SwitchAsync(Hebrew);
 
         // Assert
-        Assert.NotEqual(state.Applied[0].Version.DocumentKey, state.Applied[1].Version.DocumentKey);
+        Assert.NotEqual(state.AppliedCultures[0].Version.DocumentKey, state.AppliedCultures[1].Version.DocumentKey);
     }
 
     [Fact]

@@ -156,7 +156,7 @@ public sealed class DomWatcherTests
             await watcher.DisposeAsync();
 
             // Assert
-            Assert.Equal(1, browser.Watcher.Releases);
+            Assert.Equal(1, browser.Watcher.DisposalCount);
         }
 
         [Fact]
@@ -177,7 +177,7 @@ public sealed class DomWatcherTests
                 () => Assert.Equal(LogLevel.Warning, entry.Level),
                 () => Assert.Contains("release failed", entry.Message, StringComparison.Ordinal),
                 () => Assert.True(observation.IsDisposed),
-                () => Assert.Equal(1, browser.Watcher.Releases));
+                () => Assert.Equal(1, browser.Watcher.DisposalCount));
         }
 
         [Fact]
@@ -198,7 +198,7 @@ public sealed class DomWatcherTests
                 () => Assert.Equal(LogLevel.Debug, entry.Level),
                 () => Assert.Contains("was canceled", entry.Message, StringComparison.Ordinal),
                 () => Assert.True(observation.IsDisposed),
-                () => Assert.Equal(1, browser.Watcher.Releases));
+                () => Assert.Equal(1, browser.Watcher.DisposalCount));
         }
 
         [Fact]
@@ -279,12 +279,12 @@ public sealed class DomWatcherTests
             await using var observation = await watching;
 
             // The release follows the import's landing, which the disposal doesn't wait for.
-            await browser.Watcher.Released.WaitAsync(TestContext.Current.CancellationToken);
+            await browser.Watcher.DisposalStarted.WaitAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Multiple(
                 () => Assert.Empty(browser.Watcher.Recorder.Calls),
-                () => Assert.Equal(1, browser.Watcher.Releases),
+                () => Assert.Equal(1, browser.Watcher.DisposalCount),
                 () => Assert.True(observation.IsDisposed));
         }
     }

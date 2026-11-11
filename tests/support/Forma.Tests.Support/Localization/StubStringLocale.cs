@@ -51,26 +51,26 @@ public sealed class StubStringLocale(IReadOnlyDictionary<string, string> transla
     }
 
     private LocalizedPattern Resolve(string name, LocalizedArgument[] arguments)
-        => new(name, Find(name, out var found), arguments, !found, searchedLocation);
+        => new(name, Find(name, out var isFound), arguments, !isFound, searchedLocation);
 
     // Translations kept by culture read the culture in force, so a bound locale looks its translation up in its own cultures.
-    private string Find(string name, out bool found)
+    private string Find(string name, out bool isFound)
     {
-        (found, var translation) = boundUICulture is null
+        (isFound, var translation) = boundUICulture is null
             ? Look(name)
             : AmbientCulture.Run(boundCulture ?? boundUICulture, boundUICulture, () => Look(name));
 
         return translation ?? name;
     }
 
-    private (bool Found, string? Translation) Look(string name)
+    private (bool IsFound, string? Translation) Look(string name)
         => (translations.TryGetValue(name, out var translation), translation);
 
     private LocalizedText GetText(string name, LocalizedArgument[] arguments)
     {
-        var format = Find(name, out var found);
+        var format = Find(name, out var isFound);
         var value = arguments.Length == 0 ? format : LocalizedFormat.Render(format, arguments, boundCulture ?? CultureInfo.CurrentCulture, boundUICulture ?? CultureInfo.CurrentUICulture);
 
-        return new LocalizedText(name, value, !found, searchedLocation);
+        return new LocalizedText(name, value, !isFound, searchedLocation);
     }
 }

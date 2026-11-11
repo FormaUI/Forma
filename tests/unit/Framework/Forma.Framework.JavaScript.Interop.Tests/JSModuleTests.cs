@@ -273,7 +273,7 @@ public sealed class JSModuleTests
             var isDisposedAtOnce = disposal.IsCompleted;
             Assert.Single(js.Recorder.GetCalls("import")).Complete(moduleReference);
             await import;
-            await moduleReference.Released.WaitAsync(TestContext.Current.CancellationToken);
+            await moduleReference.DisposalStarted.WaitAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Multiple(

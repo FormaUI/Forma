@@ -271,13 +271,13 @@ public sealed class CultureCoordinatorRegistrationTests
             var isDisposedAtOnce = disposal.IsCompleted;
             Assert.Single(browser.Module.Recorder.GetCalls("register")).Complete(reference);
             await attempt;
-            await reference.Released.WaitAsync(TestContext.Current.CancellationToken);
+            await reference.DisposalStarted.WaitAsync(TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Multiple(
                 () => Assert.True(isDisposedAtOnce),
                 () => Assert.Single(reference.Recorder.GetCalls("dispose")),
-                () => Assert.Equal(1, reference.Releases));
+                () => Assert.Equal(1, reference.DisposalCount));
         }
 
         [Fact]
@@ -299,7 +299,7 @@ public sealed class CultureCoordinatorRegistrationTests
             // Assert
             Assert.Multiple(
                 () => Assert.Empty(browser.Identities),
-                () => Assert.Equal(1, reference.Releases),
+                () => Assert.Equal(1, reference.DisposalCount),
                 () => Assert.Equal(CultureInfo.GetCultureInfo("en-US"), GetCultureState(scope).UICulture));
         }
     }
@@ -324,7 +324,7 @@ public sealed class CultureCoordinatorRegistrationTests
 
         private static string DescribeLast(IServiceScope scope)
         {
-            var applied = ((FakeCultureState)GetCultureState(scope)).Applied[^1];
+            var applied = ((FakeCultureState)GetCultureState(scope)).AppliedCultures[^1];
 
             return $"{applied.Culture.Name} {applied.Culture.DateTimeFormat.ShortTimePattern}/{applied.UICulture.Name} {applied.UICulture.DateTimeFormat.ShortTimePattern}";
         }
@@ -362,7 +362,7 @@ public sealed class CultureCoordinatorRegistrationTests
             // Assert
             Assert.Multiple(
                 () => Assert.Equal($"es-419 {FakeCultureProvider.ShortTimePattern}/he {FakeCultureProvider.ShortTimePattern}", DescribeLast(scope)),
-                () => Assert.Equal(["en-US", "en-US", "es-419", "he"], cultureProvider.Requested));
+                () => Assert.Equal(["en-US", "en-US", "es-419", "he"], cultureProvider.RequestedNames));
         }
 
         [Fact]
@@ -386,7 +386,7 @@ public sealed class CultureCoordinatorRegistrationTests
             Assert.Multiple(
                 () => Assert.IsType<InvalidOperationException>(exception),
                 () => Assert.Equal(LogLevel.Error, entry.Level),
-                () => Assert.Single(((FakeCultureState)GetCultureState(scope)).Applied));
+                () => Assert.Single(((FakeCultureState)GetCultureState(scope)).AppliedCultures));
         }
     }
 }

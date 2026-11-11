@@ -13,7 +13,7 @@ public sealed class FakeCultureProvider : ICultureProvider
     private readonly Dictionary<string, CultureInfo> _cultures = new(StringComparer.OrdinalIgnoreCase);
 
     /// <summary>The names asked for, in order.</summary>
-    public List<string> Requested { get; } = [];
+    public List<string> RequestedNames { get; } = [];
 
     /// <summary>The name of the culture the provider returns in place of each one asked for, as a provider that confuses its cultures does.</summary>
     public string? ReturnedName { get; set; }
@@ -21,7 +21,7 @@ public sealed class FakeCultureProvider : ICultureProvider
     /// <inheritdoc />
     public CultureInfo GetCulture(string name)
     {
-        Requested.Add(name);
+        RequestedNames.Add(name);
 
         var key = ReturnedName ?? name;
 

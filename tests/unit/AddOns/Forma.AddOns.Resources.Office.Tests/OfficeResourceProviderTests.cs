@@ -302,7 +302,7 @@ public sealed class OfficeResourceProviderTests
     public async Task Should_convert_a_document_a_reader_could_not_seek()
     {
         // Arrange
-        var reader = new FakeResourceContentReader { Seekable = false }
+        var reader = new FakeResourceContentReader { IsSeekable = false }
             .Add("/media/report.docx", OfficeFixture.CreateDocx(document => document.AddParagraph("Streamed in one pass.")));
         var provider = new OfficeResourceProvider(reader, CreateLocalizer());
 

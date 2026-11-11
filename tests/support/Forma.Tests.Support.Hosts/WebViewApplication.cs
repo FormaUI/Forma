@@ -148,16 +148,16 @@ public sealed class WebViewApplication : IAsyncDisposable
         throw new TimeoutException($"No web view {description} within {timeout.TotalSeconds} seconds.{_process.DescribeOutput()}");
     }
 
-    /// <summary>Finds the page of a web view other than <paramref name="known"/>, once <paramref name="runtime"/> on it reads that it renders interactively.</summary>
-    /// <param name="known">The web views' pages already found.</param>
+    /// <summary>Finds the page of a web view other than <paramref name="knownPages"/>, once <paramref name="runtime"/> on it reads that it renders interactively.</summary>
+    /// <param name="knownPages">The web views' pages already found.</param>
     /// <param name="runtime">The selector of the element the page shows its runtime in.</param>
     /// <returns>The web view's page.</returns>
-    public Task<IPage> GetOtherWebViewAsync(IReadOnlyCollection<IPage> known, string runtime)
+    public Task<IPage> GetOtherWebViewAsync(IReadOnlyCollection<IPage> knownPages, string runtime)
     {
-        ArgumentNullException.ThrowIfNull(known);
+        ArgumentNullException.ThrowIfNull(knownPages);
 
         return FindWebViewAsync(
-            async page => !known.Contains(page) && await page.EvaluateAsync<string?>("selector => document.querySelector(selector)?.textContent ?? null", runtime).ConfigureAwait(false) == "WebView True",
+            async page => !knownPages.Contains(page) && await page.EvaluateAsync<string?>("selector => document.querySelector(selector)?.textContent ?? null", runtime).ConfigureAwait(false) == "WebView True",
             "other than those found rendered interactively",
             TimeSpan.FromMinutes(1));
     }
@@ -262,15 +262,15 @@ public sealed class WebViewApplication : IAsyncDisposable
             UseShellExecute = false,
         };
 
-        using var describing = Process.Start(query);
+        using var describeProcess = Process.Start(query);
 
-        if (describing is null)
+        if (describeProcess is null)
         {
             return string.Empty;
         }
 
-        var commandLine = await describing.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
-        await describing.WaitForExitAsync().ConfigureAwait(false);
+        var commandLine = await describeProcess.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
+        await describeProcess.WaitForExitAsync().ConfigureAwait(false);
 
         return commandLine.Length == 0 ? " WebView2 runs no browser process at all." : $" WebView2's browser process started as:{Environment.NewLine}{commandLine.Trim()}";
     }

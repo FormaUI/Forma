@@ -62,16 +62,16 @@ public sealed class FakeLoggerFactory : ILoggerFactory
 
     private void Add(FakeLogEntry entry)
     {
-        List<TaskCompletionSource<FakeLogEntry>> matched;
+        List<TaskCompletionSource<FakeLogEntry>> matchedWaiters;
 
         lock (_lock)
         {
             _entries.Add(entry);
-            matched = [.. _waiters.Where(waiter => waiter.Predicate(entry)).Select(waiter => waiter.Entry)];
-            _waiters.RemoveAll(waiter => matched.Contains(waiter.Entry));
+            matchedWaiters = [.. _waiters.Where(waiter => waiter.Predicate(entry)).Select(waiter => waiter.Entry)];
+            _waiters.RemoveAll(waiter => matchedWaiters.Contains(waiter.Entry));
         }
 
-        foreach (var waiter in matched)
+        foreach (var waiter in matchedWaiters)
         {
             waiter.SetResult(entry);
         }

@@ -40,9 +40,9 @@ public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
 
         lock (_lock)
         {
-            if (_calls.FirstOrDefault(call => call.Identifier == identifier && predicate(call)) is { } taken)
+            if (_calls.FirstOrDefault(call => call.Identifier == identifier && predicate(call)) is { } takenCall)
             {
-                return Task.FromResult(taken);
+                return Task.FromResult(takenCall);
             }
 
             var waiter = new CallWaiter(identifier, predicate);
@@ -75,17 +75,17 @@ public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
     public ValueTask<TValue> TakeAsync<TValue>(string identifier, object?[]? args, CancellationToken cancellationToken = default)
     {
         var call = new RecordedCall(identifier, args ?? []);
-        List<CallWaiter> matched;
+        List<CallWaiter> matchedWaiters;
 
         lock (_lock)
         {
             call.IsHeld = _heldIdentifiers.Contains(identifier);
             _calls.Add(call);
-            matched = [.. _waiters.Where(waiter => waiter.Identifier == identifier && waiter.Predicate(call))];
-            _waiters.RemoveAll(matched.Contains);
+            matchedWaiters = [.. _waiters.Where(waiter => waiter.Identifier == identifier && waiter.Predicate(call))];
+            _waiters.RemoveAll(matchedWaiters.Contains);
         }
 
-        foreach (var waiter in matched)
+        foreach (var waiter in matchedWaiters)
         {
             waiter.Call.SetResult(call);
         }

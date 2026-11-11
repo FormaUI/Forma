@@ -9,7 +9,7 @@ using Forma.Framework.Culture;
 public sealed class FakeCultureState(CultureInfo culture) : ICultureState, ICultureStateIntegration
 {
     /// <summary>The pairs applied, in the order they were.</summary>
-    public List<AcceptedCulture> Applied { get; } = [];
+    public List<AcceptedCulture> AppliedCultures { get; } = [];
 
     /// <inheritdoc />
     public CultureInfo Culture { get; private set; } = culture;
@@ -23,7 +23,7 @@ public sealed class FakeCultureState(CultureInfo culture) : ICultureState, ICult
 
     /// <inheritdoc />
     public int Revision
-        => Applied.Count;
+        => AppliedCultures.Count;
 
     /// <inheritdoc />
     public CultureVersion Version { get; private set; } = CultureVersion.Initial;
@@ -33,7 +33,7 @@ public sealed class FakeCultureState(CultureInfo culture) : ICultureState, ICult
     {
         ArgumentNullException.ThrowIfNull(acceptedCulture);
 
-        Applied.Add(acceptedCulture);
+        AppliedCultures.Add(acceptedCulture);
         Culture = acceptedCulture.Culture;
         UICulture = acceptedCulture.UICulture;
         Version = acceptedCulture.Version;

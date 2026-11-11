@@ -57,11 +57,11 @@ public sealed class FakeAssembly : Assembly
     {
         ArgumentNullException.ThrowIfNull(attributeType);
 
-        var matching = Attributes.Where(attributeType.IsInstanceOfType).ToArray();
-        var typed = Array.CreateInstance(attributeType, matching.Length);
-        Array.Copy(matching, typed, matching.Length);
+        var matchingAttributes = Attributes.Where(attributeType.IsInstanceOfType).ToArray();
+        var typedAttributes = Array.CreateInstance(attributeType, matchingAttributes.Length);
+        Array.Copy(matchingAttributes, typedAttributes, matchingAttributes.Length);
 
-        return (object[])typed;
+        return (object[])typedAttributes;
     }
 
     /// <inheritdoc />

@@ -49,18 +49,18 @@ public static class RenderedComponentExtensions
             return;
         }
 
-        bool held;
+        bool hasHeld;
         try
         {
-            held = statePredicate();
+            hasHeld = statePredicate();
         }
         catch (Exception exception) when (exception is not OutOfMemoryException)
         {
-            held = false;
+            hasHeld = false;
         }
 
-        RecordWait(waitLog, held, callerFilePath, callerLineNumber);
-        if (!held)
+        RecordWait(waitLog, hasHeld, callerFilePath, callerLineNumber);
+        if (!hasHeld)
         {
             cut.WaitForState(statePredicate, timeout);
         }
@@ -86,31 +86,31 @@ public static class RenderedComponentExtensions
             return;
         }
 
-        bool held;
+        bool hasHeld;
         try
         {
             assertion();
-            held = true;
+            hasHeld = true;
         }
         catch (Exception exception) when (exception is not OutOfMemoryException)
         {
-            held = false;
+            hasHeld = false;
         }
 
-        RecordWait(waitLog, held, callerFilePath, callerLineNumber);
-        if (!held)
+        RecordWait(waitLog, hasHeld, callerFilePath, callerLineNumber);
+        if (!hasHeld)
         {
             cut.WaitForAssertion(assertion, timeout);
         }
     }
 
     // One file per process, since test projects run side by side and a file several processes append to loses lines.
-    private static void RecordWait(string waitLog, bool held, string callerFilePath, int callerLineNumber)
+    private static void RecordWait(string waitLog, bool hasHeld, string callerFilePath, int callerLineNumber)
     {
         lock (WaitLogLock)
         {
             Directory.CreateDirectory(waitLog);
-            File.AppendAllText(Path.Combine(waitLog, $"{Environment.ProcessId}.log"), $"{(held ? "held" : "waited")} {Path.GetFileName(callerFilePath)}:{callerLineNumber}{Environment.NewLine}");
+            File.AppendAllText(Path.Combine(waitLog, $"{Environment.ProcessId}.log"), $"{(hasHeld ? "held" : "waited")} {Path.GetFileName(callerFilePath)}:{callerLineNumber}{Environment.NewLine}");
         }
     }
 }

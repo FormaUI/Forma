@@ -19,7 +19,7 @@ public sealed class InterleavedCultureState(CultureInfo culture, CultureInfo cha
     {
         get
         {
-            var current = _culture;
+            var currentCulture = _culture;
 
             if (!_hasChanged)
             {
@@ -29,7 +29,7 @@ public sealed class InterleavedCultureState(CultureInfo culture, CultureInfo cha
                 Revision++;
             }
 
-            return current;
+            return currentCulture;
         }
     }
 

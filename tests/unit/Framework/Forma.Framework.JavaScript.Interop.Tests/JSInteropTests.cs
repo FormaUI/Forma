@@ -87,7 +87,7 @@ public sealed class JSInteropTests
             Assert.False(await attaching);
             Assert.False(probe.IsAttached);
             Assert.Single(instance.Recorder.GetCalls("dispose"));
-            Assert.Equal(1, instance.Releases);
+            Assert.Equal(1, instance.DisposalCount);
         }
 
         [Fact]
@@ -107,7 +107,7 @@ public sealed class JSInteropTests
             // Assert
             Assert.False(await attaching);
             Assert.False(probe.IsAttached);
-            Assert.Equal(1, instance.Releases);
+            Assert.Equal(1, instance.DisposalCount);
         }
 
         [Fact]
@@ -131,8 +131,8 @@ public sealed class JSInteropTests
             Assert.True(await later);
             Assert.False(await earlier);
             Assert.True(probe.IsAttached);
-            Assert.Equal(1, earlierInstance.Releases);
-            Assert.Equal(0, laterInstance.Releases);
+            Assert.Equal(1, earlierInstance.DisposalCount);
+            Assert.Equal(0, laterInstance.DisposalCount);
         }
 
         [Fact]

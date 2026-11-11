@@ -230,7 +230,7 @@
 
             // Assert
             Assert.Single(instance.Recorder.GetCalls("dispose"));
-            Assert.Equal(1, instance.Releases);
+            Assert.Equal(1, instance.DisposalCount);
         }
     }
 

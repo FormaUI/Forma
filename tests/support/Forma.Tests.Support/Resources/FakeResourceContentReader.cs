@@ -14,7 +14,7 @@ public sealed class FakeResourceContentReader : IResourceContentReader
     public bool HasOpenStream { get; private set; }
 
     /// <summary>Whether the streams this reader hands out can seek.</summary>
-    public bool Seekable { get; init; } = true;
+    public bool IsSeekable { get; init; } = true;
 
     /// <summary>Holds <paramref name="text"/> as UTF-8 bytes behind <paramref name="source"/>.</summary>
     public FakeResourceContentReader Add(string source, string text)
@@ -41,7 +41,7 @@ public sealed class FakeResourceContentReader : IResourceContentReader
 
         Stream stream = new TrackedMemoryStream(bytes, () => HasOpenStream = false);
 
-        return ValueTask.FromResult<Stream?>(Seekable ? stream : new ForwardOnlyStream(stream));
+        return ValueTask.FromResult<Stream?>(IsSeekable ? stream : new ForwardOnlyStream(stream));
     }
 
     private sealed class TrackedMemoryStream(byte[] buffer, Action onDisposed) : MemoryStream(buffer, writable: false)
@@ -54,7 +54,7 @@ public sealed class FakeResourceContentReader : IResourceContentReader
         }
     }
 
-    private sealed class ForwardOnlyStream(Stream inner) : Stream
+    private sealed class ForwardOnlyStream(Stream innerStream) : Stream
     {
         public override bool CanRead => true;
 
@@ -71,10 +71,10 @@ public sealed class FakeResourceContentReader : IResourceContentReader
         }
 
         public override void Flush()
-            => inner.Flush();
+            => innerStream.Flush();
 
         public override int Read(byte[] buffer, int offset, int count)
-            => inner.Read(buffer, offset, count);
+            => innerStream.Read(buffer, offset, count);
 
         public override long Seek(long offset, SeekOrigin origin)
             => throw new NotSupportedException();
@@ -89,7 +89,7 @@ public sealed class FakeResourceContentReader : IResourceContentReader
         {
             if (disposing)
             {
-                inner.Dispose();
+                innerStream.Dispose();
             }
 
             base.Dispose(disposing);
