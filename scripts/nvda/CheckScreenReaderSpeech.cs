@@ -147,7 +147,7 @@ static Step[] SlowSource(string loading, string count)
 {
     return [
         new("open the page", null, [loading, count]),
-        new("move to the second page", page => PressNextPageAsync(page, 1), [loading, count]),
+        new("move to the second page", page => PressPageAsync(page, 1, 2), [loading, count]),
         new("refresh", page => PressControlAsync(page, 1, 0), [loading, count]),
     ];
 }
@@ -157,8 +157,7 @@ static Step[] PageGivingWay(string fewer, string all)
 {
     return [
         new("open the page", null, []),
-        new("go to the last page", page => page.Locator(".demo-section").Nth(3).Locator(".forma-pagination-navigation-step")
-            .GetByText("3", new() { Exact = true }).EvaluateAsync("step => step.click()"), []),
+        new("go to the last page", page => PressPageAsync(page, 3, 3), []),
         new("take its only item away", page => PressControlAsync(page, 3, 0), [fewer]),
         new("put everything back", page => PressControlAsync(page, 3, 1), [all]),
     ];
@@ -301,10 +300,11 @@ static Task PressControlAsync(IPage page, int section, int control)
     return page.Locator(".demo-section").Nth(section).Locator(".demo-controls button").Nth(control).EvaluateAsync("button => button.click()");
 }
 
-// Presses a section's Next page without taking the focus to it.
-static Task PressNextPageAsync(IPage page, int section)
+// Presses a section's step to a page without taking the focus to it.
+static Task PressPageAsync(IPage page, int section, int number)
 {
-    return page.Locator(".demo-section").Nth(section).Locator(".forma-pagination-navigation-button-next").First.EvaluateAsync("button => button.click()");
+    return page.Locator(".demo-section").Nth(section).Locator(".forma-pagination-navigation-step")
+        .GetByText(number.ToString(CultureInfo.InvariantCulture), new() { Exact = true }).EvaluateAsync("step => step.click()");
 }
 
 // Presses the box of a section's list item without taking the focus to it.
