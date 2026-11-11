@@ -25,10 +25,7 @@
                       OnRename="@(req => HandleRenameAsync("full", req))"
                       OnDelete="@(req => HandleDeleteAsync("full", req))"
                       OnDrop="@(req => HandleDropAsync("full", req))"
-                      OnFolderDrop="@(req => HandleFolderDropAsync("full", req))"
                       OnFolderCreate="@(req => HandleFolderCreateAsync("full", req))"
-                      OnFolderRename="@(req => HandleFolderRenameAsync("full", req))"
-                      OnFolderDelete="@(req => HandleFolderDeleteAsync("full", req))"
                       OnUploaded="@(resources => HandleUploadedAsync("full", resources))" />
         <ul class="demo-log">
             @foreach (var resource in Log("full"))
@@ -121,10 +118,7 @@
                       SelectedChanged="@(items => HandleSelectedAsync("states", items))"
                       OnRename="@(req => HandleRenameAsync("states", req))"
                       OnDelete="@(req => HandleDeleteAsync("states", req))"
-                      OnDrop="@(req => HandleDropAsync("states", req))"
-                      OnFolderDrop="@(req => HandleFolderDropAsync("states", req))"
-                      OnFolderRename="@(req => HandleFolderRenameAsync("states", req))"
-                      OnFolderDelete="@(req => HandleFolderDeleteAsync("states", req))" />
+                      OnDrop="@(req => HandleDropAsync("states", req))" />
         <ul class="demo-log">
             @foreach (var entry in Log("states"))
             {

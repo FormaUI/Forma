@@ -10,8 +10,7 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     private readonly ExplorerDragItem _drag = new();
     private readonly ExplorerRenameAction<ICatalogItem> _rename = new();
     private readonly ExplorerCreateFolderAction _createFolder = new();
-    private readonly ExplorerBatchAction<ICatalogItem> _itemDeletion = new();
-    private readonly ExplorerBatchAction<ICatalogFolderItem> _folderDeletion = new();
+    private readonly ExplorerBatchAction<ICatalogItem> _deletion = new();
 
     /// <inheritdoc />
     public IReadOnlyList<ExplorerItemAction> Actions { get; set; } = [];
@@ -40,11 +39,11 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     /// <summary>Called to apply a confirmed folder creation.</summary>
     public Func<ICatalogFolderItem?, string, Task>? OnCreateFolderConfirmed { get; set; }
 
-    /// <summary>Called to apply a confirmed item deletion.</summary>
+    /// <summary>Called to apply a confirmed deletion of files and folders together.</summary>
     public Func<IReadOnlyList<ICatalogItem>, Task>? OnDeleteConfirmed { get; set; }
 
-    /// <summary>Called to apply a confirmed folder deletion.</summary>
-    public Func<IReadOnlyList<ICatalogFolderItem>, Task>? OnFolderDeleteConfirmed { get; set; }
+    /// <summary>Called when an operation is refused whole for an item whose capabilities leave it out, with the capability it lacks.</summary>
+    public Action<ICatalogItem, CatalogItemCapabilities>? OnRefused { get; set; }
 
     /// <summary>Called to show or hide the upload panel.</summary>
     public Action? OnToggleUpload { get; set; }
@@ -82,17 +81,19 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
         var dragged = _drag.Target;
         _drag.End();
 
-        if (dragged is null || !dragged.Permits(ItemOptions, CatalogItemCapabilities.Move))
+        // Only the top level and a folder that takes drops receive one; there, an item that may not move is refused and named.
+        if (dragged is null || (target is not null && (target is not ICatalogFolderItem folder || !folder.Permits(ItemOptions, CatalogItemCapabilities.Drop))))
         {
             return Task.CompletedTask;
         }
 
-        return target switch
+        if (!dragged.Permits(ItemOptions, CatalogItemCapabilities.Move))
         {
-            null => OnDrop?.Invoke(dragged, null) ?? Task.CompletedTask,
-            ICatalogFolderItem folder when folder.Permits(ItemOptions, CatalogItemCapabilities.Drop) => OnDrop?.Invoke(dragged, folder) ?? Task.CompletedTask,
-            _ => Task.CompletedTask,
-        };
+            OnRefused?.Invoke(dragged, CatalogItemCapabilities.Move);
+            return Task.CompletedTask;
+        }
+
+        return OnDrop?.Invoke(dragged, target as ICatalogFolderItem) ?? Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -137,65 +138,32 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
 
     /// <inheritdoc />
     public void RequestDeleteSelected()
-    {
-        var items = SelectedItems?.Invoke() ?? [];
+        => RequestDeletion(SelectedItems?.Invoke() ?? []);
 
-        List<ICatalogFolderItem> folders = [.. items.OfType<ICatalogFolderItem>().Where(folder => folder.Permits(ItemOptions, CatalogItemCapabilities.Delete))];
-
-        if (folders.Count > 0)
-        {
-            _folderDeletion.Request(folders);
-            PendingAction = _folderDeletion;
-        }
-        else
-        {
-            List<ICatalogItem> deletable = [.. items.Where(item => item is not ICatalogFolderItem && item.Permits(ItemOptions, CatalogItemCapabilities.Delete))];
-
-            if (deletable.Count == 0)
-            {
-                return;
-            }
-
-            _itemDeletion.Request(deletable);
-            PendingAction = _itemDeletion;
-        }
-
-        OnChanged?.Invoke();
-    }
-
-    /// <summary>Opens confirmation for deleting the item.</summary>
+    /// <summary>Opens confirmation for deleting the item, a file or a folder.</summary>
     public void RequestDelete(ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        if (item is ICatalogFolderItem folder)
-        {
-            RequestFolderDelete(folder);
-            return;
-        }
-
-        if (!item.Permits(ItemOptions, CatalogItemCapabilities.Delete))
-        {
-            return;
-        }
-
-        _itemDeletion.Request([item]);
-        PendingAction = _itemDeletion;
-        OnChanged?.Invoke();
+        RequestDeletion([item]);
     }
 
-    /// <summary>Opens confirmation for deleting the folder.</summary>
-    public void RequestFolderDelete(ICatalogFolderItem folder)
+    // A deletion takes the items whole: one that may not be deleted refuses it, and nothing is asked to be confirmed.
+    private void RequestDeletion(IReadOnlyList<ICatalogItem> items)
     {
-        ArgumentNullException.ThrowIfNull(folder);
-
-        if (!folder.Permits(ItemOptions, CatalogItemCapabilities.Delete))
+        if (items.Count == 0)
         {
             return;
         }
 
-        _folderDeletion.Request([folder]);
-        PendingAction = _folderDeletion;
+        if (items.FirstOrDefault(item => !item.Permits(ItemOptions, CatalogItemCapabilities.Delete)) is { } refused)
+        {
+            OnRefused?.Invoke(refused, CatalogItemCapabilities.Delete);
+            return;
+        }
+
+        _deletion.Request(items);
+        PendingAction = _deletion;
         OnChanged?.Invoke();
     }
 
@@ -246,12 +214,6 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
                 var newName = rename.NameToConfirm;
                 rename.Clear();
                 await InvokeAsync(OnRenameConfirmed, target, newName).ConfigureAwait(false);
-                break;
-
-            case ExplorerBatchAction<ICatalogFolderItem> folders:
-                var folderTargets = folders.Targets;
-                folders.Clear();
-                await InvokeAsync(OnFolderDeleteConfirmed, folderTargets).ConfigureAwait(false);
                 break;
 
             case ExplorerBatchAction<ICatalogItem> items:

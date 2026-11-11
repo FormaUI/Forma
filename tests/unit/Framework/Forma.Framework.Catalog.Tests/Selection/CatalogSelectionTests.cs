@@ -14,6 +14,9 @@ public sealed class CatalogSelectionTests
         return new CatalogItem { Key = source, Name = resource.Name, IsDisabled = isDisabled, Resource = resource };
     }
 
+    private static CatalogFolderItem CreateFolderItem(string source)
+        => CatalogItem.ForFolder(new FolderResourceInfo(source));
+
     [Fact]
     public void Should_ignore_toggling_a_disabled_item()
     {
@@ -37,7 +40,7 @@ public sealed class CatalogSelectionTests
         // Arrange
         var selection = new CatalogSelection();
         var item = CreateItem("/media/photo.png");
-        var folder = CatalogItem.ForFolder(new FolderResourceInfo("/photos"));
+        var folder = CreateFolderItem("/photos");
 
         // Act
         selection.Replace([item, folder]);
@@ -47,12 +50,12 @@ public sealed class CatalogSelectionTests
     }
 
     [Fact]
-    public void Should_keep_one_kind_selected_at_a_time()
+    public void Should_keep_a_folder_and_a_file_selected_together()
     {
         // Arrange
         var selection = new CatalogSelection();
         var item = CreateItem("/media/photo.png");
-        var folder = CatalogItem.ForFolder(new FolderResourceInfo("/photos"));
+        var folder = CreateFolderItem("/photos");
         selection.Toggle(item);
 
         // Act
@@ -61,6 +64,51 @@ public sealed class CatalogSelectionTests
         // Assert
         Assert.Multiple(
             () => Assert.True(selection.IsSelected(folder)),
-            () => Assert.False(selection.IsSelected(item)));
+            () => Assert.True(selection.IsSelected(item)),
+            () => Assert.Equal(2, selection.Count),
+            () => Assert.Equal([folder, item], selection.Items));
+    }
+
+    [Fact]
+    public void Should_count_folders_and_files_together_toward_the_selection_limit()
+    {
+        // Arrange
+        var selection = new CatalogSelection { SelectionLimit = 2 };
+        var item = CreateItem("/media/photo.png");
+        var folder = CreateFolderItem("/photos");
+        var otherItem = CreateItem("/media/cover.png");
+        var otherFolder = CreateFolderItem("/covers");
+        selection.Toggle(item);
+        selection.Toggle(folder);
+
+        // Act
+        selection.Toggle(otherItem);
+        selection.Toggle(otherFolder);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(2, selection.Count),
+            () => Assert.Equal([folder, item], selection.Items));
+    }
+
+    [Fact]
+    public void Should_replace_either_kind_when_the_selection_limit_is_one()
+    {
+        // Arrange
+        var selection = new CatalogSelection { SelectionLimit = 1 };
+        var item = CreateItem("/media/photo.png");
+        var folder = CreateFolderItem("/photos");
+        var otherItem = CreateItem("/media/cover.png");
+        selection.Toggle(item);
+
+        // Act
+        selection.Toggle(folder);
+        var selectedAfterFolder = selection.Items;
+        selection.Toggle(otherItem);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([folder], selectedAfterFolder),
+            () => Assert.Equal([otherItem], selection.Items));
     }
 }

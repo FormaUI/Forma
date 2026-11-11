@@ -76,10 +76,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Which operations the explorer offers on the items it lists.</summary>
     [Parameter] public ExplorerItemOptions ItemOptions { get; set; } = ExplorerItemOptions.Default;
 
-    /// <summary>Raised when items are deleted.</summary>
+    /// <summary>Raised when items, files and folders together, are deleted.</summary>
     [Parameter] public EventCallback<CatalogDeleteRequest> OnDelete { get; set; }
 
-    /// <summary>Raised when items are dropped onto a target folder.</summary>
+    /// <summary>Raised when items, files and folders together, are dropped onto a target folder.</summary>
     [Parameter] public EventCallback<CatalogDropRequest> OnDrop { get; set; }
 
     /// <summary>Raised when the active folder changes.</summary>
@@ -87,15 +87,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     /// <summary>Raised when a request is made to create a new folder.</summary>
     [Parameter] public EventCallback<CatalogFolderCreateRequest> OnFolderCreate { get; set; }
-
-    /// <summary>Raised when a folder is deleted.</summary>
-    [Parameter] public EventCallback<CatalogFolderDeleteRequest> OnFolderDelete { get; set; }
-
-    /// <summary>Raised when a folder is dropped onto another folder.</summary>
-    [Parameter] public EventCallback<CatalogFolderDropRequest> OnFolderDrop { get; set; }
-
-    /// <summary>Raised when a folder rename is confirmed.</summary>
-    [Parameter] public EventCallback<CatalogFolderRenameRequest> OnFolderRename { get; set; }
 
     /// <summary>Raised when the page changes.</summary>
     [Parameter] public EventCallback<int> OnPageChanged { get; set; }
@@ -332,25 +323,34 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private bool CanGoUp => CurrentFolder is not null;
 
+    // The deletion awaiting confirmation, files and folders together.
+    private ExplorerBatchAction<ICatalogItem>? PendingDeletion
+        => _itemManager.PendingAction is ExplorerBatchAction<ICatalogItem> { IsActive: true } deletion ? deletion : null;
+
+    private bool DeletesFoldersAlone
+        => PendingDeletion is { } deletion && deletion.Targets.All(target => target is ICatalogFolderItem);
+
+    private string DeleteDialogTitle
+        => DeletesFoldersAlone ? L["Delete Folder"].Value : L["Delete Media"].Value;
+
     private string DeleteConfirmMessage
     {
         get
         {
-            if (_itemManager.PendingAction is not ExplorerBatchAction<ICatalogItem> { IsActive: true } deletion)
+            if (PendingDeletion is not { } deletion)
             {
                 return string.Empty;
             }
 
-            if (deletion.Targets.Count == 1)
-            {
-                var name = deletion.Targets[0].Name;
-
-                return L["Are you sure you want to delete \"{Name}\"?", name];
-            }
-
             var count = deletion.Targets.Count;
 
-            return L["[$ plural; one: Are you sure you want to delete # item?; other: Are you sure you want to delete # items?; $]", count];
+            return (count, DeletesFoldersAlone) switch
+            {
+                (1, true) => L["Are you sure you want to delete folder \"{Name}\"?", deletion.Targets[0].Name],
+                (1, false) => L["Are you sure you want to delete \"{Name}\"?", deletion.Targets[0].Name],
+                (_, true) => L["[$ plural; one: Are you sure you want to delete # folder?; other: Are you sure you want to delete # folders?; $]", count],
+                _ => L["[$ plural; one: Are you sure you want to delete # item?; other: Are you sure you want to delete # items?; $]", count],
+            };
         }
     }
 
@@ -362,28 +362,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private string RenameDialogFieldLabel
         => PendingRename?.Target is ICatalogFolderItem ? L["Folder Name"].Value : L["New Name"].Value;
-
-    private string FolderDeleteConfirmMessage
-    {
-        get
-        {
-            if (_itemManager.PendingAction is not ExplorerBatchAction<ICatalogFolderItem> { IsActive: true } deletion)
-            {
-                return string.Empty;
-            }
-
-            if (deletion.Targets.Count == 1)
-            {
-                var name = deletion.Targets[0].Name;
-
-                return L["Are you sure you want to delete folder \"{Name}\"?", name];
-            }
-
-            var count = deletion.Targets.Count;
-
-            return L["[$ plural; one: Are you sure you want to delete # folder?; other: Are you sure you want to delete # folders?; $]", count];
-        }
-    }
 
     private bool IsProviderMode
         => ItemsProvider is not null;
@@ -560,7 +538,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _itemManager.OnRenameConfirmed = (target, newName) => RunAsync(() => ApplyRenameAsync(target, newName));
         _itemManager.OnCreateFolderConfirmed = (parent, name) => RunAsync(() => ApplyCreateFolderAsync(parent, name));
         _itemManager.OnDeleteConfirmed = targets => RunAsync(() => ApplyDeleteAsync(targets));
-        _itemManager.OnFolderDeleteConfirmed = folders => RunAsync(() => ApplyFolderDeleteAsync(folders));
+        _itemManager.OnRefused = (item, capability) => _ = RunAsync(() => RefuseAsync(item, capability));
         _itemManager.OnToggleUpload = () => Run(_uploadPanel.Toggle);
         _itemManager.SelectedItems = () => _selection.Items;
     }
@@ -801,7 +779,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         return true;
     }
 
-    private async Task<bool> EnsureFolderFitsAsync(ICatalogFolderItem? parent, int height)
+    private async Task<bool> EnsureFolderFitsAsync(ICatalogFolderItem? parent, int height, int adding = 1)
     {
         if (Constraints.MaxFolderDepth > 0 && GetDepth(parent) + height > Constraints.MaxFolderDepth)
         {
@@ -813,7 +791,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return false;
         }
 
-        if (parent is null && Constraints.MaxFolderRootCount > 0 && RootFolderCount >= Constraints.MaxFolderRootCount)
+        if (parent is null && Constraints.MaxFolderRootCount > 0 && RootFolderCount + adding > Constraints.MaxFolderRootCount)
         {
             await RejectAsync(
                 CatalogRejectionReason.FolderRootCount,
@@ -823,7 +801,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return false;
         }
 
-        if (parent is not null && Constraints.MaxSubfolderCount > 0 && FolderTree.GetChildren(parent.Key).Count >= Constraints.MaxSubfolderCount)
+        if (parent is not null && Constraints.MaxSubfolderCount > 0 && FolderTree.GetChildren(parent.Key).Count + adding > Constraints.MaxSubfolderCount)
         {
             await RejectAsync(
                 CatalogRejectionReason.SubfolderCount,
@@ -1021,7 +999,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private void AdoptSelection(IReadOnlyList<ICatalogItem> selected)
         => _selection.Replace(selected);
 
-    // The data view's boxes change the explorer's selection, whose rules decide what it holds: one kind at a time, and its limit.
+    // The data view's boxes change the explorer's selection, whose limit decides what it holds, files and folders together.
     private Task HandleViewSelectionChangedAsync(IReadOnlyList<ICatalogItem> items)
         => ChangeSelectionAsync(selection =>
         {
@@ -1146,29 +1124,58 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private Task ApplyCreateFolderAsync(ICatalogFolderItem? parent, string name)
         => OnFolderCreate.InvokeAsync(new CatalogFolderCreateRequest(parent, name));
 
+    // Files and folders are deleted as one request, a folder taking the selected folders beneath it with it; the selection keeps what the
+    // host reports it failed to delete.
     private async Task ApplyDeleteAsync(IReadOnlyList<ICatalogItem> targets)
     {
-        await ChangeSelectionAsync(selection =>
-        {
-            foreach (var target in targets)
-            {
-                selection.Remove(target);
-            }
-        });
+        var request = new CatalogDeleteRequest(WithoutNestedFolders(targets));
+        await OnDelete.InvokeAsync(request);
 
-        await OnDelete.InvokeAsync(new CatalogDeleteRequest(targets));
+        if (!request.IsFailed)
+        {
+            await ChangeSelectionAsync(selection =>
+            {
+                foreach (var target in targets)
+                {
+                    selection.Remove(target);
+                }
+            });
+        }
+
         await RefreshProviderAsync();
     }
 
-    private async Task ApplyFolderDeleteAsync(IReadOnlyList<ICatalogFolderItem> folders)
+    // A folder selected beneath another selected folder goes with it, so it is asked for once, through the folder above it.
+    private IReadOnlyList<ICatalogItem> WithoutNestedFolders(IReadOnlyList<ICatalogItem> items)
     {
-        await ClearSelectionAsync();
+        HashSet<string> folderKeys = [.. items.OfType<ICatalogFolderItem>().Select(folder => folder.Key)];
 
-        foreach (var folder in folders)
-        {
-            await OnFolderDelete.InvokeAsync(new CatalogFolderDeleteRequest(folder));
-        }
+        return [.. items.Where(item => item is not ICatalogFolderItem folder || !HasAncestorAmong(folder, folderKeys))];
     }
+
+    private bool HasAncestorAmong(ICatalogFolderItem folder, HashSet<string> folderKeys)
+    {
+        var visited = new HashSet<string>(StringComparer.Ordinal) { folder.Key };
+
+        for (var parent = FolderTree.GetParent(folder); parent is not null && visited.Add(parent.Key); parent = FolderTree.GetParent(parent))
+        {
+            if (folderKeys.Contains(parent.Key))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    // An operation refused whole for an item whose capabilities leave it out says which item and why, and acts on nothing.
+    private Task RefuseAsync(ICatalogItem item, CatalogItemCapabilities capability)
+        => RejectAsync(
+            CatalogRejectionReason.NotPermitted,
+            null,
+            capability == CatalogItemCapabilities.Delete
+                ? L["\"{Name}\" can't be deleted.", item.Name].Value
+                : L["\"{Name}\" can't be moved.", item.Name].Value);
 
     private Task HandleFolderSelectedAsync(ICatalogFolderItem? folder)
         => MoveToFolderAsync(folder);
@@ -1186,35 +1193,50 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
+    // A selected item dragged takes the selection with it, files and folders together, as one request validated whole: every item may
+    // move, no folder lands in itself or beneath itself, and the target holds them all; a refusal or a failure the host reports keeps the
+    // selection, and a folder already in the target moves nowhere.
     private async Task HandleDropOnFolderAsync(ICatalogItem target, ICatalogFolderItem? targetFolder)
     {
-        if (target is ICatalogFolderItem draggedFolder)
-        {
-            if (CanMoveFolder(draggedFolder, targetFolder)
-                && await EnsureFolderFitsAsync(targetFolder, GetHeight(draggedFolder)))
-            {
-                await OnFolderDrop.InvokeAsync(new CatalogFolderDropRequest(draggedFolder, targetFolder));
-                await RefreshProviderAsync();
-            }
+        IReadOnlyList<ICatalogItem> dragged = _selection.IsSelected(target) && _selection.Count > 1 ? _selection.Items : [target];
+        List<ICatalogItem> items = [.. WithoutNestedFolders(dragged).Where(item => item is not ICatalogFolderItem folder || folder.ParentKey != targetFolder?.Key)];
 
-            return;
-        }
-
-        var selected = _selection.Items;
-        IReadOnlyList<ICatalogItem> items = _selection.IsSelected(target) && selected.Count > 1
-            ? [.. selected.Where(item => item.Permits(ItemOptions, CatalogItemCapabilities.Move))]
-            : [target];
-
-        if (!await EnsureFolderHasRoomAsync(targetFolder, items.Count))
+        if (items.Count == 0 || !await EnsureDropFitsAsync(items, targetFolder))
         {
             return;
         }
 
-        await OnDrop.InvokeAsync(new CatalogDropRequest(items, targetFolder));
+        var request = new CatalogDropRequest(items, targetFolder);
+        await OnDrop.InvokeAsync(request);
 
         // A move takes the resources out of the items they were dragged from, which only a re-read will show.
-        await ClearSelectionAsync();
+        if (!request.IsFailed)
+        {
+            await ClearSelectionAsync();
+        }
+
         await RefreshProviderAsync();
+    }
+
+    private async Task<bool> EnsureDropFitsAsync(List<ICatalogItem> items, ICatalogFolderItem? targetFolder)
+    {
+        if (items.FirstOrDefault(item => !item.Permits(ItemOptions, CatalogItemCapabilities.Move)) is { } immovable)
+        {
+            await RefuseAsync(immovable, CatalogItemCapabilities.Move);
+            return false;
+        }
+
+        List<ICatalogFolderItem> folders = [.. items.OfType<ICatalogFolderItem>()];
+
+        // Moving a folder inside its own subtree would leave the tree cyclic and unrenderable.
+        if (targetFolder is not null && folders.FirstOrDefault(folder => IsSelfOrDescendant(targetFolder, folder)) is { } cyclic)
+        {
+            await RejectAsync(CatalogRejectionReason.FolderCycle, null, L["\"{Name}\" can't move into itself or a folder inside it.", cyclic.Name].Value);
+            return false;
+        }
+
+        return (folders.Count == 0 || await EnsureFolderFitsAsync(targetFolder, folders.Max(GetHeight), folders.Count))
+            && await EnsureFolderHasRoomAsync(targetFolder, items.Count - folders.Count);
     }
 
     private async Task HandlePageChangedAsync(int page)
@@ -1222,17 +1244,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _collection.PageNumber = page;
 
         await OnPageChanged.InvokeAsync(page);
-    }
-
-    private bool CanMoveFolder(ICatalogFolderItem folder, ICatalogFolderItem? target)
-    {
-        if (target is null)
-        {
-            return folder.ParentKey is not null;
-        }
-
-        // Moving a folder inside its own subtree would leave the tree cyclic and unrenderable.
-        return folder.Key != target.Key && !IsSelfOrDescendant(target, folder);
     }
 
     private bool IsSelfOrDescendant(ICatalogFolderItem candidate, ICatalogFolderItem ancestor)
@@ -1263,16 +1274,16 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
+    // A file and a folder are renamed alike, the items read again once the host carried the rename out.
     private async Task ApplyRenameAsync(ICatalogItem target, string newName)
     {
-        if (target is ICatalogFolderItem folder)
-        {
-            await OnFolderRename.InvokeAsync(new CatalogFolderRenameRequest(folder, newName));
-            return;
-        }
+        var request = new CatalogRenameRequest(target, newName);
+        await OnRename.InvokeAsync(request);
 
-        await OnRename.InvokeAsync(new CatalogRenameRequest(target, newName));
-        await RefreshProviderAsync();
+        if (!request.IsFailed)
+        {
+            await RefreshProviderAsync();
+        }
     }
 
     private async Task HandleSearchQueryChangedAsync(string query)

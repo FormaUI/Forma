@@ -132,8 +132,10 @@ admits it, and items stand in their groups' order, then the sort's, then their k
 
 ## Requests and constraints
 
-Each change the reader asks a surface for comes back to the host as a record in
-`Forma.Framework.Catalog.Requests`, carrying the host's own items for the host to carry out:
+Each change the reader asks a surface for comes back to the host as a request in
+`Forma.Framework.Catalog.Requests`, carrying the host's own items for the host to carry out. A rename,
+a deletion and a drop take files and folders alike, and a host that could not carry one out calls its
+`Fail()`, which the surface reads once the host has answered:
 
 | Request | Carries |
 | --- | --- |
@@ -141,9 +143,6 @@ Each change the reader asks a surface for comes back to the host as a record in
 | `CatalogDeleteRequest` | `Items` |
 | `CatalogDropRequest` | `Items`, `TargetFolder` (null is the top level) |
 | `CatalogFolderCreateRequest` | `ParentFolder`, `Name` |
-| `CatalogFolderRenameRequest` | `Folder`, `NewName` |
-| `CatalogFolderDeleteRequest` | `Folder` |
-| `CatalogFolderDropRequest` | `SourceFolder`, `TargetFolder` |
 
 `CatalogConstraints` holds the kinds a collection lists and accepts, `AcceptedResourceKinds`, the
 kinds an upload may add where they differ, `AcceptedUploadKinds`, and the ceilings it keeps, each
@@ -171,7 +170,7 @@ A component that browses a catalog keeps its state in the types this package pro
 | `CatalogProviderItems` | The items fetched from a provider, one slice replacing the last or slices appended, with the store positions read, whether more follow and the fetch in flight. |
 | `CatalogFolderTree` | The folder items indexed by key and by parent. |
 | `CatalogHistory` | The folders visited, with a cursor moving back and forward. |
-| `CatalogSelection` | The selected items, folders or other items one kind at a time, capped by a limit; `ICatalogSelectionView` is its read-only view. |
+| `CatalogSelection` | The selected items, folders and other items together, capped by a limit counting both; `ICatalogSelectionView` is its read-only view. |
 
 ## License
 

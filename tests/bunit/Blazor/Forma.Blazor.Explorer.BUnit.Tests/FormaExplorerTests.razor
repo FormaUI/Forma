@@ -793,26 +793,26 @@
         }
 
         [Fact]
-        public async Task Should_raise_on_folder_drop_when_folder_is_dropped_on_another_folder()
+        public async Task Should_raise_on_drop_when_a_folder_is_dropped_on_another_folder()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
             var source = new FolderResourceInfo("sub") { Name = "Subfolder" };
             var target = new FolderResourceInfo("parent") { Name = "ParentFolder" };
-            CatalogFolderDropRequest? folderDropRequest = null;
+            CatalogDropRequest? dropRequest = null;
 
             var cut = ctx.Render(@<FormaExplorer Items="[]"
                                                 Folders="@(CatalogItem.ForAll([source, target]))"
-                                                OnFolderDrop="@(req => { folderDropRequest = req; return Task.CompletedTask; })" />);
+                                                OnDrop="@(req => { dropRequest = req; return Task.CompletedTask; })" />);
 
             // Act - Start drag on source folder, drop on target folder
             GetFolderRow(cut, "Subfolder").DragStart();
             await DropOnAsync(cut, GetFolderRow(cut, "ParentFolder"));
 
             // Assert
-            Assert.NotNull(folderDropRequest);
-            Assert.Equal("sub", folderDropRequest.SourceFolder.Key);
-            Assert.Equal("parent", folderDropRequest.TargetFolder?.Key);
+            Assert.NotNull(dropRequest);
+            Assert.Equal("sub", Assert.IsAssignableFrom<ICatalogFolderItem>(Assert.Single(dropRequest.Items)).Key);
+            Assert.Equal("parent", dropRequest.TargetFolder?.Key);
         }
 
         [Fact]
@@ -913,21 +913,21 @@
         }
 
         [Fact]
-        public async Task Should_raise_on_folder_create_rename_and_delete()
+        public async Task Should_raise_on_folder_create_on_rename_and_on_delete_for_a_folder()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
             var fields = new TextFieldProbe(ctx);
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             CatalogFolderCreateRequest? createReq = null;
-            CatalogFolderRenameRequest? renameReq = null;
-            CatalogFolderDeleteRequest? deleteReq = null;
+            CatalogRenameRequest? renameReq = null;
+            CatalogDeleteRequest? deleteReq = null;
 
             var cut = ctx.Render(@<FormaExplorer Items="[]"
                                                 Folders="@(CatalogItem.ForAll([folder]))"
                                                 OnFolderCreate="@(req => { createReq = req; return Task.CompletedTask; })"
-                                                OnFolderRename="@(req => { renameReq = req; return Task.CompletedTask; })"
-                                                OnFolderDelete="@(req => { deleteReq = req; return Task.CompletedTask; })" />);
+                                                OnRename="@(req => { renameReq = req; return Task.CompletedTask; })"
+                                                OnDelete="@(req => { deleteReq = req; return Task.CompletedTask; })" />);
 
             // Act
             cut.Find(".forma-explorer-new-folder-tool").Click();
@@ -946,16 +946,17 @@
 
             // Assert
             Assert.NotNull(renameReq);
+            Assert.Equal("races", Assert.IsAssignableFrom<ICatalogFolderItem>(renameReq.Item).Key);
             Assert.Equal("Updated Races", renameReq.NewName);
 
             // Act
             cut.Find("button[aria-label='Actions for Races']").Click();
             cut.Find("[data-action='folder-delete']").Click();
-            cut.Find(".forma-dialog-footer .forma-button-danger").Click();
+            await cut.Find(".forma-dialog-footer .forma-button-danger").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.NotNull(deleteReq);
-            Assert.Equal("races", deleteReq.Folder.Key);
+            Assert.Equal("races", Assert.IsAssignableFrom<ICatalogFolderItem>(Assert.Single(deleteReq.Items)).Key);
         }
 
         [Fact]
@@ -1309,7 +1310,7 @@
         }
 
         [Fact]
-        public async Task Should_move_only_the_selected_items_that_can_move()
+        public async Task Should_refuse_the_whole_drop_when_one_selected_item_cannot_move()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1326,9 +1327,11 @@
             ];
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             CatalogDropRequest? request = null;
+            CatalogRejection? rejection = null;
             var cut = ctx.Render(@<FormaExplorer Items="items"
                                                 Folders="@(CatalogItem.ForAll([folder]))"
-                                                OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
+                                                OnDrop="@(req => { request = req; return Task.CompletedTask; })"
+                                                OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
             await ToggleBoxAsync(cut, "a.jpg");
             await ToggleBoxAsync(cut, "b.jpg");
@@ -1338,8 +1341,12 @@
             await DropOnAsync(cut, GetFolderRow(cut, "Races"));
 
             // Assert
-            Assert.NotNull(request);
-            Assert.Equal("a.jpg", Assert.Single(request.Items).Name);
+            Assert.Multiple(
+                () => Assert.Null(request),
+                () => Assert.Equal(CatalogRejectionReason.NotPermitted, rejection?.Reason),
+                () => Assert.Equal("\"b.jpg\" can't be moved.", cut.Find(".forma-explorer-rejection-text").TextContent.Trim()),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "a.jpg"))),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "b.jpg"))));
         }
 
         [Fact]
@@ -2144,7 +2151,7 @@
             Assert.Equal("true", cut.Find(".forma-breadcrumb-chevron").GetAttribute("aria-expanded"));
         }
         [Fact]
-        public async Task Should_switch_the_selection_to_a_folder_chosen_over_media()
+        public async Task Should_keep_the_media_selected_when_a_folder_is_chosen_too()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2159,9 +2166,9 @@
             await ToggleBoxAsync(cut, "Races");
 
             // Assert
-            Assert.False(IsBoxChecked(ItemNamed(cut, "cover.jpg")));
+            Assert.True(IsBoxChecked(ItemNamed(cut, "cover.jpg")));
             Assert.True(IsBoxChecked(ItemNamed(cut, "Races")));
-            Assert.Equal("1 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim());
+            Assert.Equal("2 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim());
         }
 
         [Fact]
@@ -2240,7 +2247,7 @@
         }
 
         [Fact]
-        public async Task Should_switch_the_selection_to_media_chosen_over_a_folder()
+        public async Task Should_keep_the_folder_selected_when_media_is_chosen_too()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2255,9 +2262,9 @@
             await ToggleBoxAsync(cut, "cover.jpg");
 
             // Assert
-            Assert.False(IsBoxChecked(ItemNamed(cut, "Races")));
+            Assert.True(IsBoxChecked(ItemNamed(cut, "Races")));
             Assert.True(IsBoxChecked(ItemNamed(cut, "cover.jpg")));
-            Assert.Equal("1 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim());
+            Assert.Equal("2 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim());
         }
 
         [Fact]
@@ -2266,20 +2273,20 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             var folder = new FolderResourceInfo("races") { Name = "Races" };
-            CatalogFolderDeleteRequest? request = null;
+            CatalogDeleteRequest? request = null;
             var cut = ctx.Render(@<FormaExplorer Items="[]"
                                                 Folders="@(CatalogItem.ForAll([folder]))"
-                                                OnFolderDelete="@(req => { request = req; return Task.CompletedTask; })" />);
+                                                OnDelete="@(req => { request = req; return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
             await ToggleBoxAsync(cut, "Races");
 
             // Act
             cut.Find(".forma-explorer-delete-button").Click();
-            cut.Find(".forma-dialog-footer .forma-button-danger").Click();
+            await cut.Find(".forma-dialog-footer .forma-button-danger").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.NotNull(request);
-            Assert.Equal("races", request.Folder.Key);
+            Assert.Equal("races", Assert.IsAssignableFrom<ICatalogFolderItem>(Assert.Single(request.Items)).Key);
         }
         [Fact]
         public void Should_keep_the_breadcrumb_menu_when_the_sidebar_is_switched_off()
@@ -2469,17 +2476,22 @@
             using var ctx = new FormaExplorerTests();
             var parent = new FolderResourceInfo("races") { Name = "Races" };
             var child = new FolderResourceInfo("2026") { Name = "2026", Parent = "races" };
-            CatalogFolderDropRequest? request = null;
+            CatalogDropRequest? request = null;
+            CatalogRejection? rejection = null;
             var cut = ctx.Render(@<FormaExplorer Items="[]"
                                                 Folders="@(CatalogItem.ForAll([parent, child]))"
-                                                OnFolderDrop="@(req => { request = req; return Task.CompletedTask; })" />);
+                                                OnDrop="@(req => { request = req; return Task.CompletedTask; })"
+                                                OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
 
             // Act
             GetFolderRow(cut, "Races").DragStart();
             await DropOnAsync(cut, GetFolderRow(cut, "2026"));
 
             // Assert
-            Assert.Null(request);
+            Assert.Multiple(
+                () => Assert.Null(request),
+                () => Assert.Equal(CatalogRejectionReason.FolderCycle, rejection?.Reason),
+                () => Assert.Equal("\"Races\" can't move into itself or a folder inside it.", cut.Find(".forma-explorer-rejection-text").TextContent.Trim()));
         }
 
         [Fact]
@@ -2490,12 +2502,10 @@
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg")];
             var races = new FolderResourceInfo("races") { Name = "Races" };
             var covers = new FolderResourceInfo("covers") { Name = "Covers" };
-            CatalogFolderDropRequest? folderRequest = null;
-            CatalogDropRequest? itemRequest = null;
+            var requests = new List<CatalogDropRequest>();
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))"
                                                 Folders="@(CatalogItem.ForAll([races, covers]))"
-                                                OnFolderDrop="@(req => { folderRequest = req; return Task.CompletedTask; })"
-                                                OnDrop="@(req => { itemRequest = req; return Task.CompletedTask; })" />);
+                                                OnDrop="@(req => { requests.Add(req); return Task.CompletedTask; })" />);
 
             // Act - drag a folder onto the root, which cannot receive it
             GetFolderRow(cut, "Races").DragStart();
@@ -2506,9 +2516,9 @@
             await DropOnAsync(cut, GetFolderRow(cut, "Covers"));
 
             // Assert
-            Assert.Null(folderRequest);
-            Assert.NotNull(itemRequest);
-            Assert.Equal("covers", itemRequest.TargetFolder?.Key);
+            var request = Assert.Single(requests);
+            Assert.Equal("a.jpg", Assert.Single(request.Items).Name);
+            Assert.Equal("covers", request.TargetFolder?.Key);
         }
 
         [Fact]
@@ -2540,10 +2550,10 @@
             using var ctx = new FormaExplorerTests();
             var parent = new FolderResourceInfo("races") { Name = "Races" };
             var child = new FolderResourceInfo("2026") { Name = "2026", Parent = "races" };
-            CatalogFolderDropRequest? request = null;
+            CatalogDropRequest? request = null;
             var cut = ctx.Render(@<FormaExplorer Items="[]"
                                                 Folders="@(CatalogItem.ForAll([parent, child]))"
-                                                OnFolderDrop="@(req => { request = req; return Task.CompletedTask; })" />);
+                                                OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
             GetFolderRow(cut, "2026").DragStart();
@@ -2551,7 +2561,7 @@
 
             // Assert
             Assert.NotNull(request);
-            Assert.Equal("2026", request.SourceFolder.Key);
+            Assert.Equal("2026", Assert.IsAssignableFrom<ICatalogFolderItem>(Assert.Single(request.Items)).Key);
             Assert.Null(request.TargetFolder);
         }
 
@@ -2561,10 +2571,10 @@
             // Arrange
             using var ctx = new FormaExplorerTests();
             var races = new FolderResourceInfo("races") { Name = "Races" };
-            CatalogFolderDropRequest? request = null;
+            CatalogDropRequest? request = null;
             var cut = ctx.Render(@<FormaExplorer Items="[]"
                                                 Folders="@(CatalogItem.ForAll([races]))"
-                                                OnFolderDrop="@(req => { request = req; return Task.CompletedTask; })" />);
+                                                OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
             GetFolderRow(cut, "Races").DragStart();
@@ -3152,6 +3162,275 @@
 
             // Assert
             Assert.Empty(cut.FindAll("button").Where(button => !button.HasAttribute("disabled")).Select(button => button.ClassName));
+        }
+    }
+
+    // A selection holds files and folders together, and a deletion or a drop takes it whole: one request, validated whole before it is
+    // raised, whose refusal or failure the host reports leaves the selection as it was.
+    public sealed class MixedOperations
+    {
+        // The file the location lists beside its folders.
+        private static IReadOnlyList<ICatalogItem> CreateItems()
+            => CatalogItem.ForAll([new ImageResourceInfo("https://example.com/cover.jpg")]);
+
+        // The top-level folders Races and Covers, with 2026 inside Races.
+        private static IReadOnlyList<ICatalogItem> CreateFolders()
+            => CatalogItem.ForAll(
+            [
+                new FolderResourceInfo("races") { Name = "Races" },
+                new FolderResourceInfo("2026") { Name = "2026", Parent = "races" },
+                new FolderResourceInfo("covers") { Name = "Covers" }
+            ]);
+
+        // Enters the selection mode and checks the box on the card showing each of the names.
+        private static async Task SelectAsync<TComponent>(IRenderedComponent<TComponent> cut, params string[] names)
+            where TComponent : IComponent
+        {
+            cut.Find(".forma-explorer-select-mode-button").Click();
+
+            foreach (var name in names)
+            {
+                await ToggleBoxAsync(cut, name);
+            }
+        }
+
+        [Fact]
+        public async Task Should_delete_a_selected_folder_and_file_in_one_request_and_leave_neither_selected()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var items = CreateItems();
+            var folders = CreateFolders();
+            var requests = new List<CatalogDeleteRequest>();
+            var reports = new List<IReadOnlyList<ICatalogItem>>();
+            var cut = ctx.Render(@<FormaExplorer Items="items"
+                                                Folders="folders"
+                                                OnDelete="@(req => { requests.Add(req); return Task.CompletedTask; })"
+                                                SelectedChanged="@(selected => { reports.Add(selected); return Task.CompletedTask; })" />);
+            await SelectAsync(cut, "Races", "cover.jpg");
+
+            // Act
+            await cut.Find(".forma-explorer-delete-button").ClickAsync(new MouseEventArgs());
+            await cut.Find(".forma-dialog-footer .forma-button-danger").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            var request = Assert.Single(requests);
+            Assert.Multiple(
+                () => Assert.Equal(["Races", "cover.jpg"], request.Items.Select(item => item.Name)),
+                () => Assert.Empty(reports[^1]),
+                () => Assert.False(IsBoxChecked(ItemNamed(cut, "Races"))),
+                () => Assert.False(IsBoxChecked(ItemNamed(cut, "cover.jpg"))));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_selection_when_the_host_fails_the_deletion()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var items = CreateItems();
+            var folders = CreateFolders();
+            var requests = new List<CatalogDeleteRequest>();
+            var cut = ctx.Render(@<FormaExplorer Items="items"
+                                                Folders="folders"
+                                                OnDelete="@(req => { requests.Add(req); req.Fail(); return Task.CompletedTask; })" />);
+            await SelectAsync(cut, "Races", "cover.jpg");
+
+            // Act
+            await cut.Find(".forma-explorer-delete-button").ClickAsync(new MouseEventArgs());
+            await cut.Find(".forma-dialog-footer .forma-button-danger").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(requests),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "Races"))),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "cover.jpg"))),
+                () => Assert.Equal("2 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim()));
+        }
+
+        [Fact]
+        public async Task Should_refuse_the_whole_deletion_when_one_selected_item_cannot_be_deleted()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var items = CreateItems();
+            var folders = CreateFolders();
+            var itemOptions = new ExplorerItemOptions { AllowedFolderCapabilities = ExplorerItemOptions.Default.AllowedFolderCapabilities & ~CatalogItemCapabilities.Delete };
+            var requests = new List<CatalogDeleteRequest>();
+            CatalogRejection? rejection = null;
+            var cut = ctx.Render(@<FormaExplorer Items="items"
+                                                Folders="folders"
+                                                ItemOptions="itemOptions"
+                                                OnDelete="@(req => { requests.Add(req); return Task.CompletedTask; })"
+                                                OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
+            await SelectAsync(cut, "Races", "cover.jpg");
+
+            // Act
+            await cut.Find(".forma-explorer-delete-button").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(requests),
+                () => Assert.Empty(cut.FindAll(".forma-dialog")),
+                () => Assert.Equal(CatalogRejectionReason.NotPermitted, rejection?.Reason),
+                () => Assert.Equal("\"Races\" can't be deleted.", cut.Find(".forma-explorer-rejection-text").TextContent.Trim()),
+                () => Assert.Equal("2 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim()));
+        }
+
+        [Theory]
+        [InlineData(new[] { "Races" }, "Delete Folder", "Are you sure you want to delete folder \"Races\"?")]
+        [InlineData(new[] { "Races", "Covers" }, "Delete Folder", "Are you sure you want to delete 2 folders?")]
+        [InlineData(new[] { "Races", "cover.jpg" }, "Delete Media", "Are you sure you want to delete 2 items?")]
+        [InlineData(new[] { "cover.jpg" }, "Delete Media", "Are you sure you want to delete \"cover.jpg\"?")]
+        public async Task Should_word_the_delete_dialog_for_the_kinds_it_deletes(string[] names, string title, string message)
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var items = CreateItems();
+            var folders = CreateFolders();
+            var cut = ctx.Render(@<FormaExplorer Items="items" Folders="folders" />);
+            await SelectAsync(cut, names);
+
+            // Act
+            await cut.Find(".forma-explorer-delete-button").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(title, cut.Find(".forma-dialog-header h5").TextContent.Trim()),
+                () => Assert.Equal(message, cut.Find(".forma-explorer-delete-message").TextContent.Trim()));
+        }
+
+        [Fact]
+        public async Task Should_raise_one_drop_for_a_selected_folder_and_file_and_clear_the_selection()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var items = CreateItems();
+            var folders = CreateFolders();
+            var requests = new List<CatalogDropRequest>();
+            var cut = ctx.Render(@<FormaExplorer Items="items"
+                                                Folders="folders"
+                                                OnDrop="@(req => { requests.Add(req); return Task.CompletedTask; })" />);
+            await SelectAsync(cut, "Races", "cover.jpg");
+
+            // Act
+            ItemNamed(cut, "cover.jpg").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "Covers"));
+
+            // Assert
+            var request = Assert.Single(requests);
+            Assert.Multiple(
+                () => Assert.Equal(["Races", "cover.jpg"], request.Items.Select(item => item.Name)),
+                () => Assert.Equal("covers", request.TargetFolder?.Key),
+                () => Assert.False(IsBoxChecked(ItemNamed(cut, "Races"))),
+                () => Assert.False(IsBoxChecked(ItemNamed(cut, "cover.jpg"))));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_selection_when_the_host_fails_the_drop()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var items = CreateItems();
+            var folders = CreateFolders();
+            var requests = new List<CatalogDropRequest>();
+            var cut = ctx.Render(@<FormaExplorer Items="items"
+                                                Folders="folders"
+                                                OnDrop="@(req => { requests.Add(req); req.Fail(); return Task.CompletedTask; })" />);
+            await SelectAsync(cut, "Races", "cover.jpg");
+
+            // Act
+            ItemNamed(cut, "cover.jpg").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "Covers"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(requests),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "Races"))),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "cover.jpg"))),
+                () => Assert.Equal("2 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim()));
+        }
+
+        [Fact]
+        public async Task Should_refuse_the_whole_drop_when_the_options_withhold_moving_a_selected_folder()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var items = CreateItems();
+            var folders = CreateFolders();
+            var itemOptions = new ExplorerItemOptions { AllowedFolderCapabilities = ExplorerItemOptions.Default.AllowedFolderCapabilities & ~CatalogItemCapabilities.Move };
+            var requests = new List<CatalogDropRequest>();
+            CatalogRejection? rejection = null;
+            var cut = ctx.Render(@<FormaExplorer Items="items"
+                                                Folders="folders"
+                                                ItemOptions="itemOptions"
+                                                OnDrop="@(req => { requests.Add(req); return Task.CompletedTask; })"
+                                                OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
+            await SelectAsync(cut, "Races", "cover.jpg");
+
+            // Act
+            ItemNamed(cut, "cover.jpg").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "Covers"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(requests),
+                () => Assert.Equal(CatalogRejectionReason.NotPermitted, rejection?.Reason),
+                () => Assert.Equal("\"Races\" can't be moved.", cut.Find(".forma-explorer-rejection-text").TextContent.Trim()),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "Races"))),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "cover.jpg"))),
+                () => Assert.Equal("2 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim()));
+        }
+
+        [Fact]
+        public async Task Should_refuse_the_whole_drop_when_a_selected_folder_would_land_inside_itself()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var items = CreateItems();
+            var folders = CreateFolders();
+            var requests = new List<CatalogDropRequest>();
+            CatalogRejection? rejection = null;
+            var cut = ctx.Render(@<FormaExplorer Items="items"
+                                                Folders="folders"
+                                                OnDrop="@(req => { requests.Add(req); return Task.CompletedTask; })"
+                                                OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
+            await SelectAsync(cut, "Races", "cover.jpg");
+
+            // Act
+            ItemNamed(cut, "cover.jpg").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "2026"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(requests),
+                () => Assert.Equal(CatalogRejectionReason.FolderCycle, rejection?.Reason),
+                () => Assert.Equal("\"Races\" can't move into itself or a folder inside it.", cut.Find(".forma-explorer-rejection-text").TextContent.Trim()),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "Races"))),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "cover.jpg"))));
+        }
+
+        [Fact]
+        public async Task Should_drop_a_selected_folder_alone_when_a_folder_inside_it_is_selected_too()
+        {
+            // Arrange - Races and 2026, inside it, selected by the host, as one location never lists them together
+            using var ctx = new FormaExplorerTests();
+            var folders = CreateFolders();
+            IReadOnlyList<ICatalogItem> selected = [folders[0], folders[1]];
+            var requests = new List<CatalogDropRequest>();
+            var cut = ctx.Render(@<FormaExplorer Items="[]"
+                                                Folders="folders"
+                                                Selected="selected"
+                                                OnDrop="@(req => { requests.Add(req); return Task.CompletedTask; })" />);
+
+            // Act
+            GetFolderRow(cut, "Races").DragStart();
+            await DropOnAsync(cut, GetFolderRow(cut, "Covers"));
+
+            // Assert
+            var request = Assert.Single(requests);
+            Assert.Multiple(
+                () => Assert.Equal(["races"], request.Items.Select(item => item.Key)),
+                () => Assert.Equal("covers", request.TargetFolder?.Key));
         }
     }
 }

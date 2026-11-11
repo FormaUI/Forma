@@ -190,6 +190,18 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`FormaFreezePane`](docs/component-catalog.md#formafreezepane) measures its frozen region again when a frozen part
   moves by a change of its style or class, as a grid's frozen columns do when a selection turns on; it kept the region
   it had measured, so the content came to rest beneath the frozen columns.
+- [`FormaExplorer`](docs/explorer-design.md#the-parts)'s selection holds files and folders together, and `OnDelete`,
+  `OnDrop` and `OnRename` each take files and folders alike. A deletion or a drop is validated whole before it is
+  raised, and refused whole, `OnRejected` naming the item and `CatalogRejectionReason.NotPermitted` where it may not be
+  deleted or moved, or `FolderCycle` where a folder would move into itself or a folder beneath it; a selected folder
+  takes the selected folders beneath it with it. `CatalogDeleteRequest`, `CatalogDropRequest` and
+  `CatalogRenameRequest` are classes a host answers with `Fail()` where it could not carry the request out, which keeps
+  the selection. `OnFolderDelete`, `OnFolderDrop` and `OnFolderRename` are gone with `CatalogFolderDeleteRequest`,
+  `CatalogFolderDropRequest` and `CatalogFolderRenameRequest`: a host handles a folder in `OnDelete`, `OnDrop` or
+  `OnRename`, telling it apart by `ICatalogFolderItem`, and reads `Items` and `TargetFolder` or `Item` and `NewName`
+  where it read `Folder`, `SourceFolder` and `TargetFolder`. `CatalogSelection` holds both kinds, `SelectionLimit`
+  counting them together. Choosing a folder cleared the files selected and the reverse, a drop of a selection skipped
+  the items that couldn't move, and several folders deleted raised one callback each.
 - [`FormaExplorer`](docs/explorer-design.md#the-parts)'s list is the data view's list at its dense step, the names
   flowing into as many columns as the width holds and the page growing downward, an item's actions leading its
   thumbnail and the selection mode's box taking their place; the rows take the focus as the thumbnails do. The list

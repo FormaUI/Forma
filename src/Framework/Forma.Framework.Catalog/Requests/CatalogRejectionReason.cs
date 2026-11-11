@@ -23,4 +23,10 @@ public enum CatalogRejectionReason
 
     /// <summary>The catalog has reached its maximum total size.</summary>
     TotalBytes,
+
+    /// <summary>An item's capabilities, or what the catalog permits for its kind, leave the operation out.</summary>
+    NotPermitted,
+
+    /// <summary>A folder would move into itself or a folder beneath it.</summary>
+    FolderCycle,
 }

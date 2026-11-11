@@ -44,22 +44,10 @@ public sealed class CatalogSelection : ICatalogSelectionView
 
         Invalidate();
 
-        if (item is ICatalogFolderItem)
-        {
-            _items.Clear();
+        // A selection holds folders and other items together, its limit counting both.
+        var items = item is ICatalogFolderItem ? _folderItems : _items;
 
-            if (!_folderItems.Remove(item.Key))
-            {
-                _folderItems[item.Key] = item;
-            }
-
-            return;
-        }
-
-        // A selection holds folders or other items, one kind at a time.
-        _folderItems.Clear();
-
-        if (_items.Remove(item.Key))
+        if (items.Remove(item.Key))
         {
             return;
         }
@@ -67,11 +55,12 @@ public sealed class CatalogSelection : ICatalogSelectionView
         if (SelectionLimit == 1)
         {
             _items.Clear();
-            _items[item.Key] = item;
+            _folderItems.Clear();
+            items[item.Key] = item;
         }
-        else if (SelectionLimit <= 0 || _items.Count < SelectionLimit)
+        else if (SelectionLimit <= 0 || Count < SelectionLimit)
         {
-            _items[item.Key] = item;
+            items[item.Key] = item;
         }
     }
 

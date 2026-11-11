@@ -73,9 +73,13 @@ callback, and an upload goes into the host's `IFileStore`.
 - **Item state.** A hidden item leaves the listing, the provider's items, the tree, the
   breadcrumb menus and every count of what is listed; an invisible one keeps its place
   undrawn; a disabled one is drawn muted, its controls disabled, and cannot be selected.
-- **One kind selected at a time.** Choosing a folder clears selected items and choosing
-  an item clears selected folders, so a selection holds one kind and delete-selected routes
-  to exactly one batch.
+- **Files and folders are selected and acted on together.** A selection holds files and
+  folders alike, and a deletion, a drop and a rename each reach the host as one request of
+  either kind. A deletion or a drop is validated whole before it is raised: every item may
+  be deleted or moved, no folder moves into itself or a folder beneath it, and the
+  destination holds them all; a refusal acts on nothing and says which item it refused and
+  why, and a folder takes the selected folders beneath it with it. A host that could not
+  carry a request out reports its failure, which keeps the selection.
 - **The parts read a view and act through an interaction.** The explorer exposes what its
   parts read and what they may ask as view and interaction pairs named for their subjects,
   location, content, search, selection, item and the sidebar, and configuration as a view alone,
@@ -84,7 +88,7 @@ callback, and an upload goes into the host's `IFileStore`.
   change is reported exactly once.
 - **One confirmation surface.** Rename, delete, delete-selected and create-folder are
   pending actions held one at a time, and the explorer renders one modal per kind of
-  action, so a folder and an item share the rename dialog.
+  action, so a folder and an item share the rename dialog and the delete dialog.
 
 ## The parts
 

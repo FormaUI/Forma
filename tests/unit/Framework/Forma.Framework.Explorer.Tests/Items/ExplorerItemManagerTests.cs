@@ -167,16 +167,36 @@ public sealed class ExplorerItemManagerTests
     }
 
     [Fact]
-    public async Task Should_delete_the_selected_folders_before_the_selected_items()
+    public void Should_ask_one_confirmation_for_every_selected_folder_and_file()
     {
         // Arrange
         var manager = new ExplorerItemManager();
         var folder = CreateFolderItem("/photos");
-        manager.SelectedItems = () => [folder, CreateItem("/media/photo.png")];
-        IReadOnlyList<ICatalogFolderItem>? deleted = null;
-        var itemsDeleted = false;
-        manager.OnFolderDeleteConfirmed = folders => { deleted = folders; return Task.CompletedTask; };
-        manager.OnDeleteConfirmed = _ => { itemsDeleted = true; return Task.CompletedTask; };
+        var item = CreateItem("/media/photo.png");
+        manager.SelectedItems = () => [folder, item];
+        var changes = 0;
+        manager.OnChanged = () => changes++;
+
+        // Act
+        manager.RequestDeleteSelected();
+
+        // Assert
+        var deletion = Assert.IsType<ExplorerBatchAction<ICatalogItem>>(manager.PendingAction);
+        Assert.Multiple(
+            () => Assert.Equal([folder, item], deletion.Targets),
+            () => Assert.Equal(1, changes));
+    }
+
+    [Fact]
+    public async Task Should_delete_the_selected_folders_and_files_together()
+    {
+        // Arrange
+        var manager = new ExplorerItemManager();
+        var folder = CreateFolderItem("/photos");
+        var item = CreateItem("/media/photo.png");
+        manager.SelectedItems = () => [folder, item];
+        var deletions = new List<IReadOnlyList<ICatalogItem>>();
+        manager.OnDeleteConfirmed = items => { deletions.Add(items); return Task.CompletedTask; };
 
         // Act
         manager.RequestDeleteSelected();
@@ -184,8 +204,8 @@ public sealed class ExplorerItemManagerTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Same(folder, Assert.Single(deleted ?? [])),
-            () => Assert.False(itemsDeleted));
+            () => Assert.Equal([folder, item], Assert.Single(deletions)),
+            () => Assert.Null(manager.PendingAction));
     }
 
     [Fact]
@@ -234,31 +254,18 @@ public sealed class ExplorerItemManagerTests
     }
 
     [Fact]
-    public void Should_open_a_folder_delete_when_the_single_item_is_a_folder()
-    {
-        // Arrange
-        var manager = new ExplorerItemManager();
-
-        // Act
-        manager.RequestDelete(CreateFolderItem("/photos"));
-
-        // Assert
-        var deletion = Assert.IsType<ExplorerBatchAction<ICatalogFolderItem>>(manager.PendingAction);
-        Assert.Single(deletion.Targets);
-    }
-
-    [Fact]
     public void Should_open_a_pending_delete_for_a_single_folder()
     {
         // Arrange
         var manager = new ExplorerItemManager();
+        var folder = CreateFolderItem("/photos");
 
         // Act
-        manager.RequestFolderDelete(CreateFolderItem("/photos"));
+        manager.RequestDelete(folder);
 
         // Assert
-        var deletion = Assert.IsType<ExplorerBatchAction<ICatalogFolderItem>>(manager.PendingAction);
-        Assert.Single(deletion.Targets);
+        var deletion = Assert.IsType<ExplorerBatchAction<ICatalogItem>>(manager.PendingAction);
+        Assert.Same(folder, Assert.Single(deletion.Targets));
     }
 
     [Fact]
@@ -372,16 +379,20 @@ public sealed class ExplorerItemManagerTests
     }
 
     [Fact]
-    public async Task Should_refuse_a_drop_of_an_item_that_cannot_move()
+    public async Task Should_refuse_a_drop_of_an_item_that_cannot_move_and_name_it()
     {
         // Arrange
         var manager = new ExplorerItemManager();
+        var item = CreateItem("/media/photo.png", CatalogItemCapabilities.Drag);
+        (ICatalogItem Item, CatalogItemCapabilities Capability)? refused = null;
+        manager.OnRefused = (refusedItem, capability) => refused = (refusedItem, capability);
 
         // Act
-        var dropped = await TryDropAsync(manager, CreateItem("/media/photo.png", CatalogItemCapabilities.Drag), CreateFolderItem("/photos"));
+        var dropped = await TryDropAsync(manager, item, CreateFolderItem("/photos"));
 
         // Assert
         Assert.False(dropped);
+        Assert.Equal((item, CatalogItemCapabilities.Move), refused);
     }
 
     [Fact]
@@ -456,33 +467,46 @@ public sealed class ExplorerItemManagerTests
     {
         // Arrange
         var manager = new ExplorerItemManager();
+        var item = CreateItem("/media/photo.png", CatalogItemCapabilities.Rename);
+        var folder = CreateFolderItem("/photos", CatalogItemCapabilities.Rename);
+        var refusals = new List<(ICatalogItem Item, CatalogItemCapabilities Capability)>();
+        manager.OnRefused = (refused, capability) => refusals.Add((refused, capability));
 
         // Act
-        manager.RequestDelete(CreateItem("/media/photo.png", CatalogItemCapabilities.Rename));
+        manager.RequestDelete(item);
         var itemPending = manager.PendingAction;
-        manager.RequestFolderDelete(CreateFolderItem("/photos", CatalogItemCapabilities.Rename));
+        manager.RequestDelete(folder);
         var folderPending = manager.PendingAction;
 
         // Assert
         Assert.Multiple(
             () => Assert.Null(itemPending),
-            () => Assert.Null(folderPending));
+            () => Assert.Null(folderPending),
+            () => Assert.Equal([(item, CatalogItemCapabilities.Delete), (folder, CatalogItemCapabilities.Delete)], refusals));
     }
 
     [Fact]
-    public void Should_delete_only_the_selected_items_that_can_be_deleted()
+    public void Should_refuse_the_whole_selection_when_one_item_cannot_be_deleted()
     {
         // Arrange
         var manager = new ExplorerItemManager();
-        var deletable = CreateItem("/media/photo.png");
-        manager.SelectedItems = () => [deletable, CreateItem("/media/fixed.png", CatalogItemCapabilities.Rename)];
+        var undeletable = CreateItem("/media/fixed.png", CatalogItemCapabilities.Rename);
+        manager.SelectedItems = () => [CreateFolderItem("/photos"), CreateItem("/media/photo.png"), undeletable];
+        var refusals = new List<(ICatalogItem Item, CatalogItemCapabilities Capability)>();
+        manager.OnRefused = (refused, capability) => refusals.Add((refused, capability));
+        var changes = 0;
+        manager.OnChanged = () => changes++;
 
         // Act
         manager.RequestDeleteSelected();
 
         // Assert
-        var deletion = Assert.IsType<ExplorerBatchAction<ICatalogItem>>(manager.PendingAction);
-        Assert.Same(deletable, Assert.Single(deletion.Targets));
+        var (item, capability) = Assert.Single(refusals);
+        Assert.Multiple(
+            () => Assert.Same(undeletable, item),
+            () => Assert.Equal(CatalogItemCapabilities.Delete, capability),
+            () => Assert.Null(manager.PendingAction),
+            () => Assert.Equal(0, changes));
     }
 
     [Fact]

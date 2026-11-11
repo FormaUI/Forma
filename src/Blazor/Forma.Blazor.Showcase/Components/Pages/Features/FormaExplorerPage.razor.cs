@@ -303,28 +303,50 @@ public sealed partial class FormaExplorerPage
 
     private Task HandleDeleteAsync(string key, CatalogDeleteRequest request)
     {
-        _mediaStore.Remove(GetResources(request.Items));
+        foreach (var folder in request.Items.OfType<ICatalogFolderItem>())
+        {
+            _sampleFolders.RemoveAll(sample => sample.Source == folder.Key);
+            _mediaStore.RemoveFolder(folder.Key);
+
+            foreach (var demo in _currentFolderSources.Where(pair => pair.Value == folder.Key).Select(pair => pair.Key).ToList())
+            {
+                _currentFolderSources[demo] = null;
+            }
+        }
+
+        _mediaStore.Remove(GetFileResources(request.Items));
         SyncFromStore();
-        LogAction(key, L["Deleted {Count} item(s)", request.Items.Count]);
+        LogAction(key, request.Items is [ICatalogFolderItem removed] ? L["Deleted folder \"{Name}\"", removed.Name] : L["Deleted {Count} item(s)", request.Items.Count]);
 
         return Task.CompletedTask;
     }
 
     private Task HandleDropAsync(string key, CatalogDropRequest request)
     {
-        var count = request.Items.Count;
         var folderName = GetFolderName(request.TargetFolder);
 
-        _mediaStore.Move(GetResources(request.Items), request.TargetFolder?.Key);
+        foreach (var folder in request.Items.OfType<ICatalogFolderItem>())
+        {
+            var index = _sampleFolders.FindIndex(sample => sample.Source == folder.Key);
+
+            if (index >= 0)
+            {
+                _sampleFolders[index] = _sampleFolders[index] with { Parent = request.TargetFolder?.Key };
+            }
+        }
+
+        _mediaStore.Move(GetFileResources(request.Items), request.TargetFolder?.Key);
         SyncFromStore();
-        LogAction(key, L["Moved {Count} item(s) to \"{Folder}\"", count, folderName]);
+        LogAction(key, request.Items is [ICatalogFolderItem moved]
+            ? L["Moved folder \"{Source}\" into \"{Target}\"", moved.Name, folderName]
+            : L["Moved {Count} item(s) to \"{Folder}\"", request.Items.Count, folderName]);
 
         return Task.CompletedTask;
     }
 
-    /// <summary>The resources behind the items.</summary>
-    private static List<ResourceInfo> GetResources(IEnumerable<ICatalogItem> items)
-        => [.. items.Select(item => item.Resource).OfType<ResourceInfo>()];
+    /// <summary>The resources behind the items that are files.</summary>
+    private static List<ResourceInfo> GetFileResources(IEnumerable<ICatalogItem> items)
+        => [.. items.Where(item => item is not ICatalogFolderItem).Select(item => item.Resource).OfType<ResourceInfo>()];
 
     private string GetFolderName(ICatalogFolderItem? folder)
         => folder?.Name ?? L["All media"].Value;
@@ -342,55 +364,23 @@ public sealed partial class FormaExplorerPage
         return Task.CompletedTask;
     }
 
-    private Task HandleFolderDeleteAsync(string key, CatalogFolderDeleteRequest request)
-    {
-        var removed = request.Folder;
-        _sampleFolders.RemoveAll(folder => folder.Source == removed.Key);
-        _mediaStore.RemoveFolder(removed.Key);
-        SyncFromStore();
-
-        foreach (var demo in _currentFolderSources.Where(pair => pair.Value == removed.Key).Select(pair => pair.Key).ToList())
-        {
-            _currentFolderSources[demo] = null;
-        }
-
-        LogAction(key, L["Deleted folder \"{Name}\"", removed.Name]);
-
-        return Task.CompletedTask;
-    }
-
-    private Task HandleFolderDropAsync(string key, CatalogFolderDropRequest request)
-    {
-        var index = _sampleFolders.FindIndex(folder => folder.Source == request.SourceFolder.Key);
-
-        if (index >= 0)
-        {
-            _sampleFolders[index] = _sampleFolders[index] with { Parent = request.TargetFolder?.Key };
-        }
-
-        SyncFromStore();
-        LogAction(key, L["Moved folder \"{Source}\" into \"{Target}\"", request.SourceFolder.Name, GetFolderName(request.TargetFolder)]);
-
-        return Task.CompletedTask;
-    }
-
-    private Task HandleFolderRenameAsync(string key, CatalogFolderRenameRequest request)
-    {
-        var index = _sampleFolders.FindIndex(folder => folder.Source == request.Folder.Key);
-
-        if (index >= 0)
-        {
-            _sampleFolders[index] = _sampleFolders[index] with { Name = request.NewName };
-        }
-
-        SyncFromStore();
-        LogAction(key, L["Renamed folder \"{OldName}\" to \"{NewName}\"", request.Folder.Name, request.NewName]);
-
-        return Task.CompletedTask;
-    }
-
     private Task HandleRenameAsync(string key, CatalogRenameRequest request)
     {
+        if (request.Item is ICatalogFolderItem folder)
+        {
+            var index = _sampleFolders.FindIndex(sample => sample.Source == folder.Key);
+
+            if (index >= 0)
+            {
+                _sampleFolders[index] = _sampleFolders[index] with { Name = request.NewName };
+            }
+
+            SyncFromStore();
+            LogAction(key, L["Renamed folder \"{OldName}\" to \"{NewName}\"", folder.Name, request.NewName]);
+
+            return Task.CompletedTask;
+        }
+
         if (request.Item.Resource is { } resource)
         {
             _mediaStore.Rename(resource, request.NewName);

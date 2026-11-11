@@ -152,20 +152,19 @@ writes:
 ## Callbacks
 
 Every callback carries the items the host supplied. The host carries the request out and supplies
-the items again.
+the items again. A deletion, a drop and a rename take files and folders alike, a folder told apart
+by `ICatalogFolderItem`, and a host that could not carry one out calls its `Fail()`, which keeps the
+selection as it was.
 
 | Callback | Carries | Raised when |
 | --- | --- | --- |
 | `OnFolderChanged` | `ICatalogFolderItem?` | The reader navigates; null is the root. The host sets `CurrentFolder` to it. |
-| `OnRename` | `CatalogRenameRequest` | An item rename is confirmed. |
-| `OnDelete` | `CatalogDeleteRequest` | A deletion of one item or the selection is confirmed. |
-| `OnDrop` | `CatalogDropRequest` | Items land on a folder, or on the root. |
+| `OnRename` | `CatalogRenameRequest` | A rename of a file or a folder is confirmed. |
+| `OnDelete` | `CatalogDeleteRequest` | A deletion of one item or the selection, files and folders together, is confirmed. |
+| `OnDrop` | `CatalogDropRequest` | Items, files and folders together, land on a folder, or on the root. |
 | `OnFolderCreate` | `CatalogFolderCreateRequest` | A new folder is confirmed. |
-| `OnFolderRename` | `CatalogFolderRenameRequest` | A folder rename is confirmed. |
-| `OnFolderDelete` | `CatalogFolderDeleteRequest` | A folder deletion is confirmed. |
-| `OnFolderDrop` | `CatalogFolderDropRequest` | A folder lands on another, or on the root. |
 | `OnUploaded` | `IReadOnlyList<ResourceInfo>` | The store has taken the uploaded files. |
-| `OnRejected` | `CatalogRejection` | A constraint refused an upload, a folder or a drop. |
+| `OnRejected` | `CatalogRejection` | A constraint refused an upload, a folder or a drop, or an item may not be deleted or moved. |
 | `OnRefresh` | — | The refresh action is pressed. |
 | `SelectedChanged` | `IReadOnlyList<ICatalogItem>` | The selection changes; `@bind-Selected` pairs it with `Selected`. |
 | `OnPageChanged` | `int` | The page changes; pairs with `CurrentPage`. |

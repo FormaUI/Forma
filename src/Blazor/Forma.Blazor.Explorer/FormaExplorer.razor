@@ -96,7 +96,7 @@
                                      Folders="Folders"
                                      FolderTree="FolderTree"
                                      TotalCount="ListedItemCount"
-                                     OnFolderDelete="_itemManager.RequestFolderDelete"
+                                     OnFolderDelete="_itemManager.RequestDelete"
                                      OnFolderCreate="OpenFolderDialogAsync" />
             </FormaBackdrop>
 
@@ -170,7 +170,7 @@
     {
         <FormaDialog Opened="true"
                     Size="DialogSize.Small"
-                    Title="@L["Delete Media"]"
+                    Title="@DeleteDialogTitle"
                     Options="DialogOptions"
                     OnClose="_itemManager.CancelAction">
             <Body>
@@ -218,27 +218,6 @@
         </CascadingValue>
     }
 
-    <!-- Delete Folder Dialog -->
-    @if (_itemManager.PendingAction is ExplorerBatchAction<ICatalogFolderItem>)
-    {
-        <FormaDialog Opened="true"
-                    Size="DialogSize.Small"
-                    Title="@L["Delete Folder"]"
-                    Options="DialogOptions"
-                    OnClose="_itemManager.CancelAction">
-            <Body>
-                <p class="forma-explorer-delete-message">@FolderDeleteConfirmMessage</p>
-            </Body>
-            <Footer>
-                <FormaButton Variant="ButtonVariant.Secondary" OnClick="_itemManager.CancelAction">
-                    @L["Cancel"]
-                </FormaButton>
-                <FormaButton Variant="ButtonVariant.Danger" OnClick="_itemManager.ConfirmActionAsync">
-                    @L["Delete"]
-                </FormaButton>
-            </Footer>
-        </FormaDialog>
-    }
 </div>
 </CascadingValue>
 </CascadingValue>
