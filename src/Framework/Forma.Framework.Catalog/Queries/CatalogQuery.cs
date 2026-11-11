@@ -30,7 +30,7 @@ public readonly record struct CatalogQuery(
     /// <summary>The groups the items gather into, which order them before the sort does.</summary>
     public CatalogGrouping? Grouping { get; init; }
 
-    /// <summary>Whether the page is to say how many items each group of <see cref="Grouping"/> holds across the whole query, in <see cref="CatalogPage.GroupSizes"/>.</summary>
+    /// <summary>Whether the page is to say how many listed items each group of <see cref="Grouping"/> holds across the whole query, in <see cref="CatalogPage.GroupSizes"/>.</summary>
     public bool IncludesGroupSizes { get; init; }
 
     /// <summary>Whether the query asks for items of <paramref name="kind"/>.</summary>

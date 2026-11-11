@@ -149,8 +149,9 @@ with a range of characters, `CatalogSizeGroup` and `CatalogDateGroup` for a rang
 instants, `CatalogKindGroup` for one kind, `CatalogMissingGroup` for the items holding no size or no
 date, and `CatalogRemainderGroup` for whatever the others leave. An item falls in the first group that
 admits it, and items stand in their groups' order, then the sort's, then their keys'. A query with
-`IncludesGroupSizes` asks the page for how many items each group holds across the whole query, in
-`GroupSizes`; `CatalogGrouping.CountGroups` counts them for a provider that holds its items.
+`IncludesGroupSizes` asks the page for how many items each group lists across the whole query,
+leaving hidden items out, in `GroupSizes`; `CatalogGrouping.CountGroups` counts them for a provider
+that holds its items.
 
 `CatalogResourceFilter.Parse` reads an accepted-kinds pattern, `globs:*.jpg;*.pdf` or
 `contentType:image;video`, and its `Accepts` answers for one resource. A glob names files; a content
