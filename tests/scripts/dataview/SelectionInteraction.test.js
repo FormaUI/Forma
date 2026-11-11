@@ -480,6 +480,12 @@ describe('SelectionInteraction', () => {
             selected().not.toHaveBeenCalled();
         });
 
+        it('writes a tab index on every item, so a press can land the focus on any of them', () => {
+            attachSelection(list, options());
+
+            expect([1, 2, 3].map(key => itemOf(key).getAttribute('tabindex'))).toEqual(['0', '-1', '-1']);
+        });
+
         it('activates the item pressed and the item Enter is pressed on', () => {
             attachSelection(list, options());
 
@@ -500,6 +506,33 @@ describe('SelectionInteraction', () => {
             const box = itemOf(2).querySelector('input');
             expect(document.activeElement).toBe(box);
             expect(box.tabIndex).toBe(0);
+        });
+
+        it('takes every item out of the Tab sequence once the items draw boxes in their place, the tab stop on the box of its item', async () => {
+            attachSelection(list, options());
+            itemOf(1).focus();
+            press(itemOf(1), 'ArrowDown');
+            document.body.focus();
+
+            [1, 2, 3].forEach(key => {
+                itemOf(key).removeAttribute('data-row-key');
+                itemOf(key).insertAdjacentHTML('afterbegin', `<input type="checkbox" data-row-key="${key}" />`);
+            });
+            await settle();
+
+            expect([1, 2, 3].map(key => itemOf(key).hasAttribute('tabindex'))).toEqual([false, false, false]);
+            expect([1, 2, 3].map(key => itemOf(key).querySelector('input').tabIndex)).toEqual([-1, 0, -1]);
+        });
+
+        it('gives the items back the tab index they had once it lets them go', () => {
+            itemOf(3).setAttribute('tabindex', '-1');
+            const handle = attachSelection(list, options());
+            itemOf(1).focus();
+            press(itemOf(1), 'ArrowDown');
+
+            handle.dispose();
+
+            expect([1, 2, 3].map(key => itemOf(key).getAttribute('tabindex'))).toEqual([null, null, '-1']);
         });
 
         it('takes the focus back onto the item once the box holding it goes and the item is its own marker again', async () => {
@@ -533,10 +566,20 @@ describe('SelectionInteraction', () => {
             attachSelection(list, options({ checksOnPress: true }));
 
             click(itemOf(2).querySelector('.name'));
+            const focused = document.activeElement;
             press(itemOf(3).querySelector('input'), 'Enter');
 
             expect(checked).toEqual([2]);
+            expect(focused).toBe(itemOf(2).querySelector('input'));
             expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 3]]);
+        });
+
+        it('activates the item a press lands on where a press checks but the item draws no box', () => {
+            attachSelection(list, options({ checksOnPress: true }));
+
+            click(itemOf(2).querySelector('.name'));
+
+            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 2]]);
         });
 
         it('turns a press from activating to checking and back without attaching again', () => {

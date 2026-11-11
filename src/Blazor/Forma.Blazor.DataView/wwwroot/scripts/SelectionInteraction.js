@@ -205,6 +205,7 @@ class SelectionInteraction {
     #actionsSelector;
     #gathersControls;
     #gathered = new Map();
+    #indexed = new Map();
     #actionsReturn = null;
     #suppressesContextMenu = false;
 
@@ -379,6 +380,7 @@ class SelectionInteraction {
         this.#listening.abort();
         this.#registration.dispose();
         this.#releaseControls();
+        this.#releaseMarkers([]);
     }
 
     /**
@@ -469,14 +471,19 @@ class SelectionInteraction {
         tell(this.#owner, 'HandleActivateAsync', token);
     }
 
-    // A press checks or unchecks the box of the item it lands on, as a press on the box itself does.
+    // A press checks or unchecks the box the item it lands on draws, as a press on the box itself does, the focus landing on the box so
+    // the keys carry on from the item the pointer chose; an item that draws no box is activated.
     #check(event) {
         const item = this.#pressedItem(event);
-        const box = item ? this.#markerIn(item) : null;
+        const box = this.#markerIn(item);
 
-        if (box && box !== item) {
-            box.click();
+        if (!box || box === item) {
+            this.#activate(event);
+            return;
         }
+
+        this.#focusMarker(box, this.#markers());
+        box.click();
     }
 
     // The marker holding the focus can stop being one while its item stays; the focus moves to the marker the item draws now.
@@ -526,9 +533,10 @@ class SelectionInteraction {
 
     #focusMarker(marker, all) {
         this.#tabStop = marker;
+        this.#releaseMarkers(all);
 
         for (const candidate of all) {
-            candidate.tabIndex = candidate === marker ? 0 : -1;
+            this.#setMarkerTabIndex(candidate, candidate === marker ? 0 : -1);
         }
 
         marker.focus();
@@ -540,12 +548,36 @@ class SelectionInteraction {
         const all = this.#markers();
         const last = this.#tabStop?.isConnected && this.#target.contains(this.#tabStop) ? this.#tabStop : null;
         const stop = (last && (all.includes(last) ? last : this.#markerIn(last))) ?? all[0];
+        this.#releaseMarkers(all);
 
         for (const marker of all) {
-            const tabIndex = marker === stop ? 0 : -1;
+            this.#setMarkerTabIndex(marker, marker === stop ? 0 : -1);
+        }
+    }
 
-            if (marker.tabIndex !== tabIndex) {
-                marker.tabIndex = tabIndex;
+    // A marker's place in the Tab sequence, written on it so an element that takes no focus of its own takes a press's, the tab index it
+    // had kept to return to once it stops being a marker.
+    #setMarkerTabIndex(marker, tabIndex) {
+        if (!this.#indexed.has(marker)) {
+            this.#indexed.set(marker, marker.getAttribute('tabindex'));
+        }
+
+        if (marker.getAttribute('tabindex') !== `${tabIndex}`) {
+            marker.tabIndex = tabIndex;
+        }
+    }
+
+    // An element no longer among the markers, an item that drew a box in its place above all, takes back the tab index it had, so it
+    // leaves the Tab sequence it stood in as a marker.
+    #releaseMarkers(all) {
+        const markers = new Set(all);
+
+        for (const [element, tabIndex] of this.#indexed) {
+            if (!element.isConnected) {
+                this.#indexed.delete(element);
+            } else if (!markers.has(element)) {
+                this.#indexed.delete(element);
+                this.#restoreTabIndex(element, tabIndex);
             }
         }
     }

@@ -171,10 +171,32 @@
             // Act
             cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.EnableCheckedSelection, true));
 
-            // Assert — the boxes carry the key now, the cards no longer, and the script, attached once, now checks on a press
+            // Assert — the boxes carry the key now, the cards no longer, and the script, attached once to check the box an item draws on a
+            // press, is told nothing as the boxes come
+            var attach = Assert.Single(selection.Invocations, invocation => invocation.Identifier == "attach");
             Assert.Multiple(
                 () => Assert.All(cut.FindAll(".forma-data-card"), card => Assert.Null(card.GetAttribute("data-row-key"))),
                 () => Assert.Equal(3, cut.FindAll(".forma-data-card [data-row-key]").Count),
+                () => Assert.Equal(true, InteropPayload.GetValue(attach.Arguments[1]!, "checksOnPress")),
+                () => Assert.DoesNotContain(selection.Invocations, invocation => invocation.Identifier == "setChecksOnPress"));
+        }
+
+        [Fact]
+        public void Should_tell_the_attached_script_once_the_host_has_a_press_check()
+        {
+            // Arrange — the boxes drawn, a press activating
+            using var ctx = new FormaDataViewTests();
+            var selection = SetUpSelection(ctx);
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+
+            // Act
+            cut.FindComponent<FormaDataView<Product>>().Render(parameters => parameters.Add(view => view.CheckedSelectionOptions, new CheckedSelectionOptions { ChecksOnPress = true }));
+
+            // Assert
+            Assert.Multiple(
                 () => Assert.Single(selection.Invocations, invocation => invocation.Identifier == "attach"),
                 () => Assert.Equal([true], selection.Invocations.Where(invocation => invocation.Identifier == "setChecksOnPress").Select(invocation => invocation.Arguments[0])));
         }

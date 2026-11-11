@@ -503,9 +503,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     public bool FocusesItems
         => EnableItemFocus && !EnableItemSelection && !EnableCheckedSelection;
 
-    // Under checked selection alone a press can check the item's box rather than activate the item.
+    // Where an item draws a box, under checked selection alone, a press can check it rather than activate the item; the behavior reads
+    // whether the item pressed draws one, so a selection turning on or off changes nothing it holds.
     private bool ChecksOnPress
-        => EnableCheckedSelection && !EnableItemSelection && CheckedSelectionOptions.ChecksOnPress;
+        => !EnableItemSelection && CheckedSelectionOptions.ChecksOnPress;
 
     // Selecting the page adds what is not yet selected on it to what is selected, on this page or another.
     private bool CanSelectPage

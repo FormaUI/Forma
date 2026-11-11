@@ -640,9 +640,11 @@ public sealed class DataViewTests
             await WaitForFocusedItemAsync(page, "Row 3");
             await Assertions.Expect(selected).ToHaveTextAsync("0");
 
-            // Act — the selection mode on, the focus staying on the third item's box, then the fourth's checked from the keyboard and opened
+            // Act — the selection mode on, the focus staying on the third item's box and the items leaving the Tab sequence to their boxes,
+            // then the fourth's checked from the keyboard and opened
             await page.Locator($"#select-{view}").ClickAsync();
             await Assertions.Expect(items.Nth(2).Locator("input[type=checkbox]")).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator($"#{view} [data-item-root][tabindex]")).ToHaveCountAsync(0);
             await page.Keyboard.PressAsync(next);
             await WaitForFocusedItemAsync(page, "Row 4");
             await page.Keyboard.PressAsync("Space");
