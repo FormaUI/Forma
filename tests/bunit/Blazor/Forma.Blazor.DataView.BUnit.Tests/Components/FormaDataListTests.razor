@@ -117,7 +117,7 @@
         }
 
         [Fact]
-        public void Should_draw_a_box_per_row_under_checked_selection_and_select_through_it()
+        public async Task Should_draw_a_box_per_row_under_checked_selection_and_select_through_it()
         {
             // Arrange
             using var ctx = new FormaDataListTests();
@@ -129,7 +129,7 @@
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
 
             // Act
-            cut.FindAll("input[type=checkbox]")[2].Click();
+            await cut.FindAll("input[type=checkbox]")[2].ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-data-list-item-marker"));

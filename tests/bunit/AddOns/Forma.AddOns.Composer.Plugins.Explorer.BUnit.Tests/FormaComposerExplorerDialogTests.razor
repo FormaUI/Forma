@@ -8,14 +8,15 @@
 @using Forma.Blazor.Components.Composer.RichTextEditor
 @using Forma.Blazor.Components.Explorer
 @using Forma.Framework.Composer.Plugins
+@using Microsoft.AspNetCore.Components.Web
 
 @code {
-    // Chooses the file the card showing the name stands for, by the box the explorer's selection draws on it.
-    private static void Choose(IRenderedComponent<ContainerFragment> cut, string name)
+    // Chooses the file the card showing the name stands for, by the box the explorer's selection draws on it, once the click has ended.
+    private static Task ChooseAsync(IRenderedComponent<ContainerFragment> cut, string name)
         => cut.FindAll(".forma-data-card")
             .Single(card => card.QuerySelector(".forma-data-card-name")?.TextContent == name)
             .QuerySelector("input[type=checkbox]")!
-            .Click();
+            .ClickAsync(new MouseEventArgs());
 
     public sealed class Component
     {
@@ -164,7 +165,7 @@
             using var ctx = new FormaComposerExplorerDialogTests();
             ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture));
             var cut = ctx.Render(@<FormaComposerExplorerDialog />);
-            Choose(cut, "podium.png");
+            await ChooseAsync(cut, "podium.png");
 
             // Act
             var insertion = await ConfirmAsync(cut);
@@ -185,7 +186,7 @@
             ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Clip));
             var options = new ExplorerPluginOptions { InsertMode = MediaInsertMode.Both };
             var cut = ctx.Render(@<FormaComposerExplorerDialog Options="options" />);
-            Choose(cut, "finish.mp4");
+            await ChooseAsync(cut, "finish.mp4");
 
             // Act
             var insertion = await ConfirmAsync(cut);
@@ -206,7 +207,7 @@
             ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Report));
             var options = new ExplorerPluginOptions { InsertMode = MediaInsertMode.Embed };
             var cut = ctx.Render(@<FormaComposerExplorerDialog Options="options" />);
-            Choose(cut, "report.pdf");
+            await ChooseAsync(cut, "report.pdf");
 
             // Act
             var insertion = await ConfirmAsync(cut);
@@ -284,7 +285,7 @@
         }
 
         [Fact]
-        public void Should_insert_the_chosen_file_into_the_editor_and_close()
+        public async Task Should_insert_the_chosen_file_into_the_editor_and_close()
         {
             // Arrange
             using var ctx = new FormaComposerExplorerDialogTests();
@@ -297,7 +298,7 @@
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-dialog-form .forma-explorer")));
 
             // Act
-            Choose(cut, "podium.png");
+            await ChooseAsync(cut, "podium.png");
             cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
 
             // Assert

@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Microsoft.AspNetCore.Components.Web
 @code {
     public sealed class Component
     {
@@ -154,6 +155,24 @@
 
             // Assert
             Assert.True(cut.Find(".forma-checkbox").HasAttribute("blazor:onclick:preventdefault"));
+        }
+
+        [Fact]
+        public async Task Should_hand_a_prevented_click_to_its_caller_once_the_click_ends()
+        {
+            // Arrange
+            using var ctx = new FormaCheckBoxTests();
+            var model = new FakeModel();
+            var clicks = 0;
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox Value="model.Toggle" ValueExpression="() => model.Toggle" PreventDefault="true" OnClick="() => clicks++" />
+            </FakeFormHost>);
+
+            // Act
+            await cut.Find(".forma-checkbox").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal(1, clicks);
         }
 
         [Fact]

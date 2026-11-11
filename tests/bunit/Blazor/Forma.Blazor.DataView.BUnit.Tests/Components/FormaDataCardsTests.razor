@@ -127,7 +127,7 @@
         }
 
         [Fact]
-        public void Should_draw_a_box_per_card_under_checked_selection_and_select_through_it()
+        public async Task Should_draw_a_box_per_card_under_checked_selection_and_select_through_it()
         {
             // Arrange
             using var ctx = new FormaDataCardsTests();
@@ -139,7 +139,7 @@
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
 
             // Act
-            cut.FindAll("input.forma-data-card-box")[0].Click();
+            await cut.FindAll("input.forma-data-card-box")[0].ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(1, Assert.Single(changedTo!).Id);

@@ -34,10 +34,10 @@
     private static bool IsBoxChecked(AngleSharp.Dom.IElement card)
         => card.QuerySelector("input[type=checkbox]")?.HasAttribute("checked") == true;
 
-    // Clicks the box on the card showing the name, which checks it or clears it.
-    private static void ToggleBox<TComponent>(Bunit.IRenderedComponent<TComponent> cut, string name)
+    // Clicks the box on the card showing the name, which checks it or clears it once the click has ended.
+    private static Task ToggleBoxAsync<TComponent>(Bunit.IRenderedComponent<TComponent> cut, string name)
         where TComponent : Microsoft.AspNetCore.Components.IComponent
-        => GetBox(ItemNamed(cut, name)).Click();
+        => GetBox(ItemNamed(cut, name)).ClickAsync(new MouseEventArgs());
 
     // Presses the card showing the name, as the selection behavior reports a press by the token the card carries.
     private static Task PressCardAsync<TComponent>(Bunit.IRenderedComponent<TComponent> cut, string name)
@@ -565,7 +565,7 @@
         }
 
         [Fact]
-        public void Should_toggle_selection_and_support_single_selection()
+        public async Task Should_toggle_selection_and_support_single_selection()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -581,8 +581,8 @@
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "item1.jpg");
-            ToggleBox(cut, "item2.jpg");
+            await ToggleBoxAsync(cut, "item1.jpg");
+            await ToggleBoxAsync(cut, "item2.jpg");
 
             // Assert
             Assert.NotNull(selected);
@@ -590,7 +590,7 @@
         }
 
         [Fact]
-        public void Should_replace_the_toolbar_with_the_selection_bar_while_items_are_selected()
+        public async Task Should_replace_the_toolbar_with_the_selection_bar_while_items_are_selected()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -604,7 +604,7 @@
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            ToggleBox(cut, "item1.jpg");
+            await ToggleBoxAsync(cut, "item1.jpg");
 
             // Assert
             Assert.NotNull(applied);
@@ -965,7 +965,7 @@
         }
 
         [Fact]
-        public void Should_hide_toolbar_delete_for_selection_when_options_disallow_delete()
+        public async Task Should_hide_toolbar_delete_for_selection_when_options_disallow_delete()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -975,7 +975,7 @@
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "cover.jpg");
+            await ToggleBoxAsync(cut, "cover.jpg");
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-selection-bar"));
@@ -1133,7 +1133,7 @@
             // Act
             await PressCardAsync(cut, "locked.jpg");
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "locked.jpg");
+            await ToggleBoxAsync(cut, "locked.jpg");
 
             // Assert
             Assert.Multiple(
@@ -1214,8 +1214,8 @@
                                                 Folders="@(CatalogItem.ForAll([folder]))"
                                                 OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "a.jpg");
-            ToggleBox(cut, "b.jpg");
+            await ToggleBoxAsync(cut, "a.jpg");
+            await ToggleBoxAsync(cut, "b.jpg");
 
             // Act
             ItemNamed(cut, "a.jpg").DragStart();
@@ -1227,7 +1227,7 @@
         }
 
         [Fact]
-        public void Should_hide_the_selection_delete_when_nothing_selected_can_be_deleted()
+        public async Task Should_hide_the_selection_delete_when_nothing_selected_can_be_deleted()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1245,7 +1245,7 @@
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "fixed.jpg");
+            await ToggleBoxAsync(cut, "fixed.jpg");
 
             // Assert
             Assert.Multiple(
@@ -1945,14 +1945,14 @@
         }
 
         [Fact]
-        public void Should_clear_selection_when_select_mode_is_left()
+        public async Task Should_clear_selection_when_select_mode_is_left()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "cover.jpg");
+            await ToggleBoxAsync(cut, "cover.jpg");
             Assert.NotNull(cut.Find(".forma-explorer-selection-bar"));
 
             // Act
@@ -1964,15 +1964,15 @@
         }
 
         [Fact]
-        public void Should_clear_every_box_the_selection_bar_clears_the_selection_of()
+        public async Task Should_clear_every_box_the_selection_bar_clears_the_selection_of()
         {
             // Arrange — two cards checked in the selection mode
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg"), new ImageResourceInfo("https://example.com/banner.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "cover.jpg");
-            ToggleBox(cut, "banner.jpg");
+            await ToggleBoxAsync(cut, "cover.jpg");
+            await ToggleBoxAsync(cut, "banner.jpg");
             Assert.True(IsBoxChecked(ItemNamed(cut, "banner.jpg")));
 
             // Act
@@ -2008,7 +2008,7 @@
             Assert.Equal("true", cut.Find(".forma-breadcrumb-chevron").GetAttribute("aria-expanded"));
         }
         [Fact]
-        public void Should_switch_the_selection_to_a_folder_chosen_over_media()
+        public async Task Should_switch_the_selection_to_a_folder_chosen_over_media()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2016,11 +2016,11 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="@(CatalogItem.ForAll([folder]))" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "cover.jpg");
+            await ToggleBoxAsync(cut, "cover.jpg");
             Assert.True(IsBoxChecked(ItemNamed(cut, "cover.jpg")));
 
             // Act
-            ToggleBox(cut, "Races");
+            await ToggleBoxAsync(cut, "Races");
 
             // Assert
             Assert.False(IsBoxChecked(ItemNamed(cut, "cover.jpg")));
@@ -2047,7 +2047,7 @@
         }
 
         [Fact]
-        public void Should_keep_the_selection_and_the_history_while_a_sidebar_branch_closes_and_opens()
+        public async Task Should_keep_the_selection_and_the_history_while_a_sidebar_branch_closes_and_opens()
         {
             // Arrange — two files selected at the top level, Races open in the sidebar over 2026
             using var ctx = new FormaExplorerTests();
@@ -2056,8 +2056,8 @@
             var moves = 0;
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="folders" OnFolderChanged="@(_ => moves++)" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "a.jpg");
-            ToggleBox(cut, "b.jpg");
+            await ToggleBoxAsync(cut, "a.jpg");
+            await ToggleBoxAsync(cut, "b.jpg");
             Assert.Contains("2026", GetFolderNames(cut));
 
             // Act — the branch closed from its row, then opened again
@@ -2086,7 +2086,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="folders" CurrentFolder="races" OnFolderChanged="@(_ => moves++)" />);
             var explorer = cut.FindComponent<FormaExplorer>();
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "race.jpg");
+            await ToggleBoxAsync(cut, "race.jpg");
             var splitter = cut.FindComponents<FormaSplitter>().Single(component => component.Find("[role=separator]").ClassList.Contains("forma-explorer-splitter"));
 
             // Act — the sidebar widened, hidden, then shown again
@@ -2104,7 +2104,7 @@
         }
 
         [Fact]
-        public void Should_switch_the_selection_to_media_chosen_over_a_folder()
+        public async Task Should_switch_the_selection_to_media_chosen_over_a_folder()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2112,11 +2112,11 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="@(CatalogItem.ForAll([folder]))" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "Races");
+            await ToggleBoxAsync(cut, "Races");
             Assert.True(IsBoxChecked(ItemNamed(cut, "Races")));
 
             // Act
-            ToggleBox(cut, "cover.jpg");
+            await ToggleBoxAsync(cut, "cover.jpg");
 
             // Assert
             Assert.False(IsBoxChecked(ItemNamed(cut, "Races")));
@@ -2125,7 +2125,7 @@
         }
 
         [Fact]
-        public void Should_delete_the_selected_folders_from_the_selection_bar()
+        public async Task Should_delete_the_selected_folders_from_the_selection_bar()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2135,7 +2135,7 @@
                                                 Folders="@(CatalogItem.ForAll([folder]))"
                                                 OnFolderDelete="@(req => { request = req; return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "Races");
+            await ToggleBoxAsync(cut, "Races");
 
             // Act
             cut.Find(".forma-explorer-delete-button").Click();
@@ -2210,7 +2210,7 @@
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            ToggleBox(cut, "b.jpg");
+            await ToggleBoxAsync(cut, "b.jpg");
 
             // Assert
             Assert.Equal("b.jpg", cut.FindAll(".forma-data-card-name")[0].TextContent);
@@ -2720,12 +2720,12 @@
                                                 PageSize="10"
                                                 SelectedChanged="@(items => { selected = items; return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "0001.jpg");
+            await ToggleBoxAsync(cut, "0001.jpg");
             Assert.Single(selected);
 
             // Act - page away from the slice holding the selected resource
             await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
-            ToggleBox(cut, "0011.jpg");
+            await ToggleBoxAsync(cut, "0011.jpg");
 
             // Assert
             Assert.Equal(["0001.jpg", "0011.jpg"], selected.Select(item => item.Name));
@@ -2897,7 +2897,7 @@
         ];
 
         [Fact]
-        public void Should_report_once_when_a_resource_is_selected()
+        public async Task Should_report_once_when_a_resource_is_selected()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2907,14 +2907,14 @@
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            ToggleBox(cut, "item1.jpg");
+            await ToggleBoxAsync(cut, "item1.jpg");
 
             // Assert
             Assert.Equal("item1.jpg", Assert.Single(Assert.Single(reports)).Name);
         }
 
         [Fact]
-        public void Should_report_the_emptied_selection_when_leaving_selection_mode()
+        public async Task Should_report_the_emptied_selection_when_leaving_selection_mode()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2922,7 +2922,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(Two))"
                                                 SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "item1.jpg");
+            await ToggleBoxAsync(cut, "item1.jpg");
 
             // Act
             cut.Find(".forma-explorer-exit-select-button").Click();
@@ -2934,7 +2934,7 @@
         }
 
         [Fact]
-        public void Should_report_when_a_folder_is_selected()
+        public async Task Should_report_when_a_folder_is_selected()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2946,7 +2946,7 @@
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            ToggleBox(cut, "photos");
+            await ToggleBoxAsync(cut, "photos");
 
             // Assert
             Assert.Multiple(
@@ -2955,7 +2955,7 @@
         }
 
         [Fact]
-        public void Should_report_the_emptied_selection_when_the_clear_action_runs()
+        public async Task Should_report_the_emptied_selection_when_the_clear_action_runs()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2963,7 +2963,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(Two))"
                                                 SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ToggleBox(cut, "item1.jpg");
+            await ToggleBoxAsync(cut, "item1.jpg");
 
             // Act
             cut.Find(".forma-explorer-clear-button").Click();

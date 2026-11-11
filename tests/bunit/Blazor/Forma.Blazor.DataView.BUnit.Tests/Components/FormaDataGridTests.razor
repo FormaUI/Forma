@@ -509,7 +509,7 @@
         }
 
         [Fact]
-        public void Should_invoke_selected_items_changed_with_the_checked_row()
+        public async Task Should_invoke_selected_items_changed_with_the_checked_row()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -526,7 +526,7 @@
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Act
-            cut.FindAll("tbody input[type=checkbox]")[0].Click();
+            await cut.FindAll("tbody input[type=checkbox]")[0].ClickAsync(new MouseEventArgs());
 
             // Assert
             var selected = Assert.Single(changedTo!);
@@ -534,7 +534,7 @@
         }
 
         [Fact]
-        public void Should_select_the_page_when_the_master_checkbox_is_checked()
+        public async Task Should_select_the_page_when_the_master_checkbox_is_checked()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -551,7 +551,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead input[type=checkbox]").Click();
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(10, changedTo!.Count);
@@ -579,7 +579,7 @@
         }
 
         [Fact]
-        public void Should_clear_only_the_page_when_the_master_checkbox_is_unchecked()
+        public async Task Should_clear_only_the_page_when_the_master_checkbox_is_unchecked()
         {
             // Arrange — the first page is selected along with one item of the second
             using var ctx = new FormaDataGridTests();
@@ -596,7 +596,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead input[type=checkbox]").Click();
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
 
             // Assert
             var remaining = Assert.Single(changedTo!);
@@ -702,7 +702,7 @@
         }
 
         [Fact]
-        public void Should_select_the_whole_set_at_one_press_in_direct_mode()
+        public async Task Should_select_the_whole_set_at_one_press_in_direct_mode()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -718,7 +718,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead input[type=checkbox]").Click();
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(25, changedTo!.Count);
@@ -726,7 +726,7 @@
         }
 
         [Fact]
-        public void Should_clear_a_selection_on_another_page_from_the_master_checkbox_in_direct_mode()
+        public async Task Should_clear_a_selection_on_another_page_from_the_master_checkbox_in_direct_mode()
         {
             // Arrange — the selection sits on the second page alone
             using var ctx = new FormaDataGridTests();
@@ -742,14 +742,14 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead input[type=checkbox]").Click();
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Empty(changedTo!);
         }
 
         [Fact]
-        public void Should_offer_the_set_in_the_footer_once_the_page_is_selected_in_pager_mode()
+        public async Task Should_offer_the_set_in_the_footer_once_the_page_is_selected_in_pager_mode()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -766,8 +766,8 @@
             Assert.Empty(cut.FindAll(".forma-data-view-select-set"));
 
             // Act
-            cut.Find("thead input[type=checkbox]").Click();
-            cut.WaitForState(() => cut.FindAll(".forma-data-view-select-set").Count == 1);
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
+            Assert.Single(cut.FindAll(".forma-data-view-select-set"));
             cut.Find(".forma-data-view-select-set").Click();
 
             // Assert
@@ -798,7 +798,7 @@
         }
 
         [Fact]
-        public void Should_select_the_page_from_the_master_checkbox_over_an_items_provider()
+        public async Task Should_select_the_page_from_the_master_checkbox_over_an_items_provider()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -817,7 +817,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead input[type=checkbox]").Click();
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(10, changedTo!.Count);
@@ -1185,7 +1185,7 @@
         }
 
         [Fact]
-        public void Should_clear_the_selection_when_the_select_all_checkbox_is_unchecked()
+        public async Task Should_clear_the_selection_when_the_select_all_checkbox_is_unchecked()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -1202,7 +1202,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead input[type=checkbox]").Click();
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Empty(changedTo!);
@@ -1658,7 +1658,7 @@
         }
 
         [Fact]
-        public void Should_select_the_whole_set_from_the_master_checkbox_while_virtualizing()
+        public async Task Should_select_the_whole_set_from_the_master_checkbox_while_virtualizing()
         {
             // Arrange — nothing pages, so the master control reaches the set the data view holds
             using var ctx = new FormaDataGridTests();
@@ -1674,7 +1674,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead input[type=checkbox]").Click();
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(25, changedTo!.Count);
@@ -2341,14 +2341,14 @@
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Act — unchecking the only selected row would drop below the minimum
-            cut.FindAll("tbody input[type=checkbox]")[0].Click();
+            await cut.FindAll("tbody input[type=checkbox]")[0].ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Null(changedTo);
         }
 
         [Fact]
-        public void Should_allow_clearing_the_whole_selection_below_the_minimum_via_the_master_toggle()
+        public async Task Should_allow_clearing_the_whole_selection_below_the_minimum_via_the_master_toggle()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -2365,7 +2365,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead input[type=checkbox]").Click();
+            await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Empty(changedTo!);
@@ -2462,7 +2462,7 @@
         }
 
         [Fact]
-        public void Should_report_the_minimum_bound_when_an_uncheck_is_rejected()
+        public async Task Should_report_the_minimum_bound_when_an_uncheck_is_rejected()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -2479,7 +2479,7 @@
             cut.WaitForState(() => cut.FindAll("tbody input[type=checkbox]").Count == 3);
 
             // Act
-            cut.FindAll("tbody input[type=checkbox]")[0].Click();
+            await cut.FindAll("tbody input[type=checkbox]")[0].ClickAsync(new MouseEventArgs());
 
             // Assert
             var rejection = Assert.Single(rejections);
