@@ -118,6 +118,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Under WebAssembly, a [`FormaCheckBox`](docs/component-catalog.md#formacheckbox) with `PreventDefault` is drawn in the
   state its caller sets on a click, and so is every data view's box; the browser undid the click's toggle after the
   state was drawn, so a box stayed unchecked though its item was selected.
+- A selection the host hands [`FormaDataView`](docs/data-view-design.md#selection) through `SelectedItems` redraws
+  every view's items it changes; a view drawn in the host's content kept drawing the selection it last drew, so a
+  box the host cleared, or one it refused, stayed checked.
 - A sidebar [`FormaDataTree`](docs/data-view-design.md#the-tree) takes `RootsItem`, an item of the host's that
   stands for the roots first among the top-level nodes, current while the roots are, so choosing it takes the
   reader back to them; a sidebar offered no way back to the roots of its own once a node was current.

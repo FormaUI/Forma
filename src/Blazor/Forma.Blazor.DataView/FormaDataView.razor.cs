@@ -103,6 +103,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     // Which markers the views drew the items with last: either selection's, or the items' own where they take the focus.
     private (bool Checked, bool Pointer, bool Focus)? _drawnMarkers;
+
+    // Whether the selection the host handed over selects other items than the data view drew, which every view's items draw again.
+    private bool _isSelectionAdopted;
     private int _orderVersion;
     private SelectionBounds _selectionBounds;
     private int _readCount;
@@ -626,7 +629,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         // the list it began with, so the selection made since stays.
         if (_selectedItemsParameter.Update(SelectedItems) || keyChanged)
         {
-            _selectedSet = new HashSet<TItem>(SelectedItems, _keyComparer);
+            HashSet<TItem> adopted = new(SelectedItems, _keyComparer);
+            _isSelectionAdopted |= !adopted.SetEquals(_selectedSet);
+            _selectedSet = adopted;
         }
 
         // The address speaks first, once; after that a page the host sets is the page shown.
@@ -705,7 +710,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             // A selection turned on or off changes which element of every item carries the focus, which each view draws again.
             await NotifyStateAsync();
         }
+        else if (_isSelectionAdopted)
+        {
+            // A view drawn inside the host's content gets no parameters of its own as the host hands over a selection, so it is told.
+            await NotifyStateAsync(isItemStateOnly: true);
+        }
 
+        _isSelectionAdopted = false;
         _drawnMarkers = (EnableCheckedSelection, EnableItemSelection, EnableItemFocus);
         await RevealCurrentAsync();
     }

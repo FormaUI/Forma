@@ -581,6 +581,29 @@
             Assert.Equal(1, engine.Instance.SelectedCount);
         }
 
+        [Fact]
+        public void Should_draw_an_item_again_once_the_host_hands_over_a_selection_without_it()
+        {
+            // Arrange — the host's selection holding the second card
+            using var ctx = new FormaDataViewTests();
+            var products = new[] { new Product(1, "Hammer"), new Product(2, "Atlas") };
+            var cut = ctx.Render(
+                @<FormaDataView Items="products.AsQueryable()" EnablePagination="false" EnableCheckedSelection="true" SelectedItems="@(new[] { products[1] })" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-card").Count == 2);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            Assert.Equal("true", cut.FindAll(".forma-data-card")[1].GetAttribute("aria-selected"));
+
+            // Act — the host clears its selection
+            engine.Render(parameters => parameters.Add(view => view.SelectedItems, Array.Empty<Product>()));
+
+            // Assert
+            var atlas = cut.FindAll(".forma-data-card")[1];
+            Assert.Equal("false", atlas.GetAttribute("aria-selected"));
+            Assert.False(atlas.QuerySelector("input[type=checkbox]")!.HasAttribute("checked"));
+        }
+
         private sealed record Product(int Id, string Name);
     }
 
