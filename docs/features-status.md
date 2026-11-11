@@ -27,7 +27,6 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [The naming sweep](#the-naming-sweep) | The survey's renames after the add-on assemblies', group by group |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -170,12 +169,6 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
 Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.4` are published, as [the changelog](../CHANGELOG.md) lists them. `release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
 
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
-
-<a id="the-naming-sweep"></a>
-
-## The naming sweep
-
-A survey finds 629 names of variables, constants and properties that are a bare adjective or participle, or a count named as a plural, where the naming standard names each for the noun it holds. They land in small groups, each reviewed with its call sites; the add-on assemblies' group has landed, and the next group comes for review.
 
 <a id="open-decisions"></a>
 
