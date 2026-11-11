@@ -191,6 +191,114 @@ public sealed class ExplorerTests
         }
     }
 
+    public sealed class ExplorerKeyboard(BrowserHost host)
+    {
+        // The name of the content's item the focus stands on itself, where it stands on one.
+        private const string FocusedItem = """
+            () => {
+                const focused = document.activeElement;
+                const root = focused?.closest('#check .forma-explorer-content-backdrop [data-item-root]');
+                return root && focused === root
+                    ? root.querySelector('.forma-data-card-name, .forma-explorer-details-name-text, .forma-data-list-item-name')?.textContent?.trim() ?? null
+                    : null;
+            }
+            """;
+
+        // Whether the focus stands within one of the content's items.
+        private const string IsWithinItems = "() => document.activeElement?.closest('#check .forma-explorer-content-backdrop [data-item-root]') != null";
+
+        // Whether the selection behavior has gathered the controls of every one of the top level's four items but the one at the tab stop
+        // out of the Tab sequence, which it does once a view's items are drawn.
+        private const string IsGathered = """
+            () => {
+                const actions = [...document.querySelectorAll('#check .forma-explorer-content-backdrop [data-item-root] [data-item-actions]')];
+                return actions.length === 4 && actions.filter(action => action.tabIndex >= 0).length === 1;
+            }
+            """;
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_enter_and_leave_the_thumbnails_at_one_tab_stop_and_run_an_item_s_actions_and_open_it_from_the_keyboard(string runtime)
+            => CheckAsync(runtime, "Thumbnails", "ArrowRight");
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_enter_and_leave_the_details_at_one_tab_stop_and_run_an_item_s_actions_and_open_it_from_the_keyboard(string runtime)
+            => CheckAsync(runtime, "Details", "ArrowDown");
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_enter_and_leave_the_list_at_one_tab_stop_and_run_an_item_s_actions_and_open_it_from_the_keyboard(string runtime)
+            => CheckAsync(runtime, "List", "ArrowDown");
+
+        // Tab from the sidebar's splitter enters the items at the first, Covers, then reaches its actions and leaves the items; back in, the
+        // key moving on reaches Races, whose Rename, run from its actions opened with Shift+F10, asks for its new name and hands the focus
+        // back to it once dismissed, and Enter then opens it.
+        private async Task CheckAsync(string runtime, string view, string next)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer");
+            await using var _ = context;
+            var items = page.Locator("#check .forma-explorer-content-backdrop [data-item-root]");
+            await ComponentChecks.WaitForInputScopeAsync(page, "#check .forma-data-view-region");
+            var viewButton = page.Locator("#check .forma-explorer-header-wide").GetByRole(AriaRole.Button, new() { Name = view, Exact = true });
+            await viewButton.ClickAsync();
+            await Assertions.Expect(viewButton).ToHaveAttributeAsync("aria-pressed", "true");
+            await page.WaitForFunctionAsync(IsGathered);
+            await page.Locator("#check .forma-explorer-splitter").FocusAsync();
+
+            // Act — into the items past what the view draws before them, through the first item's actions and out
+            var first = await TabIntoItemsAsync(page);
+            await page.Keyboard.PressAsync("Tab");
+            await Assertions.Expect(items.Nth(0).Locator("[data-item-actions]")).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Tab");
+            var isLeft = !await page.EvaluateAsync<bool>(IsWithinItems);
+
+            // Act — back in, on to Races, its Rename run from its actions and dismissed
+            await page.Keyboard.PressAsync("Shift+Tab");
+            await Assertions.Expect(items.Nth(0).Locator("[data-item-actions]")).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Shift+Tab");
+            await WaitForFocusedItemAsync(page, "Covers");
+            await page.Keyboard.PressAsync(next);
+            await WaitForFocusedItemAsync(page, "Races");
+            await page.Keyboard.PressAsync("Shift+F10");
+            var menu = page.GetByRole(AriaRole.Menu);
+            await ComponentChecks.WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
+            await menu.GetByRole(AriaRole.Menuitem, new() { Name = "Rename", Exact = true }).PressAsync("Enter");
+            var rename = page.Locator("dialog:has(#forma-explorer-rename-input)");
+            await ComponentChecks.WaitForLayerAsync(rename);
+            await Assertions.Expect(rename.Locator("#forma-explorer-rename-input")).ToHaveValueAsync("Races");
+            await page.Keyboard.PressAsync("Escape");
+            await Assertions.Expect(rename).ToHaveCountAsync(0);
+            await WaitForFocusedItemAsync(page, "Races");
+            await page.Keyboard.PressAsync("Enter");
+
+            // Assert
+            Assert.Equal("Covers", first);
+            Assert.True(isLeft);
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Races");
+        }
+
+        // Presses Tab until the focus stands on an item, a view drawing a few controls of its own before them.
+        private static async Task<string?> TabIntoItemsAsync(IPage page)
+        {
+            for (var press = 0; press < 12; press++)
+            {
+                await page.Keyboard.PressAsync("Tab");
+
+                if (await page.EvaluateAsync<string?>(FocusedItem) is { } item)
+                {
+                    return item;
+                }
+            }
+
+            return null;
+        }
+
+        private static async Task WaitForFocusedItemAsync(IPage page, string name)
+            => await page.WaitForFunctionAsync($"name => ({FocusedItem})() === name", name);
+    }
+
     public sealed class ExplorerDetails(BrowserHost host)
     {
         private static readonly string[] ByName = ["Archive", "alpha.txt", "beta.txt", "gamma.txt"];

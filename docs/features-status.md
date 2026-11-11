@@ -64,8 +64,8 @@ Each feature, the document that states it, its state, and the month it first lan
 
 | Feature | Contract | State | Since |
 | --- | --- | --- | --- |
-| The data view: one engine over a grid, a list, cards and a tree, with its sort menu and view switch | [Data view design](data-view-design.md) | In progress: steps 11 and 13 of [its plan](data-view-implementation-plan.md); step 12 is built with the gallery | [September 2026](../FEATURE-HISTORY.md#2026-09) |
-| The explorer | [Explorer design](explorer-design.md) | Implemented; moving its content onto the data view is the data view's step 11 | [August 2026](../FEATURE-HISTORY.md#2026-08) |
+| The data view: one engine over a grid, a list, cards and a tree, with its sort menu and view switch | [Data view design](data-view-design.md) | In progress: step 14 of [its plan](data-view-implementation-plan.md); step 12 is built with the gallery | [September 2026](../FEATURE-HISTORY.md#2026-09) |
+| The explorer | [Explorer design](explorer-design.md) | Implemented, its content on the data view | [August 2026](../FEATURE-HISTORY.md#2026-08) |
 | The composer, its rich text editor and its plugins | [Composer design](composer-design.md) | Implemented through its phases 1 to 3, 5 and 8; [later phases](#the-composers-later-phases) planned | [August 2026](../FEATURE-HISTORY.md#2026-08) |
 | The gallery | [Gallery design](gallery-design.md) | Planned | — |
 
@@ -118,7 +118,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## Components to build
 
-The data view, with its views and controls, is finished once one step of [its plan](data-view-implementation-plan.md) lands: the explorer's content moving onto it. Its third open step, the gallery's browsing on it, is built with the gallery and stays open until the gallery starts. [The roadmap](component-roadmap.md) orders what follows: the category selector; the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
+The data view, with its views and controls, is finished once one step of [its plan](data-view-implementation-plan.md) closes: the second of two rare browser check failures, named or shown not to recur. Its other open step, the gallery's browsing on it, is built with the gallery and stays open until the gallery starts. [The roadmap](component-roadmap.md) orders what follows: the category selector; the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
 
 <a id="blazor-hybrid-on-phones-and-macs"></a>
 

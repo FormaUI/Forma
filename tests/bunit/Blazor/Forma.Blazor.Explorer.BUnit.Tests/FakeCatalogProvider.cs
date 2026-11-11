@@ -21,6 +21,9 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
     /// <summary>The key of the folder whose fetches alone wait on <see cref="Gate"/>, where null holds every fetch.</summary>
     public string? GatedFolderKey { get; set; }
 
+    /// <summary>Whether a fetch held on <see cref="Gate"/> keeps waiting once canceled, answering when the gate opens.</summary>
+    public bool IgnoresCancellation { get; set; }
+
     /// <summary>The resources each folder holds, by the folder's key, where a folder it does not name holds the resources the provider was made with.</summary>
     public Dictionary<string, IReadOnlyList<ResourceInfo>> FolderResources { get; } = new(StringComparer.Ordinal);
 
@@ -68,7 +71,7 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
 
         if (Gate is { } gate && (GatedFolderKey is null || GatedFolderKey == query.FolderKey))
         {
-            await gate.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
+            await (IgnoresCancellation ? gate.Task : gate.Task.WaitAsync(cancellationToken)).ConfigureAwait(false);
         }
 
         IEnumerable<ResourceInfo> matching = query.FolderKey is { } folderKey && FolderResources.TryGetValue(folderKey, out var held) ? held : _resources;
@@ -97,7 +100,9 @@ public sealed class FakeCatalogProvider(IReadOnlyList<ResourceInfo> resources) :
             ReportsTotal ? ordered.Count : null)
         {
             ListedCount = ReportsListedCount ? ordered.Count(resource => !HiddenSources.Contains(resource.Source)) : null,
-            GroupSizes = query.IncludesGroupSizes && query.Grouping is { } counted ? counted.CountGroups(ordered.Select(ToItem)) : null
+            GroupSizes = query.IncludesGroupSizes && query.Grouping is { } counted
+                ? counted.CountGroups(ordered.Where(resource => !HiddenSources.Contains(resource.Source)).Select(ToItem))
+                : null
         };
     }
 

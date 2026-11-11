@@ -505,6 +505,30 @@
         }
 
         [Fact]
+        public async Task Should_show_the_details_in_the_sort_the_thumbnails_were_given()
+        {
+            // Arrange - the thumbnails sorted by size
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources =
+            [
+                new ImageResourceInfo("https://example.com/a.jpg") { Size = 500 },
+                new ImageResourceInfo("https://example.com/b.jpg") { Size = 1000 },
+                new ImageResourceInfo("https://example.com/c.jpg") { Size = 200 }
+            ];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
+            await SortByAsync(cut, CatalogSortField.Size);
+
+            // Act
+            cut.FindAll(".forma-explorer-view-button")[1].Click();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["c.jpg", "a.jpg", "b.jpg"], GetDetailsNames(cut)),
+                () => Assert.Equal("ascending", cut.Find("th.forma-explorer-column-size").GetAttribute("aria-sort")),
+                () => Assert.Equal("none", cut.Find("th.forma-explorer-column-name").GetAttribute("aria-sort")));
+        }
+
+        [Fact]
         public async Task Should_sort_resources_by_the_date_added_and_the_date_modified()
         {
             // Arrange
@@ -2205,6 +2229,38 @@
                 () => Assert.False(IsBoxChecked(ItemNamed(cut, "banner.jpg"))),
                 () => Assert.Empty(cut.FindAll(".forma-explorer-cards [aria-selected=true]")));
         }
+
+        [Fact]
+        public async Task Should_keep_a_picker_s_choices_and_the_history_through_a_switch_to_the_details()
+        {
+            // Arrange - two of three files chosen in a picker's thumbnails, whose toolbar stays beside its choices
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources =
+            [
+                new ImageResourceInfo("https://example.com/a.jpg"),
+                new ImageResourceInfo("https://example.com/b.jpg"),
+                new ImageResourceInfo("https://example.com/c.jpg")
+            ];
+            var moves = 0;
+            List<IReadOnlyList<ICatalogItem>> reports = [];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))"
+                                                Options="@(new ExplorerOptions { SelectOnOpen = true })"
+                                                OnFolderChanged="@(_ => moves++)"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+            await ToggleBoxAsync(cut, "a.jpg");
+            await ToggleBoxAsync(cut, "b.jpg");
+
+            // Act
+            cut.FindAll(".forma-explorer-view-button")[1].Click();
+
+            // Assert - the same two rows checked in the details, the switch reporting nothing and making no move
+            Assert.Multiple(
+                () => Assert.Equal([true, true, false], new[] { "a.jpg", "b.jpg", "c.jpg" }.Select(name => IsBoxChecked(GetDetailsRow(cut, name)))),
+                () => Assert.Equal(2, reports.Count),
+                () => Assert.Equal(["a.jpg", "b.jpg"], reports[^1].Select(item => item.Name)),
+                () => Assert.Equal(0, moves),
+                () => Assert.NotNull(cut.Find(".forma-explorer-nav-button[aria-label='Back']").GetAttribute("disabled")));
+        }
     }
 
     public sealed class Sidebar
@@ -2368,6 +2424,71 @@
             Assert.NotNull(request);
             Assert.Equal("races", Assert.IsAssignableFrom<ICatalogFolderItem>(Assert.Single(request.Items)).Key);
         }
+        [Fact]
+        public async Task Should_leave_the_delete_nothing_to_act_on_once_another_folder_is_entered()
+        {
+            // Arrange - two files selected at the top level of an explorer that manages files
+            using var ctx = new FormaExplorerTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg"), new ImageResourceInfo("https://example.com/b.jpg")];
+            var folders = CatalogItem.ForAll([new FolderResourceInfo("races") { Name = "Races" }]);
+            List<IReadOnlyList<ICatalogItem>> reports = [];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))"
+                                                Folders="folders"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+            await ReportFocusAsync(probe, cut);
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            await ToggleBoxAsync(cut, "a.jpg");
+            await ToggleBoxAsync(cut, "b.jpg");
+            Assert.NotNull(cut.Find(".forma-explorer-delete-button"));
+
+            // Act
+            await PressFolderAsync(router, cut, "Races");
+
+            // Assert - in Races, with nothing selected for the delete to act on
+            Assert.Multiple(
+                () => Assert.Equal("true", GetFolderRow(cut, "Races").GetAttribute("aria-selected")),
+                () => Assert.Empty(reports[^1]),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-delete-button")),
+                () => Assert.False(IsBoxChecked(ItemNamed(cut, "a.jpg"))),
+                () => Assert.False(IsBoxChecked(ItemNamed(cut, "b.jpg"))));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_location_and_the_selection_where_a_move_is_refused()
+        {
+            // Arrange - two files selected in Races, beside a folder that cannot be opened
+            using var ctx = new FormaExplorerTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg"), new ImageResourceInfo("https://example.com/b.jpg")];
+            IReadOnlyList<ICatalogItem> folders =
+            [
+                .. CatalogItem.ForAll([new FolderResourceInfo("races") { Name = "Races" }]),
+                new CatalogFolderItem { Key = "sealed", Name = "Sealed", Capabilities = CatalogItemCapabilities.Drag | CatalogItemCapabilities.Drop }
+            ];
+            var races = (ICatalogFolderItem)folders[0];
+            var moves = 0;
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="folders" CurrentFolder="races" OnFolderChanged="@(_ => moves++)" />);
+            await ReportFocusAsync(probe, cut);
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            await ToggleBoxAsync(cut, "a.jpg");
+            await ToggleBoxAsync(cut, "b.jpg");
+
+            // Act
+            await PressFolderAsync(router, cut, "Sealed");
+
+            // Assert - still in Races, both files still selected
+            Assert.Multiple(
+                () => Assert.Equal(0, moves),
+                () => Assert.Equal("true", GetFolderRow(cut, "Races").GetAttribute("aria-selected")),
+                () => Assert.Equal("false", GetFolderRow(cut, "Sealed").GetAttribute("aria-selected")),
+                () => Assert.Equal("2 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim()),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "a.jpg"))),
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "b.jpg"))));
+        }
+
         [Fact]
         public void Should_keep_the_breadcrumb_menu_when_the_sidebar_is_switched_off()
         {
@@ -2799,6 +2920,103 @@
             Assert.Multiple(
                 () => Assert.Equal([0, 2], provider.Queries.Select(query => query.Skip)),
                 () => Assert.Equal(["a.jpg", "b.jpg", "c.jpg", "d.jpg"], GetItemNames(cut)));
+        }
+
+        // The provider resumes off the renderer, so the report's own task, the page the end asked for, says when it has settled.
+        [Fact(Timeout = 10_000)]
+        public async Task Should_ask_once_for_a_page_the_end_of_the_items_and_a_press_ask_for_together()
+        {
+            // Arrange - the end of the items watched, and the store holding the second page back
+            using var ctx = new FormaExplorerTests();
+            var probe = new DomProbe<IntersectionState>(ctx);
+            var provider = new FakeCatalogProvider([.. new[] { "a", "b", "c", "d", "e", "f" }
+                .Select(name => new ImageResourceInfo($"https://example.com/{name}.jpg"))]);
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider"
+                                                PageSize="2"
+                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Automatic })" />);
+            Assert.Equal(["a.jpg", "b.jpg"], GetItemNames(cut));
+            provider.Gate = new TaskCompletionSource();
+
+            // Act - the end, out of view when first measured, comes into view, and the action is pressed while the page it asked for is
+            // on its way
+            await probe.ReportAsync(new IntersectionState(IsIntersecting: false));
+            var reached = probe.ReportAsync(new IntersectionState(IsIntersecting: true));
+            await cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
+            provider.Gate.SetResult();
+            await reached.WaitAsync(TestContext.Current.CancellationToken);
+
+            // Assert - the page asked for once
+            Assert.Multiple(
+                () => Assert.Equal([0, 2], provider.Queries.Select(query => query.Skip)),
+                () => Assert.Equal(["a.jpg", "b.jpg", "c.jpg", "d.jpg"], GetItemNames(cut)));
+        }
+
+        [Fact]
+        public async Task Should_append_a_group_across_its_pages_and_a_slice_of_hidden_items_counting_what_is_listed()
+        {
+            // Arrange - today's five files across three pages, the second page's two hidden, and yesterday's file after them
+            using var ctx = new FormaExplorerTests();
+            var clock = new FakeTimeProvider(new DateTimeOffset(2026, 9, 16, 12, 0, 0, TimeSpan.Zero));
+            clock.SetLocalTimeZone(TimeZoneInfo.Utc);
+            ctx.Services.AddSingleton<TimeProvider>(clock);
+            var morning = new DateTimeOffset(2026, 9, 16, 9, 0, 0, TimeSpan.Zero);
+            var provider = new FakeCatalogProvider(
+            [
+                .. new[] { "a", "b", "c", "d", "e" }.Select(name => new ImageResourceInfo($"https://example.com/{name}.jpg") { ModifiedAt = morning }),
+                new ImageResourceInfo("https://example.com/f.jpg") { ModifiedAt = morning.AddDays(-1) },
+            ]);
+            provider.HiddenSources.UnionWith(["https://example.com/c.jpg", "https://example.com/d.jpg"]);
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider"
+                                                GroupField="ExplorerGroupField.DateModified"
+                                                PageSize="2"
+                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
+
+            // Act - the slice of hidden items is read through on the way to the rest of today's group and yesterday's
+            await cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
+
+            // Assert - each item once, in order, under a heading counting what its group lists
+            Assert.Multiple(
+                () => Assert.Equal([0, 2, 4], provider.Queries.Select(query => query.Skip)),
+                () => Assert.Equal(
+                    ["Today (3)", "a.jpg", "b.jpg", "e.jpg", "Yesterday (1)", "f.jpg"],
+                    cut.FindAll(".forma-data-group-heading, .forma-data-card-name").Select(element => element.ClassList.Contains("forma-data-group-heading")
+                        ? $"{element.QuerySelector(".forma-data-group-name")!.TextContent} ({element.QuerySelector(".forma-data-group-count")!.TextContent})"
+                        : element.TextContent.Trim())),
+                () => Assert.Empty(cut.FindAll(".forma-data-view-more button")));
+        }
+
+        [Fact]
+        public async Task Should_add_nothing_from_the_page_of_a_folder_left_while_it_was_on_its_way()
+        {
+            // Arrange - Covers' first page shown, and its next held by a store that answers it even once it is canceled
+            using var ctx = new FormaExplorerTests();
+            var folders = CatalogItem.ForAll([new FolderResourceInfo("covers") { Name = "Covers" }, new FolderResourceInfo("races") { Name = "Races" }]);
+            var provider = new FakeCatalogProvider([]) { IgnoresCancellation = true };
+            provider.FolderResources["covers"] = [.. new[] { "a", "b", "c" }.Select(name => new ImageResourceInfo($"https://example.com/{name}.jpg"))];
+            provider.FolderResources["races"] = [new ImageResourceInfo("https://example.com/race.jpg")];
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider"
+                                                Folders="folders"
+                                                CurrentFolder="@((ICatalogFolderItem)folders[0])"
+                                                PageSize="2"
+                                                Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
+            var explorer = cut.FindComponent<FormaExplorer>();
+            Assert.Equal(["a.jpg", "b.jpg"], GetItemNames(cut));
+            provider.Gate = new TaskCompletionSource();
+            provider.GatedFolderKey = "covers";
+
+            // Act - the next page asked for, the host moving to Races while it is on its way, and the page arriving after Races' files;
+            // Races' files are drawn in the turn that asks for them, which a turn on the renderer passes
+            var pressed = cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
+            explorer.Render(parameters => parameters.Add(p => p.CurrentFolder, (ICatalogFolderItem)folders[1]));
+            await provider.WhenAskedForAsync("races").WaitAsync(TestContext.Current.CancellationToken);
+            await cut.InvokeAsync(static () => { });
+            await cut.ReleaseAsync(() => provider.Gate.SetResult());
+            await pressed.WaitAsync(TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([("covers", 0), ("covers", 2), ("races", 0)], provider.Queries.Select(query => (query.FolderKey, query.Skip))),
+                () => Assert.Equal(["race.jpg"], GetItemNames(cut)));
         }
     }
 
@@ -3833,6 +4051,27 @@
             Assert.Multiple(
                 () => Assert.Equal(["races"], request.Items.Select(item => item.Key)),
                 () => Assert.Equal("covers", request.TargetFolder?.Key));
+        }
+
+        [Fact]
+        public async Task Should_delete_a_selected_folder_alone_when_a_folder_inside_it_is_selected_too()
+        {
+            // Arrange - Races and 2026, inside it, selected by the host, as one location never lists them together
+            using var ctx = new FormaExplorerTests();
+            var folders = CreateFolders();
+            IReadOnlyList<ICatalogItem> selected = [folders[0], folders[1]];
+            var requests = new List<CatalogDeleteRequest>();
+            var cut = ctx.Render(@<FormaExplorer Items="[]"
+                                                Folders="folders"
+                                                Selected="selected"
+                                                OnDelete="@(req => { requests.Add(req); return Task.CompletedTask; })" />);
+
+            // Act
+            await cut.Find(".forma-explorer-delete-button").ClickAsync(new MouseEventArgs());
+            await cut.Find(".forma-dialog-footer .forma-button-danger").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal(["races"], Assert.Single(requests).Items.Select(item => item.Key));
         }
     }
 }
