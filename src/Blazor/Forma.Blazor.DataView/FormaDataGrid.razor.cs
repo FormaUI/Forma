@@ -605,11 +605,10 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         builder.Add("forma-data-grid-row");
         builder.Add(View.ItemClass?.Invoke(item));
 
-        if (HasSelectionColumn)
-        {
-            builder.Add("forma-data-grid-row-selected", View.IsSelected(item));
-            builder.Add("forma-data-grid-row-disabled", View.IsMuted(item));
-        }
+        builder.Add("forma-data-grid-row-selected", HasSelectionColumn && View.IsSelected(item));
+
+        // A disabled item is muted whether or not a selection is on, and a selection mutes an item its maximum blocks besides.
+        builder.Add("forma-data-grid-row-disabled", HasSelectionColumn ? View.IsMuted(item) : View.IsDisabled(item));
 
         builder.Add("forma-data-grid-row-editing", _editSession.IsEditing(item));
 

@@ -121,6 +121,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A selection the host hands [`FormaDataView`](docs/data-view-design.md#selection) through `SelectedItems` redraws
   every view's items it changes; a view drawn in the host's content kept drawing the selection it last drew, so a
   box the host cleared, or one it refused, stayed checked.
+- A disabled item in a [`FormaDataView`](docs/data-view-design.md#selection)'s list, cards, grid or tree is drawn muted
+  with no selection on, and an item that takes the focus itself, or a tree's node, is `aria-disabled`; a view muted
+  it only while a selection was on, and nothing announced it disabled.
 - A sidebar [`FormaDataTree`](docs/data-view-design.md#the-tree) takes `RootsItem`, an item of the host's that
   stands for the roots first among the top-level nodes, current while the roots are, so choosing it takes the
   reader back to them; a sidebar offered no way back to the roots of its own once a node was current.

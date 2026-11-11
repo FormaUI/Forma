@@ -127,11 +127,10 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
         builder.Add("forma-data-list-item");
         builder.Add(View.ItemClass?.Invoke(item));
 
-        if (HasSelection)
-        {
-            builder.Add("forma-data-list-item-selected", View.IsSelected(item));
-            builder.Add("forma-data-list-item-disabled", View.IsMuted(item));
-        }
+        builder.Add("forma-data-list-item-selected", HasSelection && View.IsSelected(item));
+
+        // A disabled item is muted whether or not a selection is on, and a selection mutes an item its maximum blocks besides.
+        builder.Add("forma-data-list-item-disabled", HasSelection ? View.IsMuted(item) : View.IsDisabled(item));
 
         return builder.ToStringOrNull();
     }

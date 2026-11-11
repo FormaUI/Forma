@@ -811,11 +811,10 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         builder.Add(View.ItemClass?.Invoke(node));
         builder.Add("forma-data-tree-node-current", IsCurrent(node));
 
-        if (HasSelection)
-        {
-            builder.Add("forma-data-tree-node-selected", View.IsSelected(node));
-            builder.Add("forma-data-tree-node-disabled", View.IsMuted(node));
-        }
+        builder.Add("forma-data-tree-node-selected", HasSelection && View.IsSelected(node));
+
+        // A disabled item is muted whether or not a selection is on, and a selection mutes an item its maximum blocks besides.
+        builder.Add("forma-data-tree-node-disabled", HasSelection ? View.IsMuted(node) : View.IsDisabled(node));
 
         return builder.ToStringOrNull();
     }

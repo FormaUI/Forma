@@ -687,6 +687,49 @@
                 () => Assert.Equal("Archive", ((IDataView<Entry>)engine.Instance).CurrentItem?.Name));
         }
 
+        private static IRenderedComponent<IComponent> RenderFocused(FormaDataViewTests ctx, RenderFragment view)
+            => ctx.Render(
+                @<FormaDataView Items="Entries.AsQueryable()" EnablePagination="false" EnableItemFocus="true"
+                                ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" ItemName="@(entry => entry.Name)" HasChildren="@(entry => entry.Kind == "folder")"
+                                IsItemDisabled="@(entry => entry.Kind == "locked")">
+                    @view
+                </FormaDataView>);
+
+        [Fact]
+        public void Should_draw_a_disabled_item_muted_with_no_selection_on_and_say_so_where_it_takes_the_focus()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+
+            // Act — a list, cards, a grid and a tree, each its own data view, none selecting
+            var list = RenderFocused(ctx, @<FormaDataList TItem="Entry" />);
+            var cards = RenderFocused(ctx, @<FormaDataCards TItem="Entry" />);
+            var grid = RenderFocused(ctx,
+                @<FormaDataGrid TItem="Entry">
+                    <Columns>
+                        <FormaPropertyColumn TItem="Entry" TValue="string" Property="@(entry => entry.Name)" />
+                    </Columns>
+                </FormaDataGrid>);
+            var tree = RenderFocused(ctx, @<FormaDataTree TItem="Entry" />);
+            list.WaitForState(() => list.FindAll("[role=listitem]").Count == 4);
+            cards.WaitForState(() => cards.FindAll(".forma-data-card").Count == 4);
+            grid.WaitForState(() => grid.FindAll("tbody tr.forma-data-grid-row").Count == 4);
+            tree.WaitForState(() => tree.FindAll("[role=treeitem]").Count == 4);
+
+            // Assert — the second item, Locked, muted and disabled, and the first neither
+            Assert.Multiple(
+                () => AssertDisabledSecond(list.FindAll("[role=listitem]"), "forma-data-list-item-disabled"),
+                () => AssertDisabledSecond(cards.FindAll(".forma-data-card"), "forma-data-card-disabled"),
+                () => AssertDisabledSecond(grid.FindAll("tbody tr.forma-data-grid-row"), "forma-data-grid-row-disabled"),
+                () => AssertDisabledSecond(tree.FindAll("[role=treeitem]"), "forma-data-tree-node-disabled"));
+        }
+
+        private static void AssertDisabledSecond(IReadOnlyList<AngleSharp.Dom.IElement> items, string disabledClass)
+        {
+            Assert.Equal([false, true], items.Take(2).Select(item => item.ClassList.Contains(disabledClass)));
+            Assert.Equal([null, "true"], items.Take(2).Select(item => item.GetAttribute("aria-disabled")));
+        }
+
         [Fact]
         public void Should_draw_no_marker_for_an_item_that_cannot_take_the_focus()
         {
