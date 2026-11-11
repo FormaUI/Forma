@@ -111,8 +111,10 @@ store's first position. The sidebar chooses where the reader is and never select
 Media stands first among its folders and takes the reader back to every item, every
 folder holding folders starts open, and a folder is selected in the content, where it is
 listed beside the files. The sidebar's width is set by a splitter, with a new-folder and a
-collapse-all tool over it. Grouping, selection, and the paged or infinite collection are
-the data view's. Below a tablet's width the sidebar stacks above the content. Each item carries its depiction and its
+collapse-all tool over it. The sort, grouping, selection, and the paged or infinite
+collection are the data view's: its sort always applies, opening on the field and direction
+the host gives, and the store sorts by the field it names, so a column's header and the
+toolbar's sort menu are one sort. Below a tablet's width the sidebar stacks above the content. Each item carries its depiction and its
 operations, which a checkbox replaces while selecting. An item takes the focus whether or not
 the selection mode is on, the arrows moving the focus alone; a press or Enter opens it, a
 folder entered and a file previewed, and in the selection mode a press or Space checks its

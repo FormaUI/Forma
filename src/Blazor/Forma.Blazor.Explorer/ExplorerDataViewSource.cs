@@ -9,9 +9,9 @@ using Forma.Framework.Explorer.Content;
 /// <summary>What an explorer's data view reads its items from: a location's content, its folders before its files, and a folder's own folders for the tree.</summary>
 /// <param name="folders">The folders the explorer holds, as they stand when a request is made.</param>
 /// <param name="files">The provider of the files, the host's or one over the items the explorer holds.</param>
-/// <param name="createQuery">Creates the query for a location's content, from the folder's key, the first position and how many positions.</param>
+/// <param name="createQuery">Creates the query for a location's content, from the data view's request and the folder's key.</param>
 /// <param name="filter">The kinds the explorer lists, where null lists every kind.</param>
-internal sealed class ExplorerDataViewSource(Func<CatalogFolderTree> folders, Func<ICatalogProvider> files, Func<string?, int, int, CatalogQuery> createQuery, Func<CatalogResourceFilter?> filter)
+internal sealed class ExplorerDataViewSource(Func<CatalogFolderTree> folders, Func<ICatalogProvider> files, Func<DataViewRequest<ICatalogItem>, string?, CatalogQuery> createQuery, Func<CatalogResourceFilter?> filter)
 {
     private ExplorerContentProvider? _content;
     private CatalogFolderTree? _contentFolders;
@@ -39,7 +39,7 @@ internal sealed class ExplorerDataViewSource(Func<CatalogFolderTree> folders, Fu
             return new DataViewPage<ICatalogItem>([.. children], children.Count);
         }
 
-        var query = createQuery(folderKey, request.StartIndex, request.Count ?? int.MaxValue);
+        var query = createQuery(request, folderKey);
         var page = await GetContent(tree).GetItemsAsync(query, request.CancellationToken);
 
         // A hidden item, or a file of a kind the explorer does not list, leaves the page while the position it stands in still counts.

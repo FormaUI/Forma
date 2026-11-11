@@ -219,6 +219,11 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // The boxes the selection mode draws, which a press checks as Enter opens the item, made again for a new selection limit.
     private CheckedSelectionOptions? _checkedSelectionOptions;
 
+    // The sort the data view opens in, made again for a field, a direction or a culture the host gives anew.
+    private DataViewSortOption<ICatalogItem>? _defaultSort;
+
+    private (CatalogSortField Field, CatalogSortDirection Direction, CultureInfo UICulture)? _defaultSortBasis;
+
     // Whether an item is a folder holding folders, the children the sidebar's tree opens on, made once and reading the folders in force.
     private Func<ICatalogItem, bool> _holdsFolders = default!;
 
@@ -438,6 +443,29 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private string GetKindLabel(CatalogItemKind kind)
         => ExplorerItemLocalization.GetKindLabel(L, kind);
 
+    // The data view's sort is the one the explorer sorts by, which opens as the host sets it and always applies.
+    private DataViewSortOption<ICatalogItem> DefaultSort
+    {
+        get
+        {
+            var basis = (SortField, SortDirection, Context.CultureState.UICulture);
+
+            if (_defaultSort is null || _defaultSortBasis != basis)
+            {
+                _defaultSortBasis = basis;
+                _defaultSort = new DataViewSortOption<ICatalogItem>(
+                    ExplorerDataViewSorts.GetName(SortField),
+                    ExplorerSortPresentation.GetFieldLabel(L, SortField),
+                    ExplorerDataViewSorts.GetSort(SortField))
+                {
+                    InitialDirection = ExplorerDataViewSorts.ToDataViewDirection(SortDirection),
+                };
+            }
+
+            return _defaultSort;
+        }
+    }
+
     private CheckedSelectionOptions CheckedSelectionOptions
     {
         get
@@ -612,13 +640,40 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     }
 
     // The query for a location's content, read as the data view asks, so it carries the search, the sort and the groups in force.
-    private CatalogQuery CreateContentQuery(string? folderKey, int skip, int take)
-        => new(folderKey, skip, take, string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery, _collection.SortField, _collection.SortDirection)
+    private CatalogQuery CreateContentQuery(DataViewRequest<ICatalogItem> request, string? folderKey)
+    {
+        AdoptSort(request.Sort, request.SortDirection);
+
+        return new(folderKey, request.StartIndex, request.Count ?? int.MaxValue, string.IsNullOrWhiteSpace(_collection.SearchQuery) ? null : _collection.SearchQuery, _collection.SortField, _collection.SortDirection)
         {
             Filter = _collection.Filter,
             Grouping = Grouping,
             IncludesGroupSizes = Grouping is not null,
         };
+    }
+
+    // A sort the reader chose from a header reaches the explorer with the request it makes, a browsing sequence of its own whose groups
+    // follow its direction.
+    private void AdoptSort(DataViewSort<ICatalogItem>? sort, DataViewSortDirection direction)
+    {
+        var catalogDirection = ExplorerDataViewSorts.ToCatalogDirection(direction);
+
+        if (ExplorerDataViewSorts.GetField(sort) is not { } field || (field == _collection.SortField && catalogDirection == _collection.SortDirection))
+        {
+            return;
+        }
+
+        _collection.SortField = field;
+        _collection.SortDirection = catalogDirection;
+        _queriedBasis = QueryBasis;
+        StartSequence();
+        _ = InvokeAsync(StateHasChanged);
+    }
+
+    // Whether the data view sorts as the explorer does, which a sort the explorer chose has yet to reach.
+    private bool IsSortedAsExplorer(FormaDataView<ICatalogItem> view)
+        => string.Equals(view.SortName, ExplorerDataViewSorts.GetName(_collection.SortField), StringComparison.Ordinal)
+            && view.SortDirection == ExplorerDataViewSorts.ToDataViewDirection(_collection.SortDirection);
 
     private (ExplorerGroupField GroupField, CatalogSortField SortField, CatalogSortDirection Direction, CatalogResourceFilter? Filter) QueryBasis
         => (_groupField, _collection.SortField, _collection.SortDirection, _collection.Filter);
@@ -637,6 +692,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     {
         _queriedBasis = QueryBasis;
         StartSequence();
+
+        // A sort the explorer chose becomes the data view's, which a grid's header shows, and which reads the first page again itself.
+        if (_dataView is { } view && !IsSortedAsExplorer(view))
+        {
+            _collection.PageNumber = 1;
+
+            return view.SortByAsync(ExplorerDataViewSorts.GetName(_collection.SortField), ExplorerDataViewSorts.GetSort(_collection.SortField), ExplorerDataViewSorts.ToDataViewDirection(_collection.SortDirection));
+        }
 
         // A new grouping, or a page other than the first, reaches the data view as it renders, which reads the items again itself.
         if (_collection.PageNumber != 1 || !ReferenceEquals(DataViewGrouping, _dataView?.GroupBy))
