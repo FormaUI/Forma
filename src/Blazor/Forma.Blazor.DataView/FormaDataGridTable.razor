@@ -46,9 +46,9 @@
                             {
                                 <label class="forma-data-view-box-target">
                                     <FormaCheckBox aria-label="@L["Select All"]"
-                                                   Value="@View.AllSelected"
+                                                   Value="@View.IsAllSelected"
                                                    ValueExpression="() => MasterSelection"
-                                                   Indeterminate="@View.PartiallySelected"
+                                                   Indeterminate="@View.IsPartiallySelected"
                                                    Disabled="@View.IsMasterControlDisabled"
                                                    PreventDefault="true"
                                                    OnClick="HandleMasterClickAsync" />
@@ -76,7 +76,7 @@
                                         <FormaIcon Icon="Glyph.ChevronDown" Size="IconSize.Small" />
                                     </Trigger>
                                     <ChildContent>
-                                        <FormaDropDownMenuItem Disabled="@(View.AllSelected || View.IsMasterControlDisabled)" OnClick="Interaction.SelectPageAsync">
+                                        <FormaDropDownMenuItem Disabled="@(View.IsAllSelected || View.IsMasterControlDisabled)" OnClick="Interaction.SelectPageAsync">
                                             <span>@L["Select Page ({Count})", View.Items.Count]</span>
                                         </FormaDropDownMenuItem>
                                         @if (View.CanOfferSet)

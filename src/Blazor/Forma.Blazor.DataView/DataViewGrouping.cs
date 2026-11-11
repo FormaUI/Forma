@@ -27,14 +27,14 @@ public sealed class DataViewGrouping<TItem>
     /// <param name="key">The value an item's group is decided by.</param>
     /// <param name="name">The name a group's heading shows for its key, where null shows the key's own text.</param>
     public static DataViewGrouping<TItem> By<TValue>(Expression<Func<TItem, TValue>> key, Func<TValue, string>? name = null)
-        => Create(key, DataViewSort<TItem>.ByAscending(key), name, descending: false);
+        => Create(key, DataViewSort<TItem>.ByAscending(key), name, isDescending: false);
 
     /// <summary>Groups by <paramref name="key"/>, the groups coming largest key first.</summary>
     /// <typeparam name="TValue">The key's value.</typeparam>
     /// <param name="key">The value an item's group is decided by.</param>
     /// <param name="name">The name a group's heading shows for its key, where null shows the key's own text.</param>
     public static DataViewGrouping<TItem> ByDescending<TValue>(Expression<Func<TItem, TValue>> key, Func<TValue, string>? name = null)
-        => Create(key, DataViewSort<TItem>.ByDescending(key), name, descending: true);
+        => Create(key, DataViewSort<TItem>.ByDescending(key), name, isDescending: true);
 
     /// <summary>Orders <paramref name="source"/> so that each group's items stand together, in the order the groups come in.</summary>
     /// <param name="source">The items to order.</param>
@@ -66,7 +66,7 @@ public sealed class DataViewGrouping<TItem>
     internal DataViewGroup<TItem> CreateGroup(object? key, IReadOnlyList<TItem> items, ICultureState cultureState)
         => new(key, _nameSelector, items, cultureState);
 
-    private static DataViewGrouping<TItem> Create<TValue>(Expression<Func<TItem, TValue>> key, DataViewSort<TItem> order, Func<TValue, string>? name, bool descending)
+    private static DataViewGrouping<TItem> Create<TValue>(Expression<Func<TItem, TValue>> key, DataViewSort<TItem> order, Func<TValue, string>? name, bool isDescending)
     {
         ArgumentNullException.ThrowIfNull(key);
 
@@ -78,15 +78,15 @@ public sealed class DataViewGrouping<TItem>
             name is null
                 ? (value, culture) => Convert.ToString(value, culture) ?? string.Empty
                 : (value, _) => name((TValue)value!),
-            source => CountGroups(source, key, descending));
+            source => CountGroups(source, key, isDescending));
     }
 
     // The store groups, orders and counts, so the groups come in the order its own sort puts their items in.
-    private static IQueryable<DataViewGroupSize> CountGroups<TValue>(IQueryable<TItem> source, Expression<Func<TItem, TValue>> key, bool descending)
+    private static IQueryable<DataViewGroupSize> CountGroups<TValue>(IQueryable<TItem> source, Expression<Func<TItem, TValue>> key, bool isDescending)
     {
         var groups = source.GroupBy(key);
-        var ordered = descending ? groups.OrderByDescending(group => group.Key) : groups.OrderBy(group => group.Key);
+        var orderedGroups = isDescending ? groups.OrderByDescending(group => group.Key) : groups.OrderBy(group => group.Key);
 
-        return ordered.Select(group => new DataViewGroupSize(group.Key, group.Count()));
+        return orderedGroups.Select(group => new DataViewGroupSize(group.Key, group.Count()));
     }
 }

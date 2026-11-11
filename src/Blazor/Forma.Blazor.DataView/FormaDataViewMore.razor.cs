@@ -12,7 +12,7 @@ public sealed partial class FormaDataViewMore : FormaComponentBase
     private static readonly IntersectionWatchOptions WatchOptions = new() { RootMarginPixels = 200 };
 
     private ElementReference _element;
-    private Task<DomObservation<IntersectionWatchOptions, IntersectionState>>? _watching;
+    private Task<DomObservation<IntersectionWatchOptions, IntersectionState>>? _watchTask;
     private bool _isWatching;
     private int _measuredItemCount;
 
@@ -43,7 +43,7 @@ public sealed partial class FormaDataViewMore : FormaComponentBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // The watch is made once, by the first render that wants it, and a render arriving while it is still being made waits for it.
-        if (_watching is null)
+        if (_watchTask is null)
         {
             if (!ShouldWatch)
             {
@@ -52,10 +52,10 @@ public sealed partial class FormaDataViewMore : FormaComponentBase
 
             _isWatching = true;
             _measuredItemCount = ItemCount;
-            _watching = Context.DomWatcher.GetElement(_element).Intersection.WatchAsync(HandleInViewAsync, WatchOptions);
+            _watchTask = Context.DomWatcher.GetElement(_element).Intersection.WatchAsync(HandleInViewAsync, WatchOptions);
         }
 
-        var watch = await _watching;
+        var watch = await _watchTask;
 
         // Renders waiting on the watch can resume out of turn, so each brings it in step with the latest render rather than its own.
         var watches = ShouldWatch;
@@ -89,9 +89,9 @@ public sealed partial class FormaDataViewMore : FormaComponentBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        if (_watching is { IsCompletedSuccessfully: true } watching)
+        if (_watchTask is { IsCompletedSuccessfully: true } watchTask)
         {
-            await (await watching).DisposeAsync();
+            await (await watchTask).DisposeAsync();
         }
 
         await base.DisposeAsyncCore();

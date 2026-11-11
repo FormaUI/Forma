@@ -46,16 +46,16 @@ public readonly record struct DataViewRequest<TItem>(
             return Sort is null ? source : Sort.Apply(source, SortDirection);
         }
 
-        var grouped = Grouping.Apply(source);
+        var groupedItems = Grouping.Apply(source);
 
-        return Sort is null ? grouped : Sort.ThenApply(grouped, SortDirection);
+        return Sort is null ? groupedItems : Sort.ThenApply(groupedItems, SortDirection);
     }
 
     /// <summary>The grouping's key and the sort's keys as the members they read, in order.</summary>
     public IReadOnlyList<DataViewSortedProperty> GetSortedProperties()
     {
-        var sorted = Sort?.GetSortedProperties(SortDirection) ?? [];
+        var sortedProperties = Sort?.GetSortedProperties(SortDirection) ?? [];
 
-        return Grouping is null ? sorted : [Grouping.GetSortedProperty(), .. sorted];
+        return Grouping is null ? sortedProperties : [Grouping.GetSortedProperty(), .. sortedProperties];
     }
 }

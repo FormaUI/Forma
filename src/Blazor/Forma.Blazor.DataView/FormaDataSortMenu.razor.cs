@@ -38,8 +38,8 @@ public sealed partial class FormaDataSortMenu<TItem> : FormaElementBase
         => Sorter.SortName is { } name ? Sorts.FirstOrDefault(option => string.Equals(option.Name, name, StringComparison.Ordinal)) : null;
 
     private string TriggerLabel
-        => CurrentOption is { } current
-            ? L["Sorted by {Name}, {Direction}", current.Label, GetDirectionLabel(Sorter.SortDirection)].Value
+        => CurrentOption is { } currentOption
+            ? L["Sorted by {Name}, {Direction}", currentOption.Label, GetDirectionLabel(Sorter.SortDirection)].Value
             : L["Sort"].Value;
 
     /// <inheritdoc />
@@ -47,9 +47,9 @@ public sealed partial class FormaDataSortMenu<TItem> : FormaElementBase
     {
         ArgumentNullException.ThrowIfNull(Sorts);
 
-        if (Sorts.GroupBy(option => option.Name, StringComparer.Ordinal).FirstOrDefault(names => names.Count() > 1) is { } repeated)
+        if (Sorts.GroupBy(option => option.Name, StringComparer.Ordinal).FirstOrDefault(names => names.Count() > 1) is { } repeatedGroup)
         {
-            throw new ArgumentException($"{nameof(FormaDataSortMenu<>)} offers the sort '{repeated.Key}' twice; each sort's name is what the address carries, so names must differ.", nameof(Sorts));
+            throw new ArgumentException($"{nameof(FormaDataSortMenu<>)} offers the sort '{repeatedGroup.Key}' twice; each sort's name is what the address carries, so names must differ.", nameof(Sorts));
         }
 
         if (!ReferenceEquals(_observedDataView, Sorter))
@@ -65,8 +65,8 @@ public sealed partial class FormaDataSortMenu<TItem> : FormaElementBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (Sorter.SortName is null
-            && Sorter.RequestedSortName is { } requested
-            && Sorts.FirstOrDefault(option => string.Equals(option.Name, requested, StringComparison.Ordinal)) is { } option)
+            && Sorter.RequestedSortName is { } requestedSortName
+            && Sorts.FirstOrDefault(option => string.Equals(option.Name, requestedSortName, StringComparison.Ordinal)) is { } option)
         {
             await Sorter.SortByAsync(option.Name, option.Sort, Sorter.RequestedSortDirection);
         }

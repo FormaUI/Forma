@@ -142,10 +142,10 @@ public interface IDataView<TItem> : INotifyStateChanged
     CheckedSelectionOptions CheckedSelectionOptions { get; }
 
     /// <summary>Whether every item on screen is selected.</summary>
-    bool AllSelected { get; }
+    bool IsAllSelected { get; }
 
     /// <summary>Whether some items on screen are selected and others are not.</summary>
-    bool PartiallySelected { get; }
+    bool IsPartiallySelected { get; }
 
     /// <summary>Whether the master control can neither select nor clear anything.</summary>
     bool IsMasterControlDisabled { get; }

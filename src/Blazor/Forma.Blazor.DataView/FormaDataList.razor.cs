@@ -69,8 +69,8 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
     }
 
     /// <inheritdoc />
-    int? IDataViewPositions<TItem>.GetEdgePosition(bool last)
-        => _rows.GetEdgePosition(last);
+    int? IDataViewPositions<TItem>.GetEdgePosition(bool isLast)
+        => _rows.GetEdgePosition(isLast);
 
     /// <inheritdoc />
     ValueTask<IReadOnlyList<TItem>> IDataViewPositions<TItem>.ReadAsync(int from, int to, CancellationToken cancellationToken)

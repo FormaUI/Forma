@@ -92,7 +92,7 @@ export function attach(target, options) {
 /** Where the items stand, read once per key press: each item's box, and the neighbors each direction reaches. */
 class Layout {
     #boxes;
-    #stacked;
+    #isStacked;
     #rightToLeft;
 
     constructor(items, rightToLeft) {
@@ -100,8 +100,8 @@ class Layout {
         this.#rightToLeft = rightToLeft;
 
         // Boxes that are all one box carry no layout, so the items stand in one column in their order.
-        const first = this.#boxes[0];
-        this.#stacked = this.#boxes.every(box => box.top === first.top && box.left === first.left);
+        const firstBox = this.#boxes[0];
+        this.#isStacked = this.#boxes.every(box => box.top === firstBox.top && box.left === firstBox.left);
     }
 
     get count() {
@@ -109,21 +109,21 @@ class Layout {
     }
 
     below(index) {
-        return index < 0 ? 0 : this.#stacked ? Math.min(this.count - 1, index + 1) : this.#nearest(index, box => this.#sameColumn(index, box) && box.top > this.#boxes[index].top, box => box.top);
+        return index < 0 ? 0 : this.#isStacked ? Math.min(this.count - 1, index + 1) : this.#findNearest(index, box => this.#sameColumn(index, box) && box.top > this.#boxes[index].top, box => box.top);
     }
 
     above(index) {
-        return index < 0 ? this.count - 1 : this.#stacked ? Math.max(0, index - 1) : this.#nearest(index, box => this.#sameColumn(index, box) && box.top < this.#boxes[index].top, box => -box.top);
+        return index < 0 ? this.count - 1 : this.#isStacked ? Math.max(0, index - 1) : this.#findNearest(index, box => this.#sameColumn(index, box) && box.top < this.#boxes[index].top, box => -box.top);
     }
 
     beside(index, direction) {
-        if (index < 0 || this.#stacked) {
+        if (index < 0 || this.#isStacked) {
             return index < 0 ? 0 : index;
         }
 
         const left = this.#boxes[index].left;
 
-        return this.#nearest(index, box => this.#sameRow(index, box) && Math.sign(box.left - left) === direction, box => direction * box.left);
+        return this.#findNearest(index, box => this.#sameRow(index, box) && Math.sign(box.left - left) === direction, box => direction * box.left);
     }
 
     /** Whether the item has no neighbors across, so its row's ends are the list's. */
@@ -132,8 +132,8 @@ class Layout {
     }
 
     // A row's own end where the item has neighbors in its row, else the list's; the list's whenever the whole list is asked for.
-    end(index, direction, whole = false) {
-        const rowmates = whole ? [] : this.#rowmates(index);
+    end(index, direction, isWholeList = false) {
+        const rowmates = isWholeList ? [] : this.#rowmates(index);
 
         if (rowmates.length === 0) {
             return direction < 0 ? 0 : this.count - 1;
@@ -146,7 +146,7 @@ class Layout {
     }
 
     #rowmates(index) {
-        return index < 0 || this.#stacked ? [] : this.#boxes.map((_, candidate) => candidate).filter(candidate => candidate !== index && this.#sameRow(index, this.#boxes[candidate]));
+        return index < 0 || this.#isStacked ? [] : this.#boxes.map((_, candidate) => candidate).filter(candidate => candidate !== index && this.#sameRow(index, this.#boxes[candidate]));
     }
 
     #sameColumn(index, box) {
@@ -158,8 +158,8 @@ class Layout {
     }
 
     // The item nearest along the measure among those the direction admits, or the item itself where none does.
-    #nearest(index, admits, measure) {
-        let best = index;
+    #findNearest(index, admits, measure) {
+        let bestIndex = index;
         let bestMeasure = Infinity;
 
         this.#boxes.forEach((box, candidate) => {
@@ -171,11 +171,11 @@ class Layout {
 
             if (value < bestMeasure) {
                 bestMeasure = value;
-                best = candidate;
+                bestIndex = candidate;
             }
         });
 
-        return best;
+        return bestIndex;
     }
 }
 
@@ -195,11 +195,11 @@ class SelectionInteraction {
     #tabStop = null;
     #anchor = null;
     #anchorPosition = null;
-    #seeking = null;
+    #activeSeek = null;
     #lastRequest = 0;
-    #waiting = null;
-    #listening = new AbortController();
-    #held = null;
+    #stopWaiting = null;
+    #listenerAbort = new AbortController();
+    #heldMarker = null;
     #readerMoved = false;
     #moveStart = null;
     #itemRootSelector;
@@ -286,7 +286,7 @@ class SelectionInteraction {
         // than routed, so whichever scope owns them still does, a surface keeping Tab inside itself above all. Each ends where
         // its focus has finished moving: a Tab at its release, a press at its click, where a touch tap's late compatibility press
         // has moved the focus, or at its release where it raises no click, and a press also at its cancellation.
-        const signal = this.#listening.signal;
+        const signal = this.#listenerAbort.signal;
         const ownerDocument = target.ownerDocument;
         target.addEventListener('focusin', event => this.#hold(this.#focusedMarker(event)), { signal });
 
@@ -333,10 +333,10 @@ class SelectionInteraction {
             }
         }, { capture: true, signal });
         target.addEventListener('focusout', event => {
-            const held = this.#held;
+            const heldMarker = this.#heldMarker;
 
-            if (event.relatedTarget === null && held && !this.#readerMoved) {
-                requestAnimationFrame(() => this.#restore(held));
+            if (event.relatedTarget === null && heldMarker && !this.#readerMoved) {
+                requestAnimationFrame(() => this.#restore(heldMarker));
             }
         }, { signal });
 
@@ -365,20 +365,20 @@ class SelectionInteraction {
         if (this.#gathersControls) {
             target.addEventListener('focusin', event => this.#focusItemOf(event), { signal });
 
-            const gathering = new MutationObserver(records => {
+            const gatherObserver = new MutationObserver(records => {
                 if (!records.every(record => record.type === 'attributes' && this.#gathered.has(record.target))) {
                     this.#gatherControls();
                 }
             });
-            gathering.observe(target, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex', 'disabled'] });
-            signal.addEventListener('abort', () => gathering.disconnect());
+            gatherObserver.observe(target, { childList: true, subtree: true, attributes: true, attributeFilter: ['tabindex', 'disabled'] });
+            signal.addEventListener('abort', () => gatherObserver.disconnect());
             this.#gatherControls();
         }
     }
 
     dispose() {
         this.#cancelSeek();
-        this.#listening.abort();
+        this.#listenerAbort.abort();
         this.#registration.dispose();
         this.#releaseControls();
         this.#releaseMarkers([]);
@@ -391,12 +391,12 @@ class SelectionInteraction {
      * @param {number} position The position of the item reached.
      */
     focusItem(request, position) {
-        if (this.#seeking?.request !== request) {
+        if (this.#activeSeek?.request !== request) {
             return;
         }
 
-        const { mode } = this.#seeking;
-        this.#seeking = null;
+        const { mode } = this.#activeSeek;
+        this.#activeSeek = null;
         this.#whenDrawn(() => this.#markerAt(position), marker => {
             this.#focusMarker(marker, this.#markers());
 
@@ -490,13 +490,13 @@ class SelectionInteraction {
 
     // The marker holding the focus can stop being one while its item stays; the focus moves to the marker the item draws now.
     #followFocus() {
-        const held = this.#tabStop;
+        const tabStop = this.#tabStop;
 
-        if (!held?.isConnected || held.matches(this.#markerSelector) || held !== this.#target.ownerDocument.activeElement) {
+        if (!tabStop?.isConnected || tabStop.matches(this.#markerSelector) || tabStop !== this.#target.ownerDocument.activeElement) {
             return;
         }
 
-        const marker = this.#markerIn(held);
+        const marker = this.#markerIn(tabStop);
 
         if (marker) {
             this.#focusMarker(marker, this.#markers());
@@ -519,25 +519,25 @@ class SelectionInteraction {
     }
 
     #rangeTokens(from, to) {
-        const all = this.#markers();
-        const fromIndex = all.indexOf(from);
-        const toIndex = all.indexOf(to);
+        const markers = this.#markers();
+        const fromIndex = markers.indexOf(from);
+        const toIndex = markers.indexOf(to);
 
         if (fromIndex === -1 || toIndex === -1) {
             return [this.#tokenOf(to)];
         }
 
         // From the anchor to the item reached, which a selection of one item at most chooses alone.
-        const tokens = all.slice(Math.min(fromIndex, toIndex), Math.max(fromIndex, toIndex) + 1).map(marker => this.#tokenOf(marker));
+        const tokens = markers.slice(Math.min(fromIndex, toIndex), Math.max(fromIndex, toIndex) + 1).map(marker => this.#tokenOf(marker));
 
         return fromIndex <= toIndex ? tokens : tokens.reverse();
     }
 
-    #focusMarker(marker, all) {
+    #focusMarker(marker, markers) {
         this.#tabStop = marker;
-        this.#releaseMarkers(all);
+        this.#releaseMarkers(markers);
 
-        for (const candidate of all) {
+        for (const candidate of markers) {
             this.#setMarkerTabIndex(candidate, candidate === marker ? 0 : -1);
         }
 
@@ -547,12 +547,12 @@ class SelectionInteraction {
     // The marker last focused stays the one tab stop while it is drawn, the marker its item draws now where it stopped being one, and
     // the first drawn marker stands in for it otherwise.
     #settleTabStop() {
-        const all = this.#markers();
-        const last = this.#tabStop?.isConnected && this.#target.contains(this.#tabStop) ? this.#tabStop : null;
-        const stop = (last && (all.includes(last) ? last : this.#markerIn(last))) ?? all[0];
-        this.#releaseMarkers(all);
+        const markers = this.#markers();
+        const lastTabStop = this.#tabStop?.isConnected && this.#target.contains(this.#tabStop) ? this.#tabStop : null;
+        const stop = (lastTabStop && (markers.includes(lastTabStop) ? lastTabStop : this.#markerIn(lastTabStop))) ?? markers[0];
+        this.#releaseMarkers(markers);
 
-        for (const marker of all) {
+        for (const marker of markers) {
             this.#setMarkerTabIndex(marker, marker === stop ? 0 : -1);
         }
     }
@@ -619,18 +619,18 @@ class SelectionInteraction {
     // The actions hand the focus back to their opener as they close, which passes it on to where the key was pressed; the focus
     // reaching a marker or another item first means the reader went elsewhere.
     #returnFromActions(event) {
-        const pending = this.#actionsReturn;
+        const actionsReturn = this.#actionsReturn;
         const { target } = event;
 
-        if (!pending || !(target instanceof Element)) {
+        if (!actionsReturn || !(target instanceof Element)) {
             return;
         }
 
-        if (target === pending.opener) {
+        if (target === actionsReturn.opener) {
             this.#actionsReturn = null;
 
-            if (pending.origin.isConnected) {
-                pending.origin.focus();
+            if (actionsReturn.origin.isConnected) {
+                actionsReturn.origin.focus();
             }
 
             return;
@@ -638,7 +638,7 @@ class SelectionInteraction {
 
         const root = target.closest(this.#itemRootSelector);
 
-        if (target.matches(this.#markerSelector) || (root && root !== pending.opener.closest(this.#itemRootSelector))) {
+        if (target.matches(this.#markerSelector) || (root && root !== actionsReturn.opener.closest(this.#itemRootSelector))) {
             this.#actionsReturn = null;
         }
     }
@@ -659,40 +659,40 @@ class SelectionInteraction {
 
     /** The items whose controls Tab reaches: each holding a collection's tab stop, by its marker or itself, and the one holding the focus. */
     #activeRoots(roots) {
-        const active = new Set(roots.filter(root => root.getAttribute('tabindex') === '0' || root.querySelector(`${this.#markerSelector}[tabindex="0"]`) !== null));
-        const focused = this.#target.ownerDocument.activeElement;
-        const focusedRoot = focused instanceof Element && this.#target.contains(focused) ? focused.closest(this.#itemRootSelector) : null;
+        const activeRoots = new Set(roots.filter(root => root.getAttribute('tabindex') === '0' || root.querySelector(`${this.#markerSelector}[tabindex="0"]`) !== null));
+        const focusedElement = this.#target.ownerDocument.activeElement;
+        const focusedRoot = focusedElement instanceof Element && this.#target.contains(focusedElement) ? focusedElement.closest(this.#itemRootSelector) : null;
 
         if (focusedRoot) {
-            active.add(focusedRoot);
+            activeRoots.add(focusedRoot);
         }
 
-        return active;
+        return activeRoots;
     }
 
     // Every item's controls but the active ones' leave the Tab sequence, each keeping the tab index it had to return to; while no item
     // holds a tab stop, Tab has no item to enter by, so every item's controls stay in the sequence.
     #gatherControls() {
         const roots = [...this.#target.querySelectorAll(this.#itemRootSelector)];
-        const active = this.#activeRoots(roots);
+        const activeRoots = this.#activeRoots(roots);
 
         for (const [control, tabIndex] of this.#gathered) {
             const root = control.isConnected ? control.closest(this.#itemRootSelector) : null;
 
             if (!control.isConnected) {
                 this.#gathered.delete(control);
-            } else if (active.size === 0 || root === null || active.has(root)) {
+            } else if (activeRoots.size === 0 || root === null || activeRoots.has(root)) {
                 this.#gathered.delete(control);
                 this.#restoreTabIndex(control, tabIndex);
             }
         }
 
-        if (active.size === 0) {
+        if (activeRoots.size === 0) {
             return;
         }
 
         for (const root of roots) {
-            if (active.has(root)) {
+            if (activeRoots.has(root)) {
                 continue;
             }
 
@@ -736,16 +736,16 @@ class SelectionInteraction {
     }
 
     // A range runs by position where the owner seeks, so an anchor scrolled out of the page still counts; by the markers drawn otherwise.
-    #extendTo(marker, additive) {
+    #extendTo(marker, isAdditive) {
         const position = this.#positionOf(marker);
 
         if (this.#anchorPosition !== null && position !== null) {
-            tell(this.#owner, 'HandleRangeSelectByPositionAsync', this.#anchorPosition, position, additive);
+            tell(this.#owner, 'HandleRangeSelectByPositionAsync', this.#anchorPosition, position, isAdditive);
             return;
         }
 
         // A range can span every item drawn, so its tokens cross through the transfer.
-        tell(this.#owner, 'HandleRangeSelectAsync', Transfer.of(this.#rangeTokens(this.#anchor, marker)), additive);
+        tell(this.#owner, 'HandleRangeSelectAsync', Transfer.of(this.#rangeTokens(this.#anchor, marker)), isAdditive);
     }
 
     #select(event) {
@@ -769,20 +769,20 @@ class SelectionInteraction {
     // Asks the owner for the list's first or last item, a request for the same end the same way still pending joining it rather
     // than asking again; one that selects otherwise replaces it.
     #seek(edge, mode) {
-        const effective = mode === 'extend' && this.#anchorPosition === null ? 'select' : mode;
+        const effectiveMode = mode === 'extend' && this.#anchorPosition === null ? 'select' : mode;
 
-        if (this.#seeking?.edge === edge && this.#seeking.mode === effective) {
+        if (this.#activeSeek?.edge === edge && this.#activeSeek.mode === effectiveMode) {
             return;
         }
 
         this.#cancelSeek();
         const request = ++this.#lastRequest;
-        this.#seeking = { request, edge, mode: effective };
-        tell(this.#owner, 'HandleSeekAsync', request, edge > 0, effective, effective === 'extend' ? this.#anchorPosition : null);
+        this.#activeSeek = { request, edge, mode: effectiveMode };
+        tell(this.#owner, 'HandleSeekAsync', request, edge > 0, effectiveMode, effectiveMode === 'extend' ? this.#anchorPosition : null);
     }
 
     #hold(marker) {
-        this.#held = marker ? { token: this.#tokenOf(marker), position: this.#positionOf(marker), item: this.#itemOf(marker) } : null;
+        this.#heldMarker = marker ? { token: this.#tokenOf(marker), position: this.#positionOf(marker), item: this.#itemOf(marker) } : null;
         this.#readerMoved = false;
         this.#moveStart = null;
     }
@@ -804,23 +804,23 @@ class SelectionInteraction {
 
     // Whether the focus has fallen to nothing rather than gone to something else.
     #isFocusLost() {
-        const active = this.#target.ownerDocument.activeElement;
+        const activeElement = this.#target.ownerDocument.activeElement;
 
-        return !active || active === this.#target.ownerDocument.body;
+        return !activeElement || activeElement === this.#target.ownerDocument.body;
     }
 
     // Only a focus that fell to nothing is taken back, onto the held item's marker once the render has drawn it again, by token or by position.
-    #restore(held) {
-        if (this.#held !== held || this.#readerMoved || !this.#isFocusLost() || this.#waiting) {
+    #restore(heldMarker) {
+        if (this.#heldMarker !== heldMarker || this.#readerMoved || !this.#isFocusLost() || this.#stopWaiting) {
             return;
         }
 
-        const find = () => this.#target.querySelector(`[${this.#keyAttribute}="${held.token}"]`)
-            ?? (held.position === null ? null : this.#markerAt(held.position))
-            ?? this.#nearestMarker(held.item);
+        const find = () => this.#target.querySelector(`[${this.#keyAttribute}="${heldMarker.token}"]`)
+            ?? (heldMarker.position === null ? null : this.#markerAt(heldMarker.position))
+            ?? this.#nearestMarker(heldMarker.item);
 
         this.#whenDrawn(find, marker => {
-            if (this.#held === held && !this.#readerMoved && this.#isFocusLost()) {
+            if (this.#heldMarker === heldMarker && !this.#readerMoved && this.#isFocusLost()) {
                 this.#focusMarker(marker, this.#markers());
             }
         });
@@ -832,10 +832,10 @@ class SelectionInteraction {
             return null;
         }
 
-        const all = this.#markers();
+        const markers = this.#markers();
 
-        return all.find(marker => item.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_FOLLOWING)
-            ?? all.findLast(marker => item.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_PRECEDING)
+        return markers.find(marker => item.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_FOLLOWING)
+            ?? markers.findLast(marker => item.compareDocumentPosition(marker) & Node.DOCUMENT_POSITION_PRECEDING)
             ?? null;
     }
 
@@ -844,16 +844,16 @@ class SelectionInteraction {
     }
 
     #cancelSeek() {
-        this.#seeking = null;
-        this.#waiting?.();
-        this.#waiting = null;
+        this.#activeSeek = null;
+        this.#stopWaiting?.();
+        this.#stopWaiting = null;
     }
 
     // Hands over the marker the finder names once it is drawn, giving up after a while or when the reader moves on; a newer wait
     // replaces this one, and this one's own end stops it alone.
     #whenDrawn(find, land) {
-        this.#waiting?.();
-        this.#waiting = null;
+        this.#stopWaiting?.();
+        this.#stopWaiting = null;
         const marker = find();
 
         if (marker) {
@@ -862,11 +862,11 @@ class SelectionInteraction {
         }
 
         const observer = new MutationObserver(() => {
-            const drawn = find();
+            const drawnMarker = find();
 
-            if (drawn) {
+            if (drawnMarker) {
                 stop();
-                land(drawn);
+                land(drawnMarker);
             }
         });
         const timer = setTimeout(() => stop(), SeekPatience);
@@ -874,15 +874,15 @@ class SelectionInteraction {
             observer.disconnect();
             clearTimeout(timer);
 
-            if (this.#waiting === stop) {
-                this.#waiting = null;
+            if (this.#stopWaiting === stop) {
+                this.#stopWaiting = null;
             }
         };
 
         observer.observe(this.#target, this.#positionAttribute
             ? { childList: true, subtree: true, attributes: true, attributeFilter: [this.#positionAttribute] }
             : { childList: true, subtree: true });
-        this.#waiting = stop;
+        this.#stopWaiting = stop;
     }
 
     /** The items and the place the key would move the focused one to, the list's end to ask the owner for, or null where there is nowhere to go. */
@@ -893,29 +893,29 @@ class SelectionInteraction {
             return null;
         }
 
-        const all = this.#markers();
+        const markers = this.#markers();
 
-        if (all.length === 0) {
+        if (markers.length === 0) {
             return null;
         }
 
         // The focused marker names the current item; tabbing onto one leaves the roving tab index where it was.
-        const focused = document.activeElement?.closest(this.#markerSelector);
-        const currentIndex = focused ? all.indexOf(focused) : -1;
+        const focusedMarker = document.activeElement?.closest(this.#markerSelector);
+        const currentIndex = focusedMarker ? markers.indexOf(focusedMarker) : -1;
         // The reading direction is the list's own, which the page's may differ from.
         const rightToLeft = getComputedStyle(this.#target).direction === 'rtl';
-        const layout = new Layout(all.map(marker => this.#itemOf(marker)), rightToLeft);
+        const layout = new Layout(markers.map(marker => this.#itemOf(marker)), rightToLeft);
         // Home and End reach the whole list where the item stands alone in its row or the primary modifier asks for it.
-        const whole = edge !== undefined && (event.ctrlKey || event.metaKey || layout.standsAlone(currentIndex));
+        const isWholeList = edge !== undefined && (event.ctrlKey || event.metaKey || layout.standsAlone(currentIndex));
 
-        if (whole && this.#seeks) {
-            return { edge, whole };
+        if (isWholeList && this.#seeks) {
+            return { edge, isWholeList };
         }
 
-        const nextIndex = target(layout, currentIndex, whole);
+        const nextIndex = target(layout, currentIndex, isWholeList);
         const isEnd = key === 'Home' || key === 'End';
 
-        return nextIndex === currentIndex && !isEnd ? null : { all, next: all[nextIndex], whole };
+        return nextIndex === currentIndex && !isEnd ? null : { markers, nextMarker: markers[nextIndex], isWholeList };
     }
 
     // The move is planned again here, since a host's remap of the action replaces the binding and its predicate with it.
@@ -928,28 +928,28 @@ class SelectionInteraction {
 
         // Plain selects the item reached and the primary modifier moves the focus alone; Shift extends the range, with the
         // primary modifier too where the move reached the whole list's end. A list that does not select moves the focus alone.
-        const primary = event.ctrlKey || event.metaKey;
-        const mode = !this.#selects ? 'focus' : event.shiftKey && (!primary || plan.whole) ? 'extend' : primary ? 'focus' : 'select';
+        const isPrimaryHeld = event.ctrlKey || event.metaKey;
+        const mode = !this.#selects ? 'focus' : event.shiftKey && (!isPrimaryHeld || plan.isWholeList) ? 'extend' : isPrimaryHeld ? 'focus' : 'select';
 
-        if (plan.edge !== undefined && plan.all === undefined) {
+        if (plan.edge !== undefined && plan.markers === undefined) {
             this.#seek(plan.edge, mode);
             return;
         }
 
         this.#cancelSeek();
-        const { all, next } = plan;
-        this.#focusMarker(next, all);
+        const { markers, nextMarker } = plan;
+        this.#focusMarker(nextMarker, markers);
 
         if (mode === 'focus') {
             return;
         }
 
         if (mode === 'extend' && this.#anchor) {
-            this.#extendTo(next, false);
+            this.#extendTo(nextMarker, false);
             return;
         }
 
-        this.#setAnchor(next);
-        tell(this.#owner, 'HandleSelectAsync', this.#tokenOf(next), false);
+        this.#setAnchor(nextMarker);
+        tell(this.#owner, 'HandleSelectAsync', this.#tokenOf(nextMarker), false);
     }
 }

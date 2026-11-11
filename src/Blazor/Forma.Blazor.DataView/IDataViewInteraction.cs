@@ -60,8 +60,8 @@ public interface IDataViewInteraction<TItem>
 
     /// <summary>Selects or clears <paramref name="item"/> through its own control, subject to the selection bounds.</summary>
     /// <param name="item">The item whose control changed.</param>
-    /// <param name="selected">Whether the item is to be selected.</param>
-    Task ToggleSelectionAsync(TItem item, bool selected);
+    /// <param name="isSelected">Whether the item is to be selected.</param>
+    Task ToggleSelectionAsync(TItem item, bool isSelected);
 
     /// <summary>Selects or clears what the master control reaches in the selection options' mode.</summary>
     Task ToggleMasterAsync();

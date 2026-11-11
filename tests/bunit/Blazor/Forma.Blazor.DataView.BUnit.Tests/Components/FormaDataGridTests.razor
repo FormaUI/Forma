@@ -1071,11 +1071,11 @@
             cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 6);
             var engine = cut.FindComponent<FormaDataView<GridItem>>();
             var tokens = GetRowTokens(engine);
-            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[1], additive: false));
+            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[1], isAdditive: false));
             var before = new Dictionary<int, int>(drawn);
 
             // Act — a press on another row moves the selection from the second to the fifth
-            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[4], additive: false));
+            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[4], isAdditive: false));
 
             // Assert
             Assert.Equal([2, 5], DrawnSince(drawn, before));
@@ -1214,11 +1214,11 @@
             // Act — the first rows are selected again and again while the sixth is never drawn again
             foreach (var _ in Enumerable.Range(0, 4))
             {
-                await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[0], additive: false));
-                await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[1], additive: false));
+                await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[0], isAdditive: false));
+                await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[1], isAdditive: false));
             }
 
-            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[5], additive: false));
+            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[5], isAdditive: false));
 
             // Assert
             Assert.Equal(6, Assert.Single(changedTo!).Id);
@@ -2183,7 +2183,7 @@
             var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[1].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
 
             // Act
-            await cut.InvokeAsync(() => grid.HandleSelectAsync(token, additive: false));
+            await cut.InvokeAsync(() => grid.HandleSelectAsync(token, isAdditive: false));
 
             // Assert
             var selected = Assert.Single(changedTo!);
@@ -2210,7 +2210,7 @@
             var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[2].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
 
             // Act
-            await cut.InvokeAsync(() => grid.HandleSelectAsync(token, additive: true));
+            await cut.InvokeAsync(() => grid.HandleSelectAsync(token, isAdditive: true));
 
             // Assert
             Assert.Equal(2, changedTo!.Count);
@@ -2241,7 +2241,7 @@
                 .ToArray();
 
             // Act
-            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(InlineTransfer.Of(tokens), additive: false));
+            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(InlineTransfer.Of(tokens), isAdditive: false));
 
             // Assert
             Assert.Equal(3, changedTo!.Count);
@@ -2273,7 +2273,7 @@
             await using var stream = new FakeJSStreamReference(JsonSerializer.SerializeToUtf8Bytes(tokens));
 
             // Act
-            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(new JSTransfer { Stream = stream }, additive: false));
+            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(new JSTransfer { Stream = stream }, isAdditive: false));
 
             // Assert
             Assert.Multiple(
@@ -2301,7 +2301,7 @@
             await using var stream = new FakeJSStreamReference([], length: JSTransferOptions.Default.MaximumLength + 1);
 
             // Act
-            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(new JSTransfer { Stream = stream }, additive: false));
+            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(new JSTransfer { Stream = stream }, isAdditive: false));
 
             // Assert
             Assert.Multiple(
@@ -2330,7 +2330,7 @@
             var token = int.Parse(cut.FindAll("tbody .forma-data-grid-row-marker")[2].GetAttribute("data-row-key")!, CultureInfo.InvariantCulture);
 
             // Act
-            await cut.InvokeAsync(() => grid.HandleSelectAsync(token, additive: true));
+            await cut.InvokeAsync(() => grid.HandleSelectAsync(token, isAdditive: true));
 
             // Assert
             Assert.Null(changedTo);
@@ -2597,7 +2597,7 @@
             grid.Render();
 
             // Act
-            await cut.InvokeAsync(() => grid.Instance.HandleSelectAsync(token, additive: false));
+            await cut.InvokeAsync(() => grid.Instance.HandleSelectAsync(token, isAdditive: false));
 
             // Assert
             var selected = Assert.Single(changedTo!);
@@ -2628,7 +2628,7 @@
             await cut.InvokeAsync(() => pager.Instance.OnPageChanged.InvokeAsync(2));
             grid.WaitForState(() => grid.Markup.Contains("Item 3", StringComparison.Ordinal));
             grid.Render();
-            await cut.InvokeAsync(() => grid.Instance.HandleSelectAsync(staleToken, additive: false));
+            await cut.InvokeAsync(() => grid.Instance.HandleSelectAsync(staleToken, isAdditive: false));
 
             // Assert
             Assert.Null(changedTo);

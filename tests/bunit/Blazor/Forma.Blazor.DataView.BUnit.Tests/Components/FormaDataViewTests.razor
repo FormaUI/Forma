@@ -385,7 +385,7 @@
             var engine = cut.FindComponent<FormaDataView<Product>>();
 
             // Act
-            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(7, last: true, "select", null));
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(7, isLast: true, "select", null));
 
             // Assert
             Assert.Multiple(
@@ -407,7 +407,7 @@
             var engine = cut.FindComponent<FormaDataView<Product>>();
 
             // Act
-            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: false, "focus", null));
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, isLast: false, "focus", null));
 
             // Assert
             Assert.Multiple(
@@ -429,7 +429,7 @@
             var engine = cut.FindComponent<FormaDataView<Product>>();
 
             // Act
-            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: true, "extend", 1));
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, isLast: true, "extend", 1));
 
             // Assert
             Assert.Equal(["Atlas", "Primer", "Wrench"], selected.Select(product => product.Name).Order());
@@ -451,9 +451,9 @@
             var engine = cut.FindComponent<FormaDataView<Product>>();
 
             // Act
-            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: false, "select", null));
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, isLast: false, "select", null));
             var first = selected;
-            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectByPositionAsync(0, 3, additive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectByPositionAsync(0, 3, isAdditive: false));
 
             // Assert — the positions run through the set, Books' two first
             Assert.Multiple(
@@ -483,7 +483,7 @@
 
             // Act
             holding = true;
-            var move = engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: true, "select", null));
+            var move = engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, isLast: true, "select", null));
             await engine.InvokeAsync(() => engine.Instance.RefreshDataAsync());
             held.SetResult(new DataViewPage<Product>([CreateProducts().Last()], 4));
             await move;
@@ -514,7 +514,7 @@
 
             // Act
             failing = true;
-            await Assert.ThrowsAsync<InvalidOperationException>(() => engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: true, "select", null)));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, isLast: true, "select", null)));
 
             // Assert
             Assert.Equal(cancels + 1, CancelCount(ctx));
@@ -534,7 +534,7 @@
             var engine = cut.FindComponent<FormaDataView<Product>>();
 
             // Act
-            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: true, "extend", null));
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, isLast: true, "extend", null));
 
             // Assert — the focus still lands on the last item
             Assert.Multiple(
@@ -556,7 +556,7 @@
             var engine = cut.FindComponent<FormaDataView<Product>>();
 
             // Act
-            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, last: true, "focus", null));
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, isLast: true, "focus", null));
 
             // Assert
             Assert.Equal((1, 3), LastFocus(ctx));
@@ -597,7 +597,7 @@
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 2);
             var engine = cut.FindComponent<FormaDataView<Product>>();
             var token = int.Parse(cut.FindAll("[data-item]")[1].GetAttribute("data-item")!, System.Globalization.CultureInfo.InvariantCulture);
-            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(token, additive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(token, isAdditive: false));
 
             // Act — the host renders again, handing over a new source
             engine.Render(parameters => parameters.Add(view => view.Items, products.AsQueryable()));
@@ -668,10 +668,10 @@
             var token = GetToken(cut, "Locked");
 
             // Act
-            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(token, additive: false));
-            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(token, additive: true));
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(token, isAdditive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(token, isAdditive: true));
             await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(locked, true));
-            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectAsync(InlineTransfer.Of(new[] { token }), additive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectAsync(InlineTransfer.Of(new[] { token }), isAdditive: false));
             await engine.InvokeAsync(() => engine.Instance.SelectAsync([locked]));
             await engine.InvokeAsync(() => engine.Instance.HandleActivateAsync(token));
             await engine.InvokeAsync(() => engine.Instance.ActivateAsync(locked));
@@ -694,11 +694,11 @@
             var cut = Render(ctx, []);
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
             var engine = cut.FindComponent<FormaDataView<Entry>>();
-            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(GetToken(cut, "Notes"), additive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(GetToken(cut, "Notes"), isAdditive: false));
             var archive = GetToken(cut, "Archive");
 
             // Act - a press on the folder, then Enter on it
-            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(archive, additive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(archive, isAdditive: false));
             var item = cut.FindAll("[role=listitem]")[0];
             var (ariaSelected, isMuted) = (item.GetAttribute("aria-selected"), item.ClassList.Contains("forma-data-list-item-disabled"));
             var selected = cut.FindAll("[aria-selected=true] .forma-data-list-item-name").Select(name => name.TextContent).ToList();
@@ -845,7 +845,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
             var engine = cut.FindComponent<FormaDataView<Entry>>();
-            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(GetToken(cut, "Notes"), additive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(GetToken(cut, "Notes"), isAdditive: false));
 
             // Act
             await engine.InvokeAsync(() => engine.Instance.MakeCurrentAsync(Entries[0]));
@@ -990,13 +990,13 @@
             cut.WaitForState(() => cut.FindAll("tbody tr").Count == 4);
             var engine = cut.FindComponent<FormaDataView<Entry>>();
             var atlas = GetToken(cut, "Atlas");
-            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(atlas, additive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleSelectAsync(atlas, isAdditive: false));
 
             // Act - a range from Atlas to Hammer, then from Hammer to the folder
-            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectAsync(InlineTransfer.Of(new[] { atlas, GetToken(cut, "Hammer") }), additive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectAsync(InlineTransfer.Of(new[] { atlas, GetToken(cut, "Hammer") }), isAdditive: false));
             var reached = changes[^1].Select(entry => entry.Name).ToList();
             var count = changes.Count;
-            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectAsync(InlineTransfer.Of(new[] { GetToken(cut, "Hammer"), GetToken(cut, "Folder") }), additive: false));
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectAsync(InlineTransfer.Of(new[] { GetToken(cut, "Hammer"), GetToken(cut, "Folder") }), isAdditive: false));
 
             // Assert
             Assert.Multiple(

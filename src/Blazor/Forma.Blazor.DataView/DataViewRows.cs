@@ -27,32 +27,32 @@ internal sealed class DataViewRows<TItem>(
     where TItem : notnull
 {
     // Room enough for any set a source cannot count, which is read until it comes back short.
-    private const int UncountedItems = int.MaxValue / 2;
+    private const int UncountedItemCount = int.MaxValue / 2;
 
     private readonly IDataView<TItem> _view = view;
     private readonly RowComparer _comparer = new(view.ItemComparer);
     private List<Segment> _segments = [];
     private List<(object? Key, int Count, bool IsFolded)> _shape = [];
     private int? _shapeTotal;
-    private int _shapeColumns;
+    private int _shapeColumnCount;
     private bool _isLaidOut;
-    private int _columns = 1;
-    private int _knownItems;
+    private int _columnCount = 1;
+    private int _knownItemCount;
     private bool _isExhausted;
-    private int _publishedRows;
-    private int _continuationRows;
+    private int _publishedRowCount;
+    private int _continuationRowCount;
     private bool _isHeld;
-    private List<DataViewRow<TItem>> _answered = [];
+    private List<DataViewRow<TItem>> _answeredRows = [];
     private object? _focusedItemKey;
     private DataViewRow<TItem>? _focusedRow;
     private DataViewRow<TItem>? _previousRow;
     private DataViewRow<TItem>? _nextRow;
 
     /// <summary>How many items stand across a row.</summary>
-    public int Columns
+    public int ColumnCount
     {
-        get => _columns;
-        set => _columns = Math.Max(1, value);
+        get => _columnCount;
+        set => _columnCount = Math.Max(1, value);
     }
 
     /// <summary>How many rows the set lays out into.</summary>
@@ -74,9 +74,9 @@ internal sealed class DataViewRows<TItem>(
         HashSet<object> keys = [];
 
         // Until a row holding it is known, the focused item stands for its own row, which it heads in a view of one item a row.
-        if (_focusedRow is { } focused)
+        if (_focusedRow is { } focusedRow)
         {
-            keys.Add(GetRowKey(focused));
+            keys.Add(GetRowKey(focusedRow));
         }
         else if (_focusedItemKey is { } key)
         {
@@ -102,7 +102,7 @@ internal sealed class DataViewRows<TItem>(
     /// moving the focus along the focused row or onto a row beside it.</remarks>
     public bool NoteFocus(TItem item)
     {
-        var kept = GetPinnedKeys();
+        var pinnedKeys = GetPinnedKeys();
         var key = _view.ItemKey(item);
 
         if (!Equals(key, _focusedItemKey))
@@ -116,17 +116,17 @@ internal sealed class DataViewRows<TItem>(
 
         FindFocusedNeighbors();
 
-        return !kept.SetEquals(GetPinnedKeys());
+        return !pinnedKeys.SetEquals(GetPinnedKeys());
     }
 
     /// <summary>Forgets what the rows were laid out from and what a source that cannot count has answered.</summary>
     public void Reset()
     {
         _isLaidOut = false;
-        _knownItems = 0;
+        _knownItemCount = 0;
         _isExhausted = false;
-        _publishedRows = 0;
-        _continuationRows = 0;
+        _publishedRowCount = 0;
+        _continuationRowCount = 0;
     }
 
     /// <summary>Lays the rows out again.</summary>
@@ -135,7 +135,7 @@ internal sealed class DataViewRows<TItem>(
     {
         List<(object? Key, int Count, bool IsFolded)> shape = [.. _view.Groups.Select(group => (group.Key, GetLaidOutCount(group), _view.IsFolded(group)))];
 
-        if (_isLaidOut && _shapeTotal == _view.ItemCount && _shapeColumns == _columns && shape.SequenceEqual(_shape))
+        if (_isLaidOut && _shapeTotal == _view.ItemCount && _shapeColumnCount == _columnCount && shape.SequenceEqual(_shape))
         {
             return false;
         }
@@ -143,7 +143,7 @@ internal sealed class DataViewRows<TItem>(
         _isLaidOut = true;
         _shape = shape;
         _shapeTotal = _view.ItemCount;
-        _shapeColumns = _columns;
+        _shapeColumnCount = _columnCount;
         _segments = [];
         var row = 0;
 
@@ -155,7 +155,7 @@ internal sealed class DataViewRows<TItem>(
             {
                 var segment = new Segment(row, group, firstItem, GetLaidOutCount(group), _view.IsFolded(group));
                 _segments.Add(segment);
-                row += segment.GetRowCount(_columns);
+                row += segment.GetRowCount(_columnCount);
                 firstItem += GetLaidOutCount(group);
             }
         }
@@ -163,14 +163,14 @@ internal sealed class DataViewRows<TItem>(
         {
             var segment = new Segment(0, null, 0, total, false);
             _segments.Add(segment);
-            row = segment.GetRowCount(_columns);
+            row = segment.GetRowCount(_columnCount);
         }
         else if (_view.ItemCount is null)
         {
             // A source that cannot count is read as far as it answers; the rows end where a slice comes back short.
-            var segment = new Segment(0, null, 0, UncountedItems, false);
+            var segment = new Segment(0, null, 0, UncountedItemCount, false);
             _segments.Add(segment);
-            row = segment.GetRowCount(_columns);
+            row = segment.GetRowCount(_columnCount);
         }
 
         RowCount = row;
@@ -186,7 +186,7 @@ internal sealed class DataViewRows<TItem>(
         {
             if (itemIndex < segment.FirstItem + segment.ItemCount)
             {
-                var itemRow = Math.Max(0, itemIndex - segment.FirstItem) / _columns;
+                var itemRow = Math.Max(0, itemIndex - segment.FirstItem) / _columnCount;
 
                 // A group's first row is reached with its heading above it, so the reader sees which group it opens.
                 return segment.IsFolded || itemRow == 0
@@ -217,41 +217,41 @@ internal sealed class DataViewRows<TItem>(
             }
 
             var itemRow = offset - (segment.Group is null ? 0 : 1);
-            var firstItem = segment.FirstItem + (itemRow * _columns);
-            rows.Add((null, firstItem, Math.Min(_columns, segment.FirstItem + segment.ItemCount - firstItem)));
+            var firstItem = segment.FirstItem + (itemRow * _columnCount);
+            rows.Add((null, firstItem, Math.Min(_columnCount, segment.FirstItem + segment.ItemCount - firstItem)));
         }
 
         var items = await FetchAsync(rows, request.CancellationToken);
-        List<DataViewRow<TItem>> answered = [.. rows.Select(row => new DataViewRow<TItem>(row.Group, row.Group is null ? Slice(items, row.FirstItem, row.ItemCount) : [], row.FirstItem))];
+        List<DataViewRow<TItem>> answeredRows = [.. rows.Select(row => new DataViewRow<TItem>(row.Group, row.Group is null ? Slice(items, row.FirstItem, row.ItemCount) : [], row.FirstItem))];
 
         if (_view.ItemCount is not null || _view.IsGrouped)
         {
-            return Answer(answered, RowCount);
+            return Answer(answeredRows, RowCount);
         }
 
         // Uncounted, a slice shorter than asked for ends the set; until one does, the rows run one slice past the last answered,
         // so a scroll to their end asks for the next.
-        var filled = answered.TakeWhile(row => row.Items.Count > 0).ToList();
+        var filledRows = answeredRows.TakeWhile(row => row.Items.Count > 0).ToList();
 
-        if (filled.Count > 0)
+        if (filledRows.Count > 0)
         {
-            _knownItems = Math.Max(_knownItems, filled[^1].FirstItemIndex + filled[^1].Items.Count);
+            _knownItemCount = Math.Max(_knownItemCount, filledRows[^1].FirstItemIndex + filledRows[^1].Items.Count);
         }
 
-        _isExhausted |= filled.Count < rows.Count || (filled.Count > 0 && filled[^1].Items.Count < _columns);
-        _continuationRows = Math.Max(_continuationRows, request.Count);
+        _isExhausted |= filledRows.Count < rows.Count || (filledRows.Count > 0 && filledRows[^1].Items.Count < _columnCount);
+        _continuationRowCount = Math.Max(_continuationRowCount, request.Count);
 
         // The first answer is published with it; a later one that found more rows is published once it has been drawn.
-        if (_publishedRows == 0)
+        if (_publishedRowCount == 0)
         {
             Publish();
         }
-        else if (!_isHeld && PublishableRows != _publishedRows)
+        else if (!_isHeld && PublishableRowCount != _publishedRowCount)
         {
             _ = invoke(RepublishAsync);
         }
 
-        return Answer(filled, _publishedRows);
+        return Answer(filledRows, _publishedRowCount);
     }
 
     // A group lays out the items it holds where it holds them, as an appending view's do, and its whole count where it holds none.
@@ -262,7 +262,7 @@ internal sealed class DataViewRows<TItem>(
     // hands the pinned keys to the virtualization as it draws.
     private ItemsProviderResult<DataViewRow<TItem>> Answer(List<DataViewRow<TItem>> rows, int count)
     {
-        _answered = rows;
+        _answeredRows = rows;
 
         if (FindFocusedNeighbors())
         {
@@ -276,24 +276,24 @@ internal sealed class DataViewRows<TItem>(
     // answered where they hold it; a side the answer ends before is left as it was. Returns whether the rows kept drawn changed.
     private bool FindFocusedNeighbors()
     {
-        if (_focusedItemKey is not { } focused)
+        if (_focusedItemKey is not { } focusedItemKey)
         {
             return false;
         }
 
-        var index = _answered.FindIndex(row => Holds(row, focused));
+        var index = _answeredRows.FindIndex(row => Holds(row, focusedItemKey));
 
         if (index < 0)
         {
             return false;
         }
 
-        var kept = GetPinnedKeys();
-        _focusedRow = _answered[index];
-        _previousRow = _answered.Take(index).LastOrDefault(row => row.Group is null) ?? _previousRow;
-        _nextRow = _answered.Skip(index + 1).FirstOrDefault(row => row.Group is null) ?? _nextRow;
+        var pinnedKeys = GetPinnedKeys();
+        _focusedRow = _answeredRows[index];
+        _previousRow = _answeredRows.Take(index).LastOrDefault(row => row.Group is null) ?? _previousRow;
+        _nextRow = _answeredRows.Skip(index + 1).FirstOrDefault(row => row.Group is null) ?? _nextRow;
 
-        return !kept.SetEquals(GetPinnedKeys());
+        return !pinnedKeys.SetEquals(GetPinnedKeys());
     }
 
     private bool Holds(DataViewRow<TItem>? row, object key)
@@ -330,20 +330,20 @@ internal sealed class DataViewRows<TItem>(
     }
 
     // Uncounted, the rows only ever grow: every item answered so far, and one slice more while the source may hold further ones.
-    private int PublishableRows
-        => ((_knownItems + _columns - 1) / _columns) + (_isExhausted ? 0 : _continuationRows);
+    private int PublishableRowCount
+        => ((_knownItemCount + _columnCount - 1) / _columnCount) + (_isExhausted ? 0 : _continuationRowCount);
 
     private bool IsUncounted
         => _view.ItemCount is null && !_view.IsGrouped;
 
     private bool Publish()
     {
-        if (!IsUncounted || PublishableRows == _publishedRows)
+        if (!IsUncounted || PublishableRowCount == _publishedRowCount)
         {
             return false;
         }
 
-        _publishedRows = PublishableRows;
+        _publishedRowCount = PublishableRowCount;
 
         return true;
     }
@@ -361,19 +361,19 @@ internal sealed class DataViewRows<TItem>(
     }
 
     /// <summary>The position in the set of the first or the last item the rows reach, across the open groups.</summary>
-    /// <param name="last">Whether the last is asked for rather than the first.</param>
-    public int? GetEdgePosition(bool last)
+    /// <param name="isLast">Whether the last is asked for rather than the first.</param>
+    public int? GetEdgePosition(bool isLast)
     {
         if (_view.ItemCount is null && !_view.IsGrouped)
         {
-            return _knownItems == 0 ? null : last ? _knownItems - 1 : 0;
+            return _knownItemCount == 0 ? null : isLast ? _knownItemCount - 1 : 0;
         }
 
-        var open = _segments.Where(segment => !segment.IsFolded && segment.ItemCount > 0).ToList();
+        var openSegments = _segments.Where(segment => !segment.IsFolded && segment.ItemCount > 0).ToList();
 
-        return open.Count == 0 ? null
-            : last ? open[^1].FirstItem + open[^1].ItemCount - 1
-            : open[0].FirstItem;
+        return openSegments.Count == 0 ? null
+            : isLast ? openSegments[^1].FirstItem + openSegments[^1].ItemCount - 1
+            : openSegments[0].FirstItem;
     }
 
     /// <summary>The items the rows reach from <paramref name="from"/> to <paramref name="to"/> in the set, both included, a folded group's items left out.</summary>
@@ -457,31 +457,31 @@ internal sealed class DataViewRows<TItem>(
     // The segments stand in row order, so the last one opening at or before the row holds it.
     private Segment FindSegment(int row)
     {
-        var low = 0;
-        var high = _segments.Count - 1;
+        var lowIndex = 0;
+        var highIndex = _segments.Count - 1;
 
-        while (low < high)
+        while (lowIndex < highIndex)
         {
-            var middle = (low + high + 1) / 2;
+            var middleIndex = (lowIndex + highIndex + 1) / 2;
 
-            if (_segments[middle].FirstRow <= row)
+            if (_segments[middleIndex].FirstRow <= row)
             {
-                low = middle;
+                lowIndex = middleIndex;
             }
             else
             {
-                high = middle - 1;
+                highIndex = middleIndex - 1;
             }
         }
 
-        return _segments[low];
+        return _segments[lowIndex];
     }
 
     /// <summary>A run of rows: an ungrouped set's items, or one group's heading followed by its items unless it is folded.</summary>
     private readonly record struct Segment(int FirstRow, DataViewGroup<TItem>? Group, int FirstItem, int ItemCount, bool IsFolded)
     {
-        public int GetRowCount(int columns)
-            => (Group is null ? 0 : 1) + (IsFolded ? 0 : (ItemCount + columns - 1) / columns);
+        public int GetRowCount(int columnCount)
+            => (Group is null ? 0 : 1) + (IsFolded ? 0 : (ItemCount + columnCount - 1) / columnCount);
     }
 
     /// <summary>Tells a heading row by its group's key and a row of items by its first item.</summary>
@@ -501,7 +501,7 @@ internal sealed class DataViewRows<TItem>(
             => obj switch
             {
                 { Group: { } group } => group.Key?.GetHashCode() ?? 0,
-                { Items: [var first, ..] } => items.GetHashCode(first),
+                { Items: [var firstItem, ..] } => items.GetHashCode(firstItem),
                 _ => 0,
             };
     }

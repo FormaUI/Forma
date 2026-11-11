@@ -88,7 +88,7 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     [JSInvokable]
     public Task HandleGridColumnsAsync(int count)
     {
-        _rows.Columns = count;
+        _rows.ColumnCount = count;
         _isRefreshWanted |= _rows.Update() && _virtualizer is not null;
 
         // The rows open on the initial item once the columns that place it are known.
@@ -102,8 +102,8 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     }
 
     /// <inheritdoc />
-    int? IDataViewPositions<TItem>.GetEdgePosition(bool last)
-        => _rows.GetEdgePosition(last);
+    int? IDataViewPositions<TItem>.GetEdgePosition(bool isLast)
+        => _rows.GetEdgePosition(isLast);
 
     /// <inheritdoc />
     ValueTask<IReadOnlyList<TItem>> IDataViewPositions<TItem>.ReadAsync(int from, int to, CancellationToken cancellationToken)

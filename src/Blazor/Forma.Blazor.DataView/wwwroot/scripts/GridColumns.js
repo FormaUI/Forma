@@ -21,7 +21,7 @@ class GridColumns {
     #target;
     #owner;
     #observer;
-    #last = 0;
+    #lastColumnCount = 0;
 
     constructor(target, { owner }) {
         this.#target = target;
@@ -43,11 +43,11 @@ class GridColumns {
 
         const count = GridColumns.#count(getComputedStyle(this.#target).gridTemplateColumns);
 
-        if (count === this.#last) {
+        if (count === this.#lastColumnCount) {
             return;
         }
 
-        this.#last = count;
+        this.#lastColumnCount = count;
         tell(this.#owner, 'HandleGridColumnsAsync', count);
     }
 

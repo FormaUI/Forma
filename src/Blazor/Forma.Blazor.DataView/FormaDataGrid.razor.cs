@@ -204,7 +204,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
         foreach (var column in report.Columns)
         {
-            widthsChanged |= !_wantedWidths.TryGetValue(column.Key, out var wanted) || wanted != column.Width;
+            widthsChanged |= !_wantedWidths.TryGetValue(column.Key, out var wantedWidth) || wantedWidth != column.Width;
             _wantedWidths[column.Key] = column.Width;
         }
 
@@ -252,7 +252,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     // scrolls sideways for a chosen one; of the rest, the lowest priorities leave, the last written first among equals, until they fit.
     private bool FitColumns()
     {
-        var dropped = new HashSet<string>(StringComparer.Ordinal);
+        var droppedKeys = new HashSet<string>(StringComparer.Ordinal);
 
         if (_availableWidth > 0)
         {
@@ -261,9 +261,9 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
             foreach (var column in DroppableColumns)
             {
-                if (_columnChoices.TryGetValue(column.ColumnKey, out var shown) && !shown)
+                if (_columnChoices.TryGetValue(column.ColumnKey, out var isShown) && !isShown)
                 {
-                    dropped.Add(column.ColumnKey);
+                    droppedKeys.Add(column.ColumnKey);
                 }
             }
 
@@ -280,18 +280,18 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
                     break;
                 }
 
-                dropped.Add(column.ColumnKey);
+                droppedKeys.Add(column.ColumnKey);
                 total -= GetWantedWidth(column.ColumnKey);
             }
         }
 
-        if (dropped.SetEquals(_droppedColumnKeys))
+        if (droppedKeys.SetEquals(_droppedColumnKeys))
         {
             return false;
         }
 
         _droppedColumnKeys.Clear();
-        _droppedColumnKeys.UnionWith(dropped);
+        _droppedColumnKeys.UnionWith(droppedKeys);
 
         return true;
     }
@@ -305,27 +305,27 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         }
 
         var offset = HasSelectionColumn ? GetWantedWidth(SelectionColumnKey) : 0;
-        FormaColumnBase<TItem>? lastFrozen = null;
+        FormaColumnBase<TItem>? lastFrozenColumn = null;
 
-        foreach (var frozen in ShownColumns.Where(shown => shown.Frozen))
+        foreach (var frozenColumn in ShownColumns.Where(shown => shown.Frozen))
         {
-            if (frozen == column)
+            if (frozenColumn == column)
             {
                 break;
             }
 
-            offset += GetWantedWidth(frozen.ColumnKey);
+            offset += GetWantedWidth(frozenColumn.ColumnKey);
         }
 
-        foreach (var frozen in ShownColumns.Where(shown => shown.Frozen))
+        foreach (var frozenColumn in ShownColumns.Where(shown => shown.Frozen))
         {
-            lastFrozen = frozen;
+            lastFrozenColumn = frozenColumn;
         }
 
         builder.Add("--forma-freeze-pane-frozen-offset", CssLength.FromPx(offset));
 
         // The reader's extent is honored by the last frozen column, which takes what the columns before it leave.
-        if (lastFrozen == column && _frozenExtent is { } extent && extent > offset)
+        if (lastFrozenColumn == column && _frozenExtent is { } extent && extent > offset)
         {
             builder.Add("inline-size", CssLength.FromPx(extent - offset));
         }
@@ -347,7 +347,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         {
             null => null,
             { SelectAllText: not null, DeselectAllText: not null } caption
-                => View.PartiallySelected || View.AllSelected ? caption.DeselectAllText : caption.SelectAllText,
+                => View.IsPartiallySelected || View.IsAllSelected ? caption.DeselectAllText : caption.SelectAllText,
             { SelectAllText: not null } caption => caption.SelectAllText,
             { DeselectAllText: not null } caption => caption.DeselectAllText,
             _ => null,
@@ -356,7 +356,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     // The caption the toggle would show in its other state.
     internal string? MasterCaptionAlternateText
         => MasterCaptionInteractive
-            ? View.PartiallySelected || View.AllSelected ? View.CheckedSelectionOptions.Caption!.SelectAllText : View.CheckedSelectionOptions.Caption!.DeselectAllText
+            ? View.IsPartiallySelected || View.IsAllSelected ? View.CheckedSelectionOptions.Caption!.SelectAllText : View.CheckedSelectionOptions.Caption!.DeselectAllText
             : null;
 
     /// <inheritdoc />
@@ -386,8 +386,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     /// <returns>A number that is the same until then.</returns>
     internal int GetRowRevision()
     {
-        var shown = ShownColumns.Select(column => $"{column.ColumnKey}:{column.Revision}:{GetCellClass(column)}:{GetCellStyle(column)}");
-        var signature = string.Join('|', [View.Revision, _parameterRevision.Value, HasSelectionColumn, HasColumnsMenu, SelectionCellClass, .. shown]);
+        var shownColumnSignatures = ShownColumns.Select(column => $"{column.ColumnKey}:{column.Revision}:{GetCellClass(column)}:{GetCellStyle(column)}");
+        var signature = string.Join('|', [View.Revision, _parameterRevision.Value, HasSelectionColumn, HasColumnsMenu, SelectionCellClass, .. shownColumnSignatures]);
 
         if (signature != _rowSignature)
         {
@@ -568,7 +568,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
     internal void UnregisterHeader(FormaColumnBase<TItem> column, FormaDataGridColumnHeader<TItem> header)
     {
-        if (_headers.TryGetValue(column, out var registered) && ReferenceEquals(registered, header))
+        if (_headers.TryGetValue(column, out var registeredHeader) && ReferenceEquals(registeredHeader, header))
         {
             _headers.Remove(column);
         }
@@ -678,9 +678,9 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     {
         _isCollectingColumns = false;
 
-        if (_columns.Where(column => column.IsSortable).GroupBy(column => column.SortName, StringComparer.Ordinal).FirstOrDefault(named => named.Count() > 1) is { } repeated)
+        if (_columns.Where(column => column.IsSortable).GroupBy(column => column.SortName, StringComparer.Ordinal).FirstOrDefault(named => named.Count() > 1) is { } repeatedGroup)
         {
-            throw new InvalidOperationException($"Two sortable columns of one {nameof(FormaDataGrid<>)} name the sort '{repeated.Key}'; give one a {nameof(FormaColumnBase<>.SortName)} of its own.");
+            throw new InvalidOperationException($"Two sortable columns of one {nameof(FormaDataGrid<>)} name the sort '{repeatedGroup.Key}'; give one a {nameof(FormaColumnBase<>.SortName)} of its own.");
         }
     }
 
@@ -695,11 +695,11 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     {
         if (View.RequestedSortName is { } requestedName)
         {
-            var requested = _columns.FirstOrDefault(column => column.IsSortable && column.SortBy is not null && string.Equals(column.SortName, requestedName, StringComparison.Ordinal));
+            var requestedColumn = _columns.FirstOrDefault(column => column.IsSortable && column.SortBy is not null && string.Equals(column.SortName, requestedName, StringComparison.Ordinal));
 
-            if (requested is { SortBy: { } requestedSort })
+            if (requestedColumn is { SortBy: { } requestedSort })
             {
-                await Interaction.SortByAsync(requested.SortName!, requestedSort, View.RequestedSortDirection);
+                await Interaction.SortByAsync(requestedColumn.SortName!, requestedSort, View.RequestedSortDirection);
             }
         }
     }
@@ -753,8 +753,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     }
 
     /// <inheritdoc />
-    int? IDataViewPositions<TItem>.GetEdgePosition(bool last)
-        => _rows.GetEdgePosition(last);
+    int? IDataViewPositions<TItem>.GetEdgePosition(bool isLast)
+        => _rows.GetEdgePosition(isLast);
 
     /// <inheritdoc />
     ValueTask<IReadOnlyList<TItem>> IDataViewPositions<TItem>.ReadAsync(int from, int to, CancellationToken cancellationToken)

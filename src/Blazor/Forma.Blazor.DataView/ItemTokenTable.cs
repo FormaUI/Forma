@@ -28,10 +28,10 @@ internal sealed class ItemTokenTable<TItem>
             return;
         }
 
-        var released = pass.Retired;
-        pass.Retired = pass.Current;
-        pass.Current = [];
-        ReleaseUnheld(released);
+        var releasedKeys = pass.RetiredKeys;
+        pass.RetiredKeys = pass.CurrentKeys;
+        pass.CurrentKeys = [];
+        ReleaseUnheld(releasedKeys);
     }
 
     /// <summary>Ends the passes of <paramref name="view"/>, letting go of the keys they drew that nothing else holds.</summary>
@@ -40,7 +40,7 @@ internal sealed class ItemTokenTable<TItem>
     {
         if (_passes.Remove(view, out var pass))
         {
-            ReleaseUnheld([.. pass.Current, .. pass.Retired]);
+            ReleaseUnheld([.. pass.CurrentKeys, .. pass.RetiredKeys]);
         }
     }
 
@@ -69,7 +69,7 @@ internal sealed class ItemTokenTable<TItem>
                 _passes[view] = pass = new Pass();
             }
 
-            pass.Current.Add(key);
+            pass.CurrentKeys.Add(key);
         }
 
         return token;
@@ -93,13 +93,13 @@ internal sealed class ItemTokenTable<TItem>
     }
 
     private bool IsHeld(object key)
-        => _heldKeys.Contains(key) || _passes.Values.Any(pass => pass.Current.Contains(key) || pass.Retired.Contains(key));
+        => _heldKeys.Contains(key) || _passes.Values.Any(pass => pass.CurrentKeys.Contains(key) || pass.RetiredKeys.Contains(key));
 
     /// <summary>The keys a view drew in its pass under way and the one before.</summary>
     private sealed class Pass
     {
-        public HashSet<object> Current { get; set; } = [];
+        public HashSet<object> CurrentKeys { get; set; } = [];
 
-        public HashSet<object> Retired { get; set; } = [];
+        public HashSet<object> RetiredKeys { get; set; } = [];
     }
 }

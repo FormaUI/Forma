@@ -16,7 +16,7 @@ export function attach(target, options = {}) {
 class HeightReservation {
     #target;
     #rowSelector;
-    #reserved;
+    #reservedHeight;
 
     constructor(target, { rowSelector = 'tbody tr' }) {
         this.#target = target;
@@ -35,23 +35,23 @@ class HeightReservation {
         }
 
         // Empty rows pad a short page out to the page size and carry no content to measure.
-        const filled = [...this.#target.querySelectorAll(this.#rowSelector)]
+        const filledRows = [...this.#target.querySelectorAll(this.#rowSelector)]
             .filter(row => row.textContent.trim() !== '');
 
-        if (filled.length === 0) {
+        if (filledRows.length === 0) {
             return;
         }
 
         // A full page's height is held outright; a short page projects its tallest row only while nothing is held.
-        if (filled.length >= pageSize) {
-            this.#reserved = table.getBoundingClientRect().height;
-        } else if (this.#reserved === undefined) {
+        if (filledRows.length >= pageSize) {
+            this.#reservedHeight = table.getBoundingClientRect().height;
+        } else if (this.#reservedHeight === undefined) {
             const header = table.tHead?.getBoundingClientRect().height ?? 0;
-            const tallest = Math.max(...filled.map(row => row.getBoundingClientRect().height));
-            this.#reserved = header + tallest * pageSize;
+            const tallestHeight = Math.max(...filledRows.map(row => row.getBoundingClientRect().height));
+            this.#reservedHeight = header + tallestHeight * pageSize;
         }
 
-        this.#target.style.minBlockSize = `${this.#reserved}px`;
+        this.#target.style.minBlockSize = `${this.#reservedHeight}px`;
     }
 
     dispose() {

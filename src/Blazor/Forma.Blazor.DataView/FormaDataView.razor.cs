@@ -111,7 +111,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private int _readCount;
     private int? _positionCount;
     private bool _hasMore;
-    private Task? _appending;
+    private Task? _appendTask;
     private bool _isLoadingMore;
     private bool _isAppendFailed;
 
@@ -415,14 +415,14 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         => _requestedSortDirection;
 
     /// <inheritdoc />
-    public bool AllSelected
+    public bool IsAllSelected
         => MasterReachesSet
             ? _totalItemCount is > 0 && _selectedSet.Count >= _totalItemCount
             : SelectableItems.Any() && SelectableItems.All(IsSelected);
 
     /// <inheritdoc />
-    public bool PartiallySelected
-        => (MasterReachesSet ? _selectedSet.Count : PageSelectedCount) > 0 && !AllSelected;
+    public bool IsPartiallySelected
+        => (MasterReachesSet ? _selectedSet.Count : PageSelectedCount) > 0 && !IsAllSelected;
 
     /// <inheritdoc />
     public bool IsMasterControlDisabled
@@ -533,7 +533,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             && CheckedSelectionOptions.SelectAllMode == SelectAllMode.FromPager
             && !_selectionBounds.IsSingle
             && CanOfferSet
-            && AllSelected
+            && IsAllSelected
             && _totalItemCount is { } total
             && _selectedSet.Count < total;
 
@@ -634,9 +634,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         // the list it began with, so the selection made since stays.
         if (_selectedItemsParameter.Update(SelectedItems) || keyChanged)
         {
-            HashSet<TItem> adopted = new(SelectedItems, _keyComparer);
-            _isSelectionAdopted |= !adopted.SetEquals(_selectedSet);
-            _selectedSet = adopted;
+            HashSet<TItem> adoptedItems = new(SelectedItems, _keyComparer);
+            _isSelectionAdopted |= !adoptedItems.SetEquals(_selectedSet);
+            _selectedSet = adoptedItems;
         }
 
         // The address speaks first, once; after that a page the host sets is the page shown.
@@ -829,12 +829,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         // The action and the reader reaching the end share one request for the page they ask for, while it is on its way.
-        if (_appending is { IsCompleted: false } pending)
+        if (_appendTask is { IsCompleted: false } pending)
         {
             return pending;
         }
 
-        return _appending = AppendAsync();
+        return _appendTask = AppendAsync();
     }
 
     // Appends the next page of the run the last load started; a new run cancels it, so its late answer adds nothing, and a failure keeps
@@ -915,11 +915,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     // Takes how far into the source a page read and whether more follows.
     private void TakeProgress(DataViewPage<TItem> page, bool append)
     {
-        var read = page.ReadCount ?? page.Items.Count;
-        _readCount = append ? _readCount + read : StartIndex + read;
+        var pageReadCount = page.ReadCount ?? page.Items.Count;
+        _readCount = append ? _readCount + pageReadCount : StartIndex + pageReadCount;
         _positionCount = page.PositionCount;
         var total = page.PositionCount ?? page.TotalCount;
-        _hasMore = read > 0 && (page.HasMore ?? (total is { } count ? _readCount < count : read >= PageSize));
+        _hasMore = pageReadCount > 0 && (page.HasMore ?? (total is { } count ? _readCount < count : pageReadCount >= PageSize));
     }
 
     // The action after the items, which reads the next page, or offers it again where the last attempt failed.
@@ -994,8 +994,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
-        var whole = await LoadSliceCoreAsync(0, null, CancellationToken.None);
-        var selectable = CreateSelection(whole.Items.Where(IsSelectable));
+        var wholeSlice = await LoadSliceCoreAsync(0, null, CancellationToken.None);
+        var selectable = CreateSelection(wholeSlice.Items.Where(IsSelectable));
 
         if (!_selectionBounds.CanSelectAll(selectable.Count))
         {
@@ -1015,9 +1015,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return;
         }
 
-        var updated = CreateSelection(_selectedSet);
-        updated.UnionWith(_items.Where(IsSelectable));
-        await ReplaceSelectionAsync(updated);
+        var updatedSelection = CreateSelection(_selectedSet);
+        updatedSelection.UnionWith(_items.Where(IsSelectable));
+        await ReplaceSelectionAsync(updatedSelection);
     }
 
     /// <inheritdoc />
@@ -1033,10 +1033,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             return Task.CompletedTask;
         }
 
-        var updated = CreateSelection(_selectedSet);
-        updated.ExceptWith(_items);
+        var updatedSelection = CreateSelection(_selectedSet);
+        updatedSelection.ExceptWith(_items);
 
-        return ReplaceSelectionAsync(updated);
+        return ReplaceSelectionAsync(updatedSelection);
     }
 
     /// <summary>Adds those of <paramref name="items"/> that can be selected to the selection, subject to the selection bounds.</summary>
@@ -1045,16 +1045,16 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         ArgumentNullException.ThrowIfNull(items);
 
-        var updated = CreateSelection(_selectedSet);
-        updated.UnionWith(items.Where(IsSelectable));
+        var updatedSelection = CreateSelection(_selectedSet);
+        updatedSelection.UnionWith(items.Where(IsSelectable));
 
-        if (!_selectionBounds.CanSelectAll(updated.Count))
+        if (!_selectionBounds.CanSelectAll(updatedSelection.Count))
         {
             await RejectSelectionAsync(SelectionBoundary.Maximum);
             return;
         }
 
-        await ReplaceSelectionAsync(updated);
+        await ReplaceSelectionAsync(updatedSelection);
     }
 
     /// <summary>Removes <paramref name="items"/> from the selection, subject to the selection bounds.</summary>
@@ -1063,16 +1063,16 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         ArgumentNullException.ThrowIfNull(items);
 
-        var updated = CreateSelection(_selectedSet);
-        updated.ExceptWith(items);
+        var updatedSelection = CreateSelection(_selectedSet);
+        updatedSelection.ExceptWith(items);
 
-        if (updated.Count > 0 && _selectionBounds.Minimum is { } minimum && updated.Count < minimum)
+        if (updatedSelection.Count > 0 && _selectionBounds.Minimum is { } minimum && updatedSelection.Count < minimum)
         {
             await RejectSelectionAsync(SelectionBoundary.Minimum);
             return;
         }
 
-        await ReplaceSelectionAsync(updated);
+        await ReplaceSelectionAsync(updatedSelection);
     }
 
     /// <inheritdoc />
@@ -1228,7 +1228,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         await NotifyStateAsync(isItemStateOnly: true);
 
         // An answer for a state a new source replaced is asked for again, and opens what it holds then.
-        if (_nodes.TryGetValue(key, out var live) && ReferenceEquals(live, node))
+        if (_nodes.TryGetValue(key, out var liveNode) && ReferenceEquals(liveNode, node))
         {
             await OpenNamedNodesAsync(children);
         }
@@ -1267,13 +1267,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         }
 
         List<TItem> ancestors = [];
-        HashSet<object> visited = [];
+        HashSet<object> visitedKeys = [];
         var step = _currentItem;
 
         while (step is not null)
         {
             // A path not yet loaded waits for the level holding it, and a source whose parents run in a circle reaches no root at all.
-            if (!visited.Add(ItemKey(step)))
+            if (!visitedKeys.Add(ItemKey(step)))
             {
                 _revealsCurrent = false;
                 return;
@@ -1398,15 +1398,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     }
 
     /// <inheritdoc />
-    public async Task ToggleSelectionAsync(TItem item, bool selected)
+    public async Task ToggleSelectionAsync(TItem item, bool isSelected)
     {
-        if (selected == IsSelected(item) || (selected && !IsSelectable(item)))
+        if (isSelected == IsSelected(item) || (isSelected && !IsSelectable(item)))
         {
             return;
         }
 
         // Checking a second item of a selection that holds one at most chooses it in place of the first, in one change.
-        if (selected && _selectionBounds.IsSingle)
+        if (isSelected && _selectionBounds.IsSingle)
         {
             await ReplaceSelectionAsync(CreateSelection([item]));
             return;
@@ -1414,22 +1414,22 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         if (!CanToggle(item))
         {
-            await RejectSelectionAsync(selected ? SelectionBoundary.Maximum : SelectionBoundary.Minimum);
+            await RejectSelectionAsync(isSelected ? SelectionBoundary.Maximum : SelectionBoundary.Minimum);
             return;
         }
 
-        var updated = CreateSelection(_selectedSet);
+        var updatedSelection = CreateSelection(_selectedSet);
 
-        if (selected)
+        if (isSelected)
         {
-            updated.Add(item);
+            updatedSelection.Add(item);
         }
         else
         {
-            updated.Remove(item);
+            updatedSelection.Remove(item);
         }
 
-        await ReplaceSelectionAsync(updated);
+        await ReplaceSelectionAsync(updatedSelection);
     }
 
     /// <inheritdoc />
@@ -1464,16 +1464,16 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>Replaces or toggles the selection with a single item.</summary>
     /// <param name="itemToken">The token of the item the gesture landed on.</param>
-    /// <param name="additive">Whether the gesture toggles the item rather than replacing the selection with it.</param>
+    /// <param name="isAdditive">Whether the gesture toggles the item rather than replacing the selection with it.</param>
     [JSInvokable]
-    public async Task HandleSelectAsync(int itemToken, bool additive)
+    public async Task HandleSelectAsync(int itemToken, bool isAdditive)
     {
         if (!_itemTokens.TryGetItem(itemToken, out var item))
         {
             return;
         }
 
-        if (additive)
+        if (isAdditive)
         {
             await ToggleSelectionAsync(item, !IsSelected(item));
             return;
@@ -1523,9 +1523,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>Replaces or extends the selection with a contiguous range of items.</summary>
     /// <param name="itemTokens">The tokens of the items in the range, as the transfer carries them.</param>
-    /// <param name="additive">Whether the range extends the selection rather than replacing it.</param>
+    /// <param name="isAdditive">Whether the range extends the selection rather than replacing it.</param>
     [JSInvokable]
-    public async Task HandleRangeSelectAsync(JSTransfer itemTokens, bool additive)
+    public async Task HandleRangeSelectAsync(JSTransfer itemTokens, bool isAdditive)
     {
         ArgumentNullException.ThrowIfNull(itemTokens);
 
@@ -1556,15 +1556,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             }
         }
 
-        await SelectRangeAsync(range, additive, range.Count > 0 ? range[^1] : default);
+        await SelectRangeAsync(range, isAdditive, range.Count > 0 ? range[^1] : default);
     }
 
     /// <summary>Replaces or extends the selection with the items the active view reaches between two positions in its order.</summary>
     /// <param name="fromPosition">The position of the range's anchor.</param>
     /// <param name="toPosition">The position of the item the gesture landed on.</param>
-    /// <param name="additive">Whether the range extends the selection rather than replacing it.</param>
+    /// <param name="isAdditive">Whether the range extends the selection rather than replacing it.</param>
     [JSInvokable]
-    public async Task HandleRangeSelectByPositionAsync(int fromPosition, int toPosition, bool additive)
+    public async Task HandleRangeSelectByPositionAsync(int fromPosition, int toPosition, bool isAdditive)
     {
         if (ActivePositions is not { } positions)
         {
@@ -1577,18 +1577,18 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         // The positions were read against the order as it stood; a new one leaves them naming other items.
         if (order == _orderVersion && range.Count > 0)
         {
-            await SelectRangeAsync(range, additive, toPosition >= fromPosition ? range[^1] : range[0]);
+            await SelectRangeAsync(range, isAdditive, toPosition >= fromPosition ? range[^1] : range[0]);
         }
     }
 
     /// <summary>Moves to the first or the last item the active view reaches.</summary>
     /// <remarks>The move selects by its mode, the view scrolls the item into range, and the selection behavior lands the focus on it once it is drawn.</remarks>
     /// <param name="request">The request the behavior names the move by.</param>
-    /// <param name="last">Whether the move reaches the last item rather than the first.</param>
+    /// <param name="isLast">Whether the move reaches the last item rather than the first.</param>
     /// <param name="mode">How the move selects: <c>select</c> the item alone, <c>extend</c> the range from the anchor, or <c>focus</c> the item alone.</param>
     /// <param name="anchorPosition">The position of the range's anchor, for a move that extends.</param>
     [JSInvokable]
-    public async Task HandleSeekAsync(int request, bool last, string mode, int? anchorPosition)
+    public async Task HandleSeekAsync(int request, bool isLast, string mode, int? anchorPosition)
     {
         var order = _orderVersion;
         var view = ActiveViewKey;
@@ -1604,7 +1604,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         try
         {
-            if (ActivePositions is not { } positions || positions.GetEdgePosition(last) is not { } position)
+            if (ActivePositions is not { } positions || positions.GetEdgePosition(isLast) is not { } position)
             {
                 return;
             }
@@ -1619,7 +1619,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
                 if (IsCurrent() && range.Count > 0)
                 {
-                    await SelectRangeAsync(range, additive: false, position >= anchor ? range[^1] : range[0]);
+                    await SelectRangeAsync(range, isAdditive: false, position >= anchor ? range[^1] : range[0]);
                 }
             }
 
@@ -1645,28 +1645,28 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     // A range select is a whole-set replacement, so it is judged as a master select-all is, over the items in it that can be selected;
     // where the selection holds one item at most, the range chooses the item it reached, and one that cannot be chosen leaves the selection.
-    private async Task SelectRangeAsync(IReadOnlyList<TItem> range, bool additive, TItem? reached)
+    private async Task SelectRangeAsync(IReadOnlyList<TItem> range, bool isAdditive, TItem? reachedItem)
     {
         if (_selectionBounds.IsSingle)
         {
-            if (reached is not null && IsSelectable(reached) && !(_selectedSet.Count == 1 && IsSelected(reached)))
+            if (reachedItem is not null && IsSelectable(reachedItem) && !(_selectedSet.Count == 1 && IsSelected(reachedItem)))
             {
-                await ReplaceSelectionAsync(CreateSelection([reached]));
+                await ReplaceSelectionAsync(CreateSelection([reachedItem]));
             }
 
             return;
         }
 
-        var updated = CreateSelection(additive ? _selectedSet : []);
-        updated.UnionWith(range.Where(IsSelectable));
+        var updatedSelection = CreateSelection(isAdditive ? _selectedSet : []);
+        updatedSelection.UnionWith(range.Where(IsSelectable));
 
-        if (!_selectionBounds.CanSelectAll(updated.Count))
+        if (!_selectionBounds.CanSelectAll(updatedSelection.Count))
         {
             await RejectSelectionAsync(SelectionBoundary.Maximum);
             return;
         }
 
-        await ReplaceSelectionAsync(updated);
+        await ReplaceSelectionAsync(updatedSelection);
     }
 
     /// <inheritdoc />
@@ -1821,9 +1821,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     // The roots and every open node, the nodes a tree shows, are asked for their children again from the source as it now is; a closed node asks when it opens.
     private async Task RefreshStaleNodesAsync()
     {
-        var shown = _nodes.Where(pair => pair.Value.IsStale && (ReferenceEquals(pair.Key, RootsKey) || pair.Value.IsOpen)).ToList();
+        var shownNodes = _nodes.Where(pair => pair.Value.IsStale && (ReferenceEquals(pair.Key, RootsKey) || pair.Value.IsOpen)).ToList();
 
-        foreach (var (key, node) in shown)
+        foreach (var (key, node) in shownNodes)
         {
             await LoadChildrenCoreAsync(ReferenceEquals(key, RootsKey) ? default : node.Item);
         }
@@ -1908,11 +1908,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         return groups;
     }
 
-    private async Task ReplaceSelectionAsync(HashSet<TItem> updated)
+    private async Task ReplaceSelectionAsync(HashSet<TItem> updatedSelection)
     {
-        _selectedSet = updated;
-        IReadOnlyList<TItem> reported = [.. updated];
-        await SelectedItemsChanged.InvokeAsync(reported);
+        _selectedSet = updatedSelection;
+        IReadOnlyList<TItem> reportedItems = [.. updatedSelection];
+        await SelectedItemsChanged.InvokeAsync(reportedItems);
         await NotifyStateAsync(isItemStateOnly: true);
     }
 
@@ -1947,10 +1947,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     {
         // Every load may order the items anew, so a position read against the last order names nothing now.
         _orderVersion++;
-        if (_loadCancellation is { } superseded)
+        if (_loadCancellation is { } supersededCancellation)
         {
-            await superseded.CancelAsync();
-            superseded.Dispose();
+            await supersededCancellation.CancelAsync();
+            supersededCancellation.Dispose();
         }
 
         var cancellation = _loadCancellation = new CancellationTokenSource();

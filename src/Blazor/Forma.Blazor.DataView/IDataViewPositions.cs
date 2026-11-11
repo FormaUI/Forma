@@ -6,8 +6,8 @@ internal interface IDataViewPositions<TItem>
     where TItem : notnull
 {
     /// <summary>The position of the first or the last item the view reaches.</summary>
-    /// <param name="last">Whether the last is asked for rather than the first.</param>
-    int? GetEdgePosition(bool last);
+    /// <param name="isLast">Whether the last is asked for rather than the first.</param>
+    int? GetEdgePosition(bool isLast);
 
     /// <summary>The items the view reaches from <paramref name="from"/> to <paramref name="to"/>, both included, in their order.</summary>
     /// <param name="from">The position of the first item.</param>

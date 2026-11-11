@@ -154,20 +154,20 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
             return EditorKind.DatePicker;
         }
 
-        var underlying = Nullable.GetUnderlyingType(type) ?? type;
+        var underlyingType = Nullable.GetUnderlyingType(type) ?? type;
 
         if (type == typeof(TimeOnly) || type == typeof(TimeOnly?))
         {
             return EditorKind.TimePicker;
         }
 
-        if (underlying == typeof(DateTime) || underlying == typeof(DateTimeOffset))
+        if (underlyingType == typeof(DateTime) || underlyingType == typeof(DateTimeOffset))
         {
             return EditorKind.DateTimePicker;
         }
 
-        if (underlying == typeof(int) || underlying == typeof(long) || underlying == typeof(short)
-            || underlying == typeof(float) || underlying == typeof(double) || underlying == typeof(decimal))
+        if (underlyingType == typeof(int) || underlyingType == typeof(long) || underlyingType == typeof(short)
+            || underlyingType == typeof(float) || underlyingType == typeof(double) || underlyingType == typeof(decimal))
         {
             return EditorKind.NumberInput;
         }
@@ -221,8 +221,8 @@ public sealed class FormaPropertyColumn<TItem, TValue> : FormaColumnBase<TItem>
 
     // The same member read again: a path of members is the same by its names, where any other expression is the same only as the one given before,
     // since the host builds a new expression each time it renders.
-    private static bool IsSameProperty(Expression<Func<TItem, TValue>> bound, Expression<Func<TItem, TValue>> given)
-        => ReferenceEquals(bound, given) || (ResolveSortName(bound) is { } path && path == ResolveSortName(given));
+    private static bool IsSameProperty(Expression<Func<TItem, TValue>> boundExpression, Expression<Func<TItem, TValue>> givenExpression)
+        => ReferenceEquals(boundExpression, givenExpression) || (ResolveSortName(boundExpression) is { } path && path == ResolveSortName(givenExpression));
 
     // The property's path, such as Customer.Name, and null for a property that is not a path of members.
     private static string? ResolveSortName(Expression<Func<TItem, TValue>> property)

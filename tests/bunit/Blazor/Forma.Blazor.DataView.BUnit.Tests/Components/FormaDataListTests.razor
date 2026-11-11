@@ -508,11 +508,11 @@
             cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 6);
             var engine = cut.FindComponent<FormaDataView<Product>>();
             var tokens = GetTokens(cut);
-            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[1], additive: false));
+            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[1], isAdditive: false));
             var before = new Dictionary<int, int>(drawn);
 
             // Act
-            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[4], additive: false));
+            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[4], isAdditive: false));
 
             // Assert
             Assert.Equal([2, 5], DrawnSince(drawn, before));
@@ -583,11 +583,11 @@
             // Act — the first items are selected again and again while the sixth is never drawn again
             foreach (var _ in Enumerable.Range(0, 4))
             {
-                await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[0], additive: false));
-                await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[1], additive: false));
+                await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[0], isAdditive: false));
+                await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[1], isAdditive: false));
             }
 
-            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[5], additive: false));
+            await cut.InvokeAsync(() => engine.Instance.HandleSelectAsync(tokens[5], isAdditive: false));
 
             // Assert
             Assert.Equal(6, Assert.Single(changedTo!).Id);

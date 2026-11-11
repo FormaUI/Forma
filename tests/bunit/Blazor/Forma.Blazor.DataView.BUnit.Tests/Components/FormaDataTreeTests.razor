@@ -975,7 +975,7 @@
             var moved = new List<Entry?>();
             var cut = ctx.Render(
                 @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)"
-                               OnCurrentItemChanging="@((DataViewCurrentItemChange<Entry> change) => { asked.Add((change.Item?.Name, change.Previous?.Name)); change.Refuse(); })"
+                               OnCurrentItemChanging="@((DataViewCurrentItemChange<Entry> change) => { asked.Add((change.Item?.Name, change.PreviousItem?.Name)); change.Refuse(); })"
                                CurrentItemChanged="@((Entry? entry) => moved.Add(entry))">
                     <FormaDataGrid TItem="Entry">
                         <Columns>

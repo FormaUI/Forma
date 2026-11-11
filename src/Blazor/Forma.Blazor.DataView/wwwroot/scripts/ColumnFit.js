@@ -27,7 +27,7 @@ class ColumnFit {
     #columnAttribute;
     #measuringClass;
     #observer;
-    #last = null;
+    #lastKey = null;
 
     constructor(target, { owner, columnAttribute, measuringClass }) {
         this.#target = target;
@@ -56,11 +56,11 @@ class ColumnFit {
         };
         const key = JSON.stringify(report);
 
-        if (key === this.#last) {
+        if (key === this.#lastKey) {
             return;
         }
 
-        this.#last = key;
+        this.#lastKey = key;
         tell(this.#owner, 'HandleColumnFitAsync', report);
     }
 

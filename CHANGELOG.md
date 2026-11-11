@@ -32,6 +32,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `TableDialogResult.RowCount` and `ColumnCount` were `Rows` and `Columns`; and `FormaComposerTableDialog`'s
   `MaxRowCount` and `MaxColumnCount` parameters were `MaxRows` and `MaxColumns`. A composer dialog's `ReopeningResult`
   parameter was `Reopening`.
+- The data view's Booleans and items say what they hold: `IDataView.IsAllSelected` and `IsPartiallySelected`, on
+  `FormaDataView` too, were `AllSelected` and `PartiallySelected`, and `DataViewCurrentItemChange.PreviousItem` was
+  `Previous`. Parameters, which a caller naming its arguments names anew: `IDataViewInteraction.ToggleSelectionAsync`
+  takes `isSelected`, `FormaDataView`'s selection handlers take `isAdditive` and `HandleSeekAsync` takes `isLast`, and
+  `DataViewSort.ThenApply` takes `orderedItems`.
 - A [`FormaDataGrid`](docs/data-view-design.md#accessibility-keyboard-and-direction) row's box is named for its item,
   "Select Hammer", where the data view's `ItemName` names the items, as the boxes of the list, the cards and the tree
   are; it said "Select Row" in every row. `IDataView` declares `NamesItems`.
