@@ -3167,6 +3167,92 @@
         }
     }
 
+    // A folder can be chosen where the accepted kinds take folders, and is entered where they don't, so a picker reaches the files
+    // inside it.
+    public sealed class Choosing
+    {
+        private static readonly IReadOnlyList<ResourceInfo> Files =
+        [
+            new ImageResourceInfo("https://example.com/cover.jpg"),
+            new ImageResourceInfo("https://example.com/back.jpg")
+        ];
+
+        private static readonly IReadOnlyList<FolderResourceInfo> PhotoFolders = [new("/photos") { Name = "photos" }];
+
+        // Presses the card showing the name while the boxes are drawn, as the selection behavior reports a checking press.
+        private static Task CheckCardAsync<TComponent>(IRenderedComponent<TComponent> cut, string name)
+            where TComponent : class, Microsoft.AspNetCore.Components.IComponent
+        {
+            var token = int.Parse(ItemNamed(cut, name).GetAttribute("data-item")!, CultureInfo.InvariantCulture);
+
+            return cut.InvokeAsync(() => cut.FindComponent<FormaDataView<ICatalogItem>>().Instance.HandleCheckAsync(token));
+        }
+
+        [Fact]
+        public async Task Should_enter_a_folder_a_press_lands_on_where_the_accepted_kinds_take_no_folders()
+        {
+            // Arrange - a picker of images, its boxes drawn
+            using var ctx = new FormaExplorerTests();
+            List<IReadOnlyList<ICatalogItem>> reports = [];
+            ICatalogFolderItem? entered = null;
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(Files))"
+                                                Folders="@(CatalogItem.ForAll(PhotoFolders))"
+                                                Constraints="@(new CatalogConstraints { AcceptedResourceKinds = "contentType:image" })"
+                                                Options="@(new ExplorerOptions { SelectOnOpen = true, MaxSelection = 1 })"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })"
+                                                OnFolderChanged="@(folder => { entered = folder; return Task.CompletedTask; })" />);
+            var folderBox = GetBox(ItemNamed(cut, "photos")).GetAttribute("aria-disabled");
+
+            // Act
+            await CheckCardAsync(cut, "photos");
+
+            // Assert - the folder's box unable to act, the folder entered and nothing chosen
+            Assert.Multiple(
+                () => Assert.Equal("true", folderBox),
+                () => Assert.Equal("/photos", entered?.Key),
+                () => Assert.All(reports, Assert.Empty));
+        }
+
+        [Fact]
+        public async Task Should_choose_a_file_a_press_lands_on_where_the_accepted_kinds_take_no_folders()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            List<IReadOnlyList<ICatalogItem>> reports = [];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(Files))"
+                                                Folders="@(CatalogItem.ForAll(PhotoFolders))"
+                                                Constraints="@(new CatalogConstraints { AcceptedResourceKinds = "contentType:image" })"
+                                                Options="@(new ExplorerOptions { SelectOnOpen = true, MaxSelection = 1 })"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+
+            // Act - a file chosen, then a second in its place
+            await CheckCardAsync(cut, "cover.jpg");
+            await CheckCardAsync(cut, "back.jpg");
+
+            // Assert
+            Assert.Equal(["cover.jpg", "back.jpg"], reports.Select(report => Assert.Single(report).Name));
+        }
+
+        [Fact]
+        public async Task Should_choose_a_folder_a_press_lands_on_where_the_accepted_kinds_take_folders()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            List<IReadOnlyList<ICatalogItem>> reports = [];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(Files))"
+                                                Folders="@(CatalogItem.ForAll(PhotoFolders))"
+                                                Constraints="@(new CatalogConstraints { AcceptedResourceKinds = "contentType:image;folder" })"
+                                                Options="@(new ExplorerOptions { SelectOnOpen = true })"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+
+            // Act
+            await CheckCardAsync(cut, "photos");
+
+            // Assert
+            Assert.Equal("/photos", Assert.Single(Assert.Single(reports)).Key);
+        }
+    }
+
     // A selection holds files and folders together, and a deletion or a drop takes it whole: one request, validated whole before it is
     // raised, whose refusal or failure the host reports leaves the selection as it was.
     public sealed class MixedOperations

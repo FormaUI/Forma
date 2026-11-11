@@ -218,6 +218,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // Whether an item is a folder holding folders, the children the sidebar's tree opens on, made once and reading the folders in force.
     private Func<ICatalogItem, bool> _holdsFolders = default!;
 
+    // Whether an item can be chosen, made once and reading the accepted kinds in force.
+    private Func<ICatalogItem, bool> _canChoose = default!;
+
     // The folders that start open in the sidebar, every one holding folders, made again for a new set of folders.
     private (CatalogFolderTree Tree, IReadOnlyCollection<object> Keys)? _openFolderKeys;
 
@@ -501,6 +504,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         Context.CultureState.Subscribe(HandleCultureChangedAsync);
         _source = new ExplorerDataViewSource(() => FolderTree, GetFileProvider, CreateContentQuery, () => _collection.Filter);
         _holdsFolders = item => item is ICatalogFolderItem folder && FolderTree.GetListedChildren(folder.Key).Count > 0;
+        _canChoose = CanChoose;
 
         _collection = new CatalogCollectionView(item => GetKindLabel(item.GetKind()), () => Context.CultureState.UICulture)
         {
@@ -888,7 +892,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        return item.IsDisabled ? Task.CompletedTask : ChangeSelectionAsync(selection => selection.Toggle(item));
+        return item.IsDisabled || !CanChoose(item) ? Task.CompletedTask : ChangeSelectionAsync(selection => selection.Toggle(item));
     }
 
     Task IExplorerContentInteraction.SortByAsync(CatalogSortField field)
@@ -1031,6 +1035,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         return Task.CompletedTask;
     }
+
+    // A file can be chosen, and a folder where the accepted kinds take folders, so a folder they don't take is still entered.
+    private bool CanChoose(ICatalogItem item)
+        => item is not ICatalogFolderItem || _collection.Filter?.AcceptsFolders != false;
 
     private async Task ToggleSelectModeAsync()
     {
@@ -1417,25 +1425,16 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _itemManager.BeginCreateFolder(parent);
     }
 
-    private Task ActivateItemAsync(ICatalogItem item)
+    private async Task ActivateItemAsync(ICatalogItem item)
     {
-        if (_selection.IsSelectionModeActive)
+        if (_selection.IsSelectionModeActive && CanChoose(item))
         {
-            return ChangeSelectionAsync(selection => selection.Toggle(item));
+            await ChangeSelectionAsync(selection => selection.Toggle(item));
+            return;
         }
 
-        if (item is ICatalogFolderItem folder)
-        {
-            return MoveToFolderAsync(folder);
-        }
-
-        if (item.Resource is { } resource && item.Permits(ItemOptions, CatalogItemCapabilities.View))
-        {
-            OpenPreview(resource);
-            StateHasChanged();
-        }
-
-        return Task.CompletedTask;
+        await OpenItemAsync(item);
+        StateHasChanged();
     }
 
     private void OpenPreview(ResourceInfo resource)

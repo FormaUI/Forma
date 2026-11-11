@@ -199,7 +199,9 @@ and `ExplorerItemOptions.ReadOnly` permits browsing and selection.
 
 `Constraints` is a `CatalogConstraints` of the kinds the explorer lists and accepts, the kinds an
 upload may add where they differ, and the ceilings it keeps, each unlimited at zero; a refusal is
-announced in the explorer and raised through `OnRejected`:
+announced in the explorer and raised through `OnRejected`. A folder can be chosen only where the
+accepted kinds name it, `contentType:image;folder`, and is entered otherwise, so an explorer that
+chooses images lets the reader into every folder to reach them:
 
 ```razor
 <FormaExplorer Items="_items"

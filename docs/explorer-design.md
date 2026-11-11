@@ -68,6 +68,11 @@ callback, and an upload goes into the host's `IFileStore`.
   nesting depth, items per folder, items and bytes it holds; an upload, a new folder or a
   drop that would cross one is refused, announced in an alert region under the header and
   reported through `OnRejected` with its reason.
+- **Entering is apart from choosing.** The accepted kinds decide what can be chosen as
+  well as what is listed: a listed file can be chosen, and a folder only where they name
+  folders, while every folder is listed and entered whatever they name. A press on a folder
+  that cannot be chosen enters it, in the selection mode too, so a caller choosing files
+  reaches the files a folder holds.
 - **Effective capabilities.** What may be done to an item is its own set intersected with
   what the explorer permits for its kind, and nothing while the item is disabled. Every
   entry point enforces that set and the views draw from it. Opening is a folder's

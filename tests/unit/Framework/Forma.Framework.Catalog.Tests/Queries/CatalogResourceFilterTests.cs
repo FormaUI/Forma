@@ -95,4 +95,46 @@ public sealed class CatalogResourceFilterTests
             () => Assert.True(filter!.Accepts(image)),
             () => Assert.False(filter!.Accepts(clip)));
     }
+
+    private static readonly string[] FolderPatterns = ["contentType:image;folder", "contentType:image", "globs:*", "globs:*.svg"];
+
+    [Fact]
+    public void Should_accept_a_folder_only_where_the_content_types_name_folders()
+    {
+        // Arrange
+        var folder = new FolderResourceInfo("/media/covers") { Name = "covers.svg" };
+
+        // Act
+        var accepted = FolderPatterns
+            .Select(pattern => CatalogResourceFilter.Parse(pattern)!)
+            .Select(filter => (filter.AcceptsFolders, Folder: filter.Accepts(folder)));
+
+        // Assert - a glob names files, whatever a folder is called
+        Assert.Equal([(true, true), (false, false), (false, false), (false, false)], accepted);
+    }
+
+    [Fact]
+    public void Should_accept_folders_where_the_filter_names_nothing()
+    {
+        // Arrange
+        var filter = CatalogResourceFilter.Parse("contentType:");
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.True(filter!.AcceptsFolders),
+            () => Assert.True(filter!.Accepts(new FolderResourceInfo("/media/covers") { Name = "Covers" })));
+    }
+
+    [Fact]
+    public void Should_accept_every_file_and_no_folder_for_a_glob_naming_any_name()
+    {
+        // Arrange
+        var filter = CatalogResourceFilter.Parse("globs:*");
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.True(filter!.Accepts(new FileResourceInfo("/media/notes") { Name = "notes" })),
+            () => Assert.True(filter!.Accepts(new VideoResourceInfo("/media/clip.mp4") { Name = "clip.mp4" })),
+            () => Assert.False(filter!.Accepts(new FolderResourceInfo("/media/covers") { Name = "Covers" })));
+    }
 }

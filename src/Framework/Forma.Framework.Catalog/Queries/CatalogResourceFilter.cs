@@ -6,14 +6,17 @@ using Forma.Framework.Resources;
 
 /// <summary>A filter of the resources a catalog accepts, parsed from a pattern.</summary>
 /// <remarks>
-/// Written either as <c>globs:*.jpg;*.pdf</c> or as <c>contentType:image;video</c>. A content type
-/// matches a resource's own media type, and failing that the kind its type stands for.
+/// Written either as <c>globs:*.jpg;*.pdf</c> or as <c>contentType:image;video</c>. A glob matches a
+/// file's name. A content type matches a resource's own media type, and failing that the kind its type
+/// stands for, <c>folder</c> naming folders. A filter naming nothing accepts every resource.
 /// </remarks>
 public sealed class CatalogResourceFilter
 {
     private const string ContentTypePrefix = "contentType:";
 
     private const string GlobsPrefix = "globs:";
+
+    private const string FolderKind = "folder";
 
     private readonly string[] _contentTypes;
 
@@ -27,6 +30,11 @@ public sealed class CatalogResourceFilter
 
     /// <summary>The pattern the filter was parsed from.</summary>
     public string Pattern { get; private init; } = string.Empty;
+
+    /// <summary>Whether the filter accepts folders.</summary>
+    public bool AcceptsFolders
+        => (_globs.Length == 0 && _contentTypes.Length == 0)
+            || _contentTypes.Contains(FolderKind, StringComparer.OrdinalIgnoreCase);
 
     /// <summary>Parses the pattern into a filter.</summary>
     /// <exception cref="ArgumentException">The pattern names neither globs nor content types.</exception>
@@ -57,7 +65,9 @@ public sealed class CatalogResourceFilter
     {
         ArgumentNullException.ThrowIfNull(resource);
 
-        return Accepts(resource.Name, (resource as FileResourceInfo)?.ContentType, resource);
+        return resource is FolderResourceInfo
+            ? AcceptsFolders
+            : Accepts(resource.Name, (resource as FileResourceInfo)?.ContentType, resource);
     }
 
     /// <summary>Whether a file with the name and content type is one the catalog accepts.</summary>

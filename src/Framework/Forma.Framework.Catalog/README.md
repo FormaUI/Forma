@@ -153,7 +153,8 @@ admits it, and items stand in their groups' order, then the sort's, then their k
 `GroupSizes`; `CatalogGrouping.CountGroups` counts them for a provider that holds its items.
 
 `CatalogResourceFilter.Parse` reads an accepted-kinds pattern, `globs:*.jpg;*.pdf` or
-`contentType:image;video`, and its `Accepts` answers for one resource.
+`contentType:image;video`, and its `Accepts` answers for one resource. A glob names files; a content
+type of `folder` names folders, and `AcceptsFolders` says whether a filter takes them.
 
 ## Requests and constraints
 
