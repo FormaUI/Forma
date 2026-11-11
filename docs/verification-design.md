@@ -106,7 +106,10 @@ failed, so a fix to a host's startup reaches both.
   `dev` holds the same coverage as a candidate's.
 
 **A change runs the gates its reach calls for.** Before a commit, it runs the fast gate, the format check where C#
-changed, and the browser checks for what it touches, `scripts/build/browser.ps1 -Filter`. It runs the full gate
+changed, and the browser checks for what it touches, `scripts/build/browser.ps1 -Filter`. While it's made, a
+browser check runs in one runtime, `Runtime=server` among the filter's terms, and in every runtime once the change
+is otherwise done; a change split into commits runs the fast gate on each, and the browser checks and the format
+check once, on its final state. It runs the full gate
 locally where it changes what every component rests on, shared interop, the component bases, the hosts or the
 build, and where a failure CI found is being reproduced. Everything else the full gate covers runs in CI, nightly on
 `dev` and on every push to `candidate`, and the nightly run files what fails, so an intermittent failure or a
