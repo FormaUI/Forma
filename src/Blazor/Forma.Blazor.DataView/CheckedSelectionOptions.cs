@@ -13,7 +13,7 @@ public sealed record CheckedSelectionOptions
     /// <summary>The caption shown in place of the header checkbox, where null or a caption with no text keeps the plain checkbox.</summary>
     public CheckedSelectionCaption? Caption { get; init; }
 
-    /// <summary>Whether a press on an item checks or unchecks its box rather than activating the item, as a selection mode does, Enter still activating it.</summary>
+    /// <summary>Whether a press on an item checks or unchecks its box rather than activating the item, as a selection mode does, Enter and a press on an item that cannot be selected still activating it.</summary>
     public bool ChecksOnPress { get; init; }
 
     /// <summary>What the master control reaches when pressed.</summary>

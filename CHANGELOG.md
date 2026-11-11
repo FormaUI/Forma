@@ -9,6 +9,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- [`FormaDataView`](docs/data-view-design.md#selection) activates an item a press lands on where
+  `CheckedSelectionOptions.ChecksOnPress` has a press check boxes and the item cannot be selected, so a reader opens a
+  folder a picker will not let them choose; such a press did nothing.
 - A [`CatalogQuery`](src/Framework/Forma.Framework.Catalog/README.md#providers) names the kinds of item it asks for in
   `Kinds`, null asking for every kind and an empty set for none, and `AsksFor` answers for one. A provider applies them
   before it pages, so its slice, positions and counts describe those kinds alone; a provider that ignores them answers

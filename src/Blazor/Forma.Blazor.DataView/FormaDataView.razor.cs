@@ -1501,6 +1501,22 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     public Task HandleActivateAsync(int itemToken)
         => _itemTokens.TryGetItem(itemToken, out var item) ? ActivateAsync(item) : Task.CompletedTask;
 
+    /// <summary>Checks or unchecks the box of the item a checking press landed on, or activates the item where it cannot be selected.</summary>
+    /// <param name="itemToken">The token of the item.</param>
+    /// <remarks>A selected item that cannot be selected is unchecked, as its box unchecks it; a disabled one is left as it is.</remarks>
+    [JSInvokable]
+    public Task HandleCheckAsync(int itemToken)
+    {
+        if (!_itemTokens.TryGetItem(itemToken, out var item))
+        {
+            return Task.CompletedTask;
+        }
+
+        return IsSelectable(item) || (IsSelected(item) && !IsDisabled(item))
+            ? ToggleSelectionAsync(item, !IsSelected(item))
+            : ActivateAsync(item);
+    }
+
     /// <summary>Replaces or extends the selection with a contiguous range of items.</summary>
     /// <param name="itemTokens">The tokens of the items in the range, as the transfer carries them.</param>
     /// <param name="additive">Whether the range extends the selection rather than replacing it.</param>

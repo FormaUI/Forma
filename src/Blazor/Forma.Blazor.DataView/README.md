@@ -225,8 +225,8 @@ and `None` leaves the master control out.
 `EnableItemFocus` gives the items the focus where no selection is on: the collection is one tab stop,
 the arrows move the focus from item to item without selecting or opening anything, and Enter and a
 press activate the item, raising `OnItemClick`. A selection mode turns checked selection on over it,
-its `ChecksOnPress` having a press check the item's box while Enter still activates it, and the
-switch keeps the focus on the item it stood on:
+its `ChecksOnPress` having a press check the item's box while Enter still activates it, a press on an
+item that cannot be selected activating it, and the switch keeps the focus on the item it stood on:
 
 ```razor
 <FormaDataView Items="_files" EnableItemFocus="true" EnableCheckedSelection="_isSelecting"

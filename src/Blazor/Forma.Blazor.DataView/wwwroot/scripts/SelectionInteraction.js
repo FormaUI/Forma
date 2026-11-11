@@ -38,7 +38,8 @@
  * the list in never takes it as a submission. The presses are routes too: where the list selects,
  * a press selects, a shift-press stops the browser extending its own text selection across the
  * items, and a double press activates; where it does not, a press activates, or checks the item's
- * box where the list checks on a press, as a selection mode does. A press on a native control
+ * box where the list checks on a press, as a selection mode does, the owner activating instead an
+ * item that cannot be selected, so a reader can still open it. A press on a native control
  * inside an item is the control's, as is one on a part of the item a caller names as its own
  * controls, a box's cell or a card's actions.
  *
@@ -471,8 +472,9 @@ class SelectionInteraction {
         tell(this.#owner, 'HandleActivateAsync', token);
     }
 
-    // A press checks or unchecks the box the item it lands on draws, as a press on the box itself does, the focus landing on the box so
-    // the keys carry on from the item the pointer chose; an item that draws no box is activated.
+    // A press checks or unchecks the box the item it lands on draws, which the owner does where the item can be selected and activates
+    // it otherwise, the focus landing on the box so the keys carry on from the item the pointer chose; an item that draws no box is
+    // activated.
     #check(event) {
         const item = this.#pressedItem(event);
         const box = this.#markerIn(item);
@@ -483,7 +485,7 @@ class SelectionInteraction {
         }
 
         this.#focusMarker(box, this.#markers());
-        box.click();
+        tell(this.#owner, 'HandleCheckAsync', this.#tokenOfItem(item));
     }
 
     // The marker holding the focus can stop being one while its item stays; the focus moves to the marker the item draws now.

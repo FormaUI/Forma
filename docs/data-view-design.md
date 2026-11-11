@@ -180,7 +180,9 @@ library's default sentence.
 Checked selection, `EnableCheckedSelection`, gives every item a box the view draws, and a
 master control the view places, the grid in its header cell. A press on an item activates
 it, or checks its box where the checked selection options say `ChecksOnPress`, as a
-selection mode does, Enter still activating it. The master
+selection mode does, Enter still activating it; a press on an item that cannot be selected
+activates it there too, so a reader opens a folder a picker will not let them choose, unless
+the host selected it, which the press unchecks as its box does. The master
 control is a tri-state box: unchecked with nothing selected on the page, indeterminate with
 some, checked with all. What pressing it reaches is `SelectAllMode` in the checked
 selection options:

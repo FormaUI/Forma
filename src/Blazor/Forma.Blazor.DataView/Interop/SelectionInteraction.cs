@@ -11,7 +11,7 @@ using Microsoft.JSInterop;
 internal sealed class SelectionInteraction(IJSEnvironment js)
     : JSInterop(js, "./_content/Forma.Blazor.DataView/scripts/SelectionInteraction.js")
 {
-    /// <summary>Attaches selection to the list, invoking <c>HandleSelectAsync</c>, <c>HandleRangeSelectAsync</c> or <c>HandleActivateAsync</c> on <paramref name="owner"/>, and where it seeks, <c>HandleSeekAsync</c> and <c>HandleRangeSelectByPositionAsync</c>.</summary>
+    /// <summary>Attaches selection to the list, invoking <c>HandleSelectAsync</c>, <c>HandleRangeSelectAsync</c> or <c>HandleActivateAsync</c> on <paramref name="owner"/>, where it checks on a press, <c>HandleCheckAsync</c>, and where it seeks, <c>HandleSeekAsync</c> and <c>HandleRangeSelectByPositionAsync</c>.</summary>
     /// <param name="container">The element the items stand in.</param>
     /// <param name="owner">The owner told what was selected or activated.</param>
     /// <param name="itemSelector">The selector naming the item a marker sits in.</param>
@@ -24,6 +24,7 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
     /// <param name="itemRootSelector">The selector naming the element each item is drawn as, whose controls are the item's.</param>
     /// <param name="actionsSelector">The selector naming the control within an item that opens its actions, which Shift+F10 and the Menu key on the item press.</param>
     /// <param name="gathersControls">Whether Tab reaches the active item's controls alone, every other item's standing out of the Tab sequence.</param>
+    /// <param name="checksOnPress">Whether a press checks the box of the item it lands on, where the list does not select, rather than activate the item.</param>
     public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, bool moves = true, string? positionAttribute = null, bool seeks = false, string? itemRootSelector = null, string? actionsSelector = null, bool gathersControls = false, bool checksOnPress = false)
         where TOwner : class
     {

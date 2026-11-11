@@ -712,6 +712,68 @@
                 () => Assert.Equal("Archive", ((IDataView<Entry>)engine.Instance).CurrentItem?.Name));
         }
 
+        [Fact]
+        public async Task Should_check_an_item_a_checking_press_lands_on_and_activate_one_that_cannot_be_chosen()
+        {
+            // Arrange - boxes drawn, the folder unable to be chosen and Locked disabled
+            using var ctx = new FormaDataViewTests();
+            List<string> activated = [];
+            var cut = Render(ctx, activated, isChecked: true);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+
+            // Act - a press on the file, on the disabled item, then on the folder
+            await engine.InvokeAsync(() => engine.Instance.HandleCheckAsync(GetToken(cut, "Notes")));
+            await engine.InvokeAsync(() => engine.Instance.HandleCheckAsync(GetToken(cut, "Locked")));
+            var selected = cut.FindAll("[aria-selected=true] .forma-data-list-item-name").Select(name => name.TextContent).ToList();
+            await engine.InvokeAsync(() => engine.Instance.HandleCheckAsync(GetToken(cut, "Archive")));
+
+            // Assert - the file checked, the disabled item left alone, and the folder entered with the selection kept
+            Assert.Multiple(
+                () => Assert.Equal(["Notes"], selected),
+                () => Assert.Empty(activated),
+                () => Assert.Equal("Archive", ((IDataView<Entry>)engine.Instance).CurrentItem?.Name),
+                () => Assert.Equal(1, engine.Instance.SelectedCount));
+        }
+
+        [Fact]
+        public async Task Should_uncheck_a_selected_item_that_cannot_be_chosen_rather_than_activate_it()
+        {
+            // Arrange - the host's selection holding the folder, which cannot be chosen
+            using var ctx = new FormaDataViewTests();
+            List<string> activated = [];
+            var cut = Render(ctx, activated, isChecked: true);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            engine.Render(parameters => parameters.Add(view => view.SelectedItems, new[] { Entries[0] }));
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleCheckAsync(GetToken(cut, "Archive")));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, engine.Instance.SelectedCount),
+                () => Assert.Null(((IDataView<Entry>)engine.Instance).CurrentItem));
+        }
+
+        [Fact]
+        public async Task Should_uncheck_a_checked_item_a_checking_press_lands_on_again()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var cut = Render(ctx, [], isChecked: true);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            var notes = GetToken(cut, "Notes");
+            await engine.InvokeAsync(() => engine.Instance.HandleCheckAsync(notes));
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleCheckAsync(notes));
+
+            // Assert
+            Assert.Equal(0, engine.Instance.SelectedCount);
+        }
+
         private static IRenderedComponent<IComponent> RenderFocused(FormaDataViewTests ctx, RenderFragment view)
             => ctx.Render(
                 @<FormaDataView Items="Entries.AsQueryable()" EnablePagination="false" EnableItemFocus="true"

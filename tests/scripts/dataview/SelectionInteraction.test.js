@@ -556,22 +556,22 @@ describe('SelectionInteraction', () => {
             expect(document.activeElement).toBe(itemOf(2));
         });
 
-        it('checks the box of the item a press lands on where a press checks, Enter still activating it', () => {
+        it('asks the owner to check the item a press lands on where a press checks, its box taking the focus, Enter still activating it', () => {
             [1, 2, 3].forEach(key => {
                 itemOf(key).removeAttribute('data-row-key');
                 itemOf(key).insertAdjacentHTML('afterbegin', `<input type="checkbox" data-row-key="${key}" />`);
             });
-            const checked = [];
-            list.querySelectorAll('input').forEach(box => box.addEventListener('click', () => checked.push(Number(box.dataset.rowKey))));
+            const clicked = [];
+            list.querySelectorAll('input').forEach(box => box.addEventListener('click', () => clicked.push(Number(box.dataset.rowKey))));
             attachSelection(list, options({ checksOnPress: true }));
 
             click(itemOf(2).querySelector('.name'));
             const focused = document.activeElement;
             press(itemOf(3).querySelector('input'), 'Enter');
 
-            expect(checked).toEqual([2]);
+            expect(clicked).toEqual([]);
             expect(focused).toBe(itemOf(2).querySelector('input'));
-            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 3]]);
+            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleCheckAsync', 2], ['HandleActivateAsync', 3]]);
         });
 
         it('activates the item a press lands on where a press checks but the item draws no box', () => {
@@ -587,8 +587,6 @@ describe('SelectionInteraction', () => {
                 itemOf(key).removeAttribute('data-row-key');
                 itemOf(key).insertAdjacentHTML('afterbegin', `<input type="checkbox" data-row-key="${key}" />`);
             });
-            const checked = [];
-            list.querySelectorAll('input').forEach(box => box.addEventListener('click', () => checked.push(Number(box.dataset.rowKey))));
             const handle = attachSelection(list, options());
 
             click(itemOf(1).querySelector('.name'));
@@ -597,8 +595,7 @@ describe('SelectionInteraction', () => {
             handle.setChecksOnPress(false);
             click(itemOf(3).querySelector('.name'));
 
-            expect(checked).toEqual([2]);
-            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 1], ['HandleActivateAsync', 3]]);
+            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 1], ['HandleCheckAsync', 2], ['HandleActivateAsync', 3]]);
         });
     });
 
