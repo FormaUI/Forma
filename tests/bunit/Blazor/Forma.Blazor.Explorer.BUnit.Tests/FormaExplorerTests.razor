@@ -2955,7 +2955,7 @@
         }
 
         [Fact]
-        public void Should_show_only_the_folder_moved_to_when_the_folder_left_answers_late()
+        public async Task Should_show_only_the_folder_moved_to_when_the_folder_left_answers_late()
         {
             // Arrange - Covers' files held while the host moves to Races, whose files arrive at once
             using var ctx = new FormaExplorerTests();
@@ -2966,10 +2966,12 @@
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" Folders="folders" CurrentFolder="@((ICatalogFolderItem)folders[0])" />);
             var explorer = cut.FindComponent<FormaExplorer>();
 
-            // Act - the move supersedes the request for Covers, whose answer comes after Races'
+            // Act - the move supersedes the request for Covers, whose answer comes after Races'; Races is asked for once the request it
+            // supersedes is canceled, and its answer is drawn in the turn that asks, which a turn on the renderer passes
             explorer.Render(parameters => parameters.Add(p => p.CurrentFolder, (ICatalogFolderItem)folders[1]));
-            cut.WaitForState(() => cut.FindAll(".forma-data-card").Count == 1);
-            provider.Gate.SetResult();
+            await provider.WhenAskedForAsync("races").WaitAsync(TestContext.Current.CancellationToken);
+            await cut.InvokeAsync(static () => { });
+            await cut.ReleaseAsync(() => provider.Gate.SetResult());
 
             // Assert
             Assert.Multiple(
