@@ -160,7 +160,7 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
 
 ## The build
 
-- **Faster tests.** The slowest test projects and tests are measured and made faster, starting with the tests that wait on time and those that load the machine.
+- **Faster tests.** The suite runs in about 13 seconds on the build on disk, its test projects side by side. The explorer's component tests stand in classes named for their subjects, which run side by side too, taking 5 seconds where one class of 129 took 16. What remains: the Office provider's tests and the data view grid's, each one class run in turn, set the fast gate's slowest suites at about 10 seconds; and the localization build's integration tests set the full suite's time, one of them running a build for 9 seconds.
 - **A faster gate.** The gate's total time comes down, starting with its longest step, the format check; and the test step builds the solution again although the gate has just built it, about a minute where the suite takes about 20 seconds on the build already on disk.
 
 <a id="release"></a>
