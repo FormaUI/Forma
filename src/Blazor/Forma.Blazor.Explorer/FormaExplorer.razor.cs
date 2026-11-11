@@ -145,7 +145,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     [Inject] private TimeProvider Clock { get; set; } = default!;
 
-    private readonly CatalogHistory _history = new();
+    private readonly ExplorerHistory _history = new();
 
     private readonly ExplorerUploadPanel _uploadPanel = new();
 

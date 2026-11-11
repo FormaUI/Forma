@@ -1,7 +1,7 @@
-namespace Forma.Framework.Catalog.Navigation;
+namespace Forma.Framework.Explorer.Navigation;
 
-/// <summary>The history of the folders a surface has visited, with a cursor that moves back and forward along it.</summary>
-public sealed class CatalogHistory
+/// <summary>The history of the folders an explorer has visited, with a cursor that moves back and forward along it.</summary>
+public sealed class ExplorerHistory
 {
     private readonly List<string?> _trail = [null];
     private int _index;

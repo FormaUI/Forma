@@ -73,6 +73,7 @@ The state behind those contracts is held in:
 | `ExplorerPendingAction` | A confirmation awaiting the reader: `ExplorerRenameAction<T>`, `ExplorerCreateFolderAction` or `ExplorerBatchAction<T>`. |
 | `ExplorerContentProvider` | The content of a location, its child folders from the folder tree before its files from a provider, sliced by position across both, the folders filling the grouping's leading group. |
 | `ExplorerGrouping` | The groups an `ExplorerGroupField` bands the items into, defined once for a browsing sequence as a `CatalogGrouping` a store applies and the data view groups by, led by the folders' group, each group the items sharing an `ExplorerGroupBand`, such as names from A to H or sizes up to 1 MB. |
+| `ExplorerHistory` | The folders the explorer has visited, with a cursor moving back and forward. |
 | `ExplorerPreview` | The resource shown full-size, and the siblings a viewer steps through. |
 
 ## License

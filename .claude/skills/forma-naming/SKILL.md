@@ -14,7 +14,7 @@ fails and `_calendar.GetYear` passes.
 - Do prefix component tags with the library's prefix, `Forma`: `<FormaX>`.
 - Do prefix CSS classes with `forma-`: `.forma-toggle-track`.
 - Do leave C# services, enums, and records unprefixed because namespaces disambiguate them: `ToastService`, `ModalSize`, `BreadcrumbItem`.
-- Do give a supporting type its owning feature's name as a prefix only where that reads well and adds meaning, as an explorer's `ExplorerAction` and a catalog's `CatalogSelection` do against `System.Action` and a bare `Selection`; a `Collections` feature needs no `CollectionsXxx` and takes none.
+- Do give a supporting type its owning feature's name as a prefix only where that reads well and adds meaning, as an explorer's `ExplorerAction` and `ExplorerHistory` do against `System.Action` and a bare `History`; a `Collections` feature needs no `CollectionsXxx` and takes none.
 - Don't carry the component prefix on a type that is not a component, which is why a feature's options record is `{Feature}Options` rather than `Forma{Feature}Options`.
 - Do find a better name when a prefix is needed to disambiguate but reads badly.
 - Do call a thing the library ships a **component**, and raw HTML an **element** — one word per concept. "Control" is Web Forms vocabulary from the legacy application; keep it only in `aria-controls` and in descriptions of that application's own markup.

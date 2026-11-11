@@ -1,16 +1,16 @@
-namespace Forma.Framework.Catalog.Tests.Navigation;
+namespace Forma.Framework.Explorer.Tests.Navigation;
 
-using Forma.Framework.Catalog.Navigation;
+using Forma.Framework.Explorer.Navigation;
 
 using Xunit;
 
-public sealed class CatalogHistoryTests
+public sealed class ExplorerHistoryTests
 {
     [Fact]
     public void Should_start_at_all_media_with_nowhere_to_go()
     {
         // Act
-        var history = new CatalogHistory();
+        var history = new ExplorerHistory();
 
         // Assert
         Assert.Multiple(
@@ -23,7 +23,7 @@ public sealed class CatalogHistoryTests
     public void Should_walk_back_and_forward_along_the_trail()
     {
         // Arrange
-        var history = new CatalogHistory();
+        var history = new ExplorerHistory();
         history.Visit("/photos");
         history.Visit("/photos/races");
 
@@ -45,7 +45,7 @@ public sealed class CatalogHistoryTests
     public void Should_stay_put_at_either_end_of_the_trail()
     {
         // Arrange
-        var history = new CatalogHistory();
+        var history = new ExplorerHistory();
         history.Visit("/photos");
 
         // Act
@@ -61,7 +61,7 @@ public sealed class CatalogHistoryTests
     public void Should_drop_what_lay_ahead_when_a_new_folder_is_visited()
     {
         // Arrange
-        var history = new CatalogHistory();
+        var history = new ExplorerHistory();
         history.Visit("/photos");
         history.Visit("/photos/races");
         history.GoBack();

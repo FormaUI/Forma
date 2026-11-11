@@ -9,6 +9,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- `CatalogHistory` is `ExplorerHistory`, in `Forma.Framework.Explorer.Navigation`, the history of the folders an explorer
+  has visited.
 - [`FormaExplorer`](docs/explorer-design.md#the-parts) takes its selection from the data view it browses through,
   which decides what may be selected and how many, where the explorer kept a selection of its own beside it. Its parts
   read the selection as `IExplorerSelectionView`, folders first, and `IExplorerSelectionInteraction` takes an item out

@@ -195,7 +195,6 @@ A component that browses a catalog keeps its state in the types this package pro
 | `CatalogListProvider` | An `ICatalogProvider` answering from a list it holds, shaped as a `CatalogCollectionView` shapes it, so a held collection and a store answer alike. |
 | `CatalogProviderItems` | The items fetched from a provider, one slice replacing the last or slices appended, with the store positions read, whether more follow and the fetch in flight. |
 | `CatalogFolderTree` | The folder items indexed by key and by parent. |
-| `CatalogHistory` | The folders visited, with a cursor moving back and forward. |
 
 ## License
 
