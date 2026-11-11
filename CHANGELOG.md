@@ -187,6 +187,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `.forma-explorer-scroll-status`, which a stylesheet addressing them now finds as the data view's `.forma-pagination`,
   `.forma-data-view-more` and `.forma-data-view-status`. `IExplorerContentView.Paging`, `ExplorerPagingInfo`, and
   `IExplorerContentInteraction.RequestNextPageAsync` and `ChangePageAsync` are gone, the paging being the data view's.
+- A [`FormaFreezePane`](docs/component-catalog.md#formafreezepane) measures its frozen region again when a frozen part
+  moves by a change of its style or class, as a grid's frozen columns do when a selection turns on; it kept the region
+  it had measured, so the content came to rest beneath the frozen columns.
 - [`FormaExplorer`](docs/explorer-design.md#the-parts)'s thumbnails are the data view's cards at their compact density,
   each the thumbnail and the name. They hold one tab stop with the selection mode off, the arrows moving the focus
   alone, a press or Enter opening a folder or previewing a file; in the selection mode a press or Space checks a

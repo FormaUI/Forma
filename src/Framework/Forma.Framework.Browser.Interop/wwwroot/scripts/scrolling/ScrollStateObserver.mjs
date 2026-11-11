@@ -15,6 +15,7 @@ export class ScrollStateObserver {
     #publish;
     #controller = new AbortController();
     #mutations;
+    #restyling = null;
     #trackSize;
     #childSizes = [];
     #last = null;
@@ -43,6 +44,13 @@ export class ScrollStateObserver {
         });
 
         this.#mutations.observe(track, { childList: true });
+
+        // A frozen part moves as its style or its class changes, which resizes nothing the track holds, so a change of either is
+        // measured again.
+        if (frozen) {
+            this.#restyling = new MutationObserver(() => this.#schedule());
+            this.#restyling.observe(track, { subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
+        }
     }
 
     /** Measures the container's state now. */
@@ -63,6 +71,7 @@ export class ScrollStateObserver {
         this.#scheduler.cancel();
         this.#controller.abort();
         this.#mutations.disconnect();
+        this.#restyling?.disconnect();
         this.#trackSize.dispose();
 
         for (const size of this.#childSizes) {

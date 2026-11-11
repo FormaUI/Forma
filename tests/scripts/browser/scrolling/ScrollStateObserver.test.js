@@ -291,5 +291,27 @@ describe('ScrollStateObserver', () => {
 
             expect(publish).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ frozenExtent: 80, cornerExtent: 0 }));
         });
+
+        it('measures again when a frozen part moves by a change of its style, which resizes nothing', () => {
+            document.body.innerHTML = '<div id="track"><span class="pinned">A</span><span class="pinned">B</span><span>C</span></div>';
+            track = document.querySelector('#track');
+            rect(track, { left: 0, right: 300 });
+            const [, second] = track.querySelectorAll('.pinned');
+            rect(second, { left: 32, right: 219 });
+            sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
+            watch({ frozen: '.pinned' }).read();
+
+            rect(second, { left: 48, right: 235 });
+            mutations.latest().deliver([{ type: 'attributes', target: second, attributeName: 'style' }]);
+            frames.flush();
+
+            expect(publish).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ frozenExtent: 235 }));
+        });
+
+        it('watches no styles where nothing is frozen', () => {
+            watch();
+
+            expect(mutations.instances).toHaveLength(1);
+        });
     });
 });
