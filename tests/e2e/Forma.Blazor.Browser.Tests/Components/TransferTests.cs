@@ -26,7 +26,8 @@ public sealed class TransferTests
             // Arrange — two megabytes typed into the text area as the page turns interactive
             var (context, page) = await OpenAsync(host, runtime, "transfer");
             await using var _ = context;
-            var notes = new string('n', 2_000_000);
+            // Two megabytes as words, as a reader's text runs, since WebKit takes half a minute to lay out as much on one unbroken line.
+            var notes = string.Join(' ', Enumerable.Repeat("nnnnnnnnn", 200_000));
             await WaitForInteractionAsync(page, "#forma-notes", "edits");
             await page.Locator("#forma-notes").FillAsync(notes);
 
@@ -65,14 +66,15 @@ public sealed class TransferTests
             await using var _ = context;
             var canvas = page.Locator("#forma-body .forma-composer-rich-text-canvas");
             await WaitForInputScopeAsync(page, "#forma-body .forma-composer-rich-text-canvas");
-            const int Length = 2_000_000;
-            await canvas.EvaluateAsync("(canvas, length) => { canvas.focus(); canvas.innerHTML = '<p>' + 'x'.repeat(length) + '</p>'; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", Length);
+            // Two megabytes as words, as a reader's text runs, since WebKit takes half a minute to lay out as much on one unbroken line.
+            const int Words = 200_000;
+            await canvas.EvaluateAsync("(canvas, words) => { canvas.focus(); canvas.innerHTML = '<p>' + Array(words).fill('xxxxxxxxx').join(' ') + '</p>'; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", Words);
 
             // Act
             await page.Locator("#forma-save").ClickAsync();
 
             // Assert
-            await Assertions.Expect(page.Locator("#forma-body-saved")).ToHaveTextAsync(Describe($"<p>{new string('x', Length)}</p>"), Saved);
+            await Assertions.Expect(page.Locator("#forma-body-saved")).ToHaveTextAsync(Describe($"<p>{string.Join(' ', Enumerable.Repeat("xxxxxxxxx", Words))}</p>"), Saved);
         }
 
         [Theory]
@@ -82,7 +84,8 @@ public sealed class TransferTests
             // Arrange — three megabytes in the notes, still on their way as the name is submitted with Enter
             var (context, page) = await OpenAsync(host, runtime, "transfer");
             await using var _ = context;
-            var notes = new string('h', 3_000_000);
+            // Three megabytes as words, as a reader's text runs, since WebKit takes half a minute to lay out as much on one unbroken line.
+            var notes = string.Join(' ', Enumerable.Repeat("hhhhhhhhh", 300_000));
             await WaitForInteractionAsync(page, "#host-notes", "edits");
             await page.Locator("#host-notes").FillAsync(notes);
             await WaitForInteractionAsync(page, "#host-name", "edits");
@@ -202,10 +205,10 @@ public sealed class TransferTests
             await using var _ = context;
             var canvas = page.Locator("#forma-body .forma-composer-rich-text-canvas");
             await WaitForInputScopeAsync(page, "#forma-body .forma-composer-rich-text-canvas");
-            var text = new string('y', 100_000);
+            var text = string.Join(' ', Enumerable.Repeat("yyyyyyyyy", 10_000));
             await canvas.EvaluateAsync("(canvas, text) => { canvas.focus(); canvas.innerHTML = '<p>' + text + '</p>'; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", text);
             await canvas.PressAsync("ControlOrMeta+A");
-            await page.WaitForFunctionAsync("length => getSelection().toString().length === length", text.Length);
+            await page.WaitForFunctionAsync("length => getSelection().rangeCount === 1 && getSelection().getRangeAt(0).toString().length === length", text.Length);
 
             // Act
             await page.Locator("#forma-body .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Insert Link", Exact = true }).ClickAsync();
@@ -223,8 +226,9 @@ public sealed class TransferTests
             await using var _ = context;
             var canvas = page.Locator("#forma-body .forma-composer-rich-text-canvas");
             await WaitForInputScopeAsync(page, "#forma-body .forma-composer-rich-text-canvas");
-            const int Length = 2_000_000;
-            await canvas.EvaluateAsync("(canvas, length) => { canvas.focus(); canvas.innerHTML = '<p>' + 'z'.repeat(length) + '</p>'; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", Length);
+            // Two megabytes as words, as a reader's text runs, since WebKit takes half a minute to lay out as much on one unbroken line.
+            const int Words = 200_000;
+            await canvas.EvaluateAsync("(canvas, words) => { canvas.focus(); canvas.innerHTML = '<p>' + Array(words).fill('zzzzzzzzz').join(' ') + '</p>'; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", Words);
             await page.Locator("#forma-body").GetByRole(AriaRole.Tab, new() { Name = "Preview", Exact = true }).ClickAsync();
             var export = page.Locator("#forma-body .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Export HTML", Exact = true });
 
@@ -232,8 +236,8 @@ public sealed class TransferTests
             var download = await page.RunAndWaitForDownloadAsync(() => export.ClickAsync());
 
             // Assert — the page the browser composed, the document whole within it
-            var exported = await page.EvaluateAsync<int>("address => fetch(address).then(response => response.text()).then(text => text.split('z'.repeat(1000)).length - 1)", download.Url);
-            Assert.Equal(Length / 1000, exported);
+            var exported = await page.EvaluateAsync<int>("address => fetch(address).then(response => response.text()).then(text => text.split('zzzzzzzzz').length - 1)", download.Url);
+            Assert.Equal(Words, exported);
         }
 
         // The name as an item of the list holds it.

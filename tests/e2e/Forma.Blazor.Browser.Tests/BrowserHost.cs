@@ -16,8 +16,10 @@ public sealed class BrowserHost : IAsyncLifetime
     private readonly HttpClient _client = new();
     private readonly Lock _webViewLock = new();
     private readonly Lock _androidLock = new();
+    private readonly Lock _webKitLock = new();
     private Task<WebViewApplication>? _webView;
     private Task<AndroidCheckApplication>? _android;
+    private Task<IBrowser>? _webKit;
     private IPlaywright? _playwright;
     private WebApplication? _standalone;
 
@@ -127,6 +129,19 @@ public sealed class BrowserHost : IAsyncLifetime
         return (context, page);
     }
 
+    /// <summary>Opens a page in WebKit, the engine of Safari and of Apple's web views, in a context of its own.</summary>
+    /// <param name="address">The host the page's relative addresses resolve against.</param>
+    /// <returns>The page and the context that owns it.</returns>
+    public async Task<(IBrowserContext Context, IPage Page)> OpenWebKitPageAsync(Uri address)
+    {
+        ArgumentNullException.ThrowIfNull(address);
+
+        var context = await (await GetWebKitAsync().ConfigureAwait(false)).NewContextAsync(new() { BaseURL = address.ToString() }).ConfigureAwait(false);
+        var page = await context.NewPageAsync().ConfigureAwait(false);
+
+        return (context, page);
+    }
+
     /// <summary>Asks a host how many of its delayed switches have settled, past the browser, which a check may hold offline.</summary>
     /// <param name="address">The host asked.</param>
     /// <returns>The switches settled so far.</returns>
@@ -158,6 +173,18 @@ public sealed class BrowserHost : IAsyncLifetime
     {
         using var response = await _client.GetAsync(new Uri(address, $"_check/delayed/settled?after={count}"), cancellationToken).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
+    }
+
+    // WebKit launches as the first check asking for it opens its page, so a run selecting none never needs it installed.
+    private Task<IBrowser> GetWebKitAsync()
+    {
+        lock (_webKitLock)
+        {
+            return _webKit ??= _playwright!.Webkit.LaunchAsync(new()
+            {
+                Headless = Environment.GetEnvironmentVariable("FORMA_BROWSER_VISIBLE") is null,
+            });
+        }
     }
 
     /// <summary>The WebView check host the component checks open their pages in under the WebView runtime, started as the first of them asks for it.</summary>
@@ -220,6 +247,13 @@ public sealed class BrowserHost : IAsyncLifetime
                     return ValueTask.CompletedTask;
                 },
                 () => Browser?.DisposeAsync() ?? ValueTask.CompletedTask,
+                async () =>
+                {
+                    if (_webKit is { IsCompletedSuccessfully: true } webKit)
+                    {
+                        await (await webKit.ConfigureAwait(false)).DisposeAsync().ConfigureAwait(false);
+                    }
+                },
                 () =>
                 {
                     _playwright?.Dispose();

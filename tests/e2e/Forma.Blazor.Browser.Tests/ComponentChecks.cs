@@ -8,9 +8,9 @@ public static partial class ComponentChecks
     /// <summary>A script recording, in <c>window.formaCopied</c>, each text the page writes to the clipboard once the write lands, so a check reads its own copy rather than a clipboard every browser on the machine shares.</summary>
     public const string RecordingClipboard = "const writeText = Clipboard.prototype.writeText; Clipboard.prototype.writeText = function (text) { return writeText.call(this, text).then(() => { (window.formaCopied ??= []).push(text); }); };";
 
-    /// <summary>The runtimes every component is checked in: the Server, WebAssembly, Auto on a first visit, which runs on the Server, and once WebAssembly has downloaded, which runs there, and Blazor Hybrid's web view, WebView2's and Android's.</summary>
+    /// <summary>The runtimes every component is checked in: the Server, WebAssembly, Auto on a first visit, which runs on the Server, and once WebAssembly has downloaded, which runs there, the Server in WebKit, the engine of Safari and of Apple's web views, and Blazor Hybrid's web view, WebView2's and Android's.</summary>
     /// <remarks>Each row carries its runtime as the <c>Runtime</c> trait, which a run that enumerates theories selects or leaves out by the runner's trait filters.</remarks>
-    public static TheoryData<string> Runtimes { get; } = [.. ((string[])["server", "webassembly", "auto-server", "auto-webassembly", "webview", "android"]).Select(runtime => new TheoryDataRow<string>(runtime).WithTrait("Runtime", runtime))];
+    public static TheoryData<string> Runtimes { get; } = [.. ((string[])["server", "webassembly", "auto-server", "auto-webassembly", "webkit", "webview", "android"]).Select(runtime => new TheoryDataRow<string>(runtime).WithTrait("Runtime", runtime))];
 
     /// <summary>Every check page's address after its runtime segment, read from the pages' own routes.</summary>
     /// <returns>The addresses, in order.</returns>
@@ -21,7 +21,7 @@ public static partial class ComponentChecks
 
     /// <summary>Opens the check page at <paramref name="path"/> in <paramref name="runtime"/> and waits until it is interactive in the runtime the case names.</summary>
     /// <param name="host">The published hosts.</param>
-    /// <param name="runtime">The runtime, <c>server</c>, <c>webassembly</c>, <c>auto-server</c>, <c>auto-webassembly</c>, <c>webview</c> or <c>android</c>.</param>
+    /// <param name="runtime">The runtime, <c>server</c>, <c>webassembly</c>, <c>auto-server</c>, <c>auto-webassembly</c>, <c>webkit</c>, <c>webview</c> or <c>android</c>.</param>
     /// <param name="path">The component's check page, after the runtime.</param>
     /// <param name="prepare">Prepares the page before it opens the check: a script standing in for what a headless browser lacks, or a route its connections pass through.</param>
     /// <returns>The page and the context that owns it.</returns>
@@ -45,10 +45,14 @@ public static partial class ComponentChecks
             "webassembly" => ("webassembly", "WebAssembly"),
             "auto-server" => ("auto", "Server"),
             "auto-webassembly" => ("auto", "WebAssembly"),
-            _ => throw new ArgumentOutOfRangeException(nameof(runtime), runtime, "The runtime is server, webassembly, auto-server, auto-webassembly, webview or android."),
+            "webkit" => ("server", "Server"),
+            _ => throw new ArgumentOutOfRangeException(nameof(runtime), runtime, "The runtime is server, webassembly, auto-server, auto-webassembly, webkit, webview or android."),
         };
 
-        var (context, page) = await host.OpenPageAsync(await host.GetComponentsAddressAsync().ConfigureAwait(false)).ConfigureAwait(false);
+        var address = await host.GetComponentsAddressAsync().ConfigureAwait(false);
+        var (context, page) = runtime == "webkit"
+            ? await host.OpenWebKitPageAsync(address).ConfigureAwait(false)
+            : await host.OpenPageAsync(address).ConfigureAwait(false);
         var problems = WatchProblems(page);
 
         if (prepare is not null)
@@ -65,10 +69,23 @@ public static partial class ComponentChecks
             await downloads.StopOnceDownloadedAsync().ConfigureAwait(false);
         }
 
-        await page.GotoAsync($"{mode}/{path}").ConfigureAwait(false);
+        // WebKit holds the load event while a video it can't fetch anything for stays empty, so there the page is opened once parsed,
+        // the wait for its renderer following either way.
+        await page.GotoAsync($"{mode}/{path}", new() { WaitUntil = runtime == "webkit" ? WaitUntilState.DOMContentLoaded : WaitUntilState.Load }).ConfigureAwait(false);
         await WaitForRendererAsync(page, renderer, problems).ConfigureAwait(false);
 
         return (context, page);
+    }
+
+    /// <summary>Lets the page write to the clipboard in <paramref name="runtime"/>, as a press asking for a copy may: Chromium's engine asks for the permission, and WebKit lets the press that asks write.</summary>
+    /// <param name="context">The page's context.</param>
+    /// <param name="runtime">The runtime the page runs in.</param>
+    /// <returns>A task that completes once the page may write.</returns>
+    public static Task AllowClipboardWriteAsync(IBrowserContext context, string runtime)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+
+        return runtime == "webkit" ? Task.CompletedTask : context.GrantPermissionsAsync(["clipboard-write"]);
     }
 
     /// <summary>Waits until <paramref name="item"/> stands in the page's viewport, which a script brings it into, as a list opening on it or scrolling to it does.</summary>

@@ -138,7 +138,7 @@ Every component must work in every render mode the library supports: static serv
 
 ## Verification
 
-- Do give every component a check page in the browser check, and drive its interactions, every call it makes to a script and every call back, in every interactive runtime: the Server, WebAssembly, Auto on a first visit and once WebAssembly has downloaded, and the web view.
+- Do give every component a check page in the browser check, and drive its interactions, every call it makes to a script and every call back, in every interactive runtime: the Server, WebAssembly, Auto on a first visit and once WebAssembly has downloaded, the Server in WebKit, the engine of Safari and of Apple's web views, and the web view.
 - Do render every check page statically too, and require it to show its state, raise no error, show nothing waiting on a script that never runs, a spinner or a symbol reference nothing resolves, and offer no enabled control whose action needs interactivity.
 - Do assert, in every case, the runtime it ran in, so a check that silently ran elsewhere fails.
 - Do run the web view's cases where its web view runs and report them skipped elsewhere, never passed.

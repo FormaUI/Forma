@@ -301,7 +301,7 @@ public sealed class ComposerTests
             // Arrange
             var (context, page, canvas) = await OpenComposerAsync(host, runtime, prepare: page => page.AddInitScriptAsync(RecordingClipboard));
             await using var _ = context;
-            await context.GrantPermissionsAsync(["clipboard-write"]);
+            await AllowClipboardWriteAsync(context, runtime);
             await SelectTypedAsync(page, canvas, "Hello");
             await GetCommand(page, "Bold").ClickAsync();
             await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("<b>Hello</b>");

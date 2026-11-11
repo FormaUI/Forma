@@ -353,8 +353,10 @@ public sealed class DataViewTests
             await contracts.FocusAsync();
             await Assertions.Expect(contracts).ToHaveAttributeAsync("tabindex", "0", new() { Timeout = 30000 });
 
-            // Act — Contracts taken away by a button outside the tree, which holds the focus
-            await remove.ClickAsync();
+            // Act — Contracts taken away by a button outside the tree, which holds the focus, pressed from the keyboard since a pointer's
+            // press focuses a button in Chromium alone
+            await remove.FocusAsync();
+            await remove.PressAsync("Enter");
             await Assertions.Expect(contracts).ToHaveCountAsync(0);
 
             // Assert — the page's focus where it was, and Tab back into the tree at Reports, the sibling before Contracts

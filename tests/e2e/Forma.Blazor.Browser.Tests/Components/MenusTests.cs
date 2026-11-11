@@ -208,7 +208,7 @@ public sealed class MenusTests
             // Arrange
             var (context, page) = await OpenAsync(host, runtime, "share-menu", page => page.AddInitScriptAsync(RecordingClipboard));
             await using var _ = context;
-            await context.GrantPermissionsAsync(["clipboard-write"]);
+            await AllowClipboardWriteAsync(context, runtime);
             var menu = page.GetByRole(AriaRole.Menu);
             await page.Locator("#share").ClickAsync();
 

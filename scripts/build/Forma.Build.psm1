@@ -1738,7 +1738,7 @@ function Test-BrowserCheck {
         $description += ', the Blazor Hybrid ones among them'
     }
 
-    $description += ', then run the examples'' smoke checks and drive them in a browser'
+    $description += ', then run the examples'' smoke checks and drive them in a browser, the components in Playwright''s WebKit as well'
 
     if ($isVisible) {
         $description += ', in a visible browser window'
@@ -1898,6 +1898,24 @@ function Test-BrowserCheck {
         if ($isAndroid) {
             $checkArguments = if ($Filter) { @('-preEnumerateTheories', '-filterVSTest', "($Filter)&(Runtime!=android)") } else { @('-preEnumerateTheories', '-trait-', 'Runtime=android') }
             $androidArguments = if ($Filter) { @('-preEnumerateTheories', '-filterVSTest', "($Filter)&(Runtime=android)") } else { @('-preEnumerateTheories', '-trait', 'Runtime=android') }
+        }
+
+        # The components are checked in WebKit too, Playwright's own build of it, which a machine installs once; a Linux CI
+        # machine takes the libraries WebKit needs with it.
+        if ($runsChecks) {
+            dotnet build $checks -c Release --nologo -v:q
+
+            if ($LASTEXITCODE -ne 0) {
+                return
+            }
+
+            $installer = Get-ChildItem -LiteralPath (Join-Path (Split-Path -Parent $checks) 'bin' 'Release') -Recurse -Filter 'playwright.ps1' | Select-Object -First 1
+            $withDependencies = @(if ($IsLinux -and $env:CI) { '--with-deps' })
+            pwsh -NoProfile -File $installer.FullName install @withDependencies webkit
+
+            if ($LASTEXITCODE -ne 0) {
+                return
+            }
         }
 
         $failedRuns = [System.Collections.Generic.List[int]]::new()
