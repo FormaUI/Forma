@@ -73,6 +73,8 @@ callback, and an upload goes into the host's `IFileStore`.
   folders, while every folder is listed and entered whatever they name. A press on a folder
   that cannot be chosen enters it, in the selection mode too, so a caller choosing files
   reaches the files a folder holds.
+- **The explorer holds where the reader is.** A move the reader makes becomes the current
+  folder whether or not the host binds it, and a folder the host gives replaces it.
 - **Effective capabilities.** What may be done to an item is its own set intersected with
   what the explorer permits for its kind, and nothing while the item is disabled. Every
   entry point enforces that set and the views draw from it. Opening is a folder's

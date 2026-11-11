@@ -455,6 +455,24 @@
             Assert.NotNull(activeFolder);
             Assert.Equal("races", activeFolder.Key);
         }
+
+        [Fact]
+        public async Task Should_follow_its_own_moves_where_the_host_leaves_the_folder_unbound()
+        {
+            // Arrange - no CurrentFolder handed back
+            using var ctx = new FormaExplorerTests();
+            var cut = ctx.Render(@<FormaExplorer Items="@(Array.Empty<ICatalogItem>())" Folders="@(CatalogItem.ForAll([new FolderResourceInfo("covers") { Name = "Covers" }, new FolderResourceInfo("races") { Name = "Races" }]))" />);
+
+            // Act
+            await PressCardAsync(cut, "Races");
+
+            // Assert - the location, and Up, follow the move
+            var location = (IExplorerLocationView)cut.FindComponent<FormaExplorer>().Instance;
+            Assert.Multiple(
+                () => Assert.Equal("races", location.CurrentFolder?.Key),
+                () => Assert.True(location.CanGoUp),
+                () => Assert.Equal(["Races"], location.Breadcrumbs.Select(folder => folder.Name)));
+        }
     }
 
     public sealed class Sorting

@@ -9,6 +9,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- [`FormaExplorer`](docs/explorer-design.md#decision-summary) follows a move to another folder itself, so a host that
+  leaves `CurrentFolder` unbound, as the composer's stored-files dialog does, sees the breadcrumbs, Up and a new
+  folder's place follow the reader; they stayed at All Media.
 - The composer's [stored-files dialog](src/AddOns/Forma.AddOns.Composer.Plugins.Explorer/README.md#register) browses
   the folders the host's `ICatalogProvider` lists, reading every one as it opens, a reader entering a folder to reach
   the files in it; a provider that lists none browses the files flat, as before. A file activated by Enter is inserted

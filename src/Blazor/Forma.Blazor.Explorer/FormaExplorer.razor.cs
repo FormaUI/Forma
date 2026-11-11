@@ -163,6 +163,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private readonly CatalogSelection _selection = new();
 
+    // The location the reader is in, which a move the data view makes sets and a folder the host gives replaces.
+    private ICatalogFolderItem? _currentFolder;
+
     private const double MinSidebarWidth = 10;
 
     private const double MaxSidebarWidth = 28;
@@ -305,7 +308,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     }
 
     private IReadOnlyList<ICatalogFolderItem> Breadcrumbs
-        => _breadcrumbs ??= CurrentFolder is { } current ? BuildBreadcrumbs(FolderTree, current) : [];
+        => _breadcrumbs ??= _currentFolder is { } current ? BuildBreadcrumbs(FolderTree, current) : [];
 
     private static List<ICatalogFolderItem> BuildBreadcrumbs(CatalogFolderTree tree, ICatalogFolderItem current)
     {
@@ -327,7 +330,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private bool CanGoForward => _history.CanGoForward;
 
-    private bool CanGoUp => CurrentFolder is not null;
+    private bool CanGoUp => _currentFolder is not null;
 
     // The deletion awaiting confirmation, files and folders together.
     private ExplorerBatchAction<ICatalogItem>? PendingDeletion
@@ -523,6 +526,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         _paramStateTracker.Track(() => Constraints.AcceptedResourceKinds, accepted => _collection.Filter = CatalogResourceFilter.Parse(accepted));
         _paramStateTracker.Track(() => Constraints.AcceptedUploadKinds, accepted => _uploadFilter = CatalogResourceFilter.Parse(accepted));
+        _paramStateTracker.Track(() => CurrentFolder, folder => _currentFolder = folder);
         _paramStateTracker.Track(() => CurrentPage, page => _collection.PageNumber = page);
         _paramStateTracker.Track(() => ViewMode, mode => _viewMode = mode);
         _paramStateTracker.Track(() => GroupField, field => _groupField = field);
@@ -541,7 +545,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _itemManager.OnChanged = () => _ = InvokeAsync(StateHasChanged);
         _itemManager.OnActivate = ActivateItemAsync;
         _itemManager.OnDrop = (target, folder) => RunAsync(() => HandleDropOnFolderAsync(target, folder));
-        _itemManager.OnRequestNewFolder = () => RunAsync(() => OpenFolderDialogAsync(CurrentFolder));
+        _itemManager.OnRequestNewFolder = () => RunAsync(() => OpenFolderDialogAsync(_currentFolder));
         _itemManager.OnRenameConfirmed = (target, newName) => RunAsync(() => ApplyRenameAsync(target, newName));
         _itemManager.OnCreateFolderConfirmed = (parent, name) => RunAsync(() => ApplyCreateFolderAsync(parent, name));
         _itemManager.OnDeleteConfirmed = targets => RunAsync(() => ApplyDeleteAsync(targets));
@@ -828,7 +832,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     bool IExplorerConfigurationView.ShowsSidebar => ShowsSidebar;
 
-    ICatalogFolderItem? IExplorerLocationView.CurrentFolder => CurrentFolder;
+    ICatalogFolderItem? IExplorerLocationView.CurrentFolder => _currentFolder;
 
     IReadOnlyList<ICatalogFolderItem> IExplorerLocationView.Breadcrumbs => Breadcrumbs;
 
@@ -1118,10 +1122,13 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
-    // A move that succeeded clears the selection, records the visit unless it stepped through the history, and starts the location's sequence.
+    // A move that succeeded becomes the location, clears the selection, records the visit unless it stepped through the history, and
+    // starts the location's sequence.
     private async Task HandleCurrentItemChangedAsync(ICatalogItem? item)
     {
         var folder = item as ICatalogFolderItem;
+        _currentFolder = folder;
+        _breadcrumbs = null;
 
         if (_isHistoryMove)
         {
@@ -1343,7 +1350,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private async Task HandleUpAsync()
     {
-        if (CurrentFolder is { } current)
+        if (_currentFolder is { } current)
         {
             await HandleFolderSelectedAsync(FolderTree.GetParent(current));
         }
@@ -1372,7 +1379,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return;
         }
 
-        if (!await EnsureFolderHasRoomAsync(CurrentFolder, files.Count)
+        if (!await EnsureFolderHasRoomAsync(_currentFolder, files.Count)
             || !await EnsureExplorerHasRoomAsync(files.Count, files.Sum(file => file.Size)))
         {
             return;
