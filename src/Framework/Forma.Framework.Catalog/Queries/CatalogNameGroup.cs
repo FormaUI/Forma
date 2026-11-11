@@ -16,8 +16,8 @@ public sealed record CatalogNameGroup(string Key, char First, char Last) : Catal
             return false;
         }
 
-        var first = char.ToUpperInvariant(item.Name[0]);
+        var firstLetter = char.ToUpperInvariant(item.Name[0]);
 
-        return first >= First && first <= Last;
+        return firstLetter >= First && firstLetter <= Last;
     }
 }

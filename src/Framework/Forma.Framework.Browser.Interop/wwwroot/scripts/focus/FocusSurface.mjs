@@ -41,24 +41,24 @@ export class FocusSurface {
         }
 
         const regions = this.#order.map(selector => [...this.#element.querySelectorAll(selector)]);
-        const grouped = regions.map(() => []);
-        const rest = [];
+        const groupedControls = regions.map(() => []);
+        const ungroupedControls = [];
 
         for (const control of controls) {
             const region = regions.findIndex(elements => elements.some(element => element.contains(control)));
-            (region < 0 ? rest : grouped[region]).push(control);
+            (region < 0 ? ungroupedControls : groupedControls[region]).push(control);
         }
 
-        return [...grouped.flat(), ...rest];
+        return [...groupedControls.flat(), ...ungroupedControls];
     }
 
     /** The first control after the surface in the page, or the last before it. */
-    neighbor(forward) {
+    neighbor(isForward) {
         const page = new FocusSurface(this.#element.ownerDocument.documentElement);
         const outside = page.controls().filter(control => !this.#element.contains(control));
         const follows = control => this.#element.compareDocumentPosition(control) & Node.DOCUMENT_POSITION_FOLLOWING;
 
-        return forward
+        return isForward
             ? outside.find(follows) ?? null
             : outside.filter(control => !follows(control)).at(-1) ?? null;
     }

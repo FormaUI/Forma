@@ -23,9 +23,9 @@ public sealed partial class InstagramPlayerProvider : IPlayerProvider
 
         // A permalink addresses a reel in the singular, and Instagram's script matches it literally.
         var kind = match.Groups["kind"].Value;
-        var singular = kind.Equals("reels", StringComparison.OrdinalIgnoreCase) ? "reel" : kind;
+        var singularKind = kind.Equals("reels", StringComparison.OrdinalIgnoreCase) ? "reel" : kind;
 
-        var permalink = WebUtility.HtmlEncode($"https://www.instagram.com/{singular}/{match.Groups["shortcode"].Value}/");
+        var permalink = WebUtility.HtmlEncode($"https://www.instagram.com/{singularKind}/{match.Groups["shortcode"].Value}/");
         var html = $"""<blockquote class="instagram-media" data-instgrm-permalink="{permalink}" data-instgrm-version="14"></blockquote>""";
 
         return new HtmlPlayerFrame(match.Value, html, EmbedScript);

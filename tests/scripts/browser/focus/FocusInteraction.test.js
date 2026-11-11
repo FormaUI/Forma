@@ -244,7 +244,7 @@ describe('FocusInteraction roving inside a surface', () => {
     };
 
     const tabindexOf = id => document.querySelector(`#${id}`).getAttribute('tabindex');
-    const start = (roving = 'horizontal') => attachSurface(document.querySelector('#toolbar'), { roving });
+    const start = (rovingOrientation = 'horizontal') => attachSurface(document.querySelector('#toolbar'), { rovingOrientation });
     const settle = () => new Promise(resolve => setTimeout(resolve));
 
     it('leaves the first control as the one Tab stop and parks the rest', () => {

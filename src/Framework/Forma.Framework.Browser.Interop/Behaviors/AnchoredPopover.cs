@@ -37,12 +37,12 @@ public sealed class AnchoredPopover(IJSEnvironment js)
 
         // Set before the transition starts, so an open that fails, at once or later, has the last word.
         _isOpen = isOpen;
-        var next = isOpen ? OpenAsync(popover, anchor, trigger, onOpened, keepsFocus, alignment) : DetachAsync().AsTask();
-        _transition = next;
+        var nextTransition = isOpen ? OpenAsync(popover, anchor, trigger, onOpened, keepsFocus, alignment) : DetachAsync().AsTask();
+        _transition = nextTransition;
 
         try
         {
-            await next;
+            await nextTransition;
         }
         finally
         {

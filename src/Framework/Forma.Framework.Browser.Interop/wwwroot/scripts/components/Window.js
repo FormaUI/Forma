@@ -11,8 +11,8 @@ import { TabOrder } from '../focus/TabOrder.mjs';
 /**
  * @param {HTMLElement} target The window element, a manual popover.
  * @param {{
- *   presented: boolean,
- *   modal: boolean,
+ *   isPresented: boolean,
+ *   isModal: boolean,
  *   scrim: HTMLElement | null,
  *   owner?: import('../../../core/scripts/Owner.js').Owner | null
  * }} options
@@ -24,21 +24,21 @@ export function attach(target, options) {
 }
 
 /** The window shown last, which the top layer keeps in front until another is shown. */
-let topmost = null;
+let topmostWindow = null;
 
 class Window {
     #window;
-    #presented;
+    #isPresented;
     #scrim;
     #owner;
     #listeners = new AbortController();
-    #lastFocused = null;
+    #lastFocusedElement = null;
     #isPressed = false;
     #raiseAfterRelease = false;
 
-    constructor(window, { presented, modal, scrim, owner = null }) {
+    constructor(window, { isPresented, isModal, scrim, owner = null }) {
         this.#window = window;
-        this.#presented = presented;
+        this.#isPresented = isPresented;
         this.#scrim = scrim ?? null;
         this.#owner = owner;
 
@@ -54,12 +54,12 @@ class Window {
         globalThis.addEventListener('pointercancel', () => this.#handleRelease(), { capture: true, signal });
         globalThis.addEventListener('blur', () => this.#handleRelease(), { signal });
 
-        if (modal) {
+        if (isModal) {
             const tabOrder = new TabOrder(new FocusSurface(window), { wrap: true });
             signal.addEventListener('abort', () => tabOrder.dispose(), { once: true });
         }
 
-        if (presented) {
+        if (isPresented) {
             this.#show();
         }
     }
@@ -76,15 +76,15 @@ class Window {
      * focused inside the window, else its first control, else the window itself.
      */
     focus() {
-        const active = document.activeElement;
+        const activeElement = document.activeElement;
 
-        if (active !== this.#window && this.#window.contains(active)) {
+        if (activeElement !== this.#window && this.#window.contains(activeElement)) {
             return;
         }
 
-        const remembered = this.#lastFocused;
-        const target = remembered?.isConnected && this.#window.contains(remembered)
-            ? remembered
+        const rememberedElement = this.#lastFocusedElement;
+        const target = rememberedElement?.isConnected && this.#window.contains(rememberedElement)
+            ? rememberedElement
             : new FocusSurface(this.#window).controls()[0] ?? this.#window;
 
         target.focus();
@@ -97,7 +97,7 @@ class Window {
      * browser window losing focus.
      */
     raise() {
-        if (!this.#presented || topmost === this) {
+        if (!this.#isPresented || topmostWindow === this) {
             return;
         }
 
@@ -112,13 +112,13 @@ class Window {
     }
 
     /**
-     * Shows the window in the top layer or takes it out, to match presented.
-     * @param {boolean} presented
+     * Shows the window in the top layer or takes it out, to match isPresented.
+     * @param {boolean} isPresented
      */
-    present(presented) {
-        this.#presented = presented;
+    present(isPresented) {
+        this.#isPresented = isPresented;
 
-        if (presented) {
+        if (isPresented) {
             this.#show();
         } else {
             this.#hide();
@@ -128,7 +128,7 @@ class Window {
     /** Keeps the element inside the window that focus is leaving. */
     #remember(element) {
         if (element instanceof HTMLElement && this.#window.contains(element)) {
-            this.#lastFocused = element;
+            this.#lastFocusedElement = element;
         }
     }
 
@@ -149,7 +149,7 @@ class Window {
 
         if (typeof this.#window.showPopover === 'function' && !this.#window.matches(':popover-open')) {
             this.#window.showPopover();
-            topmost = this;
+            topmostWindow = this;
         }
     }
 
@@ -162,8 +162,8 @@ class Window {
             this.#scrim.hidePopover();
         }
 
-        if (topmost === this) {
-            topmost = null;
+        if (topmostWindow === this) {
+            topmostWindow = null;
         }
     }
 }

@@ -5,7 +5,7 @@ namespace Forma.Framework.Events;
 /// <param name="clock">The clock the delays are measured on.</param>
 public sealed class Debouncer(TimeProvider clock) : IDebounceable
 {
-    private CancellationTokenSource? _pending;
+    private CancellationTokenSource? _pendingCancellation;
 
     /// <summary>The clock the delays are measured on.</summary>
     public TimeProvider Clock { get; } = clock ?? throw new ArgumentNullException(nameof(clock));
@@ -18,16 +18,16 @@ public sealed class Debouncer(TimeProvider clock) : IDebounceable
 
         Cancel();
 
-        var pending = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-        var token = pending.Token;
-        _pending = pending;
+        var pendingCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var token = pendingCancellation.Token;
+        _pendingCancellation = pendingCancellation;
 
         try
         {
             await Task.Delay(delay, Clock, token).ConfigureAwait(false);
 
             // Only a request still pending once its delay elapses runs.
-            if (!ReferenceEquals(_pending, pending))
+            if (!ReferenceEquals(_pendingCancellation, pendingCancellation))
             {
                 return;
             }
@@ -40,10 +40,10 @@ public sealed class Debouncer(TimeProvider clock) : IDebounceable
         }
         finally
         {
-            if (ReferenceEquals(_pending, pending))
+            if (ReferenceEquals(_pendingCancellation, pendingCancellation))
             {
-                _pending = null;
-                pending.Dispose();
+                _pendingCancellation = null;
+                pendingCancellation.Dispose();
             }
         }
     }
@@ -51,8 +51,8 @@ public sealed class Debouncer(TimeProvider clock) : IDebounceable
     /// <inheritdoc />
     public void Cancel()
     {
-        _pending?.Cancel();
-        _pending?.Dispose();
-        _pending = null;
+        _pendingCancellation?.Cancel();
+        _pendingCancellation?.Dispose();
+        _pendingCancellation = null;
     }
 }

@@ -118,7 +118,7 @@ public sealed partial class FormaDialog : FormaElementBase
         }
 
         // The dialog is an active scope exactly while open, standing as the modal barrier.
-        await _inputRegistration.SyncAsync(RootElement, ModalProfile, wanted: _isOpen, active: _isOpen);
+        await _inputRegistration.SyncAsync(RootElement, ModalProfile, shouldRegister: _isOpen, isActive: _isOpen);
     }
 
     [SuppressMessage("Style", "IDE0060:Remove unused parameter", Justification = "The router hands every owner the action and the reason.")]
@@ -185,7 +185,7 @@ public sealed partial class FormaDialog : FormaElementBase
     private async Task SetClosedAsync()
     {
         _isOpen = false;
-        await _inputRegistration.SyncAsync(RootElement, ModalProfile, wanted: false);
+        await _inputRegistration.SyncAsync(RootElement, ModalProfile, shouldRegister: false);
     }
 
     /// <inheritdoc />

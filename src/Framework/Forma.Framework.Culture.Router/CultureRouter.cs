@@ -144,13 +144,13 @@ public sealed partial class CultureRouter : ICultureAddressing
         var segments = GetSegments(path);
         GuardAgainstConsecutiveCultures(segments, path, nameof(path));
 
-        var normalized = path.Length == 0 ? "/" : path;
+        var normalizedPath = path.Length == 0 ? "/" : path;
         var route = segments.Length > 0 ? FindRoute(segments[0]) : null;
         var effectiveRoute = route ?? DefaultRoute;
-        var remainder = route is null ? normalized : "/" + string.Join('/', segments.Skip(1));
+        var remainder = route is null ? normalizedPath : "/" + string.Join('/', segments.Skip(1));
         var canonicalPath = PrefixPath(effectiveRoute, effectiveRoute.Token, remainder);
 
-        return new CultureMatch(effectiveRoute, remainder, canonicalPath, string.Equals(canonicalPath, normalized, StringComparison.Ordinal));
+        return new CultureMatch(effectiveRoute, remainder, canonicalPath, string.Equals(canonicalPath, normalizedPath, StringComparison.Ordinal));
     }
 
     /// <summary>Whether the unescaped <paramref name="path"/> names a culture in two consecutive segments.</summary>
@@ -260,15 +260,15 @@ public sealed partial class CultureRouter : ICultureAddressing
     // The path without the culture segment it opens with, each segment read through `read` to compare it with the tokens.
     private string StripToken(string path, Func<string, string> read)
     {
-        var normalized = path.Length == 0 ? "/" : path;
-        var segments = GetSegments(normalized);
+        var normalizedPath = path.Length == 0 ? "/" : path;
+        var segments = GetSegments(normalizedPath);
 
         if (segments.Length > 0 && IsToken(read(segments[0])))
         {
             return segments.Length == 1 ? "/" : "/" + string.Join('/', segments.Skip(1));
         }
 
-        return normalized;
+        return normalizedPath;
     }
 
     private void Register(string token, CultureRoute route, string parameterName)

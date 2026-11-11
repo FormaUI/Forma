@@ -209,11 +209,11 @@ public sealed class LocalePathMatcher
     }
 
     // Matches the pieces from an index onward against the name from a position, backtracking over where each run of segments ends.
-    private bool TryMatch(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matched)
+    private bool TryMatch(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matchedCaptures)
     {
         if (index == pieces.Count)
         {
-            matched = captures;
+            matchedCaptures = captures;
 
             return position == name.Length;
         }
@@ -224,7 +224,7 @@ public sealed class LocalePathMatcher
             case Kind.Text:
                 if (name.AsSpan(position).StartsWith(piece.Text, _comparison))
                 {
-                    return TryMatch(pieces, index + 1, name, position + piece.Text.Length, captures, out matched);
+                    return TryMatch(pieces, index + 1, name, position + piece.Text.Length, captures, out matchedCaptures);
                 }
 
                 break;
@@ -232,7 +232,7 @@ public sealed class LocalePathMatcher
             case Kind.Separator:
                 if (TryReadSeparator(name, position))
                 {
-                    return TryMatch(pieces, index + 1, name, position + 1, captures, out matched);
+                    return TryMatch(pieces, index + 1, name, position + 1, captures, out matchedCaptures);
                 }
 
                 break;
@@ -240,39 +240,39 @@ public sealed class LocalePathMatcher
             case Kind.SeparatorIfGroup:
                 if (!captures.IsPresent(piece.Group!.Value))
                 {
-                    return TryMatch(pieces, index + 1, name, position, captures, out matched);
+                    return TryMatch(pieces, index + 1, name, position, captures, out matchedCaptures);
                 }
 
                 if (TryReadSeparator(name, position))
                 {
-                    return TryMatch(pieces, index + 1, name, position + 1, captures, out matched);
+                    return TryMatch(pieces, index + 1, name, position + 1, captures, out matchedCaptures);
                 }
 
                 break;
 
             case Kind.Anchor:
             case Kind.Parent:
-                if (TryMatchSegments(pieces, index, name, position, captures, out matched))
+                if (TryMatchSegments(pieces, index, name, position, captures, out matchedCaptures))
                 {
                     return true;
                 }
 
                 if (piece.IsOptional)
                 {
-                    return TryMatch(pieces, index + 1, name, position, captures, out matched);
+                    return TryMatch(pieces, index + 1, name, position, captures, out matchedCaptures);
                 }
 
                 break;
 
             case Kind.Current:
-                if (TryMatchCurrent(pieces, index, name, position, captures, out matched))
+                if (TryMatchCurrent(pieces, index, name, position, captures, out matchedCaptures))
                 {
                     return true;
                 }
 
                 if (piece.IsOptional)
                 {
-                    return TryMatch(pieces, index + 1, name, position, captures, out matched);
+                    return TryMatch(pieces, index + 1, name, position, captures, out matchedCaptures);
                 }
 
                 break;
@@ -280,7 +280,7 @@ public sealed class LocalePathMatcher
             case Kind.LastIfAnchor:
                 if (!captures.Anchor.IsPresent)
                 {
-                    return TryMatch(pieces, index + 1, name, position, captures, out matched);
+                    return TryMatch(pieces, index + 1, name, position, captures, out matchedCaptures);
                 }
 
                 if (piece.HasSeparatorBefore)
@@ -293,10 +293,10 @@ public sealed class LocalePathMatcher
                     position++;
                 }
 
-                var last = captures.Last.Read(name);
-                if (name.AsSpan(position).StartsWith(last, _comparison))
+                var lastSegment = captures.LastSegment.Read(name);
+                if (name.AsSpan(position).StartsWith(lastSegment, _comparison))
                 {
-                    return TryMatch(pieces, index + 1, name, position + last.Length, captures, out matched);
+                    return TryMatch(pieces, index + 1, name, position + lastSegment.Length, captures, out matchedCaptures);
                 }
 
                 break;
@@ -305,20 +305,20 @@ public sealed class LocalePathMatcher
                 throw new InvalidOperationException($"'{piece.Kind}' is not a piece of a path.");
         }
 
-        matched = Captures.None;
+        matchedCaptures = Captures.None;
 
         return false;
     }
 
     // Matches a run of one or more segments, the anchor or the parent, trying the longest first.
-    private bool TryMatchSegments(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matched)
+    private bool TryMatchSegments(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matchedCaptures)
     {
         var piece = pieces[index];
 
         // An anchor written after the name it ends with has nothing to end with where that name is absent.
         if ((piece.HasSeparatorBefore && !TryReadSeparator(name, position)) || (piece.EndsWithCurrent && !captures.Current.IsPresent))
         {
-            matched = Captures.None;
+            matchedCaptures = Captures.None;
 
             return false;
         }
@@ -346,8 +346,8 @@ public sealed class LocalePathMatcher
             var end = ends[candidate];
             var lastStart = candidate == 0 ? position : ends[candidate - 1] + 1;
             var run = new Capture(position, end);
-            var last = new Capture(lastStart, end);
-            var next = piece.Kind == Kind.Anchor ? captures with { Anchor = run, Last = last } : captures with { Parent = run };
+            var lastSegment = new Capture(lastStart, end);
+            var nextCaptures = piece.Kind == Kind.Anchor ? captures with { Anchor = run, LastSegment = lastSegment } : captures with { Parent = run };
 
             // An anchor written after the name it ends with ends with exactly that name.
             if (piece.EndsWithCurrent && !name.AsSpan(lastStart, end - lastStart).Equals(captures.Current.Read(name), _comparison))
@@ -355,25 +355,25 @@ public sealed class LocalePathMatcher
                 continue;
             }
 
-            if (TryMatch(pieces, index + 1, name, end, next, out matched))
+            if (TryMatch(pieces, index + 1, name, end, nextCaptures, out matchedCaptures))
             {
                 return true;
             }
         }
 
-        matched = Captures.None;
+        matchedCaptures = Captures.None;
 
         return false;
     }
 
-    private bool TryMatchCurrent(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matched)
+    private bool TryMatchCurrent(IReadOnlyList<Piece> pieces, int index, string name, int position, Captures captures, out Captures matchedCaptures)
     {
         var piece = pieces[index];
         if (piece.HasSeparatorBefore)
         {
             if (!TryReadSeparator(name, position))
             {
-                matched = Captures.None;
+                matchedCaptures = Captures.None;
 
                 return false;
             }
@@ -383,10 +383,10 @@ public sealed class LocalePathMatcher
 
         if (TryReadSegment(name, position, out var end))
         {
-            return TryMatch(pieces, index + 1, name, end, captures with { Current = new Capture(position, end) }, out matched);
+            return TryMatch(pieces, index + 1, name, end, captures with { Current = new Capture(position, end) }, out matchedCaptures);
         }
 
-        matched = Captures.None;
+        matchedCaptures = Captures.None;
 
         return false;
     }
@@ -434,7 +434,7 @@ public sealed class LocalePathMatcher
             => name[Start..End];
     }
 
-    private readonly record struct Captures(Capture Anchor, Capture Parent, Capture Current, Capture Last)
+    private readonly record struct Captures(Capture Anchor, Capture Parent, Capture Current, Capture LastSegment)
     {
         public static Captures None { get; } = new(Capture.Absent, Capture.Absent, Capture.Absent, Capture.Absent);
 

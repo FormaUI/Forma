@@ -1408,8 +1408,8 @@ describe('InputRouter registration lifetime and topology', () => {
         registration.update({ escape: 'cancel' });
         key(option(), 'Escape');
 
-        expect(registration.disposed).toBe(true);
-        expect(registration.active).toBe(false);
+        expect(registration.isDisposed).toBe(true);
+        expect(registration.isActive).toBe(false);
         expect(stack()).toEqual([]);
         expect(dismissed).not.toHaveBeenCalled();
     });

@@ -9,7 +9,7 @@ public ref struct LocalizedSegmentEnumerator(ReadOnlySpan<char> format)
 {
     private static readonly SearchValues<char> Braces = SearchValues.Create(['{', '}']);
 
-    private ReadOnlySpan<char> _remaining = format;
+    private ReadOnlySpan<char> _remainingFormat = format;
 
     /// <summary>The segment the last <see cref="MoveNext"/> produced.</summary>
     public LocalizedSegment Current { get; private set; } = default;
@@ -21,15 +21,15 @@ public ref struct LocalizedSegmentEnumerator(ReadOnlySpan<char> format)
     /// <summary>Advances to the next literal run or hole.</summary>
     public bool MoveNext()
     {
-        if (_remaining.Length == 0)
+        if (_remainingFormat.Length == 0)
         {
             return false;
         }
 
-        var brace = _remaining.IndexOfAny(Braces);
+        var brace = _remainingFormat.IndexOfAny(Braces);
         if (brace < 0)
         {
-            return TakeText(_remaining.Length);
+            return TakeText(_remainingFormat.Length);
         }
 
         if (brace > 0)
@@ -38,26 +38,26 @@ public ref struct LocalizedSegmentEnumerator(ReadOnlySpan<char> format)
         }
 
         // A doubled brace stands for one literal brace.
-        if (_remaining.Length > 1 && _remaining[1] == _remaining[0])
+        if (_remainingFormat.Length > 1 && _remainingFormat[1] == _remainingFormat[0])
         {
-            Current = new LocalizedSegment(_remaining[..1], default, 0, default);
-            _remaining = _remaining[2..];
+            Current = new LocalizedSegment(_remainingFormat[..1], default, 0, default);
+            _remainingFormat = _remainingFormat[2..];
 
             return true;
         }
 
-        if (_remaining[0] == '}')
+        if (_remainingFormat[0] == '}')
         {
             return TakeText(1);
         }
 
-        var close = _remaining.IndexOf('}');
+        var close = _remainingFormat.IndexOf('}');
         if (close < 0)
         {
-            return TakeText(_remaining.Length);
+            return TakeText(_remainingFormat.Length);
         }
 
-        return TryReadHole(_remaining[1..close], out var name, out var alignment, out var format)
+        return TryReadHole(_remainingFormat[1..close], out var name, out var alignment, out var format)
             ? TakeHole(close + 1, name, alignment, format)
             : TakeText(close + 1);
     }
@@ -85,8 +85,8 @@ public ref struct LocalizedSegmentEnumerator(ReadOnlySpan<char> format)
 
     private bool TakeText(int length)
     {
-        Current = new LocalizedSegment(_remaining[..length], default, 0, default);
-        _remaining = _remaining[length..];
+        Current = new LocalizedSegment(_remainingFormat[..length], default, 0, default);
+        _remainingFormat = _remainingFormat[length..];
 
         return true;
     }
@@ -94,7 +94,7 @@ public ref struct LocalizedSegmentEnumerator(ReadOnlySpan<char> format)
     private bool TakeHole(int length, ReadOnlySpan<char> name, int alignment, ReadOnlySpan<char> format)
     {
         Current = new LocalizedSegment(default, name, alignment, format);
-        _remaining = _remaining[length..];
+        _remainingFormat = _remainingFormat[length..];
 
         return true;
     }

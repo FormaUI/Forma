@@ -12,7 +12,7 @@ export class IntersectionStateObserver {
     #rootMargin;
     #publish;
     #subscription;
-    #last = null;
+    #lastState = null;
     #isDisposed = false;
 
     /**
@@ -30,14 +30,14 @@ export class IntersectionStateObserver {
 
     /** Reads whether the target is in view now. */
     read() {
-        this.#last = { isIntersecting: this.#isIntersecting() };
+        this.#lastState = { isIntersecting: this.#isIntersecting() };
 
-        return this.#last;
+        return this.#lastState;
     }
 
     /** Measures and publishes whether the target is in view again. */
     refresh() {
-        this.#last = null;
+        this.#lastState = null;
         this.#subscription.remeasure();
     }
 
@@ -48,12 +48,12 @@ export class IntersectionStateObserver {
 
     #take(isIntersecting) {
         // Reports queued before disposal still arrive.
-        if (this.#isDisposed || this.#last?.isIntersecting === isIntersecting) {
+        if (this.#isDisposed || this.#lastState?.isIntersecting === isIntersecting) {
             return;
         }
 
-        this.#last = { isIntersecting };
-        this.#publish(this.#last);
+        this.#lastState = { isIntersecting };
+        this.#publish(this.#lastState);
     }
 
     #isIntersecting() {

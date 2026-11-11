@@ -25,7 +25,7 @@ public sealed class PluralOperandsTests
         var operands = PluralOperands.From(-2.5m);
 
         // Assert
-        Assert.Equal(2.5m, operands.Absolute);
+        Assert.Equal(2.5m, operands.AbsoluteValue);
         Assert.Equal(2, operands.IntegerPart);
     }
 

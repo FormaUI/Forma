@@ -25,7 +25,7 @@ internal static class ComposerKeyBindingExtensions
     }
 
     private static bool Claims(KeyBinding host, ComposerKeyBinding binding)
-        => !host.Released
+        => !host.MatchesRelease
             && string.Equals(host.Key, binding.Key, StringComparison.OrdinalIgnoreCase)
             && host.Modifiers.Meta is not true
             && (host.Modifiers.Primary || host.Modifiers.Control is true) == binding.Control

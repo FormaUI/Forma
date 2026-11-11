@@ -40,11 +40,11 @@ internal sealed class JsonResourceCache
     {
         var (assembly, _, typeName) = key.Location;
         var assemblyName = assembly.GetName().Name ?? string.Empty;
-        var embedded = _embeddedByAssembly.GetOrAdd(assembly, static (owner, format) => new EmbeddedLocaleSource(owner, format), _format);
-        _embeddedByAssemblyName[assemblyName] = embedded;
+        var embeddedSource = _embeddedByAssembly.GetOrAdd(assembly, static (owner, format) => new EmbeddedLocaleSource(owner, format), _format);
+        _embeddedByAssemblyName[assemblyName] = embeddedSource;
 
         var entries = new Dictionary<string, string?>(StringComparer.Ordinal);
-        foreach (var source in (LocaleSource[])[embedded, .. _packs, .. _host])
+        foreach (var source in (LocaleSource[])[embeddedSource, .. _packs, .. _host])
         {
             foreach (var entry in source.Read(assemblyName, typeName, key.CultureName))
             {
@@ -66,7 +66,7 @@ internal sealed class JsonResourceCache
 
     // The root namespace an assembly's embedded config declares, which a host's folder and a pack lay its files out by.
     private string? GetRootNamespace(string assemblyName)
-        => _embeddedByAssemblyName.TryGetValue(assemblyName, out var embedded) ? embedded.GetRootNamespace(assemblyName) : null;
+        => _embeddedByAssemblyName.TryGetValue(assemblyName, out var embeddedSource) ? embeddedSource.GetRootNamespace(assemblyName) : null;
 
     private readonly record struct CacheKey(ResourceLocation Location, string CultureName);
 }

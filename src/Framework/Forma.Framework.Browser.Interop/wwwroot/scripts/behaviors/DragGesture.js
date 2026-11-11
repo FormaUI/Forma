@@ -63,7 +63,7 @@ class DragGesture {
     #pointerType;
 
     #subject = null;
-    #pressed = null;
+    #pressedElement = null;
     #pointerId = null;
     #startX = 0;
     #startY = 0;
@@ -167,7 +167,7 @@ class DragGesture {
         }
 
         this.#subject = null;
-        this.#pressed = null;
+        this.#pressedElement = null;
         this.#pointerId = null;
         this.#isDragging = false;
     }
@@ -176,7 +176,7 @@ class DragGesture {
     #begin() {
         this.#isDragging = true;
         this.#registration.activate();
-        this.#registration.claimClick(this.#pointerId, this.#pressed);
+        this.#registration.claimClick(this.#pointerId, this.#pressedElement);
         this.#onStart?.(this.#context());
     }
 
@@ -204,7 +204,7 @@ class DragGesture {
         }
 
         this.#subject = subject;
-        this.#pressed = event.target;
+        this.#pressedElement = event.target;
         this.#pointerId = event.pointerId;
         this.#startX = event.clientX;
         this.#startY = event.clientY;
@@ -241,7 +241,7 @@ class DragGesture {
 
         // A press that travels before the hold elapses is a swipe, left to the browser to scroll.
         if (this.#holdTimer !== null) {
-            if (this.#travelled(event) >= this.#threshold) {
+            if (this.#getTravelledDistance(event) >= this.#threshold) {
                 this.#release();
             }
 
@@ -252,7 +252,7 @@ class DragGesture {
         this.#lastY = event.clientY;
 
         if (!this.#isDragging) {
-            if (this.#travelled(event) < this.#threshold) {
+            if (this.#getTravelledDistance(event) < this.#threshold) {
                 return;
             }
 
@@ -282,7 +282,7 @@ class DragGesture {
     }
 
     /** How far the pointer has traveled from where the press began, along the axis the gesture drags on. */
-    #travelled(event) {
+    #getTravelledDistance(event) {
         return this.#axis === 'any'
             ? Math.hypot(event.clientX - this.#startX, event.clientY - this.#startY)
             : Math.abs(event.clientY - this.#startY);

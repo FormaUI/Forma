@@ -15,7 +15,7 @@ public sealed class ExplorerHistory
         => _index < _trail.Count - 1;
 
     /// <summary>The source of the folder at the cursor, where null is the top level.</summary>
-    public string? Current
+    public string? CurrentSource
         => _trail[_index];
 
     /// <summary>Records a visit to the folder, dropping whatever lay ahead of the cursor.</summary>

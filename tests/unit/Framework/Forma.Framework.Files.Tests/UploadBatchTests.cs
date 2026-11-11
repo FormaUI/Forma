@@ -38,8 +38,8 @@ public sealed class UploadBatchTests
         var set = CreateSet(("one.png", 100), ("two.png", 200));
 
         // Act
-        set.UpdateFileProgress(0, percent: 50, transferred: 50);
-        set.UpdateFileProgress(1, percent: 25, transferred: 50);
+        set.UpdateFileProgress(0, percent: 50, bytesTransferred: 50);
+        set.UpdateFileProgress(1, percent: 25, bytesTransferred: 50);
 
         // Assert
         Assert.Multiple(

@@ -32,27 +32,27 @@ public static class HtmlSourceFormatter
 
         while (position < html.Length)
         {
-            var open = html.IndexOf('<', position, StringComparison.Ordinal);
+            var openIndex = html.IndexOf('<', position, StringComparison.Ordinal);
 
-            if (open < 0)
+            if (openIndex < 0)
             {
                 Write(html[position..]);
                 break;
             }
 
-            if (open > position)
+            if (openIndex > position)
             {
-                Write(html[position..open]);
+                Write(html[position..openIndex]);
             }
 
-            var close = html.IndexOf('>', open, StringComparison.Ordinal);
+            var close = html.IndexOf('>', openIndex, StringComparison.Ordinal);
             if (close < 0)
             {
-                Write(html[open..]);
+                Write(html[openIndex..]);
                 break;
             }
 
-            var tag = html[open..(close + 1)];
+            var tag = html[openIndex..(close + 1)];
             var name = GetTagName(tag, out var isClosing, out var isSelfClosing);
             position = close + 1;
 
@@ -123,8 +123,8 @@ public static class HtmlSourceFormatter
 
             if (atLineStart)
             {
-                var trimmed = text.TrimStart();
-                if (trimmed.Length == 0)
+                var trimmedText = text.TrimStart();
+                if (trimmedText.Length == 0)
                 {
                     return;
                 }
@@ -134,7 +134,7 @@ public static class HtmlSourceFormatter
                     output.Append(Indent);
                 }
 
-                text = trimmed;
+                text = trimmedText;
                 atLineStart = false;
             }
 
@@ -155,21 +155,21 @@ public static class HtmlSourceFormatter
 
     private static string GetTagName(string tag, out bool isClosing, out bool isSelfClosing)
     {
-        var inner = tag.AsSpan(1, tag.Length - 2).Trim();
-        isClosing = inner.Length > 0 && inner[0] == '/';
-        isSelfClosing = inner.Length > 0 && inner[^1] == '/';
+        var innerTag = tag.AsSpan(1, tag.Length - 2).Trim();
+        isClosing = innerTag.Length > 0 && innerTag[0] == '/';
+        isSelfClosing = innerTag.Length > 0 && innerTag[^1] == '/';
 
         if (isClosing)
         {
-            inner = inner[1..].TrimStart();
+            innerTag = innerTag[1..].TrimStart();
         }
 
         var end = 0;
-        while (end < inner.Length && !char.IsWhiteSpace(inner[end]) && inner[end] != '/')
+        while (end < innerTag.Length && !char.IsWhiteSpace(innerTag[end]) && innerTag[end] != '/')
         {
             end++;
         }
 
-        return inner[..end].ToString();
+        return innerTag[..end].ToString();
     }
 }

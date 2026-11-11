@@ -31,13 +31,13 @@ export class ScrollContainer {
 
     /**
      * Measures where the content stands.
-     * @param {{ frozen?: string | null, viewportExtent?: boolean }} options
+     * @param {{ frozenSelector?: string | null, viewportExtent?: boolean }} options
      * @returns {ScrollState}
      */
-    measure({ frozen = null, viewportExtent = false } = {}) {
+    measure({ frozenSelector = null, viewportExtent = false } = {}) {
         const offset = this.#offset();
         const slack = this.#slack();
-        const region = frozen ? this.#frozenRegion(frozen) : { extent: 0, corner: 0 };
+        const region = frozenSelector ? this.#frozenRegion(frozenSelector) : { extent: 0, corner: 0 };
 
         return {
             canScrollBack: slack > 1 && offset > 1,
@@ -51,9 +51,9 @@ export class ScrollContainer {
     /**
      * Moves the content one step in the direction and returns whether it started moving.
      * @param {-1 | 1} direction -1 toward the start, 1 toward the end.
-     * @param {{ stops?: string | null, frozen?: string | null }} options The selectors of the stops and of the frozen parts.
+     * @param {{ stops?: string | null, frozenSelector?: string | null }} options The selectors of the stops and of the frozen parts.
      */
-    step(direction, { stops = null, frozen = null } = {}) {
+    step(direction, { stops = null, frozenSelector = null } = {}) {
         const positions = stops ? this.#stopPositions(stops) : [];
 
         if (positions.length === 0) {
@@ -61,7 +61,7 @@ export class ScrollContainer {
             return true;
         }
 
-        const inset = frozen ? this.#frozenRegion(frozen).extent : 0;
+        const inset = frozenSelector ? this.#frozenRegion(frozenSelector).extent : 0;
         const offset = this.#offset();
         const target = direction > 0
             ? positions.find(position => position - inset > offset + 1)
@@ -85,13 +85,13 @@ export class ScrollContainer {
      */
     moveBy(distance) {
         const offset = this.#offset();
-        const next = Math.max(0, Math.min(this.#slack(), offset + distance));
+        const nextOffset = Math.max(0, Math.min(this.#slack(), offset + distance));
 
-        if (Math.abs(next - offset) < 1) {
+        if (Math.abs(nextOffset - offset) < 1) {
             return false;
         }
 
-        this.#scrollTo(next, 'instant');
+        this.#scrollTo(nextOffset, 'instant');
 
         return true;
     }

@@ -65,9 +65,9 @@ class Dialog {
 
     #focusWithin(selector) {
         const part = selector ? this.#dialog.querySelector(selector) : null;
-        const [first] = part ? new FocusSurface(part).controls() : [];
+        const [firstControl] = part ? new FocusSurface(part).controls() : [];
 
-        first?.focus();
+        firstControl?.focus();
     }
 
     #release() {

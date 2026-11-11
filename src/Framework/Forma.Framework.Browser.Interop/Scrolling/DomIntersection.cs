@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components;
 /// <remarks>Elements observed against the same root and margin share one native observer.</remarks>
 public sealed class DomIntersection : IDomIntersectionObservation
 {
-    private static readonly DomCapability<IntersectionWatchOptions> Watching = new(DomRoot.Watcher, "intersection", Describe);
+    private static readonly DomCapability<IntersectionWatchOptions> WatchCapability = new(DomRoot.Watcher, "intersection", Describe);
 
     private readonly DomWatcher _watcher;
     private readonly ElementReference _element;
@@ -26,7 +26,7 @@ public sealed class DomIntersection : IDomIntersectionObservation
         ArgumentNullException.ThrowIfNull(options);
         ArgumentOutOfRangeException.ThrowIfNegative(options.RootMarginPixels, nameof(options));
 
-        var observation = new DomObservation<IntersectionWatchOptions, IntersectionState>(_watcher.Session, Watching, DomJsonContext.Default.IntersectionState, handler);
+        var observation = new DomObservation<IntersectionWatchOptions, IntersectionState>(_watcher.Session, WatchCapability, DomJsonContext.Default.IntersectionState, handler);
         await observation.SyncAsync(_element, options, shouldObserve);
 
         return observation;

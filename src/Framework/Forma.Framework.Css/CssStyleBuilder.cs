@@ -38,11 +38,11 @@ public sealed class CssStyleBuilder
             return this;
         }
 
-        var trimmed = declarations.Trim().TrimEnd(';').TrimEnd();
+        var trimmedDeclarations = declarations.Trim().TrimEnd(';').TrimEnd();
 
-        if (trimmed.Length > 0)
+        if (trimmedDeclarations.Length > 0)
         {
-            _declarations.Add($"{trimmed};");
+            _declarations.Add($"{trimmedDeclarations};");
         }
 
         return this;

@@ -62,22 +62,22 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     /// <inheritdoc />
     public Task DropOnItemAsync(ICatalogItem? target)
     {
-        var dragged = _drag.Target;
+        var dragTarget = _drag.Target;
         _drag.End();
 
         // Only the top level and a folder that takes drops receive one; there, an item that may not move is refused and named.
-        if (dragged is null || (target is not null && (target is not ICatalogFolderItem folder || !folder.Permits(ItemOptions, CatalogItemCapabilities.Drop))))
+        if (dragTarget is null || (target is not null && (target is not ICatalogFolderItem folder || !folder.Permits(ItemOptions, CatalogItemCapabilities.Drop))))
         {
             return Task.CompletedTask;
         }
 
-        if (!dragged.Permits(ItemOptions, CatalogItemCapabilities.Move))
+        if (!dragTarget.Permits(ItemOptions, CatalogItemCapabilities.Move))
         {
-            OnRefused?.Invoke(dragged, CatalogItemCapabilities.Move);
+            OnRefused?.Invoke(dragTarget, CatalogItemCapabilities.Move);
             return Task.CompletedTask;
         }
 
-        return OnDrop?.Invoke(dragged, target as ICatalogFolderItem) ?? Task.CompletedTask;
+        return OnDrop?.Invoke(dragTarget, target as ICatalogFolderItem) ?? Task.CompletedTask;
     }
 
     /// <inheritdoc />
@@ -91,11 +91,11 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     /// <summary>Opens the new-folder dialog under the parent, or at the top level when null.</summary>
     public void BeginCreateFolder(ICatalogFolderItem? parent)
     {
-        var permitted = parent is null
+        var isPermitted = parent is null
             ? ItemOptions.AllowedFolderCapabilities.HasFlag(CatalogItemCapabilities.Create)
             : parent.Permits(ItemOptions, CatalogItemCapabilities.Create);
 
-        if (!permitted)
+        if (!isPermitted)
         {
             return;
         }
@@ -178,14 +178,14 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     /// <inheritdoc />
     public async Task ConfirmActionAsync()
     {
-        if (PendingAction is not { CanConfirm: true } pending)
+        if (PendingAction is not { CanConfirm: true } pendingAction)
         {
             return;
         }
 
         PendingAction = null;
 
-        switch (pending)
+        switch (pendingAction)
         {
             case ExplorerCreateFolderAction create:
                 var parent = create.Parent;

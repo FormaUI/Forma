@@ -1143,7 +1143,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         try
         {
-            await MoveToFolderAsync(FolderTree.Find(_history.Current));
+            await MoveToFolderAsync(FolderTree.Find(_history.CurrentSource));
         }
         finally
         {

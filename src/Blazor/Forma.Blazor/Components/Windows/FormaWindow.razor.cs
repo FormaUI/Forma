@@ -302,7 +302,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             await _window.DetachAsync();
 
             // The scope goes with the attachment it was made for and comes back with the next.
-            await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: false);
+            await _inputRegistration.SyncAsync(RootElement, _inputProfile, shouldRegister: false);
             _isAttached = await _window.AttachAsync(RootElement, IsPresented, Modal, ShowsScrim ? _scrim : null, _selfReference!);
 
             // A window that opens becomes the current one.
@@ -323,7 +323,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         }
 
         // The window is a scope while attached, held active while it is the workspace's current window and focus is inside it.
-        await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: _isAttached, active: _holdsInput);
+        await _inputRegistration.SyncAsync(RootElement, _inputProfile, shouldRegister: _isAttached, isActive: _holdsInput);
     }
 
     // Answers the router's dismissal: a press away sends the window back when its options say so, and anything else closes it when it is closable.
@@ -351,18 +351,18 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     }
 
     // The workspace calls in from off the renderer, so each of its requests is carried onto the dispatcher first.
-    ValueTask IManagedWindow.SetActiveAsync(bool active)
+    ValueTask IManagedWindow.SetActiveAsync(bool isActive)
         => new(InvokeAsync(async () =>
         {
-            if (Active != active)
+            if (Active != isActive)
             {
-                Active = active;
-                await RaiseAsync(ActiveChanged, active);
+                Active = isActive;
+                await RaiseAsync(ActiveChanged, isActive);
             }
 
-            _holdsInput = active;
+            _holdsInput = isActive;
 
-            if (active)
+            if (isActive)
             {
                 await _window.FocusAsync();
             }
@@ -370,32 +370,32 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             StateHasChanged();
         }));
 
-    ValueTask IManagedWindow.SetMinimizedAsync(bool minimized)
+    ValueTask IManagedWindow.SetMinimizedAsync(bool isMinimized)
         => new(InvokeAsync(async () =>
         {
-            if (Minimized != minimized)
+            if (Minimized != isMinimized)
             {
-                Minimized = minimized;
-                await RaiseAsync(MinimizedChanged, minimized);
+                Minimized = isMinimized;
+                await RaiseAsync(MinimizedChanged, isMinimized);
             }
 
             await PresentAsync();
         }));
 
-    ValueTask IManagedWindow.SetHiddenAsync(bool hidden)
+    ValueTask IManagedWindow.SetHiddenAsync(bool isHidden)
         => new(InvokeAsync(() =>
         {
-            _isHidden = hidden;
+            _isHidden = isHidden;
 
             return PresentAsync();
         }));
 
-    ValueTask IManagedWindow.SetBlockedAsync(bool blocked)
+    ValueTask IManagedWindow.SetBlockedAsync(bool isBlocked)
         => new(InvokeAsync(() =>
         {
-            _isBlocked = blocked;
+            _isBlocked = isBlocked;
 
-            if (blocked)
+            if (isBlocked)
             {
                 _holdsInput = false;
             }

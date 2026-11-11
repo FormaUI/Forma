@@ -11,7 +11,7 @@ const LineHeight = 16;
 
 /**
  * @typedef {{
- *   axis?: 'inline' | 'block', stops?: string | null, frozen?: string | null,
+ *   axis?: 'inline' | 'block', stops?: string | null, frozenSelector?: string | null,
  *   wheel?: string | null,
  *   buttons?: { container: HTMLElement } & import('./ScrollButtons.mjs').ScrollButtonOptions | null,
  * }} ScrollInteractionOptions
@@ -27,7 +27,7 @@ export class ScrollInteraction {
      * @param {HTMLElement} target The scroll container.
      * @param {ScrollInteractionOptions} options
      */
-    constructor(target, { axis = 'inline', stops = null, frozen = null, wheel = null, buttons = null } = {}) {
+    constructor(target, { axis = 'inline', stops = null, frozenSelector = null, wheel = null, buttons = null } = {}) {
         const container = new ScrollContainer(target, axis);
 
         if (wheel) {
@@ -41,7 +41,7 @@ export class ScrollInteraction {
         }
 
         if (buttons) {
-            this.#buttons = new ScrollButtons(buttons.container, buttons, direction => container.step(direction, { stops, frozen }));
+            this.#buttons = new ScrollButtons(buttons.container, buttons, direction => container.step(direction, { stops, frozenSelector }));
         }
     }
 

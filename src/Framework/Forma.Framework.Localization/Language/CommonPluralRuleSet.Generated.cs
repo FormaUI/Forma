@@ -10,23 +10,23 @@ public sealed partial class CommonPluralRuleSet
         => locale switch
         {
             "af" or "an" or "asa" or "az" or "bal" or "bem" or "bez" or "bg" or "brx" or "ce" or "cgg" or "chr" or "ckb" or "dv" or "ee" or "el" or "eo" or "eu" or "fo" or "fur" or "gsw" or "ha" or "haw" or "hu" or "jgo" or "jmc" or "ka" or "kaj" or "kcg" or "kk" or "kkj" or "kl" or "ks" or "ksb" or "ku" or "ky" or "lb" or "lg" or "mas" or "mgo" or "ml" or "mn" or "mr" or "nah" or "nb" or "nd" or "ne" or "nn" or "nnh" or "no" or "nr" or "ny" or "nyn" or "om" or "or" or "os" or "pap" or "ps" or "rm" or "rof" or "rwk" or "saq" or "sd" or "sdh" or "seh" or "sn" or "so" or "sq" or "ss" or "ssy" or "st" or "syr" or "ta" or "te" or "teo" or "tig" or "tk" or "tn" or "tr" or "ts" or "ug" or "uz" or "ve" or "vo" or "vun" or "wae" or "xh" or "xog"
-                => operands.Absolute == 1 ? PluralCategory.One
+                => operands.AbsoluteValue == 1 ? PluralCategory.One
                 : PluralCategory.Other,
 
             "ak" or "bho" or "csw" or "guw" or "ln" or "mg" or "nso" or "pa" or "ti" or "wa"
-                => InRange(operands.Absolute, 0, 1) ? PluralCategory.One
+                => InRange(operands.AbsoluteValue, 0, 1) ? PluralCategory.One
                 : PluralCategory.Other,
 
             "am" or "as" or "bn" or "doi" or "fa" or "gu" or "hi" or "kn" or "kok" or "kok-Latn" or "pcm" or "zu"
-                => (operands.IntegerPart == 0 || operands.Absolute == 1) ? PluralCategory.One
+                => (operands.IntegerPart == 0 || operands.AbsoluteValue == 1) ? PluralCategory.One
                 : PluralCategory.Other,
 
             "ar" or "ars"
-                => operands.Absolute == 0 ? PluralCategory.Zero
-                : operands.Absolute == 1 ? PluralCategory.One
-                : operands.Absolute == 2 ? PluralCategory.Two
-                : InRange((operands.Absolute % 100), 3, 10) ? PluralCategory.Few
-                : InRange((operands.Absolute % 100), 11, 99) ? PluralCategory.Many
+                => operands.AbsoluteValue == 0 ? PluralCategory.Zero
+                : operands.AbsoluteValue == 1 ? PluralCategory.One
+                : operands.AbsoluteValue == 2 ? PluralCategory.Two
+                : InRange((operands.AbsoluteValue % 100), 3, 10) ? PluralCategory.Few
+                : InRange((operands.AbsoluteValue % 100), 11, 99) ? PluralCategory.Many
                 : PluralCategory.Other,
 
             "ast" or "de" or "en" or "et" or "fi" or "fy" or "gl" or "ia" or "ie" or "io" or "lij" or "nl" or "sc" or "sv" or "sw" or "ur" or "yi"
@@ -34,24 +34,24 @@ public sealed partial class CommonPluralRuleSet
                 : PluralCategory.Other,
 
             "be"
-                => ((operands.Absolute % 10) == 1 && !((operands.Absolute % 100) == 11)) ? PluralCategory.One
-                : (InRange((operands.Absolute % 10), 2, 4) && !(InRange((operands.Absolute % 100), 12, 14))) ? PluralCategory.Few
-                : ((operands.Absolute % 10) == 0 || InRange((operands.Absolute % 10), 5, 9) || InRange((operands.Absolute % 100), 11, 14)) ? PluralCategory.Many
+                => ((operands.AbsoluteValue % 10) == 1 && !((operands.AbsoluteValue % 100) == 11)) ? PluralCategory.One
+                : (InRange((operands.AbsoluteValue % 10), 2, 4) && !(InRange((operands.AbsoluteValue % 100), 12, 14))) ? PluralCategory.Few
+                : ((operands.AbsoluteValue % 10) == 0 || InRange((operands.AbsoluteValue % 10), 5, 9) || InRange((operands.AbsoluteValue % 100), 11, 14)) ? PluralCategory.Many
                 : PluralCategory.Other,
 
             "blo" or "cv" or "ksh"
-                => operands.Absolute == 0 ? PluralCategory.Zero
-                : operands.Absolute == 1 ? PluralCategory.One
+                => operands.AbsoluteValue == 0 ? PluralCategory.Zero
+                : operands.AbsoluteValue == 1 ? PluralCategory.One
                 : PluralCategory.Other,
 
             "bm" or "bo" or "dz" or "hnj" or "id" or "ig" or "ii" or "ja" or "jbo" or "jv" or "jw" or "kde" or "kea" or "km" or "ko" or "lkt" or "lo" or "ms" or "my" or "nqo" or "osa" or "sah" or "ses" or "sg" or "su" or "th" or "to" or "tpi" or "und" or "vi" or "wo" or "yo" or "yue" or "zh"
                 => PluralCategory.Other,
 
             "br"
-                => ((operands.Absolute % 10) == 1 && !(((operands.Absolute % 100) == 11 || (operands.Absolute % 100) == 71 || (operands.Absolute % 100) == 91))) ? PluralCategory.One
-                : ((operands.Absolute % 10) == 2 && !(((operands.Absolute % 100) == 12 || (operands.Absolute % 100) == 72 || (operands.Absolute % 100) == 92))) ? PluralCategory.Two
-                : ((InRange((operands.Absolute % 10), 3, 4) || (operands.Absolute % 10) == 9) && !((InRange((operands.Absolute % 100), 10, 19) || InRange((operands.Absolute % 100), 70, 79) || InRange((operands.Absolute % 100), 90, 99)))) ? PluralCategory.Few
-                : (!(operands.Absolute == 0) && (operands.Absolute % 1000000) == 0) ? PluralCategory.Many
+                => ((operands.AbsoluteValue % 10) == 1 && !(((operands.AbsoluteValue % 100) == 11 || (operands.AbsoluteValue % 100) == 71 || (operands.AbsoluteValue % 100) == 91))) ? PluralCategory.One
+                : ((operands.AbsoluteValue % 10) == 2 && !(((operands.AbsoluteValue % 100) == 12 || (operands.AbsoluteValue % 100) == 72 || (operands.AbsoluteValue % 100) == 92))) ? PluralCategory.Two
+                : ((InRange((operands.AbsoluteValue % 10), 3, 4) || (operands.AbsoluteValue % 10) == 9) && !((InRange((operands.AbsoluteValue % 100), 10, 19) || InRange((operands.AbsoluteValue % 100), 70, 79) || InRange((operands.AbsoluteValue % 100), 90, 99)))) ? PluralCategory.Few
+                : (!(operands.AbsoluteValue == 0) && (operands.AbsoluteValue % 1000000) == 0) ? PluralCategory.Many
                 : PluralCategory.Other,
 
             "bs" or "hr" or "sh" or "sr"
@@ -75,15 +75,15 @@ public sealed partial class CommonPluralRuleSet
                 : PluralCategory.Other,
 
             "cy"
-                => operands.Absolute == 0 ? PluralCategory.Zero
-                : operands.Absolute == 1 ? PluralCategory.One
-                : operands.Absolute == 2 ? PluralCategory.Two
-                : operands.Absolute == 3 ? PluralCategory.Few
-                : operands.Absolute == 6 ? PluralCategory.Many
+                => operands.AbsoluteValue == 0 ? PluralCategory.Zero
+                : operands.AbsoluteValue == 1 ? PluralCategory.One
+                : operands.AbsoluteValue == 2 ? PluralCategory.Two
+                : operands.AbsoluteValue == 3 ? PluralCategory.Few
+                : operands.AbsoluteValue == 6 ? PluralCategory.Many
                 : PluralCategory.Other,
 
             "da"
-                => (operands.Absolute == 1 || (!(operands.SignificantFractionValue == 0) && (operands.IntegerPart == 0 || operands.IntegerPart == 1))) ? PluralCategory.One
+                => (operands.AbsoluteValue == 1 || (!(operands.SignificantFractionValue == 0) && (operands.IntegerPart == 0 || operands.IntegerPart == 1))) ? PluralCategory.One
                 : PluralCategory.Other,
 
             "dsb" or "hsb"
@@ -93,7 +93,7 @@ public sealed partial class CommonPluralRuleSet
                 : PluralCategory.Other,
 
             "es"
-                => operands.Absolute == 1 ? PluralCategory.One
+                => operands.AbsoluteValue == 1 ? PluralCategory.One
                 : ((operands.Exponent == 0 && !(operands.IntegerPart == 0) && operands.IntegerPart % 1000000 == 0 && operands.FractionDigits == 0) || !((operands.Exponent >= 0 && operands.Exponent <= 5))) ? PluralCategory.Many
                 : PluralCategory.Other,
 
@@ -107,16 +107,16 @@ public sealed partial class CommonPluralRuleSet
                 : PluralCategory.Other,
 
             "ga"
-                => operands.Absolute == 1 ? PluralCategory.One
-                : operands.Absolute == 2 ? PluralCategory.Two
-                : InRange(operands.Absolute, 3, 6) ? PluralCategory.Few
-                : InRange(operands.Absolute, 7, 10) ? PluralCategory.Many
+                => operands.AbsoluteValue == 1 ? PluralCategory.One
+                : operands.AbsoluteValue == 2 ? PluralCategory.Two
+                : InRange(operands.AbsoluteValue, 3, 6) ? PluralCategory.Few
+                : InRange(operands.AbsoluteValue, 7, 10) ? PluralCategory.Many
                 : PluralCategory.Other,
 
             "gd"
-                => (operands.Absolute == 1 || operands.Absolute == 11) ? PluralCategory.One
-                : (operands.Absolute == 2 || operands.Absolute == 12) ? PluralCategory.Two
-                : (InRange(operands.Absolute, 3, 10) || InRange(operands.Absolute, 13, 19)) ? PluralCategory.Few
+                => (operands.AbsoluteValue == 1 || operands.AbsoluteValue == 11) ? PluralCategory.One
+                : (operands.AbsoluteValue == 2 || operands.AbsoluteValue == 12) ? PluralCategory.Two
+                : (InRange(operands.AbsoluteValue, 3, 10) || InRange(operands.AbsoluteValue, 13, 19)) ? PluralCategory.Few
                 : PluralCategory.Other,
 
             "gv"
@@ -136,32 +136,32 @@ public sealed partial class CommonPluralRuleSet
                 : PluralCategory.Other,
 
             "iu" or "naq" or "sat" or "se" or "sma" or "smi" or "smj" or "smn" or "sms"
-                => operands.Absolute == 1 ? PluralCategory.One
-                : operands.Absolute == 2 ? PluralCategory.Two
+                => operands.AbsoluteValue == 1 ? PluralCategory.One
+                : operands.AbsoluteValue == 2 ? PluralCategory.Two
                 : PluralCategory.Other,
 
             "kw"
-                => operands.Absolute == 0 ? PluralCategory.Zero
-                : operands.Absolute == 1 ? PluralCategory.One
-                : (((operands.Absolute % 100) == 2 || (operands.Absolute % 100) == 22 || (operands.Absolute % 100) == 42 || (operands.Absolute % 100) == 62 || (operands.Absolute % 100) == 82) || ((operands.Absolute % 1000) == 0 && (InRange((operands.Absolute % 100000), 1000, 20000) || (operands.Absolute % 100000) == 40000 || (operands.Absolute % 100000) == 60000 || (operands.Absolute % 100000) == 80000)) || (!(operands.Absolute == 0) && (operands.Absolute % 1000000) == 100000)) ? PluralCategory.Two
-                : ((operands.Absolute % 100) == 3 || (operands.Absolute % 100) == 23 || (operands.Absolute % 100) == 43 || (operands.Absolute % 100) == 63 || (operands.Absolute % 100) == 83) ? PluralCategory.Few
-                : (!(operands.Absolute == 1) && ((operands.Absolute % 100) == 1 || (operands.Absolute % 100) == 21 || (operands.Absolute % 100) == 41 || (operands.Absolute % 100) == 61 || (operands.Absolute % 100) == 81)) ? PluralCategory.Many
+                => operands.AbsoluteValue == 0 ? PluralCategory.Zero
+                : operands.AbsoluteValue == 1 ? PluralCategory.One
+                : (((operands.AbsoluteValue % 100) == 2 || (operands.AbsoluteValue % 100) == 22 || (operands.AbsoluteValue % 100) == 42 || (operands.AbsoluteValue % 100) == 62 || (operands.AbsoluteValue % 100) == 82) || ((operands.AbsoluteValue % 1000) == 0 && (InRange((operands.AbsoluteValue % 100000), 1000, 20000) || (operands.AbsoluteValue % 100000) == 40000 || (operands.AbsoluteValue % 100000) == 60000 || (operands.AbsoluteValue % 100000) == 80000)) || (!(operands.AbsoluteValue == 0) && (operands.AbsoluteValue % 1000000) == 100000)) ? PluralCategory.Two
+                : ((operands.AbsoluteValue % 100) == 3 || (operands.AbsoluteValue % 100) == 23 || (operands.AbsoluteValue % 100) == 43 || (operands.AbsoluteValue % 100) == 63 || (operands.AbsoluteValue % 100) == 83) ? PluralCategory.Few
+                : (!(operands.AbsoluteValue == 1) && ((operands.AbsoluteValue % 100) == 1 || (operands.AbsoluteValue % 100) == 21 || (operands.AbsoluteValue % 100) == 41 || (operands.AbsoluteValue % 100) == 61 || (operands.AbsoluteValue % 100) == 81)) ? PluralCategory.Many
                 : PluralCategory.Other,
 
             "lag"
-                => operands.Absolute == 0 ? PluralCategory.Zero
-                : ((operands.IntegerPart == 0 || operands.IntegerPart == 1) && !(operands.Absolute == 0)) ? PluralCategory.One
+                => operands.AbsoluteValue == 0 ? PluralCategory.Zero
+                : ((operands.IntegerPart == 0 || operands.IntegerPart == 1) && !(operands.AbsoluteValue == 0)) ? PluralCategory.One
                 : PluralCategory.Other,
 
             "lt"
-                => ((operands.Absolute % 10) == 1 && !(InRange((operands.Absolute % 100), 11, 19))) ? PluralCategory.One
-                : (InRange((operands.Absolute % 10), 2, 9) && !(InRange((operands.Absolute % 100), 11, 19))) ? PluralCategory.Few
+                => ((operands.AbsoluteValue % 10) == 1 && !(InRange((operands.AbsoluteValue % 100), 11, 19))) ? PluralCategory.One
+                : (InRange((operands.AbsoluteValue % 10), 2, 9) && !(InRange((operands.AbsoluteValue % 100), 11, 19))) ? PluralCategory.Few
                 : !(operands.FractionValue == 0) ? PluralCategory.Many
                 : PluralCategory.Other,
 
             "lv" or "prg"
-                => ((operands.Absolute % 10) == 0 || InRange((operands.Absolute % 100), 11, 19) || (operands.FractionDigits == 2 && (operands.FractionValue % 100 >= 11 && operands.FractionValue % 100 <= 19))) ? PluralCategory.Zero
-                : (((operands.Absolute % 10) == 1 && !((operands.Absolute % 100) == 11)) || (operands.FractionDigits == 2 && operands.FractionValue % 10 == 1 && !(operands.FractionValue % 100 == 11)) || (!(operands.FractionDigits == 2) && operands.FractionValue % 10 == 1)) ? PluralCategory.One
+                => ((operands.AbsoluteValue % 10) == 0 || InRange((operands.AbsoluteValue % 100), 11, 19) || (operands.FractionDigits == 2 && (operands.FractionValue % 100 >= 11 && operands.FractionValue % 100 <= 19))) ? PluralCategory.Zero
+                : (((operands.AbsoluteValue % 10) == 1 && !((operands.AbsoluteValue % 100) == 11)) || (operands.FractionDigits == 2 && operands.FractionValue % 10 == 1 && !(operands.FractionValue % 100 == 11)) || (!(operands.FractionDigits == 2) && operands.FractionValue % 10 == 1)) ? PluralCategory.One
                 : PluralCategory.Other,
 
             "mk"
@@ -170,14 +170,14 @@ public sealed partial class CommonPluralRuleSet
 
             "mo" or "ro"
                 => (operands.IntegerPart == 1 && operands.FractionDigits == 0) ? PluralCategory.One
-                : (!(operands.FractionDigits == 0) || operands.Absolute == 0 || (!(operands.Absolute == 1) && InRange((operands.Absolute % 100), 1, 19))) ? PluralCategory.Few
+                : (!(operands.FractionDigits == 0) || operands.AbsoluteValue == 0 || (!(operands.AbsoluteValue == 1) && InRange((operands.AbsoluteValue % 100), 1, 19))) ? PluralCategory.Few
                 : PluralCategory.Other,
 
             "mt"
-                => operands.Absolute == 1 ? PluralCategory.One
-                : operands.Absolute == 2 ? PluralCategory.Two
-                : (operands.Absolute == 0 || InRange((operands.Absolute % 100), 3, 10)) ? PluralCategory.Few
-                : InRange((operands.Absolute % 100), 11, 19) ? PluralCategory.Many
+                => operands.AbsoluteValue == 1 ? PluralCategory.One
+                : operands.AbsoluteValue == 2 ? PluralCategory.Two
+                : (operands.AbsoluteValue == 0 || InRange((operands.AbsoluteValue % 100), 3, 10)) ? PluralCategory.Few
+                : InRange((operands.AbsoluteValue % 100), 11, 19) ? PluralCategory.Many
                 : PluralCategory.Other,
 
             "pl"
@@ -198,19 +198,19 @@ public sealed partial class CommonPluralRuleSet
                 : PluralCategory.Other,
 
             "sgs"
-                => ((operands.Absolute % 10) == 1 && !((operands.Absolute % 100) == 11)) ? PluralCategory.One
-                : operands.Absolute == 2 ? PluralCategory.Two
-                : (!(operands.Absolute == 2) && InRange((operands.Absolute % 10), 2, 9) && !(InRange((operands.Absolute % 100), 11, 19))) ? PluralCategory.Few
+                => ((operands.AbsoluteValue % 10) == 1 && !((operands.AbsoluteValue % 100) == 11)) ? PluralCategory.One
+                : operands.AbsoluteValue == 2 ? PluralCategory.Two
+                : (!(operands.AbsoluteValue == 2) && InRange((operands.AbsoluteValue % 10), 2, 9) && !(InRange((operands.AbsoluteValue % 100), 11, 19))) ? PluralCategory.Few
                 : !(operands.FractionValue == 0) ? PluralCategory.Many
                 : PluralCategory.Other,
 
             "shi"
-                => (operands.IntegerPart == 0 || operands.Absolute == 1) ? PluralCategory.One
-                : InRange(operands.Absolute, 2, 10) ? PluralCategory.Few
+                => (operands.IntegerPart == 0 || operands.AbsoluteValue == 1) ? PluralCategory.One
+                : InRange(operands.AbsoluteValue, 2, 10) ? PluralCategory.Few
                 : PluralCategory.Other,
 
             "si"
-                => ((operands.Absolute == 0 || operands.Absolute == 1) || (operands.IntegerPart == 0 && operands.FractionValue == 1)) ? PluralCategory.One
+                => ((operands.AbsoluteValue == 0 || operands.AbsoluteValue == 1) || (operands.IntegerPart == 0 && operands.FractionValue == 1)) ? PluralCategory.One
                 : PluralCategory.Other,
 
             "sl"
@@ -220,7 +220,7 @@ public sealed partial class CommonPluralRuleSet
                 : PluralCategory.Other,
 
             "tzm"
-                => (InRange(operands.Absolute, 0, 1) || InRange(operands.Absolute, 11, 99)) ? PluralCategory.One
+                => (InRange(operands.AbsoluteValue, 0, 1) || InRange(operands.AbsoluteValue, 11, 99)) ? PluralCategory.One
                 : PluralCategory.Other,
 
             _ => null,

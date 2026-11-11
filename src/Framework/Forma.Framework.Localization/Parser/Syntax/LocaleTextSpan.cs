@@ -29,8 +29,8 @@ public readonly record struct LocaleTextSpan(int Start, int Length)
     {
         ArgumentNullException.ThrowIfNull(text);
 
-        var found = Slice(text).IndexOf(value);
+        var foundIndex = Slice(text).IndexOf(value);
 
-        return found < 0 ? -1 : Start + found;
+        return foundIndex < 0 ? -1 : Start + foundIndex;
     }
 }

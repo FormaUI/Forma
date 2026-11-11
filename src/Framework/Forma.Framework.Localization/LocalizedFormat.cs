@@ -114,7 +114,7 @@ public static class LocalizedFormat
         var text = value switch
         {
             null => string.Empty,
-            string written => written,
+            string writtenText => writtenText,
             IFormattable formattable => formattable.ToString(segment.Format.IsEmpty ? null : segment.Format.ToString(), culture),
             _ => AmbientCulture.Run(culture, uiCulture, () => value.ToString()) ?? string.Empty,
         };

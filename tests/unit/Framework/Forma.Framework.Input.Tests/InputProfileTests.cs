@@ -64,7 +64,7 @@ public sealed class InputProfileTests
     {
         IReadOnlyList<InputBinding> bindings =
         [
-            new KeyBinding("Enter") { Released = true },
+            new KeyBinding("Enter") { MatchesRelease = true },
             new PointerBinding { Button = 2, PointerType = PointerType.Touch },
             PointerBinding.Drag,
             new WheelBinding { Axis = WheelAxis.Horizontal, Modifiers = new() { Shift = true } },

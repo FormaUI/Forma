@@ -510,7 +510,7 @@
             Assert.Multiple(
                 () => Assert.True(active),
                 () => Assert.Contains("is-active", cut.Find(".forma-window").ClassList),
-                () => Assert.Equal("Folders", manager.Current?.Title));
+                () => Assert.Equal("Folders", manager.CurrentWindow?.Title));
         }
 
         [Fact]
@@ -528,7 +528,7 @@
             await window.InvokeAsync(window.Instance.HandlePressAsync);
 
             // Assert
-            Assert.Equal("Folders", manager.Current?.Title);
+            Assert.Equal("Folders", manager.CurrentWindow?.Title);
         }
 
         [Fact]
@@ -543,7 +543,7 @@
             ctx.Render(@<FormaWindow Title="Second" />);
 
             // Assert
-            Assert.Equal("Second", manager.Current?.Title);
+            Assert.Equal("Second", manager.CurrentWindow?.Title);
         }
 
         [Fact]
@@ -703,7 +703,7 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal("Back", manager.Current?.Title),
+                () => Assert.Equal("Back", manager.CurrentWindow?.Title),
                 () => Assert.Equal("Back", manager.StackedWindows[^1].Title));
         }
 

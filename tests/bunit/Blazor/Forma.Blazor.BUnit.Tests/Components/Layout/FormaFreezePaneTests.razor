@@ -291,7 +291,7 @@
             Assert.Multiple(
                 () => Assert.Equal("scroll", DomProbe<ScrollState>.GetRequestField(observation, "capability")),
                 () => Assert.Equal("block", DomProbe<ScrollState>.GetOption(observation, "axis")),
-                () => Assert.Equal(".forma-freeze-pane-frozen", DomProbe<ScrollState>.GetOption(observation, "frozen")));
+                () => Assert.Equal(".forma-freeze-pane-frozen", DomProbe<ScrollState>.GetOption(observation, "frozenSelector")));
         }
 
         [Fact]
@@ -338,10 +338,10 @@
             object? GetButtonOption(string name) => InteropPayload.GetValue(buttons, name);
             Assert.Multiple(
                 () => Assert.Equal(".forma-freeze-pane-stop", DomProbe<ScrollState>.GetOption(interaction, "stops")),
-                () => Assert.Equal(".forma-freeze-pane-frozen", DomProbe<ScrollState>.GetOption(interaction, "frozen")),
+                () => Assert.Equal(".forma-freeze-pane-frozen", DomProbe<ScrollState>.GetOption(interaction, "frozenSelector")),
                 () => Assert.Equal(cut.FindComponent<FormaFreezePane>().Instance.RootElement.Id, ((ElementReference)GetButtonOption("container")!).Id),
-                () => Assert.Equal(".forma-freeze-pane-arrow-back", GetButtonOption("back")),
-                () => Assert.Equal(".forma-freeze-pane-arrow-forward", GetButtonOption("forward")),
+                () => Assert.Equal(".forma-freeze-pane-arrow-back", GetButtonOption("backButtonSelector")),
+                () => Assert.Equal(".forma-freeze-pane-arrow-forward", GetButtonOption("forwardButtonSelector")),
                 () => Assert.Equal("freeze-pane.scroll-back", GetButtonOption("backAction")),
                 () => Assert.Equal("freeze-pane.scroll-forward", GetButtonOption("forwardAction")));
         }

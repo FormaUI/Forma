@@ -136,7 +136,7 @@ public sealed partial class FormaPagination : FormaElementBase
 
         if (PageCount <= 1)
         {
-            await _navigationInputRegistration.SyncAsync(default, NavigationInputProfile, wanted: false);
+            await _navigationInputRegistration.SyncAsync(default, NavigationInputProfile, shouldRegister: false);
 
             if (_entryFocus is { } hiddenEntryFocus)
             {

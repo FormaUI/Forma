@@ -241,7 +241,7 @@ describe('ScrollStateObserver', () => {
             rect(second, { left: 50, right: 130 });
             sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
 
-            expect(watch({ frozen: '.pinned' }).read()).toEqual(expect.objectContaining({ frozenExtent: 120, cornerExtent: 0 }));
+            expect(watch({ frozenSelector: '.pinned' }).read()).toEqual(expect.objectContaining({ frozenExtent: 120, cornerExtent: 0 }));
         });
 
         it('reads how far the frozen corner reaches across the axis', () => {
@@ -253,7 +253,7 @@ describe('ScrollStateObserver', () => {
             rect(cell, { left: 0, right: 60, top: 32, bottom: 64 });
             sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
 
-            expect(watch({ frozen: '.pinned' }).read()).toEqual(expect.objectContaining({ frozenExtent: 60, cornerExtent: 32 }));
+            expect(watch({ frozenSelector: '.pinned' }).read()).toEqual(expect.objectContaining({ frozenExtent: 60, cornerExtent: 32 }));
         });
 
         it('measures a right-to-left track from its right edge', () => {
@@ -263,7 +263,7 @@ describe('ScrollStateObserver', () => {
             rect(track.querySelector('.pinned'), { left: 250, right: 310 });
             sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
 
-            expect(watch({ frozen: '.pinned' }).read()).toEqual(expect.objectContaining({ frozenExtent: 60, cornerExtent: 0 }));
+            expect(watch({ frozenSelector: '.pinned' }).read()).toEqual(expect.objectContaining({ frozenExtent: 60, cornerExtent: 0 }));
         });
 
         it('measures a frozen header row from the top', () => {
@@ -273,7 +273,7 @@ describe('ScrollStateObserver', () => {
             rect(track.querySelector('.pinned'), { top: 100, bottom: 132 });
             sizeScroller(track, { scrollTop: 0, scrollHeight: 900, clientHeight: 300 });
 
-            expect(watch({ axis: 'block', frozen: '.pinned' }).read()).toEqual(expect.objectContaining({ frozenExtent: 32, cornerExtent: 0 }));
+            expect(watch({ axis: 'block', frozenSelector: '.pinned' }).read()).toEqual(expect.objectContaining({ frozenExtent: 32, cornerExtent: 0 }));
         });
 
         it('publishes again when only the frozen extent changes', () => {
@@ -283,7 +283,7 @@ describe('ScrollStateObserver', () => {
             const pinned = track.querySelector('.pinned');
             rect(pinned, { left: 0, right: 40 });
             sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
-            watch({ frozen: '.pinned' }).read();
+            watch({ frozenSelector: '.pinned' }).read();
 
             rect(pinned, { left: 0, right: 80 });
             track.dispatchEvent(new Event('scroll'));
@@ -299,7 +299,7 @@ describe('ScrollStateObserver', () => {
             const [, second] = track.querySelectorAll('.pinned');
             rect(second, { left: 32, right: 219 });
             sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
-            watch({ frozen: '.pinned' }).read();
+            watch({ frozenSelector: '.pinned' }).read();
 
             rect(second, { left: 48, right: 235 });
             mutations.latest().deliver([{ type: 'attributes', target: second, attributeName: 'style' }]);

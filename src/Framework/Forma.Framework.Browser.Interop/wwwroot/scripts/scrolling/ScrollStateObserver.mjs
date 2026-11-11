@@ -11,27 +11,27 @@ import { ScrollContainer } from './ScrollContainer.mjs';
 export class ScrollStateObserver {
     #track;
     #container;
-    #measuring;
+    #measureOptions;
     #publish;
     #controller = new AbortController();
     #mutations;
     #restyling = null;
     #trackSize;
     #childSizes = [];
-    #last = null;
+    #lastState = null;
     #scheduler = new FrameScheduler();
     #isDisposed = false;
 
     /**
      * @param {HTMLElement} track The scroll container.
-     * @param {{ axis?: 'inline' | 'block', frozen?: string | null, viewportExtent?: boolean }} options
+     * @param {{ axis?: 'inline' | 'block', frozenSelector?: string | null, viewportExtent?: boolean }} options
      *   The axis it scrolls along, the selector of its frozen parts, and whether its visible extent is measured.
      * @param {(state: ScrollState) => void} publish Publishes each changed state.
      */
-    constructor(track, { axis = 'inline', frozen = null, viewportExtent = false } = {}, publish) {
+    constructor(track, { axis = 'inline', frozenSelector = null, viewportExtent = false } = {}, publish) {
         this.#track = track;
         this.#container = new ScrollContainer(track, axis);
-        this.#measuring = { frozen, viewportExtent };
+        this.#measureOptions = { frozenSelector, viewportExtent };
         this.#publish = publish;
 
         track.addEventListener('scroll', () => this.#schedule(), { signal: this.#controller.signal, passive: true });
@@ -47,7 +47,7 @@ export class ScrollStateObserver {
 
         // A frozen part moves as its style or its class changes, which resizes nothing the track holds, so a change of either is
         // measured again.
-        if (frozen) {
+        if (frozenSelector) {
             this.#restyling = new MutationObserver(() => this.#schedule());
             this.#restyling.observe(track, { subtree: true, attributes: true, attributeFilter: ['style', 'class'] });
         }
@@ -55,14 +55,14 @@ export class ScrollStateObserver {
 
     /** Measures the container's state now. */
     read() {
-        this.#last = this.#container.measure(this.#measuring);
+        this.#lastState = this.#container.measure(this.#measureOptions);
 
-        return this.#last;
+        return this.#lastState;
     }
 
     /** Measures and publishes the container's state again. */
     refresh() {
-        this.#last = null;
+        this.#lastState = null;
         this.#schedule();
     }
 
@@ -101,18 +101,18 @@ export class ScrollStateObserver {
             return;
         }
 
-        const next = this.#container.measure(this.#measuring);
+        const nextState = this.#container.measure(this.#measureOptions);
 
-        if (this.#last
-            && this.#last.canScrollBack === next.canScrollBack
-            && this.#last.canScrollForward === next.canScrollForward
-            && this.#last.frozenExtent === next.frozenExtent
-            && this.#last.cornerExtent === next.cornerExtent
-            && this.#last.viewportExtent === next.viewportExtent) {
+        if (this.#lastState
+            && this.#lastState.canScrollBack === nextState.canScrollBack
+            && this.#lastState.canScrollForward === nextState.canScrollForward
+            && this.#lastState.frozenExtent === nextState.frozenExtent
+            && this.#lastState.cornerExtent === nextState.cornerExtent
+            && this.#lastState.viewportExtent === nextState.viewportExtent) {
             return;
         }
 
-        this.#last = next;
-        this.#publish(next);
+        this.#lastState = nextState;
+        this.#publish(nextState);
     }
 }

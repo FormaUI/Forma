@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Components;
 /// <summary>A text field's entry: the range its selection spans, as the reader moves it, and whether the browser filled it.</summary>
 public sealed class DomText : IDomTextObservation
 {
-    private static readonly DomCapability<TextSelectionWatchOptions> Selecting = new(DomRoot.Watcher, "selection", static _ => new SelectionDescription());
-    private static readonly DomCapability<AutofillWatchOptions> Autofilling = new(DomRoot.Watcher, "autofill", static _ => new AutofillDescription());
+    private static readonly DomCapability<TextSelectionWatchOptions> SelectionCapability = new(DomRoot.Watcher, "selection", static _ => new SelectionDescription());
+    private static readonly DomCapability<AutofillWatchOptions> AutofillCapability = new(DomRoot.Watcher, "autofill", static _ => new AutofillDescription());
 
     private readonly DomWatcher _watcher;
     private readonly ElementReference _element;
@@ -24,7 +24,7 @@ public sealed class DomText : IDomTextObservation
     {
         ArgumentNullException.ThrowIfNull(handler);
 
-        var observation = new DomObservation<TextSelectionWatchOptions, TextSelection>(_watcher.Session, Selecting, DomJsonContext.Default.TextSelection, handler);
+        var observation = new DomObservation<TextSelectionWatchOptions, TextSelection>(_watcher.Session, SelectionCapability, DomJsonContext.Default.TextSelection, handler);
         await observation.SyncAsync(_element, new TextSelectionWatchOptions(), shouldObserve);
 
         return observation;
@@ -35,7 +35,7 @@ public sealed class DomText : IDomTextObservation
     {
         ArgumentNullException.ThrowIfNull(handler);
 
-        var observation = new DomObservation<AutofillWatchOptions, AutofillState>(_watcher.Session, Autofilling, DomJsonContext.Default.AutofillState, handler);
+        var observation = new DomObservation<AutofillWatchOptions, AutofillState>(_watcher.Session, AutofillCapability, DomJsonContext.Default.AutofillState, handler);
         await observation.SyncAsync(_element, new AutofillWatchOptions(), shouldObserve);
 
         return observation;

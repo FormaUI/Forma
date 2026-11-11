@@ -41,7 +41,7 @@ public sealed class DomScrollTests
             var attach = Assert.Single(browser.Watcher.Recorder.GetCalls("attach"));
             Assert.Multiple(
                 () => Assert.Equal("block", FakeDomBrowser.GetOption(attach, "axis")),
-                () => Assert.Equal(".frozen", FakeDomBrowser.GetOption(attach, "frozen")),
+                () => Assert.Equal(".frozen", FakeDomBrowser.GetOption(attach, "frozenSelector")),
                 () => Assert.Equal(true, FakeDomBrowser.GetOption(attach, "viewportExtent")));
         }
     }
@@ -77,11 +77,11 @@ public sealed class DomScrollTests
             Assert.Multiple(
                 () => Assert.Equal("inline", FakeDomBrowser.GetOption(attach, "axis")),
                 () => Assert.Equal(".stop", FakeDomBrowser.GetOption(attach, "stops")),
-                () => Assert.Equal(".frozen", FakeDomBrowser.GetOption(attach, "frozen")),
+                () => Assert.Equal(".frozen", FakeDomBrowser.GetOption(attach, "frozenSelector")),
                 () => Assert.Equal("pane.scroll", FakeDomBrowser.GetOption(attach, "wheel")),
                 () => Assert.Equal(Pane, GetButtonOption("container")),
-                () => Assert.Equal(".back", GetButtonOption("back")),
-                () => Assert.Equal(".forward", GetButtonOption("forward")),
+                () => Assert.Equal(".back", GetButtonOption("backButtonSelector")),
+                () => Assert.Equal(".forward", GetButtonOption("forwardButtonSelector")),
                 () => Assert.Equal("pane.scroll-back", GetButtonOption("backAction")),
                 () => Assert.Equal("pane.scroll-forward", GetButtonOption("forwardAction")));
         }

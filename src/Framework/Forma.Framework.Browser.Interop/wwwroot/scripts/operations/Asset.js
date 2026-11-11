@@ -10,23 +10,23 @@ const loads = new Map();
 const sheets = new Map();
 
 // The symbol ids the current host holds; a host swept away with the body starts it afresh.
-let adopted = new Set();
+let adoptedSymbolIds = new Set();
 
-function cached(map, key, start) {
-    const existing = map.get(key);
+function getOrStart(map, key, start) {
+    const existingLoad = map.get(key);
 
-    if (existing) {
-        return existing;
+    if (existingLoad) {
+        return existingLoad;
     }
 
-    const pending = start().catch(error => {
+    const pendingLoad = start().catch(error => {
         map.delete(key);
         throw error;
     });
 
-    map.set(key, pending);
+    map.set(key, pendingLoad);
 
-    return pending;
+    return pendingLoad;
 }
 
 async function attempt(start) {
@@ -55,7 +55,7 @@ function loadElement(tag, url, configure) {
 }
 
 function loadOnce(kind, url, start) {
-    return attempt(() => cached(loads, `${kind}:${url}`, start));
+    return attempt(() => getOrStart(loads, `${kind}:${url}`, start));
 }
 
 export function loadModule(url) {
@@ -77,10 +77,10 @@ export function loadStyle(url) {
 }
 
 function getSpriteHost() {
-    const existing = document.getElementById(SpriteHostId);
+    const existingHost = document.getElementById(SpriteHostId);
 
-    if (existing?.isConnected) {
-        return existing;
+    if (existingHost?.isConnected) {
+        return existingHost;
     }
 
     const host = document.createElementNS(SvgNamespace, 'svg');
@@ -90,26 +90,26 @@ function getSpriteHost() {
     host.style.cssText = 'position:absolute;inline-size:0;block-size:0;overflow:hidden';
 
     document.body.appendChild(host);
-    adopted = new Set();
+    adoptedSymbolIds = new Set();
 
     return host;
 }
 
 function fetchSheet(url, timeoutMs) {
-    return cached(sheets, url, async () => {
+    return getOrStart(sheets, url, async () => {
         const response = await fetch(url, { signal: AbortSignal.timeout(timeoutMs) });
 
         if (!response.ok) {
             throw new Error(`Could not load SVG sprite: ${url}`);
         }
 
-        const parsed = new DOMParser().parseFromString(await response.text(), 'image/svg+xml');
+        const parsedDocument = new DOMParser().parseFromString(await response.text(), 'image/svg+xml');
 
-        if (parsed.querySelector('parsererror')) {
+        if (parsedDocument.querySelector('parsererror')) {
             throw new Error(`Could not parse SVG sprite: ${url}`);
         }
 
-        return [...parsed.querySelectorAll('symbol')];
+        return [...parsedDocument.querySelectorAll('symbol')];
     });
 }
 
@@ -125,9 +125,9 @@ export function loadSprite(url, timeoutMs = SpriteTimeout) {
         const host = getSpriteHost();
 
         for (const symbol of symbols) {
-            if (!adopted.has(symbol.id)) {
+            if (!adoptedSymbolIds.has(symbol.id)) {
                 host.appendChild(document.importNode(symbol, true));
-                adopted.add(symbol.id);
+                adoptedSymbolIds.add(symbol.id);
             }
         }
     });

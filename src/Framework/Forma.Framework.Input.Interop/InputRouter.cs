@@ -51,14 +51,14 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
     public async Task<bool> ConfigureAsync()
     {
         var configuration = _configuration ??= PushAsync();
-        var configured = await configuration;
+        var isConfigured = await configuration;
 
-        if (!configured && ReferenceEquals(_configuration, configuration))
+        if (!isConfigured && ReferenceEquals(_configuration, configuration))
         {
             _configuration = null;
         }
 
-        return configured;
+        return isConfigured;
     }
 
     /// <summary>Performs a host route's action through the host's handler.</summary>

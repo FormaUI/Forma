@@ -723,7 +723,7 @@
 
             // Assert
             var attach = Assert.Single(probe.Interactions, attach => DomProbe<FocusState>.GetRequestField(attach, "capability") is "focus");
-            Assert.Equal("horizontal", DomProbe<FocusState>.GetOption(attach, "roving"));
+            Assert.Equal("horizontal", DomProbe<FocusState>.GetOption(attach, "rovingOrientation"));
         }
 
         [Fact]

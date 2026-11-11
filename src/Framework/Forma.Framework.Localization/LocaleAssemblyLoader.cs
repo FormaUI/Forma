@@ -24,14 +24,14 @@ public static class LocaleAssemblyLoader
 
     /// <summary>The assemblies an application's build recorded its locales in: the entry assembly, or, where the runtime names none, as a native host such as .NET for Android's and for iOS's names none, each loaded assembly its build marked with <see cref="LocaleApplicationAttribute"/>.</summary>
     /// <param name="entry">The assembly the runtime started the application from.</param>
-    /// <param name="loaded">The assemblies loaded into the application.</param>
-    public static IReadOnlyList<Assembly> GetApplicationAssemblies(Assembly? entry, IEnumerable<Assembly> loaded)
+    /// <param name="loadedAssemblies">The assemblies loaded into the application.</param>
+    public static IReadOnlyList<Assembly> GetApplicationAssemblies(Assembly? entry, IEnumerable<Assembly> loadedAssemblies)
     {
-        ArgumentNullException.ThrowIfNull(loaded);
+        ArgumentNullException.ThrowIfNull(loadedAssemblies);
 
         return entry is not null
             ? [entry]
-            : [.. loaded.Where(assembly => assembly.IsDefined(typeof(LocaleApplicationAttribute), inherit: false))];
+            : [.. loadedAssemblies.Where(assembly => assembly.IsDefined(typeof(LocaleApplicationAttribute), inherit: false))];
     }
 
     /// <summary>Whether the assembly's build embedded a host's files in it, under <see cref="LocalePackSource.HostResourcePrefix"/>.</summary>

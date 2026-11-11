@@ -43,7 +43,7 @@
             var service = ctx.Services.GetRequiredService<IConfirmDialogService>();
 
             // Assert
-            Assert.Null(service.Current);
+            Assert.Null(service.CurrentRequest);
         }
 
         [Fact]

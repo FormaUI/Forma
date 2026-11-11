@@ -4,14 +4,14 @@ namespace Forma.Framework.Localization.Language;
 public readonly record struct PluralOperands
 {
     private PluralOperands(
-        decimal absolute,
+        decimal absoluteValue,
         long integerPart,
         int fractionDigits,
         int significantFractionDigits,
         long fractionValue,
         long significantFractionValue)
     {
-        Absolute = absolute;
+        AbsoluteValue = absoluteValue;
         IntegerPart = integerPart;
         FractionDigits = fractionDigits;
         SignificantFractionDigits = significantFractionDigits;
@@ -20,7 +20,7 @@ public readonly record struct PluralOperands
     }
 
     /// <summary>CLDR n — the absolute value of the number.</summary>
-    public decimal Absolute { get; }
+    public decimal AbsoluteValue { get; }
 
     /// <summary>CLDR i — the integer part.</summary>
     public long IntegerPart { get; }
@@ -44,14 +44,14 @@ public readonly record struct PluralOperands
     /// <remarks>The visible fraction digits are the decimal's scale, so <c>1.50m</c> has two.</remarks>
     public static PluralOperands From(decimal value)
     {
-        var absolute = Math.Abs(value);
+        var absoluteValue = Math.Abs(value);
 
-        var scale = (decimal.GetBits(absolute)[3] >> 16) & 0xFF;
+        var scale = (decimal.GetBits(absoluteValue)[3] >> 16) & 0xFF;
 
-        var truncated = decimal.Truncate(absolute);
-        var integerPart = truncated > long.MaxValue ? long.MaxValue : (long)truncated;
+        var truncatedValue = decimal.Truncate(absoluteValue);
+        var integerPart = truncatedValue > long.MaxValue ? long.MaxValue : (long)truncatedValue;
 
-        var fractionValue = GetFractionDigits(absolute - truncated, scale);
+        var fractionValue = GetFractionDigits(absoluteValue - truncatedValue, scale);
 
         var significantValue = fractionValue;
         var significantDigits = scale;
@@ -62,7 +62,7 @@ public readonly record struct PluralOperands
         }
 
         return new PluralOperands(
-            absolute,
+            absoluteValue,
             integerPart,
             scale,
             significantValue == 0 ? 0 : significantDigits,
@@ -78,14 +78,14 @@ public readonly record struct PluralOperands
             return 0L;
         }
 
-        var shifted = fraction;
-        for (var moved = 0; moved < scale; moved++)
+        var shiftedFraction = fraction;
+        for (var movedDigitCount = 0; movedDigitCount < scale; movedDigitCount++)
         {
-            shifted *= 10m;
+            shiftedFraction *= 10m;
         }
 
-        shifted = decimal.Truncate(shifted);
+        shiftedFraction = decimal.Truncate(shiftedFraction);
 
-        return (long)(shifted > long.MaxValue ? shifted % 1000000000000000000m : shifted);
+        return (long)(shiftedFraction > long.MaxValue ? shiftedFraction % 1000000000000000000m : shiftedFraction);
     }
 }

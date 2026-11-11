@@ -73,7 +73,7 @@ describe('ScrollContainer', () => {
     describe('stepping between stops', () => {
         // Three columns of 100px past a 120px frozen region, in a container scrolled to its start.
         const rect = (element, left, right) => { element.getBoundingClientRect = () => ({ left, right, top: 0, bottom: 40 }); };
-        const options = { stops: '.stop', frozen: '.frozen' };
+        const options = { stops: '.stop', frozenSelector: '.frozen' };
 
         const shiftStops = distance => {
             for (const stop of container.querySelectorAll('.stop')) {

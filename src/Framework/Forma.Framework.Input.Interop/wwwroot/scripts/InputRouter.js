@@ -104,12 +104,12 @@ const EditingKeys = new Set(['Enter', 'Backspace', 'Delete']);
 const scopes = new Map();
 const activeEntries = [];
 let policy = { escape: 'dismiss', closeRequest: null, pressAway: 'dismiss', bindings: new Map() };
-let registrations = 0;
-let activations = 0;
+let registrationCount = 0;
+let activationCount = 0;
 let documentListeners = null;
 let suppressedClick = null;
 let pendingPress = null;
-const dispatched = new WeakSet();
+const dispatchedEvents = new WeakSet();
 
 // The text fields, and the editable elements an editor's script owns, edited since they last reported a change.
 const editedFields = new WeakSet();
@@ -154,17 +154,17 @@ export function register(element, profile = {}, owner = null, placement = null) 
     }
 
     // The parent and the elements counted as inside are per instance, so a .NET caller passes them beside its reusable profile.
-    const contributed = placement ? { ...profile, ...placement } : profile;
+    const contributedProfile = placement ? { ...profile, ...placement } : profile;
     let scope = scopes.get(element);
 
     if (!scope) {
         scope = new Scope(element);
-        scope.validate(contributed);
+        scope.validate(contributedProfile);
         scopes.set(element, scope);
         ensureDocumentListeners();
     }
 
-    return scope.add(contributed, owner);
+    return scope.add(contributedProfile, owner);
 }
 
 /**
@@ -191,9 +191,9 @@ export function resolve(event) {
     }
 
     if (event.type === 'pointerdown' && activeEntries.length > 0) {
-        const foremost = foremostEntry();
+        const foremostEntry = getForemostEntry();
 
-        if (foremost && !foremost.contains(event) && foremost.pressAway !== 'ignore') {
+        if (foremostEntry && !foremostEntry.contains(event) && foremostEntry.pressAway !== 'ignore') {
             return resolveAmbient(event, 'press-away');
         }
     }
@@ -216,18 +216,18 @@ export function requestDismiss(element, reason = 'close-request') {
         return { ...unowned({ type: reason }, 'source not active'), owner: element, scope };
     }
 
-    const foremost = foremostEntry();
-    const action = foremost.closeRequest === 'ignore' ? null : foremost.closeRequest;
-    const forwarded = foremost.scope !== scope;
+    const foremostEntry = getForemostEntry();
+    const action = foremostEntry.closeRequest === 'ignore' ? null : foremostEntry.closeRequest;
+    const isForwarded = foremostEntry.scope !== scope;
 
     if (action) {
-        foremost.dismiss(action, reason);
+        foremostEntry.dismiss(action, reason);
     }
 
     return {
-        owner: foremost.element,
-        scope: foremost.scope,
-        registration: foremost,
+        owner: foremostEntry.element,
+        scope: foremostEntry.scope,
+        registration: foremostEntry,
         route: null,
         input: { family: 'request', type: reason },
         action,
@@ -236,7 +236,7 @@ export function requestDismiss(element, reason = 'close-request') {
         propagation: 'stop',
         precedence: 'active',
         tie: null,
-        reason: forwarded ? `${reason} forwarded to the foremost registration` : reason,
+        reason: isForwarded ? `${reason} forwarded to the foremost registration` : reason,
     };
 }
 
@@ -258,9 +258,9 @@ export function describe(element) {
         return null;
     }
 
-    const ordered = orderedActive();
-    const foremost = ordered.at(-1) ?? null;
-    const layers = ordered.map(entry => entry.scope);
+    const orderedEntries = getOrderedActiveEntries();
+    const foremostEntry = orderedEntries.at(-1) ?? null;
+    const layers = orderedEntries.map(entry => entry.scope);
 
     return {
         boundary: [...scope.boundary],
@@ -271,7 +271,7 @@ export function describe(element) {
         conflicts: scope.conflicts(),
         active: scope.isActive,
         layer: layers.includes(scope) ? layers.lastIndexOf(scope) + 1 : null,
-        foremost: foremost?.scope === scope,
+        foremost: foremostEntry?.scope === scope,
         entries: scope.registrations.filter(entry => entry.activation !== null).map(entry => ({
             activation: entry.activation,
             modal: entry.modal,
@@ -279,33 +279,33 @@ export function describe(element) {
             closeRequest: { value: entry.closeRequest, source: entry.profile.closeRequest != null ? 'registration' : policy.closeRequest != null ? 'host' : 'escape' },
             pressAway: { value: entry.pressAway, source: entry.profile.pressAway != null ? 'registration' : 'host' },
             parent: entry.parentScope?.element ?? null,
-            foremost: entry === foremost,
+            foremost: entry === foremostEntry,
         })),
     };
 }
 
 /** The active ordering, foremost last, with the rule that placed each registration above the one before. */
 export function stack() {
-    const ordered = orderedActive();
-    const chains = ancestorChains(ordered);
+    const orderedEntries = getOrderedActiveEntries();
+    const chains = ancestorChains(orderedEntries);
     const barrier = activeEntries.filter(entry => entry.modal).at(-1) ?? null;
 
-    return ordered.map((entry, index) => ({
+    return orderedEntries.map((entry, index) => ({
         element: entry.element,
         layer: index + 1,
         modal: entry.modal,
         parent: entry.parentScope?.element ?? null,
         activation: entry.activation,
-        reason: placement(entry, ordered[index - 1], barrier, ordered, chains),
+        reason: placement(entry, orderedEntries[index - 1], barrier, orderedEntries, chains),
     }));
 }
 
-function placement(entry, below, barrier, ordered, chains) {
+function placement(entry, below, barrier, orderedEntries, chains) {
     if (!below) {
         return entry === barrier ? 'modal barrier' : 'first eligible';
     }
 
-    if (depthOf(entry, ordered, chains) > depthOf(below, ordered, chains)) {
+    if (depthOf(entry, orderedEntries, chains) > depthOf(below, orderedEntries, chains)) {
         return 'inside its parent';
     }
 
@@ -325,7 +325,7 @@ function describeRoute(route) {
 
 class Registration {
     #scope;
-    #disposed = false;
+    #isDisposed = false;
     profile;
     owner;
     order;
@@ -338,8 +338,8 @@ class Registration {
         this.order = order;
     }
 
-    get disposed() {
-        return this.#disposed;
+    get isDisposed() {
+        return this.#isDisposed;
     }
 
     get scope() {
@@ -350,7 +350,7 @@ class Registration {
         return this.#scope.element;
     }
 
-    get active() {
+    get isActive() {
         return this.activation !== null;
     }
 
@@ -379,8 +379,8 @@ class Registration {
     ancestors() {
         const chain = [];
 
-        for (let current = this.parentScope; current && !chain.includes(current); current = current.parent) {
-            chain.push(current);
+        for (let currentScope = this.parentScope; currentScope && !chain.includes(currentScope); currentScope = currentScope.parent) {
+            chain.push(currentScope);
         }
 
         return chain;
@@ -394,8 +394,8 @@ class Registration {
 
     // A disposed registration answers no call; it is gone from its scope and cannot come back.
     activate() {
-        if (this.activation === null && !this.#disposed) {
-            this.activation = activations++;
+        if (this.activation === null && !this.#isDisposed) {
+            this.activation = activationCount++;
             activeEntries.push(this);
             refreshLayers();
         }
@@ -410,22 +410,22 @@ class Registration {
     }
 
     update(profile) {
-        if (this.#disposed) {
+        if (this.#isDisposed) {
             return;
         }
 
-        const next = { ...this.profile, ...profile };
-        this.#scope.validate(next);
-        this.profile = next;
+        const nextProfile = { ...this.profile, ...profile };
+        this.#scope.validate(nextProfile);
+        this.profile = nextProfile;
         this.#scope.refresh();
     }
 
     dispose() {
-        if (this.#disposed) {
+        if (this.#isDisposed) {
             return;
         }
 
-        this.#disposed = true;
+        this.#isDisposed = true;
         this.release();
         this.#scope.remove(this);
     }
@@ -439,9 +439,9 @@ class Registration {
     }
 
     /** Claims the gesture a press began, so the click it ends in is swallowed rather than routed; a drag under way claims its press. */
-    claimClick(pointerId, pressed) {
-        if (!this.#disposed && pressed instanceof Element) {
-            suppressedClick = { pointerId, target: pressed, time: performance.now() };
+    claimClick(pointerId, pressedElement) {
+        if (!this.#isDisposed && pressedElement instanceof Element) {
+            suppressedClick = { pointerId, target: pressedElement, time: performance.now() };
         }
     }
 
@@ -496,8 +496,8 @@ class Scope {
             throw new Error('An input scope cannot be its own parent.');
         }
 
-        for (let current = scopes.get(profile.parent); current; current = current.parent) {
-            if (current === this) {
+        for (let currentScope = scopes.get(profile.parent); currentScope; currentScope = currentScope.parent) {
+            if (currentScope === this) {
                 throw new Error('An input scope cannot be inside a scope that is inside it.');
             }
         }
@@ -518,21 +518,21 @@ class Scope {
 
     /** The parent a registration declares, else the nearest registered scope containing this one. */
     get parent() {
-        const declared = this.registrations.find(registration => registration.profile.parent != null)?.profile.parent;
+        const declaredParent = this.registrations.find(registration => registration.profile.parent != null)?.profile.parent;
 
-        if (declared) {
-            return scopes.get(declared) ?? null;
+        if (declaredParent) {
+            return scopes.get(declaredParent) ?? null;
         }
 
-        let nearest = null;
+        let nearestScope = null;
 
         for (const candidate of scopes.values()) {
-            if (candidate !== this && candidate.element.contains(this.element) && (!nearest || nearest.element.contains(candidate.element))) {
-                nearest = candidate;
+            if (candidate !== this && candidate.element.contains(this.element) && (!nearestScope || nearestScope.element.contains(candidate.element))) {
+                nearestScope = candidate;
             }
         }
 
-        return nearest;
+        return nearestScope;
     }
 
     get routes() {
@@ -545,17 +545,17 @@ class Scope {
 
     /** Bindings two routes of this scope both match, which registration order alone would decide between. */
     conflicts() {
-        const seen = [];
+        const seenBindings = [];
         const conflicts = [];
 
         for (const route of [...this.#routes, ...this.#preemptiveRoutes]) {
             for (const binding of route.bindings) {
-                const rival = seen.find(candidate => sameBinding(candidate.binding, binding) && candidate.route.priority === route.priority);
+                const rival = seenBindings.find(candidate => sameBinding(candidate.binding, binding) && candidate.route.priority === route.priority);
 
                 if (rival) {
                     conflicts.push({ binding, actions: [rival.route.action, route.action] });
                 } else {
-                    seen.push({ route, binding });
+                    seenBindings.push({ route, binding });
                 }
             }
         }
@@ -565,7 +565,7 @@ class Scope {
 
     add(profile, owner) {
         this.validate(profile);
-        const registration = new Registration(this, profile, owner, registrations++);
+        const registration = new Registration(this, profile, owner, registrationCount++);
         this.registrations.push(registration);
         this.refresh();
 
@@ -625,13 +625,13 @@ class Scope {
             return null;
         }
 
-        const [best, rival] = candidates;
+        const [bestCandidate, rival] = candidates;
         const tie = !rival ? null
-            : best.specificity !== rival.specificity ? 'specificity'
-            : best.route.priority !== rival.route.priority ? 'priority'
+            : bestCandidate.specificity !== rival.specificity ? 'specificity'
+            : bestCandidate.route.priority !== rival.route.priority ? 'priority'
             : 'registration-order';
 
-        return { route: best.route, binding: best.binding, tie };
+        return { route: bestCandidate.route, binding: bestCandidate.binding, tie };
     }
 }
 
@@ -683,9 +683,9 @@ function applyOverride(defaults, override) {
         return override.replace;
     }
 
-    const removed = override.remove ?? [];
+    const removedBindings = override.remove ?? [];
 
-    return [...defaults.filter(binding => !removed.some(candidate => sameBinding(candidate, binding))), ...(override.add ?? [])];
+    return [...defaults.filter(binding => !removedBindings.some(candidate => sameBinding(candidate, binding))), ...(override.add ?? [])];
 }
 
 // `primary` names the platform's shortcut key, so a binding cannot also require that key absent.
@@ -771,11 +771,11 @@ function offerCloseRequest(event) {
 
 // An event reaches the router through more than one listener; the first decides for all of them.
 function dispatch(event) {
-    if (dispatched.has(event)) {
+    if (dispatchedEvents.has(event)) {
         return;
     }
 
-    dispatched.add(event);
+    dispatchedEvents.add(event);
 
     if (event.type === 'pointerdown') {
         suppressedClick = null;
@@ -834,9 +834,9 @@ function swallowSuppressedClick(event) {
     const { pointerId, target, time } = suppressedClick;
     suppressedClick = null;
     const samePointer = event.pointerId === undefined || event.pointerId === pointerId;
-    const related = event.target instanceof Node && (target.contains(event.target) || event.target.contains(target));
+    const isRelated = event.target instanceof Node && (target.contains(event.target) || event.target.contains(target));
 
-    if (samePointer && related && performance.now() - time <= ClickSuppressionPeriod) {
+    if (samePointer && isRelated && performance.now() - time <= ClickSuppressionPeriod) {
         event.stopPropagation();
         event.preventDefault();
     }
@@ -942,7 +942,7 @@ function routed(event, scope, { route, binding, tie }, precedence) {
 }
 
 function resolveAmbient(event, reason) {
-    const entry = foremostEntry();
+    const entry = getForemostEntry();
     const behavior = reason === 'escape' ? entry.escape : entry.pressAway;
     const action = behavior === 'ignore' ? null : reason === 'escape' ? behavior : 'dismiss';
     const consumes = action !== null && behavior !== 'pass-through';
@@ -972,22 +972,22 @@ function unowned(event, reason) {
  * Foremost is decided by the modal barrier, then parentage, then activation order, then
  * registration order. A later rule never overrides an earlier one.
  */
-function foremostEntry() {
-    return orderedActive().at(-1) ?? null;
+function getForemostEntry() {
+    return getOrderedActiveEntries().at(-1) ?? null;
 }
 
 // Beneath the topmost modal registration, only that registration, the others on its scope, and
 // the registrations whose parent chain reaches its scope are eligible.
-function orderedActive() {
+function getOrderedActiveEntries() {
     const barrier = activeEntries.filter(entry => entry.modal).at(-1) ?? null;
     const chains = ancestorChains(activeEntries);
-    const eligible = barrier
+    const eligibleEntries = barrier
         ? activeEntries.filter(entry => entry.scope === barrier.scope || chains.get(entry).includes(barrier.scope))
         : [...activeEntries];
 
-    return eligible.sort((left, right) =>
-        rankOf(left, eligible, chains) - rankOf(right, eligible, chains)
-        || depthOf(left, eligible, chains) - depthOf(right, eligible, chains)
+    return eligibleEntries.sort((left, right) =>
+        rankOf(left, eligibleEntries, chains) - rankOf(right, eligibleEntries, chains)
+        || depthOf(left, eligibleEntries, chains) - depthOf(right, eligibleEntries, chains)
         || left.activation - right.activation
         || left.order - right.order);
 }
@@ -1010,20 +1010,20 @@ function depthOf(entry, among, chains) {
 }
 
 // The elements the last refresh stamped, so one that is released or no longer active loses its layer.
-let layered = new Set();
+let layeredElements = new Set();
 
 function refreshLayers() {
-    const ordered = orderedActive();
-    const stamped = new Set(ordered.map(entry => entry.element));
+    const orderedEntries = getOrderedActiveEntries();
+    const stampedElements = new Set(orderedEntries.map(entry => entry.element));
 
-    for (const element of layered) {
-        if (!stamped.has(element)) {
+    for (const element of layeredElements) {
+        if (!stampedElements.has(element)) {
             element.removeAttribute('data-forma-layer');
         }
     }
 
-    ordered.forEach((entry, index) => entry.element.setAttribute('data-forma-layer', String(index + 1)));
-    layered = stamped;
+    orderedEntries.forEach((entry, index) => entry.element.setAttribute('data-forma-layer', String(index + 1)));
+    layeredElements = stampedElements;
 }
 
 function specificity(binding) {
@@ -1068,20 +1068,20 @@ function matchesFamily(binding, event) {
 // A key binding requires Control, Meta and Alt absent unless stated, and Shift either way unless stated;
 // a pointer or wheel binding cares only about the modifiers it states. `primary` stands for Meta on
 // Apple platforms and Control elsewhere.
-function modifiersMatch(binding, event, strict) {
+function modifiersMatch(binding, event, isStrict) {
     const modifiers = binding.modifiers ?? {};
-    const primary = modifiers.primary === true;
-    const expected = {
-        control: modifiers.control ?? (primary && !isApplePlatform ? true : strict ? false : null),
-        meta: modifiers.meta ?? (primary && isApplePlatform ? true : strict ? false : null),
-        alt: modifiers.alt ?? (strict ? false : null),
+    const isPrimaryRequired = modifiers.primary === true;
+    const expectedModifiers = {
+        control: modifiers.control ?? (isPrimaryRequired && !isApplePlatform ? true : isStrict ? false : null),
+        meta: modifiers.meta ?? (isPrimaryRequired && isApplePlatform ? true : isStrict ? false : null),
+        alt: modifiers.alt ?? (isStrict ? false : null),
         shift: modifiers.shift ?? null,
     };
 
-    return (expected.control === null || expected.control === event.ctrlKey)
-        && (expected.meta === null || expected.meta === event.metaKey)
-        && (expected.alt === null || expected.alt === event.altKey)
-        && (expected.shift === null || expected.shift === event.shiftKey);
+    return (expectedModifiers.control === null || expectedModifiers.control === event.ctrlKey)
+        && (expectedModifiers.meta === null || expectedModifiers.meta === event.metaKey)
+        && (expectedModifiers.alt === null || expectedModifiers.alt === event.altKey)
+        && (expectedModifiers.shift === null || expectedModifiers.shift === event.shiftKey);
 }
 
 function axisMatches(axis, event) {
@@ -1111,11 +1111,11 @@ function nativeClaims(element, event) {
     }
 
     if (element.matches('[contenteditable]:not([contenteditable="false"])')) {
-        return event.type === 'keydown' ? editsText(event, { vertical: true, paging: true, rich: true }) : event.type === 'wheel' && scrolls(element);
+        return event.type === 'keydown' ? editsText(event, { claimsVerticalKeys: true, claimsPagingKeys: true, claimsRichShortcuts: true }) : event.type === 'wheel' && scrolls(element);
     }
 
     if (element instanceof HTMLTextAreaElement) {
-        return event.type === 'keydown' ? editsText(event, { vertical: true, paging: true }) : event.type === 'wheel' && scrolls(element);
+        return event.type === 'keydown' ? editsText(event, { claimsVerticalKeys: true, claimsPagingKeys: true }) : event.type === 'wheel' && scrolls(element);
     }
 
     if (element instanceof HTMLSelectElement) {
@@ -1155,9 +1155,9 @@ function inputClaims(input, event) {
     const { type } = input;
 
     if (TextInputTypes.has(type)) {
-        const vertical = type === 'number';
+        const claimsVerticalKeys = type === 'number';
 
-        return event.type === 'keydown' ? editsText(event, { vertical }) : event.type === 'wheel' && vertical && document.activeElement === input;
+        return event.type === 'keydown' ? editsText(event, { claimsVerticalKeys }) : event.type === 'wheel' && claimsVerticalKeys && document.activeElement === input;
     }
 
     if (event.type !== 'keydown') {
@@ -1187,18 +1187,18 @@ function inputClaims(input, event) {
     return false;
 }
 
-function editsText(event, { vertical = false, paging = false, rich = false }) {
+function editsText(event, { claimsVerticalKeys = false, claimsPagingKeys = false, claimsRichShortcuts = false }) {
     if (isTyping(event) || HorizontalKeys.has(event.key) || EditingKeys.has(event.key)) {
         return true;
     }
 
-    if ((vertical && VerticalKeys.has(event.key)) || (paging && PagingKeys.has(event.key))) {
+    if ((claimsVerticalKeys && VerticalKeys.has(event.key)) || (claimsPagingKeys && PagingKeys.has(event.key))) {
         return true;
     }
 
     const key = event.key.toLowerCase();
 
-    return (event.ctrlKey || event.metaKey) && (EditingShortcuts.has(key) || (rich && RichEditingShortcuts.has(key)));
+    return (event.ctrlKey || event.metaKey) && (EditingShortcuts.has(key) || (claimsRichShortcuts && RichEditingShortcuts.has(key)));
 }
 
 // A character typed through AltGr arrives with Control and Alt both held.

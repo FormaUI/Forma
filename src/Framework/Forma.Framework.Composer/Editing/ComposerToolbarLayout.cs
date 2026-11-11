@@ -81,14 +81,14 @@ public sealed class ComposerToolbarLayout
         IReadOnlyList<ComposerToolbarRow> standardRows,
         Func<IComposerPlugin?, string, string> localize)
     {
-        var external = plugins.Where(p => !ReferenceEquals(p, owner) && p is not IComposerEditorPlugin and not IComposerViewPlugin).ToList();
-        var order = Order(owner, external, standardRows, localize);
+        var externalPlugins = plugins.Where(p => !ReferenceEquals(p, owner) && p is not IComposerEditorPlugin and not IComposerViewPlugin).ToList();
+        var order = Order(owner, externalPlugins, standardRows, localize);
         var items = order.ToDictionary(r => r.Id, _ => new List<ToolbarItem>(), StringComparer.Ordinal);
         var catchesStrays = items.ContainsKey(ComposerRows.Plugins);
 
         Place(owner);
 
-        foreach (var plugin in external)
+        foreach (var plugin in externalPlugins)
         {
             Place(plugin);
         }
@@ -105,15 +105,15 @@ public sealed class ComposerToolbarLayout
         {
             foreach (var entry in contributor.Items)
             {
-                var localized = entry.Items.Select(item => Localize(item, title => localize(contributor, title)));
+                var localizedItems = entry.Items.Select(item => Localize(item, title => localize(contributor, title)));
 
                 if (items.TryGetValue(entry.RowId, out var row))
                 {
-                    row.AddRange(localized);
+                    row.AddRange(localizedItems);
                 }
                 else if (catchesStrays)
                 {
-                    items[ComposerRows.Plugins].AddRange(localized);
+                    items[ComposerRows.Plugins].AddRange(localizedItems);
                 }
             }
         }
@@ -137,50 +137,50 @@ public sealed class ComposerToolbarLayout
         };
 
     /// <summary>Folds groups sharing an identifier into the first of them.</summary>
-    /// <param name="placed">The items in the order they were placed, groups included.</param>
-    public static List<ToolbarItem> Coalesce(IReadOnlyList<ToolbarItem> placed)
+    /// <param name="placedItems">The items in the order they were placed, groups included.</param>
+    public static List<ToolbarItem> Coalesce(IReadOnlyList<ToolbarItem> placedItems)
     {
-        ArgumentNullException.ThrowIfNull(placed);
+        ArgumentNullException.ThrowIfNull(placedItems);
 
-        var merged = new List<ToolbarItem>(placed.Count);
+        var mergedItems = new List<ToolbarItem>(placedItems.Count);
         var groupIndexes = new Dictionary<string, int>(StringComparer.Ordinal);
 
-        foreach (var item in placed)
+        foreach (var item in placedItems)
         {
             if (item is not ToolbarGroup group)
             {
-                merged.Add(item);
+                mergedItems.Add(item);
 
                 continue;
             }
 
             if (groupIndexes.TryGetValue(group.Id, out var index))
             {
-                var existing = (ToolbarGroup)merged[index];
-                merged[index] = existing with { Items = [.. existing.Items, .. group.Items] };
+                var existingGroup = (ToolbarGroup)mergedItems[index];
+                mergedItems[index] = existingGroup with { Items = [.. existingGroup.Items, .. group.Items] };
 
                 continue;
             }
 
-            groupIndexes[group.Id] = merged.Count;
-            merged.Add(group);
+            groupIndexes[group.Id] = mergedItems.Count;
+            mergedItems.Add(group);
         }
 
-        return merged;
+        return mergedItems;
     }
 
     private static List<ComposerToolbarRow> Order(
         IComposerPlugin owner,
-        IEnumerable<IComposerPlugin> external,
+        IEnumerable<IComposerPlugin> externalPlugins,
         IReadOnlyList<ComposerToolbarRow> standardRows,
         Func<IComposerPlugin?, string, string> localize)
     {
         var order = new List<ComposerToolbarRow> { LocalizeRow(new() { Id = ComposerRows.BuiltIn, Label = "Editor Commands" }, contributor: null) };
-        var seen = new HashSet<string>(StringComparer.Ordinal) { ComposerRows.BuiltIn };
+        var seenRows = new HashSet<string>(StringComparer.Ordinal) { ComposerRows.BuiltIn };
 
         foreach (var row in standardRows)
         {
-            seen.Add(row.Id);
+            seenRows.Add(row.Id);
         }
 
         AddDeclared(owner);
@@ -189,7 +189,7 @@ public sealed class ComposerToolbarLayout
         // Only an editor's surface has standard rows, and only it takes the rows feature plugins declare.
         if (standardRows.Count > 0)
         {
-            foreach (var plugin in external)
+            foreach (var plugin in externalPlugins)
             {
                 AddDeclared(plugin);
             }
@@ -199,7 +199,7 @@ public sealed class ComposerToolbarLayout
 
         void AddDeclared(IComposerPlugin contributor)
         {
-            foreach (var row in contributor.Rows.Where(r => seen.Add(r.Id)))
+            foreach (var row in contributor.Rows.Where(r => seenRows.Add(r.Id)))
             {
                 order.Add(LocalizeRow(row, contributor));
             }

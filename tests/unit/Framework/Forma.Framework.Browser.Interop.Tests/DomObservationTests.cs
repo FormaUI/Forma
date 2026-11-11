@@ -334,7 +334,7 @@ public sealed class DomObservationTests
             var attaches = GetAttaches(browser);
             Assert.Multiple(
                 () => Assert.Equal(3, attaches.Count),
-                () => Assert.Equal(".frozen", FakeDomBrowser.GetOption(attaches[^1], "frozen")),
+                () => Assert.Equal(".frozen", FakeDomBrowser.GetOption(attaches[^1], "frozenSelector")),
                 () => Assert.Same(first, second),
                 () => Assert.Same(first, latest),
                 () => Assert.True(observation.IsActive));

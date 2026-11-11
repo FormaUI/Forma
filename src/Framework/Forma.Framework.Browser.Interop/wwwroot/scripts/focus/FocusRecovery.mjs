@@ -8,7 +8,7 @@ export class FocusRecovery {
     #mutations;
     #abort = new AbortController();
     /** The element inside the surface that last took the focus, while the surface still holds it. */
-    #held = null;
+    #heldElement = null;
 
     /**
      * @param {HTMLElement} target The surface.
@@ -19,12 +19,12 @@ export class FocusRecovery {
         this.#heir = heir;
 
         const signal = this.#abort.signal;
-        target.addEventListener('focusin', event => { this.#held = event.target; }, { signal });
+        target.addEventListener('focusin', event => { this.#heldElement = event.target; }, { signal });
 
         // A focus the reader took out of the surface is not the surface's to hand on.
         target.addEventListener('focusout', event => {
             if (event.relatedTarget !== null && !target.contains(event.relatedTarget)) {
-                this.#held = null;
+                this.#heldElement = null;
             }
         }, { signal });
 
@@ -39,10 +39,10 @@ export class FocusRecovery {
 
     /** Moves a focus that fell to nothing with the element holding it to the element marked as heir. */
     #handOn() {
-        const held = this.#held;
-        const active = this.#target.ownerDocument.activeElement;
+        const heldElement = this.#heldElement;
+        const activeElement = this.#target.ownerDocument.activeElement;
 
-        if (held === null || held.isConnected || (active !== null && active !== this.#target.ownerDocument.body)) {
+        if (heldElement === null || heldElement.isConnected || (activeElement !== null && activeElement !== this.#target.ownerDocument.body)) {
             return;
         }
 
@@ -50,7 +50,7 @@ export class FocusRecovery {
         const heir = this.#target.matches(selector) ? this.#target : this.#target.querySelector(selector);
 
         if (heir !== null) {
-            this.#held = null;
+            this.#heldElement = null;
             heir.focus();
         }
     }

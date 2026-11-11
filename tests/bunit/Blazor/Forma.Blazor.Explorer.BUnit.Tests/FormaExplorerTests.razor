@@ -241,7 +241,7 @@
             Assert.Null(created);
             Assert.NotNull(rejection);
             Assert.Equal(CatalogRejectionReason.FolderRootCount, rejection.Reason);
-            Assert.Equal(1, rejection.Allowed);
+            Assert.Equal(1, rejection.Limit);
             Assert.Equal(rejection.Message, cut.Find(".forma-explorer-rejection-text").TextContent.Trim());
         }
 

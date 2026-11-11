@@ -61,37 +61,37 @@ public sealed class FakeWindow(string title, WindowOrigin? origin = null) : IMan
     public int CloseRequests { get; private set; }
 
     /// <inheritdoc />
-    public ValueTask SetActiveAsync(bool active)
+    public ValueTask SetActiveAsync(bool isActive)
     {
-        IsActive = active;
-        Log.Add($"active:{active}");
+        IsActive = isActive;
+        Log.Add($"active:{isActive}");
 
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    public ValueTask SetMinimizedAsync(bool minimized)
+    public ValueTask SetMinimizedAsync(bool isMinimized)
     {
-        IsMinimized = minimized;
-        Log.Add($"minimized:{minimized}");
+        IsMinimized = isMinimized;
+        Log.Add($"minimized:{isMinimized}");
 
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    public ValueTask SetHiddenAsync(bool hidden)
+    public ValueTask SetHiddenAsync(bool isHidden)
     {
-        IsHidden = hidden;
-        Log.Add($"hidden:{hidden}");
+        IsHidden = isHidden;
+        Log.Add($"hidden:{isHidden}");
 
         return ValueTask.CompletedTask;
     }
 
     /// <inheritdoc />
-    public ValueTask SetBlockedAsync(bool blocked)
+    public ValueTask SetBlockedAsync(bool isBlocked)
     {
-        IsBlocked = blocked;
-        Log.Add($"blocked:{blocked}");
+        IsBlocked = isBlocked;
+        Log.Add($"blocked:{isBlocked}");
 
         return ValueTask.CompletedTask;
     }

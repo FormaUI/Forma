@@ -54,7 +54,7 @@ public sealed partial class FormaInputScope : FormaElementBase
 
     /// <inheritdoc />
     protected override Task OnAfterRenderAsync(bool firstRender)
-        => _inputRegistration.SyncAsync(RootElement, Profile, active: Active, parent: Parent, within: Within);
+        => _inputRegistration.SyncAsync(RootElement, Profile, isActive: Active, parent: Parent, within: Within);
 
     // An action that reads its form waits for the form's text fields to hold the reader's edits, and doesn't run where one can't; any other
     // action runs at once, whatever a field of the form holds.

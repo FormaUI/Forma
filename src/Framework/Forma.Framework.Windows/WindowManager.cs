@@ -25,7 +25,7 @@ public sealed class WindowManager
         => _windows;
 
     /// <summary>The active window.</summary>
-    public IWindow? Current { get; private set; }
+    public IWindow? CurrentWindow { get; private set; }
 
     /// <summary>Raised after anything a handle or a query reads has changed.</summary>
     public event EventHandler? Changed;
@@ -58,7 +58,7 @@ public sealed class WindowManager
 
         await ApplyBlockingAsync().ConfigureAwait(false);
 
-        if (Current is IManagedWindow currentWindow && !IsEligible(currentWindow))
+        if (CurrentWindow is IManagedWindow currentWindow && !IsEligible(currentWindow))
         {
             await FallBackAsync(currentWindow, _parents.GetValueOrDefault(currentWindow.RuntimeId)).ConfigureAwait(false);
         }
@@ -86,7 +86,7 @@ public sealed class WindowManager
                 return;
             }
 
-            var currentWindow = Current;
+            var currentWindow = CurrentWindow;
             var currentParent = currentWindow is null ? null : _parents.GetValueOrDefault(currentWindow.RuntimeId);
 
             foreach (var descendant in GetDescendants(window).AsEnumerable().Reverse())
@@ -138,7 +138,7 @@ public sealed class WindowManager
             await ApplyHidingAsync(registeredWindow).ConfigureAwait(false);
             await AssertOrderAsync().ConfigureAwait(false);
 
-            if (Current is IManagedWindow currentWindow && !IsEligible(currentWindow))
+            if (CurrentWindow is IManagedWindow currentWindow && !IsEligible(currentWindow))
             {
                 await FallBackAsync(currentWindow, _parents.GetValueOrDefault(currentWindow.RuntimeId)).ConfigureAwait(false);
             }
@@ -165,13 +165,13 @@ public sealed class WindowManager
                 return new WindowSelector { Window = registeredWindow };
 
             case StandingWindowSelector { Selection: StandingWindowSelection.All }:
-                return new WindowSelector { Parent = registeredWindow, Recursive = true };
+                return new WindowSelector { Parent = registeredWindow, IsRecursive = true };
 
             case StandingWindowSelector:
                 throw new ArgumentException("A standing selection belongs to the workspace, not to a window.", nameof(selector));
 
             case WindowSelector { Parent: null } criteria:
-                return criteria with { Parent = registeredWindow, Recursive = true };
+                return criteria with { Parent = registeredWindow, IsRecursive = true };
 
             case WindowSelector { Parent: { } parent } criteria:
                 var registeredParent = GetRegisteredWindow(parent, nameof(selector));
@@ -321,7 +321,7 @@ public sealed class WindowManager
                 return WindowOperationResult.Ineligible;
             }
 
-            var currentWindow = Current;
+            var currentWindow = CurrentWindow;
 
             foreach (var window in affectedWindows)
             {
@@ -405,7 +405,7 @@ public sealed class WindowManager
             }
 
             var affectedWindows = GetSubtrees(matchingWindows);
-            var currentWindow = Current;
+            var currentWindow = CurrentWindow;
             var currentParent = currentWindow is null ? null : _parents.GetValueOrDefault(currentWindow.RuntimeId);
 
             foreach (var window in affectedWindows)
@@ -566,7 +566,7 @@ public sealed class WindowManager
 
     private async ValueTask MakeCurrentAsync(IManagedWindow target)
     {
-        if (Current is IManagedWindow previousWindow && previousWindow.RuntimeId != target.RuntimeId)
+        if (CurrentWindow is IManagedWindow previousWindow && previousWindow.RuntimeId != target.RuntimeId)
         {
             await previousWindow.SetActiveAsync(false).ConfigureAwait(false);
         }
@@ -577,7 +577,7 @@ public sealed class WindowManager
 
         _activationHistory.Remove(target);
         _activationHistory.Add(target);
-        Current = target;
+        CurrentWindow = target;
         await target.SetActiveAsync(true).ConfigureAwait(false);
     }
 
@@ -590,12 +590,12 @@ public sealed class WindowManager
             ? parent
             : _activationHistory.AsEnumerable().Reverse().FirstOrDefault(window => window.RuntimeId != formerWindow.RuntimeId && IsEligible(window));
 
-        if (Current is IManagedWindow previousWindow && Find(previousWindow.RuntimeId) is not null && (nextWindow is null || previousWindow.RuntimeId != nextWindow.RuntimeId))
+        if (CurrentWindow is IManagedWindow previousWindow && Find(previousWindow.RuntimeId) is not null && (nextWindow is null || previousWindow.RuntimeId != nextWindow.RuntimeId))
         {
             await previousWindow.SetActiveAsync(false).ConfigureAwait(false);
         }
 
-        Current = null;
+        CurrentWindow = null;
 
         if (nextWindow is not null)
         {
@@ -664,7 +664,7 @@ public sealed class WindowManager
             StandingWindowSelector { Selection: var selection } => selection switch
             {
                 StandingWindowSelection.All => [.. _stackedWindows],
-                StandingWindowSelection.Current => Current is IManagedWindow currentWindow ? [currentWindow] : [],
+                StandingWindowSelection.Current => CurrentWindow is IManagedWindow currentWindow ? [currentWindow] : [],
                 StandingWindowSelection.Frontmost => _stackedWindows.Count > 0 ? [_stackedWindows[^1]] : [],
                 StandingWindowSelection.Backmost => _stackedWindows.Count > 0 ? [_stackedWindows[0]] : [],
                 StandingWindowSelection.Previous => GetPreviousWindow() is { } previousWindow ? [previousWindow] : [],
@@ -687,7 +687,7 @@ public sealed class WindowManager
 
         IEnumerable<IManagedWindow> candidates = parent is null
             ? _stackedWindows
-            : criteria.Recursive
+            : criteria.IsRecursive
                 ? _stackedWindows.Where(candidate => IsDescendant(candidate, parent))
                 : _stackedWindows.Where(candidate => _parents.GetValueOrDefault(candidate.RuntimeId)?.RuntimeId == parent.RuntimeId);
 
@@ -699,7 +699,7 @@ public sealed class WindowManager
     }
 
     private IManagedWindow? GetPreviousWindow()
-        => _activationHistory.AsEnumerable().Reverse().FirstOrDefault(window => Current is null || window.RuntimeId != Current.RuntimeId);
+        => _activationHistory.AsEnumerable().Reverse().FirstOrDefault(window => CurrentWindow is null || window.RuntimeId != CurrentWindow.RuntimeId);
 
     // The frontmost visible modal descendant of a window.
     private IManagedWindow? GetControllingModal(IManagedWindow window)
@@ -797,9 +797,9 @@ public sealed class WindowManager
         _closingIds.Remove(window.RuntimeId);
         _blockedIds.Remove(window.RuntimeId);
 
-        if (Current?.RuntimeId == window.RuntimeId)
+        if (CurrentWindow?.RuntimeId == window.RuntimeId)
         {
-            Current = null;
+            CurrentWindow = null;
         }
     }
 

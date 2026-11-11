@@ -6,7 +6,7 @@ describe('Window', () => {
     /** @type {HTMLElement} */
     let box;
 
-    const options = (overrides = {}) => ({ presented: true, modal: false, scrim: null, ...overrides });
+    const options = (overrides = {}) => ({ isPresented: true, isModal: false, scrim: null, ...overrides });
 
     const popoverOf = element => {
         let open = false;
@@ -37,7 +37,7 @@ describe('Window', () => {
     it('stays out of the top layer while not presented, and enters it when presented', () => {
         const isOpen = popoverOf(box);
 
-        const handle = attach(box, options({ presented: false }));
+        const handle = attach(box, options({ isPresented: false }));
         expect(box.showPopover).not.toHaveBeenCalled();
 
         handle.present(true);
@@ -186,7 +186,7 @@ describe('Window', () => {
         const scrim = document.querySelector('#scrim');
         tracked(scrim, 'scrim');
 
-        const handle = attach(box, options({ modal: true, scrim }));
+        const handle = attach(box, options({ isModal: true, scrim }));
         handle.present(false);
 
         expect(shown).toEqual(['scrim', 'window']);
@@ -197,7 +197,7 @@ describe('Window', () => {
     it('keeps Tab inside a modal window', () => {
         box.querySelector('.titlebar').insertAdjacentHTML('beforeend', '<button id="last">Last</button>');
         document.body.insertAdjacentHTML('beforeend', '<button id="after">After</button>');
-        attach(box, options({ modal: true }));
+        attach(box, options({ isModal: true }));
         document.querySelector('#last').focus();
 
         const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });

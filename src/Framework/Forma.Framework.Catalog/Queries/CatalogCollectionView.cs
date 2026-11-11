@@ -146,9 +146,9 @@ public sealed class CatalogCollectionView
     {
         get
         {
-            var matching = MatchingList;
+            var matchingItems = MatchingList;
 
-            return _groupSizes ??= _grouping?.CountGroups(matching) ?? [];
+            return _groupSizes ??= _grouping?.CountGroups(matchingItems) ?? [];
         }
     }
 
@@ -227,9 +227,9 @@ public sealed class CatalogCollectionView
                 query = query.Where(item => kinds.Contains(item.GetKind()));
             }
 
-            if (_filter is { } accepted)
+            if (_filter is { } resourceFilter)
             {
-                query = query.Where(item => item.Resource is not { } resource || accepted.Accepts(resource));
+                query = query.Where(item => item.Resource is not { } resource || resourceFilter.Accepts(resource));
             }
 
             if (!string.IsNullOrWhiteSpace(_searchQuery))

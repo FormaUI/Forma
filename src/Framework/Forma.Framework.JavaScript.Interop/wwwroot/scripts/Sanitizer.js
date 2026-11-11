@@ -36,19 +36,19 @@ const UrlAttributes = new Set(['href', 'src', 'poster']);
 const SafeSchemes = new Set(['http:', 'https:', 'mailto:', 'tel:', 'data:']);
 
 function isSafeUrl(value) {
-    const trimmed = value.trim();
+    const trimmedValue = value.trim();
 
-    if (trimmed === '' || trimmed.startsWith('#') || trimmed.startsWith('/')) {
+    if (trimmedValue === '' || trimmedValue.startsWith('#') || trimmedValue.startsWith('/')) {
         return true;
     }
 
-    if (!/^[a-z][a-z0-9+.-]*:/i.test(trimmed)) {
+    if (!/^[a-z][a-z0-9+.-]*:/i.test(trimmedValue)) {
         return true;
     }
 
     try {
-        const scheme = new URL(trimmed, 'https://invalid.example').protocol;
-        return SafeSchemes.has(scheme) && !(scheme === 'data:' && !/^data:image\//i.test(trimmed));
+        const scheme = new URL(trimmedValue, 'https://invalid.example').protocol;
+        return SafeSchemes.has(scheme) && !(scheme === 'data:' && !/^data:image\//i.test(trimmedValue));
     } catch {
         return false;
     }
@@ -56,36 +56,36 @@ function isSafeUrl(value) {
 
 function cleanAttributes(element) {
     const tag = element.tagName.toLowerCase();
-    const permitted = TagAttributes.get(tag);
+    const permittedAttributes = TagAttributes.get(tag);
 
     for (const attribute of Array.from(element.attributes)) {
         const name = attribute.name.toLowerCase();
-        const allowed = GlobalAttributes.has(name) || (permitted?.has(name) ?? false);
+        const isAllowed = GlobalAttributes.has(name) || (permittedAttributes?.has(name) ?? false);
 
-        if (!allowed || (UrlAttributes.has(name) && !isSafeUrl(attribute.value))) {
+        if (!isAllowed || (UrlAttributes.has(name) && !isSafeUrl(attribute.value))) {
             element.removeAttribute(attribute.name);
             continue;
         }
 
         if (name === 'style') {
-            const kept = attribute.value
+            const keptDeclarations = attribute.value
                 .split(';')
                 .filter(rule => rule.trim() !== '' && !/mso-|expression\s*\(|url\s*\(/i.test(rule));
 
-            if (kept.length === 0) {
+            if (keptDeclarations.length === 0) {
                 element.removeAttribute('style');
             } else {
-                element.setAttribute('style', `${kept.join(';').trim()};`);
+                element.setAttribute('style', `${keptDeclarations.join(';').trim()};`);
             }
         }
 
         if (name === 'class') {
-            const kept = attribute.value.split(/\s+/).filter(token => token !== '' && !/^Mso/i.test(token));
+            const keptClasses = attribute.value.split(/\s+/).filter(token => token !== '' && !/^Mso/i.test(token));
 
-            if (kept.length === 0) {
+            if (keptClasses.length === 0) {
                 element.removeAttribute('class');
             } else {
-                element.setAttribute('class', kept.join(' '));
+                element.setAttribute('class', keptClasses.join(' '));
             }
         }
     }
@@ -97,11 +97,11 @@ export function sanitize(html) {
     template.innerHTML = html ?? '';
 
     const comments = document.createTreeWalker(template.content, NodeFilter.SHOW_COMMENT);
-    const stale = [];
+    const staleComments = [];
     while (comments.nextNode()) {
-        stale.push(comments.currentNode);
+        staleComments.push(comments.currentNode);
     }
-    for (const comment of stale) {
+    for (const comment of staleComments) {
         comment.remove();
     }
 

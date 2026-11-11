@@ -32,36 +32,36 @@ public static class LocalizationMetadata
 
     private static void ValidateSchemaVersion(LocaleFieldResult result, string value, string fileName)
     {
-        if (Find(result, value, LocalizationSchema.SchemaVersionField) is not { } written)
+        if (Find(result, value, LocalizationSchema.SchemaVersionField) is not { } writtenVersion)
         {
             throw new LocalizationMetadataException($"'{fileName}' does not declare '{LocalizationSchema.SchemaVersionField}'.");
         }
 
-        if (!Version.TryParse(written, out var schema) || schema.Build < 0 || schema.Revision >= 0)
+        if (!Version.TryParse(writtenVersion, out var schema) || schema.Build < 0 || schema.Revision >= 0)
         {
             throw new LocalizationMetadataException(
-                $"'{fileName}' declares '{LocalizationSchema.SchemaVersionField}: {written}', which is not three numbers separated by dots.");
+                $"'{fileName}' declares '{LocalizationSchema.SchemaVersionField}: {writtenVersion}', which is not three numbers separated by dots.");
         }
 
         // Only the major version decides whether a file is readable.
         if (schema.Major != LocalizationSchema.SupportedMajor)
         {
             throw new LocalizationMetadataException(
-                $"'{fileName}' is written for localization schema {written}; this build reads {LocalizationSchema.SupportedMajor}.x.");
+                $"'{fileName}' is written for localization schema {writtenVersion}; this build reads {LocalizationSchema.SupportedMajor}.x.");
         }
     }
 
     private static void ValidateCulture(LocaleFieldResult result, string value, string fileName, string expectedCulture)
     {
-        if (Find(result, value, LocalizationSchema.CultureField) is not { } written)
+        if (Find(result, value, LocalizationSchema.CultureField) is not { } writtenCulture)
         {
             throw new LocalizationMetadataException($"'{fileName}' does not declare '{LocalizationSchema.CultureField}'.");
         }
 
-        if (!string.Equals(written, expectedCulture, StringComparison.OrdinalIgnoreCase))
+        if (!string.Equals(writtenCulture, expectedCulture, StringComparison.OrdinalIgnoreCase))
         {
             throw new LocalizationMetadataException(
-                $"'{fileName}' declares '{LocalizationSchema.CultureField}: {written}' but is read as '{expectedCulture}'.");
+                $"'{fileName}' declares '{LocalizationSchema.CultureField}: {writtenCulture}' but is read as '{expectedCulture}'.");
         }
     }
 

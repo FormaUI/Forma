@@ -31,18 +31,18 @@ internal sealed class DefaultCultureState(ICultureProvider? cultureProvider = nu
 
     /// <inheritdoc />
     /// <remarks>The cultures are assigned on the caller's flow, where they stay in force after the call, and the subscribers hear of the change once the call has returned.</remarks>
-    public Task ApplyAsync(AcceptedCulture accepted)
+    public Task ApplyAsync(AcceptedCulture acceptedCulture)
     {
-        ArgumentNullException.ThrowIfNull(accepted);
+        ArgumentNullException.ThrowIfNull(acceptedCulture);
 
-        if (!accepted.Version.Follows(Version))
+        if (!acceptedCulture.Version.Follows(Version))
         {
             return Task.CompletedTask;
         }
 
-        var culture = CultureInfo.ReadOnly(CultureResolution.GetCulture(cultureProvider, accepted.Culture));
-        var uiCulture = CultureInfo.ReadOnly(CultureResolution.GetCulture(cultureProvider, accepted.UICulture));
-        Version = accepted.Version;
+        var culture = CultureInfo.ReadOnly(CultureResolution.GetCulture(cultureProvider, acceptedCulture.Culture));
+        var uiCulture = CultureInfo.ReadOnly(CultureResolution.GetCulture(cultureProvider, acceptedCulture.UICulture));
+        Version = acceptedCulture.Version;
 
         if (IsHeld(culture, Culture) && IsHeld(uiCulture, UICulture))
         {
@@ -77,6 +77,6 @@ internal sealed class DefaultCultureState(ICultureProvider? cultureProvider = nu
     }
 
     // A culture of the same name that writes dates or numbers otherwise, as a clone pinning its own patterns does, is a change.
-    private static bool IsHeld(CultureInfo culture, CultureInfo held)
-        => culture.Equals(held) && CultureFormats.AreEqual(culture, held);
+    private static bool IsHeld(CultureInfo culture, CultureInfo heldCulture)
+        => culture.Equals(heldCulture) && CultureFormats.AreEqual(culture, heldCulture);
 }

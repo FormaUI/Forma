@@ -63,43 +63,43 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
 
         while (index < source.Length)
         {
-            var open = source[index..].IndexOf('<');
+            var openIndex = source[index..].IndexOf('<');
 
-            if (open < 0)
+            if (openIndex < 0)
             {
                 output.Append(source[index..]);
                 break;
             }
 
-            open += index;
-            output.Append(source[index..open]);
-            index = SanitizeMarkup(output, source, open);
+            openIndex += index;
+            output.Append(source[index..openIndex]);
+            index = SanitizeMarkup(output, source, openIndex);
         }
 
         return output.ToString();
     }
 
     // Handles one '<' and returns where scanning resumes.
-    private int SanitizeMarkup(StringBuilder output, ReadOnlySpan<char> source, int open)
+    private int SanitizeMarkup(StringBuilder output, ReadOnlySpan<char> source, int openIndex)
     {
-        var rest = source[open..];
+        var remainingSource = source[openIndex..];
 
-        if (rest.StartsWith("<!--", StringComparison.Ordinal))
+        if (remainingSource.StartsWith("<!--", StringComparison.Ordinal))
         {
-            var end = rest.IndexOf("-->", StringComparison.Ordinal);
-            return end < 0 ? source.Length : open + end + 3;
+            var end = remainingSource.IndexOf("-->", StringComparison.Ordinal);
+            return end < 0 ? source.Length : openIndex + end + 3;
         }
 
-        if (rest.StartsWith("<!", StringComparison.Ordinal) || rest.StartsWith("<?", StringComparison.Ordinal))
+        if (remainingSource.StartsWith("<!", StringComparison.Ordinal) || remainingSource.StartsWith("<?", StringComparison.Ordinal))
         {
-            var end = rest.IndexOf('>');
-            return end < 0 ? source.Length : open + end + 1;
+            var end = remainingSource.IndexOf('>');
+            return end < 0 ? source.Length : openIndex + end + 1;
         }
 
-        if (!TryReadTag(source, open, out var tag, out var afterTag))
+        if (!TryReadTag(source, openIndex, out var tag, out var afterTag))
         {
             output.Append('<');
-            return open + 1;
+            return openIndex + 1;
         }
 
         var name = source[tag.Name];
@@ -151,20 +151,20 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
         // A '>' inside a quoted value belongs to the value.
         while (position < source.Length)
         {
-            var current = source[position];
+            var currentChar = source[position];
 
             if (quote != '\0')
             {
-                if (current == quote)
+                if (currentChar == quote)
                 {
                     quote = '\0';
                 }
             }
-            else if (current is '"' or '\'')
+            else if (currentChar is '"' or '\'')
             {
-                quote = current;
+                quote = currentChar;
             }
-            else if (current == '>')
+            else if (currentChar == '>')
             {
                 break;
             }
@@ -178,9 +178,9 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
         }
 
         var attributes = source[attributesStart..position];
-        var trimmed = attributes.TrimEnd();
-        var isSelfClosing = trimmed.Length > 0 && trimmed[^1] == '/';
-        var attributesEnd = attributesStart + (isSelfClosing ? trimmed.Length - 1 : attributes.Length);
+        var trimmedAttributes = attributes.TrimEnd();
+        var isSelfClosing = trimmedAttributes.Length > 0 && trimmedAttributes[^1] == '/';
+        var attributesEnd = attributesStart + (isSelfClosing ? trimmedAttributes.Length - 1 : attributes.Length);
 
         tag = new HtmlTag(isClosing, nameRange, attributesStart..attributesEnd, isSelfClosing);
         afterTag = position + 1;
@@ -222,14 +222,14 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
 
     private void AppendTag(StringBuilder output, ReadOnlySpan<char> source, HtmlTag tag)
     {
-        var raw = source[tag.Name];
+        var rawName = source[tag.Name];
 
-        if (!MarkupPolicy.Allows(HtmlSubject.Element, raw, default, out var canonical))
+        if (!MarkupPolicy.Allows(HtmlSubject.Element, rawName, default, out var canonicalSpelling))
         {
             return;
         }
 
-        var name = canonical is null ? raw : canonical.AsSpan();
+        var name = canonicalSpelling is null ? rawName : canonicalSpelling.AsSpan();
         var isVoid = VoidTagLookup.Contains(name);
 
         if (tag.IsClosing)
@@ -247,25 +247,25 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
         output.Append(tag.IsSelfClosing || isVoid ? " />" : ">");
     }
 
-    private void AppendAttributes(StringBuilder output, ReadOnlySpan<char> tagName, ReadOnlySpan<char> raw)
+    private void AppendAttributes(StringBuilder output, ReadOnlySpan<char> tagName, ReadOnlySpan<char> rawAttributes)
     {
-        if (raw.IsWhiteSpace())
+        if (rawAttributes.IsWhiteSpace())
         {
             return;
         }
 
         var position = 0;
 
-        while (position < raw.Length)
+        while (position < rawAttributes.Length)
         {
-            while (position < raw.Length && (char.IsWhiteSpace(raw[position]) || raw[position] == '/'))
+            while (position < rawAttributes.Length && (char.IsWhiteSpace(rawAttributes[position]) || rawAttributes[position] == '/'))
             {
                 position++;
             }
 
             var nameStart = position;
 
-            while (position < raw.Length && (char.IsAsciiLetterOrDigit(raw[position]) || raw[position] is '-' or '_' or ':'))
+            while (position < rawAttributes.Length && (char.IsAsciiLetterOrDigit(rawAttributes[position]) || rawAttributes[position] is '-' or '_' or ':'))
             {
                 position++;
             }
@@ -276,37 +276,37 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
                 continue;
             }
 
-            var name = raw[nameStart..position];
+            var name = rawAttributes[nameStart..position];
 
-            while (position < raw.Length && char.IsWhiteSpace(raw[position]))
+            while (position < rawAttributes.Length && char.IsWhiteSpace(rawAttributes[position]))
             {
                 position++;
             }
 
             var value = ReadOnlySpan<char>.Empty;
 
-            if (position < raw.Length && raw[position] == '=')
+            if (position < rawAttributes.Length && rawAttributes[position] == '=')
             {
                 position++;
 
-                while (position < raw.Length && char.IsWhiteSpace(raw[position]))
+                while (position < rawAttributes.Length && char.IsWhiteSpace(rawAttributes[position]))
                 {
                     position++;
                 }
 
-                if (position < raw.Length && raw[position] is '"' or '\'')
+                if (position < rawAttributes.Length && rawAttributes[position] is '"' or '\'')
                 {
-                    var quote = raw[position++];
+                    var quote = rawAttributes[position++];
                     var valueStart = position;
 
-                    while (position < raw.Length && raw[position] != quote)
+                    while (position < rawAttributes.Length && rawAttributes[position] != quote)
                     {
                         position++;
                     }
 
-                    value = raw[valueStart..position];
+                    value = rawAttributes[valueStart..position];
 
-                    if (position < raw.Length)
+                    if (position < rawAttributes.Length)
                     {
                         position++;
                     }
@@ -315,12 +315,12 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
                 {
                     var valueStart = position;
 
-                    while (position < raw.Length && !char.IsWhiteSpace(raw[position]))
+                    while (position < rawAttributes.Length && !char.IsWhiteSpace(rawAttributes[position]))
                     {
                         position++;
                     }
 
-                    value = raw[valueStart..position];
+                    value = rawAttributes[valueStart..position];
                 }
             }
 
@@ -340,7 +340,7 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
             return;
         }
 
-        if (!MarkupPolicy.Allows(HtmlSubject.Attribute, name, tagName, out var canonical))
+        if (!MarkupPolicy.Allows(HtmlSubject.Attribute, name, tagName, out var canonicalSpelling))
         {
             return;
         }
@@ -357,7 +357,7 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
             var checkpoint = output.Length;
 
             output.Append(' ');
-            AppendName(output, name, canonical);
+            AppendName(output, name, canonicalSpelling);
             output.Append("=\"");
 
             if (!TryAppendStyle(output, value))
@@ -371,28 +371,28 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
         }
 
         output.Append(' ');
-        AppendName(output, name, canonical);
+        AppendName(output, name, canonicalSpelling);
         output.Append("=\"");
         AppendEscaped(output, value);
         output.Append('"');
     }
 
     // A null canonical name keeps the document's spelling.
-    private static void AppendName(StringBuilder output, ReadOnlySpan<char> name, string? canonical)
+    private static void AppendName(StringBuilder output, ReadOnlySpan<char> name, string? canonicalSpelling)
     {
-        if (canonical is null)
+        if (canonicalSpelling is null)
         {
             output.Append(name);
         }
         else
         {
-            output.Append(canonical);
+            output.Append(canonicalSpelling);
         }
     }
 
     private bool TryAppendStyle(StringBuilder output, ReadOnlySpan<char> style)
     {
-        var wrote = false;
+        var hasWritten = false;
 
         foreach (var range in style.Split(';'))
         {
@@ -413,40 +413,40 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
             var property = declaration[..colon].TrimEnd();
             var value = declaration[(colon + 1)..].Trim();
 
-            if (!MarkupPolicy.Allows(HtmlSubject.StyleProperty, property, default, out var canonical))
+            if (!MarkupPolicy.Allows(HtmlSubject.StyleProperty, property, default, out var canonicalSpelling))
             {
                 continue;
             }
 
-            if (wrote)
+            if (hasWritten)
             {
                 output.Append("; ");
             }
 
-            AppendName(output, property, canonical);
+            AppendName(output, property, canonicalSpelling);
             output.Append(": ");
             AppendEscaped(output, value);
-            wrote = true;
+            hasWritten = true;
         }
 
-        return wrote;
+        return hasWritten;
     }
 
     private static void AppendEscaped(StringBuilder output, ReadOnlySpan<char> value)
     {
         while (!value.IsEmpty)
         {
-            var next = value.IndexOfAny(EscapeTargets);
+            var nextEscapeIndex = value.IndexOfAny(EscapeTargets);
 
-            if (next < 0)
+            if (nextEscapeIndex < 0)
             {
                 output.Append(value);
                 return;
             }
 
-            output.Append(value[..next]);
+            output.Append(value[..nextEscapeIndex]);
 
-            output.Append(value[next] switch
+            output.Append(value[nextEscapeIndex] switch
             {
                 '&' => "&amp;",
                 '"' => "&quot;",
@@ -454,7 +454,7 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
                 _ => "&gt;"
             });
 
-            value = value[(next + 1)..];
+            value = value[(nextEscapeIndex + 1)..];
         }
     }
 

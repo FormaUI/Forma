@@ -185,7 +185,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         // The arrows belong to the viewer only while it can navigate; the registration runs beside the image's behaviors.
-        var navigation = _navigation.SyncAsync(RootElement, Context.CultureState.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile, wanted: IsNavigable);
+        var navigation = _navigation.SyncAsync(RootElement, Context.CultureState.IsRightToLeft ? RightToLeftProfile : LeftToRightProfile, shouldRegister: IsNavigable);
 
         if (Resource is ImageResourceInfo)
         {

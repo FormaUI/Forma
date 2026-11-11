@@ -33,6 +33,6 @@ public sealed partial class CommonPluralRuleSet : IPluralRuleSet
     }
 
     // A CLDR range matches integers only, so 3.5 falls outside 3..10.
-    private static bool InRange(decimal value, int low, int high)
-        => decimal.Truncate(value) == value && value >= low && value <= high;
+    private static bool InRange(decimal value, int lowBound, int highBound)
+        => decimal.Truncate(value) == value && value >= lowBound && value <= highBound;
 }

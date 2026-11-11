@@ -66,15 +66,15 @@ public sealed class ExplorerContentProvider(CatalogFolderTree folders, ICatalogP
 
         if (fileTake <= 0)
         {
-            var known = IsSameSequence(_filesQuery, filesQuery) ? _filesPage : null;
+            var knownPage = IsSameSequence(_filesQuery, filesQuery) ? _filesPage : null;
             var end = query.Skip + folderSlice.Count;
 
-            return new CatalogPage(folderSlice, known?.TotalCount + folderCount)
+            return new CatalogPage(folderSlice, knownPage?.TotalCount + folderCount)
             {
                 ReadCount = folderSlice.Count,
-                HasMore = end < folderCount || known is not { TotalCount: 0 },
-                ListedCount = known?.ListedCount + folderCount,
-                GroupSizes = Merge(folderSizes, known?.GroupSizes)
+                HasMore = end < folderCount || knownPage is not { TotalCount: 0 },
+                ListedCount = knownPage?.ListedCount + folderCount,
+                GroupSizes = Merge(folderSizes, knownPage?.GroupSizes)
             };
         }
 
@@ -92,16 +92,16 @@ public sealed class ExplorerContentProvider(CatalogFolderTree folders, ICatalogP
     }
 
     // The kinds a file can be that the query asks for.
-    private FrozenSet<CatalogItemKind> GetFileKinds(IReadOnlySet<CatalogItemKind>? asked)
+    private FrozenSet<CatalogItemKind> GetFileKinds(IReadOnlySet<CatalogItemKind>? askedKinds)
     {
-        if (asked is null)
+        if (askedKinds is null)
         {
             return FileKinds;
         }
 
-        if (_fileKinds is not { } known || !ReferenceEquals(known.Asked, asked))
+        if (_fileKinds is not { } known || !ReferenceEquals(known.Asked, askedKinds))
         {
-            known = (asked, asked.Where(FileKinds.Contains).ToFrozenSet());
+            known = (askedKinds, askedKinds.Where(FileKinds.Contains).ToFrozenSet());
             _fileKinds = known;
         }
 
@@ -120,8 +120,8 @@ public sealed class ExplorerContentProvider(CatalogFolderTree folders, ICatalogP
     }
 
     // Whether two file queries read the same sequence, apart from where their slices begin and end.
-    private static bool IsSameSequence(CatalogQuery? known, CatalogQuery query)
-        => known is { } last && last with { Skip = 0, Take = 0 } == query with { Skip = 0, Take = 0 };
+    private static bool IsSameSequence(CatalogQuery? knownQuery, CatalogQuery query)
+        => knownQuery is { } lastQuery && lastQuery with { Skip = 0, Take = 0 } == query with { Skip = 0, Take = 0 };
 
     // The folders' groups lead, so their sizes come before the files'.
     private static IReadOnlyList<CatalogGroupSize>? Merge(IReadOnlyList<CatalogGroupSize>? folderSizes, IReadOnlyList<CatalogGroupSize>? fileSizes)

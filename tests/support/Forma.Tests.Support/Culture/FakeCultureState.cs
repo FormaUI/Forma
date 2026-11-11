@@ -29,14 +29,14 @@ public sealed class FakeCultureState(CultureInfo culture) : ICultureState, ICult
     public CultureVersion Version { get; private set; } = CultureVersion.Initial;
 
     /// <inheritdoc />
-    public Task ApplyAsync(AcceptedCulture accepted)
+    public Task ApplyAsync(AcceptedCulture acceptedCulture)
     {
-        ArgumentNullException.ThrowIfNull(accepted);
+        ArgumentNullException.ThrowIfNull(acceptedCulture);
 
-        Applied.Add(accepted);
-        Culture = accepted.Culture;
-        UICulture = accepted.UICulture;
-        Version = accepted.Version;
+        Applied.Add(acceptedCulture);
+        Culture = acceptedCulture.Culture;
+        UICulture = acceptedCulture.UICulture;
+        Version = acceptedCulture.Version;
 
         return Task.CompletedTask;
     }

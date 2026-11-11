@@ -13,7 +13,7 @@ describe('ScrollInteraction', () => {
     /** @type {ScrollInteraction[]} */
     let handles;
 
-    const buttons = () => ({ container: pane, back: '.back', forward: '.forward', backAction: 'pane.scroll-back', forwardAction: 'pane.scroll-forward' });
+    const buttons = () => ({ container: pane, backButtonSelector: '.back', forwardButtonSelector: '.forward', backAction: 'pane.scroll-back', forwardAction: 'pane.scroll-forward' });
 
     beforeEach(() => {
         mutations = stubMutationObserver();

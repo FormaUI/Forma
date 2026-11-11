@@ -77,22 +77,22 @@ public sealed class UploadBatch
         => _duration = _startTimestamp == 0 ? TimeSpan.Zero : Stopwatch.GetElapsedTime(_startTimestamp);
 
     /// <summary>Records how far one file's transfer has come.</summary>
-    public void UpdateFileProgress(int index, int percent, long transferred)
-        => _files[index] = _files[index] with { ProgressPercentage = percent, BytesTransferred = transferred };
+    public void UpdateFileProgress(int index, int percent, long bytesTransferred)
+        => _files[index] = _files[index] with { ProgressPercentage = percent, BytesTransferred = bytesTransferred };
 
     /// <summary>Moves one file to a state.</summary>
     /// <remarks>Entering <see cref="UploadState.Uploading"/> starts the file's clock, and a later state stops it.</remarks>
     public void SetFileState(int index, UploadState state, int? percent = null)
     {
         var file = _files[index];
-        var starting = state == UploadState.Uploading;
+        var isStarting = state == UploadState.Uploading;
 
         _files[index] = file with
         {
             State = state,
             ProgressPercentage = percent ?? file.ProgressPercentage,
-            StartTimestamp = starting ? Stopwatch.GetTimestamp() : file.StartTimestamp,
-            Duration = starting || file.StartTimestamp == 0 ? null : Stopwatch.GetElapsedTime(file.StartTimestamp)
+            StartTimestamp = isStarting ? Stopwatch.GetTimestamp() : file.StartTimestamp,
+            Duration = isStarting || file.StartTimestamp == 0 ? null : Stopwatch.GetElapsedTime(file.StartTimestamp)
         };
     }
 

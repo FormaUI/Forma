@@ -71,11 +71,11 @@ public sealed class ComposerHistory : IComposerHistory
         }
 
         var index = _redoStack.Count - 1;
-        var next = _redoStack[index];
+        var redoEntry = _redoStack[index];
         _redoStack.RemoveAt(index);
-        _undoStack.Add(next);
+        _undoStack.Add(redoEntry);
 
-        return next.Document;
+        return redoEntry.Document;
     }
 
     /// <inheritdoc />

@@ -116,7 +116,7 @@ public sealed partial class FormaPopover : FormaElementBase
         }
 
         // The scope goes before the content does, so nothing is routed to a popover on its way out.
-        await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: false);
+        await _inputRegistration.SyncAsync(RootElement, _inputProfile, shouldRegister: false);
 
         // Focus is moved while the content is still in the document, so where it is can be seen.
         await _popup.CloseAsync(returnsFocus);
@@ -134,7 +134,7 @@ public sealed partial class FormaPopover : FormaElementBase
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         await _popup.SyncAsync(IsOpen, RootElement, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment);
-        await _inputRegistration.SyncAsync(RootElement, _inputProfile, wanted: IsOpen, active: IsOpen, within: [_trigger]);
+        await _inputRegistration.SyncAsync(RootElement, _inputProfile, shouldRegister: IsOpen, isActive: IsOpen, within: [_trigger]);
     }
 
     /// <inheritdoc />

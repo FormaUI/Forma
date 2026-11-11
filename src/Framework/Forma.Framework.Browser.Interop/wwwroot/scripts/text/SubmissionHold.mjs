@@ -61,7 +61,7 @@ export class SubmissionHold {
 
         const submitter = event.submitter ?? null;
 
-        Promise.allSettled(deliveringEdits.map(edits => edits.delivered)).then(() => {
+        Promise.allSettled(deliveringEdits.map(edits => edits.deliveryCompletion)).then(() => {
             if (form.isConnected) {
                 form.requestSubmit(submitter?.isConnected && submitter.form === form ? submitter : null);
             }

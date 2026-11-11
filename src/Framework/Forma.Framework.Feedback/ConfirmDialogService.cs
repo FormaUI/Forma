@@ -9,7 +9,7 @@ public sealed class ConfirmDialogService : IConfirmDialogService
     private readonly StateNotifier _notifier = new();
 
     /// <inheritdoc />
-    public ConfirmDialogRequest? Current { get; private set; }
+    public ConfirmDialogRequest? CurrentRequest { get; private set; }
 
     /// <inheritdoc />
     public async Task<bool> ConfirmAsync(
@@ -22,7 +22,7 @@ public sealed class ConfirmDialogService : IConfirmDialogService
         ArgumentException.ThrowIfNullOrWhiteSpace(confirmText);
         ArgumentException.ThrowIfNullOrWhiteSpace(cancelText);
 
-        Current?.Result.TrySetResult(false);
+        CurrentRequest?.Result.TrySetResult(false);
 
         var tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
         var request = new ConfirmDialogRequest
@@ -32,7 +32,7 @@ public sealed class ConfirmDialogService : IConfirmDialogService
             CancelText = cancelText,
             Result = tcs
         };
-        Current = request;
+        CurrentRequest = request;
 
         await _notifier.NotifyAsync(cancellationToken).ConfigureAwait(false);
 
@@ -43,9 +43,9 @@ public sealed class ConfirmDialogService : IConfirmDialogService
         finally
         {
             // A later ConfirmAsync may have superseded this request while it was awaited.
-            if (ReferenceEquals(Current, request))
+            if (ReferenceEquals(CurrentRequest, request))
             {
-                Current = null;
+                CurrentRequest = null;
             }
         }
     }

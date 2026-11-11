@@ -33,7 +33,7 @@ describe('SubmissionHold', () => {
     // A field's edits with one on its way until the returned function delivers it.
     const delivering = element => {
         let deliver;
-        const edits = { element, isDelivering: true, delivered: new Promise(resolve => { deliver = resolve; }) };
+        const edits = { element, isDelivering: true, deliveryCompletion: new Promise(resolve => { deliver = resolve; }) };
         handles.push(SubmissionHold.track(edits));
 
         return () => {
@@ -58,7 +58,7 @@ describe('SubmissionHold', () => {
     });
 
     it('lets a submission through when no edit is on its way', () => {
-        handles.push(SubmissionHold.track({ element: document.querySelector('#field'), isDelivering: false, delivered: Promise.resolve() }));
+        handles.push(SubmissionHold.track({ element: document.querySelector('#field'), isDelivering: false, deliveryCompletion: Promise.resolve() }));
 
         form.requestSubmit();
 

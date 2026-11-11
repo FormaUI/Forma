@@ -12,31 +12,31 @@ internal static class PluginActivator
         where TPlugin : class, IPlugin
     {
         // The same plugin registered in two places is two plugins, each with its own options.
-        var built = new Dictionary<PluginRegistration<TPlugin>, PluginInstance<TPlugin>>();
-        var underway = new HashSet<PluginRegistration<TPlugin>>();
+        var builtInstances = new Dictionary<PluginRegistration<TPlugin>, PluginInstance<TPlugin>>();
+        var registrationsInProgress = new HashSet<PluginRegistration<TPlugin>>();
 
         foreach (var registration in registrations)
         {
-            Build(registration, registrations, services, built, underway);
+            Build(registration, registrations, services, builtInstances, registrationsInProgress);
         }
 
-        return new PluginScope<TPlugin>([.. registrations.Select(registration => built[registration])]);
+        return new PluginScope<TPlugin>([.. registrations.Select(registration => builtInstances[registration])]);
     }
 
     private static PluginInstance<TPlugin> Build<TPlugin>(
         PluginRegistration<TPlugin> registration,
         IReadOnlyList<PluginRegistration<TPlugin>> registrations,
         IServiceProvider services,
-        Dictionary<PluginRegistration<TPlugin>, PluginInstance<TPlugin>> built,
-        HashSet<PluginRegistration<TPlugin>> underway)
+        Dictionary<PluginRegistration<TPlugin>, PluginInstance<TPlugin>> builtInstances,
+        HashSet<PluginRegistration<TPlugin>> registrationsInProgress)
         where TPlugin : class, IPlugin
     {
-        if (built.TryGetValue(registration, out var already))
+        if (builtInstances.TryGetValue(registration, out var already))
         {
             return already;
         }
 
-        if (!underway.Add(registration))
+        if (!registrationsInProgress.Add(registration))
         {
             throw new InvalidOperationException(
                 $"{registration.PluginType.Name} takes a plugin that takes it back, so neither can be built; break the cycle by having one of them ask for what it needs at the point it is used instead.");
@@ -46,7 +46,7 @@ internal static class PluginActivator
 
         if (registration.Factory is { } factory)
         {
-            underway.Remove(registration);
+            registrationsInProgress.Remove(registration);
             plugin = factory(services);
         }
         else
@@ -54,10 +54,10 @@ internal static class PluginActivator
             var constructor = GetConstructor(registration.PluginType);
             var arguments = constructor
                 .GetParameters()
-                .Select(parameter => Resolve(parameter, registration, registrations, services, built, underway))
+                .Select(parameter => Resolve(parameter, registration, registrations, services, builtInstances, registrationsInProgress))
                 .ToArray();
 
-            underway.Remove(registration);
+            registrationsInProgress.Remove(registration);
             plugin = (TPlugin)constructor.Invoke(arguments);
         }
 
@@ -65,11 +65,11 @@ internal static class PluginActivator
         var instance = new PluginInstance<TPlugin>
         {
             Plugin = plugin,
-            Owner = registration.Owner is { } owner && built.TryGetValue(owner, out var ownerInstance) ? ownerInstance : null,
+            Owner = registration.Owner is { } owner && builtInstances.TryGetValue(owner, out var ownerInstance) ? ownerInstance : null,
             IsAutonomous = registration.Factory is not null,
         };
 
-        built[registration] = instance;
+        builtInstances[registration] = instance;
 
         return instance;
     }
@@ -79,14 +79,14 @@ internal static class PluginActivator
         PluginRegistration<TPlugin> registration,
         IReadOnlyList<PluginRegistration<TPlugin>> registrations,
         IServiceProvider services,
-        Dictionary<PluginRegistration<TPlugin>, PluginInstance<TPlugin>> built,
-        HashSet<PluginRegistration<TPlugin>> underway)
+        Dictionary<PluginRegistration<TPlugin>, PluginInstance<TPlugin>> builtInstances,
+        HashSet<PluginRegistration<TPlugin>> registrationsInProgress)
         where TPlugin : class, IPlugin
     {
         // A plugin registered beside this one is one instance, shared by everything that takes it.
         if (GetSupplier(parameter.ParameterType, registration, registrations) is { } supplier)
         {
-            return Build(supplier, registrations, services, built, underway).Plugin;
+            return Build(supplier, registrations, services, builtInstances, registrationsInProgress).Plugin;
         }
 
         if (registration.OptionsType == parameter.ParameterType)

@@ -28,10 +28,10 @@ public static class ServiceCollectionExtensions
 
             // The application's build records the packs it references in its own assembly, and embeds the host's files there.
             var logger = loggerFactory.CreateLogger(typeof(LocaleAssemblyLoader));
-            var configured = LocaleAssemblyLoader.GetApplicationAssemblies(Assembly.GetEntryAssembly(), AppDomain.CurrentDomain.GetAssemblies())
+            var configuredOptions = LocaleAssemblyLoader.GetApplicationAssemblies(Assembly.GetEntryAssembly(), AppDomain.CurrentDomain.GetAssemblies())
                 .Aggregate(options, (recorded, application) => recorded.WithRecordedLocales(application, logger));
 
-            return new JsonStringLocaleFactory(configured, loggerFactory);
+            return new JsonStringLocaleFactory(configuredOptions, loggerFactory);
         });
         services.TryAddSingleton(typeof(IStringLocale<>), typeof(JsonStringLocale<>));
 

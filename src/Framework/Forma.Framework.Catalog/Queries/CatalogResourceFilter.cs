@@ -100,16 +100,16 @@ public sealed class CatalogResourceFilter
             return true;
         }
 
-        foreach (var accepted in _contentTypes)
+        foreach (var acceptedContentType in _contentTypes)
         {
             if (contentType is not null
-                && (contentType.StartsWith($"{accepted}/", StringComparison.OrdinalIgnoreCase)
-                    || contentType.Equals(accepted, StringComparison.OrdinalIgnoreCase)))
+                && (contentType.StartsWith($"{acceptedContentType}/", StringComparison.OrdinalIgnoreCase)
+                    || contentType.Equals(acceptedContentType, StringComparison.OrdinalIgnoreCase)))
             {
                 return true;
             }
 
-            if (GetKind(resource) is { } kind && kind.Equals(accepted, StringComparison.OrdinalIgnoreCase))
+            if (GetKind(resource) is { } kind && kind.Equals(acceptedContentType, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }

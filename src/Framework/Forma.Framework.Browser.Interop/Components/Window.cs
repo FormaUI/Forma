@@ -11,10 +11,10 @@ using Microsoft.JSInterop;
 public sealed class Window(IJSEnvironment js)
     : JSInterop(js, "./_content/forma/browser/scripts/components/Window.js")
 {
-    /// <summary>Attaches to the window, shown in the top layer while <paramref name="presented"/>; a <paramref name="modal"/> one keeps Tab inside itself and shows <paramref name="scrim"/> beneath it; <paramref name="owner"/> hears of each press inside it.</summary>
-    public ValueTask<bool> AttachAsync<TOwner>(ElementReference window, bool presented, bool modal, ElementReference? scrim, DotNetObjectReference<TOwner> owner)
+    /// <summary>Attaches to the window, shown in the top layer while <paramref name="isPresented"/>; a <paramref name="isModal"/> one keeps Tab inside itself and shows <paramref name="scrim"/> beneath it; <paramref name="owner"/> hears of each press inside it.</summary>
+    public ValueTask<bool> AttachAsync<TOwner>(ElementReference window, bool isPresented, bool isModal, ElementReference? scrim, DotNetObjectReference<TOwner> owner)
         where TOwner : class
-        => AttachCoreAsync(window, new AttachOptions<TOwner> { Presented = presented, Modal = modal, Scrim = scrim, Owner = owner });
+        => AttachCoreAsync(window, new AttachOptions<TOwner> { IsPresented = isPresented, IsModal = isModal, Scrim = scrim, Owner = owner });
 
     /// <summary>Moves focus into the window.</summary>
     /// <remarks>Focus already on a control inside the window stays there; otherwise it goes to the element last focused inside the window, else its first control, else the window itself.</remarks>
@@ -25,18 +25,18 @@ public sealed class Window(IJSEnvironment js)
     public ValueTask<bool> RaiseAsync()
         => InvokeAsync("raise");
 
-    /// <summary>Shows the window in the top layer or takes it out, to match <paramref name="presented"/>.</summary>
-    public ValueTask<bool> PresentAsync(bool presented)
-        => InvokeAsync("present", presented);
+    /// <summary>Shows the window in the top layer or takes it out, to match <paramref name="isPresented"/>.</summary>
+    public ValueTask<bool> PresentAsync(bool isPresented)
+        => InvokeAsync("present", isPresented);
 
     /// <summary>The options the script attaches with.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
     private sealed record AttachOptions<TOwner>
         where TOwner : class
     {
-        public required bool Presented { get; init; }
+        public required bool IsPresented { get; init; }
 
-        public required bool Modal { get; init; }
+        public required bool IsModal { get; init; }
 
         public required ElementReference? Scrim { get; init; }
 

@@ -11,9 +11,9 @@ internal sealed class ProcessCultureIntegration(ICultureState cultureState) : IC
         ?? throw new InvalidOperationException($"The registered {nameof(ICultureState)}, {cultureState.GetType().Name}, doesn't implement {nameof(ICultureStateIntegration)}.");
 
     /// <inheritdoc />
-    public Task ApplyAsync(AcceptedCulture accepted)
+    public Task ApplyAsync(AcceptedCulture acceptedCulture)
     {
-        var notification = _integration.ApplyAsync(accepted);
+        var notification = _integration.ApplyAsync(acceptedCulture);
 
         CultureInfo.DefaultThreadCurrentCulture = cultureState.Culture;
         CultureInfo.DefaultThreadCurrentUICulture = cultureState.UICulture;

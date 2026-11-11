@@ -71,11 +71,11 @@ public sealed partial record InputRoute
 
         foreach (var character in name)
         {
-            var lowered = char.ToLowerInvariant(character);
+            var loweredCharacter = char.ToLowerInvariant(character);
 
-            if (lowered is (>= 'a' and <= 'z') or (>= '0' and <= '9') or '-')
+            if (loweredCharacter is (>= 'a' and <= 'z') or (>= '0' and <= '9') or '-')
             {
-                slug.Append(lowered);
+                slug.Append(loweredCharacter);
             }
             else if (slug.Length > 0 && slug[^1] != '-')
             {

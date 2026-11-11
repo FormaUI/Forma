@@ -84,59 +84,59 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         TagAttributes.GetAlternateLookup<ReadOnlySpan<char>>();
 
     /// <inheritdoc />
-    public bool Allows(HtmlSubject subject, ReadOnlySpan<char> value, ReadOnlySpan<char> owner, out string? canonical)
+    public bool Allows(HtmlSubject subject, ReadOnlySpan<char> value, ReadOnlySpan<char> owner, out string? canonicalSpelling)
     {
-        canonical = null;
+        canonicalSpelling = null;
 
         return subject switch
         {
-            HtmlSubject.Element => TagLookup.TryGetValue(value, out canonical),
+            HtmlSubject.Element => TagLookup.TryGetValue(value, out canonicalSpelling),
             HtmlSubject.ElementContent => !DiscardedLookup.Contains(value),
-            HtmlSubject.Attribute => AllowsAttribute(value, owner, out canonical),
-            HtmlSubject.StyleProperty => AllowsStyleProperty(value, out canonical),
+            HtmlSubject.Attribute => AllowsAttribute(value, owner, out canonicalSpelling),
+            HtmlSubject.StyleProperty => AllowsStyleProperty(value, out canonicalSpelling),
             HtmlSubject.StyleDeclaration => !IsDenied(value),
             HtmlSubject.Url => IsAllowedUrl(value),
             _ => false,
         };
     }
 
-    private static bool AllowsAttribute(ReadOnlySpan<char> name, ReadOnlySpan<char> owner, out string? canonical)
+    private static bool AllowsAttribute(ReadOnlySpan<char> name, ReadOnlySpan<char> owner, out string? canonicalSpelling)
     {
-        if (GlobalAttributeLookup.TryGetValue(name, out canonical))
+        if (GlobalAttributeLookup.TryGetValue(name, out canonicalSpelling))
         {
             return true;
         }
 
         if (TagAttributeLookup.TryGetValue(owner, out var set)
-            && set.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(name, out canonical))
+            && set.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(name, out canonicalSpelling))
         {
             return true;
         }
 
         // Any data attribute is permitted in the spelling it was written with.
-        canonical = null;
+        canonicalSpelling = null;
 
         return name.StartsWith("data-", StringComparison.OrdinalIgnoreCase);
     }
 
-    private static bool AllowsStyleProperty(ReadOnlySpan<char> property, out string? canonical)
+    private static bool AllowsStyleProperty(ReadOnlySpan<char> property, out string? canonicalSpelling)
     {
-        if (StylePropertyLookup.TryGetValue(property, out canonical))
+        if (StylePropertyLookup.TryGetValue(property, out canonicalSpelling))
         {
             return true;
         }
 
         // Any Forma custom property is permitted in the spelling it was written with.
-        canonical = null;
+        canonicalSpelling = null;
 
         return property.StartsWith("--forma-", StringComparison.OrdinalIgnoreCase);
     }
 
     private static bool IsDenied(ReadOnlySpan<char> declaration)
     {
-        foreach (var denied in StyleDenyList)
+        foreach (var deniedStyle in StyleDenyList)
         {
-            if (declaration.Contains(denied, StringComparison.OrdinalIgnoreCase))
+            if (declaration.Contains(deniedStyle, StringComparison.OrdinalIgnoreCase))
             {
                 return true;
             }
@@ -147,41 +147,41 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
 
     private static bool IsAllowedUrl(ReadOnlySpan<char> url)
     {
-        var trimmed = url.Trim();
+        var trimmedUrl = url.Trim();
 
-        if (trimmed.IsEmpty)
+        if (trimmedUrl.IsEmpty)
         {
             return false;
         }
 
-        if (trimmed[0] == '#')
+        if (trimmedUrl[0] == '#')
         {
-            return trimmed.Length > 1;
+            return trimmedUrl.Length > 1;
         }
 
         // A relative path takes the document's own scheme.
-        if (trimmed[0] == '/'
-            || trimmed.StartsWith("./", StringComparison.Ordinal)
-            || trimmed.StartsWith("../", StringComparison.Ordinal)
-            || IsRelativePath(trimmed))
+        if (trimmedUrl[0] == '/'
+            || trimmedUrl.StartsWith("./", StringComparison.Ordinal)
+            || trimmedUrl.StartsWith("../", StringComparison.Ordinal)
+            || IsRelativePath(trimmedUrl))
         {
             return true;
         }
 
         foreach (var scheme in UrlSchemes)
         {
-            if (trimmed.StartsWith(scheme, StringComparison.OrdinalIgnoreCase))
+            if (trimmedUrl.StartsWith(scheme, StringComparison.OrdinalIgnoreCase))
             {
-                return trimmed.Length > scheme.Length;
+                return trimmedUrl.Length > scheme.Length;
             }
         }
 
         foreach (var prefix in DataUrlPrefixes)
         {
-            if (trimmed.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
+            if (trimmedUrl.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
             {
                 // A data URL's bytes follow its comma.
-                return trimmed.IndexOf(',') > 0;
+                return trimmedUrl.IndexOf(',') > 0;
             }
         }
 

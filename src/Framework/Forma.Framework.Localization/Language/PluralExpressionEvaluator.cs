@@ -22,7 +22,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
     /// <summary>The keyword a plural expression names, whose fields carry the CLDR categories.</summary>
     public static LocaleKeyword Keyword { get; } = new("plural", "zero", "one", "two", "few", "many", "other");
 
-    private static LocaleKeywords Known { get; } = new(Keyword);
+    private static LocaleKeywords KnownKeywords { get; } = new(Keyword);
 
     /// <summary>The format with every plural expression replaced by the field its count selects.</summary>
     public string Evaluate(string format, CultureInfo culture, IReadOnlyList<LocalizedArgument> arguments)
@@ -42,8 +42,8 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         ArgumentNullException.ThrowIfNull(arguments);
 
         // An expression the parser rejected stays in the text as written.
-        var parsed = LocaleExpressionParser.Parse(format, Known);
-        if (parsed.Expressions.Count == 0)
+        var parseResult = LocaleExpressionParser.Parse(format, KnownKeywords);
+        if (parseResult.Expressions.Count == 0)
         {
             return format;
         }
@@ -51,7 +51,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         var builder = new StringBuilder(format.Length);
         var position = 0;
 
-        foreach (var expression in parsed.Expressions)
+        foreach (var expression in parseResult.Expressions)
         {
             builder.Append(format, position, expression.Span.Start - position);
 
@@ -82,10 +82,10 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
 
         var count = ToDecimal(name, text, Find(name, arguments));
         var operands = PluralOperands.From(count);
-        var wanted = _rules.Select(localeCulture.Name, operands) ?? PluralCategory.Other;
+        var wantedCategory = _rules.Select(localeCulture.Name, operands) ?? PluralCategory.Other;
 
-        var selected = Select(text, expression.Fields, wanted) ?? Select(text, expression.Fields, PluralCategory.Other);
-        if (selected is not { } field)
+        var selectedField = Select(text, expression.Fields, wantedCategory) ?? Select(text, expression.Fields, PluralCategory.Other);
+        if (selectedField is not { } field)
         {
             return;
         }
@@ -94,29 +94,29 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         var display = Format(count, operands.FractionDigits, displayCulture, number);
 
         // A '#' stands for the count formatted in the culture it is shown in, and a doubled '#' for a literal one.
-        var rest = field.Slice(text);
+        var remainingText = field.Slice(text);
         while (true)
         {
-            var hash = rest.IndexOf('#');
+            var hash = remainingText.IndexOf('#');
             if (hash < 0)
             {
-                builder.Append(rest);
+                builder.Append(remainingText);
 
                 return;
             }
 
-            builder.Append(rest[..hash]);
+            builder.Append(remainingText[..hash]);
 
-            if (hash + 1 < rest.Length && rest[hash + 1] == '#')
+            if (hash + 1 < remainingText.Length && remainingText[hash + 1] == '#')
             {
                 builder.Append('#');
-                rest = rest[(hash + 2)..];
+                remainingText = remainingText[(hash + 2)..];
 
                 continue;
             }
 
             builder.Append(display);
-            rest = rest[(hash + 1)..];
+            remainingText = remainingText[(hash + 1)..];
         }
     }
 
@@ -166,8 +166,8 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         _ = fractionDigits.TryFormat(specifier[1..], out var specifierLength, provider: CultureInfo.InvariantCulture);
         specifier = specifier[..(1 + specifierLength)];
 
-        return count.TryFormat(destination, out var written, specifier, culture)
-            ? destination[..written]
+        return count.TryFormat(destination, out var charsWritten, specifier, culture)
+            ? destination[..charsWritten]
             : count.ToString(specifier.ToString(), culture);
     }
 

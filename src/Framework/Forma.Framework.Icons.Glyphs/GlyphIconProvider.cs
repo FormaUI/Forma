@@ -70,9 +70,9 @@ public sealed class GlyphIconProvider : IIconProvider
         {
             if (Glyphs.Value.TryGetValue((icon.Glyph, grid), out var variants)
                 && (uint)index < (uint)variants.Length
-                && variants[index] is { } found)
+                && variants[index] is { } foundArtwork)
             {
-                artwork = found;
+                artwork = foundArtwork;
                 return true;
             }
         }
@@ -93,13 +93,13 @@ public sealed class GlyphIconProvider : IIconProvider
     {
         using var stream = OpenResource(GlyphResourceName, "scripts/Build-GlyphPack.ps1");
 
-        var raw = JsonSerializer.Deserialize(stream, IconSetJsonContext.Default.RawGlyphSet)
+        var rawGlyphSet = JsonSerializer.Deserialize(stream, IconSetJsonContext.Default.RawGlyphSet)
             ?? throw new InvalidOperationException($"The resource '{GlyphResourceName}' could not be read.");
 
         var variantCount = Enum.GetValues<GlyphVariant>().Length;
-        var set = new Dictionary<(Glyph, int), IconArtwork[]>(raw.Glyphs.Count);
+        var set = new Dictionary<(Glyph, int), IconArtwork[]>(rawGlyphSet.Glyphs.Count);
 
-        foreach (var (name, byGrid) in raw.Glyphs)
+        foreach (var (name, byGrid) in rawGlyphSet.Glyphs)
         {
             if (!Enum.TryParse<Glyph>(name, out var glyph) || glyph is Glyph.None)
             {
@@ -137,12 +137,12 @@ public sealed class GlyphIconProvider : IIconProvider
     {
         using var stream = OpenResource(BrandResourceName, "scripts/Build-BrandPack.ps1");
 
-        var raw = JsonSerializer.Deserialize(stream, IconSetJsonContext.Default.RawBrandSet)
+        var rawBrandSet = JsonSerializer.Deserialize(stream, IconSetJsonContext.Default.RawBrandSet)
             ?? throw new InvalidOperationException($"The resource '{BrandResourceName}' could not be read.");
 
-        var set = new Dictionary<Brand, IconArtwork>(raw.Brands.Count);
+        var set = new Dictionary<Brand, IconArtwork>(rawBrandSet.Brands.Count);
 
-        foreach (var (name, mark) in raw.Brands)
+        foreach (var (name, mark) in rawBrandSet.Brands)
         {
             if (Enum.TryParse<Brand>(name, out var brand) && brand is not Brand.None)
             {

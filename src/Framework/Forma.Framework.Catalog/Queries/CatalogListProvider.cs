@@ -29,11 +29,11 @@ public sealed class CatalogListProvider : ICatalogProvider
         _view.SortDirection = query.Direction;
         _view.Grouping = query.Grouping;
 
-        var matching = _view.MatchingItems;
+        var matchingItems = _view.MatchingItems;
 
-        return ValueTask.FromResult(new CatalogPage([.. matching.Skip(query.Skip).Take(query.Take)], matching.Count)
+        return ValueTask.FromResult(new CatalogPage([.. matchingItems.Skip(query.Skip).Take(query.Take)], matchingItems.Count)
         {
-            ListedCount = matching.Count,
+            ListedCount = matchingItems.Count,
             GroupSizes = query.IncludesGroupSizes ? _view.GroupSizes : null
         });
     }

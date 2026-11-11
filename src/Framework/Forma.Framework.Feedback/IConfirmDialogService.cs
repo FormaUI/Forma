@@ -7,7 +7,7 @@ using Forma.Framework.Events;
 public interface IConfirmDialogService : INotifyStateChanged
 {
     /// <summary>The confirmation currently awaiting a response.</summary>
-    ConfirmDialogRequest? Current { get; }
+    ConfirmDialogRequest? CurrentRequest { get; }
 
     /// <summary>Shows a confirmation dialog and resolves to the user's choice.</summary>
     Task<bool> ConfirmAsync(

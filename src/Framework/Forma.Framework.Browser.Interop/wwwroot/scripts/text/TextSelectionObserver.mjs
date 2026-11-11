@@ -9,7 +9,7 @@ export class TextSelectionObserver {
     #publish;
     #abort = new AbortController();
     /** @type {TextSelection | null} */
-    #last = null;
+    #lastSelection = null;
 
     /**
      * @param {HTMLInputElement | HTMLTextAreaElement} field The field observed.
@@ -36,14 +36,14 @@ export class TextSelectionObserver {
 
     /** Reads the range the selection spans now. */
     read() {
-        this.#last = this.#measure();
+        this.#lastSelection = this.#measure();
 
-        return this.#last;
+        return this.#lastSelection;
     }
 
     /** Publishes the range again. */
     refresh() {
-        this.#last = null;
+        this.#lastSelection = null;
         this.#take();
     }
 
@@ -59,11 +59,11 @@ export class TextSelectionObserver {
     #take() {
         const state = this.#measure();
 
-        if (this.#abort.signal.aborted || (this.#last?.start === state.start && this.#last?.end === state.end)) {
+        if (this.#abort.signal.aborted || (this.#lastSelection?.start === state.start && this.#lastSelection?.end === state.end)) {
             return;
         }
 
-        this.#last = state;
+        this.#lastSelection = state;
         this.#publish(state);
     }
 }

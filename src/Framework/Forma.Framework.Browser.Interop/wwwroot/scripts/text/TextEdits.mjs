@@ -27,7 +27,7 @@ export class TextEdits {
     /** @type {CharacterCount | null} */
     #count = null;
     /** The sends the owner has yet to take. */
-    #sending = new Set();
+    #pendingSends = new Set();
     #hold;
     #controller = new AbortController();
     /** The text the field held as the edits were released. */
@@ -89,10 +89,10 @@ export class TextEdits {
      * @param {string} after
      */
     static diff(before, after) {
-        const shortest = Math.min(before.length, after.length);
+        const shortestLength = Math.min(before.length, after.length);
         let start = 0;
 
-        while (start < shortest && before.charCodeAt(start) === after.charCodeAt(start)) {
+        while (start < shortestLength && before.charCodeAt(start) === after.charCodeAt(start)) {
             start++;
         }
 
@@ -102,7 +102,7 @@ export class TextEdits {
 
         let end = 0;
 
-        while (end < shortest - start && before.charCodeAt(before.length - 1 - end) === after.charCodeAt(after.length - 1 - end)) {
+        while (end < shortestLength - start && before.charCodeAt(before.length - 1 - end) === after.charCodeAt(after.length - 1 - end)) {
             end++;
         }
 
@@ -110,7 +110,7 @@ export class TextEdits {
             end--;
         }
 
-        return { start, removed: before.length - start - end, inserted: after.slice(start, after.length - end) };
+        return { startIndex: start, removedLength: before.length - start - end, insertedText: after.slice(start, after.length - end) };
     }
 
     /** The field the edits are of. */
@@ -120,12 +120,12 @@ export class TextEdits {
 
     /** Whether an edit is still on its way to the owner. */
     get isDelivering() {
-        return this.#sending.size > 0;
+        return this.#pendingSends.size > 0;
     }
 
-    /** Settles once every edit sent so far has reached the owner, or failed on its way. */
-    get delivered() {
-        return Promise.allSettled([...this.#sending]);
+    /** Settles once every edit on its way when this is read has reached the owner, or failed on its way. */
+    get deliveryCompletion() {
+        return Promise.allSettled([...this.#pendingSends]);
     }
 
     /**
@@ -178,18 +178,18 @@ export class TextEdits {
             return;
         }
 
-        const { start, removed, inserted } = TextEdits.diff(this.#text, text);
+        const { startIndex, removedLength, insertedText } = TextEdits.diff(this.#text, text);
         this.#text = text;
         this.#isCommitted = isCommit;
 
-        this.#deliver(this.#report('EditAsync', ++this.#revision, start, removed, Transfer.of(inserted), isCommit));
+        this.#deliver(this.#report('EditAsync', ++this.#revision, startIndex, removedLength, Transfer.of(insertedText), isCommit));
     }
 
     // A send is on its way until the owner has taken it or it failed, which is reported.
-    #deliver(sending) {
-        const delivery = sending.catch(error => this.#fail(error));
-        this.#sending.add(delivery);
-        delivery.finally(() => this.#sending.delete(delivery));
+    #deliver(send) {
+        const delivery = send.catch(error => this.#fail(error));
+        this.#pendingSends.add(delivery);
+        delivery.finally(() => this.#pendingSends.delete(delivery));
     }
 
     #fail(error) {

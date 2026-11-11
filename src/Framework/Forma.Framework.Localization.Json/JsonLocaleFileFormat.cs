@@ -52,7 +52,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
     {
         var sections = new List<KeyValuePair<string, LocaleSection>>();
         var entries = new List<KeyValuePair<string, string?>>();
-        var shared = new List<KeyValuePair<string, string?>>();
+        var sharedEntries = new List<KeyValuePair<string, string?>>();
 
         foreach (var property in node.EnumerateObject())
         {
@@ -74,7 +74,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
                     throw new LocaleFileException($"'{fileName}' nests '{(section.Sections.Count > 0 ? section.Sections[0].Key : LocalizationSchema.SharedKey)}' inside '{property.Name}', which holds translations alone.");
                 }
 
-                shared.AddRange(section.Entries);
+                sharedEntries.AddRange(section.Entries);
                 continue;
             }
 
@@ -96,7 +96,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
             }
         }
 
-        return new LocaleSection(sections, entries, shared);
+        return new LocaleSection(sections, entries, sharedEntries);
     }
 
     private static string GetKey(string name, string fileName)

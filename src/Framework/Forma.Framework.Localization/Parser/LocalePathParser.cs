@@ -91,33 +91,33 @@ public static class LocalePathParser
     // A path names each token once, names its culture and extension, and spells its whole anchor or none of it.
     private static void CheckTokens(string text, List<LocalePathPart> parts, List<LocaleDiagnostic> diagnostics)
     {
-        var seen = new HashSet<LocalePathToken>();
+        var seenTokens = new HashSet<LocalePathToken>();
         foreach (var part in parts)
         {
-            if (part.Token is { } token && !seen.Add(token))
+            if (part.Token is { } token && !seenTokens.Add(token))
             {
                 diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.DuplicatePathToken, part.Span));
             }
         }
 
-        var whole = new LocaleTextSpan(0, text.Length);
+        var wholeSpan = new LocaleTextSpan(0, text.Length);
 
-        if (!seen.Contains(LocalePathToken.Culture) || !seen.Contains(LocalePathToken.Extension))
+        if (!seenTokens.Contains(LocalePathToken.Culture) || !seenTokens.Contains(LocalePathToken.Extension))
         {
-            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingPathToken, whole));
+            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingPathToken, wholeSpan));
         }
 
-        var hasAnchorName = seen.Contains(LocalePathToken.AnchorName);
-        var hasParentName = seen.Contains(LocalePathToken.ParentName);
-        var hasCurrentName = seen.Contains(LocalePathToken.CurrentName);
+        var hasAnchorName = seenTokens.Contains(LocalePathToken.AnchorName);
+        var hasParentName = seenTokens.Contains(LocalePathToken.ParentName);
+        var hasCurrentName = seenTokens.Contains(LocalePathToken.CurrentName);
 
         if (hasAnchorName && hasParentName)
         {
-            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.ConflictingPathAnchor, whole));
+            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.ConflictingPathAnchor, wholeSpan));
         }
         else if (!hasAnchorName && hasParentName != hasCurrentName)
         {
-            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.IncompletePathAnchor, whole));
+            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.IncompletePathAnchor, wholeSpan));
         }
     }
 }

@@ -10,7 +10,7 @@ const routeCookieMaxAge = 31536000;
 let initialization = null;
 
 // The pair accepted last, with its number in the document's sequence: the marker's pair, number zero, until a switch.
-let accepted = null;
+let acceptedPair = null;
 
 // What the server last served to the document's attributes.
 let servedPair = readPair();
@@ -61,7 +61,7 @@ export function initialize(head = document.head) {
     }
 
     initialization = { documentKey: crypto.randomUUID(), policy: readPolicy(head) };
-    accepted = { ...marker, direction: servedPair.direction, number: 0 };
+    acceptedPair = { ...marker, direction: servedPair.direction, number: 0 };
 
     // A traversal is told by the document's own history, since the location's change reports one as any other; a landing
     // is the traversal's only where it lands at the address the traversal arrived at, which a refused one never leaves.
@@ -90,7 +90,7 @@ export async function register(identity, receiver, runtime = 'server', start = n
     }
 
     registration.receiver = receiver;
-    await registration.deliver(accepted);
+    await registration.deliver(acceptedPair);
 
     return registration;
 }
@@ -127,8 +127,8 @@ export function track(blazor) {
             land(readMarker(document.head));
         }
 
-        if (hold === null && accepted !== null) {
-            writePair(accepted);
+        if (hold === null && acceptedPair !== null) {
+            writePair(acceptedPair);
         }
     });
 
@@ -176,7 +176,7 @@ class CultureCoordinatorRegistration {
             return Promise.reject(new Error(`No configured culture route represents the culture ${culture} with the UI culture ${uiCulture}, so the switch can't be made by address.`));
         }
 
-        const pending = queue.then(async () => {
+        const pendingWork = queue.then(async () => {
             await hold?.promise;
 
             if (!this.#isLive) {
@@ -195,9 +195,9 @@ class CultureCoordinatorRegistration {
 
         // The next request waits for this one to settle, whatever its outcome, which reaches its own requester; a switch by
         // address settles once its navigation is under way, so a newer one supersedes it rather than waiting for its landing.
-        queue = pending.then(() => {}, () => {});
+        queue = pendingWork.then(() => {}, () => {});
 
-        return pending.then(({ landing }) => landing);
+        return pendingWork.then(({ landing }) => landing);
     }
 
     /**
@@ -247,12 +247,12 @@ class CultureCoordinatorRegistration {
         hasLanded = true;
         unmarkHistoryEntry();
 
-        if (replacementIndex >= 0 || isSamePair(accepted, pair)) {
+        if (replacementIndex >= 0 || isSamePair(acceptedPair, pair)) {
             return;
         }
 
         if (isAdopting) {
-            readdress(policy, accepted);
+            readdress(policy, acceptedPair);
 
             return;
         }
@@ -269,7 +269,7 @@ class CultureCoordinatorRegistration {
         const policy = getInitialization().policy;
         const pair = { culture, uiCulture, direction };
 
-        if (!isSamePair(accepted, pair)) {
+        if (!isSamePair(acceptedPair, pair)) {
             accept(pair, [this]);
         }
 
@@ -350,7 +350,7 @@ function createMeta(name, attributes) {
 // A server-rendered landing takes its pair from its own response's marker; a response without a valid marker leaves the
 // accepted pair.
 function land(marker) {
-    if (marker !== null && accepted !== null) {
+    if (marker !== null && acceptedPair !== null) {
         acceptLanding({ ...marker, direction: servedPair.direction }).then(() => {}, () => {});
     } else {
         cancelPendingSwitch();
@@ -371,23 +371,23 @@ async function acceptLanding(pair, reporter = null) {
     }
 
     const isEarlier = earlierIndex >= 0 && pendingSwitch !== null && !isSamePair(pair, pendingSwitch.route);
-    const waiting = isEarlier ? null : takePendingSwitch();
+    const waitingSwitch = isEarlier ? null : takePendingSwitch();
 
     // A navigation the waiting switch made lands after every earlier one, so none of theirs can land after it.
-    if (waiting !== null && isSamePair(pair, waiting.route)) {
+    if (waitingSwitch !== null && isSamePair(pair, waitingSwitch.route)) {
         earlierPairs = [];
     }
 
-    const awaited = [reporter, waiting?.requester].filter(registration => registration != null);
-    const isNew = pair.culture !== accepted.culture || pair.uiCulture !== accepted.uiCulture;
-    const current = isNew ? accept(pair, awaited) : accepted;
-    const deliveries = isNew ? new Map([...new Set(awaited)].map(registration => [registration, registration.deliver(current)])) : new Map();
+    const awaitedRegistrations = [reporter, waitingSwitch?.requester].filter(registration => registration != null);
+    const isNew = pair.culture !== acceptedPair.culture || pair.uiCulture !== acceptedPair.uiCulture;
+    const currentPair = isNew ? accept(pair, awaitedRegistrations) : acceptedPair;
+    const deliveries = isNew ? new Map([...new Set(awaitedRegistrations)].map(registration => [registration, registration.deliver(currentPair)])) : new Map();
 
-    if (waiting !== null) {
-        if (isSamePair(pair, waiting.route)) {
-            deliveries.get(waiting.requester)?.then(() => waiting.resolve('accepted'), waiting.reject) ?? waiting.resolve('accepted');
+    if (waitingSwitch !== null) {
+        if (isSamePair(pair, waitingSwitch.route)) {
+            deliveries.get(waitingSwitch.requester)?.then(() => waitingSwitch.resolve('accepted'), waitingSwitch.reject) ?? waitingSwitch.resolve('accepted');
         } else {
-            waiting.resolve('canceled');
+            waitingSwitch.resolve('canceled');
         }
     }
 
@@ -398,20 +398,20 @@ async function acceptLanding(pair, reporter = null) {
 
 // The accepted pair is delivered to every registration but those that await their own; a delivery that fails is
 // recovered as its runtime registers again, which adopts the accepted pair.
-function accept(pair, excluded = []) {
-    accepted = { ...pair, number: accepted.number + 1 };
+function accept(pair, excludedRegistrations = []) {
+    acceptedPair = { ...pair, number: acceptedPair.number + 1 };
 
     if (hold === null) {
-        writePair(accepted);
+        writePair(acceptedPair);
     }
 
     for (const registration of registrations.values()) {
-        if (!excluded.includes(registration)) {
-            registration.deliver(accepted).then(() => {}, () => {});
+        if (!excludedRegistrations.includes(registration)) {
+            registration.deliver(acceptedPair).then(() => {}, () => {});
         }
     }
 
-    return accepted;
+    return acceptedPair;
 }
 
 // A switch by address navigates to the current page's address in its route: a full load leaves the document, and an
@@ -420,7 +420,7 @@ function accept(pair, excluded = []) {
 function navigate(policy, route, requester) {
     const destination = buildDestination(policy, route, location.href);
 
-    if (isSamePair(accepted, route) && isSameAddress(destination, location.href)) {
+    if (isSamePair(acceptedPair, route) && isSameAddress(destination, location.href)) {
         return Promise.resolve('accepted');
     }
 
@@ -458,14 +458,14 @@ function timeOut(attempt) {
 
 // The switch waiting for its landing, no longer waiting.
 function takePendingSwitch() {
-    const waiting = pendingSwitch;
+    const waitingSwitch = pendingSwitch;
     pendingSwitch = null;
 
-    if (waiting !== null) {
-        clearTimeout(waiting.timeout);
+    if (waitingSwitch !== null) {
+        clearTimeout(waitingSwitch.timeout);
     }
 
-    return waiting;
+    return waitingSwitch;
 }
 
 // A following document moves its page into the route carrying `pair`, keeping its page, query and fragment, in place of the
@@ -507,14 +507,14 @@ function cancelPendingSwitch() {
 }
 
 function endHold() {
-    const ended = hold;
+    const endedHold = hold;
     hold = null;
 
-    if (accepted !== null) {
-        writePair(accepted);
+    if (acceptedPair !== null) {
+        writePair(acceptedPair);
     }
 
-    ended?.end();
+    endedHold?.end();
 }
 
 // Under the cookie policy, the cookie is written in request localization's serialization and read back before the
@@ -582,16 +582,16 @@ export function buildDestination(policy, route, href) {
     const url = new URL(href);
     const rootPath = policy.root;
     const rootAddress = rootPath.slice(0, -1);
-    let relative = '';
+    let relativePath = '';
 
     if (url.pathname.toLowerCase().startsWith(rootPath.toLowerCase())) {
-        relative = url.pathname.slice(rootPath.length);
+        relativePath = url.pathname.slice(rootPath.length);
     } else if (url.pathname.toLowerCase() !== rootAddress.toLowerCase()) {
         url.search = '';
     }
 
     // The culture segment the path opens with is replaced; a path without one is kept as written.
-    let path = `/${relative}`;
+    let path = `/${relativePath}`;
     const segments = path.split('/').filter(segment => segment !== '');
 
     if (segments.length > 0 && findRouteByToken(policy, decodeSegment(segments[0]), false) !== null) {
@@ -600,9 +600,9 @@ export function buildDestination(policy, route, href) {
 
     const token = escapeData(route.token);
     const isUnprefixed = route.token === policy.defaultToken && !policy.prefixesDefault;
-    const prefixed = isUnprefixed ? path : path === '/' ? `/${token}` : `/${token}${path}`;
+    const prefixedPath = isUnprefixed ? path : path === '/' ? `/${token}` : `/${token}${path}`;
 
-    return `${url.origin}${rootPath}${prefixed.replace(/^\/+/, '')}${url.search}`;
+    return `${url.origin}${rootPath}${prefixedPath.replace(/^\/+/, '')}${url.search}`;
 }
 
 // Escapes as .NET's Uri.EscapeDataString does, every character but the unreserved ones.

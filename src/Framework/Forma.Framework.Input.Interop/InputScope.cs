@@ -15,19 +15,19 @@ public sealed class InputScope(IJSObjectReference handle, IJSEnvironment environ
     /// <summary>Holds the scope active, reporting whether the call ran.</summary>
     public async ValueTask<bool> ActivateAsync()
     {
-        var ran = await InvokeAsync("activate");
-        IsActive = IsActive || ran;
+        var hasRun = await InvokeAsync("activate");
+        IsActive = IsActive || hasRun;
 
-        return ran;
+        return hasRun;
     }
 
     /// <summary>Releases the hold, reporting whether the call ran.</summary>
     public async ValueTask<bool> ReleaseAsync()
     {
-        var ran = await InvokeAsync("release");
-        IsActive = IsActive && !ran;
+        var hasRun = await InvokeAsync("release");
+        IsActive = IsActive && !hasRun;
 
-        return ran;
+        return hasRun;
     }
 
     /// <summary>Replaces what the scope contributes, reporting whether the call ran.</summary>

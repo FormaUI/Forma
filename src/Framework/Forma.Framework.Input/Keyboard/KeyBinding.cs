@@ -32,11 +32,11 @@ public sealed record KeyBinding : InputBinding
     public ModifierRequirement Modifiers { get; init; } = ModifierRequirement.None;
 
     /// <summary>Whether the binding matches the key's release.</summary>
-    public bool Released { get; init; }
+    public bool MatchesRelease { get; init; }
 
     /// <inheritdoc />
     public override string Type
-        => Released ? "keyup" : "keydown";
+        => MatchesRelease ? "keyup" : "keydown";
 
     /// <summary>A key pressed with the platform's primary shortcut modifier held.</summary>
     public static KeyBinding Shortcut(string key, bool shift = false)

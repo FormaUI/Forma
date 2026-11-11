@@ -188,10 +188,10 @@ public abstract class LocaleSource(ILocaleFileFormat format)
             }
         }
 
-        if (configFiles is [var first, var second, ..])
+        if (configFiles is [var firstConfigFile, var secondConfigFile, ..])
         {
             throw new LocaleConfigException(
-                $"'{GetDisplayName(first.Name)}' and '{GetDisplayName(second.Name)}' both configure '{assemblyName}'; an assembly has one '{LocaleConfig.FileName}', at its root.");
+                $"'{GetDisplayName(firstConfigFile.Name)}' and '{GetDisplayName(secondConfigFile.Name)}' both configure '{assemblyName}'; an assembly has one '{LocaleConfig.FileName}', at its root.");
         }
 
         return configFiles is [var configFile] ? (configFile.Folder, ReadConfig(configFile.Name)) : null;
@@ -271,9 +271,9 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     // A rootDir is written with '/' and sits beneath the config file's own folder.
     private string JoinFolders(string folder, string rootDir)
     {
-        var written = rootDir.Replace(Path.AltDirectorySeparatorChar, FolderSeparator);
+        var writtenRoot = rootDir.Replace(Path.AltDirectorySeparatorChar, FolderSeparator);
 
-        return folder.Length == 0 ? written : $"{folder}{FolderSeparator}{written}";
+        return folder.Length == 0 ? writtenRoot : $"{folder}{FolderSeparator}{writtenRoot}";
     }
 
     // Each file is placed at every anchor the assembly's paths read it for, in the order of the paths.

@@ -35,21 +35,21 @@ public sealed class CultureRoutingMiddleware
     {
         ArgumentNullException.ThrowIfNull(context);
 
-        var requested = context.Request.Path.Value ?? string.Empty;
+        var requestedPath = context.Request.Path.Value ?? string.Empty;
 
-        if (_router.HasConsecutiveCultures(requested))
+        if (_router.HasConsecutiveCultures(requestedPath))
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
 
             return Task.CompletedTask;
         }
 
-        var match = _router.Match(requested);
+        var match = _router.Match(requestedPath);
         var isDocument = IsDocument(match.Path);
 
         // A framework endpoint such as /_blazor, which its interactive circuit inherits a culture from, takes the culture its
         // address names, and the stored culture only where its address names none.
-        var namesCulture = !string.Equals(match.Path, requested, StringComparison.Ordinal);
+        var namesCulture = !string.Equals(match.Path, requestedPath, StringComparison.Ordinal);
         var route = isDocument || namesCulture ? match.Route : GetStoredRoute(context) ?? match.Route;
 
         ApplyCulture(context, route);
@@ -125,16 +125,16 @@ public sealed class CultureRoutingMiddleware
 
     private CultureRoute? GetStoredRoute(HttpContext context)
     {
-        var stored = context.Request.Cookies[CultureRouter.GetCookieName(context.Request.PathBase.Value ?? string.Empty)];
+        var storedToken = context.Request.Cookies[CultureRouter.GetCookieName(context.Request.PathBase.Value ?? string.Empty)];
 
-        return string.IsNullOrEmpty(stored) ? null : _router.Routes.FirstOrDefault(route => string.Equals(route.Token, stored, StringComparison.Ordinal));
+        return string.IsNullOrEmpty(storedToken) ? null : _router.Routes.FirstOrDefault(route => string.Equals(route.Token, storedToken, StringComparison.Ordinal));
     }
 
     private static void WriteCultureCookie(HttpContext context, CultureRoute route)
     {
         var name = CultureRouter.GetCookieName(context.Request.PathBase.Value ?? string.Empty);
 
-        if (context.Request.Cookies.TryGetValue(name, out var stored) && string.Equals(stored, route.Token, StringComparison.Ordinal))
+        if (context.Request.Cookies.TryGetValue(name, out var storedToken) && string.Equals(storedToken, route.Token, StringComparison.Ordinal))
         {
             return;
         }

@@ -70,11 +70,11 @@ internal sealed class ApplicationCultureCoordinator : ICultureStateIntegration
 
     /// <inheritdoc />
     /// <remarks>The pair enters the application's sequence as a switch does.</remarks>
-    public Task ApplyAsync(AcceptedCulture accepted)
+    public Task ApplyAsync(AcceptedCulture acceptedCulture)
     {
-        ArgumentNullException.ThrowIfNull(accepted);
+        ArgumentNullException.ThrowIfNull(acceptedCulture);
 
-        return SwitchAsync(accepted.Culture, accepted.UICulture);
+        return SwitchAsync(acceptedCulture.Culture, acceptedCulture.UICulture);
     }
 
     /// <summary>Accepts the pair of <paramref name="culture"/> and <paramref name="uiCulture"/> as the application's next switch.</summary>
@@ -141,11 +141,11 @@ internal sealed class ApplicationCultureCoordinator : ICultureStateIntegration
     private sealed class DocumentPairIntegration(ApplicationCultureCoordinator coordinator) : ICultureStateIntegration
     {
         /// <inheritdoc />
-        public Task ApplyAsync(AcceptedCulture accepted)
+        public Task ApplyAsync(AcceptedCulture acceptedCulture)
         {
-            ArgumentNullException.ThrowIfNull(accepted);
+            ArgumentNullException.ThrowIfNull(acceptedCulture);
 
-            return accepted.Version.Number == 0 ? Task.CompletedTask : coordinator.AcceptDocumentPairAsync(accepted.Culture, accepted.UICulture);
+            return acceptedCulture.Version.Number == 0 ? Task.CompletedTask : coordinator.AcceptDocumentPairAsync(acceptedCulture.Culture, acceptedCulture.UICulture);
         }
     }
 }

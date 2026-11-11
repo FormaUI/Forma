@@ -59,27 +59,27 @@ afterEach(() => {
 describe('TextEdits', () => {
     describe('diff', () => {
         it('takes what two texts share at either end out of the edit', () => {
-            expect(TextEdits.diff('Hello world', 'Hello brave world')).toEqual({ start: 6, removed: 0, inserted: 'brave ' });
+            expect(TextEdits.diff('Hello world', 'Hello brave world')).toEqual({ startIndex: 6, removedLength: 0, insertedText: 'brave ' });
         });
 
         it('replaces a run with what took its place', () => {
-            expect(TextEdits.diff('Ada Byron', 'Ada Lovelace')).toEqual({ start: 4, removed: 5, inserted: 'Lovelace' });
+            expect(TextEdits.diff('Ada Byron', 'Ada Lovelace')).toEqual({ startIndex: 4, removedLength: 5, insertedText: 'Lovelace' });
         });
 
         it('takes a whole text from nothing', () => {
-            expect(TextEdits.diff('', 'Notes')).toEqual({ start: 0, removed: 0, inserted: 'Notes' });
+            expect(TextEdits.diff('', 'Notes')).toEqual({ startIndex: 0, removedLength: 0, insertedText: 'Notes' });
         });
 
         it('never parts a surrogate pair at the edit\'s start', () => {
-            expect(TextEdits.diff(`a${grinning}`, `a${grinningWithOpenMouth}`)).toEqual({ start: 1, removed: 2, inserted: grinningWithOpenMouth });
+            expect(TextEdits.diff(`a${grinning}`, `a${grinningWithOpenMouth}`)).toEqual({ startIndex: 1, removedLength: 2, insertedText: grinningWithOpenMouth });
         });
 
         it('never parts a surrogate pair at the edit\'s end', () => {
-            expect(TextEdits.diff(`x${grinning}y`, `x${sharingItsLow}y`)).toEqual({ start: 1, removed: 2, inserted: sharingItsLow });
+            expect(TextEdits.diff(`x${grinning}y`, `x${sharingItsLow}y`)).toEqual({ startIndex: 1, removedLength: 2, insertedText: sharingItsLow });
         });
 
         it('makes no edit of a text that stayed', () => {
-            expect(TextEdits.diff('Same', 'Same')).toEqual({ start: 4, removed: 0, inserted: '' });
+            expect(TextEdits.diff('Same', 'Same')).toEqual({ startIndex: 4, removedLength: 0, insertedText: '' });
         });
     });
 

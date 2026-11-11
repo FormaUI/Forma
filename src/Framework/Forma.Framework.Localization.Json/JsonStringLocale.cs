@@ -62,7 +62,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
     /// <inheritdoc />
     public IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures)
     {
-        var seen = new HashSet<string>(StringComparer.Ordinal);
+        var seenKeys = new HashSet<string>(StringComparer.Ordinal);
 
         for (var culture = UICulture; culture.Name.Length != 0; culture = culture.Parent)
         {
@@ -71,7 +71,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
             {
                 foreach (var entry in file)
                 {
-                    if (seen.Add(entry.Key))
+                    if (seenKeys.Add(entry.Key))
                     {
                         yield return new LocalizedText(entry.Key, entry.Value.Format, ResourceNotFound: false, location.BaseName);
                     }
@@ -98,38 +98,38 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
     private LocalizedText Render(string name, LocalizedArgument[] arguments)
     {
         var key = LocalizationSchema.Unescape(name);
-        var found = TryFind(key, out var entry);
-        RequireFound(name, found);
+        var isFound = TryFind(key, out var entry);
+        RequireFound(name, isFound);
 
-        var format = Evaluate(found ? entry.Format : key, IsLocalized(found, entry), arguments);
+        var format = Evaluate(isFound ? entry.Format : key, IsLocalized(isFound, entry), arguments);
 
-        return new LocalizedText(name, LocalizedFormat.Render(format, arguments, Culture, UICulture), !found, location.BaseName);
+        return new LocalizedText(name, LocalizedFormat.Render(format, arguments, Culture, UICulture), !isFound, location.BaseName);
     }
 
     private LocalizedPattern Resolve(string name, LocalizedArgument[] arguments)
     {
         var key = LocalizationSchema.Unescape(name);
-        var found = TryFind(key, out var entry);
-        RequireFound(name, found);
+        var isFound = TryFind(key, out var entry);
+        RequireFound(name, isFound);
 
-        return new LocalizedPattern(name, Evaluate(found ? entry.Format : key, IsLocalized(found, entry), arguments), arguments, !found, location.BaseName);
+        return new LocalizedPattern(name, Evaluate(isFound ? entry.Format : key, IsLocalized(isFound, entry), arguments), arguments, !isFound, location.BaseName);
     }
 
     // A format that is the key itself is source-language text.
-    private static bool IsLocalized(bool found, JsonResourceEntry entry)
-        => found && !entry.IsSourceText;
+    private static bool IsLocalized(bool isFound, JsonResourceEntry entry)
+        => isFound && !entry.IsSourceText;
 
     // Plural rules follow the language the text is written in.
-    private string Evaluate(string format, bool localized, IReadOnlyList<LocalizedArgument> arguments)
+    private string Evaluate(string format, bool isLocalized, IReadOnlyList<LocalizedArgument> arguments)
         => context.PluralEvaluator.Evaluate(
             format,
-            localized ? UICulture : context.SourceCulture,
+            isLocalized ? UICulture : context.SourceCulture,
             UICulture,
             arguments);
 
-    private void RequireFound(string name, bool found)
+    private void RequireFound(string name, bool isFound)
     {
-        if (!found && context.Options.RequireMatchingLocalization)
+        if (!isFound && context.Options.RequireMatchingLocalization)
         {
             throw new LocalizationNotFoundException(
                 $"'{location.BaseName}' carries no translation of '{name}' for '{UICulture.Name}'.");

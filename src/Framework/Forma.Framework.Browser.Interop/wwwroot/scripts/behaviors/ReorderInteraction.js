@@ -55,7 +55,7 @@ class ReorderInteraction {
     #sourceIndex = -1;
 
     /** The item currently marked as the drop target. */
-    #indicated = null;
+    #indicatedItem = null;
 
     constructor(list, {
         owner,
@@ -137,9 +137,9 @@ class ReorderInteraction {
 
     /** Marks the target's item on the side the item would land, unmarking whatever was marked before. */
     #indicate(target) {
-        this.#indicated?.classList.remove(this.#beforeClass, this.#afterClass);
-        this.#indicated = target?.item ?? null;
-        this.#indicated?.classList.add(target.insertAfter ? this.#afterClass : this.#beforeClass);
+        this.#indicatedItem?.classList.remove(this.#beforeClass, this.#afterClass);
+        this.#indicatedItem = target?.item ?? null;
+        this.#indicatedItem?.classList.add(target.insertAfter ? this.#afterClass : this.#beforeClass);
     }
 
     /** The item the pointer rests on and which side of its midpoint, after the last item below the list. */
@@ -203,11 +203,11 @@ class ReorderInteraction {
             return null;
         }
 
-        const all = this.#items();
-        const currentIndex = all.indexOf(item);
-        const targetIndex = target(currentIndex, all.length);
+        const items = this.#items();
+        const currentIndex = items.indexOf(item);
+        const targetIndex = target(currentIndex, items.length);
 
-        return targetIndex === currentIndex || targetIndex < 0 || targetIndex >= all.length ? null : { currentIndex, targetIndex };
+        return targetIndex === currentIndex || targetIndex < 0 || targetIndex >= items.length ? null : { currentIndex, targetIndex };
     }
 
     #move(event, move) {

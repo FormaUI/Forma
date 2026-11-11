@@ -186,7 +186,7 @@ public sealed class WindowManagerTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.Same(older, manager.Current),
+                () => Assert.Same(older, manager.CurrentWindow),
                 () => Assert.False(current.IsActive));
         }
 
@@ -293,8 +293,8 @@ public sealed class WindowManagerTests
 
             // Act
             manager.TryFindWindows(new WindowSelector { Parent = parent }, out var children);
-            manager.TryFindWindows(new WindowSelector { Parent = parent, Recursive = true }, out var descendants);
-            manager.TryFindWindows(new WindowSelector { Recursive = true }, out var everything);
+            manager.TryFindWindows(new WindowSelector { Parent = parent, IsRecursive = true }, out var descendants);
+            manager.TryFindWindows(new WindowSelector { IsRecursive = true }, out var everything);
 
             // Assert
             Assert.Multiple(
@@ -339,7 +339,7 @@ public sealed class WindowManagerTests
 
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentException>(async () => await manager.MinimizeAsync(new WindowSelector()));
-            await Assert.ThrowsAsync<ArgumentException>(async () => await manager.MinimizeAsync(new WindowSelector { Recursive = true }));
+            await Assert.ThrowsAsync<ArgumentException>(async () => await manager.MinimizeAsync(new WindowSelector { IsRecursive = true }));
             await Assert.ThrowsAsync<ArgumentException>(async () => await manager.MinimizeAsync(GetSelector(foreign)));
             Assert.Throws<ArgumentException>(() => manager.TryFindWindows(new OtherSelector(), out _));
         }
@@ -403,7 +403,7 @@ public sealed class WindowManagerTests
             Assert.Multiple(
                 () => Assert.Equal(WindowOperationOutcome.NoMatch, none.Outcome),
                 () => Assert.Equal(WindowOperationOutcome.Ambiguous, both.Outcome),
-                () => Assert.Null(manager.Current));
+                () => Assert.Null(manager.CurrentWindow));
         }
 
         [Fact]
@@ -421,7 +421,7 @@ public sealed class WindowManagerTests
             // Assert
             Assert.Multiple(
                 () => Assert.True(result.Succeeded),
-                () => Assert.Same(first, manager.Current),
+                () => Assert.Same(first, manager.CurrentWindow),
                 () => Assert.True(first.IsActive),
                 () => Assert.False(second.IsActive),
                 () => Assert.Equal(["Second", "First"], GetTitles(manager.StackedWindows)));
@@ -445,7 +445,7 @@ public sealed class WindowManagerTests
                 () => Assert.False(parent.IsMinimized),
                 () => Assert.False(child.IsMinimized),
                 () => Assert.False(child.IsHidden),
-                () => Assert.Same(child, manager.Current));
+                () => Assert.Same(child, manager.CurrentWindow));
         }
 
         [Fact]
@@ -463,7 +463,7 @@ public sealed class WindowManagerTests
             // Assert
             Assert.Multiple(
                 () => Assert.True(result.Succeeded),
-                () => Assert.Same(first, manager.Current),
+                () => Assert.Same(first, manager.CurrentWindow),
                 () => Assert.Equal(["Second", "First"], GetTitles(manager.StackedWindows)));
         }
 
@@ -489,7 +489,7 @@ public sealed class WindowManagerTests
                 () => Assert.True(parent.IsMinimized),
                 () => Assert.True(child.IsHidden),
                 () => Assert.True(lone.IsMinimized),
-                () => Assert.Null(manager.Current));
+                () => Assert.Null(manager.CurrentWindow));
         }
 
         [Fact]
@@ -508,7 +508,7 @@ public sealed class WindowManagerTests
             // Assert
             Assert.Multiple(
                 () => Assert.Equal([modal], fromParent.Windows),
-                () => Assert.Same(sibling, manager.Current),
+                () => Assert.Same(sibling, manager.CurrentWindow),
                 () => Assert.True(fromSibling.Succeeded),
                 () => Assert.True(manager.IsBlocked(parent)),
                 () => Assert.False(manager.IsBlocked(sibling)));
@@ -528,7 +528,7 @@ public sealed class WindowManagerTests
             // Assert
             Assert.Multiple(
                 () => Assert.Equal([modal], result.Windows),
-                () => Assert.Same(modal, manager.Current));
+                () => Assert.Same(modal, manager.CurrentWindow));
         }
 
         [Fact]
@@ -569,7 +569,7 @@ public sealed class WindowManagerTests
             // Assert
             Assert.Multiple(
                 () => Assert.False(page.IsActive),
-                () => Assert.NotEqual(page, manager.Current));
+                () => Assert.NotEqual(page, manager.CurrentWindow));
         }
 
         [Fact]
@@ -603,7 +603,7 @@ public sealed class WindowManagerTests
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(WindowOperationOutcome.Ineligible, result.Outcome),
-                () => Assert.Null(manager.Current));
+                () => Assert.Null(manager.CurrentWindow));
         }
 
         [Fact]
@@ -619,16 +619,16 @@ public sealed class WindowManagerTests
 
             // Act
             await manager.CloseAsync(GetSelector(child));
-            var afterChild = manager.Current;
+            var afterChild = manager.CurrentWindow;
             await manager.MinimizeAsync(GetSelector(parent));
-            var afterParent = manager.Current;
+            var afterParent = manager.CurrentWindow;
             await manager.MinimizeAsync(GetSelector(older));
 
             // Assert
             Assert.Multiple(
                 () => Assert.Same(parent, afterChild),
                 () => Assert.Same(older, afterParent),
-                () => Assert.Null(manager.Current));
+                () => Assert.Null(manager.CurrentWindow));
         }
     }
 
@@ -784,7 +784,7 @@ public sealed class WindowManagerTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.Null(manager.Current),
+                () => Assert.Null(manager.CurrentWindow),
                 () => Assert.False(window.IsActive),
                 () => Assert.Equal("Window", manager.StackedWindows[^1].Title));
         }
@@ -847,14 +847,14 @@ public sealed class WindowManagerTests
 
             // Act
             await manager.RestoreAsync(GetSelector(one));
-            var afterOne = manager.Current;
+            var afterOne = manager.CurrentWindow;
             await manager.MinimizeAsync(WindowSelector.All);
             await manager.RestoreAsync(WindowSelector.All);
 
             // Assert
             Assert.Multiple(
                 () => Assert.Same(one, afterOne),
-                () => Assert.Null(manager.Current),
+                () => Assert.Null(manager.CurrentWindow),
                 () => Assert.False(two.IsMinimized));
         }
 
@@ -989,7 +989,7 @@ public sealed class WindowManagerTests
                 () => Assert.True(child.IsClosed),
                 () => Assert.Equal(0, child.CloseRequests),
                 () => Assert.Empty(manager.StackedWindows),
-                () => Assert.Null(manager.Current));
+                () => Assert.Null(manager.CurrentWindow));
         }
     }
 }

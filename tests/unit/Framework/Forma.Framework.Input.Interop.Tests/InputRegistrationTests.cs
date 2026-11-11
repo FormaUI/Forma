@@ -69,7 +69,7 @@ public sealed class InputRegistrationTests
             await registration.SyncAsync(Element, Profile);
 
             // Act
-            await registration.SyncAsync(Element, Profile, wanted: false);
+            await registration.SyncAsync(Element, Profile, shouldRegister: false);
 
             // Assert
             Assert.False(registration.IsRegistered);
@@ -168,9 +168,9 @@ public sealed class InputRegistrationTests
             await using var registration = new InputRegistration(router);
 
             // Act
-            await registration.SyncAsync(Element, Profile, active: true);
+            await registration.SyncAsync(Element, Profile, isActive: true);
             var heldActive = registration.IsActive;
-            await registration.SyncAsync(Element, Profile, active: false);
+            await registration.SyncAsync(Element, Profile, isActive: false);
 
             // Assert
             Assert.Multiple(
@@ -193,7 +193,7 @@ public sealed class InputRegistrationTests
             var pending = registration.SyncAsync(Element, Profile);
 
             // Act
-            await registration.SyncAsync(Element, Profile, wanted: false);
+            await registration.SyncAsync(Element, Profile, shouldRegister: false);
             script.Held!.Answer(script.Handle);
             await pending;
 

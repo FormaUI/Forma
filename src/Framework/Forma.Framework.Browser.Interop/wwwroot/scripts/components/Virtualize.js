@@ -19,12 +19,12 @@ class Virtualize {
     #owner;
     #spacerAttribute;
     #scroller;
-    #listening = new AbortController();
+    #listenerAbort = new AbortController();
     #resizes;
     #drawings;
     #frame = 0;
-    #reported = '';
-    #measured = 0;
+    #reportedKey = '';
+    #measuredItemSize = 0;
     #measuredAt = null;
     #measuredWidth = 0;
     #heights = new Map();
@@ -35,7 +35,7 @@ class Virtualize {
         this.#spacerAttribute = spacerAttribute;
         this.#scroller = Virtualize.#scrollerOf(start.parentElement);
 
-        const signal = this.#listening.signal;
+        const signal = this.#listenerAbort.signal;
         (this.#scroller ?? window).addEventListener('scroll', () => this.#schedule(), { passive: true, signal });
         window.addEventListener('resize', () => this.#schedule(), { signal });
 
@@ -52,7 +52,7 @@ class Virtualize {
     }
 
     dispose() {
-        this.#listening.abort();
+        this.#listenerAbort.abort();
         this.#resizes.disconnect();
         this.#drawings.disconnect();
         cancelAnimationFrame(this.#frame);
@@ -109,15 +109,15 @@ class Virtualize {
 
         const offset = Math.round(this.#offset());
         const viewport = Math.round(this.#viewport());
-        const measured = this.#measure(offset);
-        const reported = `${offset}|${viewport}|${measured}`;
+        const measuredItemSize = this.#measure(offset);
+        const reportedKey = `${offset}|${viewport}|${measuredItemSize}`;
 
-        if (reported === this.#reported) {
+        if (reportedKey === this.#reportedKey) {
             return;
         }
 
-        this.#reported = reported;
-        tell(this.#owner, 'HandleViewportAsync', offset, viewport, measured);
+        this.#reportedKey = reportedKey;
+        tell(this.#owner, 'HandleViewportAsync', offset, viewport, measuredItemSize);
     }
 
     /**
@@ -131,13 +131,13 @@ class Virtualize {
         const isResized = [...heights].some(([item, height]) => this.#heights.has(item) && Math.abs(this.#heights.get(item) - height) >= 0.5);
         this.#heights = heights;
 
-        if (this.#measured === 0 || offset !== this.#measuredAt || width !== this.#measuredWidth || isResized) {
-            this.#measured = Math.round(this.#itemSize() * 10) / 10;
+        if (this.#measuredItemSize === 0 || offset !== this.#measuredAt || width !== this.#measuredWidth || isResized) {
+            this.#measuredItemSize = Math.round(this.#itemSize() * 10) / 10;
             this.#measuredAt = offset;
             this.#measuredWidth = width;
         }
 
-        return this.#measured;
+        return this.#measuredItemSize;
     }
 
     /** The average room an item takes: from its top to the next drawn item's top, or its own height where no two drawn items stand together. */

@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Components;
 /// </remarks>
 public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEditOptions>
 {
-    private static readonly DomCapability<TextEditOptions> Editing = new(DomRoot.Engine, "edits", DescribeEdits);
+    private static readonly DomCapability<TextEditOptions> EditCapability = new(DomRoot.Engine, "edits", DescribeEdits);
 
     private readonly DomSession _session;
     private readonly DomRegistration<TextEditOptions> _registration;
@@ -52,7 +52,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
         _handler = handler;
         _text = text ?? string.Empty;
         _shownText = text;
-        _registration = new DomRegistration<TextEditOptions>(_session, Editing, this, isReleased: engine.IsDisposed);
+        _registration = new DomRegistration<TextEditOptions>(_session, EditCapability, this, isReleased: engine.IsDisposed);
         _session.AddEditTarget(_registration.Token, this);
     }
 
@@ -182,8 +182,8 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
         => _registration.DisposeAsync();
 
     /// <summary>Takes the edit the field made at <paramref name="revision"/>.</summary>
-    internal Task ReceiveEditAsync(int revision, int start, int removed, JSTransfer inserted, bool isCommit)
-        => ReceiveAsync(new Arrival(revision, inserted, start, removed, isCommit));
+    internal Task ReceiveEditAsync(int revision, int startIndex, int removedLength, JSTransfer insertedText, bool isCommit)
+        => ReceiveAsync(new Arrival(revision, insertedText, startIndex, removedLength, isCommit));
 
     /// <summary>Takes the field's whole text at <paramref name="revision"/>, in place of the edits that led to it.</summary>
     internal Task ReceiveReplacementAsync(int revision, JSTransfer text)
@@ -213,9 +213,9 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
         {
             Token = _registration.Token,
             Generation = generation,
-            Capability = Editing.Name,
+            Capability = EditCapability.Name,
             Target = element,
-            Options = (EditsDescription)Editing.DescribeOptions(options) with { Text = _text, Revision = _revision },
+            Options = (EditsDescription)EditCapability.DescribeOptions(options) with { Text = _text, Revision = _revision },
         });
 
     /// <inheritdoc />
@@ -420,14 +420,14 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
             return;
         }
 
-        if (edit.Start < 0 || edit.Removed < 0 || edit.Start > _text.Length || edit.Removed > _text.Length - edit.Start)
+        if (edit.StartIndex < 0 || edit.RemovedLength < 0 || edit.StartIndex > _text.Length || edit.RemovedLength > _text.Length - edit.StartIndex)
         {
             DomLog.EditMisplaced(_session.Logger, _registration.Token, edit.Revision, _session.RuntimeId);
             MarkLost(edit);
             return;
         }
 
-        _text = string.Concat(_text.AsSpan(0, edit.Start), insertedText, _text.AsSpan(edit.Start + edit.Removed));
+        _text = string.Concat(_text.AsSpan(0, edit.StartIndex), insertedText, _text.AsSpan(edit.StartIndex + edit.RemovedLength));
         _revision = edit.Revision;
         await NotifyAsync(edit.IsCommit);
     }
@@ -513,7 +513,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
         }
         catch (Exception ex)
         {
-            DomLog.HandlerFailed(_session.Logger, ex, Editing.Name, _registration.Token, _registration.Generation, _session.RuntimeId);
+            DomLog.HandlerFailed(_session.Logger, ex, EditCapability.Name, _registration.Token, _registration.Generation, _session.RuntimeId);
         }
     }
 
@@ -535,7 +535,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
     }
 
     /// <summary>What arrived from the field: an edit at its revision, or the field's whole text at the revision it stands at.</summary>
-    private sealed record Arrival(int Revision, JSTransfer Transfer, int Start = 0, int Removed = 0, bool IsCommit = false, bool IsReplacement = false)
+    private sealed record Arrival(int Revision, JSTransfer Transfer, int StartIndex = 0, int RemovedLength = 0, bool IsCommit = false, bool IsReplacement = false)
     {
         public Arrival(int revision, JSTransfer text)
             : this(revision, text, IsReplacement: true)

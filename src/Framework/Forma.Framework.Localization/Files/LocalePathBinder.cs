@@ -49,9 +49,9 @@ public sealed class LocalePathBinder(LocalePathValues values, char separator)
                 continue;
             }
 
-            var appended = name.Length;
+            var previousLength = name.Length;
             AppendValue(name, token, anchor);
-            if (name.Length == appended)
+            if (name.Length == previousLength)
             {
                 // An empty token takes the separator before it with it.
                 if (endsWithFolderSeparator)

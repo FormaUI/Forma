@@ -150,8 +150,8 @@ try {
 
         if ($Locale -eq 'und') { return $null }
         if ($parentLocales.ContainsKey($Locale)) { return $parentLocales[$Locale] }
-        $cut = $Locale.LastIndexOf('-')
-        if ($cut -gt 0) { return $Locale.Substring(0, $cut) }
+        $cutIndex = $Locale.LastIndexOf('-')
+        if ($cutIndex -gt 0) { return $Locale.Substring(0, $cutIndex) }
         'und'
     }
 

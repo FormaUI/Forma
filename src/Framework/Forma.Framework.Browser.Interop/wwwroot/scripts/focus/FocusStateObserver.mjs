@@ -15,7 +15,7 @@ export class FocusStateObserver {
     #isWithin;
     /** The item attribute's value on the item holding the focus. */
     #item = null;
-    #last = null;
+    #lastState = null;
     /** Whether the last press on the page landed inside the surface. */
     #pressedInside = false;
     /** Whether a press inside the surface dropped the focus to the page, with the reader still within it. */
@@ -85,14 +85,14 @@ export class FocusStateObserver {
 
     /** Reads whether the reader is within the surface now, and the item holding the focus. */
     read() {
-        this.#last = this.#describe(this.#isWithin, this.#item);
+        this.#lastState = this.#describe(this.#isWithin, this.#item);
 
-        return this.#last;
+        return this.#lastState;
     }
 
     /** Publishes whether the reader is within the surface again. */
     refresh() {
-        this.#last = null;
+        this.#lastState = null;
         this.#take(this.#isWithin, this.#item);
     }
 
@@ -110,12 +110,12 @@ export class FocusStateObserver {
         this.#isWithin = isWithin;
         this.#item = item;
 
-        if (this.#abort.signal.aborted || (this.#last?.isWithin === isWithin && (this.#last.item ?? null) === item)) {
+        if (this.#abort.signal.aborted || (this.#lastState?.isWithin === isWithin && (this.#lastState.item ?? null) === item)) {
             return;
         }
 
-        this.#last = this.#describe(isWithin, item);
-        this.#publish(this.#last);
+        this.#lastState = this.#describe(isWithin, item);
+        this.#publish(this.#lastState);
     }
 
     // The state names the item only where the observation asks for items.

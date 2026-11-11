@@ -5,7 +5,7 @@
 import { register } from '../../../input/scripts/InputRouter.js';
 
 /**
- * @typedef {{ back: string, forward: string, backAction: string, forwardAction: string }} ScrollButtonOptions
+ * @typedef {{ backButtonSelector: string, forwardButtonSelector: string, backAction: string, forwardAction: string }} ScrollButtonOptions
  *   The selectors of the back and forward buttons, and the actions each is routed as.
  */
 
@@ -22,12 +22,12 @@ export class ScrollButtons {
      * @param {ScrollButtonOptions} options
      * @param {(direction: -1 | 1) => void} step Takes one step toward the start, -1, or the end, 1.
      */
-    constructor(container, { back, forward, backAction, forwardAction }, step) {
+    constructor(container, { backButtonSelector, forwardButtonSelector, backAction, forwardAction }, step) {
         this.#container = container;
         this.#step = step;
         this.#kinds = [
-            { selector: back, action: backAction, direction: -1 },
-            { selector: forward, action: forwardAction, direction: 1 },
+            { selector: backButtonSelector, action: backAction, direction: -1 },
+            { selector: forwardButtonSelector, action: forwardAction, direction: 1 },
         ];
 
         this.#mutations = new MutationObserver(() => this.#refresh());

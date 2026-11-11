@@ -112,7 +112,7 @@ public sealed class DomFocusTests
                 () => Assert.Equal("focus", FakeDomBrowser.GetRequestField(attach, "capability")),
                 () => Assert.Equal(true, FakeDomBrowser.GetOption(attach, "wrap")),
                 () => Assert.Equal([".canvas"], (IEnumerable<string>)FakeDomBrowser.GetOption(attach, "order")!),
-                () => Assert.Equal("vertical", FakeDomBrowser.GetOption(attach, "roving")),
+                () => Assert.Equal("vertical", FakeDomBrowser.GetOption(attach, "rovingOrientation")),
                 () => Assert.Equal("data-heir", FakeDomBrowser.GetOption(attach, "heir")));
         }
 

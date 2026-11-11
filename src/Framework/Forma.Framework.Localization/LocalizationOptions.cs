@@ -32,15 +32,15 @@ public sealed record LocalizationOptions
         ArgumentNullException.ThrowIfNull(application);
         ArgumentNullException.ThrowIfNull(logger);
 
-        var recorded = LocaleAssemblyLoader.LoadPacks(application, logger);
-        var configured = recorded.Count == 0
+        var recordedPacks = LocaleAssemblyLoader.LoadPacks(application, logger);
+        var configuredOptions = recordedPacks.Count == 0
             ? this
-            : this with { LocalePacks = [.. recorded, .. LocalePacks.Where(pack => !recorded.Contains(pack))] };
+            : this with { LocalePacks = [.. recordedPacks, .. LocalePacks.Where(pack => !recordedPacks.Contains(pack))] };
 
         var hosts = LocaleAssemblyLoader.LoadHostLocaleAssemblies(application, logger);
 
         return hosts.Count == 0
-            ? configured
-            : configured with { HostLocaleAssemblies = [.. hosts, .. HostLocaleAssemblies.Where(host => !hosts.Contains(host))] };
+            ? configuredOptions
+            : configuredOptions with { HostLocaleAssemblies = [.. hosts, .. HostLocaleAssemblies.Where(host => !hosts.Contains(host))] };
     }
 }

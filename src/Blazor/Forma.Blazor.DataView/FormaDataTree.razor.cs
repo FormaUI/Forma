@@ -246,7 +246,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         // the watch is still being made leaves them to the first render's pass.
         if (_focusState is not null)
         {
-            await _inputRegistration.SyncAsync(RootElement, GetInputProfile(), wanted: IsActive);
+            await _inputRegistration.SyncAsync(RootElement, GetInputProfile(), shouldRegister: IsActive);
         }
 
         // The hand-off watches the tree while it shows, and lets go of a root the tree no longer draws.

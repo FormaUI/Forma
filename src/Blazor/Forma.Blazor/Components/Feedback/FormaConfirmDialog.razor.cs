@@ -29,7 +29,7 @@ public sealed partial class FormaConfirmDialog : FormaElementBase
     {
         return InvokeAsync(() =>
         {
-            _request = ConfirmService.Current;
+            _request = ConfirmService.CurrentRequest;
             _isOpen = _request is not null;
             StateHasChanged();
         });

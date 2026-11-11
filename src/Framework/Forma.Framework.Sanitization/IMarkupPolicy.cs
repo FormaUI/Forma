@@ -7,6 +7,6 @@ public interface IMarkupPolicy
     /// <param name="subject">What is being asked about.</param>
     /// <param name="value">The name or address being judged.</param>
     /// <param name="owner">The element owning an attribute.</param>
-    /// <param name="canonical">The spelling to write; null keeps the one given.</param>
-    bool Allows(HtmlSubject subject, ReadOnlySpan<char> value, ReadOnlySpan<char> owner, out string? canonical);
+    /// <param name="canonicalSpelling">The spelling to write; null keeps the one given.</param>
+    bool Allows(HtmlSubject subject, ReadOnlySpan<char> value, ReadOnlySpan<char> owner, out string? canonicalSpelling);
 }

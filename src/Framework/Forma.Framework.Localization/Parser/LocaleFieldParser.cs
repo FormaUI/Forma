@@ -68,9 +68,9 @@ public static class LocaleFieldParser
             start = position + 1;
         }
 
-        if (ReadField(text, new LocaleTextSpan(start, body.End - start), knownNames, diagnostics) is { } last)
+        if (ReadField(text, new LocaleTextSpan(start, body.End - start), knownNames, diagnostics) is { } lastField)
         {
-            fields.Add(last);
+            fields.Add(lastField);
         }
 
         ReportDuplicates(text, fields, diagnostics);
@@ -95,8 +95,8 @@ public static class LocaleFieldParser
         }
 
         var nameStart = position + 1;
-        var spaced = nameStart < end && text[nameStart] == ' ';
-        if (spaced)
+        var isSpaced = nameStart < end && text[nameStart] == ' ';
+        if (isSpaced)
         {
             nameStart++;
         }
@@ -123,7 +123,7 @@ public static class LocaleFieldParser
         {
             separator = Separator.Length;
 
-            return spaced;
+            return isSpaced;
         }
 
         var name = new LocaleTextSpan(nameStart, nameEnd - nameStart);
@@ -134,7 +134,7 @@ public static class LocaleFieldParser
             return false;
         }
 
-        if (!spaced)
+        if (!isSpaced)
         {
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MalformedFieldSeparator, new LocaleTextSpan(position, 1)));
         }
@@ -154,8 +154,8 @@ public static class LocaleFieldParser
             return null;
         }
 
-        var written = new LocaleTextSpan(span.Start, colon - span.Start);
-        var name = Trim(text, written);
+        var writtenNameSpan = new LocaleTextSpan(span.Start, colon - span.Start);
+        var name = Trim(text, writtenNameSpan);
         if (name.IsEmpty)
         {
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.EmptyFieldName, span));
@@ -168,17 +168,17 @@ public static class LocaleFieldParser
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.UnknownFieldName, name));
         }
 
-        var raw = new LocaleTextSpan(colon + 1, span.End - colon - 1);
-        var value = Trim(text, raw);
+        var rawValueSpan = new LocaleTextSpan(colon + 1, span.End - colon - 1);
+        var value = Trim(text, rawValueSpan);
 
         // An empty value is reported alone, its separator's shape unchecked.
         if (value.IsEmpty)
         {
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.EmptyFieldValue, span));
         }
-        else if (name != written || value.Start != raw.Start + 1 || value.End != raw.End)
+        else if (name != writtenNameSpan || value.Start != rawValueSpan.Start + 1 || value.End != rawValueSpan.End)
         {
-            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MalformedNameSeparator, written));
+            diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MalformedNameSeparator, writtenNameSpan));
         }
 
         return new LocaleField(name, value);
@@ -186,13 +186,13 @@ public static class LocaleFieldParser
 
     private static void ReportDuplicates(string text, List<LocaleField> fields, List<LocaleDiagnostic> diagnostics)
     {
-        for (var later = 1; later < fields.Count; later++)
+        for (var laterIndex = 1; laterIndex < fields.Count; laterIndex++)
         {
-            for (var earlier = 0; earlier < later; earlier++)
+            for (var earlierIndex = 0; earlierIndex < laterIndex; earlierIndex++)
             {
-                if (fields[earlier].NameSpan.Slice(text).SequenceEqual(fields[later].NameSpan.Slice(text)))
+                if (fields[earlierIndex].NameSpan.Slice(text).SequenceEqual(fields[laterIndex].NameSpan.Slice(text)))
                 {
-                    diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.DuplicateFieldName, fields[later].NameSpan));
+                    diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.DuplicateFieldName, fields[laterIndex].NameSpan));
 
                     break;
                 }
@@ -202,9 +202,9 @@ public static class LocaleFieldParser
 
     private static bool Knows(string text, LocaleTextSpan name, ReadOnlySpan<string> knownNames)
     {
-        foreach (var known in knownNames)
+        foreach (var knownName in knownNames)
         {
-            if (name.Slice(text).SequenceEqual(known))
+            if (name.Slice(text).SequenceEqual(knownName))
             {
                 return true;
             }

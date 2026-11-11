@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Components;
 /// <summary>An element's focus: observing whether the reader is within it, and the interaction that decides where the focus goes inside it.</summary>
 public sealed class DomFocus : IDomFocusObservation
 {
-    private static readonly DomCapability<FocusWatchOptions> Watching = new(DomRoot.Watcher, "focus", DescribeWatch);
+    private static readonly DomCapability<FocusWatchOptions> WatchCapability = new(DomRoot.Watcher, "focus", DescribeWatch);
 
-    private static readonly DomCapability<FocusInteractionOptions> Interacting = new(DomRoot.Engine, "focus", DescribeInteraction)
+    private static readonly DomCapability<FocusInteractionOptions> InteractionCapability = new(DomRoot.Engine, "focus", DescribeInteraction)
     {
         DeclaresRoutes = options => options.Wraps || options.RegionSelectors.Count > 0 || options.RovingOrientation is not null,
     };
@@ -40,7 +40,7 @@ public sealed class DomFocus : IDomFocusObservation
             ArgumentException.ThrowIfNullOrWhiteSpace(itemAttribute, nameof(options));
         }
 
-        var observation = new DomObservation<FocusWatchOptions, FocusState>(_watcher.Session, Watching, DomJsonContext.Default.FocusState, handler);
+        var observation = new DomObservation<FocusWatchOptions, FocusState>(_watcher.Session, WatchCapability, DomJsonContext.Default.FocusState, handler);
         await observation.SyncAsync(_element, options, shouldObserve);
 
         return observation;
@@ -60,7 +60,7 @@ public sealed class DomFocus : IDomFocusObservation
             ArgumentException.ThrowIfNullOrWhiteSpace(options.HeirAttribute, nameof(options));
         }
 
-        var interaction = new DomInteraction<FocusInteractionOptions>(_watcher.Session, Interacting, engine.IsDisposed);
+        var interaction = new DomInteraction<FocusInteractionOptions>(_watcher.Session, InteractionCapability, engine.IsDisposed);
         await interaction.SyncAsync(_element, options, shouldEnable);
 
         return interaction;
@@ -74,7 +74,7 @@ public sealed class DomFocus : IDomFocusObservation
         {
             Wrap = options.Wraps,
             Order = options.RegionSelectors,
-            Roving = options.RovingOrientation switch
+            RovingOrientation = options.RovingOrientation switch
             {
                 FocusOrientation.Horizontal => "horizontal",
                 FocusOrientation.Vertical => "vertical",
@@ -98,7 +98,7 @@ public sealed class DomFocus : IDomFocusObservation
 
         public required IReadOnlyList<string> Order { get; init; }
 
-        public required string? Roving { get; init; }
+        public required string? RovingOrientation { get; init; }
 
         public required string? Heir { get; init; }
     }

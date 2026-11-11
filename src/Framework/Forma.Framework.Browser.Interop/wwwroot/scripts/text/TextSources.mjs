@@ -13,7 +13,7 @@
  */
 
 /** The sources the scripts owning an element's text provide for it. */
-const provided = new WeakMap();
+const providedSources = new WeakMap();
 
 export class TextSources {
     /**
@@ -22,12 +22,12 @@ export class TextSources {
      * @param {TextSource} source
      */
     static provide(element, source) {
-        provided.set(element, source);
+        providedSources.set(element, source);
 
         return {
             dispose() {
-                if (provided.get(element) === source) {
-                    provided.delete(element);
+                if (providedSources.get(element) === source) {
+                    providedSources.delete(element);
                 }
             },
         };
@@ -39,7 +39,7 @@ export class TextSources {
      * @returns {TextSource}
      */
     static of(element) {
-        return provided.get(element) ?? new FieldSource(element);
+        return providedSources.get(element) ?? new FieldSource(element);
     }
 }
 

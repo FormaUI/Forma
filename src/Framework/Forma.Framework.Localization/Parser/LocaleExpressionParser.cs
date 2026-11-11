@@ -10,25 +10,25 @@ using Forma.Framework.Localization.Parser.Syntax;
 public static class LocaleExpressionParser
 {
     /// <summary>The characters that open an expression.</summary>
-    public const string Opening = "[$ ";
+    public const string OpeningDelimiter = "[$ ";
 
     /// <summary>The characters that close an expression.</summary>
-    public const string Closing = " $]";
+    public const string ClosingDelimiter = " $]";
 
-    private const string Interpolated = "[{";
+    private const string InterpolationDelimiter = "[{";
 
     /// <summary>Rewrites the interpolation holes an interpolated key carries into plain argument names.</summary>
     /// <param name="text">The text to examine.</param>
-    /// <param name="normalized">The rewritten text, where <see langword="null"/> means the text already reads as written.</param>
+    /// <param name="normalizedText">The rewritten text, where <see langword="null"/> means the text already reads as written.</param>
     /// <remarks>
     /// Only an expression's header is rewritten, from the <c>[{files}]</c> an interpolated call site writes to the
     /// <c>[files]</c> a locale file carries; prose such as <c>See [{files}] for details</c> keeps its hole.
     /// </remarks>
-    public static bool TryNormalize(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? normalized)
+    public static bool TryNormalize(ReadOnlySpan<char> text, [NotNullWhen(true)] out string? normalizedText)
     {
-        normalized = null;
+        normalizedText = null;
 
-        if (!text.Contains(Interpolated, StringComparison.Ordinal))
+        if (!text.Contains(InterpolationDelimiter, StringComparison.Ordinal))
         {
             return false;
         }
@@ -38,22 +38,22 @@ public static class LocaleExpressionParser
 
         while (true)
         {
-            var opening = text[position..].IndexOf(Opening, StringComparison.Ordinal);
-            if (opening < 0)
+            var openingIndex = text[position..].IndexOf(OpeningDelimiter, StringComparison.Ordinal);
+            if (openingIndex < 0)
             {
                 break;
             }
 
-            var start = position + opening + Opening.Length;
+            var start = position + openingIndex + OpeningDelimiter.Length;
             builder.Append(text[position..start]);
             position = start;
 
-            if (!text[start..].StartsWith(Interpolated, StringComparison.Ordinal))
+            if (!text[start..].StartsWith(InterpolationDelimiter, StringComparison.Ordinal))
             {
                 continue;
             }
 
-            var name = start + Interpolated.Length;
+            var name = start + InterpolationDelimiter.Length;
             var end = name;
             while (end < text.Length && (char.IsLetterOrDigit(text[end]) || text[end] == '_'))
             {
@@ -70,7 +70,7 @@ public static class LocaleExpressionParser
         }
 
         builder.Append(text[position..]);
-        normalized = builder.ToString();
+        normalizedText = builder.ToString();
 
         return true;
     }
@@ -83,8 +83,8 @@ public static class LocaleExpressionParser
         ArgumentNullException.ThrowIfNull(text);
         ArgumentNullException.ThrowIfNull(keywords);
 
-        var first = text.IndexOf(Opening, StringComparison.Ordinal);
-        if (first < 0)
+        var firstOpeningIndex = text.IndexOf(OpeningDelimiter, StringComparison.Ordinal);
+        if (firstOpeningIndex < 0)
         {
             return LocaleParseResult.Empty;
         }
@@ -92,43 +92,43 @@ public static class LocaleExpressionParser
         var expressions = new List<LocaleExpression>();
         var diagnostics = new List<LocaleDiagnostic>();
 
-        for (var opening = first; opening >= 0; opening = text.IndexOf(Opening, opening, StringComparison.Ordinal))
+        for (var openingIndex = firstOpeningIndex; openingIndex >= 0; openingIndex = text.IndexOf(OpeningDelimiter, openingIndex, StringComparison.Ordinal))
         {
-            var closing = text.IndexOf(Closing, opening + Opening.Length, StringComparison.Ordinal);
-            if (closing < 0)
+            var closingIndex = text.IndexOf(ClosingDelimiter, openingIndex + OpeningDelimiter.Length, StringComparison.Ordinal);
+            if (closingIndex < 0)
             {
                 diagnostics.Add(new LocaleDiagnostic(
                     LocaleDiagnosticKind.UnclosedExpression,
-                    new LocaleTextSpan(opening, text.Length - opening)));
+                    new LocaleTextSpan(openingIndex, text.Length - openingIndex)));
 
                 break;
             }
 
-            var span = new LocaleTextSpan(opening, closing + Closing.Length - opening);
-            var inner = new LocaleTextSpan(opening + Opening.Length, closing - opening - Opening.Length);
+            var span = new LocaleTextSpan(openingIndex, closingIndex + ClosingDelimiter.Length - openingIndex);
+            var innerSpan = new LocaleTextSpan(openingIndex + OpeningDelimiter.Length, closingIndex - openingIndex - OpeningDelimiter.Length);
 
-            var expression = ReadExpression(text, span, inner, keywords, diagnostics);
+            var expression = ReadExpression(text, span, innerSpan, keywords, diagnostics);
             if (expression is not null)
             {
                 expressions.Add(expression);
             }
 
-            opening = span.End;
+            openingIndex = span.End;
         }
 
         return new LocaleParseResult(expressions, diagnostics);
     }
 
-    private static LocaleExpression? ReadExpression(string text, LocaleTextSpan span, LocaleTextSpan inner, LocaleKeywords keywords, List<LocaleDiagnostic> diagnostics)
+    private static LocaleExpression? ReadExpression(string text, LocaleTextSpan span, LocaleTextSpan innerSpan, LocaleKeywords keywords, List<LocaleDiagnostic> diagnostics)
     {
-        if (inner.IsEmpty || text[inner.End - 1] != ';')
+        if (innerSpan.IsEmpty || text[innerSpan.End - 1] != ';')
         {
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingTrailingSemicolon, span));
 
             return null;
         }
 
-        var body = new LocaleTextSpan(inner.Start, inner.Length - 1);
+        var body = new LocaleTextSpan(innerSpan.Start, innerSpan.Length - 1);
 
         var headerEnd = body.IndexOf(text, ';');
         if (headerEnd < 0)
@@ -144,8 +144,8 @@ public static class LocaleExpressionParser
             return null;
         }
 
-        var defined = keywords.Find(keyword.Slice(text));
-        if (defined is null)
+        var definedKeyword = keywords.Find(keyword.Slice(text));
+        if (definedKeyword is null)
         {
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.UnknownKeyword, keyword));
         }
@@ -160,15 +160,15 @@ public static class LocaleExpressionParser
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MalformedFieldSeparator, new LocaleTextSpan(headerEnd, 1)));
         }
 
-        var reported = diagnostics.Count;
+        var reportedCount = diagnostics.Count;
         var fields = LocaleFieldParser.Parse(
             text,
             new LocaleTextSpan(fieldsStart, body.End - fieldsStart),
-            defined is null ? default : defined.FieldNames,
+            definedKeyword is null ? default : definedKeyword.FieldNames,
             diagnostics);
 
         // A missing-fields diagnostic is added only where no field diagnostic explains the empty list.
-        if (fields.Count == 0 && diagnostics.Count == reported)
+        if (fields.Count == 0 && diagnostics.Count == reportedCount)
         {
             diagnostics.Add(new LocaleDiagnostic(LocaleDiagnosticKind.MissingFields, span));
         }

@@ -9,6 +9,20 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- The framework's members and parameters named for a bare participle or adjective, or for a plural that counts, are
+  named for what they hold. Properties and constants: `CatalogRejection.Limit` was `Allowed`,
+  `ExplorerHistory.CurrentSource` was `Current`, `IConfirmDialogService.CurrentRequest` was `Current`,
+  `KeyBinding.MatchesRelease` was `Released`, `PluralOperands.AbsoluteValue` was `Absolute`,
+  `LocaleExpressionParser.OpeningDelimiter`, `ClosingDelimiter` and `InterpolationDelimiter` were `Opening`, `Closing`
+  and `Interpolated`, `WindowManager.CurrentWindow` was `Current`, and `WindowSelector.IsRecursive` was `Recursive`.
+  Parameters, which a caller naming its arguments names anew: `Window.AttachAsync` and `PresentAsync` take
+  `isPresented` and `isModal`, `DomReceiver.EditAsync` takes `startIndex`, `removedLength` and `insertedText`,
+  `Download`, `Print` and `Share` take `nativeOperations`, `ComposerToolbarLayout.Coalesce` takes `placedItems`,
+  `ICultureStateIntegration.ApplyAsync` takes `acceptedCulture`, `UploadBatch.UpdateFileProgress` takes
+  `bytesTransferred`, `LocaleAssemblyLoader.GetApplicationAssemblies` takes `loadedAssemblies`,
+  `LocaleExpressionParser.TryNormalize` gives `normalizedText`, `IMarkupPolicy.Allows` gives `canonicalSpelling`,
+  `InputRegistration.SyncAsync` takes `shouldRegister` and `isActive`, and `IManagedWindow`'s setters take `isActive`,
+  `isMinimized`, `isHidden` and `isBlocked`.
 - A [`FormaDataGrid`](docs/data-view-design.md#accessibility-keyboard-and-direction) row's box is named for its item,
   "Select Hammer", where the data view's `ItemName` names the items, as the boxes of the list, the cards and the tree
   are; it said "Select Row" in every row. `IDataView` declares `NamesItems`.

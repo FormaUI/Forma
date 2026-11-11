@@ -67,7 +67,7 @@ public sealed partial class FormaRestArea : FormaElementBase
     }
 
     private bool IsCurrent(IWindow window)
-        => Manager.Current?.RuntimeId == window.RuntimeId;
+        => Manager.CurrentWindow?.RuntimeId == window.RuntimeId;
 
     private bool IsMinimized(IWindow window)
         => window.IsMinimized || Manager.IsHidden(window);

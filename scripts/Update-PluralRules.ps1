@@ -29,7 +29,7 @@ $sourceUrl = "https://raw.githubusercontent.com/unicode-org/cldr-json/$reference
 
 # CLDR names its operands with single letters; the struct spells them out.
 $operandNames = @{
-    'n' = 'operands.Absolute'
+    'n' = 'operands.AbsoluteValue'
     'i' = 'operands.IntegerPart'
     'v' = 'operands.FractionDigits'
     'w' = 'operands.SignificantFractionDigits'

@@ -64,7 +64,7 @@
             // Assert
             area.WaitForAssertion(() => Assert.Multiple(
                 () => Assert.False(window.Find(".forma-window").HasAttribute("hidden")),
-                () => Assert.Equal("Folders", manager.Current?.Title),
+                () => Assert.Equal("Folders", manager.CurrentWindow?.Title),
                 () => Assert.Null(area.Find(".forma-rest-area-handle").GetAttribute("aria-description"))));
         }
 

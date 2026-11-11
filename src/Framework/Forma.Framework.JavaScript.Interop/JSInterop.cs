@@ -64,14 +64,14 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
             return false;
         }
 
-        var released = _attachment!.Token;
+        var releaseToken = _attachment!.Token;
 
         try
         {
-            await AwaitWhileAttachedAsync(_handle.InvokeAsync<IJSVoidResult>(identifier, args), released);
+            await AwaitWhileAttachedAsync(_handle.InvokeAsync<IJSVoidResult>(identifier, args), releaseToken);
             return true;
         }
-        catch (OperationCanceledException) when (released.IsCancellationRequested)
+        catch (OperationCanceledException) when (releaseToken.IsCancellationRequested)
         {
             return false;
         }
@@ -90,13 +90,13 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
             return default;
         }
 
-        var released = _attachment!.Token;
+        var releaseToken = _attachment!.Token;
 
         try
         {
-            return await AwaitWhileAttachedAsync(_handle.InvokeAsync<TValue>(identifier, args), released);
+            return await AwaitWhileAttachedAsync(_handle.InvokeAsync<TValue>(identifier, args), releaseToken);
         }
-        catch (OperationCanceledException) when (released.IsCancellationRequested)
+        catch (OperationCanceledException) when (releaseToken.IsCancellationRequested)
         {
             return default;
         }
@@ -133,15 +133,15 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
     }
 
     // The wait ends with the attachment while the call keeps the runtime's own timeout, and a fault arriving after the release is observed.
-    private static async ValueTask<TValue> AwaitWhileAttachedAsync<TValue>(ValueTask<TValue> call, CancellationToken released)
+    private static async ValueTask<TValue> AwaitWhileAttachedAsync<TValue>(ValueTask<TValue> call, CancellationToken releaseToken)
     {
         var answer = call.AsTask();
 
         try
         {
-            return await answer.WaitAsync(released);
+            return await answer.WaitAsync(releaseToken);
         }
-        catch (OperationCanceledException) when (released.IsCancellationRequested && !answer.IsCompleted)
+        catch (OperationCanceledException) when (releaseToken.IsCancellationRequested && !answer.IsCompleted)
         {
             _ = answer.ContinueWith(static late => late.Exception, CancellationToken.None, TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
             throw;

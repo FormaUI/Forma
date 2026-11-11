@@ -26,7 +26,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     private readonly string _identity = Guid.CreateVersion7().ToString("N");
     private JSModule _module;
     private Task<IJSObjectReference>? _attempt;
-    private int _landings;
+    private int _landingCount;
     private IJSObjectReference? _registration;
     private volatile bool _isUnavailable;
     private volatile bool _isDisposed;
@@ -175,7 +175,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     public async Task ReportLandingAsync(string? token)
     {
         var registration = await GetRegistrationAsync().ConfigureAwait(false);
-        var order = Interlocked.Increment(ref _landings);
+        var order = Interlocked.Increment(ref _landingCount);
 
         await registration.InvokeVoidAsync("reportLanding", token, order).ConfigureAwait(false);
     }
@@ -190,11 +190,11 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
             return Task.CompletedTask;
         }
 
-        AcceptedCulture accepted;
+        AcceptedCulture acceptedCulture;
 
         try
         {
-            accepted = new AcceptedCulture(CultureResolution.GetCulture(_cultureProvider, cultureName), CultureResolution.GetCulture(_cultureProvider, uiCultureName), version);
+            acceptedCulture = new AcceptedCulture(CultureResolution.GetCulture(_cultureProvider, cultureName), CultureResolution.GetCulture(_cultureProvider, uiCultureName), version);
         }
         catch (Exception ex) when (_cultureProvider is not null)
         {
@@ -203,18 +203,18 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
             throw;
         }
 
-        _ = ObserveAsync(_integration.ApplyAsync(accepted), accepted);
+        _ = ObserveAsync(_integration.ApplyAsync(acceptedCulture), acceptedCulture);
 
         return Task.CompletedTask;
     }
 
-    private async Task ObserveAsync(Task notification, AcceptedCulture accepted)
+    private async Task ObserveAsync(Task notification, AcceptedCulture acceptedCulture)
     {
         await notification.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
         if (notification.Exception?.InnerException is { } exception)
         {
-            CultureBrowserInteropLog.NotificationFailed(_environment.Logger, exception, accepted.UICulture.Name, _environment.RuntimeId);
+            CultureBrowserInteropLog.NotificationFailed(_environment.Logger, exception, acceptedCulture.UICulture.Name, _environment.RuntimeId);
         }
     }
 
@@ -260,9 +260,9 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
             var runtime = OperatingSystem.IsBrowser() ? "webassembly" : "server";
             var registration = await GetModule().InvokeAsync<IJSObjectReference>("register", _identity, _receiverReference, runtime, start).ConfigureAwait(false);
 
-            if (_registration is { } replaced && !ReferenceEquals(replaced, registration))
+            if (_registration is { } replacedRegistration && !ReferenceEquals(replacedRegistration, registration))
             {
-                await ReleaseAsync(replaced).ConfigureAwait(false);
+                await ReleaseAsync(replacedRegistration).ConfigureAwait(false);
             }
 
             _registration = registration;

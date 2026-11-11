@@ -15,7 +15,7 @@ public sealed class PluginRegistry<TPlugin>
         public PluginRegistry<TPlugin>? Children { get; set; }
     }
 
-    private readonly List<Entry> _registered = [];
+    private readonly List<Entry> _registeredEntries = [];
     private readonly List<PluginRegistration<TPlugin>> _defaults = [];
     private readonly PluginRegistration<TPlugin>? _owner;
 
@@ -93,7 +93,7 @@ public sealed class PluginRegistry<TPlugin>
     /// <summary>This registry's registrations, each followed by whatever sits under it, and its uncovered defaults last.</summary>
     internal IEnumerable<PluginRegistration<TPlugin>> Resolve()
     {
-        foreach (var entry in _registered)
+        foreach (var entry in _registeredEntries)
         {
             yield return entry.Registration;
 
@@ -103,7 +103,7 @@ public sealed class PluginRegistry<TPlugin>
             }
         }
 
-        foreach (var fallback in _defaults.Where(fallback => !_registered.Exists(held => held.Registration.PluginType == fallback.PluginType)))
+        foreach (var fallback in _defaults.Where(fallback => !_registeredEntries.Exists(held => held.Registration.PluginType == fallback.PluginType)))
         {
             yield return fallback;
         }
@@ -120,22 +120,22 @@ public sealed class PluginRegistry<TPlugin>
 
         if (children is not null)
         {
-            var nested = new PluginRegistry<TPlugin>(entry.Registration);
+            var nestedRegistry = new PluginRegistry<TPlugin>(entry.Registration);
 
-            children(nested);
-            entry.Children = nested;
+            children(nestedRegistry);
+            entry.Children = nestedRegistry;
         }
 
-        var standing = _registered.FindIndex(held => held.Registration.PluginType == pluginType);
+        var existingIndex = _registeredEntries.FindIndex(held => held.Registration.PluginType == pluginType);
 
         // Re-registering a plugin replaces it in place.
-        if (standing >= 0)
+        if (existingIndex >= 0)
         {
-            _registered[standing] = entry;
+            _registeredEntries[existingIndex] = entry;
         }
         else
         {
-            _registered.Add(entry);
+            _registeredEntries.Add(entry);
         }
 
         return this;

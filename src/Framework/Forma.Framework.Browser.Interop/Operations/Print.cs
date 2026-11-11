@@ -6,8 +6,8 @@ using Microsoft.JSInterop;
 
 /// <summary>Sends a document alone to the printer, or, where the host's native operations take it, hands the reader the document as a file to print from.</summary>
 /// <param name="js">The component's JS environment.</param>
-/// <param name="native">The host's native operations.</param>
-public sealed class Print(IJSEnvironment js, INativeOperations? native = null) : IAsyncDisposable
+/// <param name="nativeOperations">The host's native operations.</param>
+public sealed class Print(IJSEnvironment js, INativeOperations? nativeOperations = null) : IAsyncDisposable
 {
     private const string DocumentType = "text/html";
 
@@ -18,7 +18,7 @@ public sealed class Print(IJSEnvironment js, INativeOperations? native = null) :
     {
         ArgumentNullException.ThrowIfNull(title);
 
-        return (native is { CanSave: true } && await _module.TryInvokeTextAsync("compose", js.TransferOptions.MaximumLength, html, title, className) is { } document && await native.TrySaveAsync(GetFileName(title), document, DocumentType))
+        return (nativeOperations is { CanSave: true } && await _module.TryInvokeTextAsync("compose", js.TransferOptions.MaximumLength, html, title, className) is { } document && await nativeOperations.TrySaveAsync(GetFileName(title), document, DocumentType))
             || await _module.TryInvokeVoidAsync("print", html, title, className);
     }
 
@@ -28,7 +28,7 @@ public sealed class Print(IJSEnvironment js, INativeOperations? native = null) :
     {
         ArgumentNullException.ThrowIfNull(title);
 
-        return (native is { CanSave: true } && await _module.TryInvokeTextAsync("composePage", js.TransferOptions.MaximumLength, title) is { } document && await native.TrySaveAsync(GetFileName(title), document, DocumentType))
+        return (nativeOperations is { CanSave: true } && await _module.TryInvokeTextAsync("composePage", js.TransferOptions.MaximumLength, title) is { } document && await nativeOperations.TrySaveAsync(GetFileName(title), document, DocumentType))
             || await _module.TryInvokeVoidAsync("page");
     }
 

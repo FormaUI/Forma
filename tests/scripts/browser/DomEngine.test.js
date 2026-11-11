@@ -37,7 +37,7 @@ describe('DomEngine', () => {
         mutations.restore();
     });
 
-    const buttons = () => ({ container: pane, back: '.back', forward: '.forward', backAction: 'pane.scroll-back', forwardAction: 'pane.scroll-forward' });
+    const buttons = () => ({ container: pane, backButtonSelector: '.back', forwardButtonSelector: '.forward', backAction: 'pane.scroll-back', forwardAction: 'pane.scroll-forward' });
     const request = (generation = 1, options = { wheel: 'pane.scroll', buttons: buttons() }, target = viewport) => ({ token: '1', generation, capability: 'scroll', target, options });
     const observation = () => ({ token: '2', generation: 1, capability: 'scroll', target: viewport, options: {} });
 
@@ -56,7 +56,7 @@ describe('DomEngine', () => {
     });
 
     it('attaches a focus interaction the request names', async () => {
-        const isAttached = await attach(runtimeKey, null, { token: '2', generation: 1, capability: 'focus', target: pane, options: { roving: 'horizontal' } });
+        const isAttached = await attach(runtimeKey, null, { token: '2', generation: 1, capability: 'focus', target: pane, options: { rovingOrientation: 'horizontal' } });
 
         expect(isAttached).toBe(true);
         expect(describeScope(pane).routes.map(route => route.action)).toEqual(['focus.next', 'focus.previous', 'focus.first', 'focus.last']);

@@ -24,8 +24,8 @@ public sealed record CatalogPage(IReadOnlyList<ICatalogItem> Items, int? TotalCo
     // slice that read nothing ends the run, so a provider that makes no progress is never asked again.
     internal bool IsFollowed(CatalogQuery query, int runReadCount)
     {
-        var read = ReadCount ?? Items.Count;
+        var readCount = ReadCount ?? Items.Count;
 
-        return read > 0 && (HasMore ?? (TotalCount is { } total ? runReadCount < total : read >= query.Take));
+        return readCount > 0 && (HasMore ?? (TotalCount is { } total ? runReadCount < total : readCount >= query.Take));
     }
 }

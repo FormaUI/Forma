@@ -20,7 +20,7 @@ internal sealed class CultureCircuitHandler(ICultureState cultureState, CultureC
     /// <inheritdoc />
     public override Task OnConnectionUpAsync(Circuit circuit, CancellationToken cancellationToken)
     {
-        var registering = RegisterAsync();
+        var registration = RegisterAsync();
 
         if (_hasConnected)
         {
@@ -29,7 +29,7 @@ internal sealed class CultureCircuitHandler(ICultureState cultureState, CultureC
 
         _hasConnected = true;
 
-        return registering;
+        return registration;
     }
 
     /// <inheritdoc />

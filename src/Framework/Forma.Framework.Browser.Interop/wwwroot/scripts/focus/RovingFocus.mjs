@@ -15,7 +15,7 @@ const Actions = {
 };
 
 /** A control parked outside the page's Tab order. */
-const Parked = '[tabindex="-1"]';
+const ParkedSelector = '[tabindex="-1"]';
 
 export class RovingFocus {
     #surface;
@@ -23,7 +23,7 @@ export class RovingFocus {
     #mutations;
     #abort = new AbortController();
     /** Each control the surface has parked, with the tabindex it carried before. */
-    #parked = new Map();
+    #parkedControls = new Map();
 
     /**
      * @param {import('./FocusSurface.mjs').FocusSurface} surface The surface.
@@ -34,9 +34,9 @@ export class RovingFocus {
 
         const target = surface.element;
         const along = axis === 'horizontal';
-        const mirrored = along && Direction.isRightToLeft(target);
-        const forward = along ? (mirrored ? 'ArrowLeft' : 'ArrowRight') : 'ArrowDown';
-        const backward = along ? (mirrored ? 'ArrowRight' : 'ArrowLeft') : 'ArrowUp';
+        const isMirrored = along && Direction.isRightToLeft(target);
+        const forwardKey = along ? (isMirrored ? 'ArrowLeft' : 'ArrowRight') : 'ArrowDown';
+        const backwardKey = along ? (isMirrored ? 'ArrowRight' : 'ArrowLeft') : 'ArrowUp';
 
         // Each handler checks its binding's predicate again, since a host's remap of the action replaces the binding.
         const route = (action, key, place) => ({
@@ -47,8 +47,8 @@ export class RovingFocus {
 
         this.#registration = register(target, {
             routes: [
-                route(Actions.next, forward, (index, count) => (index + 1) % count),
-                route(Actions.previous, backward, (index, count) => (index + count - 1) % count),
+                route(Actions.next, forwardKey, (index, count) => (index + 1) % count),
+                route(Actions.previous, backwardKey, (index, count) => (index + count - 1) % count),
                 route(Actions.first, 'Home', () => 0),
                 route(Actions.last, 'End', (index, count) => count - 1),
             ],
@@ -66,7 +66,7 @@ export class RovingFocus {
         this.#abort.abort();
         this.#mutations.disconnect();
 
-        for (const [control, tabindex] of this.#parked) {
+        for (const [control, tabindex] of this.#parkedControls) {
             if (tabindex === null) {
                 control.removeAttribute('tabindex');
             } else {
@@ -74,12 +74,12 @@ export class RovingFocus {
             }
         }
 
-        this.#parked.clear();
+        this.#parkedControls.clear();
     }
 
     /** The roved controls and the place of the one holding focus. */
     #stop() {
-        const controls = this.#roved();
+        const controls = this.#getRovedControls();
         const index = controls.indexOf(document.activeElement);
 
         return index < 0 ? null : { controls, index };
@@ -95,31 +95,31 @@ export class RovingFocus {
     }
 
     /** Leaves one control reachable by Tab and parks the rest: the focused one, else the one holding the stop, else the first. */
-    #park(focused) {
-        for (const control of this.#parked.keys()) {
+    #park(focusedControl) {
+        for (const control of this.#parkedControls.keys()) {
             if (!control.isConnected) {
-                this.#parked.delete(control);
+                this.#parkedControls.delete(control);
             }
         }
 
-        const controls = this.#roved();
-        const current = controls.includes(focused)
-            ? focused
-            : controls.find(control => control.tabIndex === 0 && this.#parked.has(control)) ?? controls[0];
+        const controls = this.#getRovedControls();
+        const currentControl = controls.includes(focusedControl)
+            ? focusedControl
+            : controls.find(control => control.tabIndex === 0 && this.#parkedControls.has(control)) ?? controls[0];
 
         for (const control of controls) {
-            if (!this.#parked.has(control)) {
-                this.#parked.set(control, control.getAttribute('tabindex'));
+            if (!this.#parkedControls.has(control)) {
+                this.#parkedControls.set(control, control.getAttribute('tabindex'));
             }
 
-            control.tabIndex = control === current ? 0 : -1;
+            control.tabIndex = control === currentControl ? 0 : -1;
         }
     }
 
     /** The controls the stop roves among, in the surface's arranged order: what Tab could reach and what this surface parked, enabled and outside any popover. */
-    #roved() {
-        return this.#surface.arrange(this.#surface.controls(`${Controls.Focusable}, ${Parked}`)
-            .filter(control => (control.matches(Controls.Focusable) || this.#parked.has(control))
+    #getRovedControls() {
+        return this.#surface.arrange(this.#surface.controls(`${Controls.Focusable}, ${ParkedSelector}`)
+            .filter(control => (control.matches(Controls.Focusable) || this.#parkedControls.has(control))
                 && !control.matches(':disabled')
                 && control.closest('[popover]') === null));
     }

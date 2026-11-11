@@ -14,7 +14,7 @@ public sealed class ExplorerHistoryTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Null(history.Current),
+            () => Assert.Null(history.CurrentSource),
             () => Assert.False(history.CanGoBack),
             () => Assert.False(history.CanGoForward));
     }
@@ -29,16 +29,16 @@ public sealed class ExplorerHistoryTests
 
         // Act & Assert
         history.GoBack();
-        Assert.Equal("/photos", history.Current);
+        Assert.Equal("/photos", history.CurrentSource);
 
         history.GoBack();
         Assert.Multiple(
-            () => Assert.Null(history.Current),
+            () => Assert.Null(history.CurrentSource),
             () => Assert.False(history.CanGoBack),
             () => Assert.True(history.CanGoForward));
 
         history.GoForward();
-        Assert.Equal("/photos", history.Current);
+        Assert.Equal("/photos", history.CurrentSource);
     }
 
     [Fact]
@@ -54,7 +54,7 @@ public sealed class ExplorerHistoryTests
         history.GoBack();
 
         // Assert
-        Assert.Null(history.Current);
+        Assert.Null(history.CurrentSource);
     }
 
     [Fact]
@@ -71,10 +71,10 @@ public sealed class ExplorerHistoryTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal("/documents", history.Current),
+            () => Assert.Equal("/documents", history.CurrentSource),
             () => Assert.False(history.CanGoForward));
 
         history.GoBack();
-        Assert.Equal("/photos", history.Current);
+        Assert.Equal("/photos", history.CurrentSource);
     }
 }

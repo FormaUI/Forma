@@ -6,13 +6,13 @@ using Forma.Framework.Plugins;
 /// <summary>The plugins one composer can use, each still holding the editor or view it was registered under.</summary>
 public sealed class ComposerPluginCatalog
 {
-    private readonly IReadOnlyList<PluginInstance<IComposerPlugin>> _available;
+    private readonly IReadOnlyList<PluginInstance<IComposerPlugin>> _availablePlugins;
 
     private ComposerPluginCatalog(
-        IReadOnlyList<PluginInstance<IComposerPlugin>> available,
+        IReadOnlyList<PluginInstance<IComposerPlugin>> availablePlugins,
         IReadOnlyList<IComposerEditorPlugin> editors)
     {
-        _available = available;
+        _availablePlugins = availablePlugins;
         Editors = editors;
     }
 
@@ -21,7 +21,7 @@ public sealed class ComposerPluginCatalog
 
     /// <summary>Every available plugin, in the order it was registered.</summary>
     public IEnumerable<IComposerPlugin> Plugins
-        => _available.Select(instance => instance.Plugin);
+        => _availablePlugins.Select(instance => instance.Plugin);
 
     /// <summary>Creates the catalog of the available plugins among the given instances.</summary>
     /// <param name="instances">The plugins one composer built, each naming what it was registered under.</param>
@@ -39,29 +39,29 @@ public sealed class ComposerPluginCatalog
         ArgumentNullException.ThrowIfNull(instances);
         ArgumentNullException.ThrowIfNull(fallbackEditor);
 
-        var available = new List<PluginInstance<IComposerPlugin>>();
+        var availablePlugins = new List<PluginInstance<IComposerPlugin>>();
 
-        var seen = new HashSet<(PluginInstance<IComposerPlugin>? Owner, string Id)>();
+        var seenKeys = new HashSet<(PluginInstance<IComposerPlugin>? Owner, string Id)>();
 
         foreach (var instance in instances)
         {
             if (!await instance.Plugin.IsAvailableAsync(cancellationToken).ConfigureAwait(false)
-                || !seen.Add((instance.Owner, instance.Plugin.Id)))
+                || !seenKeys.Add((instance.Owner, instance.Plugin.Id)))
             {
                 continue;
             }
 
-            available.Add(instance);
+            availablePlugins.Add(instance);
         }
 
-        var editors = available.Select(instance => instance.Plugin).OfType<IComposerEditorPlugin>().ToList();
+        var editors = availablePlugins.Select(instance => instance.Plugin).OfType<IComposerEditorPlugin>().ToList();
 
         if (editors.Count == 0)
         {
             editors.Add(fallbackEditor);
         }
 
-        return new ComposerPluginCatalog(available, editors);
+        return new ComposerPluginCatalog(availablePlugins, editors);
     }
 
     /// <summary>Picks the editor to activate.</summary>
@@ -79,7 +79,7 @@ public sealed class ComposerPluginCatalog
 
         return
         [
-            .. _available
+            .. _availablePlugins
                 .Where(instance => ReferenceEquals(instance.Owner?.Plugin, editor))
                 .Select(instance => instance.Plugin)
                 .OfType<IComposerViewPlugin>(),
@@ -98,7 +98,7 @@ public sealed class ComposerPluginCatalog
         ArgumentNullException.ThrowIfNull(editor);
 
         var surface = (IComposerPlugin?)view ?? editor;
-        var inScope = _available
+        var inScope = _availablePlugins
             .Where(instance => instance.Plugin is not IComposerEditorPlugin and not IComposerViewPlugin && IsInScope(instance, surface))
             .ToList();
 

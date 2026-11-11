@@ -4,16 +4,16 @@ namespace Forma.Framework.Windows;
 public interface IManagedWindow : IWindow
 {
     /// <summary>Makes the window the current one, or stops it being so.</summary>
-    ValueTask SetActiveAsync(bool active);
+    ValueTask SetActiveAsync(bool isActive);
 
     /// <summary>Minimizes the window, or restores it to its preceding presentation.</summary>
-    ValueTask SetMinimizedAsync(bool minimized);
+    ValueTask SetMinimizedAsync(bool isMinimized);
 
     /// <summary>Hides the window under a minimized ancestor, or shows it again.</summary>
-    ValueTask SetHiddenAsync(bool hidden);
+    ValueTask SetHiddenAsync(bool isHidden);
 
     /// <summary>Bars the window from interaction behind a visible modal, or lets it interact again.</summary>
-    ValueTask SetBlockedAsync(bool blocked);
+    ValueTask SetBlockedAsync(bool isBlocked);
 
     /// <summary>Puts a floating window on top of every other floating window.</summary>
     ValueTask RaiseAsync();

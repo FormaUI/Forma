@@ -33,23 +33,23 @@ export function composePage(title) {
 }
 
 function writeDocument(title, fill) {
-    const written = document.implementation.createHTMLDocument();
-    written.documentElement.lang = document.documentElement.lang;
-    written.documentElement.dir = document.documentElement.dir;
+    const writtenDocument = document.implementation.createHTMLDocument();
+    writtenDocument.documentElement.lang = document.documentElement.lang;
+    writtenDocument.documentElement.dir = document.documentElement.dir;
 
-    const charset = written.createElement('meta');
+    const charset = writtenDocument.createElement('meta');
     charset.setAttribute('charset', 'utf-8');
-    const heading = written.createElement('title');
+    const heading = writtenDocument.createElement('title');
     heading.textContent = title;
-    written.head.append(charset, heading);
+    writtenDocument.head.append(charset, heading);
 
-    const style = written.createElement('style');
+    const style = writtenDocument.createElement('style');
     style.textContent = [...document.styleSheets].map(readRules).join('\n');
-    written.head.append(style);
+    writtenDocument.head.append(style);
 
-    fill(written.body);
+    fill(writtenDocument.body);
 
-    return `<!DOCTYPE html>${written.documentElement.outerHTML}`;
+    return `<!DOCTYPE html>${writtenDocument.documentElement.outerHTML}`;
 }
 
 // A sheet another origin serves keeps its rules from script, so it is left out rather than failing the document.
@@ -78,29 +78,29 @@ export function print(html, title, className) {
     frame.style.visibility = 'hidden';
     document.body.appendChild(frame);
 
-    const printed = frame.contentDocument;
-    printed.open();
-    printed.write(`<!DOCTYPE html><html lang="${document.documentElement.lang}" dir="${document.documentElement.dir}"><head><meta charset="utf-8"><title></title></head><body><article></article></body></html>`);
-    printed.close();
+    const printedDocument = frame.contentDocument;
+    printedDocument.open();
+    printedDocument.write(`<!DOCTYPE html><html lang="${document.documentElement.lang}" dir="${document.documentElement.dir}"><head><meta charset="utf-8"><title></title></head><body><article></article></body></html>`);
+    printedDocument.close();
 
-    printed.title = title;
-    printed.body.firstElementChild.className = className;
-    printed.body.firstElementChild.innerHTML = html;
+    printedDocument.title = title;
+    printedDocument.body.firstElementChild.className = className;
+    printedDocument.body.firstElementChild.innerHTML = html;
 
     for (const style of document.querySelectorAll('style')) {
-        printed.head.appendChild(printed.importNode(style, true));
+        printedDocument.head.appendChild(printedDocument.importNode(style, true));
     }
 
     const sheets = [...document.styleSheets]
         .map(sheet => sheet.href)
         .filter(Boolean)
         .map(href => new Promise(resolve => {
-            const link = printed.createElement('link');
+            const link = printedDocument.createElement('link');
             link.rel = 'stylesheet';
             link.href = href;
             link.addEventListener('load', resolve, { once: true });
             link.addEventListener('error', resolve, { once: true });
-            printed.head.appendChild(link);
+            printedDocument.head.appendChild(link);
         }));
 
     frame.contentWindow.addEventListener('afterprint', () => frame.remove(), { once: true });

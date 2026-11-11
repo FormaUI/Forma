@@ -34,7 +34,7 @@ public sealed record WindowSelector : IWindowSelector
     public IWindow? Parent { get; init; }
 
     /// <summary>Whether <see cref="Parent"/> selects every descendant.</summary>
-    public bool Recursive { get; init; }
+    public bool IsRecursive { get; init; }
 
     /// <summary>Whether any criterion is set.</summary>
     public bool HasCriteria

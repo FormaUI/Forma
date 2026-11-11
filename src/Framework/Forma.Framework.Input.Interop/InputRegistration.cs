@@ -38,12 +38,12 @@ public sealed class InputRegistration : IAsyncDisposable
     public bool IsActive
         => _scope is { IsActive: true };
 
-    /// <summary>Brings the registration in step with what its owner wants: <paramref name="element"/> registered with <paramref name="profile"/> while <paramref name="wanted"/>, inside <paramref name="parent"/> with the <paramref name="within"/> elements counted as inside it, and held active while <paramref name="active"/>.</summary>
-    public async Task SyncAsync(ElementReference element, InputProfile profile, bool wanted = true, bool active = false, ElementReference? parent = null, IReadOnlyList<ElementReference>? within = null)
+    /// <summary>Brings the registration in step with what its owner wants: <paramref name="element"/> registered with <paramref name="profile"/> while <paramref name="shouldRegister"/>, inside <paramref name="parent"/> with the <paramref name="within"/> elements counted as inside it, and held active while <paramref name="isActive"/>.</summary>
+    public async Task SyncAsync(ElementReference element, InputProfile profile, bool shouldRegister = true, bool isActive = false, ElementReference? parent = null, IReadOnlyList<ElementReference>? within = null)
     {
         ArgumentNullException.ThrowIfNull(profile);
 
-        _request = new Request(element, profile, wanted && !_isDisposed, active, parent, within);
+        _request = new Request(element, profile, shouldRegister && !_isDisposed, isActive, parent, within);
 
         if (_settle is { IsCompleted: false })
         {
@@ -76,7 +76,7 @@ public sealed class InputRegistration : IAsyncDisposable
 
         if (_request is { } request)
         {
-            _request = request with { Wanted = false };
+            _request = request with { ShouldRegister = false };
         }
 
         var settle = _settle;
@@ -90,7 +90,7 @@ public sealed class InputRegistration : IAsyncDisposable
         while (_request is { } request)
         {
             // An unrendered @ref arrives as a reference with no id, which nothing can be registered on.
-            if (!request.Wanted || request.Element.Id is not { Length: > 0 })
+            if (!request.ShouldRegister || request.Element.Id is not { Length: > 0 })
             {
                 await ReleaseAsync();
             }
@@ -125,7 +125,7 @@ public sealed class InputRegistration : IAsyncDisposable
         _registeredElementId = request.Element.Id;
         _registeredPlacement = Placement.Of(request);
 
-        if (request.Active)
+        if (request.IsActive)
         {
             await scope.ActivateAsync();
         }
@@ -138,11 +138,11 @@ public sealed class InputRegistration : IAsyncDisposable
             _registeredProfile = request.Profile;
         }
 
-        if (request.Active && !scope.IsActive)
+        if (request.IsActive && !scope.IsActive)
         {
             await scope.ActivateAsync();
         }
-        else if (!request.Active && scope.IsActive)
+        else if (!request.IsActive && scope.IsActive)
         {
             await scope.ReleaseAsync();
         }
@@ -180,7 +180,7 @@ public sealed class InputRegistration : IAsyncDisposable
     }
 
     /// <summary>What the owner asked for last.</summary>
-    private sealed record Request(ElementReference Element, InputProfile Profile, bool Wanted, bool Active, ElementReference? Parent, IReadOnlyList<ElementReference>? Within);
+    private sealed record Request(ElementReference Element, InputProfile Profile, bool ShouldRegister, bool IsActive, ElementReference? Parent, IReadOnlyList<ElementReference>? Within);
 
     /// <summary>A registration's parent and the elements counted as inside it, by their ids.</summary>
     private sealed record Placement(string? ParentId, string WithinIds)

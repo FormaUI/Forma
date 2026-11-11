@@ -176,7 +176,7 @@ class Frame {
 
         this.#origin = this.#box.getBoundingClientRect();
         this.#edge = resize ? 'se' : null;
-        this.#apply(this.#edge ? this.#resized(dx, dy) : this.#moved(dx, dy));
+        this.#apply(this.#edge ? this.#getResizedBox(dx, dy) : this.#getMovedBox(dx, dy));
         this.#origin = null;
         this.#report();
     }
@@ -255,7 +255,7 @@ class Frame {
     }
 
     #handleMove(dx, dy) {
-        const box = this.#edge ? this.#resized(dx, dy) : this.#moved(dx, dy);
+        const box = this.#edge ? this.#getResizedBox(dx, dy) : this.#getMovedBox(dx, dy);
         this.#apply(box);
     }
 
@@ -271,7 +271,7 @@ class Frame {
     }
 
     /** The box moved by the pointer's travel, held so it stays within its region. */
-    #moved(dx, dy) {
+    #getMovedBox(dx, dy) {
         const { left, top, width, height } = this.#origin;
         const region = this.#region();
         return {
@@ -286,29 +286,29 @@ class Frame {
      * The box with the held edge pulled by the pointer's travel, the opposite edge staying put and the size held
      * within its limits and within its region; the minimum wins over a region too small to hold it.
      */
-    #resized(dx, dy) {
+    #getResizedBox(dx, dy) {
         const { left, top, width, height, right, bottom } = this.#origin;
         const { minWidth, minHeight, maxWidth, maxHeight } = this.#limits();
         const region = this.#region();
         const box = { left, top, width, height };
-        const widest = room => Math.max(minWidth, Math.min(maxWidth, room));
-        const tallest = room => Math.max(minHeight, Math.min(maxHeight, room));
+        const clampWidth = room => Math.max(minWidth, Math.min(maxWidth, room));
+        const clampHeight = room => Math.max(minHeight, Math.min(maxHeight, room));
 
         if (this.#edge.includes('e')) {
-            box.width = clamp(width + dx, minWidth, widest(region.right - left));
+            box.width = clamp(width + dx, minWidth, clampWidth(region.right - left));
         }
 
         if (this.#edge.includes('w')) {
-            box.width = clamp(width - dx, minWidth, widest(right - region.left));
+            box.width = clamp(width - dx, minWidth, clampWidth(right - region.left));
             box.left = right - box.width;
         }
 
         if (this.#edge.includes('s')) {
-            box.height = clamp(height + dy, minHeight, tallest(region.bottom - top));
+            box.height = clamp(height + dy, minHeight, clampHeight(region.bottom - top));
         }
 
         if (this.#edge.includes('n')) {
-            box.height = clamp(height - dy, minHeight, tallest(bottom - region.top));
+            box.height = clamp(height - dy, minHeight, clampHeight(bottom - region.top));
             box.top = bottom - box.height;
         }
 
@@ -318,14 +318,14 @@ class Frame {
     /** The smallest and largest size the frame's and the box's styles allow. */
     #limits() {
         const styles = this.#box === this.#frame ? [getComputedStyle(this.#frame)] : [getComputedStyle(this.#frame), getComputedStyle(this.#box)];
-        const smallest = name => Math.max(...styles.map(style => parseFloat(style[name]) || 0));
-        const largest = name => Math.min(...styles.map(style => parseFloat(style[name]) || Infinity));
+        const getSmallestSize = name => Math.max(...styles.map(style => parseFloat(style[name]) || 0));
+        const getLargestSize = name => Math.min(...styles.map(style => parseFloat(style[name]) || Infinity));
 
         return {
-            minWidth: smallest('minWidth'),
-            minHeight: smallest('minHeight'),
-            maxWidth: largest('maxWidth'),
-            maxHeight: largest('maxHeight'),
+            minWidth: getSmallestSize('minWidth'),
+            minHeight: getSmallestSize('minHeight'),
+            maxWidth: getLargestSize('maxWidth'),
+            maxHeight: getLargestSize('maxHeight'),
         };
     }
 

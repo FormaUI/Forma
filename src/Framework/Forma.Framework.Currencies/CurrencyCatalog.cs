@@ -74,11 +74,11 @@ public static class CurrencyCatalog
     // so zh-TW starts from zh-Hant rather than from zh.
     private static string GetLocale(CurrencyData data, CultureInfo culture)
     {
-        for (var current = culture; current.Name.Length > 0; current = current.Parent)
+        for (var candidateCulture = culture; candidateCulture.Name.Length > 0; candidateCulture = candidateCulture.Parent)
         {
-            if (data.Locales.Contains(current.Name))
+            if (data.Locales.Contains(candidateCulture.Name))
             {
-                return current.Name;
+                return candidateCulture.Name;
             }
         }
 
@@ -98,9 +98,9 @@ public static class CurrencyCatalog
             return parent;
         }
 
-        var cut = locale.LastIndexOf('-', StringComparison.Ordinal);
+        var cutIndex = locale.LastIndexOf('-', StringComparison.Ordinal);
 
-        return cut > 0 ? locale[..cut] : RootLocale;
+        return cutIndex > 0 ? locale[..cutIndex] : RootLocale;
     }
 
     private static CurrencyData Load()
@@ -108,17 +108,17 @@ public static class CurrencyCatalog
         using var stream = typeof(CurrencyCatalog).GetTypeInfo().Assembly.GetManifestResourceStream(ResourceName)
             ?? throw new InvalidOperationException($"The resource '{ResourceName}' is missing; regenerate it with scripts/Update-CurrencyData.ps1.");
 
-        var raw = JsonSerializer.Deserialize(stream, CurrencyJsonContext.Default.RawCurrencyData)
+        var rawData = JsonSerializer.Deserialize(stream, CurrencyJsonContext.Default.RawCurrencyData)
             ?? throw new InvalidOperationException($"The resource '{ResourceName}' could not be read.");
 
         return new CurrencyData(
-            Array.AsReadOnly([.. raw.Codes]),
-            raw.Codes.ToFrozenSet(StringComparer.Ordinal),
-            raw.DefaultMinorUnits,
-            raw.MinorUnits.ToFrozenDictionary(StringComparer.Ordinal),
-            raw.Locales.ToFrozenSet(StringComparer.OrdinalIgnoreCase),
-            raw.Parents.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
-            raw.Symbols.ToFrozenDictionary(entry => entry.Key, entry => entry.Value.ToFrozenDictionary(StringComparer.Ordinal), StringComparer.OrdinalIgnoreCase));
+            Array.AsReadOnly([.. rawData.Codes]),
+            rawData.Codes.ToFrozenSet(StringComparer.Ordinal),
+            rawData.DefaultMinorUnits,
+            rawData.MinorUnits.ToFrozenDictionary(StringComparer.Ordinal),
+            rawData.Locales.ToFrozenSet(StringComparer.OrdinalIgnoreCase),
+            rawData.Parents.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
+            rawData.Symbols.ToFrozenDictionary(entry => entry.Key, entry => entry.Value.ToFrozenDictionary(StringComparer.Ordinal), StringComparer.OrdinalIgnoreCase));
     }
 
     private sealed record CurrencyData(
