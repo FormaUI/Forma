@@ -126,10 +126,13 @@
                     </FormaDataGrid>
                 </FormaDataView>);
 
-            // Assert — the item element carries the key the script moves by, and no box is drawn to carry it instead
+            // Assert — the item element carries the key the script moves by, a list item and a card named by their item, and no box is drawn
+            // to carry it instead
             Assert.Multiple(
                 () => Assert.All(list.FindAll(".forma-data-list-item"), item => Assert.Equal(item.GetAttribute("data-item"), item.GetAttribute("data-row-key"))),
                 () => Assert.All(cards.FindAll(".forma-data-card"), card => Assert.Equal(card.GetAttribute("data-item"), card.GetAttribute("data-row-key"))),
+                () => Assert.Equal(["Product 1", "Product 2", "Product 3"], list.FindAll(".forma-data-list-item").Select(item => item.GetAttribute("aria-label"))),
+                () => Assert.Equal(["Product 1", "Product 2", "Product 3"], cards.FindAll(".forma-data-card").Select(card => card.GetAttribute("aria-label"))),
                 () => Assert.All(grid.FindAll("tbody tr.forma-data-grid-row"), row => Assert.Equal(row.GetAttribute("data-item"), row.GetAttribute("data-row-key"))),
                 () => Assert.Empty(list.FindAll("input[type=checkbox]")),
                 () => Assert.Empty(cards.FindAll("input[type=checkbox]")),

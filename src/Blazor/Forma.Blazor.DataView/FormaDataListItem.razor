@@ -11,6 +11,7 @@
      data-item-position="@Position"
      data-item="@Token"
      data-row-key="@(View.FocusesItems && View.CanFocus(Item) ? Token : null)"
+     aria-label="@(View.FocusesItems && View.CanFocus(Item) ? View.ItemName(Item) : null)"
      aria-disabled="@(View.FocusesItems && View.CanFocus(Item) && View.IsDisabled(Item) ? "true" : null)"
      data-item-root
      @onfocusin="@(View.FocusesItems ? List.GetFocusHandler(Item) : default)">

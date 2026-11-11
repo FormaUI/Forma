@@ -113,8 +113,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   the items of a list, cards or a grid the focus where no selection is on: one tab stop, the arrows moving the focus
   alone, and Enter and a press activating the item. `CheckedSelectionOptions.ChecksOnPress` has a press check an
   item's box rather than activate it, as a selection mode does, Enter still activating it, and turning a selection
-  on or off keeps the focus on the item it stood on. `IDataView` declares `FocusesItems`. A selection turned on or
-  off redraws every view's items; a view drew its old markers until something else changed.
+  on or off keeps the focus on the item it stood on, and a list item or a card that takes the focus is named for its
+  item. `IDataView` declares `FocusesItems`. A selection turned on or off redraws every view's items; a view drew its
+  old markers until something else changed.
 - Under WebAssembly, a [`FormaCheckBox`](docs/component-catalog.md#formacheckbox) with `PreventDefault` is drawn in the
   state its caller sets on a click, and so is every data view's box; the browser undid the click's toggle after the
   state was drawn, so a box stayed unchecked though its item was selected.
