@@ -41,10 +41,16 @@ var transcript = new StringBuilder();
 
 Scenario[] scenarios =
 [
-    new("The slow source's first load", "en", "/data-view/states",
-    [
-        new("open the page", null, ["Loading", "9 items"]),
-    ]),
+    new("The slow source's first load, its second page and a refresh", "en", "/data-view/states", SlowSource("Loading", "9 items")),
+    new("The slow source's first load, its second page and a refresh", "he", "/he/data-view/states", SlowSource("טוען", "9 פריטים")),
+    new("The slow tree's first load", "en", "/data-view/states", [new("open the page", null, ["Loading", "3 items"])]),
+    new("The slow tree's first load", "he", "/he/data-view/states", [new("open the page", null, ["טוען", "3 פריטים"])]),
+    new("The last page's only item taken away and everything put back", "en", "/data-view/states", PageGivingWay("8 items", "9 items")),
+    new("The last page's only item taken away and everything put back", "he", "/he/data-view/states", PageGivingWay("8 פריטים", "9 פריטים")),
+    new("A fourth box pressed in a bounded selection", "en", "/data-view/states",
+        BoundedSelection("3 of at most 3 selected", "Refused", "at most 3 may be selected")),
+    new("A fourth box pressed in a bounded selection", "he", "/he/data-view/states",
+        BoundedSelection("נבחרו 3 מתוך 3 לכל היותר", "נדחה", "ניתן לבחור 3 לכל היותר")),
     new("The tree's focus kept while it scrolls", "en", "/data-view/tree", TreeScrolling(rightToLeft: false)),
     new("The tree's focus kept while it scrolls", "he", "/he/data-view/tree", TreeScrolling(rightToLeft: true)),
     new("The tree's focus handed on when its node goes away", "en", "/data-view/tree", TreeHandOff(rightToLeft: false)),
@@ -135,18 +141,56 @@ await Console.Out.WriteAsync(transcript.ToString()).ConfigureAwait(false);
 
 return failureCount == 0 ? 0 : 1;
 
+// The states tab's slow source, three items to a page: its first load, a move to its second page and a refresh, each spoken as loading
+// and then the count.
+static Step[] SlowSource(string loading, string count)
+{
+    return [
+        new("open the page", null, [loading, count]),
+        new("move to the second page", page => PressNextPageAsync(page, 1), [loading, count]),
+        new("refresh", page => PressControlAsync(page, 1, 0), [loading, count]),
+    ];
+}
+
+// The states tab's shelf, four items to a page and nine items: its last page's only item taken away, and everything put back.
+static Step[] PageGivingWay(string fewer, string all)
+{
+    return [
+        new("open the page", null, []),
+        new("go to the last page", page => page.Locator(".demo-section").Nth(3).Locator(".forma-pagination-navigation-step")
+            .GetByText("3", new() { Exact = true }).EvaluateAsync("step => step.click()"), []),
+        new("take its only item away", page => PressControlAsync(page, 3, 0), [fewer]),
+        new("put everything back", page => PressControlAsync(page, 3, 1), [all]),
+    ];
+}
+
+// The states tab's bounded selection, one product checked and three at most: two more checked, then a fourth box pressed.
+static Step[] BoundedSelection(string full, string refused, string limit)
+{
+    return [
+        new("open the page", null, []),
+        new("check two more products", async page =>
+        {
+            await PressBoxAsync(page, 4, 1).ConfigureAwait(false);
+            await Task.Delay(500).ConfigureAwait(false);
+            await PressBoxAsync(page, 4, 2).ConfigureAwait(false);
+        }, [full]),
+        new("press a fourth box", page => PressBoxAsync(page, 4, 3), [refused, limit]),
+    ];
+}
+
 // The archive of a hundred thousand nodes: a node focused, scrolled out of view, and the keys carrying on from it. A name is
 // expected as NVDA speaks it, its full stop read as "dot".
 static Step[] TreeScrolling(bool rightToLeft)
 {
     return [
         new("open the page", null, []),
-        new("focus the first archive", page => TreeNode(page, 1, "Archive 1").FocusAsync(), ["Archive 1"]),
+        new("focus the first archive", page => TreeNode(page, 3, "Archive 1").FocusAsync(), ["Archive 1"]),
         new("open it", page => page.Keyboard.PressAsync(rightToLeft ? "ArrowLeft" : "ArrowRight"), ["expanded"]),
         new("move to the third scan", page => PressAsync(page, "ArrowDown", 3), ["Scan 1-00003 dot jpg"]),
         new("scroll it out of view, then move on", async page =>
         {
-            await page.Locator(".demo-section").Nth(1).Locator(".forma-data-tree").EvaluateAsync("tree => tree.scrollTop = 60000").ConfigureAwait(false);
+            await page.Locator(".demo-section").Nth(3).Locator(".forma-data-tree").EvaluateAsync("tree => tree.scrollTop = 60000").ConfigureAwait(false);
             await Task.Delay(1000).ConfigureAwait(false);
             await page.Keyboard.PressAsync("ArrowDown").ConfigureAwait(false);
         }, ["Scan 1-00004 dot jpg"]),
@@ -159,19 +203,19 @@ static Step[] TreeHandOff(bool rightToLeft)
 {
     return [
         new("open the page", null, []),
-        new("focus Documents", page => TreeNode(page, 3, "Documents").FocusAsync(), ["Documents"]),
+        new("focus Documents", page => TreeNode(page, 5, "Documents").FocusAsync(), ["Documents"]),
         new("open it", page => page.Keyboard.PressAsync(rightToLeft ? "ArrowLeft" : "ArrowRight"), ["expanded"]),
         new("move to Reports", page => page.Keyboard.PressAsync("ArrowDown"), ["Reports"]),
-        new("take Reports away while it holds the focus", page => PressControlAsync(page, 3, 1), ["Contracts"], TimeSpan.FromSeconds(8)),
+        new("take Reports away while it holds the focus", page => PressControlAsync(page, 5, 1), ["Contracts"], TimeSpan.FromSeconds(8)),
         new("put everything back, and move to Reports", async page =>
         {
-            await PressControlAsync(page, 3, 6).ConfigureAwait(false);
+            await PressControlAsync(page, 5, 6).ConfigureAwait(false);
             await Task.Delay(1000).ConfigureAwait(false);
             await page.Keyboard.PressAsync("ArrowUp").ConfigureAwait(false);
         }, ["Reports"]),
         new("open it", page => page.Keyboard.PressAsync(rightToLeft ? "ArrowLeft" : "ArrowRight"), ["expanded"]),
         new("move to Q1.pdf", page => page.Keyboard.PressAsync("ArrowDown"), ["Q 1 dot pdf"]),
-        new("close Documents over the focus", page => PressControlAsync(page, 3, 4), ["Documents"], TimeSpan.FromSeconds(8)),
+        new("close Documents over the focus", page => PressControlAsync(page, 5, 4), ["Documents"], TimeSpan.FromSeconds(8)),
     ];
 }
 
@@ -255,6 +299,18 @@ static async Task PressAsync(IPage page, string key, int pressCount)
 static Task PressControlAsync(IPage page, int section, int control)
 {
     return page.Locator(".demo-section").Nth(section).Locator(".demo-controls button").Nth(control).EvaluateAsync("button => button.click()");
+}
+
+// Presses a section's Next page without taking the focus to it.
+static Task PressNextPageAsync(IPage page, int section)
+{
+    return page.Locator(".demo-section").Nth(section).Locator(".forma-pagination-navigation-button-next").First.EvaluateAsync("button => button.click()");
+}
+
+// Presses the box of a section's list item without taking the focus to it.
+static Task PressBoxAsync(IPage page, int section, int item)
+{
+    return page.Locator(".demo-section").Nth(section).Locator(".forma-data-list-item-lead input").Nth(item).EvaluateAsync("box => box.click()");
 }
 
 /// <summary>A page in a culture, and the steps taken on it.</summary>

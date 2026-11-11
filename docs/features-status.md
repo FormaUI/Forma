@@ -24,7 +24,6 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | The component suite on iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
-| [Screen reader checks](#screen-reader-checks) | The data view's remaining scenarios |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
 
@@ -110,7 +109,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | The gate and CI on Linux and Windows | [Build and verification](repository-structure.md#build-and-verification) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | The browser check | [Tests](repository-structure.md#tests) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| The screen reader check | [Screen reader checks design](screen-reader-checks-design.md) | Implemented in part; [the data view's scenarios](#screen-reader-checks) remain | [October 2026](../FEATURE-HISTORY.md#2026-10) |
+| The screen reader check | [Screen reader checks design](screen-reader-checks-design.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Releases | [Build and verification](repository-structure.md#build-and-verification) | Implemented in part; [the rest](#release) planned | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 
 <a id="components-to-build"></a>
@@ -147,12 +146,6 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
 ## The composer's later phases
 
 [Its plan](composer-implementation-plan.md) leaves three phases open: the Markdown and code editors with `Forma.AddOns.Composer.Markdown`; the satellite capabilities, `Forma.AddOns.Composer.TextMate`, `.KaTeX` and a hardened sanitizer; and the page designer, with its palette, canvas, widget tree and the text widget hosting the rich text editor, which lands last since it composes everything else.
-
-<a id="screen-reader-checks"></a>
-
-## Screen reader checks
-
-[The check](screen-reader-checks-design.md) runs the tree's scenarios, the checkbox's, the time picker's, the date and time picker's, the currency input's, and the slow source's first load in English. The data view's remaining announcements become scenarios in English and Hebrew: a move to the second page and a refresh each saying loading and then the count, the tree's first load the same, taking away the last page's only item and putting everything back each saying the new count, a fourth box pressed in a bounded selection saying the refusal, and the slow source's first load in Hebrew. Once they pass, the data view's manual screen reader check retires.
 
 <a id="the-build"></a>
 
