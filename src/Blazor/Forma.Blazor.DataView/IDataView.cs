@@ -16,6 +16,9 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>The name an item goes by.</summary>
     Func<TItem, string> ItemName { get; }
 
+    /// <summary>Whether the host names its items, rather than <see cref="ItemName"/> reading an item's text.</summary>
+    bool NamesItems { get; }
+
     /// <summary>The items on screen, in the order shown.</summary>
     IReadOnlyList<TItem> Items { get; }
 

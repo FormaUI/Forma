@@ -9,6 +9,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- A [`FormaDataGrid`](docs/data-view-design.md#accessibility-keyboard-and-direction) row's box is named for its item,
+  "Select Hammer", where the data view's `ItemName` names the items, as the boxes of the list, the cards and the tree
+  are; it said "Select Row" in every row. `IDataView` declares `NamesItems`.
 - `CatalogProviderItems` is gone: [`FormaDataView`](docs/data-view-design.md) pages and appends a provider's items, and
   `ReadAllAsync` reads a whole query where a surface needs every item.
 - `CatalogHistory` is `ExplorerHistory`, in `Forma.Framework.Explorer.Navigation`, the history of the folders an explorer

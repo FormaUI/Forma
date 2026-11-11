@@ -16,6 +16,7 @@
   "FormaDataGrid": {
     "Select All": "Seleccionar Todo",
     "Select Row": "Seleccionar Fila",
+    "Select {Name}": "Seleccionar {Name}",
     "Column Options": "Opciones de Columna",
     "Select Page ({Count})": "Seleccionar Página ({Count})",
     "Select All ({Count})": "Seleccionar Todo ({Count})",

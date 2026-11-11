@@ -641,7 +641,8 @@ paginator's own keys page. Items that take the focus themselves are activated by
 a press, and a selection turned on or off hands the focus to the element of the same item
 that carries it now, so the reader keeps their place. The markers stand as one tab stop, the one last focused or the first drawn
 until one is, and a box in the list, the cards and the tree is named for its item, as a list
-item or a card that takes the focus itself is. Home and
+item or a card that takes the focus itself is, and so is a grid row's where the host names its
+items, the row's box saying only that it selects a row where the host doesn't. Home and
 End reach the ends of the collection in a view of one column, and a row's ends in the cards,
 where Ctrl+Home and Ctrl+End reach the collection's. Under checked selection alone the
 markers are the boxes, every move takes the focus alone, and Space checks the box; under

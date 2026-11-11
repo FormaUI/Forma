@@ -31,6 +31,10 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
     // The field a row's box names to the input base as its value expression.
     private bool RowSelection { get; }
 
+    // The name of a row's box, its item's where the host names its items.
+    private string BoxLabel
+        => View.NamesItems ? L["Select {Name}", View.ItemName(Item)] : L["Select Row"];
+
     /// <inheritdoc />
     protected override Type LocalizationSourceType
         => typeof(FormaDataGrid<TItem>);

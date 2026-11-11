@@ -63,6 +63,46 @@
         }
 
         [Fact]
+        public void Should_name_each_row_s_box_for_its_item_where_the_host_names_the_items()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(2)" PageSize="10" EnableCheckedSelection="true" ItemName="@(item => item.Title)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+
+            // Assert
+            Assert.Equal(["Select Item 1", "Select Item 2"], cut.FindAll("tbody input[type=checkbox]").Select(box => box.GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public void Should_name_each_row_s_box_for_selecting_a_row_where_the_host_leaves_the_items_unnamed()
+        {
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(2)" PageSize="10" EnableCheckedSelection="true">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+
+            // Assert
+            Assert.All(cut.FindAll("tbody input[type=checkbox]"), box => Assert.Equal("Select Row", box.GetAttribute("aria-label")));
+        }
+
+        [Fact]
         public void Should_attach_selection_again_when_the_selection_changes_from_checked_to_items()
         {
             // Arrange — the behavior hands back a handle, so the grid holds it as attached

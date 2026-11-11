@@ -16,6 +16,7 @@
   "FormaDataGrid": {
     "Select All": "בחר הכל",
     "Select Row": "בחר שורה",
+    "Select {Name}": "בחר את {Name}",
     "Column Options": "אפשרויות עמודה",
     "Select Page ({Count})": "בחר עמוד ({Count})",
     "Select All ({Count})": "בחר הכל ({Count})",

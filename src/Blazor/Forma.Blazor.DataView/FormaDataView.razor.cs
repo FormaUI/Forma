@@ -362,6 +362,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         => ItemName ?? GetItemText;
 
     /// <inheritdoc />
+    bool IDataView<TItem>.NamesItems
+        => ItemName is not null;
+
+    /// <inheritdoc />
     public IReadOnlyList<DataViewGroup<TItem>> Groups
         => _groups;
 
