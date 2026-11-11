@@ -126,7 +126,7 @@ it marks as an application.
   titles the host refreshes, a switch reaching the native window left once another closes, and the culture
   the application keeps from one run to the next.
 - **Android, iOS and Mac Catalyst.** The MAUI example host builds from Forma's packages for each, in Release,
-  trimmed as the platform's own build trims it, on the platform's own machine, Android's in CI, and the native operations are
+  trimmed as the platform's own build trims it, on the platform's own machine in CI, and the native operations are
   checked against MAUI's share and file system contracts. On Android the build is installed on an emulator and
   driven through its web view's DevTools socket, which adb forwards: its strings switching with the culture, the
   host's own and a pack's, its stylesheets loading from the application's package, and its share menu's Share and

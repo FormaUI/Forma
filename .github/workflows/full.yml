@@ -1,5 +1,6 @@
 # Runs the full gate on every platform a release is held to: Linux's and Windows' gates,
-# WebView2 among Windows', and Android's checks on an emulator, the components in its web view and the MAUI example.
+# WebView2 among Windows', and Android's checks on an emulator, the components in its web view and the MAUI example;
+# it builds the MAUI example for iOS and Mac Catalyst as well, and reports those builds without holding a release to them.
 # A push to candidate runs it on the candidate, whose run a promotion to main and a release require to have passed for
 # the exact commit, and whose Linux gate keeps the packages it packed and checked, which the release publishes as they
 # are; the nightly run on dev surfaces an integration regression before a candidate is selected, checking one commit and
@@ -164,14 +165,16 @@ jobs:
           if-no-files-found: error
           retention-days: 90
 
-  # A Blazor Hybrid application on a phone or a tablet builds from Forma's packages on the platform's own machine, with
-  # the MAUI workload for its platform, which the gate's machines have no use for. Android's builds on Linux; Apple's
-  # need the Xcode their workloads name, which no hosted Mac carries yet, so `mobile.ps1` builds them on a Mac by hand.
+  # A Blazor Hybrid application on a phone, a tablet or a Mac builds from Forma's packages on the platform's own machine,
+  # with the MAUI workload for its platform, which the gate's machines have no use for. Android's builds on Linux, and
+  # Apple's on a Mac carrying the Xcode their workloads name; a run passes on Android's, the platform a release is held
+  # to, and reports Apple's.
   mobile:
     name: mobile (${{ matrix.platform }})
     needs: commit
     runs-on: ${{ matrix.os }}
     timeout-minutes: 75
+    continue-on-error: ${{ matrix.platform != 'Android' }}
 
     strategy:
       fail-fast: false
@@ -180,6 +183,15 @@ jobs:
           - platform: Android
             os: ubuntu-latest
             workload: maui-android
+            results: linux
+          - platform: iOS
+            os: xcode-27
+            workload: maui-ios
+            results: ios
+          - platform: MacCatalyst
+            os: xcode-27
+            workload: maui-maccatalyst
+            results: maccatalyst
 
     steps:
       - uses: actions/checkout@v7
@@ -231,7 +243,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: checks-mobile-linux-1
+          name: checks-mobile-${{ matrix.results }}-1
           path: artifacts/browser/mobile-results
           if-no-files-found: ignore
           retention-days: 14

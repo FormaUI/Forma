@@ -102,7 +102,8 @@ failed, so a fix to a host's startup reaches both.
 - **Full,** `./build.ps1`: everything, packaging, integration, smoke, the browsers, WebView2 and Android's E2E
   among it. It runs every check the machine it runs on can execute, naming each platform check it couldn't, as
   WebView2's away from Windows or Android's without a device. A full run in CI passes only once every required
-  platform job has passed for the same SHA: Linux's, Windows' with WebView2, and Android's E2E. The nightly run on
+  platform job has passed for the same SHA: Linux's, Windows' with WebView2, and Android's E2E. The MAUI example's
+  builds for iOS and Mac Catalyst, on a hosted Mac, are reported beside them and hold nothing. The nightly run on
   `dev` holds the same coverage as a candidate's.
 
 **A change runs the gates its reach calls for.** Before a commit, it runs the fast gate, the format check where C#
