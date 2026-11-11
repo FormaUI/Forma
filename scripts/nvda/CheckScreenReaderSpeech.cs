@@ -108,15 +108,15 @@ foreach (var scenario in scenarios)
 
         var outcome = await speech.WaitForAsync(mark, step.Expect, step.Timeout ?? TimeSpan.FromSeconds(10)).ConfigureAwait(false);
 
-        transcript.AppendLine(CultureInfo.InvariantCulture, $"## {step.Description}: {(outcome.Missing is null ? "passed" : $"missing \"{outcome.Missing}\"")}");
+        transcript.AppendLine(CultureInfo.InvariantCulture, $"## {step.Description}: {(outcome.MissingUtterance is null ? "passed" : $"missing \"{outcome.MissingUtterance}\"")}");
         transcript.AppendLine(CultureInfo.InvariantCulture, $"Expected, in order: {string.Join(" | ", step.Expect)}");
 
-        foreach (var utterance in outcome.Heard)
+        foreach (var utterance in outcome.HeardUtterances)
         {
             transcript.AppendLine(CultureInfo.InvariantCulture, $"  {utterance.Sequence,4}  {utterance.Text}");
         }
 
-        if (outcome.Missing is not null)
+        if (outcome.MissingUtterance is not null)
         {
             failureCount++;
         }
@@ -289,7 +289,7 @@ internal sealed class SpeechLog(string path)
         while (true)
         {
             var heardUtterances = Read().Skip(mark).ToList();
-            var missingUtterance = FirstMissing(heardUtterances, expectedUtterances);
+            var missingUtterance = GetFirstMissingUtterance(heardUtterances, expectedUtterances);
 
             if (missingUtterance is null || DateTime.UtcNow >= deadline)
             {
