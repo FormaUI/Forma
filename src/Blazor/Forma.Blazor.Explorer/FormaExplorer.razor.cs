@@ -185,8 +185,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private ExplorerGroupField _groupField;
 
-    private readonly HashSet<string> _collapsedGroups = [with(StringComparer.Ordinal)];
-
     private CatalogCollectionView _collection = default!;
 
     // The kinds an upload may add, where null is the kinds the explorer lists.
@@ -194,6 +192,11 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     // The groups of the browsing sequence under way, defined against the moment it started.
     private CatalogGrouping? _grouping;
+
+    // What the data view groups by, made for each grouped field so a new grouping opens every group, and reading the sequence's groups.
+    private DataViewGrouping<ICatalogItem>? _dataViewGrouping;
+
+    private ExplorerGroupField _dataViewGroupingField;
 
     // The grouped field, direction and culture the groups were defined for.
     private (ExplorerGroupField Field, CatalogSortDirection Direction, CultureInfo UICulture)? _groupingBasis;
@@ -209,6 +212,12 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     // The classes an item's row carries for its state.
     private static readonly Func<ICatalogItem, string?> GetItemClass = static item => item.GetStateClasses();
+
+    // An invisible item keeps its place undrawn, so the focus passes over it.
+    private static readonly Func<ICatalogItem, bool> CanFocusItem = static item => item.Visibility != CatalogItemVisibility.Invisible;
+
+    // The boxes the selection mode draws, which a press checks as Enter opens the item, made again for a new selection limit.
+    private CheckedSelectionOptions? _checkedSelectionOptions;
 
     // Whether an item is a folder holding folders, the children the sidebar's tree opens on, made once and reading the folders in force.
     private Func<ICatalogItem, bool> _holdsFolders = default!;
@@ -264,7 +273,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
-    // A folder's row is dragged where the folder may be moved and takes a drop where items may land in it, named by its key; the row
+    // An item is dragged where it may be moved, and a folder's row takes a drop where items may land in it, named by its key; the row
     // standing for every item takes a drop on the root and names none.
     private Dictionary<string, object>? GetItemAttributes(ICatalogItem item)
     {
@@ -273,22 +282,21 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return new Dictionary<string, object>(StringComparer.Ordinal) { ["data-drop-target"] = "true" };
         }
 
-        if (item is not ICatalogFolderItem folder)
-        {
-            return null;
-        }
-
-        var allowed = folder.GetCapabilities(ItemOptions);
+        var allowed = item.GetCapabilities(ItemOptions);
         Dictionary<string, object> attributes = new(StringComparer.Ordinal)
         {
             ["draggable"] = allowed.HasFlag(CatalogItemCapabilities.Drag) ? "true" : "false",
-            ["data-drop-key"] = folder.Key,
-            ["ondragstart"] = EventCallback.Factory.Create(this, () => _itemManager.BeginDrag(folder)),
+            ["ondragstart"] = EventCallback.Factory.Create(this, () => _itemManager.BeginDrag(item)),
         };
 
-        if (allowed.HasFlag(CatalogItemCapabilities.Drop))
+        if (item is ICatalogFolderItem folder)
         {
-            attributes["data-drop-target"] = "true";
+            attributes["data-drop-key"] = folder.Key;
+
+            if (allowed.HasFlag(CatalogItemCapabilities.Drop))
+            {
+                attributes["data-drop-target"] = "true";
+            }
         }
 
         return attributes;
@@ -430,6 +438,51 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private string GetKindLabel(CatalogItemKind kind)
         => ExplorerItemLocalization.GetKindLabel(L, kind);
 
+    private CheckedSelectionOptions CheckedSelectionOptions
+    {
+        get
+        {
+            int? maximum = Options.MaxSelection > 0 ? Options.MaxSelection : null;
+
+            if (_checkedSelectionOptions is not { } options || options.Maximum != maximum)
+            {
+                _checkedSelectionOptions = options = new CheckedSelectionOptions { ChecksOnPress = true, Maximum = maximum, SelectAllMode = SelectAllMode.None };
+            }
+
+            return options;
+        }
+    }
+
+    // The grouping the data view groups by, none while the explorer is ungrouped.
+    private DataViewGrouping<ICatalogItem>? DataViewGrouping
+    {
+        get
+        {
+            if (Grouping is null)
+            {
+                return null;
+            }
+
+            if (_dataViewGrouping is null || _dataViewGroupingField != _groupField)
+            {
+                _dataViewGroupingField = _groupField;
+                _dataViewGrouping = DataViewGrouping<ICatalogItem>.By(item => GetGroupKey(item), GetGroupName);
+            }
+
+            return _dataViewGrouping;
+        }
+    }
+
+    // The key of the group an item stands in, among the sequence's groups.
+    private string GetGroupKey(ICatalogItem item)
+        => _grouping?.GetGroup(item).Key ?? string.Empty;
+
+    // The heading of the group the key names, a kind group by its kind's label and every other by its band.
+    private string GetGroupName(string key)
+        => _grouping?.Groups.FirstOrDefault(group => group.Key == key) is CatalogKindGroup kindGroup
+            ? GetKindLabel(kindGroup.Kind)
+            : Enum.TryParse<ExplorerGroupBand>(key, out var band) ? ExplorerGroupPresentation.GetLabel(L, band, null) : key;
+
     // Kind groups stand in the order of their labels in the reader's culture, so the content is asked for again in the new order.
     private Task HandleCultureChangedAsync()
         => IsDisposed || _groupField != ExplorerGroupField.Kind
@@ -459,11 +512,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _paramStateTracker.Track(() => Constraints.AcceptedUploadKinds, accepted => _uploadFilter = CatalogResourceFilter.Parse(accepted));
         _paramStateTracker.Track(() => CurrentPage, page => _collection.PageNumber = page);
         _paramStateTracker.Track(() => ViewMode, mode => _viewMode = mode);
-        _paramStateTracker.Track(() => GroupField, field =>
-        {
-            _groupField = field;
-            _collapsedGroups.Clear();
-        });
+        _paramStateTracker.Track(() => GroupField, field => _groupField = field);
         _paramStateTracker.Track(() => Options.DetailsColumns, columns => _detailsColumns = columns);
         _paramStateTracker.Track(() => Options.ShowDetailsHeader, shows => _showsDetailsHeader = shows);
         _paramStateTracker.Track(() => SortField, field => _collection.SortField = field);
@@ -589,7 +638,8 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _queriedBasis = QueryBasis;
         StartSequence();
 
-        if (_collection.PageNumber != 1)
+        // A new grouping, or a page other than the first, reaches the data view as it renders, which reads the items again itself.
+        if (_collection.PageNumber != 1 || !ReferenceEquals(DataViewGrouping, _dataView?.GroupBy))
         {
             _collection.PageNumber = 1;
             StateHasChanged();
@@ -757,11 +807,12 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     IReadOnlyList<ExplorerItemGroup> IExplorerContentView.VisibleGroups
         => ExplorerGrouping.GroupBy(VisibleItems, Grouping, GetKindLabel, _source.GroupSizes);
 
+    // The data view folds the groups, so a group folded in one view stays folded in the others.
     bool IExplorerContentView.IsCollapsed(ExplorerItemGroup group)
     {
         ArgumentNullException.ThrowIfNull(group);
 
-        return _collapsedGroups.Contains(group.Key);
+        return ContentView is { } content && content.Groups.FirstOrDefault(viewGroup => Equals(viewGroup.Key, group.Key)) is { } folded && content.IsFolded(folded);
     }
 
     ICatalogSelectionView IExplorerView.Selection => _selection;
@@ -808,16 +859,17 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     Task IExplorerContentInteraction.GroupByAsync(ExplorerGroupField field)
         => RunAsync(() => HandleGroupFieldChangedAsync(field));
 
-    Task IExplorerContentInteraction.ToggleGroupAsync(ExplorerItemGroup group)
+    async Task IExplorerContentInteraction.ToggleGroupAsync(ExplorerItemGroup group)
     {
         ArgumentNullException.ThrowIfNull(group);
 
-        if (!_collapsedGroups.Remove(group.Key))
+        if (_dataView is not { } view)
         {
-            _collapsedGroups.Add(group.Key);
+            return;
         }
 
-        return InvokeAsync(StateHasChanged);
+        await (((IExplorerContentView)this).IsCollapsed(group) ? view.UnfoldGroupAsync(group.Key) : view.FoldGroupAsync(group.Key));
+        await InvokeAsync(StateHasChanged);
     }
 
     Task IExplorerContentInteraction.ToggleDetailsColumnAsync(ExplorerDetailsColumns column)
@@ -905,6 +957,39 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // The host's own selection is adopted without being reported back.
     private void AdoptSelection(IReadOnlyList<ICatalogItem> selected)
         => _selection.Replace(selected);
+
+    // The data view's boxes change the explorer's selection, whose rules decide what it holds: one kind at a time, and its limit.
+    private Task HandleViewSelectionChangedAsync(IReadOnlyList<ICatalogItem> items)
+        => ChangeSelectionAsync(selection =>
+        {
+            HashSet<string> kept = [.. items.Select(item => item.Key)];
+
+            foreach (var item in selection.Items.Where(item => !kept.Contains(item.Key)).ToList())
+            {
+                selection.Remove(item);
+            }
+
+            foreach (var item in items.Where(item => !selection.IsSelected(item)))
+            {
+                selection.Toggle(item);
+            }
+        });
+
+    // An item the data view activates, by a press or by Enter, opens: a folder is entered and a file previewed where it may be viewed.
+    private Task OpenItemAsync(ICatalogItem item)
+    {
+        if (item is ICatalogFolderItem folder)
+        {
+            return MoveToFolderAsync(folder);
+        }
+
+        if (item.Resource is { } resource && item.Permits(ItemOptions, CatalogItemCapabilities.View))
+        {
+            OpenPreview(resource);
+        }
+
+        return Task.CompletedTask;
+    }
 
     private async Task ToggleSelectModeAsync()
     {
@@ -1220,7 +1305,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
 
         _groupField = field;
-        _collapsedGroups.Clear();
 
         // The store orders by the groups, so the content is asked for again, once, whether or not the host binds the field back.
         await RestartContentAsync();

@@ -60,6 +60,7 @@ internal sealed class ExplorerDataViewSource(Func<CatalogFolderTree> folders, Fu
             ReadCount = page.ReadCount ?? page.Items.Count,
             HasMore = page.HasMore,
             PositionCount = page.TotalCount,
+            GroupSizes = page.GroupSizes is { } sizes ? [.. sizes.Select(size => new DataViewGroupSize(size.Key, size.Count))] : null,
         };
     }
 

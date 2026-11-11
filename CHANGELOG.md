@@ -176,6 +176,15 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `.forma-explorer-scroll-status`, which a stylesheet addressing them now finds as the data view's `.forma-pagination`,
   `.forma-data-view-more` and `.forma-data-view-status`. `IExplorerContentView.Paging`, `ExplorerPagingInfo`, and
   `IExplorerContentInteraction.RequestNextPageAsync` and `ChangePageAsync` are gone, the paging being the data view's.
+- [`FormaExplorer`](docs/explorer-design.md#the-parts)'s thumbnails are the data view's cards at their compact density,
+  each the thumbnail and the name. They hold one tab stop with the selection mode off, the arrows moving the focus
+  alone, a press or Enter opening a folder or previewing a file; in the selection mode a press or Space checks a
+  card's box and Enter still opens it, the focus staying on its card as the mode changes. Their group headings and
+  folding are the data view's, a group folded in one view staying folded in the others. A file's size no longer
+  shows beneath its name, and a tile was a button the keyboard reached one by one. `FormaExplorerThumbnailsView` is
+  gone, and a stylesheet addressing the tiles' `.forma-explorer-item`, `.forma-explorer-item-name` or
+  `.forma-explorer-thumbnail-wrapper` finds the cards' `.forma-data-card`, `.forma-data-card-name` and
+  `.forma-data-card-thumbnail`.
 - On a statically rendered page, [`FormaNumberInput`](docs/component-catalog.md#formanumberinput),
   `FormaCurrencyInput`, `FormaDatePicker`, `FormaTimePicker` and `FormaDateTimePicker` are edited in the browser's own
   number, date, time and date-and-time inputs, and `FormaSelect` and `FormaMultiSelect` in the browser's own list,

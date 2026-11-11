@@ -51,6 +51,37 @@
     font-size: var(--font-size-sm);
 }
 
+/* --- Thumbnails --- */
+/* A thumbnail fills its card's image, and the item's actions stand in the image's leading corner, the box taking their place while
+   selecting. */
+.forma-explorer-card-thumbnail {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: 100%;
+    block-size: 100%;
+}
+
+.forma-explorer-card-actions {
+    position: absolute;
+    inset-block-start: var(--space-2);
+    inset-inline-start: var(--space-2);
+    z-index: 1;
+}
+
+/* A card that can be dragged says so to the pointer, and an invisible item keeps its place in the cards undrawn. */
+.forma-explorer-scroll ::deep .forma-data-card[draggable="true"] {
+    cursor: grab;
+}
+
+.forma-explorer-scroll ::deep .forma-data-card[draggable="true"]:active {
+    cursor: grabbing;
+}
+
+.forma-explorer-scroll ::deep .forma-data-card.is-invisible {
+    visibility: hidden;
+}
+
 /* --- Footer --- */
 /* The data view's footer, its pager and status, sits inside the card's inset beneath the media. */
 ::deep .forma-explorer-footer {

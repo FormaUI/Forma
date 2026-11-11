@@ -4,6 +4,7 @@
 @using Forma.Framework.Input.Pointer
 @using Forma.Framework.Resources
 @using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.DataView
 @using Forma.Blazor.Components.Explorer
 @using Forma.Blazor.Components.Files
 @using Forma.Framework.Files
@@ -15,10 +16,37 @@
 @using Bunit.Rendering
 
 @code {
-    // The item a view draws under the name, wherever the location's folders, drawn before its files, put it.
+    // The card the thumbnails draw for the item under the name, wherever the location's folders, drawn before its files, put it.
     private static AngleSharp.Dom.IElement ItemNamed<TComponent>(Bunit.IRenderedComponent<TComponent> cut, string name)
         where TComponent : Microsoft.AspNetCore.Components.IComponent
-        => cut.FindAll(".forma-explorer-item").Single(item => item.QuerySelector(".forma-explorer-item-name")?.TextContent == name);
+        => cut.FindAll(".forma-data-card").Single(card => card.QuerySelector(".forma-data-card-name")?.TextContent == name);
+
+    // The names the thumbnails show, in order.
+    private static List<string> GetItemNames<TComponent>(Bunit.IRenderedComponent<TComponent> cut)
+        where TComponent : Microsoft.AspNetCore.Components.IComponent
+        => [.. cut.FindAll(".forma-data-card-name").Select(node => node.TextContent.Trim())];
+
+    // The box the selection mode draws on a card.
+    private static AngleSharp.Dom.IElement GetBox(AngleSharp.Dom.IElement card)
+        => card.QuerySelector("input[type=checkbox]")!;
+
+    // Whether the box on a card is checked, the item selected.
+    private static bool IsBoxChecked(AngleSharp.Dom.IElement card)
+        => card.QuerySelector("input[type=checkbox]")?.HasAttribute("checked") == true;
+
+    // Clicks the box on the card showing the name, which checks it or clears it.
+    private static void ToggleBox<TComponent>(Bunit.IRenderedComponent<TComponent> cut, string name)
+        where TComponent : Microsoft.AspNetCore.Components.IComponent
+        => GetBox(ItemNamed(cut, name)).Click();
+
+    // Presses the card showing the name, as the selection behavior reports a press by the token the card carries.
+    private static Task PressCardAsync<TComponent>(Bunit.IRenderedComponent<TComponent> cut, string name)
+        where TComponent : class, Microsoft.AspNetCore.Components.IComponent
+    {
+        var token = int.Parse(ItemNamed(cut, name).GetAttribute("data-item")!, CultureInfo.InvariantCulture);
+
+        return cut.InvokeAsync(() => cut.FindComponent<FormaDataView<ICatalogItem>>().Instance.HandleActivateAsync(token));
+    }
 
     // The sidebar's rows, the row standing for every item first.
     private static IReadOnlyList<AngleSharp.Dom.IElement> GetFolderRows<TComponent>(Bunit.IRenderedComponent<TComponent> cut)
@@ -96,7 +124,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Constraints="constraints" />);
 
             // Assert
-            var names = cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim()).ToList();
+            var names = GetItemNames(cut);
             Assert.Equal(["cover.jpg", "notes.pdf"], names);
         }
 
@@ -117,7 +145,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Constraints="constraints" />);
 
             // Assert
-            var names = cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim()).ToList();
+            var names = GetItemNames(cut);
             Assert.Equal(["clip.mp4", "cover.jpg"], names);
         }
 
@@ -137,7 +165,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Constraints="constraints" />);
 
             // Assert
-            var names = cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim()).ToList();
+            var names = GetItemNames(cut);
             Assert.Equal(["photo-01.jpg"], names);
         }
 
@@ -246,10 +274,10 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
 
             // Assert
-            var items = cut.FindAll(".forma-explorer-item");
-            Assert.Equal(2, items.Count);
-            Assert.NotNull(cut.Find(".forma-explorer-grid"));
-            Assert.Equal("cover.jpg", items[0].QuerySelector(".forma-explorer-item-name")!.TextContent);
+            var cards = cut.FindAll(".forma-data-card");
+            Assert.Equal(2, cards.Count);
+            Assert.NotNull(cut.Find(".forma-explorer-cards"));
+            Assert.Equal("cover.jpg", cards[0].QuerySelector(".forma-data-card-name")!.TextContent);
         }
 
         [Fact]
@@ -273,7 +301,7 @@
 
             // Act & Assert - Switch back to Thumbnails
             cut.FindAll(".forma-explorer-view-button")[0].Click();
-            Assert.NotNull(cut.Find(".forma-explorer-grid"));
+            Assert.NotNull(cut.Find(".forma-explorer-cards"));
         }
 
         [Fact]
@@ -294,8 +322,8 @@
             await fields.TypeAsync(cut.Find("input.forma-search-box"), "banner");
 
             // Assert
-            var item = Assert.Single(cut.FindAll(".forma-explorer-item"));
-            Assert.Equal("banner.png", item.QuerySelector(".forma-explorer-item-name")!.TextContent);
+            var card = Assert.Single(cut.FindAll(".forma-data-card"));
+            Assert.Equal("banner.png", card.QuerySelector(".forma-data-card-name")!.TextContent);
         }
 
         [Fact]
@@ -390,14 +418,14 @@
 
             // Act & Assert - Name ascending (default)
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
-            var items = cut.FindAll(".forma-explorer-item-name");
+            var items = cut.FindAll(".forma-data-card-name");
             Assert.Equal("a.jpg", items[0].TextContent);
             Assert.Equal("b.jpg", items[1].TextContent);
             Assert.Equal("c.jpg", items[2].TextContent);
 
             // Act
             await SortByAsync(cut, CatalogSortField.Size);
-            items = cut.FindAll(".forma-explorer-item-name");
+            items = cut.FindAll(".forma-data-card-name");
             Assert.Equal("c.jpg", items[0].TextContent);
             Assert.Equal("b.jpg", items[1].TextContent);
             Assert.Equal("a.jpg", items[2].TextContent);
@@ -421,14 +449,14 @@
             await SortByAsync(cut, CatalogSortField.DateAdded);
 
             // Assert
-            var items = cut.FindAll(".forma-explorer-item-name");
+            var items = cut.FindAll(".forma-data-card-name");
             Assert.Equal(["b.jpg", "c.jpg", "a.jpg"], items.Select(i => i.TextContent));
 
             // Act
             await SortByAsync(cut, CatalogSortField.DateModified);
 
             // Assert
-            items = cut.FindAll(".forma-explorer-item-name");
+            items = cut.FindAll(".forma-data-card-name");
             Assert.Equal(["a.jpg", "c.jpg", "b.jpg"], items.Select(i => i.TextContent));
         }
 
@@ -448,7 +476,7 @@
             await SortByAsync(cut, CatalogSortField.DateModified);
 
             // Assert
-            var items = cut.FindAll(".forma-explorer-item-name");
+            var items = cut.FindAll(".forma-data-card-name");
             Assert.Equal(["undated.jpg", "dated.jpg"], items.Select(i => i.TextContent));
         }
 
@@ -553,8 +581,8 @@
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.FindAll(".forma-explorer-item-open")[0].Click();
-            cut.FindAll(".forma-explorer-item-open")[1].Click();
+            ToggleBox(cut, "item1.jpg");
+            ToggleBox(cut, "item2.jpg");
 
             // Assert
             Assert.NotNull(selected);
@@ -576,7 +604,7 @@
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            cut.Find(".forma-explorer-item-open").Click();
+            ToggleBox(cut, "item1.jpg");
 
             // Assert
             Assert.NotNull(applied);
@@ -673,7 +701,7 @@
                                                 Folders="@(CatalogItem.ForAll([folder]))"
                                                 OnDrop="@(_ => Task.CompletedTask)" />);
 
-            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-explorer-item")));
+            cut.WaitForAssertion(() => Assert.NotEmpty(cut.FindAll(".forma-data-card")));
             var asked = provider.Queries.Count;
 
             // Act
@@ -947,7 +975,7 @@
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.Find(".forma-explorer-item-open").Click();
+            ToggleBox(cut, "cover.jpg");
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-selection-bar"));
@@ -1031,7 +1059,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="items" />);
 
             // Assert
-            Assert.Equal(["shown.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim()));
+            Assert.Equal(["shown.jpg"], GetItemNames(cut));
         }
 
         [Fact]
@@ -1071,12 +1099,12 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(2, cut.FindAll(".forma-explorer-item").Count),
-                () => Assert.Equal("invisible.jpg", cut.Find(".forma-explorer-item.is-invisible .forma-explorer-item-name").TextContent.Trim()));
+                () => Assert.Equal(2, cut.FindAll(".forma-data-card").Count),
+                () => Assert.Equal("invisible.jpg", cut.Find(".forma-data-card.is-invisible .forma-data-card-name").TextContent.Trim()));
         }
 
         [Fact]
-        public void Should_draw_a_disabled_item_without_any_operation()
+        public async Task Should_draw_a_disabled_item_without_any_operation()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1096,20 +1124,20 @@
                                                 SelectedChanged="@(selected => { reports.Add(selected); return Task.CompletedTask; })" />);
 
             // Assert
-            var tile = cut.Find(".forma-explorer-item");
+            var card = ItemNamed(cut, "locked.jpg");
             Assert.Multiple(
-                () => Assert.Equal("false", tile.GetAttribute("draggable")),
-                () => Assert.Contains("is-disabled", tile.ClassList),
-                () => Assert.True(cut.Find(".forma-explorer-item-open").HasAttribute("disabled")),
+                () => Assert.Equal("false", card.GetAttribute("draggable")),
+                () => Assert.Contains("is-disabled", card.ClassList),
                 () => Assert.Empty(cut.FindAll(".forma-explorer-action-bar")));
 
             // Act
-            cut.Find(".forma-explorer-item-open").Click();
+            await PressCardAsync(cut, "locked.jpg");
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.Find(".forma-explorer-item-open").Click();
+            ToggleBox(cut, "locked.jpg");
 
             // Assert
             Assert.Multiple(
+                () => Assert.Equal("true", GetBox(ItemNamed(cut, "locked.jpg")).GetAttribute("aria-disabled")),
                 () => Assert.Empty(cut.FindAll(".forma-dialog")),
                 () => Assert.Empty(reports));
         }
@@ -1186,8 +1214,8 @@
                                                 Folders="@(CatalogItem.ForAll([folder]))"
                                                 OnDrop="@(req => { request = req; return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ItemNamed(cut, "a.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
-            ItemNamed(cut, "b.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
+            ToggleBox(cut, "a.jpg");
+            ToggleBox(cut, "b.jpg");
 
             // Act
             ItemNamed(cut, "a.jpg").DragStart();
@@ -1217,7 +1245,7 @@
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.Find(".forma-explorer-item-open").Click();
+            ToggleBox(cut, "fixed.jpg");
 
             // Assert
             Assert.Multiple(
@@ -1345,17 +1373,17 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
 
             // Assert
-            Assert.Empty(cut.FindAll(".forma-explorer-item-select"));
+            Assert.Empty(cut.FindAll(".forma-explorer-cards input[type=checkbox]"));
             Assert.Equal("false", cut.Find(".forma-explorer-select-mode-button").GetAttribute("aria-pressed"));
-            Assert.Equal("Preview cover.jpg", cut.Find(".forma-explorer-item-open").GetAttribute("aria-label"));
+            Assert.Null(ItemNamed(cut, "cover.jpg").GetAttribute("aria-selected"));
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Assert
-            Assert.Single(cut.FindAll(".forma-explorer-item-select"));
+            Assert.Equal("Select cover.jpg", Assert.Single(cut.FindAll(".forma-explorer-cards input[type=checkbox]")).GetAttribute("aria-label"));
             Assert.Equal("true", cut.Find(".forma-explorer-select-mode-button").GetAttribute("aria-pressed"));
-            Assert.Equal("Select cover.jpg", cut.Find(".forma-explorer-item-open").GetAttribute("aria-label"));
+            Assert.Equal("false", ItemNamed(cut, "cover.jpg").GetAttribute("aria-selected"));
         }
 
         [Theory]
@@ -1389,7 +1417,7 @@
 
             // Assert
             Assert.Single(cut.FindAll(".forma-explorer-sidebar .forma-explorer-folder-actions"));
-            Assert.Empty(ItemNamed(cut, "Races").QuerySelectorAll(".forma-explorer-item-select"));
+            Assert.Empty(ItemNamed(cut, "Races").QuerySelectorAll("input[type=checkbox]"));
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
@@ -1397,7 +1425,7 @@
             // Assert
             Assert.Single(cut.FindAll(".forma-explorer-sidebar .forma-explorer-folder-actions"));
             Assert.Empty(cut.FindAll(".forma-explorer-sidebar input[type=checkbox]"));
-            Assert.Single(ItemNamed(cut, "Races").QuerySelectorAll(".forma-explorer-item-select"));
+            Assert.Single(ItemNamed(cut, "Races").QuerySelectorAll("input[type=checkbox]"));
         }
 
         [Fact]
@@ -1756,8 +1784,8 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(["zebra.jpg", "kite.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
-                () => Assert.Equal(["Q–Z", "I–P"], cut.FindAll(".forma-explorer-group-label").Select(node => node.TextContent)));
+                () => Assert.Equal(["zebra.jpg", "kite.jpg"], GetItemNames(cut)),
+                () => Assert.Equal(["Q–Z", "I–P"], cut.FindAll(".forma-data-group-name").Select(node => node.TextContent)));
         }
 
         // Reads the headings and the items of each page in turn, the clock passing midnight once the first page is read.
@@ -1769,8 +1797,8 @@
 
             for (var page = 0; page < count; page++)
             {
-                pages.Add([.. cut.FindAll(".forma-explorer-group-heading, .forma-explorer-item img").Select(element => element.ClassList.Contains("forma-explorer-group-heading")
-                    ? $"{element.QuerySelector(".forma-explorer-group-label")!.TextContent} ({element.QuerySelector(".forma-explorer-group-count")!.TextContent})"
+                pages.Add([.. cut.FindAll(".forma-data-group-heading, .forma-data-card img").Select(element => element.ClassList.Contains("forma-data-group-heading")
+                    ? $"{element.QuerySelector(".forma-data-group-name")!.TextContent} ({element.QuerySelector(".forma-data-group-count")!.TextContent})"
                     : element.GetAttribute("src")!)]);
 
                 if (page == 0)
@@ -1818,7 +1846,7 @@
         }
 
         [Fact]
-        public void Should_gather_thumbnails_into_one_grid_per_group()
+        public void Should_gather_thumbnails_into_one_list_per_group()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1829,9 +1857,9 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(2, cut.FindAll(".forma-explorer-groups .forma-explorer-grid").Count),
-                () => Assert.Equal(2, cut.FindAll(".forma-explorer-group-heading").Count),
-                () => Assert.Equal(2, cut.FindAll(".forma-explorer-item").Count));
+                () => Assert.Equal(2, cut.FindAll(".forma-explorer-cards .forma-data-cards-group [role=list]").Count),
+                () => Assert.Equal(["Image", "Video"], cut.FindAll(".forma-data-group-heading .forma-data-group-name").Select(node => node.TextContent)),
+                () => Assert.Equal(2, cut.FindAll(".forma-data-card").Count));
         }
 
         [Fact]
@@ -1841,7 +1869,7 @@
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg"), new VideoResourceInfo("https://example.com/clip.mp4")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" GroupField="ExplorerGroupField.Kind" />);
-            cut.FindAll(".forma-explorer-group-heading")[0].Click();
+            cut.FindAll(".forma-data-group-heading")[0].Click();
 
             // Act - the same groups in the details view
             cut.FindAll(".forma-explorer-view-button")[1].Click();
@@ -1901,7 +1929,7 @@
         }
 
         [Fact]
-        public void Should_open_preview_when_item_is_activated_outside_select_mode()
+        public async Task Should_open_preview_when_item_is_activated_outside_select_mode()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1909,7 +1937,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
 
             // Act
-            cut.Find(".forma-explorer-item-open").Click();
+            await PressCardAsync(cut, "cover.jpg");
 
             // Assert
             Assert.NotNull(cut.Find(".forma-dialog"));
@@ -1924,7 +1952,7 @@
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.Find(".forma-explorer-item-open").Click();
+            ToggleBox(cut, "cover.jpg");
             Assert.NotNull(cut.Find(".forma-explorer-selection-bar"));
 
             // Act
@@ -1932,7 +1960,30 @@
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-explorer-selection-bar"));
-            Assert.Empty(cut.FindAll(".forma-explorer-item-select"));
+            Assert.Empty(cut.FindAll(".forma-explorer-cards input[type=checkbox]"));
+        }
+
+        [Fact]
+        public void Should_clear_every_box_the_selection_bar_clears_the_selection_of()
+        {
+            // Arrange — two cards checked in the selection mode
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg"), new ImageResourceInfo("https://example.com/banner.jpg")];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            ToggleBox(cut, "cover.jpg");
+            ToggleBox(cut, "banner.jpg");
+            Assert.True(IsBoxChecked(ItemNamed(cut, "banner.jpg")));
+
+            // Act
+            cut.Find(".forma-explorer-clear-button").Click();
+
+            // Assert — the boxes still drawn, none checked
+            Assert.Multiple(
+                () => Assert.Equal(2, cut.FindAll(".forma-explorer-cards input[type=checkbox]").Count),
+                () => Assert.False(IsBoxChecked(ItemNamed(cut, "cover.jpg"))),
+                () => Assert.False(IsBoxChecked(ItemNamed(cut, "banner.jpg"))),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-cards [aria-selected=true]")));
         }
 
         [Fact]
@@ -1965,15 +2016,15 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="@(CatalogItem.ForAll([folder]))" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ItemNamed(cut, "cover.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
-            Assert.NotEmpty(ItemNamed(cut, "cover.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
+            ToggleBox(cut, "cover.jpg");
+            Assert.True(IsBoxChecked(ItemNamed(cut, "cover.jpg")));
 
             // Act
-            ItemNamed(cut, "Races").QuerySelector(".forma-explorer-item-open")!.Click();
+            ToggleBox(cut, "Races");
 
             // Assert
-            Assert.Empty(ItemNamed(cut, "cover.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
-            Assert.NotEmpty(ItemNamed(cut, "Races").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
+            Assert.False(IsBoxChecked(ItemNamed(cut, "cover.jpg")));
+            Assert.True(IsBoxChecked(ItemNamed(cut, "Races")));
             Assert.Equal("1 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim());
         }
 
@@ -2005,8 +2056,8 @@
             var moves = 0;
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="folders" OnFolderChanged="@(_ => moves++)" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ItemNamed(cut, "a.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
-            ItemNamed(cut, "b.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
+            ToggleBox(cut, "a.jpg");
+            ToggleBox(cut, "b.jpg");
             Assert.Contains("2026", GetFolderNames(cut));
 
             // Act — the branch closed from its row, then opened again
@@ -2035,7 +2086,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="folders" CurrentFolder="races" OnFolderChanged="@(_ => moves++)" />);
             var explorer = cut.FindComponent<FormaExplorer>();
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ItemNamed(cut, "race.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
+            ToggleBox(cut, "race.jpg");
             var splitter = cut.FindComponents<FormaSplitter>().Single(component => component.Find("[role=separator]").ClassList.Contains("forma-explorer-splitter"));
 
             // Act — the sidebar widened, hidden, then shown again
@@ -2049,7 +2100,7 @@
                 () => Assert.Equal(0, moves),
                 () => Assert.Equal("true", GetFolderRow(cut, "Races").GetAttribute("aria-selected")),
                 () => Assert.Equal("1 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim()),
-                () => Assert.NotEmpty(ItemNamed(cut, "race.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked")));
+                () => Assert.True(IsBoxChecked(ItemNamed(cut, "race.jpg"))));
         }
 
         [Fact]
@@ -2061,15 +2112,15 @@
             var folder = new FolderResourceInfo("races") { Name = "Races" };
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="@(CatalogItem.ForAll([folder]))" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ItemNamed(cut, "Races").QuerySelector(".forma-explorer-item-open")!.Click();
-            Assert.NotEmpty(ItemNamed(cut, "Races").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
+            ToggleBox(cut, "Races");
+            Assert.True(IsBoxChecked(ItemNamed(cut, "Races")));
 
             // Act
-            ItemNamed(cut, "cover.jpg").QuerySelector(".forma-explorer-item-open")!.Click();
+            ToggleBox(cut, "cover.jpg");
 
             // Assert
-            Assert.Empty(ItemNamed(cut, "Races").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
-            Assert.NotEmpty(ItemNamed(cut, "cover.jpg").QuerySelectorAll(".forma-explorer-item-select.is-checked"));
+            Assert.False(IsBoxChecked(ItemNamed(cut, "Races")));
+            Assert.True(IsBoxChecked(ItemNamed(cut, "cover.jpg")));
             Assert.Equal("1 selected", cut.Find(".forma-explorer-selection-label").TextContent.Trim());
         }
 
@@ -2084,7 +2135,7 @@
                                                 Folders="@(CatalogItem.ForAll([folder]))"
                                                 OnFolderDelete="@(req => { request = req; return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            ItemNamed(cut, "Races").QuerySelector(".forma-explorer-item-open")!.Click();
+            ToggleBox(cut, "Races");
 
             // Act
             cut.Find(".forma-explorer-delete-button").Click();
@@ -2140,7 +2191,7 @@
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-list"));
-            Assert.Empty(cut.FindAll(".forma-explorer-grid"));
+            Assert.Empty(cut.FindAll(".forma-explorer-cards"));
         }
 
         [Fact]
@@ -2155,28 +2206,28 @@
             ];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" SelectedChanged="@(_ => Task.CompletedTask)" />);
             await SortByAsync(cut, CatalogSortField.Size);
-            Assert.Equal("b.jpg", cut.FindAll(".forma-explorer-item-name")[0].TextContent);
+            Assert.Equal("b.jpg", cut.FindAll(".forma-data-card-name")[0].TextContent);
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            cut.Find(".forma-explorer-item-open").Click();
+            ToggleBox(cut, "b.jpg");
 
             // Assert
-            Assert.Equal("b.jpg", cut.FindAll(".forma-explorer-item-name")[0].TextContent);
+            Assert.Equal("b.jpg", cut.FindAll(".forma-data-card-name")[0].TextContent);
         }
         [Fact]
-        public void Should_reopen_the_preview_after_it_has_been_closed()
+        public async Task Should_reopen_the_preview_after_it_has_been_closed()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
-            cut.Find(".forma-explorer-item-open").Click();
+            await PressCardAsync(cut, "cover.jpg");
             Assert.NotNull(cut.Find(".forma-dialog"));
 
             // Act
             cut.Find(".forma-dialog button[aria-label='Close']").Click();
-            cut.Find(".forma-explorer-item-open").Click();
+            await PressCardAsync(cut, "cover.jpg");
 
             // Assert
             Assert.NotNull(cut.Find(".forma-dialog"));
@@ -2400,13 +2451,13 @@
             ];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" PageSize="2" Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
             Assert.Empty(cut.FindAll(".forma-explorer-footer nav.forma-pagination"));
-            Assert.Equal(2, cut.FindAll(".forma-explorer-item").Count);
+            Assert.Equal(2, cut.FindAll(".forma-data-card").Count);
 
             // Act
             await cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
 
             // Assert
-            Assert.Equal(3, cut.FindAll(".forma-explorer-item").Count);
+            Assert.Equal(3, cut.FindAll(".forma-data-card").Count);
             Assert.Empty(cut.FindAll(".forma-data-view-more"));
         }
 
@@ -2476,7 +2527,7 @@
 
             // Assert — the watch is asked to measure the end afresh once the page is drawn
             Assert.Multiple(
-                () => Assert.Equal(4, cut.FindAll(".forma-explorer-item").Count),
+                () => Assert.Equal(4, cut.FindAll(".forma-data-card").Count),
                 () => Assert.Single(probe.Observations),
                 () => Assert.Single(probe.Watcher.Invocations, invocation => invocation.Identifier == "refresh"));
         }
@@ -2492,7 +2543,7 @@
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider"
                                                 PageSize="2"
                                                 Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
-            cut.WaitForState(() => cut.FindAll(".forma-explorer-item").Count == 2);
+            cut.WaitForState(() => cut.FindAll(".forma-data-card").Count == 2);
             provider.Gate = new TaskCompletionSource();
 
             // Act - a second press lands while the first page is still on its way
@@ -2504,7 +2555,7 @@
             // Assert - one request answered both presses
             Assert.Multiple(
                 () => Assert.Equal([0, 2], provider.Queries.Select(query => query.Skip)),
-                () => Assert.Equal(["a.jpg", "b.jpg", "c.jpg", "d.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())));
+                () => Assert.Equal(["a.jpg", "b.jpg", "c.jpg", "d.jpg"], GetItemNames(cut)));
         }
 
         [Fact]
@@ -2519,7 +2570,7 @@
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" PageSize="10" />);
 
             // Assert
-            Assert.Equal(10, cut.FindAll(".forma-explorer-item").Count);
+            Assert.Equal(10, cut.FindAll(".forma-data-card").Count);
             Assert.Equal(new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending), Assert.Single(provider.Queries));
             Assert.NotNull(cut.Find(".forma-explorer-footer nav.forma-pagination"));
         }
@@ -2538,7 +2589,7 @@
 
             // Assert
             Assert.Equal(10, provider.Queries[^1].Skip);
-            Assert.Equal("0011.jpg", cut.FindAll(".forma-explorer-item-name")[0].TextContent.Trim());
+            Assert.Equal("0011.jpg", cut.FindAll(".forma-data-card-name")[0].TextContent.Trim());
         }
 
         [Fact]
@@ -2571,13 +2622,13 @@
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider"
                                                 PageSize="10"
                                                 Options="@(new ExplorerOptions { InfiniteScroll = ExplorerInfiniteScrollMode.Manual })" />);
-            Assert.Equal(10, cut.FindAll(".forma-explorer-item").Count);
+            Assert.Equal(10, cut.FindAll(".forma-data-card").Count);
 
             // Act
             await cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
 
             // Assert
-            Assert.Equal(20, cut.FindAll(".forma-explorer-item").Count);
+            Assert.Equal(20, cut.FindAll(".forma-data-card").Count);
             Assert.Equal(10, provider.Queries[^1].Skip);
             Assert.Equal("Showing 20 of 50", cut.Find(".forma-data-view-status").TextContent.Trim());
         }
@@ -2596,7 +2647,7 @@
 
             // Assert - the hidden item is left out, and the store's total, which counts it, is never shown as what is listed
             Assert.Multiple(
-                () => Assert.Equal(["0002.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
+                () => Assert.Equal(["0002.jpg"], GetItemNames(cut)),
                 () => Assert.Equal("Showing 1 item", cut.Find(".forma-data-view-status").TextContent.Trim()));
 
             // Act
@@ -2605,7 +2656,7 @@
             // Assert - the next slice starts where the provider's last one ended, and nothing more is offered
             Assert.Multiple(
                 () => Assert.Equal(2, provider.Queries[^1].Skip),
-                () => Assert.Equal(["0002.jpg", "0003.jpg", "0004.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
+                () => Assert.Equal(["0002.jpg", "0003.jpg", "0004.jpg"], GetItemNames(cut)),
                 () => Assert.Equal("Showing 3 items", cut.Find(".forma-data-view-status").TextContent.Trim()),
                 () => Assert.Empty(cut.FindAll(".forma-data-view-more")));
         }
@@ -2631,7 +2682,7 @@
             Assert.Multiple(
                 () => Assert.Equal([0, 2, 4], provider.Queries.Select(query => query.Skip)),
                 () => Assert.Empty(pages),
-                () => Assert.Equal(["a.jpg", "b.jpg", "e.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())),
+                () => Assert.Equal(["a.jpg", "b.jpg", "e.jpg"], GetItemNames(cut)),
                 () => Assert.Equal("Showing 3 items", cut.Find(".forma-data-view-status").TextContent.Trim()),
                 () => Assert.Empty(cut.FindAll(".forma-data-view-more button")));
         }
@@ -2648,13 +2699,13 @@
 
             // Act
             await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
-            var hiddenPage = cut.FindAll(".forma-explorer-item").Count;
+            var hiddenPage = cut.FindAll(".forma-data-card").Count;
             await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(0, hiddenPage),
-                () => Assert.Equal(["e.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())));
+                () => Assert.Equal(["e.jpg"], GetItemNames(cut)));
         }
 
         [Fact]
@@ -2669,12 +2720,12 @@
                                                 PageSize="10"
                                                 SelectedChanged="@(items => { selected = items; return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.Find(".forma-explorer-item-open").Click();
+            ToggleBox(cut, "0001.jpg");
             Assert.Single(selected);
 
             // Act - page away from the slice holding the selected resource
             await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
-            cut.Find(".forma-explorer-item-open").Click();
+            ToggleBox(cut, "0011.jpg");
 
             // Assert
             Assert.Equal(["0001.jpg", "0011.jpg"], selected.Select(item => item.Name));
@@ -2727,7 +2778,7 @@
 
             // Assert
             Assert.True(provider.Queries.Count >= 2);
-            Assert.Equal(5, cut.FindAll(".forma-explorer-item").Count);
+            Assert.Equal(5, cut.FindAll(".forma-data-card").Count);
             Assert.Empty(cut.FindAll(".forma-explorer-scroll[aria-busy='true']"));
         }
 
@@ -2769,13 +2820,13 @@
 
             // Act - the move supersedes the request for Covers, whose answer comes after Races'
             explorer.Render(parameters => parameters.Add(p => p.CurrentFolder, (ICatalogFolderItem)folders[1]));
-            cut.WaitForState(() => cut.FindAll(".forma-explorer-item").Count == 1);
+            cut.WaitForState(() => cut.FindAll(".forma-data-card").Count == 1);
             provider.Gate.SetResult();
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(["covers", "races"], provider.Queries.Select(query => query.FolderKey)),
-                () => Assert.Equal(["race.jpg"], cut.FindAll(".forma-explorer-item-name").Select(node => node.TextContent.Trim())));
+                () => Assert.Equal(["race.jpg"], GetItemNames(cut)));
         }
 
         [Fact]
@@ -2798,13 +2849,13 @@
             Assert.NotNull(cut.Find(".forma-explorer-footer nav.forma-pagination"));
             Assert.Empty(cut.FindAll(".forma-data-view-more"));
             Assert.Equal(string.Empty, cut.Find(".forma-data-view-status").TextContent.Trim());
-            Assert.Equal(2, cut.FindAll(".forma-explorer-item").Count);
+            Assert.Equal(2, cut.FindAll(".forma-data-card").Count);
 
             // Act
             await cut.Find(".forma-explorer-footer nav.forma-pagination .forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
 
             // Assert
-            Assert.Single(cut.FindAll(".forma-explorer-item"));
+            Assert.Single(cut.FindAll(".forma-data-card"));
         }
 
         [Fact]
@@ -2856,7 +2907,7 @@
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            cut.FindAll(".forma-explorer-item-open")[0].Click();
+            ToggleBox(cut, "item1.jpg");
 
             // Assert
             Assert.Equal("item1.jpg", Assert.Single(Assert.Single(reports)).Name);
@@ -2871,7 +2922,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(Two))"
                                                 SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.FindAll(".forma-explorer-item-open")[0].Click();
+            ToggleBox(cut, "item1.jpg");
 
             // Act
             cut.Find(".forma-explorer-exit-select-button").Click();
@@ -2895,7 +2946,7 @@
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            ItemNamed(cut, "photos").QuerySelector(".forma-explorer-item-open")!.Click();
+            ToggleBox(cut, "photos");
 
             // Assert
             Assert.Multiple(
@@ -2912,7 +2963,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(Two))"
                                                 SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
             cut.Find(".forma-explorer-select-mode-button").Click();
-            cut.FindAll(".forma-explorer-item-open")[0].Click();
+            ToggleBox(cut, "item1.jpg");
 
             // Act
             cut.Find(".forma-explorer-clear-button").Click();

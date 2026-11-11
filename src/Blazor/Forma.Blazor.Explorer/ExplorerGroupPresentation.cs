@@ -23,9 +23,13 @@ internal static class ExplorerGroupPresentation
 
     /// <summary>The heading of <paramref name="group"/>.</summary>
     public static string GetLabel(IStringLocale locale, ExplorerItemGroup group)
-        => group.Band switch
+        => GetLabel(locale, group.Band, group.KindLabel);
+
+    /// <summary>The heading of a group in <paramref name="band"/>, a kind group's being <paramref name="kindLabel"/>.</summary>
+    public static string GetLabel(IStringLocale locale, ExplorerGroupBand band, string? kindLabel)
+        => band switch
         {
-            ExplorerGroupBand.Kind => group.KindLabel ?? string.Empty,
+            ExplorerGroupBand.Kind => kindLabel ?? string.Empty,
             ExplorerGroupBand.NameDigits => locale["0–9"].Value,
             ExplorerGroupBand.NameAToH => locale["A–H"].Value,
             ExplorerGroupBand.NameIToP => locale["I–P"].Value,
@@ -47,6 +51,6 @@ internal static class ExplorerGroupPresentation
             ExplorerGroupBand.DateLastMonth => locale["Last Month"].Value,
             ExplorerGroupBand.DateEarlierThisYear => locale["Earlier This Year"].Value,
             ExplorerGroupBand.DateLongAgo => locale["A Long Time Ago"].Value,
-            _ => group.Band.ToString(),
+            _ => band.ToString(),
         };
 }

@@ -14,9 +14,9 @@
         transition: opacity 0.15s ease;
     }
 
-    .forma-explorer-item:hover .forma-explorer-action-bar,
-    .forma-explorer-item:focus-within .forma-explorer-action-bar,
-    .forma-explorer-item:has(.forma-dropdown-menu) .forma-explorer-action-bar,
+    .forma-data-card:hover .forma-explorer-action-bar,
+    .forma-data-card:focus-within .forma-explorer-action-bar,
+    .forma-data-card:has(.forma-dropdown-menu) .forma-explorer-action-bar,
     .forma-explorer-details-row:hover .forma-explorer-action-bar,
     .forma-explorer-details-row:focus-within .forma-explorer-action-bar,
     .forma-explorer-details-row:has(.forma-dropdown-menu) .forma-explorer-action-bar,

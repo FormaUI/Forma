@@ -9,6 +9,13 @@ public sealed class ExplorerTests
 
         private static readonly string[] RacesItemNames = ["lap-times.txt"];
 
+        // Each card's own tab index, as its element carries it, and its box's.
+        private const string TabIndexes = """
+            () => [...document.querySelectorAll('#check .forma-data-card')]
+                .map(card => `${card.getAttribute('tabindex')} ${card.querySelector('input[type=checkbox]')?.tabIndex}`)
+                .join(', ')
+            """;
+
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_list_every_item_and_only_the_open_folder_s_once_one_is_opened(string runtime)
@@ -16,7 +23,7 @@ public sealed class ExplorerTests
             // Arrange
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer");
             await using var _ = context;
-            var names = page.Locator("#check .forma-explorer-item-name");
+            var names = page.Locator("#check .forma-data-card-name");
             var sidebar = page.Locator("#check .forma-explorer-sidebar");
             var races = sidebar.Locator("[role=treeitem]", new() { HasText = "Races" });
             await Assertions.Expect(names).ToHaveTextAsync(RootItemNames);
@@ -40,7 +47,7 @@ public sealed class ExplorerTests
             // Arrange — Races opened from the sidebar
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer");
             await using var _ = context;
-            var names = page.Locator("#check .forma-explorer-item-name");
+            var names = page.Locator("#check .forma-data-card-name");
             var sidebar = page.Locator("#check .forma-explorer-sidebar");
             var allMedia = sidebar.Locator("[role=treeitem]", new() { HasText = "All Media" });
             await ComponentChecks.WaitForInputRouteAsync(page, "#check .forma-data-tree", "tree.choose");
@@ -64,13 +71,54 @@ public sealed class ExplorerTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer");
             await using var _ = context;
             await ComponentChecks.WaitForInputRouteAsync(page, "#check .forma-explorer-folder-tree", "explorer.drop");
-            var file = page.Locator("#check .forma-explorer-item", new() { HasText = "cover.txt" });
+            var file = page.Locator("#check .forma-data-card", new() { HasText = "cover.txt" });
 
             // Act
-            await file.DragToAsync(page.Locator("#check [data-drop-key='races']"));
+            await file.DragToAsync(page.Locator("#check .forma-explorer-sidebar [data-drop-key='races']"));
 
             // Assert
             await Assertions.Expect(page.Locator("#dropped")).ToHaveTextAsync("cover.txt to Races");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_open_a_focused_thumbnail_and_check_thumbnails_in_its_selection_mode(string runtime)
+        {
+            // Arrange — the thumbnails holding one tab stop, on the first
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer");
+            await using var _ = context;
+            var cards = page.Locator("#check .forma-data-card");
+            var boxes = cards.Locator("input[type=checkbox]");
+            var select = page.Locator("#check .forma-explorer-header-wide").GetByRole(AriaRole.Button, new() { Name = "Select" });
+            await Assertions.Expect(cards).ToHaveCountAsync(RootItemNames.Length);
+            await ComponentChecks.WaitForInputScopeAsync(page, "#check .forma-data-view-region");
+            await Assertions.Expect(cards.Nth(0)).ToHaveAttributeAsync("tabindex", "0");
+            await Assertions.Expect(page.Locator("#check .forma-data-card[tabindex='0']")).ToHaveCountAsync(1);
+            await cards.Nth(0).FocusAsync();
+
+            // Act — the focus moved on to Races, which opens nothing and selects nothing
+            await page.Keyboard.PressAsync("ArrowRight");
+            await Assertions.Expect(cards.Nth(1)).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync(string.Empty);
+            await Assertions.Expect(page.Locator("#check .forma-data-card[aria-selected=true]")).ToHaveCountAsync(0);
+
+            // Act — the selection mode on, the tab stop staying with Races on its box and the cards leaving the Tab sequence, then Covers
+            // checked by a press and Races by Space
+            await select.ClickAsync();
+            await Assertions.Expect(boxes).ToHaveCountAsync(RootItemNames.Length);
+            await page.WaitForFunctionAsync($"expected => ({TabIndexes})() === expected", "null -1, null 0, null -1, null -1");
+            await cards.Nth(0).Locator(".forma-data-card-name").ClickAsync();
+            await Assertions.Expect(boxes.Nth(0)).ToBeCheckedAsync();
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync(string.Empty);
+            await page.Keyboard.PressAsync("ArrowRight");
+            await Assertions.Expect(boxes.Nth(1)).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync("Space");
+            await Assertions.Expect(boxes.Nth(1)).ToBeCheckedAsync();
+            await page.Keyboard.PressAsync("Enter");
+
+            // Assert — Enter opened Races
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Races");
+            await Assertions.Expect(page.Locator("#check .forma-data-card-name")).ToHaveTextAsync(RacesItemNames);
         }
 
         [Theory]
@@ -125,7 +173,7 @@ public sealed class ExplorerTests
 
             // Assert
             await Assertions.Expect(status).ToHaveTextAsync("Showing 12 of 12");
-            await Assertions.Expect(page.Locator("#check .forma-explorer-item-name")).ToHaveCountAsync(12);
+            await Assertions.Expect(page.Locator("#check .forma-data-card-name")).ToHaveCountAsync(12);
         }
     }
 }

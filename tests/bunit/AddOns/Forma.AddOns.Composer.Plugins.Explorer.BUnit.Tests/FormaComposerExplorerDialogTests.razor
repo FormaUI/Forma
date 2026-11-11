@@ -10,6 +10,13 @@
 @using Forma.Framework.Composer.Plugins
 
 @code {
+    // Chooses the file the card showing the name stands for, by the box the explorer's selection draws on it.
+    private static void Choose(IRenderedComponent<ContainerFragment> cut, string name)
+        => cut.FindAll(".forma-data-card")
+            .Single(card => card.QuerySelector(".forma-data-card-name")?.TextContent == name)
+            .QuerySelector("input[type=checkbox]")!
+            .Click();
+
     public sealed class Component
     {
         private sealed class StubLibrary(params ResourceInfo[] resources) : ICatalogProvider
@@ -21,9 +28,6 @@
         private static readonly ResourceInfo Picture = new ImageResourceInfo("/media/podium.png");
         private static readonly ResourceInfo Clip = new VideoResourceInfo("/media/finish.mp4");
         private static readonly ResourceInfo Report = new DocumentResourceInfo("/media/report.pdf");
-
-        private static void Choose(IRenderedComponent<ContainerFragment> cut, string name)
-            => cut.FindAll(".forma-explorer-item-open").Single(button => button.GetAttribute("aria-label")!.Contains(name, StringComparison.Ordinal)).Click();
 
         private static IComposerInsertionDialog GetBody(IRenderedComponent<ContainerFragment> cut)
             => cut.FindComponent<FormaComposerExplorerDialog>().Instance;
@@ -102,7 +106,7 @@
             var cut = ctx.Render(@<FormaComposerExplorerDialog />);
 
             // Assert
-            Assert.Equal(3, cut.FindAll(".forma-explorer-item").Count);
+            Assert.Equal(3, cut.FindAll(".forma-data-card").Count);
         }
 
         [Fact]
@@ -117,7 +121,7 @@
             var cut = ctx.Render(@<FormaComposerExplorerDialog Options="options" />);
 
             // Assert
-            var names = cut.FindAll(".forma-explorer-item-name").Select(item => item.TextContent.Trim()).ToList();
+            var names = cut.FindAll(".forma-data-card-name").Select(name => name.TextContent.Trim()).ToList();
             Assert.Equal(["podium.png"], names);
         }
 
@@ -133,7 +137,7 @@
             var cut = ctx.Render(@<FormaComposerExplorerDialog Options="options" />);
 
             // Assert
-            var names = cut.FindAll(".forma-explorer-item-name").Select(item => item.TextContent.Trim()).ToList();
+            var names = cut.FindAll(".forma-data-card-name").Select(name => name.TextContent.Trim()).ToList();
             Assert.Equal(["podium.png", "finish.mp4"], names);
         }
 
@@ -293,7 +297,7 @@
             cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-dialog-form .forma-explorer")));
 
             // Act
-            cut.FindAll(".forma-explorer-item-open").Single(button => button.GetAttribute("aria-label")!.Contains("podium.png", StringComparison.Ordinal)).Click();
+            Choose(cut, "podium.png");
             cut.FindAll("button").Single(button => button.TextContent.Trim() == "Insert").Click();
 
             // Assert

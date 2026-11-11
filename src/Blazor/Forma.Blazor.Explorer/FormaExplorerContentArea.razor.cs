@@ -2,6 +2,9 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Blazor.Components.DataView;
 using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Selection;
+using Forma.Framework.Css;
+using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Navigation;
@@ -19,6 +22,14 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
 
     [CascadingParameter] private IDataView<ICatalogItem> Content { get; set; } = default!;
 
+    [CascadingParameter] private IExplorerView Explorer { get; set; } = default!;
+
+    // The width a thumbnail packs at.
+    private static readonly CssLength ThumbnailSize = CssLength.FromRem(8.125);
+
+    private ICatalogSelectionView Selection
+        => Explorer.Selection;
+
     /// <inheritdoc />
     protected override Type LocalizationSourceType
         => typeof(FormaExplorer);
@@ -26,7 +37,7 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        if (Location is null || View is null || Search is null || Content is null)
+        if (Location is null || View is null || Search is null || Content is null || Explorer is null)
         {
             throw new InvalidOperationException($"{nameof(FormaExplorerContentArea)} must be rendered inside a {nameof(FormaExplorer)}.");
         }

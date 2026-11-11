@@ -30,7 +30,23 @@
         {
             @if (View.ViewMode == ExplorerViewMode.Thumbnails)
             {
-                <FormaExplorerThumbnailsView Items="View.VisibleItems" />
+                @* The thumbnails are the data view's cards at their compact density, which draw their groups and their next page. *@
+                <FormaDataCards TItem="ICatalogItem" Dense="true" CardSize="@ThumbnailSize" class="forma-explorer-cards" aria-label="@L["Media"]">
+                    <ThumbnailTemplate Context="item">
+                        <span class="forma-explorer-card-thumbnail">
+                            @if (item.Resource is { } resource)
+                            {
+                                <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Tile" />
+                            }
+                        </span>
+                        @if (!Selection.IsSelectionModeActive)
+                        {
+                            <span class="forma-explorer-card-actions" data-item-control>
+                                <FormaExplorerActionBar Item="item" />
+                            </span>
+                        }
+                    </ThumbnailTemplate>
+                </FormaDataCards>
             }
             else if (View.ViewMode == ExplorerViewMode.Details)
             {
@@ -42,8 +58,9 @@
             }
         }
 
-        @* The next page is the data view's to load, from its action after the items and as the reader reaches their end. *@
-        @if (View.VisibleItems.Count > 0)
+        @* The next page is the data view's to load, from its action after the items and as the reader reaches their end, which the cards draw
+           themselves. *@
+        @if (View.VisibleItems.Count > 0 && View.ViewMode != ExplorerViewMode.Thumbnails)
         {
             @Content.MoreContent
         }
