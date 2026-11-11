@@ -27,7 +27,7 @@
                                 <option>@L["One"]</option>
                                 <option>@L["Two"]</option>
                             </select>
-                            <FormaCheckBox @bind-Value="_model.Agreed">@L["Check"]</FormaCheckBox>
+                            <FormaCheckBox @bind-Value="_model.HasAgreed">@L["Check"]</FormaCheckBox>
                             <FormaButton Variant="ButtonVariant.Secondary">@L["Button"]</FormaButton>
                         </div>
                         <div class="demo-row demo-controls">
@@ -78,14 +78,14 @@
                     @if (_modalOpen)
                     {
                         <div class="demo-row">
-                            <FormaToggleButton Label="@L["Inner popup"]" ShowLabel="true" Icon="Glyph.LayoutBottom" Pressed="_innerOpen" OnClick="() => _innerOpen = !_innerOpen" />
+                            <FormaToggleButton Label="@L["Inner popup"]" ShowLabel="true" Icon="Glyph.LayoutBottom" Pressed="_isInnerOpen" OnClick="() => _isInnerOpen = !_isInnerOpen" />
                         </div>
-                        <FormaInputScope id="demo-inner" class="demo-scope demo-scope-popup" Profile="_popupProfile" Active="_innerOpen" OnDismiss="dismissal => Dismiss(ref _innerOpen, ref _lastInnerDismissal, dismissal)">
+                        <FormaInputScope id="demo-inner" class="demo-scope demo-scope-popup" Profile="_popupProfile" Active="_isInnerOpen" OnDismiss="dismissal => Dismiss(ref _isInnerOpen, ref _lastInnerDismissal, dismissal)">
                             <div class="demo-scope-header">
                                 <span class="demo-scope-name"><FormaIcon Icon="Glyph.LayoutBottom" Size="IconSize.Small" /> @L["Inner popup"]</span>
-                                <FormaStatusBadge Text="@(_innerOpen ? L["open"] : _lastInnerDismissal ?? L["closed"])" class="@(_innerOpen ? "demo-readout demo-readout-live" : "demo-readout")" />
+                                <FormaStatusBadge Text="@(_isInnerOpen ? L["open"] : _lastInnerDismissal ?? L["closed"])" class="@(_isInnerOpen ? "demo-readout demo-readout-live" : "demo-readout")" />
                             </div>
-                            @if (_innerOpen)
+                            @if (_isInnerOpen)
                             {
                                 <div class="demo-row">
                                     <FormaButton Variant="ButtonVariant.Secondary">@L["Option"]</FormaButton>

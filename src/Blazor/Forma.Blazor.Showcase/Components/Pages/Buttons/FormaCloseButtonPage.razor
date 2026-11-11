@@ -10,10 +10,10 @@
     <h2>@L["Sizes"]</h2>
     <div class="demo-box">
         <div class="demo-row">
-            <FormaCloseButton Label="@L["Close"]" OnClick="() => _clicks++" />
-            <FormaCloseButton Label="@L["Close"]" Size="ButtonSize.Mini" OnClick="() => _clicks++" />
+            <FormaCloseButton Label="@L["Close"]" OnClick="() => _clickCount++" />
+            <FormaCloseButton Label="@L["Close"]" Size="ButtonSize.Mini" OnClick="() => _clickCount++" />
         </div>
-        <p class="demo-note">@L["Clicks"]: <code>@_clicks</code></p>
+        <p class="demo-note">@L["Clicks"]: <code>@_clickCount</code></p>
     </div>
 </div>
 
@@ -36,5 +36,5 @@
 </div>
 
 @code {
-    private int _clicks;
+    private int _clickCount;
 }

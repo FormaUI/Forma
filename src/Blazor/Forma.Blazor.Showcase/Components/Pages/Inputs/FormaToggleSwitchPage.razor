@@ -11,8 +11,8 @@
     <div class="demo-section">
         <h2>@L["Basic Toggle"]</h2>
         <div class="demo-box">
-            <FormaToggleSwitch @bind-Value="Model.Active" />
-            <FormaToggleSwitch @bind-Value="Model.Featured" />
+            <FormaToggleSwitch @bind-Value="Model.IsActive" />
+            <FormaToggleSwitch @bind-Value="Model.IsFeatured" />
         </div>
     </div>
 
@@ -22,7 +22,7 @@
             <FormaToggleSwitch @bind-Value="Model.Comments"
                              OnLabel="@L["On"]"
                              OffLabel="@L["Off"]" />
-            <FormaToggleSwitch @bind-Value="Model.Published"
+            <FormaToggleSwitch @bind-Value="Model.IsPublished"
                              OnLabel="@L["Published"]"
                              OffLabel="@L["Unpublished"]" />
         </div>
@@ -44,11 +44,11 @@
             <FormaToggleSwitch @bind-Value="Model.OnByDefault"
                              OnLabel="@L["On"]"
                              OffLabel="@L["Off"]" />
-            <FormaToggleSwitch @bind-Value="Model.Disabled"
+            <FormaToggleSwitch @bind-Value="Model.DisabledValue"
                              Disabled="true"
                              OnLabel="@L["On"]"
                              OffLabel="@L["Off"]" />
-            <FormaToggleSwitch @bind-Value="Model.DisabledOn"
+            <FormaToggleSwitch @bind-Value="Model.DisabledOnValue"
                              Disabled="true"
                              OnLabel="@L["On"]"
                              OffLabel="@L["Off"]" />
@@ -60,20 +60,20 @@
     private ToggleDemoModel Model { get; set; } = new()
     {
         OnByDefault = true,
-        DisabledOn = true
+        DisabledOnValue = true
     };
 
     private void HandleSubmit() { }
 
     private sealed class ToggleDemoModel
     {
-        public bool Active { get; set; }
-        public bool Featured { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsFeatured { get; set; }
         public bool Comments { get; set; }
-        public bool Published { get; set; }
+        public bool IsPublished { get; set; }
         public bool OnByDefault { get; set; }
-        public bool Disabled { get; set; }
-        public bool DisabledOn { get; set; }
+        public bool DisabledValue { get; set; }
+        public bool DisabledOnValue { get; set; }
         public bool Newsletter { get; set; }
         public bool Indexing { get; set; }
         public bool Maintenance { get; set; }

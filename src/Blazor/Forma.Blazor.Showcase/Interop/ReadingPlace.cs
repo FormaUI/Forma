@@ -16,14 +16,14 @@ using Microsoft.AspNetCore.Components;
 internal sealed class ReadingPlace(IJSEnvironment js)
     : JSInterop(js, "./scripts/ReadingPlace.js")
 {
-    /// <summary>Attaches to <paramref name="target"/>, the list holding the current page's entry, with the selectors for the <paramref name="links"/> that change the language, the <paramref name="sections"/> the place is measured by and the list's <paramref name="current"/> entry.</summary>
-    public ValueTask<bool> AttachAsync(ElementReference target, string links, string sections, string current)
+    /// <summary>Attaches to <paramref name="target"/>, the list holding the current page's entry, with the selectors for the <paramref name="links"/> that change the language, the <paramref name="sections"/> the place is measured by and the list's <paramref name="currentEntry"/> entry.</summary>
+    public ValueTask<bool> AttachAsync(ElementReference target, string links, string sections, string currentEntry)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(links);
         ArgumentException.ThrowIfNullOrWhiteSpace(sections);
-        ArgumentException.ThrowIfNullOrWhiteSpace(current);
+        ArgumentException.ThrowIfNullOrWhiteSpace(currentEntry);
 
-        return AttachCoreAsync(target, new { links, sections, current });
+        return AttachCoreAsync(target, new { links, sections, currentEntry });
     }
 
     /// <summary>Scrolls the list to center its current entry when the entry is out of view.</summary>

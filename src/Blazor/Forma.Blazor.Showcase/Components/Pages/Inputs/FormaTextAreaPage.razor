@@ -59,7 +59,7 @@
         <h2>@L["Disabled"]</h2>
         <p class="description">@L["A disabled field is dimmed, refuses the caret and shows a not-allowed cursor."]</p>
         <div class="demo-box">
-            <FormaTextArea @bind-Value="_model.Locked" Label="@L["Locked note"]" disabled />
+            <FormaTextArea @bind-Value="_model.LockedValue" Label="@L["Locked note"]" disabled />
         </div>
     </div>
 
@@ -74,7 +74,7 @@
 </EditForm>
 
 @code {
-    private readonly DemoModel _model = new() { Locked = "Signed off by the editor." };
+    private readonly DemoModel _model = new() { LockedValue = "Signed off by the editor." };
     private string? _savedTerms;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messages = default!;
@@ -107,7 +107,7 @@
         public string? Comment { get; set; }
         public string? Title { get; set; }
         public string? Body { get; set; }
-        public string? Locked { get; set; }
+        public string? LockedValue { get; set; }
         public string? Terms { get; set; }
     }
 }

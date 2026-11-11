@@ -18,8 +18,8 @@ public sealed class WebRootContentReader(IWebHostEnvironment environment) : IRes
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
 
         var root = Path.TrimEndingDirectorySeparator(Path.GetFullPath(environment.WebRootPath)) + Path.DirectorySeparatorChar;
-        var relative = source.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
-        var path = Path.GetFullPath(Path.Combine(root, relative));
+        var relativePath = source.TrimStart('/').Replace('/', Path.DirectorySeparatorChar);
+        var path = Path.GetFullPath(Path.Combine(root, relativePath));
 
         // An address is untrusted input, so a traversal out of the web root reads nothing.
         if (!path.StartsWith(root, StringComparison.Ordinal) || !File.Exists(path))

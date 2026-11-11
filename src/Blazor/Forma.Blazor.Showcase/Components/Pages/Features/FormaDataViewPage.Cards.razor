@@ -133,11 +133,11 @@
     protected override Type LocalizationSourceType
         => typeof(FormaDataViewPage);
 
-    private void HandleCheckedChanged(IReadOnlyList<ShowcaseProduct> selected)
-        => _checkedProducts = selected;
+    private void HandleCheckedChanged(IReadOnlyList<ShowcaseProduct> selectedProducts)
+        => _checkedProducts = selectedProducts;
 
-    private void HandleSelectedChanged(IReadOnlyList<ShowcaseProduct> selected)
-        => _selectedProducts = selected;
+    private void HandleSelectedChanged(IReadOnlyList<ShowcaseProduct> selectedProducts)
+        => _selectedProducts = selectedProducts;
 
     private void ToggleNarrow()
         => _isNarrow = !_isNarrow;

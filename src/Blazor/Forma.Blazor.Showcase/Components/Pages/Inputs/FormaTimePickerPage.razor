@@ -60,7 +60,7 @@
             <FormaTimePicker @bind-Value="Model.Pickup" Label="@L["Pickup"]" Required="true" />
             <div class="demo-row">
                 <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
-                @if (_submitted)
+                @if (_isSubmitted)
                 {
                     <span class="demo-note">@L["Submitted."]</span>
                 }
@@ -89,26 +89,26 @@
         <h2>@L["Disabled and Read-Only"]</h2>
         <div class="demo-box">
             <div class="demo-stack">
-                <FormaTimePicker @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" />
-                <FormaTimePicker @bind-Value="Model.Locked" Label="@L["Read-Only"]" ReadOnly="true" />
+                <FormaTimePicker @bind-Value="Model.LockedValue" Label="@L["Disabled"]" Disabled="true" />
+                <FormaTimePicker @bind-Value="Model.LockedValue" Label="@L["Read-Only"]" ReadOnly="true" />
             </div>
         </div>
     </div>
 </EditForm>
 
 @code {
-    private bool _submitted;
+    private bool _isSubmitted;
 
     private TimePickerDemoModel Model { get; set; } = default!;
 
     protected override void OnInitialized()
-        => Model = new TimePickerDemoModel(L) { Arrival = new TimeOnly(9, 30, 45), Alarm = new TimeOnly(7, 0), Locked = new TimeOnly(12, 0) };
+        => Model = new TimePickerDemoModel(L) { Arrival = new TimeOnly(9, 30, 45), Alarm = new TimeOnly(7, 0), LockedValue = new TimeOnly(12, 0) };
 
     private string FormatValue(TimeOnly? time)
         => time?.ToString("T", CultureState.Culture) ?? "null";
 
     private void HandleSubmit()
-        => _submitted = true;
+        => _isSubmitted = true;
 
     private sealed class TimePickerDemoModel(IStringLocale localizer) : IValidatableObject
     {
@@ -120,7 +120,7 @@
         public TimeOnly? Pickup { get; set; }
         public TimeOnly Alarm { get; set; }
         public TimeOnly? Lap { get; set; }
-        public TimeOnly? Locked { get; set; }
+        public TimeOnly? LockedValue { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

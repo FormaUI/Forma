@@ -23,10 +23,10 @@ public static class ShowcaseCatalog
     /// <summary>The variant a page demonstrates when its name carries none: the library's own defaults.</summary>
     public const string DefaultVariant = "Forma";
 
-    private static readonly IReadOnlyList<ShowcasePage> All = Discover();
+    private static readonly IReadOnlyList<ShowcasePage> Pages = Discover();
 
     /// <summary>The pages the sidebar lists, one per component, grouped by category.</summary>
-    public static ILookup<string, ShowcasePage> Sidebar { get; } = All
+    public static ILookup<string, ShowcasePage> Sidebar { get; } = Pages
         .Where(page => string.Equals(page.Variant, DefaultVariant, StringComparison.Ordinal))
         .OrderBy(page => GetCategoryRank(page.Category))
         .ThenBy(page => page.Category, StringComparer.Ordinal)
@@ -38,15 +38,15 @@ public static class ShowcaseCatalog
     /// <returns>The page's variants, empty for a page with only one.</returns>
     public static IReadOnlyList<ShowcasePage> GetVariants(string path)
     {
-        var current = All.FirstOrDefault(page => IsRoute(page, path));
+        var currentPage = Pages.FirstOrDefault(page => IsRoute(page, path));
 
-        if (current is null)
+        if (currentPage is null)
         {
             return [];
         }
 
-        var variants = All
-            .Where(page => string.Equals(page.Component, current.Component, StringComparison.Ordinal))
+        var variants = Pages
+            .Where(page => string.Equals(page.Component, currentPage.Component, StringComparison.Ordinal))
             .OrderBy(page => string.Equals(page.Variant, DefaultVariant, StringComparison.Ordinal) ? 0 : 1)
             .ThenBy(page => page.Variant, StringComparer.Ordinal)
             .ToArray();
@@ -59,20 +59,20 @@ public static class ShowcaseCatalog
 
     private static List<ShowcasePage> Discover()
     {
-        var routed = typeof(Program).Assembly.GetTypes()
+        var routedTypes = typeof(Program).Assembly.GetTypes()
             .Select(type => (Type: type, Route: type.GetCustomAttribute<RouteAttribute>()?.Template))
             .Where(entry => entry.Route is not null)
             .ToArray();
 
         // Only a page carrying the attribute names a component; a variant takes its title from the page it varies.
-        var titles = routed
+        var titles = routedTypes
             .Select(entry => (entry.Type.Name, Attribute: entry.Type.GetCustomAttribute<ShowcasePageAttribute>()))
             .Where(entry => entry.Attribute is not null)
             .ToDictionary(entry => entry.Name, entry => entry.Attribute!.Title, StringComparer.Ordinal);
 
         var pages = new List<ShowcasePage>();
 
-        foreach (var (type, route) in routed)
+        foreach (var (type, route) in routedTypes)
         {
             // Razor compiles a dot in a file name to an underscore, so FormaEmojiPage.Twemoji.razor arrives here
             // as FormaEmojiPage_Twemoji and splits back into the page it varies and the variant it demonstrates.

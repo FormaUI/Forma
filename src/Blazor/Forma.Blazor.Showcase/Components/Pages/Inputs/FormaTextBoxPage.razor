@@ -139,7 +139,7 @@
     <div class="demo-box">
         <div class="demo-stack">
             <label for="text-box-plain">@L["Plain Text"]</label>
-            <FormaTextBox @bind-Value="_model.Plain" Id="text-box-plain" Options="@(new TextBoxOptions { Type = TextInputType.Text })" />
+            <FormaTextBox @bind-Value="_model.PlainValue" Id="text-box-plain" Options="@(new TextBoxOptions { Type = TextInputType.Text })" />
 
             <label for="text-box-typed-email">@L["Email Address"]</label>
             <FormaTextBox @bind-Value="_model.TypedEmail" Id="text-box-typed-email" Options="TextBoxOptions.Email" />
@@ -210,11 +210,11 @@
             <FormaTextBox @bind-Value="_model.Postcode" aria-label="@L["Postcode"]" Width="CssLength.FromRem(14)" />
 
             <p class="demo-note">@L["Half the space it is given:"]</p>
-            <FormaTextBox @bind-Value="_model.Half" aria-label="@L["Half Width"]" Width="CssLength.FromPercent(50)" />
+            <FormaTextBox @bind-Value="_model.HalfWidthValue" aria-label="@L["Half Width"]" Width="CssLength.FromPercent(50)" />
 
             <p class="demo-note">@L["A labeled box takes a width just the same:"]</p>
             <EditForm Model="_model" FormName="textbox-width">
-                <FormaTextBox @bind-Value="_model.ShortLabelled" Label="@L["Reference"]" Width="CssLength.FromRem(16)" />
+                <FormaTextBox @bind-Value="_model.ShortLabelledValue" Label="@L["Reference"]" Width="CssLength.FromRem(16)" />
             </EditForm>
         </div>
     </div>
@@ -287,7 +287,7 @@
         public string? Email { get; set; }
         public string? Quantity { get; set; }
         public string? Amount { get; set; }
-        public string? Plain { get; set; }
+        public string? PlainValue { get; set; }
         public string? TypedEmail { get; set; }
         public string? TypedTel { get; set; }
         public string? TypedUrl { get; set; }
@@ -297,8 +297,8 @@
         public string? FullWidth { get; set; }
         public string? Year { get; set; }
         public string? Postcode { get; set; }
-        public string? Half { get; set; }
-        public string? ShortLabelled { get; set; }
+        public string? HalfWidthValue { get; set; }
+        public string? ShortLabelledValue { get; set; }
     }
 
     private sealed class PatternModel(IStringLocale localizer) : IValidatableObject

@@ -18,7 +18,7 @@ public sealed partial class PageLocalization : ComponentBase
     private IEnumerable<(string HrefLang, string Url)> Alternates
         => Router.Routes.Select(route => (route.HrefLang, GetUrl(route)));
 
-    private string Canonical
+    private string CanonicalUrl
         => GetUrl(_currentRoute ?? Switcher.CurrentRoute);
 
     private string XDefault

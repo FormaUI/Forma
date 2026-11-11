@@ -103,7 +103,7 @@
     <h2>@L["Browsing a Set"]</h2>
     <p class="description">@L["With Siblings supplied, the arrow keys and the on-screen controls step through the set — reversed under a right-to-left culture, since left and right then read as forward and back the other way."]</p>
     <div class="demo-box" style="block-size: 22rem;">
-        <FormaFileViewer Source="@_current" Siblings="_siblings" OnNavigate="HandleNavigate" ShowMetadata="true" />
+        <FormaFileViewer Source="@_currentSource" Siblings="_siblings" OnNavigate="HandleNavigate" ShowMetadata="true" />
     </div>
 </div>
 
@@ -116,8 +116,8 @@
         "/media/archive.zip",
     ];
 
-    private string _current = _siblings[0];
+    private string _currentSource = _siblings[0];
 
     private void HandleNavigate(string source)
-        => _current = source;
+        => _currentSource = source;
 }

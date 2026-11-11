@@ -64,6 +64,6 @@
     protected override Type LocalizationSourceType
         => typeof(FormaDataViewPage);
 
-    private void HandleSelectedChanged(IReadOnlyList<ShowcaseProduct> selected)
-        => _selectedProducts = selected;
+    private void HandleSelectedChanged(IReadOnlyList<ShowcaseProduct> selectedProducts)
+        => _selectedProducts = selectedProducts;
 }

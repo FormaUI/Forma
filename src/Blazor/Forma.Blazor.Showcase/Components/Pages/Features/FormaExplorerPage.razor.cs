@@ -100,36 +100,36 @@ public sealed partial class FormaExplorerPage
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        var seeded = new DateTimeOffset(2026, 3, 14, 9, 30, 0, TimeSpan.Zero);
+        var seedDate = new DateTimeOffset(2026, 3, 14, 9, 30, 0, TimeSpan.Zero);
 
         List<SampleResource> media =
         [
-            new(new ImageResourceInfo("/media/sample-poster.svg?in=covers") { Size = 12400, CreatedAt = seeded.AddDays(-40), ModifiedAt = seeded.AddDays(-2) }, "covers"),
-            new(new DocumentResourceInfo("/media/sample.pdf?in=covers") { Size = 639, CreatedAt = seeded.AddDays(-12), ModifiedAt = seeded.AddDays(-11) }, "covers"),
-            new(new DocumentResourceInfo("/media/sample.docx?in=covers") { Size = 14200, CreatedAt = seeded.AddDays(-3), ModifiedAt = seeded.AddHours(-5) }, "covers"),
-            new(new ArchiveResourceInfo("/media/press-kit.zip?in=covers") { Size = 2411724, Count = 14, CreatedAt = seeded.AddDays(-6), ModifiedAt = seeded.AddDays(-6) }, "covers"),
-            new(new ImageResourceInfo("/media/sample-poster.svg?in=races") { Size = 18800, CreatedAt = seeded.AddDays(-90), ModifiedAt = seeded.AddDays(-60) }, "races"),
-            new(new VideoResourceInfo("/media/sample.mp4?in=races") { Size = 788493, CreatedAt = seeded.AddDays(-30), ModifiedAt = seeded.AddDays(-30) }, "races"),
-            new(new AudioResourceInfo("/media/sample.wav?in=races") { Size = 16044, CreatedAt = seeded.AddDays(-7), ModifiedAt = seeded.AddDays(-1) }, "races"),
+            new(new ImageResourceInfo("/media/sample-poster.svg?in=covers") { Size = 12400, CreatedAt = seedDate.AddDays(-40), ModifiedAt = seedDate.AddDays(-2) }, "covers"),
+            new(new DocumentResourceInfo("/media/sample.pdf?in=covers") { Size = 639, CreatedAt = seedDate.AddDays(-12), ModifiedAt = seedDate.AddDays(-11) }, "covers"),
+            new(new DocumentResourceInfo("/media/sample.docx?in=covers") { Size = 14200, CreatedAt = seedDate.AddDays(-3), ModifiedAt = seedDate.AddHours(-5) }, "covers"),
+            new(new ArchiveResourceInfo("/media/press-kit.zip?in=covers") { Size = 2411724, Count = 14, CreatedAt = seedDate.AddDays(-6), ModifiedAt = seedDate.AddDays(-6) }, "covers"),
+            new(new ImageResourceInfo("/media/sample-poster.svg?in=races") { Size = 18800, CreatedAt = seedDate.AddDays(-90), ModifiedAt = seedDate.AddDays(-60) }, "races"),
+            new(new VideoResourceInfo("/media/sample.mp4?in=races") { Size = 788493, CreatedAt = seedDate.AddDays(-30), ModifiedAt = seedDate.AddDays(-30) }, "races"),
+            new(new AudioResourceInfo("/media/sample.wav?in=races") { Size = 16044, CreatedAt = seedDate.AddDays(-7), ModifiedAt = seedDate.AddDays(-1) }, "races"),
             new(new DocumentResourceInfo("/media/notes.md?in=races") { Size = 850 }, "races"),
-            new(new FileResourceInfo("/media/telemetry.bin?in=races") { Size = 40960, CreatedAt = seeded.AddDays(-2), ModifiedAt = seeded.AddDays(-2) }, "races"),
-            new(new ImageResourceInfo("/media/sample-poster.svg?in=2026") { Size = 9700, CreatedAt = seeded.AddDays(-21), ModifiedAt = seeded.AddDays(-20) }, "2026"),
-            new(new DocumentResourceInfo("/media/sample.pdf?in=2026") { Size = 1200, CreatedAt = seeded.AddDays(-5), ModifiedAt = seeded.AddDays(-4) }, "2026"),
-            new(new VideoResourceInfo("/media/sample.mp4?in=videos") { Size = 788493, CreatedAt = seeded.AddDays(-60), ModifiedAt = seeded.AddDays(-15) }, "videos")
+            new(new FileResourceInfo("/media/telemetry.bin?in=races") { Size = 40960, CreatedAt = seedDate.AddDays(-2), ModifiedAt = seedDate.AddDays(-2) }, "races"),
+            new(new ImageResourceInfo("/media/sample-poster.svg?in=2026") { Size = 9700, CreatedAt = seedDate.AddDays(-21), ModifiedAt = seedDate.AddDays(-20) }, "2026"),
+            new(new DocumentResourceInfo("/media/sample.pdf?in=2026") { Size = 1200, CreatedAt = seedDate.AddDays(-5), ModifiedAt = seedDate.AddDays(-4) }, "2026"),
+            new(new VideoResourceInfo("/media/sample.mp4?in=videos") { Size = 788493, CreatedAt = seedDate.AddDays(-60), ModifiedAt = seedDate.AddDays(-15) }, "videos")
         ];
 
         _singleSelectResources =
         [
-            new ImageResourceInfo("/media/sample-poster.svg") { Size = 12400, CreatedAt = seeded.AddDays(-9), ModifiedAt = seeded.AddDays(-8) },
-            new VideoResourceInfo("/media/sample.mp4") { Size = 788493, CreatedAt = seeded.AddDays(-4), ModifiedAt = seeded.AddDays(-4) }
+            new ImageResourceInfo("/media/sample-poster.svg") { Size = 12400, CreatedAt = seedDate.AddDays(-9), ModifiedAt = seedDate.AddDays(-8) },
+            new VideoResourceInfo("/media/sample.mp4") { Size = 788493, CreatedAt = seedDate.AddDays(-4), ModifiedAt = seedDate.AddDays(-4) }
         ];
 
         // Sits at three of four items and just under the byte ceiling, so one more upload trips a constraint.
         _constrainedResources =
         [
-            new ImageResourceInfo("/media/sample-poster.svg?shot=1") { Size = 340000, CreatedAt = seeded.AddDays(-3), ModifiedAt = seeded.AddDays(-3) },
-            new ImageResourceInfo("/media/sample-poster.svg?shot=2") { Size = 340000, CreatedAt = seeded.AddDays(-2), ModifiedAt = seeded.AddDays(-2) },
-            new ImageResourceInfo("/media/sample-poster.svg?proof=1") { Size = 340000, CreatedAt = seeded.AddDays(-1), ModifiedAt = seeded.AddDays(-1) }
+            new ImageResourceInfo("/media/sample-poster.svg?shot=1") { Size = 340000, CreatedAt = seedDate.AddDays(-3), ModifiedAt = seedDate.AddDays(-3) },
+            new ImageResourceInfo("/media/sample-poster.svg?shot=2") { Size = 340000, CreatedAt = seedDate.AddDays(-2), ModifiedAt = seedDate.AddDays(-2) },
+            new ImageResourceInfo("/media/sample-poster.svg?proof=1") { Size = 340000, CreatedAt = seedDate.AddDays(-1), ModifiedAt = seedDate.AddDays(-1) }
         ];
 
         _singleSelectItems = CatalogItem.ForAll(_singleSelectResources);
@@ -153,13 +153,13 @@ public sealed partial class FormaExplorerPage
 
         _stateItems =
         [
-            CatalogItem.For(new ImageResourceInfo("/media/sample-poster.svg?state=live") { Name = "live.svg", Size = 12400, CreatedAt = seeded.AddDays(-5), ModifiedAt = seeded.AddDays(-1) }),
+            CatalogItem.For(new ImageResourceInfo("/media/sample-poster.svg?state=live") { Name = "live.svg", Size = 12400, CreatedAt = seedDate.AddDays(-5), ModifiedAt = seedDate.AddDays(-1) }),
             new CatalogItem
             {
                 Key = "state-fixed",
                 Name = "fixed.svg",
                 Capabilities = CatalogItemCapabilities.Drag | CatalogItemCapabilities.Open | CatalogItemCapabilities.View,
-                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=fixed") { Name = "fixed.svg", Size = 9600, CreatedAt = seeded.AddDays(-4), ModifiedAt = seeded.AddDays(-4) }
+                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=fixed") { Name = "fixed.svg", Size = 9600, CreatedAt = seedDate.AddDays(-4), ModifiedAt = seedDate.AddDays(-4) }
             },
             new CatalogItem
             {
@@ -167,7 +167,7 @@ public sealed partial class FormaExplorerPage
                 Name = "disabled.svg",
                 Capabilities = everyMediaCapability,
                 IsDisabled = true,
-                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=disabled") { Name = "disabled.svg", Size = 8200, CreatedAt = seeded.AddDays(-3), ModifiedAt = seeded.AddDays(-3) }
+                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=disabled") { Name = "disabled.svg", Size = 8200, CreatedAt = seedDate.AddDays(-3), ModifiedAt = seedDate.AddDays(-3) }
             },
             new CatalogItem
             {
@@ -175,7 +175,7 @@ public sealed partial class FormaExplorerPage
                 Name = "invisible.svg",
                 Capabilities = everyMediaCapability,
                 Visibility = CatalogItemVisibility.Invisible,
-                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=invisible") { Name = "invisible.svg", Size = 7100, CreatedAt = seeded.AddDays(-2), ModifiedAt = seeded.AddDays(-2) }
+                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=invisible") { Name = "invisible.svg", Size = 7100, CreatedAt = seedDate.AddDays(-2), ModifiedAt = seedDate.AddDays(-2) }
             },
             new CatalogItem
             {
@@ -183,7 +183,7 @@ public sealed partial class FormaExplorerPage
                 Name = "hidden.svg",
                 Capabilities = everyMediaCapability,
                 Visibility = CatalogItemVisibility.Hidden,
-                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=hidden") { Name = "hidden.svg", Size = 6400, CreatedAt = seeded.AddDays(-1), ModifiedAt = seeded.AddDays(-1) }
+                Resource = new ImageResourceInfo("/media/sample-poster.svg?state=hidden") { Name = "hidden.svg", Size = 6400, CreatedAt = seedDate.AddDays(-1), ModifiedAt = seedDate.AddDays(-1) }
             }
         ];
 
@@ -213,7 +213,7 @@ public sealed partial class FormaExplorerPage
 
         _flatStore = Store([.. Enumerable.Range(1, 5000)
             .Select(i => new SampleResource(
-                new ImageResourceInfo($"/media/sample-poster.svg?scroll={i}") { Size = 1000 * i, CreatedAt = seeded.AddMinutes(-i), ModifiedAt = seeded.AddMinutes(-i) },
+                new ImageResourceInfo($"/media/sample-poster.svg?scroll={i}") { Size = 1000 * i, CreatedAt = seedDate.AddMinutes(-i), ModifiedAt = seedDate.AddMinutes(-i) },
                 null))]);
 
         var folderSources = new string?[] { null, "covers", "races", "2026", "videos" };
@@ -222,8 +222,8 @@ public sealed partial class FormaExplorerPage
                 new ImageResourceInfo($"/media/sample-poster.svg?library={i}")
                 {
                     Size = 4000 + (i % 900 * 37),
-                    CreatedAt = seeded.AddMinutes(-i),
-                    ModifiedAt = seeded.AddMinutes(-(i / 2))
+                    CreatedAt = seedDate.AddMinutes(-i),
+                    ModifiedAt = seedDate.AddMinutes(-(i / 2))
                 },
                 folderSources[i % folderSources.Length]))
             .ToList();
@@ -242,7 +242,7 @@ public sealed partial class FormaExplorerPage
     }
 
     private SampleMediaStore Store(IReadOnlyList<SampleResource> resources)
-        => new(resources, TimeSpan.FromMilliseconds(180)) { Queried = () => InvokeAsync(StateHasChanged) };
+        => new(resources, TimeSpan.FromMilliseconds(180)) { OnQueried = () => InvokeAsync(StateHasChanged) };
 
     private static readonly CatalogConstraints _demoConstraints = new()
     {
@@ -316,7 +316,7 @@ public sealed partial class FormaExplorerPage
 
         _mediaStore.Remove(GetFileResources(request.Items));
         SyncFromStore();
-        LogAction(key, request.Items is [ICatalogFolderItem removed] ? L["Deleted folder \"{Name}\"", removed.Name] : L["Deleted {Count} item(s)", request.Items.Count]);
+        LogAction(key, request.Items is [ICatalogFolderItem removedFolder] ? L["Deleted folder \"{Name}\"", removedFolder.Name] : L["Deleted {Count} item(s)", request.Items.Count]);
 
         return Task.CompletedTask;
     }
@@ -337,8 +337,8 @@ public sealed partial class FormaExplorerPage
 
         _mediaStore.Move(GetFileResources(request.Items), request.TargetFolder?.Key);
         SyncFromStore();
-        LogAction(key, request.Items is [ICatalogFolderItem moved]
-            ? L["Moved folder \"{Source}\" into \"{Target}\"", moved.Name, folderName]
+        LogAction(key, request.Items is [ICatalogFolderItem movedFolder]
+            ? L["Moved folder \"{Source}\" into \"{Target}\"", movedFolder.Name, folderName]
             : L["Moved {Count} item(s) to \"{Folder}\"", request.Items.Count, folderName]);
 
         return Task.CompletedTask;

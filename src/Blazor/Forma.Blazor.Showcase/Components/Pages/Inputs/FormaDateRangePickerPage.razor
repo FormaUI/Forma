@@ -50,7 +50,7 @@
     <div class="demo-section">
         <h2>@L["Disabled"]</h2>
         <div class="demo-box">
-            <FormaDateRangePicker @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" />
+            <FormaDateRangePicker @bind-Value="Model.LockedRange" Label="@L["Disabled"]" Disabled="true" />
         </div>
     </div>
 
@@ -61,7 +61,7 @@
             <FormaDateRangePicker @bind-Value="Model.Campaign" Label="@L["Campaign"]" />
             <div class="demo-row">
                 <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
-                @if (_submitted)
+                @if (_isSubmitted)
                 {
                     <span class="demo-note">@L["Submitted."]</span>
                 }
@@ -71,7 +71,7 @@
 </EditForm>
 
 @code {
-    private bool _submitted;
+    private bool _isSubmitted;
 
     private DateRangePickerDemoModel Model { get; set; } = default!;
 
@@ -79,7 +79,7 @@
         => Model = new DateRangePickerDemoModel(L);
 
     private void HandleSubmit()
-        => _submitted = true;
+        => _isSubmitted = true;
 
     private string DescribePeriod(DateRange period)
     {
@@ -95,7 +95,7 @@
         public DateRange? Booking { get; set; }
         public DateRange? HebrewPeriod { get; set; }
         public DateRange? Campaign { get; set; }
-        public DateRange? Locked { get; set; } = DateRange.Between(DateOnly.FromDateTime(DateTime.Today), DateOnly.FromDateTime(DateTime.Today).AddDays(6));
+        public DateRange? LockedRange { get; set; } = DateRange.Between(DateOnly.FromDateTime(DateTime.Today), DateOnly.FromDateTime(DateTime.Today).AddDays(6));
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

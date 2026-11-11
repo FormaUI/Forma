@@ -69,21 +69,21 @@
     {
         _cascadeResult = null;
 
-        var first = await ConfirmService.ConfirmAsync(
+        var isFirstConfirmed = await ConfirmService.ConfirmAsync(
             L["Are you sure you want to delete the account?"],
             L["Confirm"],
             L["Cancel"]);
-        if (!first)
+        if (!isFirstConfirmed)
         {
             _cascadeResult = L["Canceled at first step"];
             return;
         }
 
-        var second = await ConfirmService.ConfirmAsync(
+        var isSecondConfirmed = await ConfirmService.ConfirmAsync(
             L["This action is irreversible. Continue?"],
             L["Yes, Delete"],
             L["No"]);
-        _cascadeResult = second
+        _cascadeResult = isSecondConfirmed
             ? L["Account deleted"]
             : L["Canceled at second step"];
     }

@@ -15,7 +15,7 @@
         <FormaVirtualize TItem="Todo" Items="_todos" ItemKey="@(todo => todo.Id)" ItemSize="44" PinnedKeys="Pin(_focusedTodo)">
             <ItemContent Context="todo">
                 <div class="demo-virtualize-item" @onfocusin="() => _focusedTodo = todo.Id">
-                    <FormaCheckBox @bind-Value="todo.Done">@GetTaskName(todo.Id)</FormaCheckBox>
+                    <FormaCheckBox @bind-Value="todo.IsDone">@GetTaskName(todo.Id)</FormaCheckBox>
                 </div>
             </ItemContent>
         </FormaVirtualize>
@@ -41,7 +41,7 @@
                         <tr @onfocusin="() => _focusedStage = stage.Id">
                             <td>@GetStageName(stage.Id)</td>
                             <td>@L["{Distance} km", stage.Distance.ToString("N1", CultureState.Culture)]</td>
-                            <td><FormaCheckBox aria-label="@L["{Name} done", GetStageName(stage.Id)]" @bind-Value="stage.Done" /></td>
+                            <td><FormaCheckBox aria-label="@L["{Name} done", GetStageName(stage.Id)]" @bind-Value="stage.IsDone" /></td>
                         </tr>
                     </ItemContent>
                 </FormaVirtualize>
@@ -115,9 +115,9 @@
 
     private async Task ScrollToAsync(int index, ScrollAlignment alignment)
     {
-        var reached = await _targetList.ScrollToIndexAsync(index, alignment);
+        var isReached = await _targetList.ScrollToIndexAsync(index, alignment);
 
-        _scrollResult = reached
+        _scrollResult = isReached
             ? L["{Name} is in view.", GetTaskName(index)]
             : L["There is no item at position {Position}.", (index + 1).ToString("N0", CultureState.Culture)];
     }
@@ -135,7 +135,7 @@
     {
         public int Id { get; } = id;
 
-        public bool Done { get; set; }
+        public bool IsDone { get; set; }
     }
 
     private sealed class Stage(int id, double distance)
@@ -144,6 +144,6 @@
 
         public double Distance { get; } = distance;
 
-        public bool Done { get; set; }
+        public bool IsDone { get; set; }
     }
 }

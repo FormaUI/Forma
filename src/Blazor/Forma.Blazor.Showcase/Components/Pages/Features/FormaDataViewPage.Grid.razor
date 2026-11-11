@@ -214,7 +214,7 @@
                     <FormaPropertyColumn Property="@(s => s.City)" />
                     <FormaPropertyColumn Property="@(s => s.Country)" />
                     <FormaPropertyColumn Property="@(s => s.Amount)" Format="C0" />
-                    <FormaPropertyColumn Property="@(s => s.Shipped)" Format="d" />
+                    <FormaPropertyColumn Property="@(s => s.ShipDate)" Format="d" />
                 </Columns>
             </FormaDataGrid>
         </FormaDataView>
@@ -315,7 +315,7 @@
                     <FormaPropertyColumn Property="@(e => e.ShiftStart)" Title="@L["Shift start"]" Format="t" />
                     <FormaPropertyColumn Property="@(e => e.NextReview)" Title="@L["Next review"]" Format="g" />
                     <FormaPropertyColumn Property="@(e => e.Salary)" Title="@L["Salary"]" Format="N0" />
-                    <FormaPropertyColumn Property="@(e => e.Remote)" Title="@L["Remote"]" />
+                    <FormaPropertyColumn Property="@(e => e.IsRemote)" Title="@L["Remote"]" />
                     <FormaTemplateColumn Title="@L["Actions"]">
                         <div class="demo-row-actions">
                             @if (_editGrid?.IsEditing(context) == true)
@@ -650,23 +650,23 @@
             new(3, L["High"]),
         ];
 
-    private void HandleSelectionChanged(IReadOnlyList<Employee> selected)
-        => _selectedEmployees = selected;
+    private void HandleSelectionChanged(IReadOnlyList<Employee> selectedEmployees)
+        => _selectedEmployees = selectedEmployees;
 
-    private void HandleRowSelectionChanged(IReadOnlyList<Employee> selected)
-        => _rowSelectedEmployees = selected;
+    private void HandleRowSelectionChanged(IReadOnlyList<Employee> selectedEmployees)
+        => _rowSelectedEmployees = selectedEmployees;
 
-    private void HandleVirtualizedSelectionChanged(IReadOnlyList<GridItem> selected)
-        => _virtualizedSelection = selected;
+    private void HandleVirtualizedSelectionChanged(IReadOnlyList<GridItem> selectedItems)
+        => _virtualizedSelection = selectedItems;
 
-    private void HandleCheckedChanged(IReadOnlyList<ShowcaseProduct> selected)
-        => _checkedProducts = selected;
+    private void HandleCheckedChanged(IReadOnlyList<ShowcaseProduct> selectedProducts)
+        => _checkedProducts = selectedProducts;
 
-    private void HandlePickedChanged(IReadOnlyList<Employee> picked)
-        => _pickedEmployees = picked;
+    private void HandlePickedChanged(IReadOnlyList<Employee> pickedEmployees)
+        => _pickedEmployees = pickedEmployees;
 
-    private void HandleModeSelectionChanged(IReadOnlyList<GridItem> selected)
-        => _modeSelectedItems = selected;
+    private void HandleModeSelectionChanged(IReadOnlyList<GridItem> selectedItems)
+        => _modeSelectedItems = selectedItems;
 
     private Task ScrollToRowAsync()
         => _openingDataView is { } dataView
@@ -719,11 +719,11 @@
             _ => mode.ToString(),
         };
 
-    private void HandleAssignmentSelectionChanged(IReadOnlyList<Assignment> selected)
-        => _assignmentSelection = selected;
+    private void HandleAssignmentSelectionChanged(IReadOnlyList<Assignment> selectedAssignments)
+        => _assignmentSelection = selectedAssignments;
 
-    private void HandleLimitsSelectionChanged(IReadOnlyList<Employee> selected)
-        => _limitsSelectedEmployees = selected;
+    private void HandleLimitsSelectionChanged(IReadOnlyList<Employee> selectedEmployees)
+        => _limitsSelectedEmployees = selectedEmployees;
 
     private void HandleRowClick(Employee employee)
         => _lastClickedEmployee = employee;
@@ -765,25 +765,25 @@
             ShiftStart = employee.ShiftStart,
             NextReview = employee.NextReview,
             Salary = employee.Salary,
-            Remote = employee.Remote,
+            IsRemote = employee.IsRemote,
         };
 
-    private Task SaveEmployeeAsync(EditableEmployee edited)
+    private Task SaveEmployeeAsync(EditableEmployee editedEmployee)
     {
-        var target = _editableEmployees.Find(employee => employee.Id == edited.Id);
+        var target = _editableEmployees.Find(employee => employee.Id == editedEmployee.Id);
 
         if (target is null)
         {
             return Task.CompletedTask;
         }
 
-        target.Name = edited.Name;
-        target.Department = edited.Department;
-        target.StartDate = edited.StartDate;
-        target.ShiftStart = edited.ShiftStart;
-        target.NextReview = edited.NextReview;
-        target.Salary = edited.Salary;
-        target.Remote = edited.Remote;
+        target.Name = editedEmployee.Name;
+        target.Department = editedEmployee.Department;
+        target.StartDate = editedEmployee.StartDate;
+        target.ShiftStart = editedEmployee.ShiftStart;
+        target.NextReview = editedEmployee.NextReview;
+        target.Salary = editedEmployee.Salary;
+        target.IsRemote = editedEmployee.IsRemote;
 
         return _editDataView?.RefreshDataAsync() ?? Task.CompletedTask;
     }
@@ -799,7 +799,7 @@
 
     private sealed record GridItem(int Id, string Title);
 
-    private sealed record Shipment(int Id, string Customer, string Product, string City, string Country, decimal Amount, DateOnly Shipped);
+    private sealed record Shipment(int Id, string Customer, string Product, string City, string Country, decimal Amount, DateOnly ShipDate);
 
     private sealed class Assignment
     {
@@ -829,6 +829,6 @@
         [Range(0, 1_000_000)]
         public decimal Salary { get; set; }
 
-        public bool Remote { get; set; }
+        public bool IsRemote { get; set; }
     }
 }

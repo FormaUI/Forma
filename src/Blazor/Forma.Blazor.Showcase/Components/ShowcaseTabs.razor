@@ -45,9 +45,9 @@
 
     private void Refresh()
     {
-        var relative = Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].TrimStart('/');
+        var relativePath = Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].TrimStart('/');
 
-        _path = Router.Match(Uri.UnescapeDataString("/" + relative)).Path;
+        _path = Router.Match(Uri.UnescapeDataString("/" + relativePath)).Path;
         _variants = ShowcaseCatalog.GetVariants(_path);
     }
 

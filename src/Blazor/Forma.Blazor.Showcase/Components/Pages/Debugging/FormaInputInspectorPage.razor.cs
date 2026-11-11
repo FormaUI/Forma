@@ -43,7 +43,7 @@ public sealed partial class FormaInputInspectorPage
     private readonly DemoModel _model = new();
     private bool _popupOpen;
     private bool _modalOpen;
-    private bool _innerOpen;
+    private bool _isInnerOpen;
     private string? _lastGridAction;
     private string? _lastListAction;
     private string? _lastPopupDismissal;
@@ -68,13 +68,13 @@ public sealed partial class FormaInputInspectorPage
     private static string GetReadoutClass(string? value)
         => value is null ? "demo-readout" : "demo-readout demo-readout-live";
 
-    private static void Record(ref string? last, InputAction action)
-        => last = action.Action;
+    private static void Record(ref string? lastAction, InputAction action)
+        => lastAction = action.Action;
 
-    private static void Dismiss(ref bool open, ref string? last, InputDismissal dismissal)
+    private static void Dismiss(ref bool isOpen, ref string? lastAction, InputDismissal dismissal)
     {
-        open = false;
-        last = $"{dismissal.Action} · {dismissal.Reason}";
+        isOpen = false;
+        lastAction = $"{dismissal.Action} · {dismissal.Reason}";
     }
 
     private void HandleHostAction()
@@ -90,6 +90,6 @@ public sealed partial class FormaInputInspectorPage
 
         public int Level { get; set; } = 3;
 
-        public bool Agreed { get; set; }
+        public bool HasAgreed { get; set; }
     }
 }

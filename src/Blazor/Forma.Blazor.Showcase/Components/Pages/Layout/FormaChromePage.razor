@@ -54,10 +54,10 @@
     <div class="demo-box demo-box-flush">
         <FormaBackdrop Variant="BackdropVariant.Canvas" class="demo-chrome-canvas">
             <FormaStackLayout>
-                <FormaChrome Title="@L["Output"]" Commands="OutputCommands" OnCommand="_ => _lines = 0" Hidden="_isOutputHidden" Disabled="_isOutputDisabled" class="demo-chrome-fill">
+                <FormaChrome Title="@L["Output"]" Commands="OutputCommands" OnCommand="_ => _lineCount = 0" Hidden="_isOutputHidden" Disabled="_isOutputDisabled" class="demo-chrome-fill">
                     <Body>
-                        <p>@L["{Count} lines of output", _lines]</p>
-                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _lines++">@L["Write a Line"]</FormaButton>
+                        <p>@L["{Count} lines of output", _lineCount]</p>
+                        <FormaButton Variant="ButtonVariant.Secondary" OnClick="() => _lineCount++">@L["Write a Line"]</FormaButton>
                     </Body>
                 </FormaChrome>
             </FormaStackLayout>
@@ -110,7 +110,7 @@
     private string? _lastCommand;
     private bool _isOutputHidden;
     private bool _isOutputDisabled;
-    private int _lines;
+    private int _lineCount;
     private bool _isNotesOpen;
     private bool _isNotesMaximized;
     private FramePlacement? _notesPlacement = new(320, 240, 400, 240);

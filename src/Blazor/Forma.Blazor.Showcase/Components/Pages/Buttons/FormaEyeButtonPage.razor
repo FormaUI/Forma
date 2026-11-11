@@ -11,10 +11,10 @@
     <p class="description">@L["The caller owns the state and the wording, because what is being revealed decides both."]</p>
     <div class="demo-box">
         <div class="demo-row">
-            <FormaEyeButton Label="@(_revealed ? L["Hide value"] : L["Show value"])"
-                            Revealed="_revealed"
-                            OnClick="() => _revealed = !_revealed" />
-            <code>@(_revealed ? Secret : new string('•', Secret.Length))</code>
+            <FormaEyeButton Label="@(_isRevealed ? L["Hide value"] : L["Show value"])"
+                            Revealed="_isRevealed"
+                            OnClick="() => _isRevealed = !_isRevealed" />
+            <code>@(_isRevealed ? Secret : new string('•', Secret.Length))</code>
         </div>
     </div>
 </div>
@@ -57,6 +57,6 @@
 @code {
     private const string Secret = "s3cr3t-key-9f2a";
     private const string ApiKey = "sk-live-4f9c2a71";
-    private bool _revealed;
+    private bool _isRevealed;
     private bool _keyRevealed;
 }

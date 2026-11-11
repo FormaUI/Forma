@@ -15,7 +15,7 @@
 @* The header stays in view while the page list below it scrolls. *@
 <nav class="showcase-sidebar">
     <div class="showcase-sidebar-header">
-        <a class="showcase-brand" href="@Router.GetPath(Current, "/")"><img src="/logo.svg" alt="Forma" /></a>
+        <a class="showcase-brand" href="@Router.GetPath(CurrentRoute, "/")"><img src="/logo.svg" alt="Forma" /></a>
         <div class="culture-switcher">
             @foreach (var route in Router.Routes.Where(route => Labels.ContainsKey(route.Token)))
             {
@@ -29,7 +29,7 @@
             <h3>@group.Key</h3>
             @foreach (var entry in group)
             {
-                <NavLink href="@Router.GetPath(Current, entry.Route)" Match="NavLinkMatch.Prefix">@entry.Title</NavLink>
+                <NavLink href="@Router.GetPath(CurrentRoute, entry.Route)" Match="NavLinkMatch.Prefix">@entry.Title</NavLink>
             }
         }
     </div>
@@ -49,7 +49,7 @@
 
     private bool _hasNavigated;
 
-    private CultureRoute Current => Switcher.CurrentRoute;
+    private CultureRoute CurrentRoute => Switcher.CurrentRoute;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -103,7 +103,7 @@
         => Labels.GetValueOrDefault(route.Token, route.Token);
 
     private bool IsCurrent(CultureRoute route)
-        => string.Equals(route.Token, Current.Token, StringComparison.Ordinal);
+        => string.Equals(route.Token, CurrentRoute.Token, StringComparison.Ordinal);
 
     private string LinkTo(CultureRoute route)
         => Router.GetUrl(route, Nav.ToBaseRelativePath(Nav.Uri));

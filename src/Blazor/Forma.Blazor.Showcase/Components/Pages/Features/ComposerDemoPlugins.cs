@@ -182,10 +182,10 @@ public sealed class TextEditorPlugin : IComposerEditorPlugin
 
     private static string Describe(string content)
     {
-        var words = content.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
-        var lines = content.Split('\n').Length;
+        var wordCount = content.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
+        var lineCount = content.Split('\n').Length;
 
-        return $"{Count(words, "word")}, {Count(lines, "line")}";
+        return $"{Count(wordCount, "word")}, {Count(lineCount, "line")}";
 
         static string Count(int value, string noun)
         {
@@ -375,10 +375,10 @@ public sealed partial class LongParagraphPlugin(RichTextEditorPlugin editor) : I
 
     // The formatter puts each block on a line of its own and indents what nests inside one, so a line that starts
     // at the margin with an opening tag begins a top-level block and everything indented beneath it belongs to it.
-    private static IEnumerable<(int Block, int Words)> CountWords(string html)
+    private static IEnumerable<(int Block, int WordCount)> CountWords(string html)
     {
         var block = -1;
-        var words = 0;
+        var wordCount = 0;
 
         foreach (var line in HtmlSourceFormatter.Format(html).Split('\n'))
         {
@@ -386,19 +386,19 @@ public sealed partial class LongParagraphPlugin(RichTextEditorPlugin editor) : I
             {
                 if (block >= 0)
                 {
-                    yield return (block, words);
+                    yield return (block, wordCount);
                 }
 
                 block++;
-                words = 0;
+                wordCount = 0;
             }
 
-            words += Tags().Replace(line, " ").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
+            wordCount += Tags().Replace(line, " ").Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length;
         }
 
         if (block >= 0)
         {
-            yield return (block, words);
+            yield return (block, wordCount);
         }
     }
 

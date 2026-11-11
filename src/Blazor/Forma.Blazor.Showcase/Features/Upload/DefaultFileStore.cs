@@ -16,7 +16,7 @@ internal sealed class DefaultFileStore(SandboxAssets sandbox) : IFileStore
     public bool ClearBeforeSave { get; set; } = true;
 
     /// <summary>The files in the sandbox upload directory.</summary>
-    public IReadOnlyCollection<ResourceInfo> Held
+    public IReadOnlyCollection<ResourceInfo> HeldResources
         => Directory
             .EnumerateFiles(sandbox.UploadDirectory)
             .Select(path => new ResourceInfo(SandboxAssets.GetUploadSource(path))
@@ -89,11 +89,11 @@ internal sealed class DefaultFileStore(SandboxAssets sandbox) : IFileStore
                 await using (destination.ConfigureAwait(false))
                 {
                     var buffer = new byte[ChunkDelay > TimeSpan.Zero ? PacedBufferSize : BufferSize];
-                    int read;
+                    int bytesRead;
 
-                    while ((read = await content.Stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
+                    while ((bytesRead = await content.Stream.ReadAsync(buffer, cancellationToken).ConfigureAwait(false)) > 0)
                     {
-                        await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+                        await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancellationToken).ConfigureAwait(false);
 
                         if (ChunkDelay > TimeSpan.Zero)
                         {

@@ -76,10 +76,10 @@
     <p class="description">@L["Add and remove items to watch the readout change its state. The page stops adding at the limit, as an application would."]</p>
     <div class="demo-box">
         <div class="demo-stack">
-            <FormaCapacityIndicator Used="_items" Limit="ItemLimit" Label="@L["Products"]" ShowBar="true" />
+            <FormaCapacityIndicator Used="_itemCount" Limit="ItemLimit" Label="@L["Products"]" ShowBar="true" />
             <div class="demo-row">
-                <FormaButton Disabled="_items >= ItemLimit" OnClick="AddItem">@L["Add"]</FormaButton>
-                <FormaButton Disabled="_items == 0" OnClick="RemoveItem">@L["Remove"]</FormaButton>
+                <FormaButton Disabled="_itemCount >= ItemLimit" OnClick="AddItem">@L["Add"]</FormaButton>
+                <FormaButton Disabled="_itemCount == 0" OnClick="RemoveItem">@L["Remove"]</FormaButton>
             </div>
         </div>
     </div>
@@ -88,11 +88,11 @@
 @code {
     private const int ItemLimit = 10;
 
-    private int _items = 6;
+    private int _itemCount = 6;
 
     private void AddItem()
-        => _items++;
+        => _itemCount++;
 
     private void RemoveItem()
-        => _items--;
+        => _itemCount--;
 }

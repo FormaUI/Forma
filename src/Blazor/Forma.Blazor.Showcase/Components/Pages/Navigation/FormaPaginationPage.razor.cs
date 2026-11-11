@@ -24,7 +24,7 @@ public sealed partial class FormaPaginationPage
     private int _noGoPage = 1;
     private int _wheelPage = 1;
     private int _formPage = 1;
-    private int _formSubmits;
+    private int _formSubmitCount;
 
     private void HandleFewPageChanged(int page)
         => _fewPage = page;
@@ -45,7 +45,7 @@ public sealed partial class FormaPaginationPage
         => _formPage = page;
 
     private void HandleFormSubmit()
-        => _formSubmits++;
+        => _formSubmitCount++;
 
     private sealed record GridItem(int Id, string Title);
 }

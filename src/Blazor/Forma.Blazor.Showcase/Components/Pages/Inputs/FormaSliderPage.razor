@@ -43,7 +43,7 @@
     <div class="demo-section">
         <h2>@L["Disabled"]</h2>
         <div class="demo-box">
-            <FormaSlider @bind-Value="_model.Locked" Label="@L["Site width"]" Min="960" Max="1920" Unit="px" Disabled="true" />
+            <FormaSlider @bind-Value="_model.LockedValue" Label="@L["Site width"]" Min="960" Max="1920" Unit="px" Disabled="true" />
         </div>
     </div>
 </EditForm>
@@ -57,6 +57,6 @@
         public int Volume { get; set; } = 50;
         public double Duration { get; set; } = 2.5;
         public int Priority { get; set; } = 3;
-        public int Locked { get; set; } = 1280;
+        public int LockedValue { get; set; } = 1280;
     }
 }

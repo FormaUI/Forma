@@ -72,10 +72,10 @@
     <p class="description">@L["Arguments stay as objects rather than text, so a format specifier written into a translation still reaches the value."]</p>
     <div class="demo-box">
         <div class="demo-row">
-            <label class="demo-field">@L["Written"] <input type="number" class="demo-number" @bind="_written" @bind:event="oninput" /></label>
-            <label class="demo-field">@L["Allowed"] <input type="number" class="demo-number" @bind="_allowed" @bind:event="oninput" /></label>
+            <label class="demo-field">@L["Written"] <input type="number" class="demo-number" @bind="_writtenCount" @bind:event="oninput" /></label>
+            <label class="demo-field">@L["Allowed"] <input type="number" class="demo-number" @bind="_allowedCount" @bind:event="oninput" /></label>
         </div>
-        <p>@L["{Written} of {Allowed} characters", _written, _allowed]</p>
+        <p>@L["{Written} of {Allowed} characters", _writtenCount, _allowedCount]</p>
     </div>
 </div>
 
@@ -83,7 +83,7 @@
     <h2>@L["Values Paired by Position"]</h2>
     <p class="description">@L["The names mark where the holes are, and the values are paired with them in the order the key writes them, so any expression can be passed. A translation refers to the holes by name, so it may put them in another order — the Hebrew here does."]</p>
     <div class="demo-box">
-        <p>@L["Stored {Stored} of {Total}.", _written, _allowed]</p>
+        <p>@L["Stored {Stored} of {Total}.", _writtenCount, _allowedCount]</p>
     </div>
 </div>
 
@@ -287,8 +287,8 @@
         (HostOnlyKey, ".locales/Forma.Blazor.Showcase/.locales/{culture}.json"),
     ];
 
-    private int _written = 5;
-    private int _allowed = 280;
+    private int _writtenCount = 5;
+    private int _allowedCount = 280;
     private decimal _count = 1m;
     private int _page = 1;
 
@@ -323,7 +323,7 @@
     }
 
     private LocalizedPattern Pattern
-        => L.Resolve("{Written} of {Allowed} characters", _written, _allowed);
+        => L.Resolve("{Written} of {Allowed} characters", _writtenCount, _allowedCount);
 
     private string GetCategory(decimal count)
     {

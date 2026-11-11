@@ -26,7 +26,7 @@
         <h2>@L["Within Bounds"]</h2>
         <p class="description">@L["From today at 14:00 to the day after tomorrow at 11:00. Today takes 14:00 and later, tomorrow any time, and the last day 11:00 and earlier; the list offers only the times the date allows."]</p>
         <div class="demo-box">
-            <FormaDateTimePicker @bind-Value="Model.Appointment" Label="@L["Appointment"]" Min="_earliest" Max="_latest" />
+            <FormaDateTimePicker @bind-Value="Model.Appointment" Label="@L["Appointment"]" Min="_earliestDateTime" Max="_latestDateTime" />
         </div>
     </div>
 
@@ -58,7 +58,7 @@
             <FormaDateTimePicker @bind-Value="Model.Delivery" Label="@L["Delivery"]" Required="true" />
             <div class="demo-row">
                 <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
-                @if (_submitted)
+                @if (_isSubmitted)
                 {
                     <span class="demo-note">@L["Submitted."]</span>
                 }
@@ -79,17 +79,17 @@
         <h2>@L["Disabled and Read-Only"]</h2>
         <div class="demo-box">
             <div class="demo-stack">
-                <FormaDateTimePicker @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" />
-                <FormaDateTimePicker @bind-Value="Model.Locked" Label="@L["Read-Only"]" ReadOnly="true" />
+                <FormaDateTimePicker @bind-Value="Model.LockedValue" Label="@L["Disabled"]" Disabled="true" />
+                <FormaDateTimePicker @bind-Value="Model.LockedValue" Label="@L["Read-Only"]" ReadOnly="true" />
             </div>
         </div>
     </div>
 </EditForm>
 
 @code {
-    private readonly DateTime _earliest = DateTime.Today.AddHours(14);
-    private readonly DateTime _latest = DateTime.Today.AddDays(2).AddHours(11);
-    private bool _submitted;
+    private readonly DateTime _earliestDateTime = DateTime.Today.AddHours(14);
+    private readonly DateTime _latestDateTime = DateTime.Today.AddDays(2).AddHours(11);
+    private bool _isSubmitted;
 
     private DateTimePickerDemoModel Model { get; set; } = default!;
 
@@ -98,7 +98,7 @@
         {
             Arrival = new DateTimeOffset(DateOnly.FromDateTime(DateTime.Today).ToDateTime(new TimeOnly(9, 30)), TimeSpan.FromHours(5.5)),
             Reminder = DateTime.Today.AddHours(8),
-            Locked = DateTime.Today.AddHours(12),
+            LockedValue = DateTime.Today.AddHours(12),
         };
 
     private static string FormatValue(DateTime? value)
@@ -108,7 +108,7 @@
         => value?.ToString("o", CultureInfo.InvariantCulture) ?? "null";
 
     private void HandleSubmit()
-        => _submitted = true;
+        => _isSubmitted = true;
 
     private sealed class DateTimePickerDemoModel(IStringLocale localizer) : IValidatableObject
     {
@@ -119,7 +119,7 @@
         public DateTimeOffset? Arrival { get; set; }
         public DateTime? Delivery { get; set; }
         public DateTime Reminder { get; set; }
-        public DateTime? Locked { get; set; }
+        public DateTime? LockedValue { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

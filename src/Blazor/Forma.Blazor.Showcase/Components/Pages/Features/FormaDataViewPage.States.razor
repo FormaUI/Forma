@@ -86,11 +86,11 @@
     <h2>@L["A Bounded Selection"]</h2>
     <p class="description">@L["At least one product and at most three: the boxes past the maximum are muted, the last box left checked cannot be cleared, and each refused attempt is reported to the page."]</p>
     <div class="demo-box">
-        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" EnableCheckedSelection="true" CheckedSelectionOptions="BoundedSelection" SelectedItems="_bounded" SelectedItemsChanged="HandleBoundedChanged" OnSelectionRejected="HandleRejected" AddressOptions='@(new DataViewAddressOptions("bounded"))'>
+        <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" EnableCheckedSelection="true" CheckedSelectionOptions="BoundedSelection" SelectedItems="_boundedSelection" SelectedItemsChanged="HandleBoundedChanged" OnSelectionRejected="HandleRejected" AddressOptions='@(new DataViewAddressOptions("bounded"))'>
             <ChildContent>
                 <FormaDataList TItem="ShowcaseProduct" />
             </ChildContent>
-            <Status>@(_refusal ?? L["{Selected} of at most {Maximum} selected.", _bounded.Count, BoundedSelection.Maximum ?? 0].Value)</Status>
+            <Status>@(_refusal ?? L["{Selected} of at most {Maximum} selected.", _boundedSelection.Count, BoundedSelection.Maximum ?? 0].Value)</Status>
         </FormaDataView>
     </div>
 </div>
@@ -123,7 +123,7 @@
     private FormaDataView<ShowcaseProduct>? _slowDataView;
     private bool _failsNextPage;
     private FormaDataView<ShowcaseProduct>? _shelfDataView;
-    private IReadOnlyList<ShowcaseProduct> _bounded = [DataViewShowcaseProducts.All.First()];
+    private IReadOnlyList<ShowcaseProduct> _boundedSelection = [DataViewShowcaseProducts.All.First()];
     private string? _refusal;
 
     /// <inheritdoc />
@@ -138,8 +138,8 @@
     {
         await Task.Delay(SlowAnswer, request.CancellationToken);
 
-        var sorted = request.ApplySorting(DataViewShowcaseProducts.All);
-        var slice = sorted.Skip(request.StartIndex);
+        var sortedProducts = request.ApplySorting(DataViewShowcaseProducts.All);
+        var slice = sortedProducts.Skip(request.StartIndex);
 
         return new DataViewPage<ShowcaseProduct>([.. request.Count is { } count ? slice.Take(count) : slice], DataViewShowcaseProducts.All.Count());
     }
@@ -191,9 +191,9 @@
         return _shelfDataView?.RefreshDataAsync() ?? Task.CompletedTask;
     }
 
-    private void HandleBoundedChanged(IReadOnlyList<ShowcaseProduct> selected)
+    private void HandleBoundedChanged(IReadOnlyList<ShowcaseProduct> selectedProducts)
     {
-        _bounded = selected;
+        _boundedSelection = selectedProducts;
         _refusal = null;
     }
 

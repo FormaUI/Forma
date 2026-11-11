@@ -11,9 +11,9 @@
     <p class="description">@L["The popover follows its anchor when the page scrolls, and flips above it when there is no room below."]</p>
     <div class="demo-box">
         <span class="demo-anchor" @ref="_basicAnchor">
-            <FormaButton @ref="_basicTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_basic is { IsOpen: true } ? "true" : "false")" OnClick="() => ToggleAsync(_basic, _basicTrigger)">@L["Open"]</FormaButton>
+            <FormaButton @ref="_basicTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_basicPopover is { IsOpen: true } ? "true" : "false")" OnClick="() => ToggleAsync(_basicPopover, _basicTrigger)">@L["Open"]</FormaButton>
         </span>
-        <FormaPopover @ref="_basic" Anchor="_basicAnchor" OnOpenChanged="_ => { }">
+        <FormaPopover @ref="_basicPopover" Anchor="_basicAnchor" OnOpenChanged="_ => { }">
             <div class="demo-popover">
                 <p>@L["Anything can go here. Press Escape, or click outside, to close."]</p>
             </div>
@@ -26,16 +26,16 @@
     <p class="description">@L["With KeepsFocus, Tab and Shift+Tab move between the popover's own controls and wrap at either end, so the page behind it is never tabbed into by accident."]</p>
     <div class="demo-box">
         <span class="demo-anchor" @ref="_trappedAnchor">
-            <FormaButton @ref="_trappedTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_trapped is { IsOpen: true } ? "true" : "false")" OnClick="() => ToggleAsync(_trapped, _trappedTrigger)">@L["Open"]</FormaButton>
+            <FormaButton @ref="_trappedTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_trappedPopover is { IsOpen: true } ? "true" : "false")" OnClick="() => ToggleAsync(_trappedPopover, _trappedTrigger)">@L["Open"]</FormaButton>
         </span>
-        <FormaPopover @ref="_trapped" Anchor="_trappedAnchor" KeepsFocus="true" OnOpenChanged="_ => { }" OnOpened="() => _firstAction.RootElement.FocusAsync()">
+        <FormaPopover @ref="_trappedPopover" Anchor="_trappedAnchor" KeepsFocus="true" OnOpenChanged="_ => { }" OnOpened="() => _firstAction.RootElement.FocusAsync()">
             <div class="demo-popover demo-popover-actions">
                 <FormaButton @ref="_firstAction" Variant="ButtonVariant.Secondary" OnClick="@(() => Choose(L["One"]))">@L["One"]</FormaButton>
                 <FormaButton Variant="ButtonVariant.Secondary" OnClick="@(() => Choose(L["Two"]))">@L["Two"]</FormaButton>
                 <FormaButton Variant="ButtonVariant.Secondary" OnClick="@(() => Choose(L["Three"]))">@L["Three"]</FormaButton>
             </div>
         </FormaPopover>
-        <p class="demo-note">@L["Chosen"]: <code>@(_chosen ?? L["none yet"])</code></p>
+        <p class="demo-note">@L["Chosen"]: <code>@(_choice ?? L["none yet"])</code></p>
     </div>
 </div>
 
@@ -44,9 +44,9 @@
     <p class="description">@L["A dialog opened from inside the popover stands above it: Escape closes the dialog and leaves the popover open, with focus back on the button that opened it."]</p>
     <div class="demo-box">
         <span class="demo-anchor" @ref="_layeredAnchor">
-            <FormaButton @ref="_layeredTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_layered is { IsOpen: true } ? "true" : "false")" OnClick="() => ToggleAsync(_layered, _layeredTrigger)">@L["Open"]</FormaButton>
+            <FormaButton @ref="_layeredTrigger" Variant="ButtonVariant.Primary" aria-expanded="@(_layeredPopover is { IsOpen: true } ? "true" : "false")" OnClick="() => ToggleAsync(_layeredPopover, _layeredTrigger)">@L["Open"]</FormaButton>
         </span>
-        <FormaPopover @ref="_layered" Anchor="_layeredAnchor" KeepsFocus="true" OnOpenChanged="_ => { }" OnOpened="() => _confirmTrigger.RootElement.FocusAsync()">
+        <FormaPopover @ref="_layeredPopover" Anchor="_layeredAnchor" KeepsFocus="true" OnOpenChanged="_ => { }" OnOpened="() => _confirmTrigger.RootElement.FocusAsync()">
             <div class="demo-popover demo-popover-actions">
                 <FormaButton @ref="_confirmTrigger" Variant="ButtonVariant.Secondary" OnClick="() => _isConfirmOpen = true">@L["Ask to Confirm"]</FormaButton>
             </div>
@@ -62,27 +62,27 @@
 @code {
     private ElementReference _basicAnchor;
     private FormaButton _basicTrigger = default!;
-    private FormaPopover _basic = default!;
+    private FormaPopover _basicPopover = default!;
 
     private ElementReference _trappedAnchor;
     private FormaButton _trappedTrigger = default!;
-    private FormaPopover _trapped = default!;
+    private FormaPopover _trappedPopover = default!;
     private FormaButton _firstAction = default!;
 
     private ElementReference _layeredAnchor;
     private FormaButton _layeredTrigger = default!;
-    private FormaPopover _layered = default!;
+    private FormaPopover _layeredPopover = default!;
     private FormaButton _confirmTrigger = default!;
     private bool _isConfirmOpen;
 
-    private string? _chosen;
+    private string? _choice;
 
     private static Task ToggleAsync(FormaPopover popover, FormaButton trigger)
         => popover.ToggleAsync(trigger.RootElement);
 
     private async Task Choose(string choice)
     {
-        _chosen = choice;
-        await _trapped.CloseAsync();
+        _choice = choice;
+        await _trappedPopover.CloseAsync();
     }
 }

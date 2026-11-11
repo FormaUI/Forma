@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach as attachPlace } from '#showcase/ReadingPlace.js';
 import { sizeScroller, stubResizeObserver } from '#support/platform.js';
 
-const options = { links: '.culture-switcher a', sections: '.demo-section', current: ':scope > a.active' };
+const options = { links: '.culture-switcher a', sections: '.demo-section', currentEntry: ':scope > a.active' };
 
 describe('ReadingPlace', () => {
     /** @type {HTMLElement} */

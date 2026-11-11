@@ -64,7 +64,7 @@
             </Body>
         </FormaWindow>
     }
-    <p class="demo-note">@L["Current"]: <code>@(Manager.Current?.Title ?? L["none"])</code></p>
+    <p class="demo-note">@L["Current"]: <code>@(Manager.CurrentWindow?.Title ?? L["none"])</code></p>
 </div>
 
 <div class="demo-section">
@@ -175,7 +175,7 @@
             <FormaRestArea Label="@L["Studio Windows"]" />
         </div>
     </CascadingValue>
-    <p class="demo-note">@L["Studio's current"]: <code>@(_studio.Current?.Title ?? L["none"])</code></p>
+    <p class="demo-note">@L["Studio's current"]: <code>@(_studio.CurrentWindow?.Title ?? L["none"])</code></p>
 </div>
 
 <div class="demo-section">
@@ -352,7 +352,7 @@
 
     private void FindDescendants()
     {
-        Manager.TryFindWindows(new WindowSelector { Parent = _explorerAWindow, Recursive = true }, out var windows);
+        Manager.TryFindWindows(new WindowSelector { Parent = _explorerAWindow, IsRecursive = true }, out var windows);
         Log(L["The first Explorer's descendants: {Windows}", windows.Count == 0 ? L["no windows"] : string.Join(", ", windows.Select(window => window.Title))]);
     }
 
@@ -368,7 +368,7 @@
     {
         var result = await Manager.ActivateAsync(new WindowSelector { Window = _account });
 
-        _accountActivation = L["{Outcome}, current is {Window}", GetOutcomeText(result.Outcome), Manager.Current?.Title ?? L["none"]];
+        _accountActivation = L["{Outcome}, current is {Window}", GetOutcomeText(result.Outcome), Manager.CurrentWindow?.Title ?? L["none"]];
     }
 
     private string GetOutcomeText(WindowOperationOutcome outcome)

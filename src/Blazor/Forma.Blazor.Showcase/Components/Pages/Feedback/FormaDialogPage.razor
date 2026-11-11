@@ -34,8 +34,8 @@
     <div class="demo-box demo-row">
         @foreach (var size in _sizes)
         {
-            var chosen = size;
-            <FormaButton OnClick="() => _activeSize = chosen">@chosen</FormaButton>
+            var chosenSize = size;
+            <FormaButton OnClick="() => _activeSize = chosenSize">@chosenSize</FormaButton>
         }
         @if (_activeSize is not null)
         {

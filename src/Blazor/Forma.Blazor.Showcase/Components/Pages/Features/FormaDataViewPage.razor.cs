@@ -33,8 +33,8 @@ public sealed partial class FormaDataViewPage
         return Task.CompletedTask;
     }
 
-    private void HandleSelectionChanged(IReadOnlyList<ShowcaseProduct> selected)
-        => _selectedProducts = selected;
+    private void HandleSelectionChanged(IReadOnlyList<ShowcaseProduct> selectedProducts)
+        => _selectedProducts = selectedProducts;
 
     private List<DataViewSortOption<ShowcaseProduct>> CreateSorts()
         =>

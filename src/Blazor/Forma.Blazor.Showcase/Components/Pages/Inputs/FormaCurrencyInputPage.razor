@@ -60,7 +60,7 @@
             <FormaCurrencyInput @bind-Value="Model.MinimumOrder" CurrencyCode="USD" Label="@L["Minimum Order"]" Required="true" Min="0" />
             <div class="demo-row">
                 <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
-                @if (_submitted)
+                @if (_isSubmitted)
                 {
                     <span class="demo-note">@L["Submitted."]</span>
                 }
@@ -81,26 +81,26 @@
         <h2>@L["Disabled and Read-Only"]</h2>
         <div class="demo-box">
             <div class="demo-stack">
-                <FormaCurrencyInput @bind-Value="Model.Locked" CurrencyCode="USD" Label="@L["Disabled"]" Disabled="true" />
-                <FormaCurrencyInput @bind-Value="Model.Locked" CurrencyCode="USD" Label="@L["Read-Only"]" ReadOnly="true" />
+                <FormaCurrencyInput @bind-Value="Model.LockedValue" CurrencyCode="USD" Label="@L["Disabled"]" Disabled="true" />
+                <FormaCurrencyInput @bind-Value="Model.LockedValue" CurrencyCode="USD" Label="@L["Read-Only"]" ReadOnly="true" />
             </div>
         </div>
     </div>
 </EditForm>
 
 @code {
-    private bool _submitted;
+    private bool _isSubmitted;
 
     private CurrencyInputDemoModel Model { get; set; } = default!;
 
     protected override void OnInitialized()
-        => Model = new CurrencyInputDemoModel(L) { Shekels = 30m, Yen = 1200m, Dinars = 12.5m, FreeShippingFrom = 50m, Locked = 19.99m };
+        => Model = new CurrencyInputDemoModel(L) { Shekels = 30m, Yen = 1200m, Dinars = 12.5m, FreeShippingFrom = 50m, LockedValue = 19.99m };
 
     private string FormatValue(decimal? value)
         => value?.ToString(CultureState.Culture) ?? "null";
 
     private void HandleSubmit()
-        => _submitted = true;
+        => _isSubmitted = true;
 
     private sealed class CurrencyInputDemoModel(IStringLocale localizer) : IValidatableObject
     {
@@ -113,7 +113,7 @@
         public decimal? Budget { get; set; }
         public decimal? MinimumOrder { get; set; }
         public decimal FreeShippingFrom { get; set; }
-        public decimal? Locked { get; set; }
+        public decimal? LockedValue { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

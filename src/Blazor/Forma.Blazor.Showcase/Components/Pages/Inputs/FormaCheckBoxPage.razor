@@ -15,16 +15,16 @@
     <div class="demo-section">
         <h2>@L["Basic"]</h2>
         <div class="demo-box demo-row">
-            <FormaCheckBox @bind-Value="Model.Subscribed">@L["Subscribe to updates"]</FormaCheckBox>
-            <FormaCheckBox @bind-Value="Model.Featured">@L["Featured"]</FormaCheckBox>
+            <FormaCheckBox @bind-Value="Model.IsSubscribed">@L["Subscribe to updates"]</FormaCheckBox>
+            <FormaCheckBox @bind-Value="Model.IsFeatured">@L["Featured"]</FormaCheckBox>
         </div>
     </div>
 
     <div class="demo-section">
         <h2>@L["Disabled"]</h2>
         <div class="demo-box demo-row">
-            <FormaCheckBox @bind-Value="Model.Off" Disabled="true">@L["Off"]</FormaCheckBox>
-            <FormaCheckBox @bind-Value="Model.On" Disabled="true">@L["On"]</FormaCheckBox>
+            <FormaCheckBox @bind-Value="Model.OffValue" Disabled="true">@L["Off"]</FormaCheckBox>
+            <FormaCheckBox @bind-Value="Model.OnValue" Disabled="true">@L["On"]</FormaCheckBox>
         </div>
     </div>
 
@@ -47,11 +47,11 @@
         <h2>@L["Required in a Form"]</h2>
         <p class="description">@L["A checkbox is a form input: submitting without accepting shows the validation message under it, and accepting clears it."]</p>
         <div class="demo-box">
-            <FormaCheckBox @bind-Value="Model.Accepted">@L["I accept the terms"]</FormaCheckBox>
-            <ValidationMessage For="() => Model.Accepted" />
+            <FormaCheckBox @bind-Value="Model.IsAccepted">@L["I accept the terms"]</FormaCheckBox>
+            <ValidationMessage For="() => Model.IsAccepted" />
             <div class="demo-row">
                 <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
-                @if (_submitted)
+                @if (_isSubmitted)
                 {
                     <span class="demo-note">@L["Submitted."]</span>
                 }
@@ -61,15 +61,15 @@
 </EditForm>
 
 @code {
-    private bool _submitted;
+    private bool _isSubmitted;
 
     private CheckBoxDemoModel Model { get; set; } = default!;
 
     protected override void OnInitialized()
         => Model = new CheckBoxDemoModel(L)
         {
-            Featured = true,
-            On = true,
+            IsFeatured = true,
+            OnValue = true,
         };
 
     private bool AllChildrenChecked
@@ -80,31 +80,31 @@
 
     private void ToggleAllChildren()
     {
-        var next = !AllChildrenChecked;
+        var isChecked = !AllChildrenChecked;
 
         for (var index = 0; index < Model.Children.Count; index++)
         {
-            Model.Children[index] = next;
+            Model.Children[index] = isChecked;
         }
     }
 
     private void HandleSubmit()
-        => _submitted = true;
+        => _isSubmitted = true;
 
     private sealed class CheckBoxDemoModel(IStringLocale localizer) : IValidatableObject
     {
-        public bool Subscribed { get; set; }
-        public bool Featured { get; set; }
-        public bool Off { get; set; }
-        public bool On { get; set; }
+        public bool IsSubscribed { get; set; }
+        public bool IsFeatured { get; set; }
+        public bool OffValue { get; set; }
+        public bool OnValue { get; set; }
         public List<bool> Children { get; } = [false, false, false];
-        public bool Accepted { get; set; }
+        public bool IsAccepted { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (!Accepted)
+            if (!IsAccepted)
             {
-                yield return new ValidationResult(localizer["You must accept the terms to continue."], [nameof(Accepted)]);
+                yield return new ValidationResult(localizer["You must accept the terms to continue."], [nameof(IsAccepted)]);
             }
         }
     }

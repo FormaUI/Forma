@@ -11,22 +11,22 @@ public sealed class ShowcaseShareAccounts : IShareTokenSource, IShareServerSourc
     private static readonly Uri MastodonServer = new("https://mastodon.social/");
 
     private readonly StateNotifier _notifier = new();
-    private readonly HashSet<string> _connected = [with(StringComparer.Ordinal)];
+    private readonly HashSet<string> _connectedTargetIds = [with(StringComparer.Ordinal)];
 
     /// <summary>Whether the visitor is connected to the vault.</summary>
     public bool IsVaultConnected
-        => _connected.Contains(ShowcaseShareTarget.VaultId);
+        => _connectedTargetIds.Contains(ShowcaseShareTarget.VaultId);
 
     /// <summary>Whether the visitor is connected to a Mastodon server.</summary>
     public bool IsMastodonConnected
-        => _connected.Contains(MastodonId);
+        => _connectedTargetIds.Contains(MastodonId);
 
     /// <summary>Whether the vault's token is on hand.</summary>
     public bool HasVaultToken { get; set; } = true;
 
     /// <inheritdoc />
     public bool IsConnected(string targetId)
-        => _connected.Contains(targetId);
+        => _connectedTargetIds.Contains(targetId);
 
     /// <inheritdoc />
     public Task ConnectAsync(string targetId, CancellationToken cancellationToken = default)
@@ -37,11 +37,11 @@ public sealed class ShowcaseShareAccounts : IShareTokenSource, IShareServerSourc
     {
         if (isConnected)
         {
-            _connected.Add(targetId);
+            _connectedTargetIds.Add(targetId);
         }
         else
         {
-            _connected.Remove(targetId);
+            _connectedTargetIds.Remove(targetId);
         }
 
         return _notifier.NotifyAsync();

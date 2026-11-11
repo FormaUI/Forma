@@ -163,17 +163,17 @@
         await Task.Delay(ChangeDelay);
 
         var entries = _changingEntries.ToList();
-        HashSet<int> removed = [.. ids];
-        var reached = 0;
+        HashSet<int> removedIds = [.. ids];
+        var reachedCount = 0;
 
         // Each pass takes the children of what is taken, until a pass takes nothing new.
-        while (removed.Count != reached)
+        while (removedIds.Count != reachedCount)
         {
-            reached = removed.Count;
-            removed.UnionWith(entries.Where(entry => entry.ParentId is { } parent && removed.Contains(parent)).Select(entry => entry.Id));
+            reachedCount = removedIds.Count;
+            removedIds.UnionWith(entries.Where(entry => entry.ParentId is { } parent && removedIds.Contains(parent)).Select(entry => entry.Id));
         }
 
-        _changingEntries = entries.Where(entry => !removed.Contains(entry.Id)).ToArray().AsQueryable();
+        _changingEntries = entries.Where(entry => !removedIds.Contains(entry.Id)).ToArray().AsQueryable();
     }
 
     private async Task CloseLaterAsync(int id)

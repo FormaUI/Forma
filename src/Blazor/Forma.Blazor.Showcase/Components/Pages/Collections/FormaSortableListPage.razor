@@ -53,11 +53,11 @@
             <ItemTemplate Context="link">
                 <div class="demo-sortable-tag">
                     <span>@link.Name</span>
-                    <FormaButton Size="ButtonSize.Mini" OnClick="@(() => _lastClicked = link.Name)">@L["Edit"]</FormaButton>
+                    <FormaButton Size="ButtonSize.Mini" OnClick="@(() => _lastClickedName = link.Name)">@L["Edit"]</FormaButton>
                 </div>
             </ItemTemplate>
         </FormaSortableList>
-        <p class="demo-note">@(_lastClicked is null ? L["Drag a row anywhere to reorder, or press Edit — it still clicks."] : L["Edit was clicked on {Name}, so the row did not take the press.", _lastClicked])</p>
+        <p class="demo-note">@(_lastClickedName is null ? L["Drag a row anywhere to reorder, or press Edit — it still clicks."] : L["Edit was clicked on {Name}, so the row did not take the press.", _lastClickedName])</p>
     </div>
 </div>
 
@@ -126,7 +126,7 @@
     private FormaPopover _favoritesPopover = default!;
     private FormaSortableList<PhotoItem> _favoritesList = default!;
 
-    private string? _lastClicked;
+    private string? _lastClickedName;
 
     private void RemoveTag(TagItem tag)
         => _tags = [.. _tags.Where(t => t.Id != tag.Id)];

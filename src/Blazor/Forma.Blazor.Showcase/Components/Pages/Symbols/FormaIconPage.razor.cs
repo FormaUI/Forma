@@ -7,10 +7,10 @@ public partial class FormaIconPage
     private static readonly IReadOnlyList<Brand> Brands =
         [.. Enum.GetValues<Brand>().Where(brand => brand is not Brand.None)];
 
-    private static readonly IReadOnlyList<Glyph> Mirrored =
+    private static readonly IReadOnlyList<Glyph> MirroredGlyphs =
         [.. Enum.GetValues<Glyph>().Where(glyph => glyph.IsDirectionSensitive("rtl"))];
 
-    private static readonly IReadOnlyList<GlyphSection> Named =
+    private static readonly IReadOnlyList<GlyphSection> NamedSections =
     [
         new("Arrows and Navigation",
         [
@@ -110,16 +110,16 @@ public partial class FormaIconPage
     ];
 
     // The named sections followed by a last section holding every glyph they leave out.
-    private static readonly IReadOnlyList<GlyphSection> Sections = Complete(Named);
+    private static readonly IReadOnlyList<GlyphSection> Sections = Complete(NamedSections);
 
     private static readonly int Total = Sections.Sum(section => section.Glyphs.Count);
 
-    private static IReadOnlyList<GlyphSection> Complete(IReadOnlyList<GlyphSection> named)
+    private static IReadOnlyList<GlyphSection> Complete(IReadOnlyList<GlyphSection> namedSections)
     {
-        var placed = named.SelectMany(section => section.Glyphs).ToHashSet();
-        var other = Enum.GetValues<Glyph>().Where(glyph => glyph is not Glyph.None && !placed.Contains(glyph)).ToArray();
+        var placedGlyphs = namedSections.SelectMany(section => section.Glyphs).ToHashSet();
+        var otherGlyphs = Enum.GetValues<Glyph>().Where(glyph => glyph is not Glyph.None && !placedGlyphs.Contains(glyph)).ToArray();
 
-        return other.Length is 0 ? named : [.. named, new GlyphSection("Other", other)];
+        return otherGlyphs.Length is 0 ? namedSections : [.. namedSections, new GlyphSection("Other", otherGlyphs)];
     }
 
     private sealed record GlyphSection(string Title, IReadOnlyList<Glyph> Glyphs);

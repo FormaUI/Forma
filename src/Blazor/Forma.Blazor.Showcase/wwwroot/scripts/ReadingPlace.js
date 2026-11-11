@@ -20,7 +20,7 @@ const holdDuration = 2000;
 
 /**
  * @param {HTMLElement} target The list holding the entry for the current page.
- * @param {{ links: string, sections: string, current: string }} options
+ * @param {{ links: string, sections: string, currentEntry: string }} options
  *   Selectors for the links that change the language, the sections the place is measured by, and the
  *   target's entry for the current page.
  */
@@ -31,20 +31,20 @@ export function attach(target, options) {
 class ReadingPlace {
     #target;
     #sections;
-    #current;
+    #currentEntry;
     #isShown;
     #observer;
     #abort = new AbortController();
-    #holding = null;
+    #holdAbort = null;
     #handleEnhancedLoad = () => {
-        this.#holding?.abort();
+        this.#holdAbort?.abort();
         this.#returnToPlace({ isHeld: true });
     };
 
-    constructor(target, { links, sections, current }) {
+    constructor(target, { links, sections, currentEntry }) {
         this.#target = target;
         this.#sections = sections;
-        this.#current = current;
+        this.#currentEntry = currentEntry;
 
         this.#returnToPlace({ isHeld: false });
         this.reveal();
@@ -70,13 +70,13 @@ class ReadingPlace {
     dispose() {
         this.#observer.disconnect();
         this.#abort.abort();
-        this.#holding?.abort();
+        this.#holdAbort?.abort();
         globalThis.Blazor?.removeEventListener('enhancedload', this.#handleEnhancedLoad);
     }
 
     // Centers the current entry in the target when the target's scroll leaves it out of view.
     reveal() {
-        const entry = this.#target.querySelector(this.#current);
+        const entry = this.#target.querySelector(this.#currentEntry);
 
         if (!entry) {
             return;
@@ -134,27 +134,27 @@ class ReadingPlace {
     // page settles or the next navigation begins. The hold belongs to the address it began at, which a navigation
     // changes before the next page's content arrives.
     #hold(place) {
-        this.#holding?.abort();
+        this.#holdAbort?.abort();
 
-        const holding = new AbortController();
+        const holdAbort = new AbortController();
         const address = location.href;
-        const end = () => holding.abort();
+        const end = () => holdAbort.abort();
         const observer = new MutationObserver(() => location.href === address ? this.#restore(place) : end());
         const timer = setTimeout(end, holdDuration);
 
-        this.#holding = holding;
+        this.#holdAbort = holdAbort;
         observer.observe(document.body, { childList: true, subtree: true, characterData: true });
-        holding.signal.addEventListener('abort', () => {
+        holdAbort.signal.addEventListener('abort', () => {
             observer.disconnect();
             clearTimeout(timer);
         });
 
         for (const name of ['wheel', 'touchstart', 'keydown', 'pointerdown']) {
-            document.addEventListener(name, end, { capture: true, signal: holding.signal });
+            document.addEventListener(name, end, { capture: true, signal: holdAbort.signal });
         }
 
-        window.addEventListener('popstate', end, { signal: holding.signal });
-        globalThis.navigation?.addEventListener('navigate', end, { signal: holding.signal });
+        window.addEventListener('popstate', end, { signal: holdAbort.signal });
+        globalThis.navigation?.addEventListener('navigate', end, { signal: holdAbort.signal });
     }
 
     #restore({ section, offset }) {

@@ -123,12 +123,12 @@ public sealed partial class DemoSourceEditor
         }
 
         var pattern = $@"\b{Regex.Escape(_oldName)}\b";
-        var replaced = 0;
+        var replacedCount = 0;
         string content;
 
         try
         {
-            content = Regex.Replace(Content, pattern, _ => { replaced++; return _newName; }, RegexOptions.None, MatchTimeout);
+            content = Regex.Replace(Content, pattern, _ => { replacedCount++; return _newName; }, RegexOptions.None, MatchTimeout);
         }
         catch (RegexMatchTimeoutException)
         {
@@ -136,13 +136,13 @@ public sealed partial class DemoSourceEditor
             return;
         }
 
-        _announcement = replaced == 0
+        _announcement = replacedCount == 0
             ? L["No occurrence of \"{Query}\" was found.", _oldName]
-            : L["Renamed {Count} occurrences.", replaced];
+            : L["Renamed {Count} occurrences.", replacedCount];
 
         CancelRename();
 
-        if (replaced > 0)
+        if (replacedCount > 0)
         {
             await CommitAsync(content);
         }

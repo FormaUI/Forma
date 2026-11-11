@@ -11,8 +11,8 @@
     <div class="demo-section">
         <h2>@L["Basic"]</h2>
         <div class="demo-box">
-            <FormaColorPicker @bind-Value="Model.Primary" Label="@L["Primary"]" />
-            <FormaColorPicker @bind-Value="Model.Secondary" Label="@L["Secondary"]" />
+            <FormaColorPicker @bind-Value="Model.PrimaryColor" Label="@L["Primary"]" />
+            <FormaColorPicker @bind-Value="Model.SecondaryColor" Label="@L["Secondary"]" />
         </div>
     </div>
 
@@ -43,8 +43,8 @@
 
     private sealed class ColorDemoModel
     {
-        public string Primary { get; set; } = "#0d6efd";
-        public string Secondary { get; set; } = "#6c757d";
+        public string PrimaryColor { get; set; } = "#0d6efd";
+        public string SecondaryColor { get; set; } = "#6c757d";
         public string Background { get; set; } = "#ffffff";
         public string Accent { get; set; } = "#198754";
         public string Overlay { get; set; } = "#000000CC";

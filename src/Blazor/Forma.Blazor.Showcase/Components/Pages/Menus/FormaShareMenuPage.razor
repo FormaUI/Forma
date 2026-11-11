@@ -22,7 +22,7 @@
     <p class="description">@L["A file stays off the networks; what applies is saving it, and any registered destination that takes files — here a stand-in Vault the Showcase registers."]</p>
     <div class="demo-box">
         <FormaShareMenu Item="_notes" />
-        <p class="demo-note">@L["Sent to Vault"]: <code>@(Vault.LastShared?.Name ?? L["nothing yet"])</code></p>
+        <p class="demo-note">@L["Sent to Vault"]: <code>@(Vault.LastSharedItem?.Name ?? L["nothing yet"])</code></p>
     </div>
 </div>
 
@@ -35,7 +35,7 @@
             <FormaButton OnClick="() => Accounts.SetVaultConnectedAsync(!Accounts.IsVaultConnected)">@(Accounts.IsVaultConnected ? L["Disconnect Vault"] : L["Connect Vault"])</FormaButton>
             <FormaButton OnClick="() => Accounts.HasVaultToken = !Accounts.HasVaultToken">@(Accounts.HasVaultToken ? L["Drop the Token"] : L["Restore the Token"])</FormaButton>
         </p>
-        <p class="demo-note">@L["Sent to Vault"]: <code>@(Vault.LastShared?.Name ?? L["nothing yet"])</code></p>
+        <p class="demo-note">@L["Sent to Vault"]: <code>@(Vault.LastSharedItem?.Name ?? L["nothing yet"])</code></p>
     </div>
     <p class="description">@L["Mastodon has no central server, so connecting it means naming the reader's own. Until then the menu offers Connect; once named, the entry links straight to that server's composer."]</p>
     <div class="demo-box">

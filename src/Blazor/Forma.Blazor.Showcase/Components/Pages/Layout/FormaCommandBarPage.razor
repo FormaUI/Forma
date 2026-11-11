@@ -28,7 +28,7 @@
     <div class="demo-box demo-box-flush demo-command-bar-narrow">
         <FormaCommandArea>
             <FormaCommandBar>
-                @for (var index = 0; index < _visibleCommands; index++)
+                @for (var index = 0; index < _visibleCommandCount; index++)
                 {
                     var command = ManyCommands[index];
                     <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini">@command</FormaButton>
@@ -37,8 +37,8 @@
         </FormaCommandArea>
     </div>
     <div class="demo-row">
-        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="() => _visibleCommands = Math.Min(_visibleCommands + 2, ManyCommands.Length)">@L["Add Commands"]</FormaButton>
-        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="() => _visibleCommands = Math.Max(_visibleCommands - 2, 1)">@L["Remove Commands"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="() => _visibleCommandCount = Math.Min(_visibleCommandCount + 2, ManyCommands.Length)">@L["Add Commands"]</FormaButton>
+        <FormaButton Variant="ButtonVariant.Secondary" Size="ButtonSize.Mini" OnClick="() => _visibleCommandCount = Math.Max(_visibleCommandCount - 2, 1)">@L["Remove Commands"]</FormaButton>
     </div>
 </div>
 
@@ -109,7 +109,7 @@
 </div>
 
 @code {
-    private int _visibleCommands = 2;
+    private int _visibleCommandCount = 2;
 
     private bool _showFavorites = true;
 

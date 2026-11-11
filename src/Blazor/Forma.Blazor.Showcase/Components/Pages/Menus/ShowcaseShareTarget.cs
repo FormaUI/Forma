@@ -11,7 +11,7 @@ public sealed class ShowcaseShareTarget(IShareTokenSource tokens) : IShareTarget
     public const string VaultId = "showcase-vault";
 
     /// <summary>The item last shared to the vault.</summary>
-    public ShareItem? LastShared { get; private set; }
+    public ShareItem? LastSharedItem { get; private set; }
 
     /// <summary>Raised when an item is shared to the vault.</summary>
     public event Action? Shared;
@@ -46,7 +46,7 @@ public sealed class ShowcaseShareTarget(IShareTokenSource tokens) : IShareTarget
             return false;
         }
 
-        LastShared = item;
+        LastSharedItem = item;
         Shared?.Invoke();
 
         return true;

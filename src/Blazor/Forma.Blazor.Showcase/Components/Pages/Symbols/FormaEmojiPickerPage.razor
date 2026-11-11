@@ -11,25 +11,25 @@
     <div class="demo-box">
         <FormaEmojiPicker OnSelect="OnPickedAsync" />
     </div>
-    <p role="status">@(_picked is null ? L["Nothing chosen yet."] : L["Chose {Emoji}.", _picked])</p>
+    <p role="status">@(_pickedEmoji is null ? L["Nothing chosen yet."] : L["Chose {Emoji}.", _pickedEmoji])</p>
 </div>
 
 <div class="demo-section">
     <h2>@L["Recently Used"]</h2>
     <p class="description">@L["A host that persists the recent list gets an extra leading tab. Choose an emoji here and it moves to the front."]</p>
     <div class="demo-box">
-        <FormaEmojiPicker @bind-RecentEmojis="_recent" />
+        <FormaEmojiPicker @bind-RecentEmojis="_recentEmojis" />
     </div>
-    <p>@L["Recent: {Emoji}", string.Join(" ", _recent)]</p>
+    <p>@L["Recent: {Emoji}", string.Join(" ", _recentEmojis)]</p>
 </div>
 
 <div class="demo-section">
     <h2>@L["Recent Limit"]</h2>
     <p class="description">@L["MaxRecent caps how many are kept. This one keeps three."]</p>
     <div class="demo-box">
-        <FormaEmojiPicker @bind-RecentEmojis="_limitedRecent" Options="@(new EmojiPickerOptions { MaxRecent = 3 })" />
+        <FormaEmojiPicker @bind-RecentEmojis="_limitedRecentEmojis" Options="@(new EmojiPickerOptions { MaxRecent = 3 })" />
     </div>
-    <p>@L["Recent: {Emoji}", string.Join(" ", _limitedRecent)]</p>
+    <p>@L["Recent: {Emoji}", string.Join(" ", _limitedRecentEmojis)]</p>
 </div>
 
 <div class="demo-section">
@@ -48,13 +48,13 @@
 </div>
 
 @code {
-    private string? _picked;
-    private IReadOnlyList<string> _recent = ["🚴", "🏆", "⏱️"];
-    private IReadOnlyList<string> _limitedRecent = ["✅"];
+    private string? _pickedEmoji;
+    private IReadOnlyList<string> _recentEmojis = ["🚴", "🏆", "⏱️"];
+    private IReadOnlyList<string> _limitedRecentEmojis = ["✅"];
 
     private Task OnPickedAsync(string emoji)
     {
-        _picked = emoji;
+        _pickedEmoji = emoji;
         return Task.CompletedTask;
     }
 }

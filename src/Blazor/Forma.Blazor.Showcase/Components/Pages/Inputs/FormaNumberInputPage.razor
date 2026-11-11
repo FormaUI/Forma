@@ -64,7 +64,7 @@
             <FormaNumberInput @bind-Value="Model.Seats" Label="@L["Seats"]" Required="true" Min="1" />
             <div class="demo-row">
                 <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Primary">@L["Submit"]</FormaButton>
-                @if (_submitted)
+                @if (_isSubmitted)
                 {
                     <span class="demo-note">@L["Submitted."]</span>
                 }
@@ -93,8 +93,8 @@
         <h2>@L["Disabled and Read-Only"]</h2>
         <div class="demo-box">
             <div class="demo-stack">
-                <FormaNumberInput @bind-Value="Model.Locked" Label="@L["Disabled"]" Disabled="true" Adornment="@(new NumberAdornment("%", AdornmentSide.End, L["percent"]))" />
-                <FormaNumberInput @bind-Value="Model.Locked" Label="@L["Read-Only"]" ReadOnly="true" Adornment="@(new NumberAdornment("%", AdornmentSide.End, L["percent"]))" />
+                <FormaNumberInput @bind-Value="Model.LockedValue" Label="@L["Disabled"]" Disabled="true" Adornment="@(new NumberAdornment("%", AdornmentSide.End, L["percent"]))" />
+                <FormaNumberInput @bind-Value="Model.LockedValue" Label="@L["Read-Only"]" ReadOnly="true" Adornment="@(new NumberAdornment("%", AdornmentSide.End, L["percent"]))" />
             </div>
         </div>
     </div>
@@ -112,17 +112,17 @@
 </div>
 
 @code {
-    private bool _submitted;
+    private bool _isSubmitted;
 
     private int? _bareQuantity = 1;
 
     private NumberInputDemoModel Model { get; set; } = default!;
 
     protected override void OnInitialized()
-        => Model = new NumberInputDemoModel(L) { Price = 12.5m, UsageLimit = 100, Locked = 42 };
+        => Model = new NumberInputDemoModel(L) { Price = 12.5m, UsageLimit = 100, LockedValue = 42 };
 
     private void HandleSubmit()
-        => _submitted = true;
+        => _isSubmitted = true;
 
     private sealed class NumberInputDemoModel(IStringLocale localizer) : IValidatableObject
     {
@@ -134,7 +134,7 @@
         public decimal? Adjustment { get; set; }
         public decimal? Share { get; set; }
         public decimal? Weight { get; set; }
-        public int? Locked { get; set; }
+        public int? LockedValue { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

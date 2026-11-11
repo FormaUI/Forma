@@ -81,11 +81,11 @@ public sealed partial class FormaFileUploaderPage
 
     private string DescribeHeldFiles(DefaultFileStore store)
     {
-        var held = store.Held;
+        var heldResources = store.HeldResources;
 
-        return held.Count == 0
+        return heldResources.Count == 0
             ? L["The store is holding nothing."]
-            : L["The store is holding: {Names}", string.Join(", ", held.Select(resource => resource.Name))];
+            : L["The store is holding: {Names}", string.Join(", ", heldResources.Select(resource => resource.Name))];
     }
 
     private List<string> Log(string key)
