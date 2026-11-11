@@ -1,7 +1,6 @@
 namespace Forma.Framework.Explorer.Selection;
 
 using Forma.Framework.Catalog;
-using Forma.Framework.Catalog.Selection;
 using Forma.Framework.Explorer.Items;
 
 /// <summary>What components managing an explorer's selection may ask it to do.</summary>

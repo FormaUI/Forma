@@ -196,7 +196,6 @@ A component that browses a catalog keeps its state in the types this package pro
 | `CatalogProviderItems` | The items fetched from a provider, one slice replacing the last or slices appended, with the store positions read, whether more follow and the fetch in flight. |
 | `CatalogFolderTree` | The folder items indexed by key and by parent. |
 | `CatalogHistory` | The folders visited, with a cursor moving back and forward. |
-| `CatalogSelection` | The selected items, folders and other items together, capped by a limit counting both; `ICatalogSelectionView` is its read-only view. |
 
 ## License
 

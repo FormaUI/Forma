@@ -9,7 +9,6 @@ using Forma.Framework.Catalog;
 using Forma.Framework.Catalog.Navigation;
 using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Catalog.Requests;
-using Forma.Framework.Catalog.Selection;
 using Forma.Framework.Css;
 using Forma.Framework.Events;
 using Forma.Framework.Explorer;
@@ -28,7 +27,7 @@ using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A file manager for what is already on the server: thumbnail, details and list views, folders, navigation, drag-and-drop organization, upload, preview, rename, and delete.</summary>
-public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IExplorerInteraction
+public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IExplorerInteraction, IExplorerSelectionView
 {
     private const int DefaultPageSize = 24;
 
@@ -161,7 +160,13 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // A dialog's name box is a field of the dialog's own form, outside any form the explorer stands in.
     private readonly EditContext _dialogForm = new(new object());
 
-    private readonly CatalogSelection _selection = new();
+    // The items selected, folders first, as the data view reports them and the host hands them over; the data view holds what may be
+    // selected and how many.
+    private IReadOnlyList<ICatalogItem> _selectedItems = [];
+
+    private HashSet<string> _selectedKeys = [with(StringComparer.Ordinal)];
+
+    private bool _isSelectionModeActive;
 
     // Where each selected file was selected, by its key, null being the top level; a file the host selected has none.
     private readonly Dictionary<string, ICatalogFolderItem?> _selectionLocations = [with(StringComparer.Ordinal)];
@@ -543,7 +548,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _paramStateTracker.Track(() => Selected, AdoptSelection);
 
         // Seeded once, so leaving selection mode afterwards is the reader's to decide.
-        _selection.IsSelectionModeActive = Options.SelectOnOpen;
+        _isSelectionModeActive = Options.SelectOnOpen;
 
         _itemManager.OnChanged = () => _ = InvokeAsync(StateHasChanged);
         _itemManager.OnDrop = (target, folder) => RunAsync(() => HandleDropOnFolderAsync(target, folder));
@@ -553,7 +558,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _itemManager.OnDeleteConfirmed = targets => RunAsync(() => ApplyDeleteAsync(targets));
         _itemManager.OnRefused = (item, capability) => _ = RunAsync(() => RefuseAsync(item, capability));
         _itemManager.OnToggleUpload = () => Run(_uploadPanel.Toggle);
-        _itemManager.SelectedItems = () => _selection.Items;
+        _itemManager.SelectedItems = () => _selectedItems;
     }
 
     /// <inheritdoc />
@@ -577,7 +582,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             _contentProvider = _source.ProvideAsync;
         }
 
-        _selection.SelectionLimit = Options.MaxSelection;
 
         _itemManager.Actions = Actions;
         _itemManager.ItemOptions = ItemOptions;
@@ -858,7 +862,20 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     ExplorerGroupField IExplorerContentView.GroupField => _groupField;
 
-    ICatalogSelectionView IExplorerView.Selection => _selection;
+    IExplorerSelectionView IExplorerView.Selection => this;
+
+    bool IExplorerSelectionView.IsSelectionModeActive => _isSelectionModeActive;
+
+    int IExplorerSelectionView.Count => _selectedItems.Count;
+
+    IReadOnlyList<ICatalogItem> IExplorerSelectionView.Items => _selectedItems;
+
+    bool IExplorerSelectionView.IsSelected(ICatalogItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        return _selectedKeys.Contains(item.Key);
+    }
 
     bool IExplorerView.CanSelect(ICatalogItem item)
     {
@@ -910,18 +927,19 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         await InvokeAsync(StateHasChanged);
     }
 
+    // The data view decides what a change of the selection may do, so a change asked of the explorer goes through it.
     Task IExplorerSelectionInteraction.ToggleSelectionAsync(ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        return item.IsDisabled || !CanChoose(item) ? Task.CompletedTask : ChangeSelectionAsync(selection => selection.Toggle(item));
+        return _dataView is { } view ? view.ToggleSelectionAsync(item, !_selectedKeys.Contains(item.Key)) : Task.CompletedTask;
     }
 
     Task IExplorerSelectionInteraction.DeselectAsync(ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        return _selection.IsSelected(item) ? RunAsync(() => ChangeSelectionAsync(selection => selection.Remove(item))) : Task.CompletedTask;
+        return _dataView is { } view && _selectedKeys.Contains(item.Key) ? view.ToggleSelectionAsync(item, false) : Task.CompletedTask;
     }
 
     Task IExplorerContentInteraction.SortByAsync(CatalogSortField field)
@@ -1005,14 +1023,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             }
         ];
 
-    /// <summary>Changes the selection and reports it.</summary>
-    private async Task ChangeSelectionAsync(Action<CatalogSelection> change)
+    /// <summary>Takes the items as the selection and reports it.</summary>
+    private async Task SetSelectionAsync(IEnumerable<ICatalogItem> items)
     {
-        HashSet<string> before = [.. _selection.Items.Select(item => item.Key)];
-        change(_selection);
+        var before = _selectedKeys;
+        HoldSelection(items);
         PlaceSelection(before);
 
-        await SelectedChanged.InvokeAsync(_selection.Items);
+        await SelectedChanged.InvokeAsync(_selectedItems);
 
         StateHasChanged();
     }
@@ -1020,47 +1038,38 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // The host's own selection is adopted without being reported back, a file it adds standing in no location the explorer knows.
     private void AdoptSelection(IReadOnlyList<ICatalogItem> selected)
     {
-        _selection.Replace(selected);
-        PlaceSelection([.. selected.Select(item => item.Key)]);
+        HoldSelection(selected);
+        PlaceSelection(_selectedKeys);
+    }
+
+    // The selection is held folders first, as the content lists them.
+    private void HoldSelection(IEnumerable<ICatalogItem> items)
+    {
+        IReadOnlyList<ICatalogItem> held = [.. items];
+        _selectedItems = [.. held.Where(item => item is ICatalogFolderItem), .. held.Where(item => item is not ICatalogFolderItem)];
+        _selectedKeys = [with(StringComparer.Ordinal), .. _selectedItems.Select(item => item.Key)];
     }
 
     // A file the reader adds to the selection stands in the location it was added in, and one taken out has no location.
     private void PlaceSelection(HashSet<string> before)
     {
-        HashSet<string> selected = [];
-
-        foreach (var item in _selection.Items)
+        foreach (var item in _selectedItems)
         {
-            selected.Add(item.Key);
-
             if (item is not ICatalogFolderItem && !before.Contains(item.Key))
             {
                 _selectionLocations[item.Key] = _currentFolder;
             }
         }
 
-        foreach (var key in _selectionLocations.Keys.Where(key => !selected.Contains(key)).ToList())
+        foreach (var key in _selectionLocations.Keys.Where(key => !_selectedKeys.Contains(key)).ToList())
         {
             _selectionLocations.Remove(key);
         }
     }
 
-    // The data view's boxes change the explorer's selection, whose limit decides what it holds, files and folders together.
+    // The data view reports the selection it holds, files and folders together, within the bounds it keeps.
     private Task HandleViewSelectionChangedAsync(IReadOnlyList<ICatalogItem> items)
-        => ChangeSelectionAsync(selection =>
-        {
-            HashSet<string> kept = [.. items.Select(item => item.Key)];
-
-            foreach (var item in selection.Items.Where(item => !kept.Contains(item.Key)).ToList())
-            {
-                selection.Remove(item);
-            }
-
-            foreach (var item in items.Where(item => !selection.IsSelected(item)))
-            {
-                selection.Toggle(item);
-            }
-        });
+        => SetSelectionAsync(items);
 
     // An item the data view activates, by a press or by Enter, opens: a folder is entered, and a file goes to the host where it asks
     // for one, or is previewed where it may be viewed.
@@ -1090,16 +1099,16 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private async Task ToggleSelectModeAsync()
     {
-        _selection.IsSelectionModeActive = !_selection.IsSelectionModeActive;
+        _isSelectionModeActive = !_isSelectionModeActive;
 
-        if (!_selection.IsSelectionModeActive)
+        if (!_isSelectionModeActive)
         {
             await ClearSelectionAsync();
         }
     }
 
     private Task ClearSelectionAsync()
-        => ChangeSelectionAsync(selection => selection.Clear());
+        => SetSelectionAsync([]);
 
     private string SidebarSizeStyle
         => new CssStyleBuilder().Add("--forma-explorer-sidebar-size", CssLength.FromRem(_sidebarWidth)).ToString();
@@ -1197,13 +1206,8 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         if (!request.IsFailed)
         {
-            await ChangeSelectionAsync(selection =>
-            {
-                foreach (var target in targets)
-                {
-                    selection.Remove(target);
-                }
-            });
+            HashSet<string> deleted = [with(StringComparer.Ordinal), .. targets.Select(target => target.Key)];
+            await SetSelectionAsync(_selectedItems.Where(item => !deleted.Contains(item.Key)));
         }
 
         await RefreshProviderAsync();
@@ -1262,7 +1266,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // selection, and a folder already in the target moves nowhere.
     private async Task HandleDropOnFolderAsync(ICatalogItem target, ICatalogFolderItem? targetFolder)
     {
-        IReadOnlyList<ICatalogItem> dragged = _selection.IsSelected(target) && _selection.Count > 1 ? _selection.Items : [target];
+        IReadOnlyList<ICatalogItem> dragged = _selectedKeys.Contains(target.Key) && _selectedItems.Count > 1 ? _selectedItems : [target];
         List<ICatalogItem> items = [.. WithoutNestedFolders(dragged).Where(item => item is not ICatalogFolderItem folder || folder.ParentKey != targetFolder?.Key)];
 
         if (items.Count == 0 || !await EnsureDropFitsAsync(items, targetFolder))

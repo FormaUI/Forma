@@ -3,9 +3,9 @@ namespace Forma.Blazor.Components.Explorer;
 using Forma.Blazor.Components.DataView;
 using Forma.Framework.Catalog;
 using Forma.Framework.Catalog.Queries;
-using Forma.Framework.Catalog.Selection;
 using Forma.Framework.Css;
 using Forma.Framework.Explorer;
+using Forma.Framework.Explorer.Selection;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Navigation;
@@ -29,7 +29,7 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
     // What a cell shows for a value the item does not have.
     private const string Placeholder = "—";
 
-    private ICatalogSelectionView Selection
+    private IExplorerSelectionView Selection
         => Explorer.Selection;
 
     private bool Shows(ExplorerDetailsColumns column)

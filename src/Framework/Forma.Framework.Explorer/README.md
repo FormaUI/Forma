@@ -61,7 +61,7 @@ view's tree. Each part takes the narrower contract it needs as a cascading param
 | `IExplorerLocationView`, `IExplorerLocationInteraction` | The current folder, the breadcrumbs, the folder tree and whether back, forward and up are open; moving between folders. |
 | `IExplorerContentView`, `IExplorerContentInteraction` | The items shown, the view mode, sort, grouping and details columns; changing them and refreshing. |
 | `IExplorerSearchView`, `IExplorerSearchInteraction` | The search text and placeholder; changing the search text. |
-| `IExplorerSelectionInteraction` | Toggling an item, toggling selection mode and clearing; parts read the selection as an `ICatalogSelectionView`. |
+| `IExplorerSelectionView`, `IExplorerSelectionInteraction` | The selected items, folders first, and whether selection mode is on; toggling an item, taking one out, toggling selection mode and clearing, which the data view's selection rules decide. |
 | `IExplorerItemView`, `IExplorerItemInteraction` | The item actions, item options and pending confirmation; dragging, renaming, deleting and confirming. |
 
 The state behind those contracts is held in:

@@ -9,6 +9,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- [`FormaExplorer`](docs/explorer-design.md#the-parts) takes its selection from the data view it browses through,
+  which decides what may be selected and how many, where the explorer kept a selection of its own beside it. Its parts
+  read the selection as `IExplorerSelectionView`, folders first, and `IExplorerSelectionInteraction` takes an item out
+  with `DeselectAsync`. `CatalogSelection` and `ICatalogSelectionView` are gone; a part reads `IExplorerSelectionView`
+  in their place.
 - `ExplorerItemGroup`, `ExplorerGrouping.GroupBy`, `IExplorerContentView.VisibleGroups` and `IsCollapsed`,
   `IExplorerContentInteraction.ToggleGroupAsync`, `IExplorerItemInteraction.ActivateAsync` and
   `ExplorerItemManager.OnActivate` are gone with the explorer's own views: the data view groups, folds and activates the
