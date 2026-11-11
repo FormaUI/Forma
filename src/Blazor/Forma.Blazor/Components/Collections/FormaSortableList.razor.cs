@@ -115,13 +115,13 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
             return Task.CompletedTask;
         }
 
-        var (reordered, newIndex) = Reorder(Items, sourceIndex, targetIndex, insertAfter);
+        var (reorderedItems, newIndex) = Reorder(Items, sourceIndex, targetIndex, insertAfter);
 
         // An alternating zero-width space makes a repeated announcement a new string, which the live region reads again.
         _padsAnnouncement = !_padsAnnouncement;
 
         var position = newIndex + 1;
-        var total = reordered.Count;
+        var total = reorderedItems.Count;
 
         _announcement = L["Moved to position {Position} of {Total}.", position, total]
             + (_padsAnnouncement ? "\u200B" : string.Empty);
@@ -129,7 +129,7 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
         // The announcement renders before the host feeds the reordered list back.
         StateHasChanged();
 
-        return ItemsChanged.InvokeAsync(reordered);
+        return ItemsChanged.InvokeAsync(reorderedItems);
     }
 
     /// <inheritdoc />

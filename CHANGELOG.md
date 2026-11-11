@@ -23,6 +23,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `LocaleExpressionParser.TryNormalize` gives `normalizedText`, `IMarkupPolicy.Allows` gives `canonicalSpelling`,
   `InputRegistration.SyncAsync` takes `shouldRegister` and `isActive`, and `IManagedWindow`'s setters take `isActive`,
   `isMinimized`, `isHidden` and `isBlocked`.
+- Three component parameters are named for what they hold: `FormaCalendar.MonthCount` was `Months`,
+  `FormaPagination.TotalItemCount` was `TotalItems`, and `FormaEmojiPicker.RecentEmojis` and `RecentEmojisChanged`
+  were `Recent` and `RecentChanged`, bound as `@bind-RecentEmojis`. A page still passing an old name renders it as an
+  attribute of the component's root rather than failing to build.
 - A [`FormaDataGrid`](docs/data-view-design.md#accessibility-keyboard-and-direction) row's box is named for its item,
   "Select Hammer", where the data view's `ItemName` names the items, as the boxes of the list, the cards and the tree
   are; it said "Select Row" in every row. `IDataView` declares `NamesItems`.

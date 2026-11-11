@@ -89,7 +89,7 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
         // The providers decide by address and autoplay alone.
         if (Source != _resolvedSource || Autoplay != _resolvedAutoplay)
         {
-            var previous = Frame;
+            var previousFrame = Frame;
 
             Frame = await ResolveFrameAsync();
 
@@ -98,7 +98,7 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
             _resolvedAutoplay = Autoplay;
 
             // Each video is activated on its own.
-            if (previous?.Source != Frame?.Source)
+            if (previousFrame?.Source != Frame?.Source)
             {
                 _isActivated = false;
             }

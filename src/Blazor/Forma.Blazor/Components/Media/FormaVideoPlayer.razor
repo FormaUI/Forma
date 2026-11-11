@@ -24,11 +24,11 @@
             <span id="@NoteId" class="forma-video-player-facade-note">@L["Loads from another site, which will see this visit."]</span>
         </button>
     }
-    else if (Frame is NativePlayerFrame native)
+    else if (Frame is NativePlayerFrame nativeFrame)
     {
         <video @ref="_videoElement"
                class="forma-video-player-frame"
-               src="@native.Source"
+               src="@nativeFrame.Source"
                title="@Title"
                poster="@Placeholder"
                controls
@@ -45,10 +45,10 @@
             }
         </video>
     }
-    else if (Frame is EmbeddedPlayerFrame embedded)
+    else if (Frame is EmbeddedPlayerFrame embeddedFrame)
     {
         <iframe class="forma-video-player-frame"
-                src="@embedded.Source"
+                src="@embeddedFrame.Source"
                 title="@Title"
                 loading="lazy"
                 allow="accelerometer; encrypted-media; picture-in-picture"

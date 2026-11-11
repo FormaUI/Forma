@@ -79,9 +79,9 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         {
             if (Options.ShowEstimate && IsUploading && _batch.EstimatedTimeRemaining is { } estimate)
             {
-                var remaining = ResourceFormatter.FromDuration(estimate, Context.CultureState.Culture);
+                var remainingTime = ResourceFormatter.FromDuration(estimate, Context.CultureState.Culture);
 
-                return L["{Remaining} left", remaining];
+                return L["{Remaining} left", remainingTime];
             }
 
             return Options.ShowElapsed ? ResourceFormatter.FromDuration(_batch.Elapsed, Context.CultureState.Culture) : string.Empty;
@@ -218,25 +218,25 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
             && upload.State == UploadState.Uploading
             && upload.EstimatedTimeRemaining is { } estimate)
         {
-            var remaining = ResourceFormatter.FromDuration(estimate, Context.CultureState.Culture);
+            var remainingTime = ResourceFormatter.FromDuration(estimate, Context.CultureState.Culture);
 
-            return L["{Remaining} left", remaining];
+            return L["{Remaining} left", remainingTime];
         }
 
         return Options.ShowElapsed ? ResourceFormatter.FromDuration(upload.Elapsed, Context.CultureState.Culture) : string.Empty;
     }
 
-    private string GetByteCount(long transferred, long total)
+    private string GetByteCount(long bytesTransferred, long total)
     {
-        if (transferred >= total)
+        if (bytesTransferred >= total)
         {
             return ResourceFormatter.FromByteCount(total, Context.CultureState.Culture);
         }
 
-        var sent = ResourceFormatter.FromByteCount(transferred, Context.CultureState.Culture);
+        var sentSize = ResourceFormatter.FromByteCount(bytesTransferred, Context.CultureState.Culture);
         var size = ResourceFormatter.FromByteCount(total, Context.CultureState.Culture);
 
-        return L["{Sent} of {Size}", sent, size];
+        return L["{Sent} of {Size}", sentSize, size];
     }
 
     // Measurements move with the clock rather than with progress, so a stalled transfer keeps counting.
@@ -263,7 +263,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
 
         var token = _cancellation.Token;
         var failures = new List<UploadFailure>();
-        var stored = new List<(int Index, ResourceInfo Resource)>();
+        var storedResources = new List<(int Index, ResourceInfo Resource)>();
         var anyFailed = false;
 
         if (ShowsTimeMetrics)
@@ -282,7 +282,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
                     break;
                 }
 
-                var outcome = await StoreFileAsync(index, files[index], failures, stored, token);
+                var outcome = await StoreFileAsync(index, files[index], failures, storedResources, token);
 
                 if (outcome == StoreOutcome.Canceled)
                 {
@@ -304,10 +304,10 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
                 }
             }
 
-            if (anyFailed && Options.RollbackOnFailure && stored.Count > 0)
+            if (anyFailed && Options.RollbackOnFailure && storedResources.Count > 0)
             {
-                await RollbackAsync(stored, failures);
-                stored.Clear();
+                await RollbackAsync(storedResources, failures);
+                storedResources.Clear();
             }
         }
         finally
@@ -323,9 +323,9 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
             await OnFailed.InvokeAsync(failure);
         }
 
-        if (stored.Count > 0)
+        if (storedResources.Count > 0)
         {
-            await OnCompleted.InvokeAsync(stored.Select(entry => entry.Resource).ToList());
+            await OnCompleted.InvokeAsync(storedResources.Select(entry => entry.Resource).ToList());
         }
     }
 

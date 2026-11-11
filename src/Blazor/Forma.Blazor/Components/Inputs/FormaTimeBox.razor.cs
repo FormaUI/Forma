@@ -314,7 +314,7 @@ public sealed partial class FormaTimeBox : FormaComponentBase
             return null;
         }
 
-        var nearest = 0;
+        var nearestIndex = 0;
         var nearestDistance = long.MaxValue;
 
         foreach (var option in _options)
@@ -324,12 +324,12 @@ public sealed partial class FormaTimeBox : FormaComponentBase
 
             if (distance < nearestDistance)
             {
-                nearest = option.Index;
+                nearestIndex = option.Index;
                 nearestDistance = distance;
             }
         }
 
-        return nearest;
+        return nearestIndex;
     }
 
     /// <inheritdoc />

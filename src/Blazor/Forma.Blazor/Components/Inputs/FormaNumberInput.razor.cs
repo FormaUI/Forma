@@ -79,7 +79,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     private static readonly bool IsBinaryFraction = NumberType == typeof(double) || NumberType == typeof(float);
 
     // The numbers a whole type holds, which a step stops at; a fractional type holds more than any decimal can.
-    private static readonly (decimal Lowest, decimal Highest) TypeRange =
+    private static readonly (decimal LowestValue, decimal HighestValue) TypeRange =
         NumberType == typeof(int) ? (int.MinValue, int.MaxValue)
         : NumberType == typeof(long) ? (long.MinValue, long.MaxValue)
         : NumberType == typeof(short) ? (short.MinValue, short.MaxValue)
@@ -293,12 +293,12 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             return;
         }
 
-        var start = _draft.IsInProgress && TryParseNumber(_draft.Text, _draft.Culture, out var drafted) ? drafted : CurrentValue;
-        decimal next;
+        var start = _draft.IsInProgress && TryParseNumber(_draft.Text, _draft.Culture, out var draftedNumber) ? draftedNumber : CurrentValue;
+        decimal nextValue;
 
         try
         {
-            next = start is { } value
+            nextValue = start is { } value
                 ? Convert.ToDecimal(value, CultureInfo.InvariantCulture) + (direction * Step)
                 : (direction > 0 ? Min : Max) ?? 0;
         }
@@ -307,18 +307,18 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             return;
         }
 
-        var lowest = Math.Max(Min ?? TypeRange.Lowest, TypeRange.Lowest);
-        var highest = Math.Min(Max ?? TypeRange.Highest, TypeRange.Highest);
+        var lowestValue = Math.Max(Min ?? TypeRange.LowestValue, TypeRange.LowestValue);
+        var highestValue = Math.Min(Max ?? TypeRange.HighestValue, TypeRange.HighestValue);
 
-        if (lowest > highest)
+        if (lowestValue > highestValue)
         {
             return;
         }
 
         // Dividing by one written to the most decimal places drops the trailing zeros a sum keeps, so 12.5 and a half step shows 13.
-        next = Math.Clamp(next, lowest, highest) / 1.0000000000000000000000000000m;
+        nextValue = Math.Clamp(nextValue, lowestValue, highestValue) / 1.0000000000000000000000000000m;
         _draft.Clear();
-        CurrentValueAsString = next.ToString(Context.CultureState.Culture);
+        CurrentValueAsString = nextValue.ToString(Context.CultureState.Culture);
 
         // A routed key is no event of the field's own, so the field renders the number it stepped to itself, and its edits write it in.
         StateHasChanged();
@@ -328,42 +328,42 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     // not grouped at all.
     private static bool TryParseNumber(string text, CultureInfo culture, out TValue result)
     {
-        const NumberStyles Whole = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowLeadingSign;
-        const NumberStyles Fractional = Whole | NumberStyles.AllowDecimalPoint;
+        const NumberStyles WholeNumberStyles = NumberStyles.AllowLeadingWhite | NumberStyles.AllowTrailingWhite | NumberStyles.AllowLeadingSign;
+        const NumberStyles FractionalNumberStyles = WholeNumberStyles | NumberStyles.AllowDecimalPoint;
         var format = GetReadingFormat(culture.NumberFormat);
         object? number = null;
         result = default!;
 
-        if (Ungroup(RemoveDirectionalMarks(text), format) is not { } ungrouped)
+        if (Ungroup(RemoveDirectionalMarks(text), format) is not { } ungroupedText)
         {
             return false;
         }
 
-        text = ungrouped;
+        text = ungroupedText;
 
-        if (NumberType == typeof(int) && int.TryParse(text, Whole, format, out var whole))
+        if (NumberType == typeof(int) && int.TryParse(text, WholeNumberStyles, format, out var parsedInt))
         {
-            number = whole;
+            number = parsedInt;
         }
-        else if (NumberType == typeof(long) && long.TryParse(text, Whole, format, out var wide))
+        else if (NumberType == typeof(long) && long.TryParse(text, WholeNumberStyles, format, out var parsedLong))
         {
-            number = wide;
+            number = parsedLong;
         }
-        else if (NumberType == typeof(short) && short.TryParse(text, Whole, format, out var narrow))
+        else if (NumberType == typeof(short) && short.TryParse(text, WholeNumberStyles, format, out var parsedShort))
         {
-            number = narrow;
+            number = parsedShort;
         }
-        else if (NumberType == typeof(decimal) && decimal.TryParse(text, Fractional, format, out var exact))
+        else if (NumberType == typeof(decimal) && decimal.TryParse(text, FractionalNumberStyles, format, out var parsedDecimal))
         {
-            number = exact;
+            number = parsedDecimal;
         }
-        else if (NumberType == typeof(double) && double.TryParse(text, Fractional, format, out var binary) && double.IsFinite(binary))
+        else if (NumberType == typeof(double) && double.TryParse(text, FractionalNumberStyles, format, out var parsedDouble) && double.IsFinite(parsedDouble))
         {
-            number = binary;
+            number = parsedDouble;
         }
-        else if (NumberType == typeof(float) && float.TryParse(text, Fractional, format, out var single) && float.IsFinite(single))
+        else if (NumberType == typeof(float) && float.TryParse(text, FractionalNumberStyles, format, out var parsedFloat) && float.IsFinite(parsedFloat))
         {
-            number = single;
+            number = parsedFloat;
         }
 
         result = number is null ? default! : (TValue)number;
@@ -400,10 +400,10 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     // decimal one. So in English 1,234 is a thousand and more, while 1,5 is refused rather than taken for fifteen.
     private static string? Ungroup(string text, NumberFormatInfo format)
     {
-        var trimmed = text.Trim();
-        var decimalAt = trimmed.IndexOf(format.NumberDecimalSeparator, StringComparison.Ordinal);
-        var whole = decimalAt < 0 ? trimmed : trimmed[..decimalAt];
-        var fraction = decimalAt < 0 ? string.Empty : trimmed[decimalAt..];
+        var trimmedText = text.Trim();
+        var decimalAt = trimmedText.IndexOf(format.NumberDecimalSeparator, StringComparison.Ordinal);
+        var wholePart = decimalAt < 0 ? trimmedText : trimmedText[..decimalAt];
+        var fraction = decimalAt < 0 ? string.Empty : trimmedText[decimalAt..];
         var separators = GetGroupSeparators(format);
 
         if (separators.Any(separator => fraction.Contains(separator, StringComparison.Ordinal)))
@@ -411,11 +411,11 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             return null;
         }
 
-        var groups = whole.Split(separators, StringSplitOptions.None);
+        var groups = wholePart.Split(separators, StringSplitOptions.None);
 
         if (groups.Length == 1)
         {
-            return trimmed;
+            return trimmedText;
         }
 
         var sizes = format.NumberGroupSizes;
@@ -426,11 +426,11 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             var group = groups[^(place + 1)];
             var size = sizes.Length == 0 ? 0 : sizes[Math.Min(place, sizes.Length - 1)];
             var isFirst = place == groups.Length - 1;
-            var digits = isFirst ? group.Count(char.IsAsciiDigit) : group.Length;
+            var digitCount = isFirst ? group.Count(char.IsAsciiDigit) : group.Length;
 
             if (size == 0
                 || (!isFirst && (group.Length != size || !group.All(char.IsAsciiDigit)))
-                || (isFirst && (digits == 0 || digits > size)))
+                || (isFirst && (digitCount == 0 || digitCount > size)))
             {
                 return null;
             }
@@ -448,12 +448,12 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
     // The decimal places the text writes, past the culture's decimal separator, with trailing zeros left out.
     private static int CountDecimalPlaces(string text, CultureInfo culture)
     {
-        var trimmed = text.Trim();
-        var decimalAt = trimmed.IndexOf(culture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
+        var trimmedText = text.Trim();
+        var decimalAt = trimmedText.IndexOf(culture.NumberFormat.NumberDecimalSeparator, StringComparison.Ordinal);
 
         return decimalAt < 0
             ? 0
-            : trimmed[(decimalAt + culture.NumberFormat.NumberDecimalSeparator.Length)..].TrimEnd('0').Count(char.IsAsciiDigit);
+            : trimmedText[(decimalAt + culture.NumberFormat.NumberDecimalSeparator.Length)..].TrimEnd('0').Count(char.IsAsciiDigit);
     }
 
     private static string? FormatLimit(decimal? limit)
@@ -529,7 +529,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
         var culture = _draft.Culture ?? Context.CultureState.Culture;
 
-        if (!TryParseNumber(value, culture, out var parsed))
+        if (!TryParseNumber(value, culture, out var parsedNumber))
         {
             return L["The {Field} field must be a number.", FieldName];
         }
@@ -541,17 +541,17 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
                 : L["The {Field} field must have no more than {Places} [$ [Places] plural; one: decimal place; other: decimal places; $].", FieldName, places];
         }
 
-        if (Min is { } min && CompareToLimit(parsed, min) < 0)
+        if (Min is { } min && CompareToLimit(parsedNumber, min) < 0)
         {
             return L["The {Field} field must be at least {Minimum}.", FieldName, min.ToString(Context.CultureState.Culture)];
         }
 
-        if (Max is { } max && CompareToLimit(parsed, max) > 0)
+        if (Max is { } max && CompareToLimit(parsedNumber, max) > 0)
         {
             return L["The {Field} field must be at most {Maximum}.", FieldName, max.ToString(Context.CultureState.Culture)];
         }
 
-        result = parsed;
+        result = parsedNumber;
 
         return null;
     }

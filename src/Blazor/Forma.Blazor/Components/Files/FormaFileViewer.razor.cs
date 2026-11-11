@@ -30,8 +30,8 @@ public sealed partial class FormaFileViewer : FormaElementBase
     private static readonly int[] ZoomSteps = [100, 150, 200, 300, 400];
 
     // The arrow along the reading direction steps to the next sibling and the one against it to the previous.
-    private static readonly InputProfile LeftToRightProfile = CreateProfile(next: "ArrowRight", previous: "ArrowLeft");
-    private static readonly InputProfile RightToLeftProfile = CreateProfile(next: "ArrowLeft", previous: "ArrowRight");
+    private static readonly InputProfile LeftToRightProfile = CreateProfile(nextKey: "ArrowRight", previousKey: "ArrowLeft");
+    private static readonly InputProfile RightToLeftProfile = CreateProfile(nextKey: "ArrowLeft", previousKey: "ArrowRight");
 
     private static readonly BrowserResourceProvider BrowserProvider = new();
 
@@ -146,9 +146,9 @@ public sealed partial class FormaFileViewer : FormaElementBase
         try
         {
             // A slower resolve for an address or cultures the reader has already left must not replace the current one.
-            if (await ResolveResourceAsync(request.Source, token) is { } resolved && _resolvedRequest == request)
+            if (await ResolveResourceAsync(request.Source, token) is { } resolvedResource && _resolvedRequest == request)
             {
-                Resource = resolved;
+                Resource = resolvedResource;
             }
         }
         catch (OperationCanceledException)
@@ -158,12 +158,12 @@ public sealed partial class FormaFileViewer : FormaElementBase
 
     private CancellationToken StartResolving()
     {
-        var abandoned = _resolveCancellation;
+        var abandonedCancellation = _resolveCancellation;
 
         _resolveCancellation = new CancellationTokenSource();
 
-        abandoned?.Cancel();
-        abandoned?.Dispose();
+        abandonedCancellation?.Cancel();
+        abandonedCancellation?.Dispose();
 
         return _resolveCancellation.Token;
     }
@@ -223,7 +223,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
         await navigation;
 
         // A change of culture renders the viewer again without setting a parameter, so a resolution in the cultures it left starts again here.
-        if (_resolvedRequest is { } resolved && (resolved.Culture != Context.CultureState.Culture || resolved.UICulture != Context.CultureState.UICulture))
+        if (_resolvedRequest is { } resolvedRequest && (resolvedRequest.Culture != Context.CultureState.Culture || resolvedRequest.UICulture != Context.CultureState.UICulture))
         {
             await ResolveAsync();
             StateHasChanged();
@@ -284,13 +284,13 @@ public sealed partial class FormaFileViewer : FormaElementBase
             : OnNavigate.InvokeAsync(siblings[target]);
     }
 
-    private static InputProfile CreateProfile(string next, string previous)
+    private static InputProfile CreateProfile(string nextKey, string previousKey)
         => new()
         {
             InputRoutes =
             [
-                new InputRoute(NextAction, new KeyBinding(next)),
-                new InputRoute(PreviousAction, new KeyBinding(previous)),
+                new InputRoute(NextAction, new KeyBinding(nextKey)),
+                new InputRoute(PreviousAction, new KeyBinding(previousKey)),
             ],
         };
 

@@ -11,7 +11,7 @@
     <h2>@L["Navigation Steps"]</h2>
     <p class="description">@L["Up to seven pages show as steps, with empty room kept for the rest, so the first page sits in the same place on every pager."]</p>
     <div class="demo-box">
-        <FormaPagination TotalItems="65" PageSize="10" CurrentPage="_fewPage" OnPageChanged="HandleFewPageChanged"
+        <FormaPagination TotalItemCount="65" PageSize="10" CurrentPage="_fewPage" OnPageChanged="HandleFewPageChanged"
                          aria-label="@L["Navigation steps"]" />
         <p class="demo-note">@L["Current page"]: <code>@_fewPage</code></p>
     </div>
@@ -21,7 +21,7 @@
     <h2>@L["Steps That Look Ahead"]</h2>
     <p class="description">@L["With more pages than fit, the steps show the current page and the four after it, then the last. The navigation buttons move a whole run of steps, so holding one walks the list quickly; a step goes straight to its page."]</p>
     <div class="demo-box">
-        <FormaPagination TotalItems="1000" PageSize="20" CurrentPage="_manyPage" OnPageChanged="HandleManyPageChanged"
+        <FormaPagination TotalItemCount="1000" PageSize="20" CurrentPage="_manyPage" OnPageChanged="HandleManyPageChanged"
                          aria-label="@L["Steps that look ahead"]" />
         <p class="demo-note">@L["Current page"]: <code>@_manyPage</code></p>
     </div>
@@ -31,7 +31,7 @@
     <h2>@L["Navigation Input"]</h2>
     <p class="description">@L["The navigation input takes the place of the steps when the option asks for it, past the page count the option allows steps for — fifty unless told otherwise — or wherever seven steps do not fit. It shows the page the reader is on, the navigation buttons move it one page at a time, and a typed page goes there on Enter or the Go button."]</p>
     <div class="demo-box">
-        <FormaPagination TotalItems="1000" PageSize="20" CurrentPage="_inputPage" OnPageChanged="HandleInputPageChanged"
+        <FormaPagination TotalItemCount="1000" PageSize="20" CurrentPage="_inputPage" OnPageChanged="HandleInputPageChanged"
                          Options="InputByOption" aria-label="@L["Navigation input"]" />
         <p class="demo-note">@L["Current page"]: <code>@_inputPage</code></p>
     </div>
@@ -41,7 +41,7 @@
     <h2>@L["Without the Go Button"]</h2>
     <p class="description">@L["Enter goes to the typed page, so the Go button can be left out; a touch keypad for digits may have no Enter key, so there it stays."]</p>
     <div class="demo-box">
-        <FormaPagination TotalItems="1000" PageSize="20" CurrentPage="_noGoPage" OnPageChanged="HandleNoGoPageChanged"
+        <FormaPagination TotalItemCount="1000" PageSize="20" CurrentPage="_noGoPage" OnPageChanged="HandleNoGoPageChanged"
                          Options="WithoutGoButton" aria-label="@L["Without the Go button"]" />
         <p class="demo-note">@L["Current page"]: <code>@_noGoPage</code></p>
     </div>
@@ -51,7 +51,7 @@
     <h2>@L["Wheel Scroll on Hover"]</h2>
     <p class="description">@L["With the option on, a wheel turned anywhere over the pager moves one page, and the page underneath stays still while the pointer is there."]</p>
     <div class="demo-box">
-        <FormaPagination TotalItems="1000" PageSize="20" CurrentPage="_wheelPage" OnPageChanged="HandleWheelPageChanged"
+        <FormaPagination TotalItemCount="1000" PageSize="20" CurrentPage="_wheelPage" OnPageChanged="HandleWheelPageChanged"
                          Options="WithWheel" aria-label="@L["Wheel scroll on hover"]" />
         <p class="demo-note">@L["Current page"]: <code>@_wheelPage</code></p>
     </div>
@@ -77,7 +77,7 @@
     <p class="description">@L["Enter goes to the page without submitting the surrounding form. The submission count stays at zero."]</p>
     <div class="demo-box">
         <form @onsubmit="HandleFormSubmit" @onsubmit:preventDefault>
-            <FormaPagination TotalItems="1000" PageSize="20" CurrentPage="_formPage" OnPageChanged="HandleFormPageChanged"
+            <FormaPagination TotalItemCount="1000" PageSize="20" CurrentPage="_formPage" OnPageChanged="HandleFormPageChanged"
                              Options="InputByOption" aria-label="@L["Inside a form"]" />
         </form>
         <p class="demo-note">
@@ -91,7 +91,7 @@
     <h2>@L["Single Page"]</h2>
     <p class="description">@L["When everything fits on one page, the component renders nothing."]</p>
     <div class="demo-box">
-        <FormaPagination TotalItems="8" PageSize="10" CurrentPage="1" />
+        <FormaPagination TotalItemCount="8" PageSize="10" CurrentPage="1" />
     </div>
 </div>
 
@@ -99,6 +99,6 @@
     <h2>@L["Page Beyond the Range"]</h2>
     <p class="description">@L["A page past the end — after a filter narrows the list, or from a hand-edited URL — settles on the nearest page."]</p>
     <div class="demo-box">
-        <FormaPagination TotalItems="30" PageSize="10" CurrentPage="99" aria-label="@L["Page beyond the range"]" />
+        <FormaPagination TotalItemCount="30" PageSize="10" CurrentPage="99" aria-label="@L["Page beyond the range"]" />
     </div>
 </div>

@@ -26,11 +26,11 @@ public sealed partial class FormaStatusBadge : FormaElementBase
 
     [Inject] private IStatusBadgeCatalog Catalog { get; set; } = default!;
 
-    private StatusBadgeStyle? Registered
+    private StatusBadgeStyle? RegisteredStyle
         => string.IsNullOrWhiteSpace(Status) ? null : Catalog.Find(Status);
 
     private Icon? ResolvedMarker
-        => Marker ?? Registered?.Marker;
+        => Marker ?? RegisteredStyle?.Marker;
 
     /// <inheritdoc />
     protected override void OnParametersSet() => ArgumentException.ThrowIfNullOrWhiteSpace(Text);
@@ -51,9 +51,9 @@ public sealed partial class FormaStatusBadge : FormaElementBase
 
     private (string? Background, string? Foreground) ResolveColours()
     {
-        var registered = Registered;
-        var background = Background ?? registered?.Background;
-        var foreground = Foreground ?? registered?.Foreground;
+        var registeredStyle = RegisteredStyle;
+        var background = Background ?? registeredStyle?.Background;
+        var foreground = Foreground ?? registeredStyle?.Foreground;
 
         return (background?.ToString(), foreground?.ToString());
     }

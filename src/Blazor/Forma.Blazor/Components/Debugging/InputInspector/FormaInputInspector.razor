@@ -21,7 +21,7 @@
         {
             <p class="forma-input-inspector-empty">
                 <FormaIcon Icon="Glyph.Keyboard" Size="IconSize.Medium" />
-                <span>@(_paused ? L["Paused"] : L["Press a key, click, or scroll to see how the router resolves it."])</span>
+                <span>@(_isPaused ? L["Paused"] : L["Press a key, click, or scroll to see how the router resolves it."])</span>
             </p>
         }
         else
@@ -97,18 +97,18 @@
     {
         <h3 class="forma-input-inspector-heading">@L["Recent"]</h3>
         <ol class="forma-input-inspector-history">
-            @foreach (var past in _history.Skip(1))
+            @foreach (var pastEntry in _history.Skip(1))
             {
                 <li>
                     <span class="forma-input-inspector-input">
-                        <FormaIcon Icon="GetFamilyIcon(past.Input)" Size="IconSize.Inline" />
-                        @foreach (var keycap in GetKeycaps(past.Input))
+                        <FormaIcon Icon="GetFamilyIcon(pastEntry.Input)" Size="IconSize.Inline" />
+                        @foreach (var keycap in GetKeycaps(pastEntry.Input))
                         {
                             <kbd>@keycap</kbd>
                         }
                     </span>
-                    <span class="forma-input-inspector-history-outcome">@(past.Action ?? L["none"])</span>
-                    <FormaStatusBadge Text="@past.Precedence" class="@GetPrecedenceClass(past.Precedence)" />
+                    <span class="forma-input-inspector-history-outcome">@(pastEntry.Action ?? L["none"])</span>
+                    <FormaStatusBadge Text="@pastEntry.Precedence" class="@GetPrecedenceClass(pastEntry.Precedence)" />
                 </li>
             }
         </ol>

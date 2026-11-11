@@ -50,7 +50,7 @@ public sealed partial class FormaTab : FormaElementBase
         ArgumentException.ThrowIfNullOrWhiteSpace(Title);
 
         var header = (Title, Icon, Trailing);
-        if (_header is { } shown && !shown.Equals(header))
+        if (_header is { } shownHeader && !shownHeader.Equals(header))
         {
             Parent.UpdateTab();
         }

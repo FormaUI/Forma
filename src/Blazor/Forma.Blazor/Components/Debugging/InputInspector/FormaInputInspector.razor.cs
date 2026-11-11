@@ -24,7 +24,7 @@ public sealed partial class FormaInputInspector : FormaElementBase
     private readonly List<InputDecision> _history = [];
     private Inspector _inspector = default!;
     private DotNetObjectReference<FormaInputInspector> _selfReference = default!;
-    private bool _paused;
+    private bool _isPaused;
 
     /// <summary>The latest decision.</summary>
     public InputDecision? Decision
@@ -32,7 +32,7 @@ public sealed partial class FormaInputInspector : FormaElementBase
 
     /// <summary>Whether the inspector is paused, dropping the decisions reported to it.</summary>
     public bool IsPaused
-        => _paused;
+        => _isPaused;
 
     /// <summary>Shows a decision the script reports.</summary>
     [JSInvokable]
@@ -40,7 +40,7 @@ public sealed partial class FormaInputInspector : FormaElementBase
     {
         ArgumentNullException.ThrowIfNull(decision);
 
-        if (_paused)
+        if (_isPaused)
         {
             return Task.CompletedTask;
         }
@@ -75,7 +75,7 @@ public sealed partial class FormaInputInspector : FormaElementBase
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder
             .Add("forma-input-inspector")
-            .Add("forma-input-inspector-paused", _paused);
+            .Add("forma-input-inspector-paused", _isPaused);
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
@@ -109,7 +109,7 @@ public sealed partial class FormaInputInspector : FormaElementBase
         switch (command)
         {
             case PauseCommand:
-                _paused = !_paused;
+                _isPaused = !_isPaused;
                 break;
             case ClearCommand:
                 _history.Clear();
@@ -122,7 +122,7 @@ public sealed partial class FormaInputInspector : FormaElementBase
     private IReadOnlyList<ToolbarItem> BuildTools()
         =>
         [
-            new ToolbarToggle { Id = PauseCommand, Title = L["Pause"], AlternateTitle = L["Resume"], Icon = Glyph.CircleRecord, Command = PauseCommand, IsActive = _paused },
+            new ToolbarToggle { Id = PauseCommand, Title = L["Pause"], AlternateTitle = L["Resume"], Icon = Glyph.CircleRecord, Command = PauseCommand, IsActive = _isPaused },
             new ToolbarCommand { Id = ClearCommand, Title = L["Clear"], Icon = Glyph.Eraser, Command = ClearCommand },
         ];
 
@@ -150,29 +150,29 @@ public sealed partial class FormaInputInspector : FormaElementBase
 
     private static List<string> GetModifiers(ModifierKeys modifiers)
     {
-        var held = new List<string>(4);
+        var heldModifiers = new List<string>(4);
 
         if (modifiers.Control)
         {
-            held.Add("Ctrl");
+            heldModifiers.Add("Ctrl");
         }
 
         if (modifiers.Meta)
         {
-            held.Add("Meta");
+            heldModifiers.Add("Meta");
         }
 
         if (modifiers.Alt)
         {
-            held.Add("Alt");
+            heldModifiers.Add("Alt");
         }
 
         if (modifiers.Shift)
         {
-            held.Add("Shift");
+            heldModifiers.Add("Shift");
         }
 
-        return held;
+        return heldModifiers;
     }
 
     private static double GetWheelAmount(InputWheelInfo wheel)

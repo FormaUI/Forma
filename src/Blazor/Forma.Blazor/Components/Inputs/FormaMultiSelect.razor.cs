@@ -74,11 +74,11 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     {
         get
         {
-            var selected = SelectedValues.Count;
+            var selectedCount = SelectedValues.Count;
 
-            return selected == 0
+            return selectedCount == 0
                 ? Placeholder ?? L["Select Options"]
-                : L["{Selected} selected", selected];
+                : L["{Selected} selected", selectedCount];
         }
     }
 
@@ -97,10 +97,10 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
 
     private void ToggleOption(SelectOption<TValue> option)
     {
-        var current = SelectedValues;
+        var currentValues = SelectedValues;
         CurrentValue = IsSelected(option)
-            ? [.. current.Where(v => !EqualityComparer<TValue>.Default.Equals(v, option.Value))]
-            : [.. current, option.Value];
+            ? [.. currentValues.Where(v => !EqualityComparer<TValue>.Default.Equals(v, option.Value))]
+            : [.. currentValues, option.Value];
     }
 
     private void RemoveValue(TValue value)

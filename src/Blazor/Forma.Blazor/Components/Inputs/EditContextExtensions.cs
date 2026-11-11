@@ -26,9 +26,9 @@ public static class EditContextExtensions
     /// <summary>The edits of the text fields bound in the form.</summary>
     internal static TextEditScope GetTextEditScope(this EditContext editContext)
     {
-        if (editContext.Properties.TryGetValue(TextEditScopeKey, out var existing))
+        if (editContext.Properties.TryGetValue(TextEditScopeKey, out var existingScope))
         {
-            return (TextEditScope)existing;
+            return (TextEditScope)existingScope;
         }
 
         var scope = new TextEditScope();

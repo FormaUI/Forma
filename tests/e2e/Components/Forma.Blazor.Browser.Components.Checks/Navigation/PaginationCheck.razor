@@ -1,9 +1,9 @@
 @page "/{Runtime}/pagination"
 
 @* Two hundred items ten to a page, paged by its steps and by the wheel, and again by a page typed, each bound page shown where the check reads it. *@
-<FormaPagination Id="pagination" TotalItems="200" PageSize="10" CurrentPage="_page" OnPageChanged="@(page => _page = page)" Options="WheelOptions" />
+<FormaPagination Id="pagination" TotalItemCount="200" PageSize="10" CurrentPage="_page" OnPageChanged="@(page => _page = page)" Options="WheelOptions" />
 <output id="result">@_page</output>
-<FormaPagination Id="entry" TotalItems="200" PageSize="10" CurrentPage="_entryPage" OnPageChanged="@(page => _entryPage = page)" Options="EntryOptions" />
+<FormaPagination Id="entry" TotalItemCount="200" PageSize="10" CurrentPage="_entryPage" OnPageChanged="@(page => _entryPage = page)" Options="EntryOptions" />
 <output id="entry-result">@_entryPage</output>
 
 @code {

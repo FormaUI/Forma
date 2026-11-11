@@ -55,7 +55,7 @@ public sealed partial class FormaPagination : FormaElementBase
     private int _shownPage;
 
     /// <summary>The total number of items.</summary>
-    [Parameter, EditorRequired] public int TotalItems { get; set; }
+    [Parameter, EditorRequired] public int TotalItemCount { get; set; }
 
     /// <summary>The number of items on a page.</summary>
     [Parameter, EditorRequired] public int PageSize { get; set; }
@@ -72,7 +72,7 @@ public sealed partial class FormaPagination : FormaElementBase
     private string NavigationInputId
         => $"{ElementId}-input";
 
-    private int PageCount => Math.Max(1, (int)Math.Ceiling(TotalItems / (double)PageSize));
+    private int PageCount => Math.Max(1, (int)Math.Ceiling(TotalItemCount / (double)PageSize));
 
     // Whether state calls for the input; the stylesheet decides by width.
     private bool HasInputByState => Options.NavigationInput || PageCount > Options.MaxPagesWithSteps;
@@ -106,7 +106,7 @@ public sealed partial class FormaPagination : FormaElementBase
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Options);
-        ArgumentOutOfRangeException.ThrowIfNegative(TotalItems);
+        ArgumentOutOfRangeException.ThrowIfNegative(TotalItemCount);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(PageSize, 0);
 
         // The input shows the page the reader is on.

@@ -61,9 +61,9 @@ public readonly record struct DateRange : IParsable<DateRange>, IFormattable
     {
         result = default;
 
-        if (s?.Split('/') is not [var first, var last]
-            || !DateOnly.TryParseExact(first, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var start)
-            || !DateOnly.TryParseExact(last, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var end)
+        if (s?.Split('/') is not [var startText, var endText]
+            || !DateOnly.TryParseExact(startText, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var start)
+            || !DateOnly.TryParseExact(endText, DateFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var end)
             || end < start)
         {
             return false;

@@ -5,7 +5,7 @@
 @{
     // A statically rendered page edits the number in the browser's own input, which shows it in the reader's culture and posts it in
     // the invariant form the server binds.
-    RenderFragment posted =
+    RenderFragment postedInput =
         @<input id="@ElementId"
                 data-rid="@Context.RuntimeId"
                 class="@RootClass"
@@ -25,7 +25,7 @@
                 readonly="@ReadOnly"
                 required="@IsRequired" />;
 
-    RenderFragment number = !RendererInfo.IsInteractive ? posted :
+    RenderFragment number = !RendererInfo.IsInteractive ? postedInput :
         @<input id="@ElementId"
                 data-rid="@Context.RuntimeId"
                 class="@RootClass"

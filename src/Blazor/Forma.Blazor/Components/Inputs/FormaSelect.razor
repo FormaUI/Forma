@@ -8,7 +8,7 @@
         @if (!RendererInfo.IsInteractive && IsPostable)
         {
             @* A statically rendered page chooses in the browser's own list, each option posting its value in the invariant form the server binds. *@
-            var chosen = FindSelectedOption();
+            var chosenOption = FindSelectedOption();
             <select id="@ElementId"
                     data-rid="@Context.RuntimeId"
                     class="@RootClass"
@@ -19,13 +19,13 @@
                     name="@ControlName"
                     disabled="@Disabled"
                     required="@Required">
-                @if (chosen is null)
+                @if (chosenOption is null)
                 {
                     <option value="" selected>@TriggerText</option>
                 }
                 @foreach (var option in Options)
                 {
-                    <option value="@FormValue.Format(option.Value)" selected="@(ReferenceEquals(option, chosen))">@option.Label</option>
+                    <option value="@FormValue.Format(option.Value)" selected="@(ReferenceEquals(option, chosenOption))">@option.Label</option>
                 }
             </select>
         }
@@ -64,16 +64,16 @@
                     {
                         var optionIndex = i;
                         var option = Options[optionIndex];
-                        var selected = IsSelected(option);
+                        var isSelected = IsSelected(option);
                         <button type="button"
-                                class="forma-select-option@(selected ? " selected" : "")"
+                                class="forma-select-option@(isSelected ? " selected" : "")"
                                 role="option"
                                 tabindex="-1"
-                                aria-selected="@(selected ? "true" : "false")"
+                                aria-selected="@(isSelected ? "true" : "false")"
                                 @ref="_optionElements[optionIndex]"
                                 @onclick="() => SelectAsync(option)">
                             <span class="forma-select-option-label">@option.Label</span>
-                            @if (selected)
+                            @if (isSelected)
                             {
                                 <span class="forma-select-option-check" aria-hidden="true">&#10003;</span>
                             }

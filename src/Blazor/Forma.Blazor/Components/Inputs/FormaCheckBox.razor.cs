@@ -75,7 +75,7 @@ public sealed partial class FormaCheckBox : FormaInputBase<bool>
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out bool result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
-        result = bool.TryParse(value, out var parsed) && parsed;
+        result = bool.TryParse(value, out var parsedValue) && parsedValue;
         validationErrorMessage = null;
 
         return true;

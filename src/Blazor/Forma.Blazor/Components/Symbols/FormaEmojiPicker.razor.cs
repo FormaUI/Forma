@@ -74,10 +74,10 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider? emojiProvider = nul
     [Parameter] public EventCallback<string> OnSelect { get; set; }
 
     /// <summary>The recently chosen emoji, most recent first.</summary>
-    [Parameter] public IReadOnlyList<string> Recent { get; set; } = [];
+    [Parameter] public IReadOnlyList<string> RecentEmojis { get; set; } = [];
 
     /// <summary>Raised when choosing an emoji changes the recently chosen list.</summary>
-    [Parameter] public EventCallback<IReadOnlyList<string>> RecentChanged { get; set; }
+    [Parameter] public EventCallback<IReadOnlyList<string>> RecentEmojisChanged { get; set; }
 
     /// <summary>How the picker browses: search, tabs, and the recents it keeps.</summary>
     [Parameter] public EmojiPickerOptions Options { get; set; } = EmojiPickerOptions.Default;
@@ -100,7 +100,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider? emojiProvider = nul
         => Context.CultureState.IsRightToLeft ? RightToLeftTabsProfile : LeftToRightTabsProfile;
 
     private IReadOnlyList<EmojiGroup> Tabs
-        => _tabs ??= Recent.Count == 0
+        => _tabs ??= RecentEmojis.Count == 0
             ? [.. Groups]
             : [new EmojiGroup { Id = RecentGroupId, Title = "Recently Used" }, .. Groups];
 
@@ -153,7 +153,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider? emojiProvider = nul
         InvalidateView();
 
         // A tab that was showing recents disappears once the host clears them.
-        if (_activeGroupId == RecentGroupId && Recent.Count == 0)
+        if (_activeGroupId == RecentGroupId && RecentEmojis.Count == 0)
         {
             _activeGroupId = null;
         }
@@ -215,33 +215,33 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider? emojiProvider = nul
 
     private async Task LoadNextSheetAsync()
     {
-        var next = RequiredSheets.FirstOrDefault(sheet => !IsCompleted(sheet));
+        var nextSheet = RequiredSheets.FirstOrDefault(sheet => !IsCompleted(sheet));
 
-        if (next is null || !_sheetLoadTracker.TryStartLoading(next))
+        if (nextSheet is null || !_sheetLoadTracker.TryStartLoading(nextSheet))
         {
             return;
         }
 
-        var arrived = false;
+        var hasArrived = false;
 
         try
         {
-            arrived = await SpriteLoader.LoadAsync(next);
+            hasArrived = await SpriteLoader.LoadAsync(nextSheet);
         }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
-            EmojiPickerLog.SheetLoadThrew(Context.Logger, ex, next, Context.RuntimeId);
+            EmojiPickerLog.SheetLoadThrew(Context.Logger, ex, nextSheet, Context.RuntimeId);
         }
         finally
         {
             // A failed sheet counts as completed, so its cells render without artwork.
-            if (arrived)
+            if (hasArrived)
             {
-                _sheetLoadTracker.MarkLoaded(next);
+                _sheetLoadTracker.MarkLoaded(nextSheet);
             }
             else
             {
-                _sheetLoadTracker.MarkFailed(next);
+                _sheetLoadTracker.MarkFailed(nextSheet);
             }
             InvalidateView();
             StateHasChanged();
@@ -263,7 +263,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider? emojiProvider = nul
     }
 
     private IReadOnlyList<EmojiInfo> GetRecentEmojis()
-        => [.. Recent.Select(sequence => Emoji.TryCreate(sequence, out var emoji) && _catalog.TryGetByEmoji(emoji, out var info) ? info : null).OfType<EmojiInfo>()];
+        => [.. RecentEmojis.Select(sequence => Emoji.TryCreate(sequence, out var emoji) && _catalog.TryGetByEmoji(emoji, out var info) ? info : null).OfType<EmojiInfo>()];
 
     private async Task OnQueryChangedAsync(string query)
     {
@@ -305,16 +305,16 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider? emojiProvider = nul
     {
         await OnSelect.InvokeAsync(info.Emoji.Sequence);
 
-        var updated = new List<string> { info.Emoji.Sequence };
-        updated.AddRange(Recent.Where(sequence => !string.Equals(sequence, info.Emoji.Sequence, StringComparison.Ordinal)));
+        var updatedRecentEmojis = new List<string> { info.Emoji.Sequence };
+        updatedRecentEmojis.AddRange(RecentEmojis.Where(sequence => !string.Equals(sequence, info.Emoji.Sequence, StringComparison.Ordinal)));
 
-        if (updated.Count > Options.MaxRecent)
+        if (updatedRecentEmojis.Count > Options.MaxRecent)
         {
-            updated.RemoveRange(Options.MaxRecent, updated.Count - Options.MaxRecent);
+            updatedRecentEmojis.RemoveRange(Options.MaxRecent, updatedRecentEmojis.Count - Options.MaxRecent);
         }
 
-        Recent = updated;
+        RecentEmojis = updatedRecentEmojis;
         InvalidateView();
-        await RecentChanged.InvokeAsync(updated);
+        await RecentEmojisChanged.InvokeAsync(updatedRecentEmojis);
     }
 }

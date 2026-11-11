@@ -29,7 +29,7 @@ public sealed partial class FormaToolbar : FormaElementBase
     private string? _registeredTargetId;
     private static readonly FocusInteractionOptions RovingOptions = new() { RovingOrientation = FocusOrientation.Horizontal };
 
-    private DomInteraction<FocusInteractionOptions>? _roving;
+    private DomInteraction<FocusInteractionOptions>? _rovingFocus;
 
     /// <summary>The accessible name of the toolbar.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -91,9 +91,9 @@ public sealed partial class FormaToolbar : FormaElementBase
 
         foreach (var item in Items.SelectMany(GetLeaves))
         {
-            if (item is ToolbarGroup nested)
+            if (item is ToolbarGroup nestedGroup)
             {
-                throw new ArgumentException($"Toolbar group '{nested.Id}' is nested inside another group; groups do not nest.", nameof(Items));
+                throw new ArgumentException($"Toolbar group '{nestedGroup.Id}' is nested inside another group; groups do not nest.", nameof(Items));
             }
 
             if (item is ToolbarMenu { Options.Count: 0 } menu)
@@ -139,9 +139,9 @@ public sealed partial class FormaToolbar : FormaElementBase
         await ReleaseAsync();
         _selfReference ??= DotNetObjectReference.Create(this);
 
-        if (await InputRouter.RegisterAsync(target, profile, _selfReference) is { } registered)
+        if (await InputRouter.RegisterAsync(target, profile, _selfReference) is { } registeredScope)
         {
-            _inputScope = registered;
+            _inputScope = registeredScope;
             _registeredTargetId = target.Id;
             _registeredShortcuts = shortcuts;
         }
@@ -193,12 +193,12 @@ public sealed partial class FormaToolbar : FormaElementBase
     {
         if (firstRender)
         {
-            _roving = await Context.DomEngine.GetElement(RootElement).Focus.AttachAsync(RovingOptions);
+            _rovingFocus = await Context.DomEngine.GetElement(RootElement).Focus.AttachAsync(RovingOptions);
         }
 
-        if (_roving is { } roving)
+        if (_rovingFocus is { } rovingFocus)
         {
-            await roving.SyncAsync(RootElement, RovingOptions);
+            await rovingFocus.SyncAsync(RootElement, RovingOptions);
         }
     }
 
@@ -305,13 +305,13 @@ public sealed partial class FormaToolbar : FormaElementBase
     }
 
     // A custom item's component, rendered by its type with its parameters, keyed so a reordered toolbar keeps each one's state.
-    private static RenderFragment RenderCustomItem(ToolbarCustomItem custom)
+    private static RenderFragment RenderCustomItem(ToolbarCustomItem customItem)
         => builder =>
         {
-            builder.OpenComponent(0, custom.Component);
-            builder.SetKey(custom.Id);
+            builder.OpenComponent(0, customItem.Component);
+            builder.SetKey(customItem.Id);
 
-            foreach (var (name, value) in custom.Parameters ?? new Dictionary<string, object>())
+            foreach (var (name, value) in customItem.Parameters ?? new Dictionary<string, object>())
             {
                 builder.AddComponentParameter(1, name, value);
             }

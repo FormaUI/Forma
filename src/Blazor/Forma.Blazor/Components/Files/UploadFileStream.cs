@@ -1,13 +1,13 @@
 namespace Forma.Blazor.Components.Files;
 
 /// <summary>A read-only stream over an inner stream that reports the running count of bytes read.</summary>
-internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : Stream
+internal sealed class UploadFileStream(Stream innerStream, Action<long> onProgress) : Stream
 {
     private long _bytesRead;
 
     /// <inheritdoc />
     public override bool CanRead
-        => inner.CanRead;
+        => innerStream.CanRead;
 
     /// <inheritdoc />
     public override bool CanSeek
@@ -19,7 +19,7 @@ internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : 
 
     /// <inheritdoc />
     public override long Length
-        => inner.Length;
+        => innerStream.Length;
 
     /// <inheritdoc />
     public override long Position
@@ -31,7 +31,7 @@ internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : 
     /// <inheritdoc />
     public override async ValueTask DisposeAsync()
     {
-        await inner.DisposeAsync();
+        await innerStream.DisposeAsync();
 
         await base.DisposeAsync();
     }
@@ -48,21 +48,21 @@ internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : 
     /// <inheritdoc />
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        var read = await inner.ReadAsync(buffer, cancellationToken);
+        var bytesRead = await innerStream.ReadAsync(buffer, cancellationToken);
 
-        Advance(read);
+        Advance(bytesRead);
 
-        return read;
+        return bytesRead;
     }
 
     /// <inheritdoc />
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        var read = await inner.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
+        var bytesRead = await innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
 
-        Advance(read);
+        Advance(bytesRead);
 
-        return read;
+        return bytesRead;
     }
 
     /// <inheritdoc />
@@ -82,20 +82,20 @@ internal sealed class UploadFileStream(Stream inner, Action<long> onProgress) : 
     {
         if (disposing)
         {
-            inner.Dispose();
+            innerStream.Dispose();
         }
 
         base.Dispose(disposing);
     }
 
-    private void Advance(int read)
+    private void Advance(int bytesRead)
     {
-        if (read <= 0)
+        if (bytesRead <= 0)
         {
             return;
         }
 
-        _bytesRead += read;
+        _bytesRead += bytesRead;
         onProgress(_bytesRead);
     }
 }

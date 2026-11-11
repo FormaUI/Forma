@@ -28,7 +28,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
 
     // How many times a scroll to an item draws the list again before it finds the item drawn: once to reach it, and once more
     // where the heights the reach measured moved it.
-    private const int ScrollAttempts = 3;
+    private const int ScrollAttemptCount = 3;
 
     /// <summary>The items the list holds.</summary>
     [Parameter] public IReadOnlyList<TItem>? Items { get; set; }
@@ -84,7 +84,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     private bool _hasLoaded;
     private bool _isStale;
     private int _loadedStart;
-    private List<TItem> _loaded = [];
+    private List<TItem> _loadedItems = [];
     private CancellationTokenSource? _loadCancellation;
     private CancellationTokenSource? _scrollCancellation;
     private List<TaskCompletionSource> _renderWaiters = [];
@@ -119,9 +119,9 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     /// <returns>Whether the item is in view.</returns>
     public async Task<bool> ScrollToIndexAsync(int index, ScrollAlignment alignment = ScrollAlignment.Nearest, CancellationToken cancellationToken = default)
     {
-        if (_scrollCancellation is { } superseded)
+        if (_scrollCancellation is { } supersededCancellation)
         {
-            await superseded.CancelAsync();
+            await supersededCancellation.CancelAsync();
         }
 
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
@@ -130,7 +130,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
 
         try
         {
-            for (var attempt = 0; attempt < ScrollAttempts; attempt++)
+            for (var attempt = 0; attempt < ScrollAttemptCount; attempt++)
             {
                 token.ThrowIfCancellationRequested();
 
@@ -202,11 +202,11 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         if (_initialIndexNeedsCorrection && itemSize > 0)
         {
             _initialIndexNeedsCorrection = false;
-            var corrected = InitialItemIndex * CurrentItemSize;
+            var correctedOffset = InitialItemIndex * CurrentItemSize;
 
-            if (Math.Abs(corrected - _offset) >= 1)
+            if (Math.Abs(correctedOffset - _offset) >= 1)
             {
-                _offset = corrected;
+                _offset = correctedOffset;
                 await LoadAsync();
                 StateHasChanged();
                 await _interop.ScrollToAsync(_offset);
@@ -271,7 +271,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
                 RecordPins(start, around);
             }
 
-            RecordPins(_loadedStart, _loaded);
+            RecordPins(_loadedStart, _loadedItems);
         }
     }
 
@@ -320,7 +320,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     }
 
     // The rendered range: the items around the viewport and the overscan beyond it, from the first to the one past the last; pinned items stand outside it.
-    private (int First, int End) GetRenderedRange()
+    private (int FirstIndex, int End) GetRenderedRange()
     {
         var size = CurrentItemSize;
 
@@ -334,19 +334,19 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
 
         var top = Math.Max(0, _offset);
         var bottom = Math.Max(top, _offset + _viewport);
-        var first = Math.Clamp((int)Math.Floor(top / size) - OverscanCount, 0, _count);
-        var end = Math.Clamp((int)Math.Ceiling(bottom / size) + OverscanCount, first, _count);
+        var firstIndex = Math.Clamp((int)Math.Floor(top / size) - OverscanCount, 0, _count);
+        var end = Math.Clamp((int)Math.Ceiling(bottom / size) + OverscanCount, firstIndex, _count);
 
-        return (first, end);
+        return (firstIndex, end);
     }
 
     // What the list draws, in order: the spacers, and the rendered range's items and the pinned ones, each once.
     private List<Drawn> Draw()
     {
-        var (first, end) = GetRenderedRange();
+        var (firstIndex, end) = GetRenderedRange();
         SortedDictionary<int, Drawn> entries = [];
 
-        for (var index = first; index < end; index++)
+        for (var index = firstIndex; index < end; index++)
         {
             if (TryGetItem(index, out var item))
             {
@@ -469,9 +469,9 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
 
         var offset = index - _loadedStart;
 
-        if (_hasLoaded && offset >= 0 && offset < _loaded.Count)
+        if (_hasLoaded && offset >= 0 && offset < _loadedItems.Count)
         {
-            item = _loaded[offset];
+            item = _loadedItems[offset];
             return true;
         }
 
@@ -531,17 +531,17 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
             return;
         }
 
-        var (first, end) = _hasLoaded ? GetRenderedRange() : (0, InitialCount);
+        var (firstIndex, end) = _hasLoaded ? GetRenderedRange() : (0, InitialCount);
 
-        if (_hasLoaded && !_isStale && first >= _loadedStart && end <= _loadedStart + _loaded.Count)
+        if (_hasLoaded && !_isStale && firstIndex >= _loadedStart && end <= _loadedStart + _loadedItems.Count)
         {
             return;
         }
 
-        if (_loadCancellation is { } superseded)
+        if (_loadCancellation is { } supersededCancellation)
         {
-            await superseded.CancelAsync();
-            superseded.Dispose();
+            await supersededCancellation.CancelAsync();
+            supersededCancellation.Dispose();
         }
 
         var cancellation = _loadCancellation = new CancellationTokenSource();
@@ -551,31 +551,31 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
         var previousCount = _count;
         var previousOffset = _offset;
         var previousViewport = _viewport;
-        var anchored = false;
+        var isAnchored = false;
         ItemsProviderResult<TItem> result;
-        List<TItem> loaded;
+        List<TItem> loadedItems;
 
         try
         {
-            result = await provider(new ItemsProviderRequest(first, Math.Max(1, end - first), token));
-            loaded = [.. result.Items];
+            result = await provider(new ItemsProviderRequest(firstIndex, Math.Max(1, end - firstIndex), token));
+            loadedItems = [.. result.Items];
 
             var delta = result.TotalItemCount - previousCount;
 
             if (hadLoadedBefore && delta != 0
-                && AdjustForAnchor(result.TotalItemCount, previousCount, delta, previousOffset, previousViewport, first, loaded) is { } adjusted)
+                && AdjustForAnchor(result.TotalItemCount, previousCount, delta, previousOffset, previousViewport, firstIndex, loadedItems) is { } adjustedOffset)
             {
                 // The corrected range is computed against the set's new count, which lands early for that alone. The window
                 // itself moves by exactly what changed before it rather than being re-read from the corrected offset: an
                 // ancestor outside the list, a sticky header among them, can leave the offset negative at the true top, where
                 // it is clamped to zero, so deriving the window from pixels again does not track the same shift linearly.
-                anchored = true;
+                isAnchored = true;
                 _count = result.TotalItemCount;
-                _offset = adjusted;
-                first = Math.Clamp(first + delta, 0, _count);
-                end = Math.Clamp(end + delta, first, _count);
-                result = await provider(new ItemsProviderRequest(first, Math.Max(1, end - first), token));
-                loaded = [.. result.Items];
+                _offset = adjustedOffset;
+                firstIndex = Math.Clamp(firstIndex + delta, 0, _count);
+                end = Math.Clamp(end + delta, firstIndex, _count);
+                result = await provider(new ItemsProviderRequest(firstIndex, Math.Max(1, end - firstIndex), token));
+                loadedItems = [.. result.Items];
             }
 
             if (token.IsCancellationRequested)
@@ -585,8 +585,8 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
 
             // The set stays stale until a read that was not superseded answers, so the read that supersedes one still reads it again.
             _isStale = false;
-            _loadedStart = first;
-            _loaded = loaded;
+            _loadedStart = firstIndex;
+            _loadedItems = loadedItems;
             _count = result.TotalItemCount;
             _hasLoaded = true;
 
@@ -596,8 +596,8 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
                 _pinSurroundings = [];
             }
 
-            RecordPins(_loadedStart, _loaded);
-            _loadedAnchor = _loaded.Count > 0 ? (_loadedStart, _loaded[0]) : null;
+            RecordPins(_loadedStart, _loadedItems);
+            _loadedAnchor = _loadedItems.Count > 0 ? (_loadedStart, _loadedItems[0]) : null;
 
             if (wasStale)
             {
@@ -605,7 +605,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
             }
 
             // A held or followed viewport is drawn at its old position until this render lands, so the real scroll is corrected after it.
-            if (anchored)
+            if (isAnchored)
             {
                 await RenderAsync(token);
                 await _interop.ScrollToAsync(_offset);
@@ -620,16 +620,16 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     // The item the last answer opened on is found in this one, at the same position, to tell the set added to from the set fetched
     // again: where it no longer matches, the set grew or shrank before it; where it still matches and the set grew, the set grew
     // after it.
-    private double? AdjustForAnchor(int newCount, int previousCount, int delta, double previousOffset, double previousViewport, int first, List<TItem> loaded)
+    private double? AdjustForAnchor(int newCount, int previousCount, int delta, double previousOffset, double previousViewport, int firstIndex, List<TItem> loadedItems)
     {
-        if (_loadedAnchor is not { } anchor || anchor.Index < first || anchor.Index - first >= loaded.Count)
+        if (_loadedAnchor is not { } anchor || anchor.Index < firstIndex || anchor.Index - firstIndex >= loadedItems.Count)
         {
             return null;
         }
 
         var size = CurrentItemSize;
 
-        if (!ItemComparer.Equals(anchor.Item, loaded[anchor.Index - first]))
+        if (!ItemComparer.Equals(anchor.Item, loadedItems[anchor.Index - firstIndex]))
         {
             // Added or taken before the anchor. Standing at the start already, the start shows what arrived there; otherwise the
             // viewport holds the items it showed.
@@ -674,16 +674,16 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     private async Task VerifyPinsAsync(ItemsProviderDelegate<TItem> provider, CancellationToken token)
     {
         _pinSurroundings = [];
-        HashSet<object> found = [.. _loaded.Select(ItemKey).Where(_pinnedKeys.Contains)];
+        HashSet<object> foundKeys = [.. _loadedItems.Select(ItemKey).Where(_pinnedKeys.Contains)];
 
         foreach (var (key, (index, _)) in _pins.ToList())
         {
-            if (found.Contains(key))
+            if (foundKeys.Contains(key))
             {
                 continue;
             }
 
-            if (index < _count && (index < _loadedStart || index >= _loadedStart + _loaded.Count))
+            if (index < _count && (index < _loadedStart || index >= _loadedStart + _loadedItems.Count))
             {
                 var start = Math.Max(0, index - OverscanCount);
                 var result = await provider(new ItemsProviderRequest(start, Math.Min(_count, index + OverscanCount + 1) - start, token));
@@ -696,10 +696,10 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
                 List<TItem> around = [.. result.Items];
                 _pinSurroundings.Add((start, around));
                 RecordPins(start, around);
-                found.UnionWith(around.Select(ItemKey).Where(_pinnedKeys.Contains));
+                foundKeys.UnionWith(around.Select(ItemKey).Where(_pinnedKeys.Contains));
             }
 
-            if (!found.Contains(key))
+            if (!foundKeys.Contains(key))
             {
                 _pins.Remove(key);
             }
@@ -709,11 +709,11 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     // Draws the list again and waits until the draw is on the page.
     private Task RenderAsync(CancellationToken token)
     {
-        var rendered = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        _renderWaiters.Add(rendered);
+        var renderWaiter = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        _renderWaiters.Add(renderWaiter);
         StateHasChanged();
 
-        return rendered.Task.WaitAsync(token);
+        return renderWaiter.Task.WaitAsync(token);
     }
 
     /// <inheritdoc />

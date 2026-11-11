@@ -65,9 +65,9 @@
                                         ValueChanged="value => _searchText = value"
                                         Options="SearchOptions"
                                         aria-label="@L["Search"]" />
-                        @{ var filtered = FilteredOptions; }
+                        @{ var filteredOptions = FilteredOptions; }
                         <div class="forma-multi-select-options">
-                            @foreach (var option in filtered)
+                            @foreach (var option in filteredOptions)
                             {
                                 <FormaCheckBox Value="@IsSelected(option)"
                                                ValueChanged="_ => ToggleOption(option)"
@@ -75,7 +75,7 @@
                                     <span>@option.Label</span>
                                 </FormaCheckBox>
                             }
-                            @if (filtered.Count == 0)
+                            @if (filteredOptions.Count == 0)
                             {
                                 <div class="forma-multi-select-empty">@(Options.Count == 0 ? L["No options available yet"] : L["No matches"])</div>
                             }

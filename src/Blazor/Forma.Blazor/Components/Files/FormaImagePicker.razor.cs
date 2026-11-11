@@ -61,11 +61,11 @@ public sealed partial class FormaImagePicker : FormaElementBase
         }
     }
 
-    private async Task HandleFilesRejectedAsync(IReadOnlyList<RejectedFile> rejected)
+    private async Task HandleFilesRejectedAsync(IReadOnlyList<RejectedFile> rejectedFiles)
     {
         _previewFileNames.Clear();
 
-        await OnFilesRejected.InvokeAsync(rejected);
+        await OnFilesRejected.InvokeAsync(rejectedFiles);
     }
 
     private async Task HandleFilesSelectedAsync(IReadOnlyList<IBrowserFile> files)

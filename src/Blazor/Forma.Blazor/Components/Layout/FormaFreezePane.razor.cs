@@ -42,7 +42,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
 
     private ElementReference _viewport;
     private DomObservation<ScrollWatchOptions, ScrollState>? _scrollState;
-    private DomInteraction<ScrollInteractionOptions>? _scrolling;
+    private DomInteraction<ScrollInteractionOptions>? _scrollInteraction;
     private ScrollState? _state;
 
     private bool IsMeasured
@@ -120,19 +120,19 @@ public sealed partial class FormaFreezePane : FormaElementBase
         if (firstRender)
         {
             var scroll = Context.DomEngine.GetElement(_viewport).Scroll;
-            var watching = scroll.WatchAsync(HandleScrollStateAsync, WatchOptions);
-            var attaching = scroll.AttachAsync(InteractionOptions, WantsInteraction);
+            var watchTask = scroll.WatchAsync(HandleScrollStateAsync, WatchOptions);
+            var attachTask = scroll.AttachAsync(InteractionOptions, WantsInteraction);
 
-            _scrollState = await watching;
-            _scrolling = await attaching;
+            _scrollState = await watchTask;
+            _scrollInteraction = await attachTask;
         }
 
         // A render made while the first requests were settling is caught up here.
-        if (_scrollState is { } scrollState && _scrolling is { } scrolling)
+        if (_scrollState is { } scrollState && _scrollInteraction is { } scrollInteraction)
         {
             await Task.WhenAll(
                 scrollState.SyncAsync(_viewport, WatchOptions),
-                scrolling.SyncAsync(_viewport, InteractionOptions, WantsInteraction));
+                scrollInteraction.SyncAsync(_viewport, InteractionOptions, WantsInteraction));
         }
     }
 

@@ -18,7 +18,7 @@
     <h2>@L["Recently Used"]</h2>
     <p class="description">@L["A host that persists the recent list gets an extra leading tab. Choose an emoji here and it moves to the front."]</p>
     <div class="demo-box">
-        <FormaEmojiPicker @bind-Recent="_recent" />
+        <FormaEmojiPicker @bind-RecentEmojis="_recent" />
     </div>
     <p>@L["Recent: {Emoji}", string.Join(" ", _recent)]</p>
 </div>
@@ -27,7 +27,7 @@
     <h2>@L["Recent Limit"]</h2>
     <p class="description">@L["MaxRecent caps how many are kept. This one keeps three."]</p>
     <div class="demo-box">
-        <FormaEmojiPicker @bind-Recent="_limitedRecent" Options="@(new EmojiPickerOptions { MaxRecent = 3 })" />
+        <FormaEmojiPicker @bind-RecentEmojis="_limitedRecent" Options="@(new EmojiPickerOptions { MaxRecent = 3 })" />
     </div>
     <p>@L["Recent: {Emoji}", string.Join(" ", _limitedRecent)]</p>
 </div>

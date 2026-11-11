@@ -69,9 +69,9 @@ public sealed partial class FormaIcon(IIconProvider? iconProvider = null) : Form
         // Nearest wins: this icon's own provider, then the surrounding subtree's; the registered one answers what those decline.
         var provider = Provider ?? CascadingProvider;
 
-        _artwork = provider is not null && provider.TryGetArtwork(Icon, Size, out var supplied)
-            ? supplied
-            : _iconProvider.TryGetArtwork(Icon, Size, out var registered) ? registered : IconArtwork.None;
+        _artwork = provider is not null && provider.TryGetArtwork(Icon, Size, out var suppliedArtwork)
+            ? suppliedArtwork
+            : _iconProvider.TryGetArtwork(Icon, Size, out var registeredArtwork) ? registeredArtwork : IconArtwork.None;
 
         _vectorPaths = _artwork is IconVector vector
             ? [.. vector.Paths.Select(path => new VectorPathView(path.Data, path.StrokeWidth > 0 ? GetWidth(path) : null, GetFade(path)))]

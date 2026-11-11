@@ -123,9 +123,9 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
             return true;
         }
 
-        if (DateOnly.TryParseExact(value, RoundTripFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+        if (DateOnly.TryParseExact(value, RoundTripFormat, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate))
         {
-            result = (TValue)(object)parsed;
+            result = (TValue)(object)parsedDate;
             validationErrorMessage = null;
 
             return true;

@@ -4,7 +4,7 @@
    turning, a switch to each culture, and another native window to open. *@
 <output class="runtime">@RendererInfo.Name @RendererInfo.IsInteractive</output>
 <output class="welcome">@L["Welcome"]</output>
-<FormaPagination TotalItems="20" PageSize="10" CurrentPage="_currentPage" OnPageChanged="@(page => _currentPage = page)" />
+<FormaPagination TotalItemCount="20" PageSize="10" CurrentPage="_currentPage" OnPageChanged="@(page => _currentPage = page)" />
 <button class="english" @onclick="@(() => SwitchAsync("en-US"))">English</button>
 <button class="hebrew" @onclick="@(() => SwitchAsync("he"))">עברית</button>
 <button class="open" @onclick="NativeWindows.Open">@L["New Window"]</button>

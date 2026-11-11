@@ -97,7 +97,7 @@ public sealed partial class FormaShareMenu(IShareConnections? connections = null
 
     /// <summary>Whether the target shares through an account the host reports the user has not connected.</summary>
     private bool NeedsConnection(IShareTarget target)
-        => target.RequiresAccount && connections is { } known && !known.IsConnected(target.Id);
+        => target.RequiresAccount && connections is { } knownConnections && !knownConnections.IsConnected(target.Id);
 
     private Task ConnectAsync(IShareTarget target)
         => connections!.ConnectAsync(target.Id);

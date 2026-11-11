@@ -276,7 +276,7 @@
             IReadOnlyList<string> recent = ["😀"];
 
             // Act
-            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" />);
+            var cut = ctx.Render(@<FormaEmojiPicker RecentEmojis="recent" />);
 
             // Assert
             Assert.Equal(GroupCount + 1, cut.FindAll("[role='tab']").Count);
@@ -292,7 +292,7 @@
             IReadOnlyList<string> recent = ["", "😀😀", "😀"];
 
             // Act
-            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" />);
+            var cut = ctx.Render(@<FormaEmojiPicker RecentEmojis="recent" />);
 
             // Assert
             Assert.Single(cut.FindAll(".forma-emoji-picker-emoji"));
@@ -307,7 +307,7 @@
             catalog.TryFindByGroupId("smileys", out var smileys);
             IReadOnlyList<string> recent = ["😂", "😊"];
             IReadOnlyList<string>? updated = null;
-            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" RecentChanged="value => updated = value" />);
+            var cut = ctx.Render(@<FormaEmojiPicker RecentEmojis="recent" RecentEmojisChanged="value => updated = value" />);
 
             // Act
             cut.FindAll("[role='tab']")[1].Click();
@@ -328,7 +328,7 @@
             var first = smileys[0].Emoji.Sequence;
             IReadOnlyList<string> recent = ["😂", first];
             IReadOnlyList<string>? updated = null;
-            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" RecentChanged="value => updated = value" />);
+            var cut = ctx.Render(@<FormaEmojiPicker RecentEmojis="recent" RecentEmojisChanged="value => updated = value" />);
 
             // Act
             cut.FindAll("[role='tab']")[1].Click();
@@ -346,7 +346,7 @@
             using var ctx = new FormaEmojiPickerTests();
             IReadOnlyList<string> recent = ["😂", "😊"];
             IReadOnlyList<string>? updated = null;
-            var cut = ctx.Render(@<FormaEmojiPicker Recent="recent" Options="@(new EmojiPickerOptions { MaxRecent = 2 })" RecentChanged="value => updated = value" />);
+            var cut = ctx.Render(@<FormaEmojiPicker RecentEmojis="recent" Options="@(new EmojiPickerOptions { MaxRecent = 2 })" RecentEmojisChanged="value => updated = value" />);
 
             // Act
             cut.FindAll("[role='tab']")[1].Click();

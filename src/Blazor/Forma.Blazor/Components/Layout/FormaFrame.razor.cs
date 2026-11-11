@@ -149,9 +149,9 @@ public sealed partial class FormaFrame : FormaElementBase
         }
 
         var box = Box is FrameBox.Parent ? "parent" : "self";
-        var attached = await _frame.AttachAsync(RootElement, _selfReference, box, DragRegionClass, HandleClass, StepPixels, BoundsElement);
+        var isAttached = await _frame.AttachAsync(RootElement, _selfReference, box, DragRegionClass, HandleClass, StepPixels, BoundsElement);
 
-        if (attached && !Maximized)
+        if (isAttached && !Maximized)
         {
             await _frame.MeasureAsync();
         }

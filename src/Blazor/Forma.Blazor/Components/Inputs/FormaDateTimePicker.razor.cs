@@ -74,7 +74,7 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     private bool _hasEnteredValue;
 
     private IReadOnlyList<TimeOnly> _suggestions = [];
-    private (TimeOnly Origin, TimeSpan Interval, TimeOnly Earliest, TimeOnly Latest)? _suggestionsSource;
+    private (TimeOnly Origin, TimeSpan Interval, TimeOnly EarliestTime, TimeOnly LatestTime)? _suggestionsSource;
 
     private FormaField? FieldContainer { get; set; }
 
@@ -295,9 +295,9 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     // The times the date allows, at the list's interval from the step's origin.
     private void UpdateSuggestions()
     {
-        var earliest = _date is { } date && date == MinDate ? StepOrigin : TimeOnly.MinValue;
-        var latest = _date is { } lastDate && lastDate == MaxDate && MaxClock is { } max ? TimeOnly.FromDateTime(max) : TimeOnly.MaxValue;
-        var source = (StepOrigin, EffectiveListInterval, earliest, latest);
+        var earliestTime = _date is { } date && date == MinDate ? StepOrigin : TimeOnly.MinValue;
+        var latestTime = _date is { } lastDate && lastDate == MaxDate && MaxClock is { } max ? TimeOnly.FromDateTime(max) : TimeOnly.MaxValue;
+        var source = (StepOrigin, EffectiveListInterval, earliestTime, latestTime);
 
         if (_suggestionsSource == source)
         {
@@ -307,12 +307,12 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
         _suggestionsSource = source;
 
         var interval = EffectiveListInterval.Ticks;
-        var first = StepOrigin.Ticks % interval;
-        var count = (TimeSpan.TicksPerDay - 1 - first) / interval + 1;
+        var firstTicks = StepOrigin.Ticks % interval;
+        var count = (TimeSpan.TicksPerDay - 1 - firstTicks) / interval + 1;
 
         _suggestions = [.. Enumerable.Range(0, (int)count)
-            .Select(index => new TimeOnly(first + interval * index))
-            .Where(time => time >= earliest && time <= latest)];
+            .Select(index => new TimeOnly(firstTicks + interval * index))
+            .Where(time => time >= earliestTime && time <= latestTime)];
     }
 
     private string FormatTime(TimeOnly time)
@@ -460,16 +460,16 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
         }
 
         var clock = day.ToDateTime(timeOfDay);
-        var earliest = MinClock;
-        var latest = MaxClock;
+        var earliestTime = MinClock;
+        var latestTime = MaxClock;
 
-        if ((earliest is { } min && clock < min) || (latest is { } max && clock > max))
+        if ((earliestTime is { } min && clock < min) || (latestTime is { } max && clock > max))
         {
-            return (earliest, latest) switch
+            return (earliestTime, latestTime) switch
             {
                 ({ } from, { } to) => L["The {Field} field must be between {Earliest} and {Latest}.", FieldName, FormatClock(from), FormatClock(to)],
                 ({ } from, null) => L["The {Field} field must be {Earliest} or later.", FieldName, FormatClock(from)],
-                _ => L["The {Field} field must be {Latest} or earlier.", FieldName, FormatClock(latest!.Value)],
+                _ => L["The {Field} field must be {Latest} or earlier.", FieldName, FormatClock(latestTime!.Value)],
             };
         }
 
@@ -481,10 +481,10 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
 
             if (remainder != 0)
             {
-                var earlier = timeOfDay.Add(TimeSpan.FromTicks(-remainder));
-                var later = earlier.Add(step);
+                var earlierTime = timeOfDay.Add(TimeSpan.FromTicks(-remainder));
+                var laterTime = earlierTime.Add(step);
 
-                return L["The {Field} field must be {Earlier} or {Later}.", FieldName, FormatTime(earlier), FormatTime(later)];
+                return L["The {Field} field must be {Earlier} or {Later}.", FieldName, FormatTime(earlierTime), FormatTime(laterTime)];
             }
         }
 

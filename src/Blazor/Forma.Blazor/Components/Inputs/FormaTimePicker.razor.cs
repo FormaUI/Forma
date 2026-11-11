@@ -254,10 +254,10 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
 
             if (remainder != 0)
             {
-                var earlier = time.Add(TimeSpan.FromTicks(-remainder));
-                var later = earlier.Add(step);
+                var earlierTime = time.Add(TimeSpan.FromTicks(-remainder));
+                var laterTime = earlierTime.Add(step);
 
-                return L["The {Field} field must be {Earlier} or {Later}.", FieldName, FormatTime(earlier), FormatTime(later)];
+                return L["The {Field} field must be {Earlier} or {Later}.", FieldName, FormatTime(earlierTime), FormatTime(laterTime)];
             }
         }
 

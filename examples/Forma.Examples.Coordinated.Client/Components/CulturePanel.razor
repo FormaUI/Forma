@@ -4,7 +4,7 @@
    and a switch to Hebrew. *@
 <output class="runtime">@RendererInfo.Name @RendererInfo.IsInteractive</output>
 <output class="welcome">@L["Welcome"]</output>
-<FormaPagination TotalItems="20" PageSize="10" CurrentPage="_currentPage" OnPageChanged="@(page => _currentPage = page)" />
+<FormaPagination TotalItemCount="20" PageSize="10" CurrentPage="_currentPage" OnPageChanged="@(page => _currentPage = page)" />
 <button class="switch" @onclick="SwitchAsync">עברית</button>
 
 @code {

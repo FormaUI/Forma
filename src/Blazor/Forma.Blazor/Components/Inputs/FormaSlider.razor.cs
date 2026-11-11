@@ -63,7 +63,7 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
-        result = TValue.TryParse(value, CultureInfo.InvariantCulture, out var parsed) ? parsed : Min;
+        result = TValue.TryParse(value, CultureInfo.InvariantCulture, out var parsedValue) ? parsedValue : Min;
         validationErrorMessage = null;
         return true;
     }

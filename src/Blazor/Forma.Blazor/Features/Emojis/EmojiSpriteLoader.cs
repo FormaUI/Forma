@@ -53,16 +53,16 @@ public sealed class EmojiSpriteLoader : IEmojiSpriteLoader, IAsyncDisposable, ID
             _loadsBySheet[sheet] = load;
         }
 
-        var arrived = await load;
+        var hasArrived = await load;
 
         // Only the load that failed is forgotten, so a retry another caller already started stays shared.
-        if (!arrived && _loadsBySheet.TryGetValue(sheet, out var current) && ReferenceEquals(current, load))
+        if (!hasArrived && _loadsBySheet.TryGetValue(sheet, out var currentLoad) && ReferenceEquals(currentLoad, load))
         {
             _loadsBySheet.Remove(sheet);
             EmojiSpriteLoaderLog.SpriteSheetDidNotLoad(_environment.Logger, sheet, _environment.RuntimeId);
         }
 
-        return arrived;
+        return hasArrived;
     }
 
     /// <inheritdoc />

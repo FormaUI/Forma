@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components.Web;
 public sealed partial class FormaCalendar : FormaComponentBase
 {
     /// <summary>How many months stand side by side, one or two.</summary>
-    [Parameter] public int Months { get; set; } = 1;
+    [Parameter] public int MonthCount { get; set; } = 1;
 
     /// <summary>The dates drawn as chosen, a single day or a span.</summary>
     [Parameter] public DateRange? Highlight { get; set; }
@@ -36,7 +36,7 @@ public sealed partial class FormaCalendar : FormaComponentBase
     private CalendarMonthRange _calendarMonthRange = default!;
 
     private bool ShowsTwoMonths
-        => Months == 2;
+        => MonthCount == 2;
 
     private CultureInfo Culture => Context.CultureState.Culture;
     private string TextDirection => Context.CultureState.IsRightToLeft ? "rtl" : "ltr";
@@ -44,8 +44,8 @@ public sealed partial class FormaCalendar : FormaComponentBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        ArgumentOutOfRangeException.ThrowIfLessThan(Months, 1);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(Months, 2);
+        ArgumentOutOfRangeException.ThrowIfLessThan(MonthCount, 1);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(MonthCount, 2);
 
         _calendarMonthRange = CalendarMonthRange.Create(Culture, UseNonGregorianMonths, MinDate, MaxDate);
 
@@ -140,8 +140,8 @@ public sealed partial class FormaCalendar : FormaComponentBase
     {
         if (int.TryParse(args.Value?.ToString(), out var month))
         {
-            var current = GetPanelMonth(panelIndex);
-            SetPanelMonth(panelIndex, _calendarMonthRange.GetMonthStart(_calendarMonthRange.GetYear(current), month));
+            var panelMonth = GetPanelMonth(panelIndex);
+            SetPanelMonth(panelIndex, _calendarMonthRange.GetMonthStart(_calendarMonthRange.GetYear(panelMonth), month));
         }
     }
 
@@ -149,8 +149,8 @@ public sealed partial class FormaCalendar : FormaComponentBase
     {
         if (int.TryParse(args.Value?.ToString(), out var gregorianYear))
         {
-            var current = GetPanelMonth(panelIndex);
-            var calendarMonth = _calendarMonthRange.GetMonth(current);
+            var panelMonth = GetPanelMonth(panelIndex);
+            var calendarMonth = _calendarMonthRange.GetMonth(panelMonth);
             // The year selector holds Gregorian years; the calendar year is the one in force at mid-year.
             var midYear = new DateOnly(gregorianYear, 6, 1);
             var targetCalendarYear = _calendarMonthRange.GetYear(midYear);

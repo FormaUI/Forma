@@ -76,7 +76,7 @@ public sealed partial class FormaTabs : FormaElementBase
     // Moves focus to the tab the action names, counted from the focused one, without selecting it.
     private async Task HandleStripActionAsync(string action, InputInfo input)
     {
-        if (FocusableTab is not { } focusable || Navigation.FindTarget(action, _tabs.IndexOf(focusable), _tabs.Count) is not { } target)
+        if (FocusableTab is not { } focusableTab || Navigation.FindTarget(action, _tabs.IndexOf(focusableTab), _tabs.Count) is not { } target)
         {
             return;
         }

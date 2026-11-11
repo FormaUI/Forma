@@ -111,32 +111,32 @@ public sealed partial class FormaFilePicker : FormaElementBase
         {
             var files = args.GetMultipleFiles(args.FileCount);
             var effectiveMax = Options.AllowMultipleFiles ? Options.MaxFiles : 1;
-            var accepted = new List<IBrowserFile>();
-            var rejected = new List<RejectedFile>();
+            var acceptedFiles = new List<IBrowserFile>();
+            var rejectedFiles = new List<RejectedFile>();
 
             foreach (var file in files)
             {
-                var reason = GetRejection(file, accepted.Count, effectiveMax);
+                var reason = GetRejection(file, acceptedFiles.Count, effectiveMax);
 
                 if (reason is { } rejectionReason)
                 {
-                    rejected.Add(new RejectedFile(file.Name, rejectionReason));
+                    rejectedFiles.Add(new RejectedFile(file.Name, rejectionReason));
                 }
                 else
                 {
-                    accepted.Add(file);
+                    acceptedFiles.Add(file);
                 }
             }
 
-            if (rejected.Count > 0)
+            if (rejectedFiles.Count > 0)
             {
-                _rejections.AddRange(rejected);
-                await OnFilesRejected.InvokeAsync(rejected);
+                _rejections.AddRange(rejectedFiles);
+                await OnFilesRejected.InvokeAsync(rejectedFiles);
             }
 
-            if (accepted.Count > 0)
+            if (acceptedFiles.Count > 0)
             {
-                await OnFilesSelected.InvokeAsync(accepted);
+                await OnFilesSelected.InvokeAsync(acceptedFiles);
             }
         }
         finally

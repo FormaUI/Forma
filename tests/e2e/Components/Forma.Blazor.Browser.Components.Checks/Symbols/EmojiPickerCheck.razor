@@ -1,7 +1,7 @@
 @page "/{Runtime}/emoji-picker"
 
 @* An emoji picker whose chosen emoji is shown where the check reads it, keeping the recents it is bound to. *@
-<FormaEmojiPicker Id="picker" OnSelect="@(sequence => _chosen = sequence)" @bind-Recent="_recent" />
+<FormaEmojiPicker Id="picker" OnSelect="@(sequence => _chosen = sequence)" @bind-RecentEmojis="_recent" />
 <output id="result">@_chosen</output>
 
 @code {

@@ -68,8 +68,8 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
         {
             var characters = CharacterCount;
 
-            return MaxLength is { } allowed
-                ? L["{Characters} of {Allowed} characters", characters, allowed]
+            return MaxLength is { } allowedLength
+                ? L["{Characters} of {Allowed} characters", characters, allowedLength]
                 : L["[$ plural; one: # character; other: # characters; $]", characters];
         }
     }

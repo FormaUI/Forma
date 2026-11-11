@@ -190,16 +190,16 @@ public sealed partial class FormaSplitter : FormaElementBase
     /// <summary>Takes the size, clamped to the bounds, and reports whether it differs from the current one.</summary>
     private async Task<bool> SetValueAsync(double value)
     {
-        var clamped = Math.Clamp(value, Min, Max);
+        var clampedValue = Math.Clamp(value, Min, Max);
 
-        if (clamped.Equals(Value))
+        if (clampedValue.Equals(Value))
         {
             return false;
         }
 
-        Value = clamped;
+        Value = clampedValue;
 
-        await ValueChanged.InvokeAsync(clamped);
+        await ValueChanged.InvokeAsync(clampedValue);
 
         return true;
     }

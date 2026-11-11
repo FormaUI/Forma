@@ -168,9 +168,9 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     /// <summary>Finds the first enabled item at or past <paramref name="start"/> in the direction of <paramref name="step"/>, wrapping around the ends.</summary>
     private static FormaDropDownMenuItem? FindEnabled(List<FormaDropDownMenuItem> items, int start, int step)
     {
-        for (var visited = 0; visited < items.Count; visited++)
+        for (var visitedCount = 0; visitedCount < items.Count; visitedCount++)
         {
-            var index = ((start + visited * step) % items.Count + items.Count) % items.Count;
+            var index = ((start + visitedCount * step) % items.Count + items.Count) % items.Count;
 
             if (!items[index].Disabled)
             {

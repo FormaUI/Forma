@@ -451,16 +451,16 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
         await PlacementChanged.InvokeAsync(placement);
     }
 
-    private async Task SetMaximizedAsync(bool maximized)
+    private async Task SetMaximizedAsync(bool isMaximized)
     {
-        Maximized = maximized;
-        await MaximizedChanged.InvokeAsync(maximized);
+        Maximized = isMaximized;
+        await MaximizedChanged.InvokeAsync(isMaximized);
     }
 
-    private async Task SetLockedAsync(bool locked)
+    private async Task SetLockedAsync(bool isLocked)
     {
-        Locked = locked;
-        await LockedChanged.InvokeAsync(locked);
+        Locked = isLocked;
+        await LockedChanged.InvokeAsync(isLocked);
     }
 
     /// <summary>Makes the window current, or brings the current one forward, as the reader presses anywhere inside it.</summary>
