@@ -100,12 +100,12 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
         foreach (var row in EditorRows.Where(row => row.Items.Count > 0))
         {
             var count = CountLeaves(row.Items);
-            var last = bars.Count > 0 ? bars[^1] : null;
+            var lastBar = bars.Count > 0 ? bars[^1] : null;
 
             // Folding coalesces groups of the same name across the joined rows.
-            if (last is not null && CountLeaves(last.Items) + count <= CommandsPerBar)
+            if (lastBar is not null && CountLeaves(lastBar.Items) + count <= CommandsPerBar)
             {
-                bars[^1] = last with { Items = ComposerToolbarLayout.Coalesce([.. last.Items, .. row.Items]) };
+                bars[^1] = lastBar with { Items = ComposerToolbarLayout.Coalesce([.. lastBar.Items, .. row.Items]) };
             }
             else
             {

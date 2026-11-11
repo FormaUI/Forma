@@ -33,11 +33,11 @@ export class Links {
     }
 
     /** The matching anchors a range sits inside or overlaps, in document order. */
-    touching(range, selector) {
+    getTouchingLinks(range, selector) {
         if (range.collapsed) {
-            const found = this.#canvas.closest(range.startContainer, selector);
+            const foundLink = this.#canvas.closest(range.startContainer, selector);
 
-            return found ? [found] : [];
+            return foundLink ? [foundLink] : [];
         }
 
         return [...this.#canvas.element.querySelectorAll(selector)].filter(candidate => range.intersectsNode(candidate));
@@ -48,13 +48,13 @@ export class Links {
      * The text nodes move into the anchors' places unnormalized, so the range still covers the same text afterwards.
      */
     unwrapTouching(range, selector) {
-        const found = this.touching(range, selector);
+        const touchingLinks = this.getTouchingLinks(range, selector);
 
-        for (const anchor of found) {
+        for (const anchor of touchingLinks) {
             anchor.replaceWith(...anchor.childNodes);
         }
 
-        return found.length;
+        return touchingLinks.length;
     }
 
     /** The markup a link or named anchor request builds around the selected text, where null means there is nothing to insert. */

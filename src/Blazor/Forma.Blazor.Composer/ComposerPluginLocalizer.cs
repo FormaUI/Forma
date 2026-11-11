@@ -16,9 +16,9 @@ internal sealed class ComposerPluginLocalizer(IStringLocaleFactory localeFactory
     /// <param name="title">The English title, which is the localization key.</param>
     public string Localize(IComposerPlugin? plugin, string title)
     {
-        if (plugin?.LocalizationSourceType is { } source && GetPluginLocale(source)[title] is { ResourceNotFound: false } localized)
+        if (plugin?.LocalizationSourceType is { } source && GetPluginLocale(source)[title] is { ResourceNotFound: false } localizedTitle)
         {
-            return localized.Value;
+            return localizedTitle.Value;
         }
 
         return composerLocale[title].Value;

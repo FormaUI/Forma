@@ -39,11 +39,11 @@ export class ContentWriter {
             : null;
 
         if (block) {
-            const following = this.#canvas.splitBlock(block, range);
+            const followingBlock = this.#canvas.splitBlock(block, range);
             block.after(fragment);
             ContentWriter.#removeIfEmpty(block);
 
-            if (ContentWriter.#removeIfEmpty(following)) {
+            if (ContentWriter.#removeIfEmpty(followingBlock)) {
                 range.setStartAfter(lastNode);
             } else {
                 // A trailing spacer paragraph is dropped where the following half already stands.
@@ -51,7 +51,7 @@ export class ContentWriter {
                     ContentWriter.#removeIfEmpty(lastNode);
                 }
 
-                range.setStart(following, 0);
+                range.setStart(followingBlock, 0);
             }
         } else {
             range.insertNode(fragment);

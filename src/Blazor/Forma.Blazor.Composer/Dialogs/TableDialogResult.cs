@@ -7,10 +7,10 @@ using System.Diagnostics.CodeAnalysis;
 public sealed record TableDialogResult : ComposerDialogResult
 {
     /// <summary>The number of rows in the table.</summary>
-    public required int Rows { get; init; }
+    public required int RowCount { get; init; }
 
     /// <summary>The number of columns in the table.</summary>
-    public required int Columns { get; init; }
+    public required int ColumnCount { get; init; }
 
     /// <summary>Whether the first row is a header row.</summary>
     public required bool IncludeHeader { get; init; }

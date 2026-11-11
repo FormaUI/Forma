@@ -79,9 +79,9 @@ export class InlineFormatter {
             return;
         }
 
-        const active = this.#isFullyMarked(range, selector);
+        const isActive = this.#isFullyMarked(range, selector);
 
-        if (active) {
+        if (isActive) {
             this.#isolate(range, holder => holder.matches(selector));
         }
 
@@ -89,7 +89,7 @@ export class InlineFormatter {
 
         this.#unwrapIn(fragment, selector);
 
-        if (!active) {
+        if (!isActive) {
             this.#wrapRuns(fragment, () => document.createElement(tag));
         }
 
@@ -105,9 +105,9 @@ export class InlineFormatter {
 
         if (range.collapsed) {
             if (value) {
-                const pending = document.createElement('span');
-                pending.style.setProperty(property, value);
-                this.#armPending(range, pending);
+                const pendingSpan = document.createElement('span');
+                pendingSpan.style.setProperty(property, value);
+                this.#armPending(range, pendingSpan);
             }
             return;
         }
@@ -116,9 +116,9 @@ export class InlineFormatter {
 
         const fragment = range.extractContents();
 
-        for (const styled of fragment.querySelectorAll('[style]')) {
-            styled.style.removeProperty(property);
-            this.#dropIfBareSpan(styled);
+        for (const styledElement of fragment.querySelectorAll('[style]')) {
+            styledElement.style.removeProperty(property);
+            this.#dropIfBareSpan(styledElement);
         }
 
         if (value) {
@@ -146,11 +146,11 @@ export class InlineFormatter {
 
         this.#unwrapIn(fragment, InlineFormatter.#AllMarksSelector);
 
-        for (const styled of fragment.querySelectorAll('[style]')) {
+        for (const styledElement of fragment.querySelectorAll('[style]')) {
             for (const property of InlineFormatter.#FormattingProperties) {
-                styled.style.removeProperty(property);
+                styledElement.style.removeProperty(property);
             }
-            this.#dropIfBareSpan(styled);
+            this.#dropIfBareSpan(styledElement);
         }
 
         this.#reinsert(range, fragment);
@@ -191,7 +191,7 @@ export class InlineFormatter {
      * only splits elements between its boundaries, so a container has to be split by hand.
      */
     #isolate(range, matches) {
-        let holder = this.#containing(range.commonAncestorContainer, matches);
+        let holder = this.#getContainingElement(range.commonAncestorContainer, matches);
 
         while (holder) {
             const tail = document.createRange();
@@ -215,12 +215,12 @@ export class InlineFormatter {
             }
 
             range.selectNode(holder);
-            holder = this.#containing(holder.parentNode, matches);
+            holder = this.#getContainingElement(holder.parentNode, matches);
         }
     }
 
     /** The nearest matching ancestor inside the canvas. */
-    #containing(node, matches) {
+    #getContainingElement(node, matches) {
         for (let element = Canvas.elementOf(node); element && element !== this.#canvas.element; element = element.parentElement) {
             if (matches(element)) {
                 return element;
@@ -232,14 +232,14 @@ export class InlineFormatter {
 
     /** Whether every character the range covers already sits inside the mark. */
     #isFullyMarked(range, selector) {
-        const meaningful = this.#canvas.textNodesIn(range)
+        const meaningfulNodes = this.#canvas.textNodesIn(range)
             .filter(node => node.data.replaceAll(InlineFormatter.PendingMarker, '').trim() !== '');
 
-        if (meaningful.length === 0) {
+        if (meaningfulNodes.length === 0) {
             return this.#canvas.closest(range.startContainer, selector) !== null;
         }
 
-        return meaningful.every(node => this.#canvas.closest(node, selector) !== null);
+        return meaningfulNodes.every(node => this.#canvas.closest(node, selector) !== null);
     }
 
     /** At a collapsed caret: leave the mark for what is typed next, or step typing out of the one the caret is in. */
@@ -255,29 +255,29 @@ export class InlineFormatter {
         const tail = document.createRange();
         tail.setStart(range.startContainer, range.startOffset);
         tail.setEnd(inside, inside.childNodes.length);
-        const rest = tail.extractContents();
+        const restFragment = tail.extractContents();
 
         // The caret may have sat inside further marks nested in this one; those survive for the next typed text.
-        const nested = [];
+        const nestedWrappers = [];
         for (let node = Canvas.elementOf(range.startContainer); node && node !== inside; node = node.parentElement) {
             if (node.matches(InlineFormatter.#AllMarksSelector)) {
-                nested.push(node.cloneNode(false));
+                nestedWrappers.push(node.cloneNode(false));
             }
         }
 
         const marker = document.createTextNode(InlineFormatter.PendingMarker);
-        let outermost = marker;
-        for (const wrapper of nested) {
-            wrapper.appendChild(outermost);
-            outermost = wrapper;
+        let outermostNode = marker;
+        for (const wrapper of nestedWrappers) {
+            wrapper.appendChild(outermostNode);
+            outermostNode = wrapper;
         }
 
-        inside.after(outermost);
+        inside.after(outermostNode);
 
-        if (Fragments.hasContent(rest)) {
+        if (Fragments.hasContent(restFragment)) {
             const tailClone = inside.cloneNode(false);
-            tailClone.appendChild(rest);
-            outermost.after(tailClone);
+            tailClone.appendChild(restFragment);
+            outermostNode.after(tailClone);
         }
 
         if (inside.childNodes.length === 0) {
@@ -297,8 +297,8 @@ export class InlineFormatter {
 
     /** Unwraps every element the selector matches inside a fragment, keeping its content. */
     #unwrapIn(root, selector) {
-        for (const found of root.querySelectorAll(selector)) {
-            found.replaceWith(...found.childNodes);
+        for (const foundElement of root.querySelectorAll(selector)) {
+            foundElement.replaceWith(...foundElement.childNodes);
         }
     }
 
@@ -317,8 +317,8 @@ export class InlineFormatter {
         let run = [];
 
         const flush = () => {
-            const meaningful = run.some(node => node.nodeType !== Node.TEXT_NODE || node.data.length > 0);
-            if (run.length > 0 && meaningful) {
+            const isMeaningful = run.some(node => node.nodeType !== Node.TEXT_NODE || node.data.length > 0);
+            if (run.length > 0 && isMeaningful) {
                 const wrapper = makeWrapper();
                 container.insertBefore(wrapper, run[0]);
                 for (const node of run) {
@@ -342,8 +342,8 @@ export class InlineFormatter {
 
     /** Puts a rewritten fragment back where it came from, selects it, and sweeps the shells extraction left empty. */
     #reinsert(range, fragment) {
-        const first = fragment.firstChild;
-        const last = fragment.lastChild;
+        const firstChild = fragment.firstChild;
+        const lastChild = fragment.lastChild;
 
         range.insertNode(fragment);
 
@@ -354,6 +354,6 @@ export class InlineFormatter {
             }
         }
 
-        this.#canvas.selectBetween(first, last);
+        this.#canvas.selectBetween(firstChild, lastChild);
     }
 }

@@ -17,8 +17,8 @@ export class BlockFormatter {
         const name = String(value ?? 'p').replace(/[<>]/g, '').toLowerCase();
         const blocks = this.#canvas.selectedBlocks().filter(block => block.tagName !== 'LI');
         const range = this.#canvas.currentRange();
-        const kept = range ? { start: range.startContainer, startOffset: range.startOffset, end: range.endContainer, endOffset: range.endOffset } : null;
-        let last = null;
+        const keptRange = range ? { start: range.startContainer, startOffset: range.startOffset, end: range.endContainer, endOffset: range.endOffset } : null;
+        let lastReplacement = null;
 
         for (const block of blocks) {
             if (block.tagName.toLowerCase() === name) {
@@ -33,36 +33,36 @@ export class BlockFormatter {
                 replacement.appendChild(block.firstChild);
             }
             block.replaceWith(replacement);
-            last = replacement;
+            lastReplacement = replacement;
 
             // A boundary on the block itself, as an inline command leaves it, keeps its child offset in the
             // replacement, whose children are the block's own in the same order.
-            if (kept?.start === block) {
-                kept.start = replacement;
+            if (keptRange?.start === block) {
+                keptRange.start = replacement;
             }
-            if (kept?.end === block) {
-                kept.end = replacement;
+            if (keptRange?.end === block) {
+                keptRange.end = replacement;
             }
         }
 
         const selection = window.getSelection();
-        if (!last || !selection) {
+        if (!lastReplacement || !selection) {
             return;
         }
 
         // The text the selection covered moved whole into the replacement, so the selection is put back over it.
-        if (kept && kept.start.isConnected && kept.end.isConnected) {
-            const restored = document.createRange();
-            restored.setStart(kept.start, kept.startOffset);
-            restored.setEnd(kept.end, kept.endOffset);
+        if (keptRange && keptRange.start.isConnected && keptRange.end.isConnected) {
+            const restoredRange = document.createRange();
+            restoredRange.setStart(keptRange.start, keptRange.startOffset);
+            restoredRange.setEnd(keptRange.end, keptRange.endOffset);
             selection.removeAllRanges();
-            selection.addRange(restored);
+            selection.addRange(restoredRange);
             return;
         }
 
         // Converting an empty block detaches the node the caret sat on, so the caret moves into the replacement.
         if (!selection.anchorNode || !selection.anchorNode.isConnected) {
-            this.#canvas.placeCaretAtEnd(last);
+            this.#canvas.placeCaretAtEnd(lastReplacement);
         }
     }
 
@@ -132,15 +132,15 @@ export class BlockFormatter {
             return;
         }
 
-        const following = this.#canvas.splitBlock(block, range);
-        if (!following.hasChildNodes()) {
-            following.appendChild(document.createElement('br'));
+        const followingBlock = this.#canvas.splitBlock(block, range);
+        if (!followingBlock.hasChildNodes()) {
+            followingBlock.appendChild(document.createElement('br'));
         }
         if (!block.hasChildNodes()) {
             block.appendChild(document.createElement('br'));
         }
         block.after(rule);
 
-        this.#canvas.placeCaret(following, 0);
+        this.#canvas.placeCaret(followingBlock, 0);
     }
 }

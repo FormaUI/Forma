@@ -18,7 +18,7 @@ public abstract class ComposerDialogBase : FormaComponentBase
 
     /// <summary>What the dialog reopened on, where null means it collects something new.</summary>
     [Parameter]
-    public ComposerDialogResult? Reopening { get; set; }
+    public ComposerDialogResult? ReopeningResult { get; set; }
 
     /// <summary>The context of the composer the dialog belongs to.</summary>
     [CascadingParameter] public ComposerContext? Composer { get; set; }
@@ -36,7 +36,7 @@ public abstract class ComposerDialogBase : FormaComponentBase
         => Composer?.Sanitizer.MarkupPolicy ?? RichContentMarkupPolicy.Default;
 
     /// <summary>Whether the dialog reopened on something already in the document.</summary>
-    private protected bool IsReopened => Reopening is not null;
+    private protected bool IsReopened => ReopeningResult is not null;
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -59,7 +59,7 @@ public abstract class ComposerDialogBase : FormaComponentBase
 
     /// <summary>What the dialog reopened on, as a result of this dialog's own kind.</summary>
     /// <typeparam name="TResult">The result this dialog collects.</typeparam>
-    private protected TResult? Reopened<TResult>()
+    private protected TResult? GetReopeningResult<TResult>()
         where TResult : ComposerDialogResult
-        => Reopening as TResult;
+        => ReopeningResult as TResult;
 }

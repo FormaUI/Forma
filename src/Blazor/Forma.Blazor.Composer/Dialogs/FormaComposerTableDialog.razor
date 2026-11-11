@@ -9,8 +9,8 @@
                      Messages="Messages"
                      OnConfirm="HandleConfirmAsync"
                      OnCancel="OnCancel">
-    <FormaSlider TValue="int" @bind-Value="_rows" Label="@L["Rows"]" Min="1" Max="@MaxRows" />
-    <FormaSlider TValue="int" @bind-Value="_columns" Label="@L["Columns"]" Min="1" Max="@MaxColumns" />
+    <FormaSlider TValue="int" @bind-Value="_rowCount" Label="@L["Rows"]" Min="1" Max="@MaxRowCount" />
+    <FormaSlider TValue="int" @bind-Value="_columnCount" Label="@L["Columns"]" Min="1" Max="@MaxColumnCount" />
     <div class="forma-composer-dialog-checkbox">
         <FormaCheckBox @bind-Value="_includeHeader">
             @L["Include Header Row"]

@@ -141,11 +141,11 @@ public sealed class TypographyPlugin(
 
         var (jsCommand, fallback) = name switch
         {
-            FontFamilyCommand => ("fontName", First(Options.FontFamilies)),
-            FontSizeCommand => ("fontSize", First(Options.FontSizes) is { } size ? ToCssSize(size) : null),
-            TextColorCommand => ("foreColor", First(Options.TextColors)),
-            HighlightColorCommand => ("hiliteColor", First(Options.HighlightColors)),
-            LineHeightCommand => ("lineHeight", First(Options.LineHeights)),
+            FontFamilyCommand => ("fontName", GetFirst(Options.FontFamilies)),
+            FontSizeCommand => ("fontSize", GetFirst(Options.FontSizes) is { } size ? ToCssSize(size) : null),
+            TextColorCommand => ("foreColor", GetFirst(Options.TextColors)),
+            HighlightColorCommand => ("hiliteColor", GetFirst(Options.HighlightColors)),
+            LineHeightCommand => ("lineHeight", GetFirst(Options.LineHeights)),
             _ => (null, null),
         };
 
@@ -156,7 +156,7 @@ public sealed class TypographyPlugin(
 
         return ValueTask.CompletedTask;
 
-        static string? First(IReadOnlyList<string> values)
+        static string? GetFirst(IReadOnlyList<string> values)
         {
             return values.Count > 0 ? values[0] : null;
         }

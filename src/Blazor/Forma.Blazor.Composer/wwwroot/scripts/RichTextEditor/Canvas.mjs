@@ -48,9 +48,9 @@ export class Canvas {
 
     /** The nearest matching ancestor inside the canvas. */
     closest(node, selector) {
-        const found = Canvas.elementOf(node)?.closest(selector);
+        const foundElement = Canvas.elementOf(node)?.closest(selector);
 
-        return found && this.contains(found) ? found : null;
+        return foundElement && this.contains(foundElement) ? foundElement : null;
     }
 
     /** The nearest matching ancestor of the selection's anchor inside the canvas. */
@@ -75,9 +75,9 @@ export class Canvas {
         const node = Canvas.elementOf((selection && selection.rangeCount > 0) ? selection.anchorNode : null);
 
         if (node && this.contains(node) && node !== this.#element) {
-            const found = node.closest(Canvas.BlockSelector);
+            const foundBlock = node.closest(Canvas.BlockSelector);
             // The canvas root can itself match the selector; it is the canvas, never a block.
-            return found && found !== this.#element ? found : node;
+            return foundBlock && foundBlock !== this.#element ? foundBlock : node;
         }
 
         return this.#element.querySelector(Canvas.BlockSelector) ?? this.#element;
@@ -97,10 +97,10 @@ export class Canvas {
             return block && block !== this.#element && block.matches?.(Canvas.BlockSelector) ? [block] : [];
         }
 
-        const touched = [...this.#element.querySelectorAll(Canvas.BlockSelector)]
+        const touchedBlocks = [...this.#element.querySelectorAll(Canvas.BlockSelector)]
             .filter(block => range.intersectsNode(block));
 
-        return touched.filter(block => !touched.some(other => other !== block && block.contains(other)));
+        return touchedBlocks.filter(block => !touchedBlocks.some(other => other !== block && block.contains(other)));
     }
 
     /**
@@ -140,13 +140,13 @@ export class Canvas {
             }
         }
 
-        const restored = document.createRange();
-        restored.setStart(...bounds[0]);
-        restored.setEnd(...bounds[1]);
+        const restoredRange = document.createRange();
+        restoredRange.setStart(...bounds[0]);
+        restoredRange.setEnd(...bounds[1]);
 
         const selection = window.getSelection();
         selection.removeAllRanges();
-        selection.addRange(restored);
+        selection.addRange(restoredRange);
     }
 
     /** The runs of adjacent top-level children no block holds, each with content beyond whitespace. */
@@ -176,12 +176,12 @@ export class Canvas {
         tail.setStart(range.startContainer, range.startOffset);
         tail.setEnd(block, block.childNodes.length);
 
-        const following = block.cloneNode(false);
-        following.removeAttribute('id');
-        following.append(tail.extractContents());
-        block.after(following);
+        const followingBlock = block.cloneNode(false);
+        followingBlock.removeAttribute('id');
+        followingBlock.append(tail.extractContents());
+        block.after(followingBlock);
 
-        return following;
+        return followingBlock;
     }
 
     /** Every text node the range covers at least partially, in document order. */
@@ -205,8 +205,8 @@ export class Canvas {
     }
 
     /** Places the selection so it covers everything between two sibling nodes, inclusive. */
-    selectBetween(first, last) {
-        if (!first || !last) {
+    selectBetween(firstNode, lastNode) {
+        if (!firstNode || !lastNode) {
             return;
         }
 
@@ -216,8 +216,8 @@ export class Canvas {
         }
 
         const range = document.createRange();
-        range.setStartBefore(first);
-        range.setEndAfter(last);
+        range.setStartBefore(firstNode);
+        range.setEndAfter(lastNode);
         selection.removeAllRanges();
         selection.addRange(range);
     }

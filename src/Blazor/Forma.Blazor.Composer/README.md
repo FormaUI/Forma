@@ -98,7 +98,7 @@ builder.Services.AddFormaComposer(composer => composer
         .AddFeaturePlugin<ListPlugin>()
         .AddFeaturePlugin<LinkPlugin>()
         .AddFeaturePlugin<ImagePlugin>()
-        .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRows = 12)
+        .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRowCount = 12)
         .AddFeaturePlugin<FileUploadPlugin>()
         .AddViewPlugin<RichTextPreviewViewPlugin>())
     .AddFeaturePlugin<MaximizePlugin>());

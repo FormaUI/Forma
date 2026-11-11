@@ -90,7 +90,7 @@ A host describes a composer with a builder. The description is immutable once bu
 services.AddFormaComposer(composer => composer
     .AddRichTextEditor(editor => editor
         .TryAddDefaultFeatures()
-        .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRows = 12)
+        .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRowCount = 12)
         .AddFeaturePlugin<ExplorerPlugin, ExplorerPluginOptions>(options => options.AcceptedResourceKinds = "contentType:image")
         .AddViewPlugin<RichTextPreviewViewPlugin>())
     .TryAddDefaultPlugins());

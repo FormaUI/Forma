@@ -417,7 +417,7 @@
             await editor.InvokeAsync(() => editor.Instance.HandleImageActivatedAsync(new JSTransfer { Stream = stream }));
 
             // Assert
-            var reopened = Assert.IsType<ImageDialogResult>(cut.FindComponent<FormaComposerImageDialog>().Instance.Reopening);
+            var reopened = Assert.IsType<ImageDialogResult>(cut.FindComponent<FormaComposerImageDialog>().Instance.ReopeningResult);
             Assert.Multiple(
                 () => Assert.Equal(image.Source, reopened.Source),
                 () => Assert.Equal("A cat", reopened.AltText),
@@ -461,7 +461,7 @@
             await cut.InvokeAsync(() => plugin.RequestLinkDialog());
 
             // Assert
-            var reopened = Assert.IsType<LinkDialogResult>(cut.FindComponent<FormaComposerLinkDialog>().Instance.Reopening);
+            var reopened = Assert.IsType<LinkDialogResult>(cut.FindComponent<FormaComposerLinkDialog>().Instance.ReopeningResult);
             Assert.Equal(text, reopened.Name);
         }
 

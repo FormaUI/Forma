@@ -47,17 +47,17 @@ export class TableEditor {
             return;
         }
 
-        const added = document.createElement('tr');
+        const addedRow = document.createElement('tr');
         for (let i = 0; i < row.children.length; i++) {
             const cell = document.createElement('td');
             cell.innerHTML = '&nbsp;';
-            added.appendChild(cell);
+            addedRow.appendChild(cell);
         }
 
         if (before) {
-            row.before(added);
+            row.before(addedRow);
         } else {
-            row.after(added);
+            row.after(addedRow);
         }
     }
 
@@ -87,17 +87,17 @@ export class TableEditor {
 
         for (const row of table.querySelectorAll('tr')) {
             const isHeader = row.parentElement?.tagName === 'THEAD';
-            const added = document.createElement(isHeader ? 'th' : 'td');
-            added.innerHTML = '&nbsp;';
+            const addedCell = document.createElement(isHeader ? 'th' : 'td');
+            addedCell.innerHTML = '&nbsp;';
             const at = row.children[cellIndex];
             if (at) {
                 if (before) {
-                    at.before(added);
+                    at.before(addedCell);
                 } else {
-                    at.after(added);
+                    at.after(addedCell);
                 }
             } else {
-                row.appendChild(added);
+                row.appendChild(addedCell);
             }
         }
     }
@@ -145,14 +145,14 @@ export class TableEditor {
         } else {
             const firstRow = table.querySelector('tr');
             if (firstRow) {
-                const added = document.createElement('thead');
+                const addedHead = document.createElement('thead');
                 for (const cell of [...firstRow.querySelectorAll('td, th')]) {
                     const th = document.createElement('th');
                     th.innerHTML = cell.innerHTML;
                     cell.replaceWith(th);
                 }
-                added.appendChild(firstRow);
-                table.prepend(added);
+                addedHead.appendChild(firstRow);
+                table.prepend(addedHead);
             }
         }
     }

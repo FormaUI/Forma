@@ -14,7 +14,7 @@ public sealed partial class FormaComposerVideoDialog : ComposerDialogBase
 
     /// <inheritdoc />
     private protected override void OnOpen()
-        => (_source, _title, _autoplay) = Reopened<VideoDialogResult>() is { } video
+        => (_source, _title, _autoplay) = GetReopeningResult<VideoDialogResult>() is { } video
             ? (video.Source, video.Title, video.Autoplay)
             : (null, null, false);
 

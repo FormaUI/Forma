@@ -174,10 +174,10 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
                 return;
             }
 
-            var sanitized = Composer.Sanitizer.Sanitize(change.Text);
-            _committedContent = sanitized;
+            var sanitizedText = Composer.Sanitizer.Sanitize(change.Text);
+            _committedContent = sanitizedText;
 
-            await Interaction.ChangeDocumentAsync(Composer.Document with { Content = sanitized });
+            await Interaction.ChangeDocumentAsync(Composer.Document with { Content = sanitizedText });
         }
         finally
         {
@@ -305,15 +305,15 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             var target = await _canvas.BeginLinkDialogAsync(isAnchor);
 
             // A single link or anchor the selection holds prefills its address, its name and its tab.
-            var single = target?.Count == 1 ? target : null;
+            var singleTarget = target?.Count == 1 ? target : null;
             _dialog = new RichTextDialogState(
                 RichTextDialogKind.Link,
                 new LinkDialogResult
                 {
                     IsAnchor = isAnchor,
-                    Name = (isAnchor ? single?.Name : null) ?? target?.Text ?? string.Empty,
-                    Href = single?.Href ?? string.Empty,
-                    OpenInNewTab = single?.OpensInNewTab ?? false,
+                    Name = (isAnchor ? singleTarget?.Name : null) ?? target?.Text ?? string.Empty,
+                    Href = singleTarget?.Href ?? string.Empty,
+                    OpenInNewTab = singleTarget?.OpensInNewTab ?? false,
                 });
 
             StateHasChanged();

@@ -14,7 +14,7 @@ public sealed partial class FormaComposerEmbedDialog : ComposerDialogBase
 
     /// <inheritdoc />
     private protected override void OnOpen()
-        => (_embedType, _identifier, _settings) = Reopened<EmbedDialogResult>() is { } embed
+        => (_embedType, _identifier, _settings) = GetReopeningResult<EmbedDialogResult>() is { } embed
             ? (embed.EmbedType, embed.Identifier, embed.Settings)
             : (null, null, null);
 

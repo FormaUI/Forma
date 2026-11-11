@@ -110,31 +110,31 @@ class RichTextEditor {
             return;
         }
 
-        const found = MediaMarkup.Kinds
+        const foundMedia = MediaMarkup.Kinds
             .map(({ kind, selector }) => ({ kind, element: from.closest(selector) }))
             .find(({ element }) => element && this.#canvas.contains(element));
 
-        if (!found) {
+        if (!foundMedia) {
             return;
         }
 
         // Replaces the word a double-click selects with the whole element.
         event.preventDefault();
-        this.#canvas.selectNode(found.element);
+        this.#canvas.selectNode(foundMedia.element);
         this.#memory.save();
 
         // A closing dialog returns a collapsed caret to the canvas; freezing keeps the element-wide
         // selection the replacement reads.
         this.#memory.freeze();
 
-        if (found.kind === 'link' || found.kind === 'anchor') {
-            this.#tell('HandleLinkActivatedAsync', found.kind === 'anchor');
+        if (foundMedia.kind === 'link' || foundMedia.kind === 'anchor') {
+            this.#tell('HandleLinkActivatedAsync', foundMedia.kind === 'anchor');
 
             return;
         }
 
         // What the element holds can be large, an image carried as a data address among it.
-        this.#tell(RichTextEditor.#Activations[found.kind], Transfer.of(MediaMarkup.read(found.kind, found.element)));
+        this.#tell(RichTextEditor.#Activations[foundMedia.kind], Transfer.of(MediaMarkup.read(foundMedia.kind, foundMedia.element)));
     }
 
     /**
@@ -185,22 +185,22 @@ class RichTextEditor {
      * cover the whole document.
      */
     beginLinkDialog(selector = 'a[href]') {
-        const frozen = this.#memory.freeze();
+        const frozenRange = this.#memory.freeze();
 
-        if (!frozen) {
+        if (!frozenRange) {
             return Transfer.of({ text: '', href: null, name: null, opensInNewTab: false, count: 0 });
         }
 
-        const selected = frozen.collapsed ? '' : frozen.toString();
-        const touched = this.#links.touching(frozen, selector);
-        const single = touched.length === 1 ? touched[0] : null;
+        const selectedText = frozenRange.collapsed ? '' : frozenRange.toString();
+        const touchedLinks = this.#links.getTouchingLinks(frozenRange, selector);
+        const singleLink = touchedLinks.length === 1 ? touchedLinks[0] : null;
 
         return Transfer.of({
-            text: selected || (single ? single.textContent : ''),
-            href: single?.getAttribute('href') ?? null,
-            name: single?.getAttribute('name') ?? null,
-            opensInNewTab: single?.getAttribute('target') === '_blank',
-            count: touched.length,
+            text: selectedText || (singleLink ? singleLink.textContent : ''),
+            href: singleLink?.getAttribute('href') ?? null,
+            name: singleLink?.getAttribute('name') ?? null,
+            opensInNewTab: singleLink?.getAttribute('target') === '_blank',
+            count: touchedLinks.length,
         });
     }
 

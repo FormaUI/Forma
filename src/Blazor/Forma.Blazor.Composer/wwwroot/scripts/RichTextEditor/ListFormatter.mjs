@@ -13,8 +13,8 @@ export class ListFormatter {
     }
 
     /** Toggles the touched blocks into or out of a list of the given kind. */
-    toggle(ordered) {
-        const tag = ordered ? 'OL' : 'UL';
+    toggle(isOrdered) {
+        const tag = isOrdered ? 'OL' : 'UL';
         const blocks = this.#canvas.selectedBlocks();
 
         if (blocks.length === 0) {
@@ -24,75 +24,75 @@ export class ListFormatter {
         const allInKind = blocks.every(block => block.tagName === 'LI' && block.parentElement?.tagName === tag);
 
         if (allInKind) {
-            const last = this.#dissolveItems(blocks);
-            if (last) {
-                this.#canvas.placeCaretAtEnd(last);
+            const lastBlock = this.#dissolveItems(blocks);
+            if (lastBlock) {
+                this.#canvas.placeCaretAtEnd(lastBlock);
             }
             return;
         }
 
-        let last = null;
+        let lastBlock = null;
         for (const group of ListFormatter.#groupConsecutive(blocks)) {
-            last = this.#convertGroup(group, tag) ?? last;
+            lastBlock = this.#convertGroup(group, tag) ?? lastBlock;
         }
-        if (last) {
-            this.#canvas.placeCaretAtEnd(last);
+        if (lastBlock) {
+            this.#canvas.placeCaretAtEnd(lastBlock);
         }
     }
 
     /** Nests each touched list item under its predecessor, or pushes any other block one step inward. */
     indent() {
-        let moved = null;
+        let movedBlock = null;
 
         for (const block of this.#canvas.selectedBlocks()) {
             if (block.tagName === 'LI') {
-                moved = this.#nest(block) ?? moved;
+                movedBlock = this.#nest(block) ?? movedBlock;
             } else {
                 ListFormatter.#stepMargin(block, ListFormatter.#IndentStep);
             }
         }
 
         // Moving a node collapses any live range that pointed into it, so the caret is placed back inside.
-        if (moved) {
-            this.#canvas.placeCaretAtEnd(moved);
+        if (movedBlock) {
+            this.#canvas.placeCaretAtEnd(movedBlock);
         }
     }
 
     /** Lifts each touched list item out one level, or pulls any other block one step back. */
     outdent() {
-        let moved = null;
+        let movedBlock = null;
 
         for (const block of this.#canvas.selectedBlocks()) {
             if (block.tagName === 'LI') {
-                moved = this.#lift(block) ?? moved;
+                movedBlock = this.#lift(block) ?? movedBlock;
             } else {
                 ListFormatter.#stepMargin(block, -ListFormatter.#IndentStep);
             }
         }
 
-        if (moved) {
-            this.#canvas.placeCaretAtEnd(moved);
+        if (movedBlock) {
+            this.#canvas.placeCaretAtEnd(movedBlock);
         }
     }
 
     /** Splits blocks into runs of adjacent siblings, each run becoming one list. */
     static #groupConsecutive(blocks) {
         const groups = [];
-        let current = [];
+        let currentGroup = [];
 
         for (const block of blocks) {
-            if (current.length > 0 && block.previousElementSibling === current[current.length - 1]) {
-                current.push(block);
+            if (currentGroup.length > 0 && block.previousElementSibling === currentGroup[currentGroup.length - 1]) {
+                currentGroup.push(block);
             } else {
-                if (current.length > 0) {
-                    groups.push(current);
+                if (currentGroup.length > 0) {
+                    groups.push(currentGroup);
                 }
-                current = [block];
+                currentGroup = [block];
             }
         }
 
-        if (current.length > 0) {
-            groups.push(current);
+        if (currentGroup.length > 0) {
+            groups.push(currentGroup);
         }
 
         return groups;
@@ -100,12 +100,12 @@ export class ListFormatter {
 
     /** Turns one run of adjacent blocks into a list of the given kind, re-typing items already in another kind. */
     #convertGroup(group, tag) {
-        const first = group[0];
+        const firstBlock = group[0];
 
         // Items already in a list of the other kind: re-type the whole list when the run covers it,
         // otherwise carve the run out into its own list of the wanted kind.
-        if (first.tagName === 'LI') {
-            const source = first.parentElement;
+        if (firstBlock.tagName === 'LI') {
+            const source = firstBlock.parentElement;
 
             if (group.length === source.children.length) {
                 const replacement = document.createElement(tag);
@@ -116,31 +116,31 @@ export class ListFormatter {
                 return replacement.lastElementChild;
             }
 
-            const carved = document.createElement(tag);
-            const trailing = [...source.children].slice([...source.children].indexOf(group[group.length - 1]) + 1);
+            const carvedList = document.createElement(tag);
+            const trailingItems = [...source.children].slice([...source.children].indexOf(group[group.length - 1]) + 1);
 
-            source.after(carved);
+            source.after(carvedList);
             for (const item of group) {
-                carved.appendChild(item);
+                carvedList.appendChild(item);
             }
 
-            if (trailing.length > 0) {
-                const rest = source.cloneNode(false);
-                for (const item of trailing) {
-                    rest.appendChild(item);
+            if (trailingItems.length > 0) {
+                const restList = source.cloneNode(false);
+                for (const item of trailingItems) {
+                    restList.appendChild(item);
                 }
-                carved.after(rest);
+                carvedList.after(restList);
             }
 
             if (source.children.length === 0) {
                 source.remove();
             }
 
-            return carved.lastElementChild;
+            return carvedList.lastElementChild;
         }
 
         const list = document.createElement(tag);
-        first.before(list);
+        firstBlock.before(list);
 
         for (const block of group) {
             const item = document.createElement('li');
@@ -174,12 +174,12 @@ export class ListFormatter {
         let firstBlock = null;
         let lastBlock = null;
 
-        for (const [list, selected] of byList) {
+        for (const [list, selectedItems] of byList) {
             const children = [...list.children];
-            const trailing = children.slice(children.indexOf(selected[selected.length - 1]) + 1);
+            const trailingItems = children.slice(children.indexOf(selectedItems[selectedItems.length - 1]) + 1);
             let anchor = list;
 
-            for (const item of selected) {
+            for (const item of selectedItems) {
                 const paragraph = document.createElement('p');
                 while (item.firstChild) {
                     paragraph.appendChild(item.firstChild);
@@ -198,12 +198,12 @@ export class ListFormatter {
                 lastBlock = paragraph;
             }
 
-            if (trailing.length > 0) {
-                const rest = list.cloneNode(false);
-                for (const item of trailing) {
-                    rest.appendChild(item);
+            if (trailingItems.length > 0) {
+                const restList = list.cloneNode(false);
+                for (const item of trailingItems) {
+                    restList.appendChild(item);
                 }
-                anchor.after(rest);
+                anchor.after(restList);
             }
 
             if (list.children.length === 0) {
@@ -216,17 +216,17 @@ export class ListFormatter {
 
     /** Moves an item into a sublist under the item before it. */
     #nest(item) {
-        const previous = item.previousElementSibling;
-        if (!previous || previous.tagName !== 'LI') {
+        const previousItem = item.previousElementSibling;
+        if (!previousItem || previousItem.tagName !== 'LI') {
             return null;
         }
 
         const kind = item.parentElement.tagName;
-        let sublist = previous.lastElementChild;
+        let sublist = previousItem.lastElementChild;
 
         if (!sublist || sublist.tagName !== kind) {
             sublist = document.createElement(kind);
-            previous.appendChild(sublist);
+            previousItem.appendChild(sublist);
         }
 
         sublist.appendChild(item);
@@ -267,13 +267,13 @@ export class ListFormatter {
 
     /** Adjusts a block's reading-direction-aware indentation, dropping the style entirely at zero. */
     static #stepMargin(block, step) {
-        const current = Number.parseFloat(block.style.marginInlineStart) || 0;
-        const next = Math.max(0, current + step);
+        const currentIndent = Number.parseFloat(block.style.marginInlineStart) || 0;
+        const nextIndent = Math.max(0, currentIndent + step);
 
-        if (next === 0) {
+        if (nextIndent === 0) {
             block.style.removeProperty('margin-inline-start');
         } else {
-            block.style.marginInlineStart = `${next}px`;
+            block.style.marginInlineStart = `${nextIndent}px`;
         }
     }
 }

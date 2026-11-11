@@ -22,7 +22,7 @@ using Forma.Framework.Composer.Plugins;
 var definition = ComposerDefinition.Create(composer => composer
     .AddEditorPlugin<RichTextEditorPlugin>(editor => editor
         .AddFeaturePlugin<BasicFormattingPlugin>()
-        .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRows = 12)
+        .AddFeaturePlugin<TablePlugin, TablePluginOptions>(options => options.MaxRowCount = 12)
         .AddViewPlugin<RichTextPreviewViewPlugin>())
     .TryAddFeaturePlugin<MaximizePlugin>());
 

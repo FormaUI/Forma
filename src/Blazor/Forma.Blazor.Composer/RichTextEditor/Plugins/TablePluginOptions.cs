@@ -4,16 +4,16 @@ namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 public sealed record TablePluginOptions
 {
     /// <summary>The maximum number of rows allowed when creating a table.</summary>
-    public int MaxRows { get; set; } = 20;
+    public int MaxRowCount { get; set; } = 20;
 
     /// <summary>The maximum number of columns allowed when creating a table.</summary>
-    public int MaxColumns { get; set; } = 10;
+    public int MaxColumnCount { get; set; } = 10;
 
     /// <summary>Default number of rows when inserting a new table.</summary>
-    public int DefaultRows { get; set; } = 3;
+    public int DefaultRowCount { get; set; } = 3;
 
     /// <summary>Default number of columns when inserting a new table.</summary>
-    public int DefaultColumns { get; set; } = 3;
+    public int DefaultColumnCount { get; set; } = 3;
 
     /// <summary>Whether a header row is included by default.</summary>
     public bool IncludeHeader { get; set; } = true;

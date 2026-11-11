@@ -27,6 +27,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `FormaPagination.TotalItemCount` was `TotalItems`, and `FormaEmojiPicker.RecentEmojis` and `RecentEmojisChanged`
   were `Recent` and `RecentChanged`, bound as `@bind-RecentEmojis`. A page still passing an old name renders it as an
   attribute of the component's root rather than failing to build.
+- The composer's table counts are named as counts: `TablePluginOptions.MaxRowCount`, `MaxColumnCount`,
+  `DefaultRowCount` and `DefaultColumnCount` were `MaxRows`, `MaxColumns`, `DefaultRows` and `DefaultColumns`;
+  `TableDialogResult.RowCount` and `ColumnCount` were `Rows` and `Columns`; and `FormaComposerTableDialog`'s
+  `MaxRowCount` and `MaxColumnCount` parameters were `MaxRows` and `MaxColumns`. A composer dialog's `ReopeningResult`
+  parameter was `Reopening`.
 - A [`FormaDataGrid`](docs/data-view-design.md#accessibility-keyboard-and-direction) row's box is named for its item,
   "Select Hammer", where the data view's `ItemName` names the items, as the boxes of the list, the cards and the tree
   are; it said "Select Row" in every row. `IDataView` declares `NamesItems`.

@@ -37,7 +37,7 @@
         {
             <FormaComposerLinkDialog Opened="true"
                                      IsAnchor="_isLinkAnchorMode"
-                                     Reopening="_dialog.ExistingResult"
+                                     ReopeningResult="_dialog.ExistingResult"
                                      OnInsert="HandleLinkInsertedAsync"
                                      OnCancel="CloseDialog" />
         }
@@ -52,7 +52,7 @@
         @if (_dialog.Kind == RichTextDialogKind.Video)
         {
             <FormaComposerVideoDialog Opened="true"
-                                      Reopening="_dialog.ExistingResult"
+                                      ReopeningResult="_dialog.ExistingResult"
                                       OnInsert="HandleVideoInsertedAsync"
                                       OnCancel="CloseDialog" />
         }
@@ -60,7 +60,7 @@
         @if (_dialog.Kind == RichTextDialogKind.Image)
         {
             <FormaComposerImageDialog Opened="true"
-                                      Reopening="_dialog.ExistingResult"
+                                      ReopeningResult="_dialog.ExistingResult"
                                       OnInsert="HandleImageInsertedAsync"
                                       OnCancel="CloseDialog" />
         }
@@ -68,7 +68,7 @@
         @if (_dialog.Kind == RichTextDialogKind.Embed)
         {
             <FormaComposerEmbedDialog Opened="true"
-                                      Reopening="_dialog.ExistingResult"
+                                      ReopeningResult="_dialog.ExistingResult"
                                       OnInsert="HandleEmbedInsertedAsync"
                                       OnCancel="CloseDialog" />
         }

@@ -16,7 +16,7 @@ public sealed partial class FormaComposerImageDialog : ComposerDialogBase
 
     /// <inheritdoc />
     private protected override void OnOpen()
-        => (_source, _altText, _caption) = Reopened<ImageDialogResult>() is { } image
+        => (_source, _altText, _caption) = GetReopeningResult<ImageDialogResult>() is { } image
             ? (image.Source, image.AltText, image.Caption)
             : (null, null, null);
 

@@ -96,11 +96,11 @@ public sealed partial class FormaComposerShortcutsDialog : ComposerDialogBase
 
         foreach (var command in KeyBindings.Bindings.GroupBy(binding => binding.Command, StringComparer.Ordinal))
         {
-            var reachable = command.Where(binding => !binding.IsClaimedBy(InputRouterOptions)).ToList();
+            var reachableBindings = command.Where(binding => !binding.IsClaimedBy(InputRouterOptions)).ToList();
 
-            if (reachable.Count > 0 && titles.TryGetValue(command.Key, out var title))
+            if (reachableBindings.Count > 0 && titles.TryGetValue(command.Key, out var title))
             {
-                rows.Add(new ShortcutRow(title, [.. reachable.Select(binding => binding.DisplayKeys)]));
+                rows.Add(new ShortcutRow(title, [.. reachableBindings.Select(binding => binding.DisplayKeys)]));
             }
         }
 

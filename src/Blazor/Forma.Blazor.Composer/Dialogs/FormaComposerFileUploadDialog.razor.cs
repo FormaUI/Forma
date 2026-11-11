@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Components.Forms;
 /// <param name="store">The host's file store, where null offers no upload.</param>
 public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = null) : ComposerDialogBase
 {
-    private static readonly FileUploaderOptions Detailed = FileUploaderOptions.Detailed;
+    private static readonly FileUploaderOptions DetailedOptions = FileUploaderOptions.Detailed;
 
     /// <summary>Which files may be attached.</summary>
     [Parameter] public FileUploadPluginOptions Options { get; set; } = FileUploadPluginOptions.Default;
@@ -26,7 +26,7 @@ public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = nu
     private readonly List<ResourceInfo> _uploadedResources = [];
 
     private static FileUploaderOptions UploaderOptions
-        => Detailed;
+        => DetailedOptions;
 
     /// <summary>The options of the file picker.</summary>
     private FilePickerOptions PickerOptions
@@ -60,8 +60,8 @@ public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = nu
         => Messages.Add(L["\"{Name}\" could not be uploaded.", failure.Name].Value);
 
     // Uploads are held until confirm, since handing them over closes the dialog.
-    private void HandleCompleted(IReadOnlyList<ResourceInfo> uploaded)
-        => _uploadedResources.AddRange(uploaded);
+    private void HandleCompleted(IReadOnlyList<ResourceInfo> uploadedResources)
+        => _uploadedResources.AddRange(uploadedResources);
 
     private async Task HandleConfirmAsync()
     {

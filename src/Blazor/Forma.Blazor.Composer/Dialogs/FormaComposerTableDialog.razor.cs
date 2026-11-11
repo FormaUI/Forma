@@ -5,16 +5,16 @@ using Microsoft.AspNetCore.Components;
 /// <summary>The dialog that collects a table.</summary>
 public sealed partial class FormaComposerTableDialog : ComposerDialogBase
 {
-    private int _rows = 3;
-    private int _columns = 3;
+    private int _rowCount = 3;
+    private int _columnCount = 3;
     private bool _includeHeader = true;
     private string? _caption;
 
     /// <summary>The maximum number of rows.</summary>
-    [Parameter] public int MaxRows { get; set; } = 20;
+    [Parameter] public int MaxRowCount { get; set; } = 20;
 
     /// <summary>The maximum number of columns.</summary>
-    [Parameter] public int MaxColumns { get; set; } = 10;
+    [Parameter] public int MaxColumnCount { get; set; } = 10;
 
     /// <summary>Callback invoked with the confirmed table.</summary>
     [Parameter] public EventCallback<TableDialogResult> OnInsert { get; set; }
@@ -23,8 +23,8 @@ public sealed partial class FormaComposerTableDialog : ComposerDialogBase
     {
         var result = new TableDialogResult
         {
-            Rows = Math.Clamp(_rows, 1, MaxRows),
-            Columns = Math.Clamp(_columns, 1, MaxColumns),
+            RowCount = Math.Clamp(_rowCount, 1, MaxRowCount),
+            ColumnCount = Math.Clamp(_columnCount, 1, MaxColumnCount),
             IncludeHeader = _includeHeader,
             Caption = _caption,
         };

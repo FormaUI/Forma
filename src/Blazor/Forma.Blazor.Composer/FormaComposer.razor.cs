@@ -134,11 +134,11 @@ public sealed partial class FormaComposer(
                 return null;
             }
 
-            var built = BuildComposer();
+            var builtContext = BuildComposer();
 
-            if (built != _context)
+            if (builtContext != _context)
             {
-                _context = built;
+                _context = builtContext;
             }
 
             return _context;
@@ -242,14 +242,14 @@ public sealed partial class FormaComposer(
 
     // The attach dialog's options, from the file upload plugin in play.
     private FileUploadPluginOptions _attachOptions = FileUploadPluginOptions.Default;
-    private async Task HandleAttachedAsync(IReadOnlyList<ResourceInfo> attached)
+    private async Task HandleAttachedAsync(IReadOnlyList<ResourceInfo> attachedResources)
     {
         _isAttachOpen = false;
 
         // The dialog hands back everything it has uploaded, which replaces any earlier copy of the same attachment.
-        var kept = CurrentDocument.Attachments.Where(held => !attached.Contains(held)).ToList();
+        var keptAttachments = CurrentDocument.Attachments.Where(held => !attachedResources.Contains(held)).ToList();
 
-        await HandleDocumentChangedAsync(CurrentDocument with { Attachments = [.. kept, .. attached] });
+        await HandleDocumentChangedAsync(CurrentDocument with { Attachments = [.. keptAttachments, .. attachedResources] });
     }
 
     private async Task LoadPluginsAsync()
@@ -365,12 +365,12 @@ public sealed partial class FormaComposer(
 
         await InvokeAsync(async () =>
         {
-            if (!await SettleEditorAsync() || Composer is not { } settled)
+            if (!await SettleEditorAsync() || Composer is not { } settledComposer)
             {
                 return;
             }
 
-            if (await _commandRegistry.ExecuteAsync(command, settled, this) is ComposerCommandResult.Plugin)
+            if (await _commandRegistry.ExecuteAsync(command, settledComposer, this) is ComposerCommandResult.Plugin)
             {
                 StateHasChanged();
             }
@@ -432,9 +432,9 @@ public sealed partial class FormaComposer(
             return false;
         }
 
-        var converted = new ComposerDocument(format, conversion.Content ?? string.Empty);
-        _history.Record(converted, _selection);
-        CurrentValue = converted;
+        var convertedDocument = new ComposerDocument(format, conversion.Content ?? string.Empty);
+        _history.Record(convertedDocument, _selection);
+        CurrentValue = convertedDocument;
 
         return true;
     }
@@ -516,9 +516,9 @@ public sealed partial class FormaComposer(
     {
         get
         {
-            var refused = DialogBody?.Messages ?? [];
+            var refusedMessages = DialogBody?.Messages ?? [];
 
-            return _dialogRefusal is null ? refused : [.. refused, _dialogRefusal];
+            return _dialogRefusal is null ? refusedMessages : [.. refusedMessages, _dialogRefusal];
         }
     }
 
@@ -575,14 +575,14 @@ public sealed partial class FormaComposer(
 
         if (insertion is not null)
         {
-            var inserted = await ((IComposerInteraction)this).TryInsertAsync(insertion);
+            var isInserted = await ((IComposerInteraction)this).TryInsertAsync(insertion);
 
             if (!ReferenceEquals(_dialog, dialog))
             {
                 return;
             }
 
-            if (inserted)
+            if (isInserted)
             {
                 CloseDialog();
             }
@@ -613,10 +613,10 @@ public sealed partial class FormaComposer(
     {
         ArgumentNullException.ThrowIfNull(document);
 
-        var sanitized = Sanitize(document);
+        var sanitizedDocument = Sanitize(document);
 
-        _history.Record(sanitized, _selection);
-        CurrentValue = sanitized;
+        _history.Record(sanitizedDocument, _selection);
+        CurrentValue = sanitizedDocument;
         StateHasChanged();
 
         return Task.CompletedTask;
@@ -654,12 +654,12 @@ public sealed partial class FormaComposer(
             return;
         }
 
-        var sanitized = Sanitize(Value);
-        _sanitizedValue = sanitized;
+        var sanitizedValue = Sanitize(Value);
+        _sanitizedValue = sanitizedValue;
 
-        if (sanitized != Value)
+        if (sanitizedValue != Value)
         {
-            CurrentValue = sanitized;
+            CurrentValue = sanitizedValue;
         }
     }
 
@@ -671,11 +671,11 @@ public sealed partial class FormaComposer(
 
     private Task HandleUndoAsync()
     {
-        var undone = _history.Undo();
+        var undoneDocument = _history.Undo();
 
-        if (undone is not null)
+        if (undoneDocument is not null)
         {
-            CurrentValue = undone;
+            CurrentValue = undoneDocument;
             StateHasChanged();
         }
 
@@ -684,11 +684,11 @@ public sealed partial class FormaComposer(
 
     private Task HandleRedoAsync()
     {
-        var redone = _history.Redo();
+        var redoneDocument = _history.Redo();
 
-        if (redone is not null)
+        if (redoneDocument is not null)
         {
-            CurrentValue = redone;
+            CurrentValue = redoneDocument;
             StateHasChanged();
         }
 

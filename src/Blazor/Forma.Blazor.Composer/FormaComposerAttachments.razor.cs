@@ -38,8 +38,8 @@ public sealed partial class FormaComposerAttachments : FormaComponentBase
             return;
         }
 
-        var remaining = Attachments.Where(held => !ReferenceEquals(held, attachment)).ToList();
+        var remainingAttachments = Attachments.Where(held => !ReferenceEquals(held, attachment)).ToList();
 
-        await Interaction.ChangeDocumentAsync(Composer.Document with { Attachments = remaining });
+        await Interaction.ChangeDocumentAsync(Composer.Document with { Attachments = remainingAttachments });
     }
 }

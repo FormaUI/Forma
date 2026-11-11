@@ -5,8 +5,8 @@
 
 export class SelectionMemory {
     #canvas;
-    #saved = null;
-    #frozen = null;
+    #savedRange = null;
+    #frozenRange = null;
 
     constructor(canvas) {
         this.#canvas = canvas;
@@ -23,7 +23,7 @@ export class SelectionMemory {
         const element = anchor?.nodeType === Node.TEXT_NODE ? anchor.parentElement : anchor;
 
         if (element && this.#canvas.contains(element)) {
-            this.#saved = range.cloneRange();
+            this.#savedRange = range.cloneRange();
         }
     }
 
@@ -33,20 +33,20 @@ export class SelectionMemory {
      * what the insert that follows consumes.
      */
     freeze() {
-        this.#frozen = this.#saved ? this.#saved.cloneRange() : null;
+        this.#frozenRange = this.#savedRange ? this.#savedRange.cloneRange() : null;
 
-        return this.#frozen;
+        return this.#frozenRange;
     }
 
     /** The range the next edit will land on, without consuming it. */
     peek() {
-        return this.#frozen ?? this.#saved;
+        return this.#frozenRange ?? this.#savedRange;
     }
 
     /** Makes the remembered selection current again, consuming any frozen copy. */
     restore() {
-        const range = this.#frozen ?? this.#saved;
-        this.#frozen = null;
+        const range = this.#frozenRange ?? this.#savedRange;
+        this.#frozenRange = null;
 
         if (!range) {
             return;
@@ -61,7 +61,7 @@ export class SelectionMemory {
 
     /** Forgets the remembered and frozen selections. */
     forget() {
-        this.#saved = null;
-        this.#frozen = null;
+        this.#savedRange = null;
+        this.#frozenRange = null;
     }
 }

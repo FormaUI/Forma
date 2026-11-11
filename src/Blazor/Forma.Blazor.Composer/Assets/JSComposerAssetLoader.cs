@@ -21,13 +21,13 @@ internal sealed class JSComposerAssetLoader(IJSEnvironment js) : IComposerAssetL
         }
 
         // A font is declared through a stylesheet.
-        var loaded = asset.Kind switch
+        var isLoaded = asset.Kind switch
         {
             ComposerAssetKind.Module => await _asset.LoadModuleAsync(asset.Url),
             _ => await _asset.LoadStyleAsync(asset.Url),
         };
 
-        if (loaded)
+        if (isLoaded)
         {
             _loadedUrls.Add(asset.Url);
         }

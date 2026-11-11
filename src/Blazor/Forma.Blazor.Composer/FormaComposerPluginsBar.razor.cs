@@ -49,29 +49,29 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
 
     private List<ToolbarItem> SplitVisible()
     {
-        var remaining = InlineLimit;
-        List<ToolbarItem> visible = [];
+        var remainingCount = InlineLimit;
+        List<ToolbarItem> visibleItems = [];
 
         foreach (var item in Items)
         {
-            if (remaining <= 0)
+            if (remainingCount <= 0)
             {
                 break;
             }
 
             if (item is ToolbarGroup group)
             {
-                visible.Add(group.Items.Count <= remaining ? group : group with { Items = [.. group.Items.Take(remaining)] });
-                remaining -= group.Items.Count;
+                visibleItems.Add(group.Items.Count <= remainingCount ? group : group with { Items = [.. group.Items.Take(remainingCount)] });
+                remainingCount -= group.Items.Count;
             }
             else
             {
-                visible.Add(item);
-                remaining -= 1;
+                visibleItems.Add(item);
+                remainingCount -= 1;
             }
         }
 
-        return visible;
+        return visibleItems;
     }
 
     private static IEnumerable<ToolbarItem> GetLeaves(ToolbarItem item)
