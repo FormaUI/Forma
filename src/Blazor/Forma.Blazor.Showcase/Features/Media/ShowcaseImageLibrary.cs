@@ -24,7 +24,8 @@ internal sealed class ShowcaseImageLibrary : ICatalogProvider
     /// <inheritdoc />
     public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
-        IEnumerable<ResourceInfo> matching = Images;
+        // The kinds asked for apply before the slice, so its positions and total count only those.
+        IEnumerable<ResourceInfo> matching = Images.Where(image => query.AsksFor(image.GetKind()));
 
         if (query.Search is { Length: > 0 } search)
         {

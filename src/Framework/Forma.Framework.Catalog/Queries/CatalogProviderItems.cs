@@ -91,8 +91,7 @@ public sealed class CatalogProviderItems : IDisposable
             _listedCount = page.ListedCount;
             GroupSizes = page.GroupSizes ?? (append ? GroupSizes : null);
 
-            // A slice that read nothing ends the run, so a provider that makes no progress is never asked again.
-            HasMore = read > 0 && (page.HasMore ?? (page.TotalCount is { } total ? _readCount < total : read >= query.Take));
+            HasMore = page.IsFollowed(query, _readCount);
         }
         catch (OperationCanceledException)
         {

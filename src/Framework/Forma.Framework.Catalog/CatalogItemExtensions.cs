@@ -14,12 +14,26 @@ public static class CatalogItemExtensions
         return item switch
         {
             ICatalogFolderItem => CatalogItemKind.Folder,
-            { Resource: ImageResourceInfo } => CatalogItemKind.Image,
-            { Resource: VideoResourceInfo } => CatalogItemKind.Video,
-            { Resource: AudioResourceInfo } => CatalogItemKind.Audio,
-            { Resource: ArchiveResourceInfo } => CatalogItemKind.Archive,
-            { Resource: DocumentResourceInfo } => CatalogItemKind.Document,
-            { Resource: FileResourceInfo } => CatalogItemKind.File,
+            { Resource: { } resource } => resource.GetKind(),
+            _ => CatalogItemKind.Unknown
+        };
+    }
+
+    /// <summary>The kind of thing the resource is, as a catalog item.</summary>
+    /// <param name="resource">The resource.</param>
+    public static CatalogItemKind GetKind(this ResourceInfo resource)
+    {
+        ArgumentNullException.ThrowIfNull(resource);
+
+        return resource switch
+        {
+            FolderResourceInfo => CatalogItemKind.Folder,
+            ImageResourceInfo => CatalogItemKind.Image,
+            VideoResourceInfo => CatalogItemKind.Video,
+            AudioResourceInfo => CatalogItemKind.Audio,
+            ArchiveResourceInfo => CatalogItemKind.Archive,
+            DocumentResourceInfo => CatalogItemKind.Document,
+            FileResourceInfo => CatalogItemKind.File,
             _ => CatalogItemKind.Unknown
         };
     }

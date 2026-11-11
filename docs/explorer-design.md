@@ -38,9 +38,11 @@ callback, and an upload goes into the host's `IFileStore`.
   `ItemsProvider` answers one `CatalogQuery` at a time and the explorer holds only
   the items it is showing, so a collection far too large to enumerate stays browsable.
 - **The query names its location.** The folder whose files it asks for, captured when the
-  request is issued, null for All Media, with the slice, the search box and the sort, so a
-  provider answers from the query alone, whichever folder the host has moved to by the time
-  it answers. Files the sort ties stand in the ascending ordinal order
+  request is issued, null for All Media, with the slice, the search box, the sort and the
+  kinds of item it asks for, so a provider answers from the query alone, whichever folder
+  the host has moved to by the time it answers. The explorer asks a provider for the kinds a
+  file can be, its folders coming from the folders the host gives, so a provider that also
+  lists folders answers them once, to whoever asks for folders. Files the sort ties stand in the ascending ordinal order
   of their keys in either direction, a rule held items and providers share, so neighboring
   slices neither repeat nor skip a file. The provider supplies any other filter the host
   applies itself. A page's total is optional, so a store that cannot count cheaply leaves it

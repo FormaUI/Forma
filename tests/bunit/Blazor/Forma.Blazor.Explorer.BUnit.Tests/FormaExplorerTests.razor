@@ -2715,9 +2715,11 @@
             // Act
             var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" PageSize="10" />);
 
-            // Assert
+            // Assert - the files asked for, every kind but a folder
+            var query = Assert.Single(provider.Queries);
             Assert.Equal(10, cut.FindAll(".forma-data-card").Count);
-            Assert.Equal(new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending), Assert.Single(provider.Queries));
+            Assert.Equal(new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending), query with { Kinds = null });
+            Assert.Equal(Enum.GetValues<CatalogItemKind>().Where(kind => kind != CatalogItemKind.Folder).Order(), query.Kinds!.Order());
             Assert.NotNull(cut.Find(".forma-explorer-footer nav.forma-pagination"));
         }
 

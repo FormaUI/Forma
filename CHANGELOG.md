@@ -9,6 +9,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- A [`CatalogQuery`](src/Framework/Forma.Framework.Catalog/README.md#providers) names the kinds of item it asks for in
+  `Kinds`, null asking for every kind and an empty set for none, and `AsksFor` answers for one. A provider applies them
+  before it pages, so its slice, positions and counts describe those kinds alone; a provider that ignores them answers
+  wrongly once anything asks for one kind alone; `GetKind` answers a resource's kind as it does an item's.
+  `ReadAllAsync` reads every item a query asks for, a slice at a time.
+  [`FormaExplorer`](docs/explorer-design.md#decision-summary) asks its `ItemsProvider` for files alone, its folders
+  coming from `Folders`; a folder a provider listed among its files was shown among them.
 - Forma's packages build against .NET 11.0.0 and depend on its released packages, `11.0.0` in place of the release
   candidate's `11.0.0-rc.3.26522.148`, whose ASP.NET Core packages carry published security advisories, and of
   `11.0.0-rc.2.26505.5` for the MAUI packages. A host builds with the .NET 11.0.100 SDK.

@@ -49,6 +49,59 @@ public sealed class CatalogListProviderTests
             () => Assert.Equal(2, page.ListedCount));
     }
 
+    // Folders and files whose names interleave, so a slice of either kind crosses the other.
+    private static ICatalogItem[] CreateMixedItems()
+        =>
+        [
+            CatalogItem.ForFolder(new FolderResourceInfo("/media/a") { Name = "a" }),
+            CatalogItem.For(new ImageResourceInfo("/media/b.png") { Name = "b.png" }),
+            CatalogItem.ForFolder(new FolderResourceInfo("/media/c") { Name = "c" }),
+            CatalogItem.For(new DocumentResourceInfo("/media/d.pdf") { Name = "d.pdf" }),
+            CatalogItem.ForFolder(new FolderResourceInfo("/media/e") { Name = "e" }),
+            CatalogItem.For(new ImageResourceInfo("/media/f.png") { Name = "f.png" }),
+        ];
+
+    [Fact]
+    public async Task Should_apply_the_kinds_asked_for_before_slicing_across_mixed_folders_and_files()
+    {
+        // Arrange
+        var provider = CreateProvider(CreateMixedItems());
+        var folders = new CatalogQuery(null, 0, 2, null, CatalogSortField.Name, CatalogSortDirection.Ascending) { Kinds = new HashSet<CatalogItemKind> { CatalogItemKind.Folder } };
+        var files = folders with { Kinds = new HashSet<CatalogItemKind> { CatalogItemKind.Image, CatalogItemKind.Document } };
+        var token = TestContext.Current.CancellationToken;
+
+        // Act - two slices of two of each kind
+        var firstFolders = await provider.GetItemsAsync(folders, token);
+        var lastFolders = await provider.GetItemsAsync(folders with { Skip = 2 }, token);
+        var firstFiles = await provider.GetItemsAsync(files, token);
+        var lastFiles = await provider.GetItemsAsync(files with { Skip = 2 }, token);
+
+        // Assert - each slice and its counts describe the kinds asked for alone
+        Assert.Multiple(
+            () => Assert.Equal(["a", "c"], firstFolders.Items.Select(item => item.Name)),
+            () => Assert.Equal(["e"], lastFolders.Items.Select(item => item.Name)),
+            () => Assert.Equal((3, 3), (firstFolders.TotalCount, firstFolders.ListedCount)),
+            () => Assert.Equal(["b.png", "d.pdf"], firstFiles.Items.Select(item => item.Name)),
+            () => Assert.Equal(["f.png"], lastFiles.Items.Select(item => item.Name)),
+            () => Assert.Equal((3, 3), (lastFiles.TotalCount, lastFiles.ListedCount)));
+    }
+
+    [Fact]
+    public async Task Should_answer_no_item_for_an_empty_set_of_kinds()
+    {
+        // Arrange
+        var provider = CreateProvider(CreateMixedItems());
+        var query = new CatalogQuery(null, 0, 10, null, CatalogSortField.Name, CatalogSortDirection.Ascending) { Kinds = new HashSet<CatalogItemKind>() };
+
+        // Act
+        var page = await provider.GetItemsAsync(query, TestContext.Current.CancellationToken);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Empty(page.Items),
+            () => Assert.Equal(0, page.TotalCount));
+    }
+
     [Fact]
     public async Task Should_answer_the_group_sizes_only_when_asked()
     {

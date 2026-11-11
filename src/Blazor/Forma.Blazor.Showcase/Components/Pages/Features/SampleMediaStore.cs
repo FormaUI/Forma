@@ -33,6 +33,9 @@ public sealed class SampleMediaStore(IReadOnlyList<SampleResource> resources, Ti
             ? _resources
             : _resources.Where(resource => resource.Folder == folder);
 
+        // The kinds asked for apply before the slice, so its positions and total count only those.
+        matching = matching.Where(resource => query.AsksFor(resource.Resource.GetKind()));
+
         if (query.Search is { Length: > 0 } search)
         {
             matching = matching.Where(resource => resource.Resource.Name.Contains(search, StringComparison.OrdinalIgnoreCase));

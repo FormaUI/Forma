@@ -13,6 +13,7 @@ public sealed class CatalogCollectionView
 
     private IReadOnlyList<ICatalogItem> _source = [];
     private CatalogResourceFilter? _filter;
+    private IReadOnlySet<CatalogItemKind>? _kinds;
     private string _searchQuery = string.Empty;
     private CatalogSortField _sortField = CatalogSortField.Name;
     private CatalogSortDirection _sortDirection = CatalogSortDirection.Ascending;
@@ -63,6 +64,20 @@ public sealed class CatalogCollectionView
             if (!ReferenceEquals(_filter, value))
             {
                 _filter = value;
+                _matchingItems = null;
+            }
+        }
+    }
+
+    /// <summary>The kinds of item that match, where null matches every kind and an empty set none.</summary>
+    public IReadOnlySet<CatalogItemKind>? Kinds
+    {
+        get => _kinds;
+        set
+        {
+            if (!ReferenceEquals(_kinds, value))
+            {
+                _kinds = value;
                 _matchingItems = null;
             }
         }
@@ -206,6 +221,11 @@ public sealed class CatalogCollectionView
             }
 
             IEnumerable<ICatalogItem> query = _source.Where(item => item.Visibility != CatalogItemVisibility.Hidden);
+
+            if (_kinds is { } kinds)
+            {
+                query = query.Where(item => kinds.Contains(item.GetKind()));
+            }
 
             if (_filter is { } accepted)
             {

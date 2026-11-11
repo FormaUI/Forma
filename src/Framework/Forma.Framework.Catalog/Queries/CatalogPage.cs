@@ -19,4 +19,13 @@ public sealed record CatalogPage(IReadOnlyList<ICatalogItem> Items, int? TotalCo
 
     /// <summary>How many items each group of the query's grouping holds across the whole query, in the order the groups stand.</summary>
     public IReadOnlyList<CatalogGroupSize>? GroupSizes { get; init; }
+
+    // Whether positions follow the slice that answered the query, where the run has read the positions before it and this slice's. A
+    // slice that read nothing ends the run, so a provider that makes no progress is never asked again.
+    internal bool IsFollowed(CatalogQuery query, int runReadCount)
+    {
+        var read = ReadCount ?? Items.Count;
+
+        return read > 0 && (HasMore ?? (TotalCount is { } total ? runReadCount < total : read >= query.Take));
+    }
 }

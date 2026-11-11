@@ -1,5 +1,6 @@
 namespace Forma.Framework.Explorer.Content;
 
+using System.Collections.Frozen;
 using System.Globalization;
 
 using Forma.Framework.Catalog;
@@ -13,7 +14,10 @@ using Forma.Framework.Catalog.Queries;
 /// slice's positions split at how many folders match: those before it are folders, and the rest ask the file provider
 /// from its first position, so a slice of folders alone asks the file provider nothing. Under a grouping the folders fall
 /// in the grouping's leading group, whose size the folders give. The file provider's total, listed count and group sizes
-/// are kept for the query they answered, so a slice of folders alone reports them while its query stays the same.
+/// are kept for the query they answered, so a slice of folders alone reports them while its query stays the same. The
+/// query's kinds decide what it lists: folders where it asks for them, and from the file provider the kinds it asks for
+/// among those a file can be, which the file provider applies before it pages; an item of another kind in its answer is
+/// left out of the slice.
 /// </remarks>
 /// <param name="folders">The folder tree the locations stand in.</param>
 /// <param name="files">The provider of a location's files.</param>
@@ -26,15 +30,39 @@ public sealed class ExplorerContentProvider(CatalogFolderTree folders, ICatalogP
     private CatalogQuery? _filesQuery;
     private CatalogPage? _filesPage;
 
+    // The kinds a file can be, every kind but a folder, named one by one so the file provider is asked for the kinds known here.
+    private static readonly FrozenSet<CatalogItemKind> FileKinds = new[]
+    {
+        CatalogItemKind.Image, CatalogItemKind.Video, CatalogItemKind.Audio, CatalogItemKind.Archive,
+        CatalogItemKind.Document, CatalogItemKind.File, CatalogItemKind.Unknown,
+    }.ToFrozenSet();
+
+    // The file kinds last derived, kept for the kinds they were derived from, so one query's file queries carry the same set.
+    private (IReadOnlySet<CatalogItemKind> Asked, FrozenSet<CatalogItemKind> Files)? _fileKinds;
+
     /// <inheritdoc />
     public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
-        var matchingFolders = GetFolders(query);
+        IReadOnlyList<ICatalogItem> matchingFolders = query.AsksFor(CatalogItemKind.Folder) ? GetFolders(query) : [];
         var folderCount = matchingFolders.Count;
         List<ICatalogItem> folderSlice = [.. matchingFolders.Skip(query.Skip).Take(query.Take)];
         var fileTake = query.Take - folderSlice.Count;
         var folderSizes = query.IncludesGroupSizes && query.Grouping is { } grouping ? grouping.CountGroups(matchingFolders) : null;
-        var filesQuery = query with { Skip = Math.Max(0, query.Skip - folderCount), Take = Math.Max(0, fileTake) };
+        var fileKinds = GetFileKinds(query.Kinds);
+
+        // A query asking for no kind a file can be lists the folders alone, the file provider never asked.
+        if (fileKinds.Count == 0)
+        {
+            return new CatalogPage(folderSlice, folderCount)
+            {
+                ReadCount = folderSlice.Count,
+                HasMore = query.Skip + folderSlice.Count < folderCount,
+                ListedCount = folderCount,
+                GroupSizes = folderSizes,
+            };
+        }
+
+        var filesQuery = query with { Skip = Math.Max(0, query.Skip - folderCount), Take = Math.Max(0, fileTake), Kinds = fileKinds };
 
         if (fileTake <= 0)
         {
@@ -54,13 +82,30 @@ public sealed class ExplorerContentProvider(CatalogFolderTree folders, ICatalogP
         _filesQuery = filesQuery;
         _filesPage = page;
 
-        return new CatalogPage([.. folderSlice, .. page.Items], page.TotalCount + folderCount)
+        return new CatalogPage([.. folderSlice, .. page.Items.Where(item => fileKinds.Contains(item.GetKind()))], page.TotalCount + folderCount)
         {
             ReadCount = folderSlice.Count + (page.ReadCount ?? page.Items.Count),
             HasMore = page.HasMore,
             ListedCount = page.ListedCount + folderCount,
             GroupSizes = Merge(folderSizes, page.GroupSizes)
         };
+    }
+
+    // The kinds a file can be that the query asks for.
+    private FrozenSet<CatalogItemKind> GetFileKinds(IReadOnlySet<CatalogItemKind>? asked)
+    {
+        if (asked is null)
+        {
+            return FileKinds;
+        }
+
+        if (_fileKinds is not { } known || !ReferenceEquals(known.Asked, asked))
+        {
+            known = (asked, asked.Where(FileKinds.Contains).ToFrozenSet());
+            _fileKinds = known;
+        }
+
+        return known.Files;
     }
 
     // The location's listed folders that match the query's search, in its sort.

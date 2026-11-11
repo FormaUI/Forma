@@ -133,7 +133,8 @@ Exactly one of two parameters supplies the items:
 
 With a provider, `TotalCount` and `TotalBytes` give the size of the whole library, which the
 constraints are measured against, and the explorer reads its items again after a rename, deletion,
-drop or upload. `_provider` below is an `ICatalogProvider` such as the one the catalog's README
+drop or upload. The explorer asks the provider for files alone, through the query's `Kinds`, and
+lists the `Folders` the host gives before them. `_provider` below is an `ICatalogProvider` such as the one the catalog's README
 writes:
 
 ```razor

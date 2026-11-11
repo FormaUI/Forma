@@ -100,6 +100,14 @@ which is the only count a surface shows as how many items there are. A null `Tot
 store that cannot count cheaply: `HasMore` then says whether another slice follows, and without it a
 slice that read fewer positions than `Take` ends the collection.
 
+A provider that lists folders lists them as `ICatalogFolderItem`s whose `ParentKey` places them, the
+folder key of every item in them; a flat catalog lists none. The query's `Kinds` names the kinds of
+item it asks for, null asking for every kind and an empty set for none, and `AsksFor` answers for one.
+A provider applies them before it pages, so the slice, `ReadCount`, `TotalCount`, `ListedCount` and
+`HasMore` all describe the items of those kinds alone: a surface asks a provider for its folders
+alone, or for its files alone, and pages through either. A caller can leave an item of another kind
+out of an answer, but its counts and positions stay wrong for a provider that ignored the kinds.
+
 ```csharp
 using Forma.Framework.Catalog;
 using Forma.Framework.Catalog.Queries;
@@ -109,11 +117,28 @@ public sealed class PhotoItemsProvider(IPhotoStore store) : ICatalogProvider
     public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
     {
         var photos = await store.ListAsync(
-            query.FolderKey, query.Search, query.SortBy, query.Direction, query.Skip, query.Take, cancellationToken);
+            query.FolderKey,
+            query.AsksFor(CatalogItemKind.Folder),
+            query.AsksFor(CatalogItemKind.Image),
+            query.Search, query.SortBy, query.Direction, query.Skip, query.Take, cancellationToken);
 
         return new CatalogPage([.. photos.Select(photo => new PhotoItem(photo))], TotalCount: null);
     }
 }
+```
+
+`ReadAllAsync` reads every item a query asks for, a slice of `Take` positions at a time from `Skip`
+on, moving past a slice that holds no item by the positions it read and stopping where a slice says
+none follow, which suits a surface that needs a whole list, such as every folder, at the cost of
+reading all of it:
+
+```csharp
+var everyFolder = new CatalogQuery(null, 0, 200, null, CatalogSortField.Name, CatalogSortDirection.Ascending)
+{
+    Kinds = new HashSet<CatalogItemKind> { CatalogItemKind.Folder },
+};
+
+var folders = await provider.ReadAllAsync(everyFolder, cancellationToken);
 ```
 
 A query's `Grouping` gathers the items into groups that order them before the sort does, so a group

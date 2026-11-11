@@ -228,4 +228,111 @@ public sealed class ExplorerContentProviderTests
                 () => Assert.Equal([new CatalogGroupSize("Kind.Folder", 3), new CatalogGroupSize("NameAToH", 4)], first.GroupSizes));
         }
     }
+
+    public sealed class Kinds
+    {
+        private static readonly HashSet<CatalogItemKind> FolderKinds = [CatalogItemKind.Folder];
+
+        private static readonly HashSet<CatalogItemKind> ImageKinds = [CatalogItemKind.Image];
+
+        [Fact]
+        public async Task Should_list_the_folders_alone_and_ask_the_file_provider_nothing_for_folders_asked_for_alone()
+        {
+            // Arrange
+            var files = new RecordingFiles(CreateFiles(4));
+            var provider = new ExplorerContentProvider(new CatalogFolderTree(CreateFolders(3)), files);
+
+            // Act - a page of two, then the rest
+            var first = await GetAsync(provider, CreateQuery(0, 2) with { Kinds = FolderKinds });
+            var last = await GetAsync(provider, CreateQuery(2, 2) with { Kinds = FolderKinds });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Folder 01", "Folder 02"], first.Items.Select(item => item.Name)),
+                () => Assert.Equal((3, 3, 2, true), (first.TotalCount, first.ListedCount, first.ReadCount, first.HasMore)),
+                () => Assert.Equal(["Folder 03"], last.Items.Select(item => item.Name)),
+                () => Assert.False(last.HasMore),
+                () => Assert.Empty(files.Queries));
+        }
+
+        [Fact]
+        public async Task Should_list_no_folders_and_ask_the_file_provider_for_the_kinds_asked_for_from_its_first_position()
+        {
+            // Arrange
+            var files = new RecordingFiles(CreateFiles(4));
+            var provider = new ExplorerContentProvider(new CatalogFolderTree(CreateFolders(3)), files);
+
+            // Act
+            var page = await GetAsync(provider, CreateQuery(0, 2) with { Kinds = ImageKinds });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["file-01.png", "file-02.png"], page.Items.Select(item => item.Name)),
+                () => Assert.Equal(4, page.TotalCount),
+                () => Assert.Equal((0, 2), (Assert.Single(files.Queries).Skip, files.Queries[0].Take)),
+                () => Assert.Equal(ImageKinds, files.Queries[0].Kinds));
+        }
+
+        [Fact]
+        public async Task Should_ask_the_file_provider_for_every_kind_a_file_can_be_where_the_query_names_no_kinds()
+        {
+            // Arrange
+            var files = new RecordingFiles(CreateFiles(2));
+            var provider = new ExplorerContentProvider(new CatalogFolderTree(CreateFolders(1)), files);
+
+            // Act
+            await GetAsync(provider, CreateQuery(0, 10));
+
+            // Assert
+            Assert.Equal(
+                Enum.GetValues<CatalogItemKind>().Where(kind => kind != CatalogItemKind.Folder).Order(),
+                Assert.Single(files.Queries).Kinds!.Order());
+        }
+
+        [Fact]
+        public async Task Should_cross_from_the_folders_to_the_files_once_across_a_file_provider_that_also_lists_folders()
+        {
+            // Arrange - the file provider's own list mixes folders in among its files, and pages of two cross both boundaries
+            var listed = new List<ICatalogItem>();
+            var heldFolders = CreateFolders(3);
+            var otherFiles = CreateFiles(3);
+            listed.AddRange([otherFiles[0], heldFolders[0], otherFiles[1], heldFolders[1], otherFiles[2]]);
+            var provider = new ExplorerContentProvider(new CatalogFolderTree(heldFolders), new RecordingFiles(listed));
+
+            // Act - every page in turn
+            List<ICatalogItem> items = [];
+            List<int?> totals = [];
+
+            for (var skip = 0; skip < 8; skip += 2)
+            {
+                var page = await GetAsync(provider, CreateQuery(skip, 2));
+                items.AddRange(page.Items);
+                totals.Add(page.TotalCount);
+            }
+
+            // Assert - the held folders once, first, then the files alone, each page counting six
+            Assert.Multiple(
+                () => Assert.Equal(["Folder 01", "Folder 02", "Folder 03", "file-01.png", "file-02.png", "file-03.png"], items.Select(item => item.Name)),
+                () => Assert.All(totals.Skip(1).Take(2), total => Assert.Equal(6, total)));
+        }
+
+        [Fact]
+        public async Task Should_leave_an_item_of_a_kind_not_asked_for_out_of_a_file_provider_s_answer()
+        {
+            // Arrange - a provider that ignores the kinds it is asked for
+            var provider = new ExplorerContentProvider(new CatalogFolderTree([]), new IgnoringKinds([.. CreateFolders(1), .. CreateFiles(1)]));
+
+            // Act
+            var page = await GetAsync(provider, CreateQuery(0, 10));
+
+            // Assert
+            Assert.Equal(["file-01.png"], page.Items.Select(item => item.Name));
+        }
+
+        private sealed class IgnoringKinds(IReadOnlyList<ICatalogItem> items) : ICatalogProvider
+        {
+            public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
+                => ValueTask.FromResult(new CatalogPage(items, items.Count));
+        }
+    }
 }
