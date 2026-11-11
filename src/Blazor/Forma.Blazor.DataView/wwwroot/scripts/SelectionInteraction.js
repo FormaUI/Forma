@@ -200,6 +200,8 @@ class SelectionInteraction {
     #stopWaiting = null;
     #listenerAbort = new AbortController();
     #heldMarker = null;
+    /** The element inside the list holding the focus, while the list holds it. */
+    #focusedElement = null;
     #readerMoved = false;
     #moveStart = null;
     #itemRootSelector;
@@ -288,7 +290,10 @@ class SelectionInteraction {
         // has moved the focus, or at its release where it raises no click, and a press also at its cancellation.
         const signal = this.#listenerAbort.signal;
         const ownerDocument = target.ownerDocument;
-        target.addEventListener('focusin', event => this.#hold(this.#focusedMarker(event)), { signal });
+        target.addEventListener('focusin', event => {
+            this.#focusedElement = event.target;
+            this.#hold(this.#focusedMarker(event));
+        }, { signal });
 
         // Wherever the keys move, a marker taking the focus becomes the tab stop, and every marker a render draws joins the rest.
         if (moves) {
@@ -333,12 +338,27 @@ class SelectionInteraction {
             }
         }, { capture: true, signal });
         target.addEventListener('focusout', event => {
-            const heldMarker = this.#heldMarker;
+            if (event.relatedTarget !== null) {
+                if (!target.contains(event.relatedTarget)) {
+                    this.#focusedElement = null;
+                }
 
-            if (event.relatedTarget === null && heldMarker && !this.#readerMoved) {
-                requestAnimationFrame(() => this.#restore(heldMarker));
+                return;
             }
+
+            this.#focusedElement = null;
+            this.#restoreLater();
         }, { signal });
+
+        // WebKit drops the focus of an element taken away without a focusout, so a render removing the element holding it is seen here.
+        const removal = new MutationObserver(() => {
+            if (this.#focusedElement !== null && !this.#focusedElement.isConnected) {
+                this.#focusedElement = null;
+                this.#restoreLater();
+            }
+        });
+        removal.observe(target, { childList: true, subtree: true });
+        signal.addEventListener('abort', () => removal.disconnect());
 
         if (this.#actionsSelector) {
             target.addEventListener('focusin', event => this.#returnFromActions(event), { signal });
@@ -807,6 +827,15 @@ class SelectionInteraction {
         const activeElement = this.#target.ownerDocument.activeElement;
 
         return !activeElement || activeElement === this.#target.ownerDocument.body;
+    }
+
+    // A focus that fell to nothing while the reader made no move is taken back once the render that dropped it has finished.
+    #restoreLater() {
+        const heldMarker = this.#heldMarker;
+
+        if (heldMarker && !this.#readerMoved) {
+            requestAnimationFrame(() => this.#restore(heldMarker));
+        }
     }
 
     // Only a focus that fell to nothing is taken back, onto the held item's marker once the render has drawn it again, by token or by position.

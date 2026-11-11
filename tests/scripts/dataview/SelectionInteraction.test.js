@@ -556,6 +556,25 @@ describe('SelectionInteraction', () => {
             expect(document.activeElement).toBe(itemOf(2));
         });
 
+        it('takes the focus back onto the item once the box holding it goes with no focusout, as WebKit drops it', async () => {
+            [1, 2, 3].forEach(key => {
+                itemOf(key).removeAttribute('data-row-key');
+                itemOf(key).insertAdjacentHTML('afterbegin', `<input type="checkbox" data-row-key="${key}" />`);
+            });
+            attachSelection(list, options());
+            itemOf(2).querySelector('input').focus();
+
+            [1, 2, 3].forEach(key => {
+                itemOf(key).querySelector('input').remove();
+                itemOf(key).setAttribute('data-row-key', `${key}`);
+            });
+            document.body.focus();
+            await settle();
+            await nextFrame();
+
+            expect(document.activeElement).toBe(itemOf(2));
+        });
+
         it('asks the owner to check the item a press lands on where a press checks, its box taking the focus, Enter still activating it', () => {
             [1, 2, 3].forEach(key => {
                 itemOf(key).removeAttribute('data-row-key');
