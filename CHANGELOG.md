@@ -9,6 +9,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- The composer's [stored-files dialog](src/AddOns/Forma.AddOns.Composer.Plugins.Explorer/README.md#register) browses
+  the folders the host's `ICatalogProvider` lists, reading every one as it opens, a reader entering a folder to reach
+  the files in it; a provider that lists none browses the files flat, as before. A file activated by Enter is inserted
+  at once, and a folder is never chosen. With no `AcceptedResourceKinds`, the dialog lists and chooses every file.
 - A composer dialog's body confirms the dialog itself through
   [`IComposerDialogInteraction`](src/Framework/Forma.Framework.Composer.Extensibility/README.md#dialogs-and-insertion),
   which the composer cascades to it. One confirmation runs at a time, so Insert pressed while one is under way inserts

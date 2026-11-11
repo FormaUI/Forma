@@ -1,0 +1,22 @@
+@page "/{Runtime}/composer-picker"
+@using Forma.Blazor.Components.Composer
+@using Forma.Blazor.Components.Composer.Plugins
+@using Forma.Framework.Composer.Documents
+@using Forma.Framework.Composer.Plugins
+
+@* A composer whose stored-files dialog browses the checks' catalog for pictures alone, its document written where the check reads it. *@
+<FormaComposer Id="check" @bind-Value="_document" Plugins="Definition" />
+<output id="result">@(_document?.Content)</output>
+
+@code {
+    private static readonly ComposerDefinition Definition = ComposerDefinition.Create(composer => composer
+        .AddRichTextEditor(editor => editor
+            .TryAddDefaultFeatures()
+            .AddFeaturePlugin<ExplorerPlugin, ExplorerPluginOptions>(options =>
+            {
+                options.AcceptedResourceKinds = "contentType:image";
+                options.AllowUpload = false;
+            })));
+
+    private ComposerDocument? _document = new(ComposerDocumentFormat.Html, "<p>Draft</p>");
+}

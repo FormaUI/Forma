@@ -12,6 +12,7 @@
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
+        <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Composer.Plugins.Explorer\Forma.AddOns.Composer.Plugins.Explorer.csproj" />
         <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
         <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Catalog\Forma.Framework.Catalog.csproj" />

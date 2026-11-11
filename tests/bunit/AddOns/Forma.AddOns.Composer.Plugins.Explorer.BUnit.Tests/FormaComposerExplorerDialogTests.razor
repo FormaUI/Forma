@@ -6,6 +6,7 @@
 @using Forma.Framework.Resources
 @using Forma.Blazor.Components.Composer
 @using Forma.Blazor.Components.Composer.RichTextEditor
+@using Forma.Blazor.Components.DataView
 @using Forma.Blazor.Components.Explorer
 @using Forma.Framework.Composer.Plugins
 @using Microsoft.AspNetCore.Components.Web
@@ -17,6 +18,14 @@
             .Single(card => card.QuerySelector(".forma-data-card-name")?.TextContent == name)
             .QuerySelector("input[type=checkbox]")!
             .ClickAsync(new MouseEventArgs());
+
+    // The card showing the name.
+    private static AngleSharp.Dom.IElement FindCard(IRenderedComponent<ContainerFragment> cut, string name)
+        => cut.FindAll(".forma-data-card").Single(card => card.QuerySelector(".forma-data-card-name")?.TextContent == name);
+
+    // The token the card showing the name carries, by which the selection behavior reports a press or Enter on it.
+    private static int GetCardToken(IRenderedComponent<ContainerFragment> cut, string name)
+        => int.Parse(FindCard(cut, name).GetAttribute("data-item")!, System.Globalization.CultureInfo.InvariantCulture);
 
     public sealed class Component
     {
@@ -221,6 +230,233 @@
         }
     }
 
+    // The folders the provider lists, read whole as the dialog opens, which the reader enters to reach the files they hold.
+    public sealed class Folders
+    {
+        private static readonly FolderResourceInfo Stages = new("/media/stages") { Name = "Stages" };
+        private static readonly FolderResourceInfo Finishes = new("/media/finishes") { Name = "Finishes", Parent = Stages.Source };
+        private static readonly FolderResourceInfo Ceremonies = new("/media/ceremonies") { Name = "Ceremonies" };
+
+        // Each resource with the source of the folder holding it, where null is the top level.
+        private static readonly (ResourceInfo Resource, string? Folder)[] Library =
+        [
+            (Stages, null),
+            (Finishes, Stages.Source),
+            (Ceremonies, null),
+            (new ImageResourceInfo("/media/start.png"), Stages.Source),
+            (new ImageResourceInfo("/media/sprint.png"), Finishes.Source),
+            (new ImageResourceInfo("/media/podium.png"), Ceremonies.Source),
+        ];
+
+        // Answers a folder's own items, or every folder's, of the kinds asked for, two positions a slice at most; every folder's
+        // folders stand with two positions between the second and the third that the store reads and leaves out, as its own
+        // filtering can, so one slice holds no folder. It records every query.
+        private sealed class FolderedLibrary : ICatalogProvider
+        {
+            public List<CatalogQuery> Queries { get; } = [];
+
+            public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
+            {
+                Queries.Add(query);
+
+                List<ResourceInfo?> positions = [.. Library
+                    .Where(entry => query.FolderKey is not { } folder || entry.Folder == folder)
+                    .Select(entry => entry.Resource)
+                    .Where(resource => query.AsksFor(resource.GetKind()))
+                    .Where(resource => query.Search is not { Length: > 0 } search || resource.Name.Contains(search, StringComparison.OrdinalIgnoreCase))
+                    .OrderBy(resource => resource.Name, StringComparer.OrdinalIgnoreCase)];
+
+                if (query.FolderKey is null && query.Kinds is { Count: 1 } kinds && kinds.Contains(CatalogItemKind.Folder))
+                {
+                    positions.InsertRange(2, [null, null]);
+                }
+
+                List<ResourceInfo?> slice = [.. positions.Skip(query.Skip).Take(Math.Min(query.Take, 2))];
+
+                return ValueTask.FromResult(new CatalogPage(CatalogItem.ForAll(slice.OfType<ResourceInfo>()), null)
+                {
+                    ReadCount = slice.Count,
+                    HasMore = query.Skip + slice.Count < positions.Count,
+                });
+            }
+        }
+
+        private static List<string> GetSidebarNames(IRenderedComponent<ContainerFragment> cut)
+            => [.. cut.FindAll(".forma-explorer-sidebar .forma-data-tree-node-name").Select(name => name.TextContent.Trim())];
+
+        private static List<string> GetCardNames(IRenderedComponent<ContainerFragment> cut)
+            => [.. cut.FindAll(".forma-data-card-name").Select(name => name.TextContent.Trim())];
+
+        [Fact]
+        public void Should_ask_for_every_folder_alone_whatever_the_files_listed()
+        {
+            // Arrange
+            using var ctx = new FormaComposerExplorerDialogTests();
+            var library = new FolderedLibrary();
+            ctx.Services.AddScoped<ICatalogProvider>(_ => library);
+            var options = new ExplorerPluginOptions { AcceptedResourceKinds = "contentType:image" };
+
+            // Act
+            ctx.Render(@<FormaComposerExplorerDialog Options="options" />);
+
+            // Assert - no folder narrowing them, no search and no filter of files
+            var asked = library.Queries[0];
+            Assert.Multiple(
+                () => Assert.Equal([CatalogItemKind.Folder], asked.Kinds!),
+                () => Assert.Null(asked.FolderKey),
+                () => Assert.Null(asked.Search),
+                () => Assert.Null(asked.Filter));
+        }
+
+        [Fact]
+        public void Should_read_every_folder_across_slices_past_one_that_holds_none()
+        {
+            // Arrange - three folders, two positions a slice, the second slice keeping none of what it read
+            using var ctx = new FormaComposerExplorerDialogTests();
+            var library = new FolderedLibrary();
+            ctx.Services.AddScoped<ICatalogProvider>(_ => library);
+
+            // Act
+            var cut = ctx.Render(@<FormaComposerExplorerDialog />);
+
+            // Assert - the folder slices read on past the one that held none, and the sidebar holding every folder
+            var folderSkips = library.Queries.Where(query => query.Kinds is { Count: 1 } kinds && kinds.Contains(CatalogItemKind.Folder)).Select(query => query.Skip);
+            Assert.Multiple(
+                () => Assert.Equal([0, 2, 4], folderSkips),
+                () => Assert.Equal(["Ceremonies", "Stages", "Finishes"], GetSidebarNames(cut).Skip(1)));
+        }
+
+        [Fact]
+        public async Task Should_enter_a_folder_a_press_lands_on_and_choose_the_file_in_it()
+        {
+            // Arrange
+            using var ctx = new FormaComposerExplorerDialogTests();
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new FolderedLibrary());
+            var cut = ctx.Render(@<FormaComposerExplorerDialog />);
+            var view = cut.FindComponent<FormaDataView<ICatalogItem>>();
+            var folderBox = FindCard(cut, "Ceremonies").QuerySelector("input[type=checkbox]")!.GetAttribute("aria-disabled");
+
+            // Act - a press on the folder, then on the file it holds
+            await cut.InvokeAsync(() => view.Instance.HandleCheckAsync(GetCardToken(cut, "Ceremonies")));
+            var entered = GetCardNames(cut);
+            await cut.InvokeAsync(() => view.Instance.HandleCheckAsync(GetCardToken(cut, "podium.png")));
+            IComposerInsertionDialog body = cut.FindComponent<FormaComposerExplorerDialog>().Instance;
+            var insertion = await body.TryConfirmAsync(TestContext.Current.CancellationToken) as ResourceInsertion;
+
+            // Assert - the folder a place to go rather than a choice
+            Assert.Multiple(
+                () => Assert.Equal("true", folderBox),
+                () => Assert.Equal(["podium.png"], entered),
+                () => Assert.Equal("/media/podium.png", insertion?.Source));
+        }
+
+        [Fact]
+        public void Should_browse_the_files_flat_where_the_provider_lists_no_folders()
+        {
+            // Arrange
+            using var ctx = new FormaComposerExplorerDialogTests();
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new FlatLibrary());
+
+            // Act
+            var cut = ctx.Render(@<FormaComposerExplorerDialog />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-explorer-sidebar")),
+                () => Assert.Equal(["podium.png"], GetCardNames(cut)));
+        }
+
+        [Fact]
+        public async Task Should_stop_reading_the_folders_once_it_closes()
+        {
+            // Arrange - a provider that holds its answer
+            using var ctx = new FormaComposerExplorerDialogTests();
+            var library = new HeldLibrary();
+            ctx.Services.AddScoped<ICatalogProvider>(_ => library);
+            var cut = ctx.Render(@<FormaComposerExplorerDialog />);
+            var reading = cut.FindAll(".forma-composer-explorer-loading").Count;
+
+            // Act
+            await ctx.DisposeComponentsAsync();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1, reading),
+                () => Assert.True(library.Token.IsCancellationRequested));
+        }
+
+        private sealed class FlatLibrary : ICatalogProvider
+        {
+            public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
+            {
+                IReadOnlyList<ResourceInfo> resources = query.AsksFor(CatalogItemKind.Image) ? [new ImageResourceInfo("/media/podium.png")] : [];
+
+                return ValueTask.FromResult(new CatalogPage(CatalogItem.ForAll(resources), resources.Count));
+            }
+        }
+
+        private sealed class HeldLibrary : ICatalogProvider
+        {
+            private readonly TaskCompletionSource<CatalogPage> _answer = new();
+
+            public CancellationToken Token { get; private set; }
+
+            public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
+            {
+                Token = cancellationToken;
+                cancellationToken.Register(() => _answer.TrySetCanceled(cancellationToken));
+
+                return new ValueTask<CatalogPage>(_answer.Task);
+            }
+        }
+    }
+
+    // An activated file becomes the choice, and the body asks its dialog to confirm it.
+    public sealed class Activation
+    {
+        private static readonly IReadOnlyList<ResourceInfo> Files = [new ImageResourceInfo("/media/a.png"), new ImageResourceInfo("/media/b.png")];
+
+        private sealed class StubLibrary : ICatalogProvider
+        {
+            public ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
+            {
+                IReadOnlyList<ResourceInfo> resources = query.AsksFor(CatalogItemKind.Image) ? Files : [];
+
+                return ValueTask.FromResult(new CatalogPage(CatalogItem.ForAll(resources), resources.Count));
+            }
+        }
+
+        // Confirms by asking the body what it would insert, recording each answer.
+        private sealed class RecordingDialog(Func<IComposerInsertionDialog> body) : IComposerDialogInteraction
+        {
+            public List<string?> Confirmed { get; } = [];
+
+            public async Task ConfirmAsync()
+                => Confirmed.Add((await body().TryConfirmAsync() as ResourceInsertion)?.Source);
+        }
+
+        [Fact]
+        public async Task Should_confirm_the_file_activated_in_place_of_the_one_chosen()
+        {
+            // Arrange - a.png chosen
+            using var ctx = new FormaComposerExplorerDialogTests();
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary());
+            IRenderedComponent<ContainerFragment> cut = null!;
+            var dialog = new RecordingDialog(() => cut.FindComponent<FormaComposerExplorerDialog>().Instance);
+            cut = ctx.Render(
+                @<CascadingValue Value="(IComposerDialogInteraction)dialog" IsFixed="true">
+                    <FormaComposerExplorerDialog />
+                </CascadingValue>);
+            await ChooseAsync(cut, "a.png");
+
+            // Act - b.png activated, as Enter on it does
+            await cut.InvokeAsync(() => cut.FindComponent<FormaDataView<ICatalogItem>>().Instance.HandleActivateAsync(GetCardToken(cut, "b.png")));
+
+            // Assert
+            Assert.Equal(["/media/b.png"], dialog.Confirmed);
+        }
+    }
+
     // The plugin's command, the composer's shell, the explorer inside it and the insertion reaching the rich text editor, unstubbed.
     public sealed class ThroughTheComposer
     {
@@ -236,6 +472,8 @@
         }
 
         private static readonly ResourceInfo Picture = new ImageResourceInfo("/media/podium.png");
+
+        private static readonly ResourceInfo Second = new ImageResourceInfo("/media/finish.png");
 
         private IRenderedComponent<ContainerFragment> RenderComposer(
             FormaComposerExplorerDialogTests ctx,
@@ -305,6 +543,34 @@
             cut.WaitForAssertion(() => Assert.NotNull(inserted));
             var insertion = Assert.IsType<ResourceInsertion>(inserted);
             Assert.Equal("/media/podium.png", insertion.Source);
+            Assert.Empty(cut.FindAll(".forma-composer-dialog-form .forma-explorer"));
+        }
+
+        [Fact]
+        public async Task Should_insert_the_file_activated_while_another_was_chosen_and_close()
+        {
+            // Arrange - podium.png chosen
+            using var ctx = new FormaComposerExplorerDialogTests();
+            ctx.Services.AddScoped<ICatalogProvider>(_ => new StubLibrary(Picture, Second));
+            var richText = new RichTextEditorPlugin();
+            List<string> inserted = [];
+            richText.CommandRequested += (command, value) =>
+            {
+                if (command == "insertResource" && value is ResourceInsertion insertion)
+                {
+                    inserted.Add(insertion.Source);
+                }
+            };
+            var cut = RenderComposer(ctx, new HtmlModel(), richText);
+            Browse(cut);
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find(".forma-composer-dialog-form .forma-explorer")));
+            await ChooseAsync(cut, "podium.png");
+
+            // Act - finish.png activated, as Enter on it does
+            await cut.InvokeAsync(() => cut.FindComponent<FormaDataView<ICatalogItem>>().Instance.HandleActivateAsync(GetCardToken(cut, "finish.png")));
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal(["/media/finish.png"], inserted));
             Assert.Empty(cut.FindAll(".forma-composer-dialog-form .forma-explorer"));
         }
 

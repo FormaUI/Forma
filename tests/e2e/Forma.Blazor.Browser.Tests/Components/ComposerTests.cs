@@ -401,6 +401,128 @@ public sealed class ComposerTests
         }
     }
 
+    public sealed class ComposerPicker(BrowserHost host)
+    {
+        // The names the dialog lists at the top level: the top-level folders, then every picture across every folder, the document left out.
+        private static readonly string[] TopLevelNames = ["Ceremonies", "Stages", "first.svg", "locked.svg", "podium.svg", "second.svg", "sprint.svg", "start.svg"];
+
+        // Presses Enter on the box holding the focus and Insert in the same turn, so Insert arrives while the confirmation Enter asked for
+        // is under way.
+        private const string ActivateAndInsert = """
+            () => {
+                const dialog = document.querySelector('dialog[open]');
+                document.activeElement.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true, cancelable: true }));
+                [...dialog.querySelectorAll('button')].find(button => button.textContent.trim() === 'Insert').click();
+            }
+            """;
+
+        // Opens the stored-files dialog on the composer, the caret in its canvas, once its folders are read and its items take presses.
+        private static async Task<(IBrowserContext Context, IPage Page, ILocator Dialog)> OpenPickerAsync(BrowserHost host, string runtime)
+        {
+            var (context, page, canvas) = await OpenComposerAsync(host, runtime, "composer-picker");
+
+            try
+            {
+                await canvas.ClickAsync();
+                await GetCommand(page, "Browse Files").ClickAsync();
+                var dialog = page.GetByRole(AriaRole.Dialog, new() { Name = "Browse Files" });
+                await Assertions.Expect(dialog.Locator(".forma-data-card-name")).ToHaveTextAsync(TopLevelNames);
+                await WaitForInputScopeAsync(page, "dialog[open] .forma-data-view-region");
+
+                return (context, page, dialog);
+            }
+            catch
+            {
+                await context.DisposeAsync();
+
+                throw;
+            }
+        }
+
+        private static ILocator GetName(ILocator dialog, string name)
+            => dialog.Locator(".forma-data-card-name").GetByText(name, new() { Exact = true });
+
+        // The box on the card showing the name, the card found by a name looked for within it.
+        private static ILocator GetBox(ILocator dialog, string name)
+            => dialog.Locator(".forma-data-card")
+                .Filter(new() { Has = dialog.Page.Locator(".forma-data-card-name").GetByText(name, new() { Exact = true }) })
+                .Locator("input[type=checkbox]");
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_choose_a_file_in_place_of_another_and_enter_a_folder_to_reach_the_one_it_inserts(string runtime)
+        {
+            // Arrange
+            var (context, page, dialog) = await OpenPickerAsync(host, runtime);
+            await using var _ = context;
+
+            // Act — first.svg chosen, second.svg in its place, and the disabled locked.svg pressed
+            await GetName(dialog, "first.svg").ClickAsync();
+            await Assertions.Expect(GetBox(dialog, "first.svg")).ToBeCheckedAsync();
+            await GetName(dialog, "second.svg").ClickAsync();
+            await Assertions.Expect(GetBox(dialog, "second.svg")).ToBeCheckedAsync();
+            await Assertions.Expect(GetBox(dialog, "first.svg")).Not.ToBeCheckedAsync();
+            await GetName(dialog, "locked.svg").ClickAsync();
+            await Assertions.Expect(GetBox(dialog, "locked.svg")).Not.ToBeCheckedAsync();
+            await Assertions.Expect(GetBox(dialog, "second.svg")).ToBeCheckedAsync();
+
+            // Act — a press on Ceremonies, whose box can't be checked, enters it, and its picture is chosen and inserted
+            await Assertions.Expect(GetBox(dialog, "Ceremonies")).ToHaveAttributeAsync("aria-disabled", "true");
+            await GetName(dialog, "Ceremonies").ClickAsync();
+            await Assertions.Expect(dialog.Locator(".forma-data-card-name")).ToHaveTextAsync(["podium.svg"]);
+            await GetName(dialog, "podium.svg").ClickAsync();
+            await Assertions.Expect(GetBox(dialog, "podium.svg")).ToBeCheckedAsync();
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true }).ClickAsync();
+
+            // Assert
+            await Assertions.Expect(dialog).ToHaveCountAsync(0);
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("?name=podium.svg");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_insert_the_file_activated_once_while_insert_is_pressed_and_hand_the_focus_back(string runtime)
+        {
+            // Arrange — first.svg chosen, the focus on second.svg's box
+            var (context, page, dialog) = await OpenPickerAsync(host, runtime);
+            await using var _ = context;
+            await GetName(dialog, "first.svg").ClickAsync();
+            await Assertions.Expect(GetBox(dialog, "first.svg")).ToBeCheckedAsync();
+            await GetBox(dialog, "second.svg").FocusAsync();
+
+            // Act — Enter on second.svg, and Insert pressed while that confirmation is under way
+            await page.EvaluateAsync(ActivateAndInsert);
+
+            // Assert — second.svg inserted once, first.svg not at all, and the focus back on the command that opened the dialog
+            await Assertions.Expect(dialog).ToHaveCountAsync(0);
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("?name=second.svg");
+            Assert.Equal(1, await page.EvaluateAsync<int>("() => document.querySelector('#result').textContent.split('?name=second.svg').length - 1"));
+            await Assertions.Expect(page.Locator("#result")).Not.ToContainTextAsync("?name=first.svg");
+            await Assertions.Expect(GetCommand(page, "Browse Files")).ToBeFocusedAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_stay_open_and_usable_after_refusing_to_insert_nothing(string runtime)
+        {
+            // Arrange
+            var (context, page, dialog) = await OpenPickerAsync(host, runtime);
+            await using var _ = context;
+            var insert = dialog.GetByRole(AriaRole.Button, new() { Name = "Insert", Exact = true });
+
+            // Act — Insert with nothing chosen, then a file chosen and Insert again
+            await insert.ClickAsync();
+            await Assertions.Expect(dialog.GetByRole(AriaRole.Alert)).ToHaveTextAsync("Choose a file before inserting.");
+            await GetName(dialog, "start.svg").ClickAsync();
+            await Assertions.Expect(GetBox(dialog, "start.svg")).ToBeCheckedAsync();
+            await insert.ClickAsync();
+
+            // Assert
+            await Assertions.Expect(dialog).ToHaveCountAsync(0);
+            await Assertions.Expect(page.Locator("#result")).ToContainTextAsync("?name=start.svg");
+        }
+    }
+
     public sealed class ComposerPresets(BrowserHost host)
     {
         [Theory]

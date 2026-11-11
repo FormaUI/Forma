@@ -406,7 +406,7 @@ A designer **is** an editor plugin — it is a surface the switcher offers — *
 | `AlignmentBidiPlugin` | Align start/center/end/justify, direction LTR/RTL | Justify*, BidiRtl, BidiLtr |
 | `LinkPlugin` | Link, unlink, anchor, remove anchor; double-clicking one reopens its dialog on it | Link, Unlink, Anchor |
 | `ImagePlugin` | An image by address, with alt text and caption; double-clicking one reopens its dialog on it | Image |
-| `ExplorerPlugin` | Shipped by `Forma.AddOns.Composer.Plugins.Explorer`: the host's stored files through `FormaExplorer`, which carries `FormaFilePicker` + `FormaFileUploader` in its own toolbar; a chosen picture, video or audio file is embedded, linked or both, any other file linked | `imagelibrary` |
+| `ExplorerPlugin` | Shipped by `Forma.AddOns.Composer.Plugins.Explorer`: the host's stored files through `FormaExplorer`, which carries `FormaFilePicker` + `FormaFileUploader` in its own toolbar, in the folders the host's provider lists, read whole as the dialog opens; a file is chosen and a folder entered, a file activated is inserted, and a chosen picture, video or audio file is embedded, linked or both, any other file linked | `imagelibrary` |
 | `VideoPlugin` | A placeholder carrying the address, title and autoplay, which the host resolves when it renders the document — through `FormaVideoPlayer` or otherwise — since the sanitizer discards an `iframe` | `youtube` |
 | `TablePlugin` | Insert grid, row/column add and remove, header toggle, delete | Table, tabletools |
 | `HorizontalRulePlugin` | Thematic break | HorizontalRule |

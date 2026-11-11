@@ -36,8 +36,11 @@ builder.Services.AddFormaComposer(composer => composer
         })));
 ```
 
-The dialog lists the files the host's `ICatalogProvider` answers, and uploads into the host's
-`IFileStore`:
+The dialog lists the files the host's `ICatalogProvider` answers, in the folders it lists, and
+uploads into the host's `IFileStore`. A press chooses a file and enters a folder, and a file
+activated by Enter is inserted at once. The dialog reads every folder the provider lists as it
+opens, a query for folders alone at every depth, one slice after another, so a provider listing many
+folders is read whole each time the dialog opens; a provider listing none browses the files flat:
 
 ```csharp
 using Forma.Framework.Catalog.Queries;
@@ -56,7 +59,7 @@ an `IFileStore`.
 
 | `ExplorerPluginOptions` | What it sets |
 | --- | --- |
-| `AcceptedResourceKinds` | The files listed, as `globs:*.jpg;*.pdf` or `contentType:image;video`; every file when unset. |
+| `AcceptedResourceKinds` | The files listed and chosen, as `globs:*.jpg;*.pdf` or `contentType:image;video`; every file when unset. |
 | `AcceptedUploadKinds` | The files that may be uploaded, in the same form; the listed kinds when unset. |
 | `AllowUpload` | Whether the dialog offers upload. Defaults to `true`. |
 | `InsertMode` | Whether a file the browser can render is inserted as `Embed`, `Link` or `Both`. Defaults to `Embed`. |

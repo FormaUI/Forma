@@ -6,3 +6,10 @@
     display: flex;
     flex-direction: column;
 }
+
+/* The folders being read hold the explorer's place. */
+.forma-composer-explorer-loading {
+    display: grid;
+    flex: 1;
+    place-items: center;
+}

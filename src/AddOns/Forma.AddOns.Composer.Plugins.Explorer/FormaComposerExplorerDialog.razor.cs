@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer.Plugins;
 
+using System.Collections.Frozen;
+
 using Forma.Blazor.Components.Explorer;
 using Forma.Framework.Catalog;
 using Forma.Framework.Catalog.Queries;
@@ -18,10 +20,21 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsProvider = null, IFileStore? store = null)
     : FormaComponentBase, IComposerInsertionDialog
 {
+    // The dialog inserts files, so where the options name no kinds it takes every file and no folder, which a glob never names.
+    private const string EveryFile = "globs:*";
+
+    // The folders are read whole, every one the provider lists in one query, a slice of this many at a time.
+    private const int FolderSliceSize = 200;
+
     private static readonly ExplorerOptions Library = new() { AsDialog = true, ShowFolderMenu = false, SelectOnOpen = true, MaxSelection = 1 };
+
+    private static readonly FrozenSet<CatalogItemKind> FolderKinds = new[] { CatalogItemKind.Folder }.ToFrozenSet();
 
     /// <summary>The options configuring what the dialog browses, takes in, and inserts.</summary>
     [Parameter] public ExplorerPluginOptions Options { get; set; } = ExplorerPluginOptions.Default;
+
+    /// <summary>The dialog the body fills.</summary>
+    [CascadingParameter] public IComposerDialogInteraction? Dialog { get; set; }
 
     private readonly ICatalogProvider? _itemsProvider = itemsProvider;
     private readonly IFileStore? _store = store;
@@ -30,6 +43,11 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
     private CatalogConstraints _constraints = CatalogConstraints.None;
     private readonly ParameterState<ExplorerPluginOptions?> _optionsParameter = new();
     private IReadOnlyList<ICatalogItem> _selectedItems = [];
+
+    // The folders the provider lists, where null is while they are being read and an empty list browses the files flat.
+    private IReadOnlyList<ICatalogItem>? _folders;
+
+    private readonly CancellationTokenSource _folderReading = new();
 
     string IComposerInsertionDialog.Title
         => L["Browse Files"].Value;
@@ -52,6 +70,27 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
         => _constraints;
 
     /// <inheritdoc />
+    protected override async Task OnInitializedAsync()
+    {
+        if (_itemsProvider is not { } provider)
+        {
+            return;
+        }
+
+        // Every folder, at every depth, with no search or kind of file narrowing them, so a folder stays reachable whatever it holds.
+        var query = new CatalogQuery(null, 0, FolderSliceSize, null, CatalogSortField.Name, CatalogSortDirection.Ascending) { Kinds = FolderKinds };
+
+        try
+        {
+            var folders = await provider.ReadAllAsync(query, _folderReading.Token);
+            _folders = [.. folders.OfType<ICatalogFolderItem>()];
+        }
+        catch (OperationCanceledException) when (_folderReading.IsCancellationRequested)
+        {
+        }
+    }
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
@@ -66,7 +105,7 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
 
         _itemOptions = ExplorerItemOptions.ReadOnly with { AllowUpload = Options.AllowUpload && _store is not null };
 
-        _constraints = new() { AcceptedResourceKinds = Options.AcceptedResourceKinds, AcceptedUploadKinds = Options.AcceptedUploadKinds };
+        _constraints = new() { AcceptedResourceKinds = Options.AcceptedResourceKinds ?? EveryFile, AcceptedUploadKinds = Options.AcceptedUploadKinds };
     }
 
     ValueTask<ComposerInsertion?> IComposerInsertionDialog.TryConfirmAsync(CancellationToken cancellationToken)
@@ -111,5 +150,21 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
         {
             _messages.Clear();
         }
+    }
+
+    // An activated file becomes the choice before the dialog is asked to confirm it.
+    private Task HandleFileActivatedAsync(ICatalogItem item)
+    {
+        HandleSelectedChanged([item]);
+
+        return Dialog?.ConfirmAsync() ?? Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    protected override async ValueTask DisposeAsyncCore()
+    {
+        await _folderReading.CancelAsync();
+        _folderReading.Dispose();
+        await base.DisposeAsyncCore();
     }
 }
