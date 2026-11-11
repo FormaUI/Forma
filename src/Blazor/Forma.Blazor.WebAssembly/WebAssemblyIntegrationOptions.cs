@@ -4,8 +4,8 @@ using Forma.Framework.Culture;
 using Forma.Framework.Culture.Browser.Interop;
 using Forma.Framework.Input;
 
-/// <summary>The settings a client gives Forma's WebAssembly registration.</summary>
-public sealed class UIWebAssemblyOptions
+/// <summary>The settings a client gives Forma's WebAssembly integration.</summary>
+public sealed class WebAssemblyIntegrationOptions
 {
     /// <summary>The application-wide input policy; <see langword="null"/> takes <see cref="InputRouterOptions.Default"/>.</summary>
     public InputRouterOptions? InputRouting { get; set; }

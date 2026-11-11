@@ -8,7 +8,7 @@ public static class ServiceCollectionExtensions
 {
     /// <summary>Registers the query executor a data view counts and reads a queryable through.</summary>
     /// <param name="services">The application's services.</param>
-    public static IServiceCollection AddFormaDataView(this IServiceCollection services)
+    public static IServiceCollection AddFormaDataViewServices(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 

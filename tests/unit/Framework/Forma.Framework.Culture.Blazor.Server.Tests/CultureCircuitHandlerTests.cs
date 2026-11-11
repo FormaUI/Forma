@@ -18,7 +18,7 @@ public sealed class CultureCircuitHandlerTests
         => new ServiceCollection()
             .AddSingleton<IJSRuntime>((browser ?? new FakeCultureCoordinatorBrowser()).Runtime)
             .AddScoped<ICultureSwitch, TestCultureSwitch>()
-            .AddFormaCultureServer()
+            .AddFormaCultureServerIntegration()
             .BuildServiceProvider();
 
     // The circuit is not read by the handler, and a test cannot make one.
@@ -168,7 +168,7 @@ public sealed class CultureCircuitHandlerTests
         var browser = new FakeCultureCoordinatorBrowser();
         await using var provider = new ServiceCollection()
             .AddSingleton<IJSRuntime>(browser.Runtime)
-            .AddFormaCultureServer()
+            .AddFormaCultureServerIntegration()
             .BuildServiceProvider();
         await using var scope = provider.CreateAsyncScope();
         await ConnectAsync(scope.ServiceProvider);

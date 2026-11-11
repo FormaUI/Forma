@@ -20,7 +20,7 @@ using Forma.Blazor;
 using Forma.Framework.Localization.Json;
 
 builder.Services.AddJsonLocalization();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 ```
 
 Forma's strings then appear in Hebrew wherever the culture state's UI culture is `he` or a culture

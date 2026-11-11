@@ -25,7 +25,7 @@ which comes with this package.
 
 ## Register
 
-`AddFormaUIServer()` registers what the component needs. Register an `IFileStore` for uploads, and list the
+`AddFormaServerIntegration()` registers what the component needs. Register an `IFileStore` for uploads, and list the
 component's assembly beside the library's when mapping components:
 
 ```csharp
@@ -36,7 +36,7 @@ using Forma.Framework.Resources;
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddJsonLocalization();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 builder.Services.AddScoped<IFileStore, MediaFileStore>();
 
 var app = builder.Build();

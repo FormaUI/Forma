@@ -27,25 +27,25 @@ renderer's own name for itself, `WebView`; so one half serves WPF, Windows Forms
 
 | Assembly | Holds |
 | --- | --- |
-| `Forma.Blazor.WebView` | The application's registrar, `AddFormaUIWebView`, which adds the Framework's WebView halves |
+| `Forma.Blazor.WebView` | The application's registrar, `AddFormaWebViewIntegration`, which adds the Framework's WebView halves |
 | `Forma.Framework.Culture.Blazor.WebView` | The culture's WebView half, as the culture design's [assemblies](culture-design.md#assemblies-and-registration) set out |
 
 ## Registration
 
-The host calls `AddFormaUIWebView` beside its host's own registrar, `AddWpfBlazorWebView`,
-`AddWindowsFormsBlazorWebView` or `AddMauiBlazorWebView`, in either order. It registers what `AddFormaUI`
+The host calls `AddFormaWebViewIntegration` beside its host's own registrar, `AddWpfBlazorWebView`,
+`AddWindowsFormsBlazorWebView` or `AddMauiBlazorWebView`, in either order. It registers what `AddFormaUIServices`
 does and the culture's WebView half, and takes the application-wide input routing as the other halves do.
 Every registration resolves the same in either order, since no service Forma registers stands in for one the
 platform supplies, as the [component foundations](component-foundations-design.md#the-services) set out; a
 host's own registration made first still wins.
 
 An application whose web views each hold a culture of their own declares the independent arrangement,
-`AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent)`, which registers the
+`AddFormaWebViewIntegration(options => options.CultureArrangement = CultureArrangement.Independent)`, which registers the
 culture's state and switch for each web view's scope in place of the application's, as the culture design's
 [culture per web view](culture-design.md#a-culture-per-web-view) sets out.
 
 Culture routing registers as it does in a Web App, `AddFormaCultureRouting`, before or after
-`AddFormaUIWebView`, since it registers only its own services, under `CultureSwitchMode.InPlace`;
+`AddFormaWebViewIntegration`, since it registers only its own services, under `CultureSwitchMode.InPlace`;
 `CultureSwitchMode.FullLoad` and a cookie policy are rejected with `InvalidOperationException` naming the
 setting as the application first resolves its culture coordinator, at its first web view or its first
 switch, or under a culture per web view as a web view first resolves its start, since nothing reloads a web
@@ -147,7 +147,7 @@ it marks as an application.
 | | Question | Decision |
 | --- | --- | --- |
 | V1 | Which hosts does Forma support under Blazor Hybrid? | WPF, Windows Forms and MAUI on Windows, on WebView2, and MAUI on Android, iOS and Mac Catalyst, on Android's WebView and `WKWebView`, each checked for its integration |
-| V2 | What is the half called? | `Forma.Blazor.WebView` with `AddFormaUIWebView`, and the culture's `Forma.Framework.Culture.Blazor.WebView`, after Microsoft's `Microsoft.AspNetCore.Components.WebView` and the renderer's name, as each half takes its render mode's name |
+| V2 | What is the half called? | `Forma.Blazor.WebView` with `AddFormaWebViewIntegration`, and the culture's `Forma.Framework.Culture.Blazor.WebView`, after Microsoft's `Microsoft.AspNetCore.Components.WebView` and the renderer's name, as each half takes its render mode's name |
 | V3 | What lives for the application, and what for a web view? | The culture state, the application's coordinator and the switch for the application by default, or the state and the switch for each web view under a culture per web view; the JS runtime, navigation, the document's coordinator, the input router's scopes and every subscription for its web view, released as the web view is disposed |
 | V4 | When does a web view take part? | As the first Forma component in it initializes, or a culture route page in it lands, whichever comes first |
 | V5 | In which order does a host register? | Either; no Forma registration stands in for a platform's service |

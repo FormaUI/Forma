@@ -9,6 +9,17 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- The registrations name what they add, the shared services or a host's integration. `AddFormaUI` is
+  [`AddFormaUIServices`](README.md#what-the-registration-does), the shared services used by Forma UI components;
+  `AddFormaUIServer`, `AddFormaUIWebAssembly` and `AddFormaUIWebView` are `AddFormaServerIntegration`,
+  `AddFormaWebAssemblyIntegration` and `AddFormaWebViewIntegration`, each still registering those services, and
+  their options `UIServerOptions`, `UIWebAssemblyOptions` and `UIWebViewOptions` are `ServerIntegrationOptions`,
+  `WebAssemblyIntegrationOptions` and `WebViewIntegrationOptions`. `AddFormaCultureServer`,
+  `AddFormaCultureWebAssembly` and `AddFormaCultureWebView` are `AddFormaCultureServerIntegration`,
+  `AddFormaCultureWebAssemblyIntegration` and `AddFormaCultureWebViewIntegration`, `AddFormaBrowserServer` is
+  `AddFormaBrowserServerIntegration`, and `AddFormaDataView` is `AddFormaDataViewServices`. A host calls each by its
+  new name, on the same builder or collection, and names the options types by theirs; what each registers is
+  unchanged.
 - `LocalePackLoader` is [`LocaleAssemblyLoader`](src/Framework/Forma.Framework.Localization/README.md#locale-packs),
   for the packs and the assemblies carrying a host's files it loads; its `Load` is `LoadPacks` and its `GetNames` is
   `GetPackNames`. A test or a host that read a pack's assembly through it calls `LocaleAssemblyLoader.LoadPacks`, one

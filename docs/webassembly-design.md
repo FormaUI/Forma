@@ -30,48 +30,48 @@ mode's name, as the culture's halves do:
 
 | Assembly | Holds |
 | --- | --- |
-| `Forma.Blazor` | The components and the render-mode-neutral registrar, `AddFormaUI` |
-| `Forma.Blazor.Server` | `FormaPageHead` and the server's registrar, `AddFormaUIServer`, which adds the Framework's circuit halves |
-| `Forma.Blazor.WebAssembly` | The client's registrar, `AddFormaUIWebAssembly`, which adds the Framework's WebAssembly halves |
+| `Forma.Blazor` | The components and the render-mode-neutral registrar, `AddFormaUIServices` |
+| `Forma.Blazor.Server` | `FormaPageHead` and the server's registrar, `AddFormaServerIntegration`, which adds the Framework's circuit halves |
+| `Forma.Blazor.WebAssembly` | The client's registrar, `AddFormaWebAssemblyIntegration`, which adds the Framework's WebAssembly halves |
 
 ## Registration
 
 A host makes one call on each side, and still overrides any single service by registering its own first:
 
-- **The client** calls `AddFormaUIWebAssembly`, which registers what `AddFormaUI` does and the WebAssembly
+- **The client** calls `AddFormaWebAssemblyIntegration`, which registers what `AddFormaUIServices` does and the WebAssembly
   halves: the culture's startup, which registers the runtime's state with the page's coordinator under
   coordinated pages, or sets up the local switch under an independent client culture. A runtime's culture
   services are one per runtime, the runtime being one user scope, since it starts its hosted services
   apart from the scope its components resolve from and the startup registers the state they read.
-- **The server** calls `AddFormaUIServer` on its builder, which registers what `AddFormaUI` does and the
+- **The server** calls `AddFormaServerIntegration` on its builder, which registers what `AddFormaUIServices` does and the
   circuit halves. A server prerenders every client component, so it registers everything a client
   component resolves, whether or not it renders interactive server components itself.
-- **`AddFormaUI`** registers every service a component resolves in any runtime, the culture state among
+- **`AddFormaUIServices`** registers every service a component resolves in any runtime, the culture state among
   them, and nothing that needs a circuit or a WebAssembly runtime; each render mode's half registers the
   switch that requests through the page's coordinator, or the local switch where its host chose an
   independent client culture. A component never fails
   to render for want of a service its render mode's half registers.
 
-The culture's own registrars follow the same pattern, `AddFormaCultureServer` and
-`AddFormaCultureWebAssembly`, which the product's halves call.
+The culture's own registrars follow the same pattern, `AddFormaCultureServerIntegration` and
+`AddFormaCultureWebAssemblyIntegration`, which the product's halves call.
 
 A server that renders WebAssembly components chooses how its pages treat a client's culture through the
-culture arrangement, an option on `AddFormaUIServer` and on `AddFormaUIWebAssembly`, coordinated unless a
+culture arrangement, an option on `AddFormaServerIntegration` and on `AddFormaWebAssemblyIntegration`, coordinated unless a
 host declares it otherwise. Each arrangement is complete on both sides:
 
 | Arrangement | The server | The client | The page |
 | --- | --- | --- | --- |
-| Coordinated, the default | `AddFormaUIServer` with coordinated pages; `FormaPageHead` in the document's head; capture on, which the registrar supplies where the host sets nothing | `AddFormaUIWebAssembly`, whose runtime registers with the page's coordinator | Starts from the server's resolved pair, and every runtime on it follows the coordinator |
-| Independent client culture | `AddFormaUIServer` declaring the client's culture independent; capture may be off | `AddFormaUIWebAssembly` declaring the same, with the local switch | The server's runtimes follow the coordinator; the client's culture is the client's own, and touches neither the document, the coordinator, the address nor the cookie |
+| Coordinated, the default | `AddFormaServerIntegration` with coordinated pages; `FormaPageHead` in the document's head; capture on, which the registrar supplies where the host sets nothing | `AddFormaWebAssemblyIntegration`, whose runtime registers with the page's coordinator | Starts from the server's resolved pair, and every runtime on it follows the coordinator |
+| Independent client culture | `AddFormaServerIntegration` declaring the client's culture independent; capture may be off | `AddFormaWebAssemblyIntegration` declaring the same, with the local switch | The server's runtimes follow the coordinator; the client's culture is the client's own, and touches neither the document, the coordinator, the address nor the cookie |
 
 ```csharp
 // Coordinated: the server's Program.cs, then the client's.
-builder.AddFormaUIServer();
-builder.Services.AddFormaUIWebAssembly();
+builder.AddFormaServerIntegration();
+builder.Services.AddFormaWebAssemblyIntegration();
 
 // Independent client culture: the same two calls, each declaring it.
-builder.AddFormaUIServer(options => options.CultureArrangement = CultureArrangement.Independent);
-builder.Services.AddFormaUIWebAssembly(options => options.CultureArrangement = CultureArrangement.Independent);
+builder.AddFormaServerIntegration(options => options.CultureArrangement = CultureArrangement.Independent);
+builder.Services.AddFormaWebAssemblyIntegration(options => options.CultureArrangement = CultureArrangement.Independent);
 ```
 
 A coordinated prerendered page needs the server's initialization, so an explicit `false` for
@@ -83,7 +83,7 @@ a server that renders no WebAssembly, checks nothing. It throws `InvalidOperatio
 setting, the coordinated arrangement and the two ways out, removing the `false` or declaring the
 client's culture independent. A standalone WebAssembly app has no server and initializes its coordinator
 from its own startup, which supplies the initial pair, the runtime's own, and the switch's policy, the one
-`AddFormaUIWebAssembly` takes; the registration carries them, and the coordinator starts from them only on
+`AddFormaWebAssemblyIntegration` takes; the registration carries them, and the coordinator starts from them only on
 a page whose load initialized nothing, so a Web App page without `FormaPageHead` still fails as it should.
 
 ## The client's build
@@ -131,7 +131,7 @@ render matches its prerender and the page never flips language as it hydrates:
 
 - **The server hands its pair to the client.** The framework persists the request's culture and starts the
   client in it where capture is on, `Components:UseCultureFromServer`: an explicit value decides, and
-  without one capture is on only where `IStringLocalizerFactory` is registered. `AddFormaUIServer`, on the
+  without one capture is on only where `IStringLocalizerFactory` is registered. `AddFormaServerIntegration`, on the
   host's builder, supplies capture on as a default for coordinated prerendered pages, only where the
   configuration names no value, so a host doesn't name the setting; an explicit value stays
   authoritative, and an explicit `false` under coordinated pages is the conflict
@@ -156,10 +156,10 @@ render matches its prerender and the page never flips language as it hydrates:
 | | Question | Decision |
 | --- | --- | --- |
 | W1 | What does a client library reference? | The packages it compiles against, never the shared framework, which has no browser runtime pack |
-| W2 | Where do the server-only and WebAssembly-only parts live? | In the product's halves, `Forma.Blazor.Server` with `AddFormaUIServer` and `Forma.Blazor.WebAssembly` with `AddFormaUIWebAssembly`, beside the neutral `AddFormaUI`, so the components assembly references no server half |
+| W2 | Where do the server-only and WebAssembly-only parts live? | In the product's halves, `Forma.Blazor.Server` with `AddFormaServerIntegration` and `Forma.Blazor.WebAssembly` with `AddFormaWebAssemblyIntegration`, beside the neutral `AddFormaUIServices`, so the components assembly references no server half |
 | W3 | Does a client compile with runtime async? | No, since WebAssembly's runtime throws for a method compiled with it |
 | W4 | Are the client libraries trim-compatible? | Yes, declared `IsTrimmable` with the analyzer on, reflection annotated where it enters, and every type crossing the interop annotated and built through a parameterless constructor, which Forma's analyzer enforces |
-| W5 | How does a prerendered client start in the server's culture? | Through the framework's capture, which `AddFormaUIServer` supplies as a default only where the configuration names none; `FormaPageHead`'s culture marker tells the coordinator the page's pair, and a capture the host turned off is never restored by another route |
+| W5 | How does a prerendered client start in the server's culture? | Through the framework's capture, which `AddFormaServerIntegration` supplies as a default only where the configuration names none; `FormaPageHead`'s culture marker tells the coordinator the page's pair, and a capture the host turned off is never restored by another route |
 | W6 | Who sets the process's default cultures? | WebAssembly's culture half, as it applies each accepted pair; never a server |
 | W7 | What does a server choose for a client's culture? | The culture arrangement, an option on both product registrars: coordinated by default, which needs the server's initialization and rejects an explicit capture `false` at startup, reading the final configuration; or an independent client culture, declared on both sides, with the local switch on the client |
 | W8 | How do a host's locale files reach the client? | Embedded in its client assembly by the package's targets, under resource names and discovery metadata the browser's loader finds |

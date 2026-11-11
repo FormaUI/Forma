@@ -15,12 +15,12 @@ dotnet add package formaui-net.AddOns.Operations.Maui --prerelease
 using Forma.Framework.Browser.Interop.Operations.Maui;
 
 builder.Services.AddMauiBlazorWebView();
-builder.Services.AddFormaUIWebView();
+builder.Services.AddFormaWebViewIntegration();
 builder.Services.AddFormaMauiOperations();
 ```
 
 `AddFormaMauiOperations` registers `MauiOperations` as the `INativeOperations` Forma's components consult,
-a singleton, only where nothing is registered for it yet, in any order beside `AddFormaUIWebView`.
+a singleton, only where nothing is registered for it yet, in any order beside `AddFormaWebViewIntegration`.
 
 ## What the reader gets
 

@@ -19,19 +19,19 @@ using Forma.Blazor;
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 ```
 
-`AddFormaUIServer()` registers what `AddFormaUI()` registers for every render mode, and beside it the
+`AddFormaServerIntegration()` registers what `AddFormaUIServices()` registers for every render mode, and beside it the
 circuit's integrations: the culture applied before every event and registered with the page's culture
 coordinator, whose switch reaches every circuit on the page and the document, and the browser's
 observations measured again when a circuit reconnects. Each is registered only where nothing is
-registered for it yet. `UIServerOptions.InputRouting` sets the application's input policy, and
-`UIServerOptions.CultureSwitchPolicy` how a switch persists, in the states alone by default, or also in
+registered for it yet. `ServerIntegrationOptions.InputRouting` sets the application's input policy, and
+`ServerIntegrationOptions.CultureSwitchPolicy` how a switch persists, in the states alone by default, or also in
 request localization's culture cookie:
 
 ```csharp
-builder.AddFormaUIServer(options =>
+builder.AddFormaServerIntegration(options =>
 {
     options.InputRouting = new InputRouterOptions { ... };
     options.CultureSwitchPolicy = new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie };
@@ -41,8 +41,8 @@ builder.AddFormaUIServer(options =>
 ## WebAssembly components
 
 A server that renders WebAssembly components, through `AddInteractiveWebAssemblyComponents()`, chooses how
-its pages treat a client's culture with `UIServerOptions.CultureArrangement`, and the client declares the
-same on `AddFormaUIWebAssembly`. Under `Coordinated`, the default, every runtime on the page follows the
+its pages treat a client's culture with `ServerIntegrationOptions.CultureArrangement`, and the client declares the
+same on `AddFormaWebAssemblyIntegration`. Under `Coordinated`, the default, every runtime on the page follows the
 page's coordinator, and a prerendered client starts in the pair the server rendered it in: the
 registration turns on `Components:UseCultureFromServer`, the framework's handoff of the server's culture to
 the client, wherever the host's configuration names no value, and the host fails to start where the
@@ -50,7 +50,7 @@ configuration sets it to `false`. Under `Independent` the client's culture is it
 the host's:
 
 ```csharp
-builder.AddFormaUIServer(options => options.CultureArrangement = CultureArrangement.Independent);
+builder.AddFormaServerIntegration(options => options.CultureArrangement = CultureArrangement.Independent);
 ```
 
 ## The document head

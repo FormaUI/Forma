@@ -13,7 +13,7 @@ public sealed class WebAssemblyServiceCollectionExtensionsTests
     public void Should_register_one_culture_state_per_runtime()
     {
         // Act
-        var services = new ServiceCollection().AddFormaUIWebAssembly();
+        var services = new ServiceCollection().AddFormaWebAssemblyIntegration();
 
         // Assert
         Assert.Equal(ServiceLifetime.Singleton, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState)).Lifetime);
@@ -23,7 +23,7 @@ public sealed class WebAssemblyServiceCollectionExtensionsTests
     public void Should_register_the_default_input_policy()
     {
         // Act
-        using var provider = new ServiceCollection().AddFormaUIWebAssembly().BuildServiceProvider();
+        using var provider = new ServiceCollection().AddFormaWebAssemblyIntegration().BuildServiceProvider();
 
         // Assert
         Assert.Same(InputRouterOptions.Default, provider.GetRequiredService<InputRouterOptions>());
@@ -36,7 +36,7 @@ public sealed class WebAssemblyServiceCollectionExtensionsTests
         var policy = new InputRouterOptions { Escape = DismissBehavior.Ignore };
 
         // Act
-        using var provider = new ServiceCollection().AddFormaUIWebAssembly(options => options.InputRouting = policy).BuildServiceProvider();
+        using var provider = new ServiceCollection().AddFormaWebAssemblyIntegration(options => options.InputRouting = policy).BuildServiceProvider();
 
         // Assert
         Assert.Same(policy, provider.GetRequiredService<InputRouterOptions>());

@@ -18,7 +18,7 @@ public partial class App : Application
 
         var services = new ServiceCollection();
         services.AddWpfBlazorWebView();
-        services.AddFormaUIWebView();
+        services.AddFormaWebViewIntegration();
         services.AddJsonLocalization();
         services.AddSingleton<NativeWindows>();
         var provider = services.BuildServiceProvider();

@@ -12,7 +12,7 @@ public static class ServiceCollectionExtensions
     /// <summary>Registers the browser services and the circuit handler that refreshes a circuit's observations and its text fields' edits.</summary>
     /// <param name="services">The collection to register into.</param>
     /// <returns>The same collection.</returns>
-    public static IServiceCollection AddFormaBrowserServer(this IServiceCollection services)
+    public static IServiceCollection AddFormaBrowserServerIntegration(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);
 

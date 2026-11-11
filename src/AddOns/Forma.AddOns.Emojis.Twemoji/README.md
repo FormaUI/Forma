@@ -14,13 +14,13 @@ dotnet add package formaui-net.AddOns.Emojis.Twemoji --prerelease
 using Forma.Framework.Emojis.Twemoji;
 
 builder.Services.AddFormaTwemojiPack();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 ```
 
 `AddFormaTwemojiPack` registers `TwemojiEmojiProvider` as the `IEmojiProvider` and
 `TwemojiEmojiCatalog` as the `IEmojiCatalog`, both singletons, each only where nothing is registered
 for it yet. Call it on each side that renders emoji, the server and a WebAssembly client, before or after
-`AddFormaUIServer` and `AddFormaUIWebAssembly`, which register no emoji provider of their own; a component
+`AddFormaServerIntegration` and `AddFormaWebAssemblyIntegration`, which register no emoji provider of their own; a component
 draws in the reader's font where no provider is registered.
 
 The components then draw from the pack:

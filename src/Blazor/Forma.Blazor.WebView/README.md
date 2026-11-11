@@ -22,24 +22,24 @@ Beside the platform's own registrar, `AddWpfBlazorWebView()`, `AddWindowsFormsBl
 using Forma.Blazor;
 
 services.AddWpfBlazorWebView();
-services.AddFormaUIWebView();
+services.AddFormaWebViewIntegration();
 ```
 
-`AddFormaUIWebView()` registers what `AddFormaUI()` registers for every render mode, each only where
+`AddFormaWebViewIntegration()` registers what `AddFormaUIServices()` registers for every render mode, each only where
 nothing is registered for it yet, and the culture's WebView half,
 [`Forma.Framework.Culture.Blazor.WebView`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture.Blazor.WebView/README.md):
 by default, one culture state and one switch for the application, which every web view follows.
-`UIWebViewOptions.InputRouting` sets the application's input policy:
+`WebViewIntegrationOptions.InputRouting` sets the application's input policy:
 
 ```csharp
-services.AddFormaUIWebView(options => options.InputRouting = new InputRouterOptions { ... });
+services.AddFormaWebViewIntegration(options => options.InputRouting = new InputRouterOptions { ... });
 ```
 
-`UIWebViewOptions.CultureArrangement` gives each web view a culture of its own in place of the application's
+`WebViewIntegrationOptions.CultureArrangement` gives each web view a culture of its own in place of the application's
 one, each web view switching alone:
 
 ```csharp
-services.AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent);
+services.AddFormaWebViewIntegration(options => options.CultureArrangement = CultureArrangement.Independent);
 ```
 
 ## The page

@@ -7,7 +7,7 @@ surface, placed once in a layout, follows it.
 
 ## Use it
 
-The package comes with `formaui-net.Blazor`. `AddFormaUI()` registers its services
+The package comes with `formaui-net.Blazor`. `AddFormaUIServices()` registers its services
 through `AddFormaFeedbackServices()`:
 
 | Service | Registered as |
@@ -31,7 +31,7 @@ builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
     new("closed", CssColor.FromRgba(98, 105, 118, 0.12), CssColor.FromHex(0x2c384a)) { Marker = Glyph.Prohibited },
 ]));
 
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 ```
 
 Place `FormaToastContainer` and `FormaConfirmDialog` once in the layout; they draw what the

@@ -10,14 +10,14 @@ the coordinator, so a switch reaches every circuit on the page and the document,
 ambient culture in an event after a switch reads the new cultures. While the connection is down a switch
 fails at once with `InvalidOperationException`, as it does in a static render.
 
-The package comes with `formaui-net.Blazor.Server`, and `AddFormaUIServer()` registers it through
-`AddFormaCultureServer()`, which also registers the culture state, its registration with the coordinator,
-the coordinated switch and the switch's policy. A host without `AddFormaUIServer()` makes the same call
-beside `AddFormaUI()`, and names the policy where a switch writes the culture cookie:
+The package comes with `formaui-net.Blazor.Server`, and `AddFormaServerIntegration()` registers it through
+`AddFormaCultureServerIntegration()`, which also registers the culture state, its registration with the coordinator,
+the coordinated switch and the switch's policy. A host without `AddFormaServerIntegration()` makes the same call
+beside `AddFormaUIServices()`, and names the policy where a switch writes the culture cookie:
 
 ```csharp
-builder.Services.AddFormaCultureServer(new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie });
-builder.Services.AddFormaUI();
+builder.Services.AddFormaCultureServerIntegration(new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie });
+builder.Services.AddFormaUIServices();
 ```
 
 ## The request's cultures

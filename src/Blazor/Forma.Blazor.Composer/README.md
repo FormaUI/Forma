@@ -26,13 +26,13 @@ using Forma.Blazor.Components.Composer;
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 builder.Services.AddFormaComposer(composer => composer
     .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
     .TryAddDefaultPlugins());
 ```
 
-`AddFormaUIServer()` registers what the composer needs from the library, the HTML sanitizer among it.
+`AddFormaServerIntegration()` registers what the composer needs from the library, the HTML sanitizer among it.
 `AddFormaComposer` describes, once, the plugins every composer in the application is built from.
 
 ## Use
@@ -177,7 +177,7 @@ Each registration is optional and enables one thing.
 | --- | --- |
 | `IFileStore` (`Forma.Framework.Resources`) | Uploading attachments through `FileUploadPlugin`, into the store. |
 | `IComposerDocumentConverter` (`Forma.Framework.Composer.Documents`) | Switching between editors whose formats differ, for the pair of formats it converts. |
-| `IHtmlSanitizer` or `IMarkupPolicy` (`Forma.Framework.Sanitization`) | A sanitizer of the host's own, or the library's with rules of the host's own, registered before `AddFormaUIServer()`, and in a WebAssembly client before `AddFormaUIWebAssembly()`. |
+| `IHtmlSanitizer` or `IMarkupPolicy` (`Forma.Framework.Sanitization`) | A sanitizer of the host's own, or the library's with rules of the host's own, registered before `AddFormaServerIntegration()`, and in a WebAssembly client before `AddFormaWebAssemblyIntegration()`. |
 
 ```csharp
 using Forma.Framework.Resources;

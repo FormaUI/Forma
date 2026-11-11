@@ -21,7 +21,7 @@ public static class ServiceCollectionExtensions
     /// <param name="policy">How a switch persists the pair the page accepts, which a standalone app's page publishes; <see langword="null"/> takes <see cref="CultureSwitchPolicy.Default"/>.</param>
     /// <returns>The same collection.</returns>
     /// <exception cref="InvalidOperationException">A policy is given for an independent client culture, which persists nothing.</exception>
-    public static IServiceCollection AddFormaCultureWebAssembly(this IServiceCollection services, CultureArrangement arrangement = CultureArrangement.Coordinated, CultureSwitchPolicy? policy = null)
+    public static IServiceCollection AddFormaCultureWebAssemblyIntegration(this IServiceCollection services, CultureArrangement arrangement = CultureArrangement.Coordinated, CultureSwitchPolicy? policy = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 

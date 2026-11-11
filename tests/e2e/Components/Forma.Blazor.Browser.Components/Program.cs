@@ -16,7 +16,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 builder.Services.AddCheckedComponents();
-builder.AddFormaUIServer(options => options.InputRouting = CheckServices.InputRouting);
+builder.AddFormaServerIntegration(options => options.InputRouting = CheckServices.InputRouting);
 
 var app = builder.Build();
 

@@ -9,7 +9,7 @@ right to left and read as Hebrew by browsers and screen readers.
 
 ## Use it
 
-The package comes with `formaui-net.Blazor`, whose `AddFormaUI()` registers it through
+The package comes with `formaui-net.Blazor`, whose `AddFormaUIServices()` registers it through
 `AddFormaCultureCoordination()`, and `formaui-net.Framework.Culture.Blazor.Server`'s circuit handler
 registers each circuit with it, as `formaui-net.Framework.Culture.Blazor.WebAssembly`'s startup registers
 each WebAssembly runtime:

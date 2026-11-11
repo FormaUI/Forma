@@ -41,8 +41,8 @@ exclusions, listener-registration order, or incidental event propagation.
   the router's.
 - `FormaDialog` registers a modal scope and keeps native dialog semantics.
 - Host policy and the host's own routes reach the script through a scoped .NET bridge,
-  configured where the host registers the library, `AddFormaUIServer`,
-  `AddFormaUIWebAssembly` or `AddFormaUIWebView`. A host route is
+  configured where the host registers the library, `AddFormaServerIntegration`,
+  `AddFormaWebAssemblyIntegration` or `AddFormaWebViewIntegration`. A host route is
   answered once every component scope on the path has declined.
 - The router stamps each active registration's element with its place in the ordering,
   `data-forma-layer`, for a surface outside the top layer to draw from; the visual order
@@ -408,7 +408,7 @@ Three roles, not an override chain:
 | Role | Holds | Who sets it |
 | --- | --- | --- |
 | Router invariants | The modal barrier, structural isolation, one ambient owner, the native table | The router; not configurable |
-| Host policy | Application-wide defaults (what a press away does, what Escape does, what a close request does); the bindings it remaps by action; its own routes, answered through its `IInputActionHandler` — `Routes` once every component scope has declined, `PreemptiveRoutes` before anything local | `InputRouterOptions` through `AddFormaUIServer`, `AddFormaUIWebAssembly` or `AddFormaUIWebView` |
+| Host policy | Application-wide defaults (what a press away does, what Escape does, what a close request does); the bindings it remaps by action; its own routes, answered through its `IInputActionHandler` — `Routes` once every component scope has declined, `PreemptiveRoutes` before anything local | `InputRouterOptions` through `AddFormaServerIntegration`, `AddFormaWebAssemblyIntegration` or `AddFormaWebViewIntegration` |
 | Scope profiles | A component's capabilities, its actions with their default bindings, its local dismissal behavior | The component, exposing to its host only what a host would reasonably choose |
 
 The resolver combines them into one decision. A host cannot casually override an invariant;

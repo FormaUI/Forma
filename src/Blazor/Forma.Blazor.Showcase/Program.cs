@@ -30,12 +30,12 @@ builder.Services.AddJsonLocalization();
 builder.Services.AddFormaTwemojiPack();
 builder.Services.AddSingleton(new SandboxAssets(builder.Environment.ContentRootPath));
 // The showcase's own input routes: a preemptive palette shortcut and a fallback help key.
-builder.AddFormaUIServer(options => options.InputRouting = new InputRouterOptions
+builder.AddFormaServerIntegration(options => options.InputRouting = new InputRouterOptions
 {
     PreemptiveRoutes = [new InputRoute("app.palette", KeyBinding.Shortcut("k"))],
     Routes = [new InputRoute("app.help", new KeyBinding("F1"))],
 });
-builder.Services.AddFormaDataView();
+builder.Services.AddFormaDataViewServices();
 builder.Services.AddScoped<ShowcaseInputActions>();
 builder.Services.AddScoped<IInputActionHandler>(services => services.GetRequiredService<ShowcaseInputActions>());
 builder.Services.AddFormaShareNetworks();

@@ -26,7 +26,7 @@ public static class MauiProgram
         builder.UseMauiApp<App>();
         builder.Services.AddCheckedComponents();
         builder.Services.AddMauiBlazorWebView();
-        builder.Services.AddFormaUIWebView(options => options.InputRouting = CheckServices.InputRouting);
+        builder.Services.AddFormaWebViewIntegration(options => options.InputRouting = CheckServices.InputRouting);
         builder.Services.AddJsonLocalization();
 
         return builder.Build();

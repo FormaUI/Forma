@@ -19,7 +19,7 @@ using Forma.Blazor;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Keyboard;
 
-builder.AddFormaUIServer(options => options.InputRouting = new InputRouterOptions
+builder.AddFormaServerIntegration(options => options.InputRouting = new InputRouterOptions
 {
     PreemptiveRoutes = [new InputRoute("app.palette", KeyBinding.Shortcut("p", shift: true))],
     Routes = [new InputRoute("app.help", new KeyBinding("F1"))],

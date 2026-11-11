@@ -16,7 +16,7 @@ public static class MauiProgram
         var builder = MauiApp.CreateBuilder();
         builder.UseMauiApp<App>();
         builder.Services.AddMauiBlazorWebView();
-        builder.Services.AddFormaUIWebView();
+        builder.Services.AddFormaWebViewIntegration();
         builder.Services.AddFormaMauiOperations();
         builder.Services.AddJsonLocalization();
         builder.Services.AddSingleton<NativeWindows>();

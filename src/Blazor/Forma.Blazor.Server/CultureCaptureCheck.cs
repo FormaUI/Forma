@@ -29,7 +29,7 @@ internal sealed class CultureCaptureCheck(IConfiguration configuration, IEnumera
         {
             throw new InvalidOperationException(
                 $"{Setting} is false, but the server renders WebAssembly components under the coordinated culture arrangement, which starts each WebAssembly runtime in the pair the server rendered it in and so needs the server to hand it over. "
-                + $"Remove the false, or declare the client's culture independent with {nameof(CultureArrangement)}.{nameof(CultureArrangement.Independent)} on both AddFormaUIServer and AddFormaUIWebAssembly.");
+                + $"Remove the false, or declare the client's culture independent with {nameof(CultureArrangement)}.{nameof(CultureArrangement.Independent)} on both AddFormaServerIntegration and AddFormaWebAssemblyIntegration.");
         }
 
         return Task.CompletedTask;

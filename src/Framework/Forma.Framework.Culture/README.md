@@ -7,7 +7,7 @@ and subscribes to the state to hear of each change.
 
 ## Use it
 
-The package comes with `formaui-net.Blazor`, and `AddFormaUI()` registers its state through
+The package comes with `formaui-net.Blazor`, and `AddFormaUIServices()` registers its state through
 `AddFormaCultureServices()`:
 
 | Service | Registered as |
@@ -56,10 +56,10 @@ application's.
 ## Switching
 
 `ICultureSwitch.SwitchAsync(culture, uiCulture)` requests both cultures; an omitted `uiCulture` takes
-`culture`. On an Interactive Server circuit, which `AddFormaUIServer()` sets up, the switch requests
+`culture`. On an Interactive Server circuit, which `AddFormaServerIntegration()` sets up, the switch requests
 through the page's culture coordinator, so every circuit on the page and the document follow it, as
 [`Forma.Framework.Culture.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture.Blazor.Server/README.md)
-sets out; a WebAssembly runtime's, which `AddFormaUIWebAssembly()` sets up, requests through the same
+sets out; a WebAssembly runtime's, which `AddFormaWebAssemblyIntegration()` sets up, requests through the same
 coordinator. `LocalCultureSwitch` accepts each switch at once and applies it to the user scope's state alone,
 the switch of a client whose culture its host declared independent, `CultureArrangement.Independent`.
 Either way, once the switch completes, the state holds the new cultures and its subscribers have been

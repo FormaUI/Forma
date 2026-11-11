@@ -10,8 +10,8 @@ user's work.
 
 ## Use it
 
-The package comes with `formaui-net.Blazor.WebView`, and `AddFormaUIWebView()` registers it through
-`AddFormaCultureWebView()`:
+The package comes with `formaui-net.Blazor.WebView`, and `AddFormaWebViewIntegration()` registers it through
+`AddFormaCultureWebViewIntegration()`:
 
 | Service | Registered as |
 | --- | --- |
@@ -32,8 +32,8 @@ its own.
 
 ## A culture per web view
 
-`AddFormaCultureWebView(CultureArrangement.Independent)`, which
-`AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent)` makes, gives each web
+`AddFormaCultureWebViewIntegration(CultureArrangement.Independent)`, which
+`AddFormaWebViewIntegration(options => options.CultureArrangement = CultureArrangement.Independent)` makes, gives each web
 view a culture of its own:
 
 | Service | Registered as |
@@ -60,7 +60,7 @@ server.
 ## Culture routing
 
 Pages a Web App shares with the application, culture route pages under `CultureRouteScope`, route as they
-do in the Web App, registered with `AddFormaCultureRouting` before or after `AddFormaUIWebView()` under
+do in the Web App, registered with `AddFormaCultureRouting` before or after `AddFormaWebViewIntegration()` under
 `CultureSwitchMode.InPlace`; a full-load switch is rejected with `InvalidOperationException` as the
 coordinator, or under a culture per web view a web view's start, is first resolved, since a web view reloads
 only by restarting its session. By default the application's culture decides each web view's address: a

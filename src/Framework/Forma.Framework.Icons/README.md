@@ -104,11 +104,11 @@ public sealed class HouseIconProvider : IIconProvider
 ```
 
 Register it as the `IIconProvider` on each side that renders icons, in any order beside
-`AddFormaUIServer()` and `AddFormaUIWebAssembly()`, which register no icon provider of their own:
+`AddFormaServerIntegration()` and `AddFormaWebAssemblyIntegration()`, which register no icon provider of their own:
 
 ```csharp
 builder.Services.AddSingleton<IIconProvider, HouseIconProvider>();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 ```
 
 `FormaIcon` also takes a provider for one icon through its `Provider` parameter, or for a subtree

@@ -59,11 +59,11 @@ public sealed class CdnEmojiProvider : IEmojiProvider
 ```
 
 Register it as the `IEmojiProvider` on each side that renders emoji, in any order beside
-`AddFormaUIServer()` and `AddFormaUIWebAssembly()`, which register no emoji provider of their own:
+`AddFormaServerIntegration()` and `AddFormaWebAssemblyIntegration()`, which register no emoji provider of their own:
 
 ```csharp
 builder.Services.AddSingleton<IEmojiProvider, CdnEmojiProvider>();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 ```
 
 ## Providing a catalog

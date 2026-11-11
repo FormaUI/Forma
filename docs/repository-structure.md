@@ -187,11 +187,11 @@ whichever package brings it to a host.
 - A share destination the host switches on one by one, `AddFormaDiscordSharing(configure)`, is added rather than
   tried.
 
-**`Forma.Blazor` ships one aggregate registrar, `AddFormaUI()`**, fanning out to every default a component needs in
+**`Forma.Blazor` ships one aggregate registrar, `AddFormaUIServices()`**, fanning out to every default a component needs in
 any render mode. Each render-mode half ships one more that calls it and adds its render mode's halves, so a host
-makes one call on each side: `AddFormaUIServer()` on the host's builder, `AddFormaUIWebAssembly()` and
-`AddFormaUIWebView()`. A Framework half that serves a render mode names its registrar for it: `AddFormaCultureServer()`,
-`AddFormaCultureWebAssembly()`, `AddFormaCultureWebView()` and `AddFormaBrowserServer()`.
+makes one call on each side: `AddFormaServerIntegration()` on the host's builder, `AddFormaWebAssemblyIntegration()` and
+`AddFormaWebViewIntegration()`. A Framework half that serves a render mode names its registrar for it: `AddFormaCultureServerIntegration()`,
+`AddFormaCultureWebAssemblyIntegration()`, `AddFormaCultureWebViewIntegration()` and `AddFormaBrowserServerIntegration()`.
 
 **A component whose optional contract is unregistered falls back to a default the library carries**, as `FormaIcon`
 does with the library's own glyph artwork. A contract carrying data nobody can synthesize, such as an emoji catalog,
@@ -384,7 +384,7 @@ features that own them.
 ### Test support
 
 - **`FormaBunitContext`**, in `Forma.Tests.Support.Blazor`, is the shared test context of every bUnit suite. It
-  registers localization, the Twemoji pack and `AddFormaUI`. That project holds what a component test needs and a
+  registers localization, the Twemoji pack and `AddFormaUIServices`. That project holds what a component test needs and a
   Framework test must not pull in, bUnit and the product itself, so `Forma.Tests.Support` stays free of both and every
   test project can reference it.
 - **A fake, fixture or utility one suite uses** lives in that suite's `Support/` folder, under its `Support`

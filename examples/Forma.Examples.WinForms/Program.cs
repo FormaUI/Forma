@@ -15,7 +15,7 @@ internal static class Program
         CultureSettings.Apply();
 
         var services = new ServiceCollection();
-        services.AddFormaUIWebView();
+        services.AddFormaWebViewIntegration();
         services.AddJsonLocalization();
         services.AddWindowsFormsBlazorWebView();
         services.AddSingleton<NativeWindows>();

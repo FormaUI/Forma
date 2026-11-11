@@ -13,7 +13,7 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The collection to register into.</param>
     /// <param name="policy">How a switch persists the pair it accepts; <see langword="null"/> takes <see cref="CultureSwitchPolicy.Default"/>.</param>
     /// <returns>The same collection.</returns>
-    public static IServiceCollection AddFormaCultureServer(this IServiceCollection services, CultureSwitchPolicy? policy = null)
+    public static IServiceCollection AddFormaCultureServerIntegration(this IServiceCollection services, CultureSwitchPolicy? policy = null)
     {
         ArgumentNullException.ThrowIfNull(services);
 

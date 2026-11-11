@@ -13,13 +13,13 @@ switch's policy; a page a server rendered starts from the marker `FormaPageHead`
 
 ## Use it
 
-The package comes with `formaui-net.Blazor.WebAssembly`, and `AddFormaUIWebAssembly()` registers it
-through `AddFormaCultureWebAssembly()`. A client whose host declared its culture independent registers the
+The package comes with `formaui-net.Blazor.WebAssembly`, and `AddFormaWebAssemblyIntegration()` registers it
+through `AddFormaCultureWebAssemblyIntegration()`. A client whose host declared its culture independent registers the
 local switch instead, which changes the runtime alone:
 
 ```csharp
-builder.Services.AddFormaCultureWebAssembly(CultureArrangement.Independent);
-builder.Services.AddFormaUI();
+builder.Services.AddFormaCultureWebAssemblyIntegration(CultureArrangement.Independent);
+builder.Services.AddFormaUIServices();
 ```
 
 A client that registers its own culture state registers it once per runtime too, as a singleton.

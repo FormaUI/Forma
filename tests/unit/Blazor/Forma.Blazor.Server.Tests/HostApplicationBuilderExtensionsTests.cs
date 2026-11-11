@@ -16,7 +16,7 @@ public sealed class HostApplicationBuilderExtensionsTests
         var builder = Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings());
 
         // Act
-        builder.AddFormaUIServer();
+        builder.AddFormaServerIntegration();
 
         // Assert
         Assert.Multiple(
@@ -31,7 +31,7 @@ public sealed class HostApplicationBuilderExtensionsTests
         var builder = Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings());
 
         // Act
-        builder.AddFormaUIServer();
+        builder.AddFormaServerIntegration();
 
         // Assert
         using var provider = builder.Services.BuildServiceProvider();
@@ -46,7 +46,7 @@ public sealed class HostApplicationBuilderExtensionsTests
         var policy = new InputRouterOptions { Escape = DismissBehavior.Ignore };
 
         // Act
-        builder.AddFormaUIServer(options => options.InputRouting = policy);
+        builder.AddFormaServerIntegration(options => options.InputRouting = policy);
 
         // Assert
         using var provider = builder.Services.BuildServiceProvider();
@@ -79,7 +79,7 @@ public sealed class HostApplicationBuilderExtensionsTests
             var builder = CreateBuilder();
 
             // Act
-            builder.AddFormaUIServer();
+            builder.AddFormaServerIntegration();
 
             // Assert
             Assert.Equal("true", builder.Configuration[Setting]);
@@ -94,8 +94,8 @@ public sealed class HostApplicationBuilderExtensionsTests
             SetCapture(before, "false");
 
             // Act
-            before.AddFormaUIServer();
-            after.AddFormaUIServer();
+            before.AddFormaServerIntegration();
+            after.AddFormaServerIntegration();
             SetCapture(after, "false");
 
             // Assert
@@ -116,7 +116,7 @@ public sealed class HostApplicationBuilderExtensionsTests
                 SetCapture(builder, value);
             }
 
-            builder.AddFormaUIServer();
+            builder.AddFormaServerIntegration();
 
             if (!isSetFirst)
             {
@@ -142,7 +142,7 @@ public sealed class HostApplicationBuilderExtensionsTests
             // Arrange
             var builder = CreateBuilder();
             SetCapture(builder, "false");
-            builder.AddFormaUIServer(options => options.CultureArrangement = CultureArrangement.Independent);
+            builder.AddFormaServerIntegration(options => options.CultureArrangement = CultureArrangement.Independent);
             using var host = builder.Build();
 
             // Act
@@ -161,7 +161,7 @@ public sealed class HostApplicationBuilderExtensionsTests
             // Arrange
             var builder = CreateBuilder(rendersWebAssembly: false);
             SetCapture(builder, "false");
-            builder.AddFormaUIServer();
+            builder.AddFormaServerIntegration();
             using var host = builder.Build();
 
             // Act
@@ -177,7 +177,7 @@ public sealed class HostApplicationBuilderExtensionsTests
         {
             // Arrange
             var builder = CreateBuilder();
-            builder.AddFormaUIServer();
+            builder.AddFormaServerIntegration();
             using var host = builder.Build();
 
             // Act
@@ -196,7 +196,7 @@ public sealed class HostApplicationBuilderExtensionsTests
         var builder = Host.CreateEmptyApplicationBuilder(new HostApplicationBuilderSettings());
 
         // Act
-        var returned = builder.AddFormaUIServer();
+        var returned = builder.AddFormaServerIntegration();
 
         // Assert
         Assert.Same(builder, returned);

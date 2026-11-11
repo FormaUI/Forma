@@ -22,7 +22,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_register_the_sprite_loader_once_per_circuit()
     {
         // Act
-        var services = new ServiceCollection().AddFormaUI();
+        var services = new ServiceCollection().AddFormaUIServices();
 
         // Assert
         var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IEmojiSpriteLoader));
@@ -37,7 +37,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_register_one_culture_state_per_circuit()
     {
         // Act
-        var services = new ServiceCollection().AddFormaUI();
+        var services = new ServiceCollection().AddFormaUIServices();
 
         // Assert
         var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState));
@@ -47,7 +47,7 @@ public sealed class ServiceCollectionExtensionsTests
     [Fact]
     public void Should_register_the_default_input_policy()
     {
-        using var provider = new ServiceCollection().AddFormaUI().BuildServiceProvider();
+        using var provider = new ServiceCollection().AddFormaUIServices().BuildServiceProvider();
 
         Assert.Same(InputRouterOptions.Default, provider.GetRequiredService<InputRouterOptions>());
     }
@@ -57,7 +57,7 @@ public sealed class ServiceCollectionExtensionsTests
     {
         var policy = new InputRouterOptions { Escape = DismissBehavior.Ignore };
 
-        using var provider = new ServiceCollection().AddFormaUI(policy).BuildServiceProvider();
+        using var provider = new ServiceCollection().AddFormaUIServices(policy).BuildServiceProvider();
 
         Assert.Same(policy, provider.GetRequiredService<InputRouterOptions>());
     }
@@ -69,7 +69,7 @@ public sealed class ServiceCollectionExtensionsTests
         var services = new ServiceCollection();
         services.AddSingleton(policy);
 
-        using var provider = services.AddFormaUI().BuildServiceProvider();
+        using var provider = services.AddFormaUIServices().BuildServiceProvider();
 
         Assert.Same(policy, provider.GetRequiredService<InputRouterOptions>());
     }
@@ -78,7 +78,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_register_no_artwork_of_its_own()
     {
         // Act
-        var services = new ServiceCollection().AddFormaUI();
+        var services = new ServiceCollection().AddFormaUIServices();
 
         // Assert
         Assert.Multiple(
@@ -90,7 +90,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_register_the_platform_s_logging_and_no_stand_in_for_the_runtime_or_the_localization()
     {
         // Act
-        var services = new ServiceCollection().AddFormaUI();
+        var services = new ServiceCollection().AddFormaUIServices();
 
         // Assert
         using var provider = services.BuildServiceProvider();
@@ -109,7 +109,7 @@ public sealed class ServiceCollectionExtensionsTests
         // Arrange — each registered as its own registrar does, only where nothing is registered for it yet
         IJSRuntime runtime = new FakeJSRuntime((_, _) => null);
         using var loggerProvider = new FakeLoggerProvider();
-        var services = new ServiceCollection().AddFormaUI();
+        var services = new ServiceCollection().AddFormaUIServices();
 
         // Act
         services.TryAddScoped(_ => runtime);
@@ -139,7 +139,7 @@ public sealed class ServiceCollectionExtensionsTests
         services.AddSingleton<IStringLocaleFactory>(localeFactory);
         services.AddSingleton(runtime);
 
-        using var provider = services.AddFormaUI().BuildServiceProvider();
+        using var provider = services.AddFormaUIServices().BuildServiceProvider();
 
         Assert.Multiple(
             () => Assert.Same(loggerFactory, provider.GetRequiredService<ILoggerFactory>()),

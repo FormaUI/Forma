@@ -27,7 +27,7 @@ public sealed class ServiceCollectionExtensionsTests
             .AddScoped<NavigationManager>(_ => new FakeNavigationManager(new Uri("https://0.0.0.1/"), new Uri("https://0.0.0.1/about")));
 
         configure?.Invoke(services);
-        services.AddFormaCultureWebView(arrangement);
+        services.AddFormaCultureWebViewIntegration(arrangement);
         configureAfter?.Invoke(services);
 
         return services.BuildServiceProvider();
@@ -626,7 +626,7 @@ public sealed class ServiceCollectionExtensionsTests
         public void Should_reject_an_arrangement_neither_coordinated_nor_independent()
         {
             // Act
-            var exception = Record.Exception(() => new ServiceCollection().AddFormaCultureWebView((CultureArrangement)2));
+            var exception = Record.Exception(() => new ServiceCollection().AddFormaCultureWebViewIntegration((CultureArrangement)2));
 
             // Assert
             Assert.IsType<ArgumentOutOfRangeException>(exception);

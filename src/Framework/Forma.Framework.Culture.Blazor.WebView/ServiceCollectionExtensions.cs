@@ -24,7 +24,7 @@ public static class ServiceCollectionExtensions
     /// <param name="services">The collection to register into.</param>
     /// <param name="arrangement">Whether every web view follows the application's culture, or each holds a culture of its own.</param>
     /// <returns>The same collection.</returns>
-    public static IServiceCollection AddFormaCultureWebView(this IServiceCollection services, CultureArrangement arrangement = CultureArrangement.Coordinated)
+    public static IServiceCollection AddFormaCultureWebViewIntegration(this IServiceCollection services, CultureArrangement arrangement = CultureArrangement.Coordinated)
     {
         ArgumentNullException.ThrowIfNull(services);
 

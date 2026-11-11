@@ -6,6 +6,6 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddJsonLocalization();
-builder.Services.AddFormaUIWebAssembly();
+builder.Services.AddFormaWebAssemblyIntegration();
 
 await builder.Build().RunAsync();

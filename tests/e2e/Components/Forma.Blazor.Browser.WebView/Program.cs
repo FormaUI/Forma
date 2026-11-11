@@ -44,13 +44,13 @@ internal static class Program
         {
             AddRouting(services);
             services.AddJsonLocalization();
-            services.AddFormaUIWebView(ConfigureForma);
+            services.AddFormaWebViewIntegration(ConfigureForma);
             services.AddWpfBlazorWebView();
         }
         else
         {
             services.AddWpfBlazorWebView();
-            services.AddFormaUIWebView(ConfigureForma);
+            services.AddFormaWebViewIntegration(ConfigureForma);
             AddRouting(services);
             services.AddJsonLocalization();
         }
@@ -72,7 +72,7 @@ internal static class Program
     }
 
     // The checks' input policy, and a culture for each web view where the check asks for one.
-    private static void ConfigureForma(UIWebViewOptions options)
+    private static void ConfigureForma(WebViewIntegrationOptions options)
     {
         options.InputRouting = CheckServices.InputRouting;
 

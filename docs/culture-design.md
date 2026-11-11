@@ -712,7 +712,7 @@ under Blazor Hybrid the application's culture decides, and each web view's addre
 ### A culture per web view
 
 An application can give each web view a culture of its own, as a WebAssembly client can hold one apart from
-its page's, by declaring the independent arrangement on `AddFormaUIWebView`. Each web view is then a page of
+its page's, by declaring the independent arrangement on `AddFormaWebViewIntegration`. Each web view is then a page of
 its own, as a standalone app's is:
 
 - **A state and a switch per web view.** Each web view's scope resolves a culture state and a switch of its
@@ -756,9 +756,9 @@ as an integration with ASP.NET Core does across .NET:
 | `Forma.Framework.Culture.Router.AspNetCore` | The routing middleware and the cookie's server side |
 
 The product's registrars register all of them but the routing, which takes the host's options: the
-render-mode-neutral `AddFormaUI` registers the culture and its browser interop, and `AddFormaUIServer`,
-`AddFormaUIWebAssembly` and `AddFormaUIWebView` each add their render mode's half and its switch, through
-the culture's own `AddFormaCultureServer`, `AddFormaCultureWebAssembly` and `AddFormaCultureWebView`, as the
+render-mode-neutral `AddFormaUIServices` registers the culture and its browser interop, and `AddFormaServerIntegration`,
+`AddFormaWebAssemblyIntegration` and `AddFormaWebViewIntegration` each add their render mode's half and its switch, through
+the culture's own `AddFormaCultureServerIntegration`, `AddFormaCultureWebAssemblyIntegration` and `AddFormaCultureWebViewIntegration`, as the
 [WebAssembly design](webassembly-design.md) and the [WebView design](webview-design.md) set out, so a host
 makes one call on each side and can still override any single service.
 

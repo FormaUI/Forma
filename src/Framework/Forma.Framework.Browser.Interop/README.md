@@ -107,7 +107,7 @@ reaches, and neither does an element around a text field: a surface follows the 
 through `Focus.WatchAsync`, and a field's selection through `Text.WatchSelectionAsync`.
 
 A host registers the bridge the watchers and engines of one circuit share their imports through with
-`AddFormaBrowserServices`, which `AddFormaUI` calls. On Interactive Server, `AddFormaUIServer` also
+`AddFormaBrowserServices`, which `AddFormaUIServices` calls. On Interactive Server, `AddFormaServerIntegration` also
 registers `Forma.Framework.Browser.Blazor.Server`, which refreshes a circuit's observations, and has
 each text field whose edits could have been lost send its whole text, once its connection is restored.
 A watcher made with no bridge imports through one of its own, and its observations recover through

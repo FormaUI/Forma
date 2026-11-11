@@ -67,10 +67,10 @@ using Forma.Framework.Localization.Json;
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 builder.Services.AddJsonLocalization();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 ```
 
-`AddFormaUIServer()` registers every service the components use, and what an interactive server circuit needs. A
+`AddFormaServerIntegration()` registers every service the components use, and what an interactive server circuit needs. A
 host can replace any of them, and these calls can come in any order; [what the registration
 does](#what-the-registration-does) sets out what is registered and how to configure it.
 
@@ -267,7 +267,7 @@ dotnet add package formaui-net.AddOns.Emojis.Twemoji --prerelease
 
 ```csharp
 builder.Services.AddFormaTwemojiPack();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 ```
 
 ## Styling and theming
@@ -473,7 +473,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 builder.Services.AddJsonLocalization();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 ```
 
 <!-- example: examples/Forma.Examples.Coordinated/Program.cs -->
@@ -486,7 +486,7 @@ app.MapRazorComponents<App>()
 
 Two requirements hold for a coordinated page:
 
-- **The framework's culture handoff stays on.** `AddFormaUIServer()` turns on `Components:UseCultureFromServer`,
+- **The framework's culture handoff stays on.** `AddFormaServerIntegration()` turns on `Components:UseCultureFromServer`,
   the framework's handoff of the server's culture to the client, wherever the configuration names no value. The
   host fails to start where its configuration sets it to `false`.
 - **`FormaPageHead` is in the page's head.** It publishes the cultures the server rendered the page in, which the
@@ -509,7 +509,7 @@ It registers its half:
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 
 builder.Services.AddJsonLocalization();
-builder.Services.AddFormaUIWebAssembly();
+builder.Services.AddFormaWebAssemblyIntegration();
 
 await builder.Build().RunAsync();
 ```
@@ -550,12 +550,12 @@ Both sides declare the arrangement, and the culture handoff may then be off:
 
 <!-- example: examples/Forma.Examples.Independent/Program.cs -->
 ```csharp
-builder.AddFormaUIServer(options => options.CultureArrangement = CultureArrangement.Independent);
+builder.AddFormaServerIntegration(options => options.CultureArrangement = CultureArrangement.Independent);
 ```
 
 <!-- example: examples/Forma.Examples.Independent.Client/Program.cs -->
 ```csharp
-builder.Services.AddFormaUIWebAssembly(options => options.CultureArrangement = CultureArrangement.Independent);
+builder.Services.AddFormaWebAssemblyIntegration(options => options.CultureArrangement = CultureArrangement.Independent);
 ```
 
 <!-- example: examples/Forma.Examples.Independent/appsettings.json -->
@@ -611,7 +611,7 @@ A WPF application builds the provider as it starts:
 ```csharp
 var services = new ServiceCollection();
 services.AddWpfBlazorWebView();
-services.AddFormaUIWebView();
+services.AddFormaWebViewIntegration();
 services.AddJsonLocalization();
 ```
 
@@ -629,7 +629,7 @@ private static void Main()
 <!-- example: examples/Forma.Examples.WinForms/Program.cs -->
 ```csharp
 var services = new ServiceCollection();
-services.AddFormaUIWebView();
+services.AddFormaWebViewIntegration();
 services.AddJsonLocalization();
 services.AddWindowsFormsBlazorWebView();
 ```
@@ -642,19 +642,19 @@ and Mac Catalyst, whose web views do none of the three:
 <!-- example: examples/Forma.Examples.Maui/MauiProgram.cs -->
 ```csharp
 builder.Services.AddMauiBlazorWebView();
-builder.Services.AddFormaUIWebView();
+builder.Services.AddFormaWebViewIntegration();
 builder.Services.AddFormaMauiOperations();
 builder.Services.AddJsonLocalization();
 ```
 
-`AddFormaUIWebView()` registers what `AddFormaUI()` does, and the culture's half for an application's web views:
+`AddFormaWebViewIntegration()` registers what `AddFormaUIServices()` does, and the culture's half for an application's web views:
 one culture state, one switch and one coordinator for the application. The coordinator applies a switch to the
 state, to the process's default cultures and to the thread each web view runs its events on, and delivers it to
 every web view's document.
 
 - A component, or the application's own code, switches through `ICultureSwitch`.
 - Application-wide shortcuts are passed as
-  `AddFormaUIWebView(options => options.InputRouting = new InputRouterOptions { ... })`.
+  `AddFormaWebViewIntegration(options => options.InputRouting = new InputRouterOptions { ... })`.
 - Culture routing registers as in a Web App, before or after, under `CultureSwitchMode.InPlace`, as
   [the culture design](https://github.com/FormaUI/Forma/blob/main/docs/culture-design.md#blazor-hybrid) sets out.
 
@@ -767,7 +767,7 @@ rejected, since no request reaches a server to read one.
 An application whose native windows each show a culture of their own declares it as it registers:
 
 ```csharp
-services.AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent);
+services.AddFormaWebViewIntegration(options => options.CultureArrangement = CultureArrangement.Independent);
 ```
 
 Each web view then holds a culture state and a switch of its own. A switch in one web view, or under culture routing
@@ -789,7 +789,7 @@ reads them with no folder beside it.
 
 ## What the registration does
 
-`AddFormaUIServer()` registers the services the components use, through `AddFormaUI()`:
+`AddFormaServerIntegration()` registers the services the components use, through `AddFormaUIServices()`:
 
 - the toast and confirmation dialog services;
 - the status badge catalog;
@@ -807,7 +807,7 @@ registered for it yet.
 logging, the JS runtime, the string locale factory `AddJsonLocalization()` registers, or an artwork pack's
 providers.
 
-**Options** are passed to `AddFormaUIServer(options => ...)`:
+**Options** are passed to `AddFormaServerIntegration(options => ...)`:
 
 | Option | What it sets | Documented by |
 |--------|--------------|---------------|

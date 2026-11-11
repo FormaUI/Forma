@@ -23,7 +23,7 @@ public sealed class WebViewServiceCollectionExtensionsTests
     public void Should_register_one_culture_state_and_one_switch_for_the_application()
     {
         // Act
-        var services = new ServiceCollection().AddFormaUIWebView();
+        var services = new ServiceCollection().AddFormaWebViewIntegration();
 
         // Assert
         Assert.Multiple(
@@ -43,11 +43,11 @@ public sealed class WebViewServiceCollectionExtensionsTests
 
         if (isPlatformFirst)
         {
-            AddPlatform(services).AddFormaUIWebView();
+            AddPlatform(services).AddFormaWebViewIntegration();
         }
         else
         {
-            AddPlatform(services.AddFormaUIWebView());
+            AddPlatform(services.AddFormaWebViewIntegration());
         }
 
         await using var provider = services.BuildServiceProvider();
@@ -68,7 +68,7 @@ public sealed class WebViewServiceCollectionExtensionsTests
         // Arrange
         using var fixture = new CultureFixture("en-US");
         await using var provider = AddPlatform(new ServiceCollection())
-            .AddFormaUIWebView(options => options.CultureArrangement = CultureArrangement.Independent)
+            .AddFormaWebViewIntegration(options => options.CultureArrangement = CultureArrangement.Independent)
             .BuildServiceProvider();
         await using var first = provider.CreateAsyncScope();
         await using var second = provider.CreateAsyncScope();
@@ -87,7 +87,7 @@ public sealed class WebViewServiceCollectionExtensionsTests
     public void Should_register_the_default_input_policy()
     {
         // Act
-        using var provider = new ServiceCollection().AddFormaUIWebView().BuildServiceProvider();
+        using var provider = new ServiceCollection().AddFormaWebViewIntegration().BuildServiceProvider();
 
         // Assert
         Assert.Same(InputRouterOptions.Default, provider.GetRequiredService<InputRouterOptions>());
@@ -100,7 +100,7 @@ public sealed class WebViewServiceCollectionExtensionsTests
         var policy = new InputRouterOptions { Escape = DismissBehavior.Ignore };
 
         // Act
-        using var provider = new ServiceCollection().AddFormaUIWebView(options => options.InputRouting = policy).BuildServiceProvider();
+        using var provider = new ServiceCollection().AddFormaWebViewIntegration(options => options.InputRouting = policy).BuildServiceProvider();
 
         // Assert
         Assert.Same(policy, provider.GetRequiredService<InputRouterOptions>());

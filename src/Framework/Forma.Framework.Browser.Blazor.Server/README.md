@@ -7,8 +7,8 @@ component, and every text field whose text the circuit holds at another revision
 text, so an edit lost while the connection was down is replaced. Nothing is called on the circuit's
 first connection, before anything has been observed or edited.
 
-The package comes with `formaui-net.Blazor.Server`, and `AddFormaUIServer` registers it through
-`AddFormaBrowserServer`, which also registers the browser services of
+The package comes with `formaui-net.Blazor.Server`, and `AddFormaServerIntegration` registers it through
+`AddFormaBrowserServerIntegration`, which also registers the browser services of
 `Forma.Framework.Browser.Interop`. A watcher made with no registered bridge is outside its reach and
 recovers through its observations' `RefreshAsync`.
 

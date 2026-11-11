@@ -23,7 +23,7 @@ public static class CheckServices
     /// <returns>The same collection.</returns>
     public static IServiceCollection AddCheckedComponents(this IServiceCollection services)
         => services
-            .AddFormaDataView()
+            .AddFormaDataViewServices()
             .AddFormaComposer(composer => composer
                 .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
                 .TryAddDefaultPlugins())

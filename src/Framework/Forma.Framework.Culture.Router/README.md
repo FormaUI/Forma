@@ -18,7 +18,7 @@ using Forma.Blazor;
 using Forma.Framework.Culture.Router;
 using Forma.Framework.Culture.Router.AspNetCore;
 
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 builder.Services.AddFormaCultureRouting(new CultureRouterOptions
 {
     Prefix = CulturePrefix.ExceptDefault,
@@ -43,7 +43,7 @@ culture addressing it gives, and the `CultureSwitcher` each user scope switches 
 services the product's registrar registers, so it goes before or after that registrar. Culture
 addresses then decide the page's culture: the switch that
 [`formaui-net.Blazor.Server`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Server/README.md)'s
-`AddFormaUIServer()` registers navigates to the address of the pair it is asked for, and the page's
+`AddFormaServerIntegration()` registers navigates to the address of the pair it is asked for, and the page's
 culture coordinator accepts each navigation's landing: an enhanced navigation's from the pair its
 response was rendered in, and an interactive one's from the route its page was routed with. With these
 options `/about` serves English, `/he/about` Hebrew, `/he-de/about` Hebrew text with German formats, and

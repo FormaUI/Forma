@@ -31,7 +31,7 @@ public sealed class ServiceCollectionExtensionsTests
             services.AddFormaCultureRouting(new CultureRouterOptions { DefaultCulture = "en", Routes = [new() { Token = "en", UICulture = new("en") }] });
         }
 
-        return services.AddFormaCultureWebAssembly(arrangement, policy).BuildServiceProvider();
+        return services.AddFormaCultureWebAssemblyIntegration(arrangement, policy).BuildServiceProvider();
     }
 
     // The runtime starts its hosted services from its root provider, apart from the scope its components resolve from.
@@ -243,7 +243,7 @@ public sealed class ServiceCollectionExtensionsTests
         public void Should_reject_a_switch_policy()
         {
             // Act
-            var exception = Record.Exception(() => new ServiceCollection().AddFormaCultureWebAssembly(CultureArrangement.Independent, CultureSwitchPolicy.Default));
+            var exception = Record.Exception(() => new ServiceCollection().AddFormaCultureWebAssemblyIntegration(CultureArrangement.Independent, CultureSwitchPolicy.Default));
 
             // Assert
             Assert.IsType<InvalidOperationException>(exception);
@@ -258,7 +258,7 @@ public sealed class ServiceCollectionExtensionsTests
             // Act
             var services = new ServiceCollection()
                 .AddFormaCultureRouting(new CultureRouterOptions { DefaultCulture = "en", Routes = [new() { Token = "en", UICulture = new("en") }] })
-                .AddFormaCultureWebAssembly();
+                .AddFormaCultureWebAssemblyIntegration();
 
             // Assert
             Assert.Multiple(
@@ -273,7 +273,7 @@ public sealed class ServiceCollectionExtensionsTests
         public void Should_reject_an_arrangement_it_does_not_name()
         {
             // Act
-            var exception = Record.Exception(() => new ServiceCollection().AddFormaCultureWebAssembly((CultureArrangement)7));
+            var exception = Record.Exception(() => new ServiceCollection().AddFormaCultureWebAssemblyIntegration((CultureArrangement)7));
 
             // Assert
             Assert.IsType<ArgumentOutOfRangeException>(exception);

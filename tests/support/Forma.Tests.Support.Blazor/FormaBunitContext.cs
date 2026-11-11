@@ -30,7 +30,7 @@ public abstract class FormaBunitContext : BunitContext
         Services.AddJsonLocalization(new LocalizationOptions { LocalePacks = LocaleAssemblyLoader.LoadPacks(typeof(FormaBunitContext).Assembly, NullLogger.Instance) });
         Services.AddFormaTwemojiPack();
         Services.AddScoped<ICultureSwitch, TestCultureSwitch>();
-        Services.AddFormaUI();
+        Services.AddFormaUIServices();
     }
 
     /// <summary>Switches the cultures the rendered components follow through the test switch, leaving the caller's own cultures as they were.</summary>

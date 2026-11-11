@@ -43,7 +43,7 @@ that fails to load, reaches a host through the log the host already configures.
   locale factory are what every component needs, and each is supplied by another registrar,
   the platform's or a localization package's, with `TryAdd`. The bases resolve the runtime and
   the locale factory where they are registered and fall back to their null objects where they
-  aren't, and the logger factory is the platform's, which `AddFormaUI` registers through
+  aren't, and the logger factory is the platform's, which `AddFormaUIServices` registers through
   `AddLogging`, so no registration of Forma's stands in for the real one, and the order a host
   registers in changes nothing.
 - **Every render mode.** A component works under static server rendering, Interactive Server,

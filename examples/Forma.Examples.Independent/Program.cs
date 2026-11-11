@@ -9,7 +9,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 builder.Services.AddJsonLocalization();
-builder.AddFormaUIServer(options => options.CultureArrangement = CultureArrangement.Independent);
+builder.AddFormaServerIntegration(options => options.CultureArrangement = CultureArrangement.Independent);
 
 var app = builder.Build();
 

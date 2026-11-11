@@ -16,8 +16,8 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.Services.AddJsonLocalization();
 builder.Services.AddFormaTwemojiPack();
-builder.Services.AddFormaUIWebAssembly();
-builder.Services.AddFormaDataView();
+builder.Services.AddFormaWebAssemblyIntegration();
+builder.Services.AddFormaDataViewServices();
 builder.Services.AddFormaComposer(composer => composer
     .AddRichTextEditor(editor => editor
         .TryAddDefaultFeatures()

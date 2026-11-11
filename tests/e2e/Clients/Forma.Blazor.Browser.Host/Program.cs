@@ -13,7 +13,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
-builder.AddFormaUIServer(options =>
+builder.AddFormaServerIntegration(options =>
 {
     options.CultureArrangement = HostModes.Arrangement;
     options.CultureSwitchPolicy = HostModes.UsesCultureCookie ? new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie } : null;

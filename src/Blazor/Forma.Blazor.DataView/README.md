@@ -24,11 +24,11 @@ using Forma.Blazor.Components.DataView;
 
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
-builder.AddFormaUIServer();
-builder.Services.AddFormaDataView();
+builder.AddFormaServerIntegration();
+builder.Services.AddFormaDataViewServices();
 ```
 
-`AddFormaDataView()` registers the `IDataViewQueryExecutor` a data view counts and reads a queryable
+`AddFormaDataViewServices()` registers the `IDataViewQueryExecutor` a data view counts and reads a queryable
 through, one that enumerates it in memory. A host whose items come from a database registers its own
 first, as shown under "Reading from a database".
 
@@ -344,7 +344,7 @@ public sealed class EntityFrameworkQueryExecutor : IDataViewQueryExecutor
 
 ```csharp
 builder.Services.AddSingleton<IDataViewQueryExecutor, EntityFrameworkQueryExecutor>();
-builder.Services.AddFormaDataView();
+builder.Services.AddFormaDataViewServices();
 ```
 
 The data view's own strings are localized through the library's locale packs. The

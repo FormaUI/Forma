@@ -8,7 +8,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 builder.Services.AddJsonLocalization();
-builder.AddFormaUIServer();
+builder.AddFormaServerIntegration();
 
 var app = builder.Build();
 

@@ -11,7 +11,7 @@ public sealed class ServiceCollectionExtensionsTests
     public void Should_register_the_circuit_handler_beside_the_culture_state_its_registration_and_the_coordinated_switch()
     {
         // Act
-        var services = new ServiceCollection().AddFormaCultureServer().AddFormaCultureServer();
+        var services = new ServiceCollection().AddFormaCultureServerIntegration().AddFormaCultureServerIntegration();
 
         // Assert
         Assert.Multiple(
@@ -29,7 +29,7 @@ public sealed class ServiceCollectionExtensionsTests
         var policy = new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie };
 
         // Act
-        var services = new ServiceCollection().AddFormaCultureServer(policy);
+        var services = new ServiceCollection().AddFormaCultureServerIntegration(policy);
 
         // Assert
         Assert.Same(policy, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(CultureSwitchPolicy)).ImplementationInstance);
@@ -42,7 +42,7 @@ public sealed class ServiceCollectionExtensionsTests
         var policy = new CultureSwitchPolicy { Persistence = CultureSwitchPersistence.Cookie, CookieSameSite = CultureCookieSameSite.None };
 
         // Act
-        var exception = Record.Exception(() => new ServiceCollection().AddFormaCultureServer(policy));
+        var exception = Record.Exception(() => new ServiceCollection().AddFormaCultureServerIntegration(policy));
 
         // Assert
         Assert.IsType<ArgumentException>(exception);
