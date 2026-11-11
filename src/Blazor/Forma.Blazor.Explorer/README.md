@@ -160,6 +160,7 @@ selection as it was.
 | Callback | Carries | Raised when |
 | --- | --- | --- |
 | `OnFolderChanged` | `ICatalogFolderItem?` | The reader navigates; null is the root. The host sets `CurrentFolder` to it. |
+| `OnFileActivated` | `ICatalogItem` | A file is activated, by a press or Enter, in place of opening its preview. |
 | `OnRename` | `CatalogRenameRequest` | A rename of a file or a folder is confirmed. |
 | `OnDelete` | `CatalogDeleteRequest` | A deletion of one item or the selection, files and folders together, is confirmed. |
 | `OnDrop` | `CatalogDropRequest` | Items, files and folders together, land on a folder, or on the root. |

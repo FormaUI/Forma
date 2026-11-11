@@ -3168,7 +3168,7 @@
     }
 
     // A folder can be chosen where the accepted kinds take folders, and is entered where they don't, so a picker reaches the files
-    // inside it.
+    // inside it; an activated file goes to a host that asks for one.
     public sealed class Choosing
     {
         private static readonly IReadOnlyList<ResourceInfo> Files =
@@ -3250,6 +3250,45 @@
 
             // Assert
             Assert.Equal("/photos", Assert.Single(Assert.Single(reports)).Key);
+        }
+
+        [Fact]
+        public async Task Should_hand_an_activated_file_to_the_host_in_place_of_its_preview()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            List<string> activated = [];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(Files))"
+                                                OnFileActivated="@(item => { activated.Add(item.Name); return Task.CompletedTask; })" />);
+
+            // Act
+            await PressCardAsync(cut, "cover.jpg");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["cover.jpg"], activated),
+                () => Assert.Empty(cut.FindAll(".forma-dialog")));
+        }
+
+        [Fact]
+        public async Task Should_enter_an_activated_folder_where_the_host_asks_for_activated_files()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            List<string> activated = [];
+            ICatalogFolderItem? entered = null;
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(Files))"
+                                                Folders="@(CatalogItem.ForAll(PhotoFolders))"
+                                                OnFileActivated="@(item => { activated.Add(item.Name); return Task.CompletedTask; })"
+                                                OnFolderChanged="@(folder => { entered = folder; return Task.CompletedTask; })" />);
+
+            // Act
+            await PressCardAsync(cut, "photos");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(activated),
+                () => Assert.Equal("/photos", entered?.Key));
         }
     }
 

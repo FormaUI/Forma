@@ -13,7 +13,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `CatalogConstraints.AcceptedResourceKinds` names folders, `contentType:image;folder`, and enters a folder a press
   lands on otherwise, in the selection mode too; an explorer whose accepted kinds name none chose folders all the same.
   `CatalogResourceFilter` takes `folder` as a content type, `AcceptsFolders` saying whether a filter takes folders,
-  while a glob names files alone.
+  while a glob names files alone. `OnFileActivated` hands the host a file activated by a press or Enter, in place of
+  opening its preview.
 - [`FormaDataView`](docs/data-view-design.md#selection) activates an item a press lands on where
   `CheckedSelectionOptions.ChecksOnPress` has a press check boxes and the item cannot be selected, so a reader opens a
   folder a picker will not let them choose; such a press did nothing.

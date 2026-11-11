@@ -82,6 +82,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Raised when items, files and folders together, are dropped onto a target folder.</summary>
     [Parameter] public EventCallback<CatalogDropRequest> OnDrop { get; set; }
 
+    /// <summary>Raised when a file is activated, by a press or by Enter, in place of opening its preview.</summary>
+    [Parameter] public EventCallback<ICatalogItem> OnFileActivated { get; set; }
+
     /// <summary>Raised when the active folder changes.</summary>
     [Parameter] public EventCallback<ICatalogFolderItem?> OnFolderChanged { get; set; }
 
@@ -1020,12 +1023,18 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             }
         });
 
-    // An item the data view activates, by a press or by Enter, opens: a folder is entered and a file previewed where it may be viewed.
+    // An item the data view activates, by a press or by Enter, opens: a folder is entered, and a file goes to the host where it asks
+    // for one, or is previewed where it may be viewed.
     private Task OpenItemAsync(ICatalogItem item)
     {
         if (item is ICatalogFolderItem folder)
         {
             return MoveToFolderAsync(folder);
+        }
+
+        if (OnFileActivated.HasDelegate)
+        {
+            return OnFileActivated.InvokeAsync(item);
         }
 
         if (item.Resource is { } resource && item.Permits(ItemOptions, CatalogItemCapabilities.View))

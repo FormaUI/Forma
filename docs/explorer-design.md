@@ -128,8 +128,9 @@ the host gives, and the store sorts by the field it names, so a column's header 
 toolbar's sort menu are one sort. Below a tablet's width the sidebar stacks above the content. Each item carries its depiction and its
 operations, which a checkbox replaces while selecting. An item takes the focus whether or not
 the selection mode is on, the arrows moving the focus alone; a press or Enter opens it, a
-folder entered and a file previewed, and in the selection mode a press or Space checks its
-box while Enter still opens it, the focus staying on its item as the mode changes.
+folder entered and a file previewed, or handed to the host where it asks for the files
+activated, and in the selection mode a press or Space checks its box while Enter still
+opens it, the focus staying on its item as the mode changes.
 
 Three surfaces stay on `FormaExplorer` rather than on the region they appear over, because
 each is reached from more than one of them: the preview lightbox, which activation, the
