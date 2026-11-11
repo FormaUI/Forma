@@ -9,6 +9,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- Forma's packages build against .NET 11.0.0 and depend on its released packages, `11.0.0` in place of the release
+  candidate's `11.0.0-rc.3.26522.148`, whose ASP.NET Core packages carry published security advisories, and of
+  `11.0.0-rc.2.26505.5` for the MAUI packages. A host builds with the .NET 11.0.100 SDK.
 - The registrations name what they add, the shared services or a host's integration. `AddFormaUI` is
   [`AddFormaUIServices`](README.md#what-the-registration-does), the shared services used by Forma UI components;
   `AddFormaUIServer`, `AddFormaUIWebAssembly` and `AddFormaUIWebView` are `AddFormaServerIntegration`,

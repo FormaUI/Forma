@@ -20,7 +20,7 @@
 
     <!-- The Windows Forms web view, which only an example uses, at the WPF one's version. -->
     <ItemGroup>
-        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="11.0.0-rc.2.26505.5" />
+        <PackageVersion Include="Microsoft.AspNetCore.Components.WebView.WindowsForms" Version="11.0.0" />
     </ItemGroup>
 
     <ItemGroup>
