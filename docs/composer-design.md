@@ -157,7 +157,7 @@ These are not plugins, because a plugin can be absent and these cannot:
 | Asset loading | `IComposerAssetLoader` | §3.2. |
 | Clipboard | `IHtmlSanitizer` | Pasted markup reaches the document through the same sanitized commit as typed content; paste from Word cleans the markup before it is inserted. |
 | Syntax highlighting | `IComposerSyntaxHighlighter` | §7. |
-| Dialogs and insertion | `ComposerInsertionRequest`, `IComposerInsertionDialog`, `ComposerInsertion` | §3.4a. |
+| Dialogs and insertion | `ComposerInsertionRequest`, `IComposerInsertionDialog`, `IComposerDialogInteraction`, `ComposerInsertion` | §3.4a. |
 
 ### 3.4a Dialogs and insertion
 
@@ -170,6 +170,8 @@ The engine renders `Body` by its type inside its own shell, which draws the head
 Confirming asks the body for an insertion and hands it to the active editor through `IComposerEditorPlugin.TryInsertAsync`, which answers false when it takes none of that kind. **That bool is the compatibility check.** A plugin registered under an editor that cannot take what it produces needs no capability contract to declare the mismatch: the dialog stays open and says so, which is also what a read-only or disabled composer does. What the body refused and what the editor refused are shown together, the body's own messages first.
 
 Two members of `IComposerInteraction` carry it, `OpenDialogAsync` and `TryInsertAsync`.
+
+**A body can confirm its dialog itself**, through `IComposerDialogInteraction`, which the engine cascades to the body it renders: a picker confirms the file a reader activates rather than asking them to press Insert as well. One confirmation of a dialog runs at a time, whichever asks for it, so the confirming action pressed while the body's own confirmation is under way is that one and inserts once, and a dialog closed while its body answers puts nothing into the document. The shell closes as a dialog does, rather than leaving the page while open, so the focus goes back to what opened it.
 
 The rich text editor's own link, table, video, image and embed dialogs are its own, since it reopens one on an element the author double-clicks.
 

@@ -39,6 +39,55 @@
 
     private sealed class NotAnInsertionDialog : ComponentBase;
 
+    // A body that answers an insertion once its gate is let go, confirming its dialog itself as a picker's activation does.
+    private sealed class ConfirmingInsertionDialog : ComponentBase, IComposerInsertionDialog
+    {
+        [CascadingParameter] public IComposerDialogInteraction? Dialog { get; set; }
+
+        /// <summary>The gate each answer waits on, where null answers at once.</summary>
+        public TaskCompletionSource? Gate { get; set; }
+
+        public int Confirmations { get; private set; }
+
+        public bool WasCancelled { get; private set; }
+
+        public string Title => "Confirming Dialog";
+
+        public async ValueTask<ComposerInsertion?> TryConfirmAsync(CancellationToken cancellationToken = default)
+        {
+            Confirmations++;
+
+            if (Gate is { } gate)
+            {
+                await gate.Task;
+            }
+
+            WasCancelled = cancellationToken.IsCancellationRequested;
+
+            return new ResourceInsertion { Source = "/media/b.png", Name = "b.png", Kind = "image", Embed = true, Link = false };
+        }
+    }
+
+    // An editor whose insertions wait on a gate the test lets go.
+    private sealed class HeldEditorPlugin : IComposerEditorPlugin
+    {
+        public string Id => "held";
+        public string Title => "Held";
+        public Icon Icon => Glyph.File;
+        public ComposerDocumentFormat Format => ComposerDocumentFormat.PlainText;
+        public Type EditorComponent => typeof(FormaPlainTextEditor);
+        public List<ComposerInsertion> Insertions { get; } = [];
+        public TaskCompletionSource<bool> Gate { get; } = new();
+        public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+        public async ValueTask<bool> TryInsertAsync(ComposerInsertion insertion, CancellationToken cancellationToken = default)
+        {
+            Insertions.Add(insertion);
+
+            return await Gate.Task;
+        }
+    }
+
     private sealed class InsertingEditorPlugin : IComposerEditorPlugin
     {
         public string Id => "inserting";
@@ -2150,6 +2199,120 @@
             cut.WaitForAssertion(
                 () => Assert.Equal("Choose something first.", cut.Find(".forma-composer-dialog-error[role=alert]").TextContent.Trim()));
             Assert.Empty(editor.Insertions);
+        }
+
+        private static async Task<ConfirmingInsertionDialog> OpenConfirmingAsync(IRenderedComponent<ContainerFragment> cut)
+        {
+            var composer = (IComposerInteraction)cut.FindComponent<FormaComposer>().Instance;
+
+            await cut.InvokeAsync(() => composer.OpenDialogAsync(new ComposerInsertionRequest { Body = typeof(ConfirmingInsertionDialog) }));
+
+            return cut.FindComponent<ConfirmingInsertionDialog>().Instance;
+        }
+
+        private static AngleSharp.Dom.IElement FindButton(IRenderedComponent<ContainerFragment> cut, string text)
+            => cut.FindAll("button").Single(button => button.TextContent.Trim() == text);
+
+        [Fact]
+        public async Task Should_hand_the_body_its_dialog()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var cut = RenderComposer(ctx, new TestModel(), new InsertingEditorPlugin());
+
+            // Act
+            var body = await OpenConfirmingAsync(cut);
+
+            // Assert
+            Assert.Same(cut.FindComponent<FormaComposer>().Instance, body.Dialog);
+        }
+
+        [Fact]
+        public async Task Should_insert_once_for_the_insert_button_pressed_while_the_body_s_own_confirmation_is_under_way()
+        {
+            // Arrange - an editor that holds the insertion
+            using var ctx = new FormaComposerTests();
+            var editor = new HeldEditorPlugin();
+            var cut = RenderComposer(ctx, new TestModel(), editor);
+            var body = await OpenConfirmingAsync(cut);
+            Task bodyConfirmation = Task.CompletedTask;
+            await cut.InvokeAsync(() => { bodyConfirmation = body.Dialog!.ConfirmAsync(); });
+
+            // Act - Insert pressed while the body's confirmation waits on the editor, then the editor answers
+            var pressed = FindButton(cut, "Insert").ClickAsync(new MouseEventArgs());
+            await cut.ReleaseAsync(() => editor.Gate.SetResult(true));
+            await pressed;
+            await bodyConfirmation;
+
+            // Assert - asked once, inserted once, and closed
+            Assert.Multiple(
+                () => Assert.Equal(1, body.Confirmations),
+                () => Assert.Single(editor.Insertions),
+                () => Assert.DoesNotContain("Confirming Dialog", cut.Markup, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_close_the_dialog_s_shell_in_place_once_the_editor_takes_the_insertion()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var cut = RenderComposer(ctx, new TestModel(), new InsertingEditorPlugin());
+            var body = await OpenConfirmingAsync(cut);
+
+            // Act
+            await cut.InvokeAsync(() => body.Dialog!.ConfirmAsync());
+
+            // Assert - the shell still drawn and closed, so the dialog hands the focus back as it closes, and its body gone
+            Assert.Multiple(
+                () => Assert.False(cut.FindComponent<FormaComposerDialog>().Instance.Opened),
+                () => Assert.Empty(cut.FindComponents<ConfirmingInsertionDialog>()));
+        }
+
+        [Fact]
+        public async Task Should_confirm_again_once_a_refused_confirmation_has_ended()
+        {
+            // Arrange - an editor that refuses the first insertion
+            using var ctx = new FormaComposerTests();
+            var editor = new InsertingEditorPlugin { TakesInsertions = false };
+            var cut = RenderComposer(ctx, new TestModel(), editor);
+            var body = await OpenConfirmingAsync(cut);
+            await cut.InvokeAsync(() => body.Dialog!.ConfirmAsync());
+            var refusal = cut.Find(".forma-composer-dialog-error[role=alert]").TextContent.Trim();
+
+            // Act
+            editor.TakesInsertions = true;
+            await cut.InvokeAsync(() => body.Dialog!.ConfirmAsync());
+
+            // Assert - the dialog stayed usable after its refusal, and closed on the insertion
+            Assert.Multiple(
+                () => Assert.Equal("This could not be inserted into the document.", refusal),
+                () => Assert.Equal(2, body.Confirmations),
+                () => Assert.Equal(2, editor.Insertions.Count),
+                () => Assert.DoesNotContain("Confirming Dialog", cut.Markup, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_insert_nothing_for_a_dialog_cancelled_while_its_body_answers()
+        {
+            // Arrange - a body that holds its answer
+            using var ctx = new FormaComposerTests();
+            var editor = new InsertingEditorPlugin();
+            var cut = RenderComposer(ctx, new TestModel(), editor);
+            var body = await OpenConfirmingAsync(cut);
+            body.Gate = new TaskCompletionSource();
+            Task confirmation = Task.CompletedTask;
+            await cut.InvokeAsync(() => { confirmation = body.Dialog!.ConfirmAsync(); });
+
+            // Act - the dialog dismissed, as its shell reports, then the body answers
+            var shell = cut.FindComponent<FormaComposerDialog>().Instance;
+            await cut.InvokeAsync(() => shell.OnCancel.InvokeAsync());
+            await cut.ReleaseAsync(() => body.Gate.SetResult());
+            await confirmation;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(body.WasCancelled),
+                () => Assert.Empty(editor.Insertions));
         }
 
         [Fact]

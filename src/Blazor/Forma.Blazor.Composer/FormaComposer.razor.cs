@@ -31,7 +31,7 @@ using Microsoft.JSInterop;
 public sealed partial class FormaComposer(
     IComposerSyntaxHighlighter? syntaxHighlighter = null,
     ComposerDefinition? definition = null)
-    : FormaInputBase<ComposerDocument>, IComposerInteraction
+    : FormaInputBase<ComposerDocument>, IComposerInteraction, IComposerDialogInteraction
 {
     private readonly ComposerDefinition? _definition = definition;
     private PluginScope<IComposerPlugin> _ownPlugins = PluginScope<IComposerPlugin>.Empty;
@@ -62,6 +62,15 @@ public sealed partial class FormaComposer(
     private object? _dialogInstance;
     private bool _isDialogBodyReady;
     private string? _dialogRefusal;
+
+    // The room the last dialog opened was given, which its shell keeps once it has closed.
+    private ComposerDialogSize? _dialogShellSize;
+
+    // The confirmation of the open dialog under way, which a confirmation asked for before it ends is.
+    private Task? _dialogConfirmation;
+
+    // Cancels what the open dialog's body does to answer a confirmation once the dialog closes.
+    private CancellationTokenSource? _dialogCancellation;
 
     /// <summary>The options of the composer.</summary>
     [Parameter] public ComposerOptions Options { get; set; } = ComposerOptions.Default;
@@ -453,11 +462,12 @@ public sealed partial class FormaComposer(
                 nameof(request));
         }
 
+        CloseDialog();
+
         _dialog = request;
+        _dialogShellSize = request.Size;
         _dialogParameters = request.Parameters.ToDictionary(parameter => parameter.Key, parameter => parameter.Value!, StringComparer.Ordinal);
-        _dialogInstance = null;
-        _isDialogBodyReady = false;
-        _dialogRefusal = null;
+        _dialogCancellation = new CancellationTokenSource();
 
         return InvokeAsync(StateHasChanged);
     }
@@ -521,28 +531,68 @@ public sealed partial class FormaComposer(
             _ => DialogSize.Medium,
         };
 
-    private async Task HandleDialogConfirmAsync()
+    Task IComposerDialogInteraction.ConfirmAsync()
+        => ConfirmDialogAsync();
+
+    private Task HandleDialogConfirmAsync()
+        => ConfirmDialogAsync();
+
+    // One confirmation of the open dialog runs at a time, whichever of its confirming action and its body asks for it.
+    private Task ConfirmDialogAsync()
     {
-        if (DialogBody is not { } body)
+        if (_dialogConfirmation is { IsCompleted: false } pending)
+        {
+            return pending;
+        }
+
+        return _dialogConfirmation = RunDialogConfirmationAsync();
+    }
+
+    // The body's answer goes into the document only while the dialog that asked for it is still open, and closes it once inserted.
+    private async Task RunDialogConfirmationAsync()
+    {
+        if (_dialog is not { } dialog || DialogBody is not { } body || _dialogCancellation is not { } cancellation)
         {
             return;
         }
 
         _dialogRefusal = null;
+        ComposerInsertion? insertion;
 
-        if (await body.TryConfirmAsync() is not { } insertion)
+        try
+        {
+            insertion = await body.TryConfirmAsync(cancellation.Token);
+        }
+        catch (OperationCanceledException) when (cancellation.IsCancellationRequested)
         {
             return;
         }
 
-        if (await ((IComposerInteraction)this).TryInsertAsync(insertion))
+        if (!ReferenceEquals(_dialog, dialog))
         {
-            CloseDialog();
-
             return;
         }
 
-        _dialogRefusal = L["This could not be inserted into the document."].Value;
+        if (insertion is not null)
+        {
+            var inserted = await ((IComposerInteraction)this).TryInsertAsync(insertion);
+
+            if (!ReferenceEquals(_dialog, dialog))
+            {
+                return;
+            }
+
+            if (inserted)
+            {
+                CloseDialog();
+            }
+            else
+            {
+                _dialogRefusal = L["This could not be inserted into the document."].Value;
+            }
+        }
+
+        StateHasChanged();
     }
 
     private void CloseDialog()
@@ -552,6 +602,11 @@ public sealed partial class FormaComposer(
         _dialogInstance = null;
         _isDialogBodyReady = false;
         _dialogRefusal = null;
+        _dialogConfirmation = null;
+
+        _dialogCancellation?.Cancel();
+        _dialogCancellation?.Dispose();
+        _dialogCancellation = null;
     }
 
     private Task HandleDocumentChangedAsync(ComposerDocument document)
@@ -701,6 +756,7 @@ public sealed partial class FormaComposer(
             await inputScope.DisposeAsync();
         }
 
+        CloseDialog();
         _selfReference?.Dispose();
         await _assetLoader.DisposeAsync();
         await _ownPlugins.DisposeAsync();

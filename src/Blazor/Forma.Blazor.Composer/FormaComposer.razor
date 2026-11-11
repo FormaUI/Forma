@@ -1,5 +1,6 @@
 @namespace Forma.Blazor.Components.Composer
 @using Forma.Blazor.Components.Composer.Dialogs
+@using Forma.Framework.Composer.Dialogs
 @using Forma.Framework.Composer.Editing
 @inherits FormaInputBase<ComposerDocument>
 
@@ -89,16 +90,22 @@
                                       OnCancel="() => _isShortcutsOpen = false" />
     }
 
-    @if (_dialog is { } dialog)
+    @* The shell stays once a plugin's dialog has opened, so the dialog closes as a dialog does, handing the focus back to what opened it. *@
+    @if (_dialogShellSize is { } shellSize)
     {
-        <FormaComposerDialog Opened="true"
+        <FormaComposerDialog Opened="_dialog is not null"
                              Title="@DialogBody?.Title"
-                             Size="@GetDialogSize(dialog.Size)"
+                             Size="@GetDialogSize(shellSize)"
                              Notice="@DialogBody?.Notice"
                              Messages="DialogMessages"
                              OnConfirm="HandleDialogConfirmAsync"
                              OnCancel="CloseDialog">
-            @RenderDialogBody(dialog)
+            @if (_dialog is { } dialog)
+            {
+                <CascadingValue Value="(IComposerDialogInteraction)this" IsFixed="true">
+                    @RenderDialogBody(dialog)
+                </CascadingValue>
+            }
         </FormaComposerDialog>
     }
 </CascadingValue>

@@ -183,6 +183,22 @@ await interaction.OpenDialogAsync(new ComposerInsertionRequest
 });
 ```
 
+A body confirms its dialog itself through the `IComposerDialogInteraction` the composer cascades to
+it, as a picker does with the item a reader activates. `ConfirmAsync` does what the dialog's Insert
+does, and one confirmation runs at a time, so Insert pressed while the body's own confirmation is
+under way inserts once:
+
+```csharp
+[CascadingParameter] public IComposerDialogInteraction? Dialog { get; set; }
+
+private Task HandleActivatedAsync(MyChoice choice)
+{
+    _choice = choice;
+
+    return Dialog?.ConfirmAsync() ?? Task.CompletedTask;
+}
+```
+
 `ResourceInsertion` is the insertion of a stored file: its `Source`, `Name` and `Kind`, and
 whether it is embedded, linked or both. `MediaInsertMode` names those three choices, `Embed`,
 `Link` and `Both`, for a plugin's options.

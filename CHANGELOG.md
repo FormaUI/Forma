@@ -9,6 +9,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- A composer dialog's body confirms the dialog itself through
+  [`IComposerDialogInteraction`](src/Framework/Forma.Framework.Composer.Extensibility/README.md#dialogs-and-insertion),
+  which the composer cascades to it. One confirmation runs at a time, so Insert pressed while one is under way inserts
+  once, and a dialog closed while its body answers inserts nothing; the body's `TryConfirmAsync` is cancelled then. A
+  plugin's dialog hands the focus back to what opened it as it closes; it left the page while still open, which
+  dropped the focus.
 - [`FormaExplorer`](docs/explorer-design.md#decision-summary) lets a folder be chosen only where
   `CatalogConstraints.AcceptedResourceKinds` names folders, `contentType:image;folder`, and enters a folder a press
   lands on otherwise, in the selection mode too; an explorer whose accepted kinds name none chose folders all the same.

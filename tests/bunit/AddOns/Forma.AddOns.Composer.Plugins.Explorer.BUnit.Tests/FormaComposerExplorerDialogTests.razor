@@ -305,7 +305,7 @@
             cut.WaitForAssertion(() => Assert.NotNull(inserted));
             var insertion = Assert.IsType<ResourceInsertion>(inserted);
             Assert.Equal("/media/podium.png", insertion.Source);
-            Assert.Empty(cut.FindAll(".forma-composer-dialog-form"));
+            Assert.Empty(cut.FindAll(".forma-composer-dialog-form .forma-explorer"));
         }
 
         [Fact]
