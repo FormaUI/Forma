@@ -168,7 +168,10 @@ a total of what shows is shown as one. A request superseded by a newer one is ca
 newest answer is the one shown. `RefreshDataAsync` asks the source again for the items
 being shown, a tree's open nodes among them, which is how a host reports that the records
 changed; a page that no longer exists, because the last items on it were deleted, gives way
-to the last page that does.
+to the last page that does. An appending data view's refresh starts its run again from the
+first page, since a host also refreshes for a new search or order, which starts at the top,
+and asking again for every page appended would be a request as large as all the reader has
+scrolled through.
 
 While a provider is answering the engine is busy: the items it had stay in place under a
 busy state, and a data view that has never had items shows its loading content instead. A
