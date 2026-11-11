@@ -30,8 +30,9 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
     private TextEditOptions EditOptions
         => new() { MaxLength = MaxLength };
 
-    private string RgbHex => CurrentValueAsString?.Length >= 7
-        ? CurrentValueAsString[..7]
+    // The swatch's color input holds a color as the platform's simple color, in lowercase, which WebKit keeps as written.
+    private string RgbHex => CurrentValueAsString?.Length >= 7 && int.TryParse(CurrentValueAsString.AsSpan(1, 6), NumberStyles.HexNumber, CultureInfo.InvariantCulture, out var rgb)
+        ? string.Create(CultureInfo.InvariantCulture, $"#{rgb:x6}")
         : "#000000";
 
     private string FieldName

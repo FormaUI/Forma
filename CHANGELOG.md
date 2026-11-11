@@ -15,6 +15,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - [`FormaDialog`](docs/component-catalog.md#formadialog) hands the focus back, as it closes, to what held it as the
   dialog opened, and where that has gone, as a menu item does once its menu closes, to the nearest element around it
   that can take the focus. A dialog opened from a menu, as an explorer item's Rename is, left the focus on the page.
+- [`FormaColorPicker`](docs/component-catalog.md#formacolorpicker)'s swatch holds its color in lowercase, as the
+  platform's color input does, which Safari kept in the case the value was typed in.
 - The framework's members and parameters named for a bare participle or adjective, or for a plural that counts, are
   named for what they hold. Properties and constants: `CatalogRejection.Limit` was `Allowed`,
   `ExplorerHistory.CurrentSource` was `Current`, `IConfirmDialogService.CurrentRequest` was `Current`,
