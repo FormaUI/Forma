@@ -24,7 +24,7 @@ class Breakpoint {
     #owner;
     #property;
     #observer;
-    #last = null;
+    #lastTier = null;
 
     constructor(target, { owner, property }) {
         this.#target = target;
@@ -47,11 +47,11 @@ class Breakpoint {
 
         const tier = getComputedStyle(this.#target).getPropertyValue(this.#property).trim();
 
-        if (tier === this.#last) {
+        if (tier === this.#lastTier) {
             return;
         }
 
-        this.#last = tier;
+        this.#lastTier = tier;
         tell(this.#owner, 'HandleBreakpointAsync', tier);
     }
 }

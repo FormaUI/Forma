@@ -37,6 +37,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `Previous`. Parameters, which a caller naming its arguments names anew: `IDataViewInteraction.ToggleSelectionAsync`
   takes `isSelected`, `FormaDataView`'s selection handlers take `isAdditive` and `HandleSeekAsync` takes `isLast`, and
   `DataViewSort.ThenApply` takes `orderedItems`.
+- [`FormaExplorer`](docs/explorer-design.md)'s `SelectedItems` and `SelectedItemsChanged` parameters were `Selected`
+  and `SelectedChanged`, bound as `@bind-SelectedItems`. A page still passing an old name renders it as an attribute of
+  the explorer's root rather than failing to build.
 - A [`FormaDataGrid`](docs/data-view-design.md#accessibility-keyboard-and-direction) row's box is named for its item,
   "Select Hammer", where the data view's `ItemName` names the items, as the boxes of the list, the cards and the tree
   are; it said "Select Row" in every row. `IDataView` declares `NamesItems`.

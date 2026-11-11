@@ -18,7 +18,7 @@
                OnFolderChanged="OpenPickerFolder"
                Options="PickerOptions"
                Constraints="PickerConstraints"
-               SelectedChanged="Choose" />
+               SelectedItemsChanged="Choose" />
 <output id="chosen">@string.Join(", ", _chosen.Select(item => item.Name))</output>
 
 @code {

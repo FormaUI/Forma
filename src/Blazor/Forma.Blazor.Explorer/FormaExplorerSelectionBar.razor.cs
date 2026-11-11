@@ -65,7 +65,7 @@ public sealed partial class FormaExplorerSelectionBar : FormaComponentBase
 
         // The next item's button takes the focus, or the last's where the removed one was last; with none left the review
         // closes, handing the focus back to its trigger.
-        if (items.Count > 0 && RemoveButtons.TryGetValue(items[Math.Min(position, items.Count - 1)].Key, out var next) && next.RootElement is { } element)
+        if (items.Count > 0 && RemoveButtons.TryGetValue(items[Math.Min(position, items.Count - 1)].Key, out var nextButton) && nextButton.RootElement is { } element)
         {
             await element.FocusAsync();
         }
@@ -89,7 +89,7 @@ public sealed partial class FormaExplorerSelectionBar : FormaComponentBase
 
     private async Task FocusFirstRemoveAsync()
     {
-        if (View.Selection.Items is [var first, ..] && RemoveButtons.TryGetValue(first.Key, out var button) && button.RootElement is { } element)
+        if (View.Selection.Items is [var firstItem, ..] && RemoveButtons.TryGetValue(firstItem.Key, out var button) && button.RootElement is { } element)
         {
             await element.FocusAsync();
         }

@@ -30,19 +30,19 @@ public sealed partial class FormaExplorerCommandArea : FormaComponentBase
     [JSInvokable]
     public Task HandleBreakpointAsync(string layout)
     {
-        var next = layout switch
+        var nextLayout = layout switch
         {
             "compact" => ExplorerHeaderLayout.Compact,
             "medium" => ExplorerHeaderLayout.Medium,
             _ => ExplorerHeaderLayout.Wide,
         };
 
-        if (_layout == next)
+        if (_layout == nextLayout)
         {
             return Task.CompletedTask;
         }
 
-        _layout = next;
+        _layout = nextLayout;
 
         return InvokeAsync(StateHasChanged);
     }

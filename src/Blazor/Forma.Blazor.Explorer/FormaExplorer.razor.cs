@@ -109,10 +109,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     [Parameter] public string? SearchPlaceholder { get; set; }
 
     /// <summary>The currently selected items.</summary>
-    [Parameter] public IReadOnlyList<ICatalogItem> Selected { get; set; } = [];
+    [Parameter] public IReadOnlyList<ICatalogItem> SelectedItems { get; set; } = [];
 
     /// <summary>Raised when the selected items change.</summary>
-    [Parameter] public EventCallback<IReadOnlyList<ICatalogItem>> SelectedChanged { get; set; }
+    [Parameter] public EventCallback<IReadOnlyList<ICatalogItem>> SelectedItemsChanged { get; set; }
 
     /// <summary>Active sort direction.</summary>
     [Parameter] public CatalogSortDirection SortDirection { get; set; } = CatalogSortDirection.Ascending;
@@ -295,10 +295,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return new Dictionary<string, object>(StringComparer.Ordinal) { ["data-drop-target"] = "true" };
         }
 
-        var allowed = item.GetCapabilities(ItemOptions);
+        var allowedCapabilities = item.GetCapabilities(ItemOptions);
         Dictionary<string, object> attributes = new(StringComparer.Ordinal)
         {
-            ["draggable"] = allowed.HasFlag(CatalogItemCapabilities.Drag) ? "true" : "false",
+            ["draggable"] = allowedCapabilities.HasFlag(CatalogItemCapabilities.Drag) ? "true" : "false",
             ["ondragstart"] = EventCallback.Factory.Create(this, () => _itemManager.BeginDrag(item)),
         };
 
@@ -306,7 +306,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         {
             attributes["data-drop-key"] = folder.Key;
 
-            if (allowed.HasFlag(CatalogItemCapabilities.Drop))
+            if (allowedCapabilities.HasFlag(CatalogItemCapabilities.Drop))
             {
                 attributes["data-drop-target"] = "true";
             }
@@ -318,14 +318,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private IReadOnlyList<ICatalogFolderItem> Breadcrumbs
         => _breadcrumbs ??= _currentFolder is { } current ? BuildBreadcrumbs(FolderTree, current) : [];
 
-    private static List<ICatalogFolderItem> BuildBreadcrumbs(CatalogFolderTree tree, ICatalogFolderItem current)
+    private static List<ICatalogFolderItem> BuildBreadcrumbs(CatalogFolderTree tree, ICatalogFolderItem currentFolder)
     {
         var path = new List<ICatalogFolderItem>();
-        var visited = new HashSet<string>(StringComparer.Ordinal);
-        var item = tree.Find(current.Key) ?? current;
+        var visitedKeys = new HashSet<string>(StringComparer.Ordinal);
+        var item = tree.Find(currentFolder.Key) ?? currentFolder;
 
         // A host can supply a cyclic parent chain, so each folder is walked at most once.
-        while (item is not null && visited.Add(item.Key))
+        while (item is not null && visitedKeys.Add(item.Key))
         {
             path.Insert(0, item);
             item = tree.GetParent(item);
@@ -545,7 +545,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _paramStateTracker.Track(() => Items, _ => StartSequence());
 
         // Resynced only when the host supplies a different list, so an unrelated parent render cannot discard the selection.
-        _paramStateTracker.Track(() => Selected, AdoptSelection);
+        _paramStateTracker.Track(() => SelectedItems, AdoptSelection);
 
         // Seeded once, so leaving selection mode afterwards is the reader's to decide.
         _isSelectionModeActive = Options.SelectOnOpen;
@@ -723,14 +723,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // A top-level folder counts as one, so the root itself is zero.
     private int GetDepth(ICatalogFolderItem? folder)
     {
-        var visited = new HashSet<string>(StringComparer.Ordinal);
+        var visitedKeys = new HashSet<string>(StringComparer.Ordinal);
         var depth = 0;
-        var current = folder;
+        var walkedFolder = folder;
 
-        while (current is not null && visited.Add(current.Key))
+        while (walkedFolder is not null && visitedKeys.Add(walkedFolder.Key))
         {
             depth++;
-            current = FolderTree.GetParent(current);
+            walkedFolder = FolderTree.GetParent(walkedFolder);
         }
 
         return depth;
@@ -739,26 +739,26 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // How many levels the folder's own subtree spans, the folder itself counting as one.
     private int GetHeight(ICatalogFolderItem folder)
     {
-        var tallest = 0;
+        var tallestChildHeight = 0;
 
         foreach (var child in FolderTree.GetChildren(folder.Key))
         {
-            tallest = Math.Max(tallest, GetHeight(child));
+            tallestChildHeight = Math.Max(tallestChildHeight, GetHeight(child));
         }
 
-        return tallest + 1;
+        return tallestChildHeight + 1;
     }
 
-    private async Task RejectAsync(CatalogRejectionReason reason, long? allowed, string message)
+    private async Task RejectAsync(CatalogRejectionReason reason, long? limit, string message)
     {
         _rejectionMessage = message;
 
-        await OnRejected.InvokeAsync(new CatalogRejection(reason, allowed, message));
+        await OnRejected.InvokeAsync(new CatalogRejection(reason, limit, message));
     }
 
-    private async Task<bool> EnsureFolderHasRoomAsync(ICatalogFolderItem? folder, int adding)
+    private async Task<bool> EnsureFolderHasRoomAsync(ICatalogFolderItem? folder, int addedItemCount)
     {
-        if (Constraints.MaxFolderItemCount <= 0 || folder is null || (folder.Count ?? 0) + adding <= Constraints.MaxFolderItemCount)
+        if (Constraints.MaxFolderItemCount <= 0 || folder is null || (folder.Count ?? 0) + addedItemCount <= Constraints.MaxFolderItemCount)
         {
             return true;
         }
@@ -771,9 +771,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         return false;
     }
 
-    private async Task<bool> EnsureExplorerHasRoomAsync(int adding, long bytes)
+    private async Task<bool> EnsureExplorerHasRoomAsync(int addedItemCount, long bytes)
     {
-        if (Constraints.MaxItemCount > 0 && KnownItemCount + adding > Constraints.MaxItemCount)
+        if (Constraints.MaxItemCount > 0 && KnownItemCount + addedItemCount > Constraints.MaxItemCount)
         {
             await RejectAsync(
                 CatalogRejectionReason.ItemCount,
@@ -796,7 +796,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         return true;
     }
 
-    private async Task<bool> EnsureFolderFitsAsync(ICatalogFolderItem? parent, int height, int adding = 1)
+    private async Task<bool> EnsureFolderFitsAsync(ICatalogFolderItem? parent, int height, int addedItemCount = 1)
     {
         if (Constraints.MaxFolderDepth > 0 && GetDepth(parent) + height > Constraints.MaxFolderDepth)
         {
@@ -808,7 +808,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return false;
         }
 
-        if (parent is null && Constraints.MaxFolderRootCount > 0 && RootFolderCount + adding > Constraints.MaxFolderRootCount)
+        if (parent is null && Constraints.MaxFolderRootCount > 0 && RootFolderCount + addedItemCount > Constraints.MaxFolderRootCount)
         {
             await RejectAsync(
                 CatalogRejectionReason.FolderRootCount,
@@ -818,7 +818,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return false;
         }
 
-        if (parent is not null && Constraints.MaxSubfolderCount > 0 && FolderTree.GetChildren(parent.Key).Count + adding > Constraints.MaxSubfolderCount)
+        if (parent is not null && Constraints.MaxSubfolderCount > 0 && FolderTree.GetChildren(parent.Key).Count + addedItemCount > Constraints.MaxSubfolderCount)
         {
             await RejectAsync(
                 CatalogRejectionReason.SubfolderCount,
@@ -1030,23 +1030,23 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         HoldSelection(items);
         PlaceSelection(before);
 
-        await SelectedChanged.InvokeAsync(_selectedItems);
+        await SelectedItemsChanged.InvokeAsync(_selectedItems);
 
         StateHasChanged();
     }
 
     // The host's own selection is adopted without being reported back, a file it adds standing in no location the explorer knows.
-    private void AdoptSelection(IReadOnlyList<ICatalogItem> selected)
+    private void AdoptSelection(IReadOnlyList<ICatalogItem> selectedItems)
     {
-        HoldSelection(selected);
+        HoldSelection(selectedItems);
         PlaceSelection(_selectedKeys);
     }
 
     // The selection is held folders first, as the content lists them.
     private void HoldSelection(IEnumerable<ICatalogItem> items)
     {
-        IReadOnlyList<ICatalogItem> held = [.. items];
-        _selectedItems = [.. held.Where(item => item is ICatalogFolderItem), .. held.Where(item => item is not ICatalogFolderItem)];
+        IReadOnlyList<ICatalogItem> heldItems = [.. items];
+        _selectedItems = [.. heldItems.Where(item => item is ICatalogFolderItem), .. heldItems.Where(item => item is not ICatalogFolderItem)];
         _selectedKeys = [with(StringComparer.Ordinal), .. _selectedItems.Select(item => item.Key)];
     }
 
@@ -1206,8 +1206,8 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         if (!request.IsFailed)
         {
-            HashSet<string> deleted = [with(StringComparer.Ordinal), .. targets.Select(target => target.Key)];
-            await SetSelectionAsync(_selectedItems.Where(item => !deleted.Contains(item.Key)));
+            HashSet<string> deletedKeys = [with(StringComparer.Ordinal), .. targets.Select(target => target.Key)];
+            await SetSelectionAsync(_selectedItems.Where(item => !deletedKeys.Contains(item.Key)));
         }
 
         await RefreshProviderAsync();
@@ -1223,9 +1223,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private bool HasAncestorAmong(ICatalogFolderItem folder, HashSet<string> folderKeys)
     {
-        var visited = new HashSet<string>(StringComparer.Ordinal) { folder.Key };
+        var visitedKeys = new HashSet<string>(StringComparer.Ordinal) { folder.Key };
 
-        for (var parent = FolderTree.GetParent(folder); parent is not null && visited.Add(parent.Key); parent = FolderTree.GetParent(parent))
+        for (var parent = FolderTree.GetParent(folder); parent is not null && visitedKeys.Add(parent.Key); parent = FolderTree.GetParent(parent))
         {
             if (folderKeys.Contains(parent.Key))
             {
@@ -1266,8 +1266,8 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // selection, and a folder already in the target moves nowhere.
     private async Task HandleDropOnFolderAsync(ICatalogItem target, ICatalogFolderItem? targetFolder)
     {
-        IReadOnlyList<ICatalogItem> dragged = _selectedKeys.Contains(target.Key) && _selectedItems.Count > 1 ? _selectedItems : [target];
-        List<ICatalogItem> items = [.. WithoutNestedFolders(dragged).Where(item => item is not ICatalogFolderItem folder || folder.ParentKey != targetFolder?.Key)];
+        IReadOnlyList<ICatalogItem> draggedItems = _selectedKeys.Contains(target.Key) && _selectedItems.Count > 1 ? _selectedItems : [target];
+        List<ICatalogItem> items = [.. WithoutNestedFolders(draggedItems).Where(item => item is not ICatalogFolderItem folder || folder.ParentKey != targetFolder?.Key)];
 
         if (items.Count == 0 || !await EnsureDropFitsAsync(items, targetFolder))
         {
@@ -1316,17 +1316,17 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private bool IsSelfOrDescendant(ICatalogFolderItem candidate, ICatalogFolderItem ancestor)
     {
-        var visited = new HashSet<string>(StringComparer.Ordinal);
-        var current = candidate;
+        var visitedKeys = new HashSet<string>(StringComparer.Ordinal);
+        var walkedFolder = candidate;
 
-        while (current is not null && visited.Add(current.Key))
+        while (walkedFolder is not null && visitedKeys.Add(walkedFolder.Key))
         {
-            if (current.Key == ancestor.Key)
+            if (walkedFolder.Key == ancestor.Key)
             {
                 return true;
             }
 
-            current = FolderTree.GetParent(current);
+            walkedFolder = FolderTree.GetParent(walkedFolder);
         }
 
         return false;
@@ -1334,9 +1334,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private void HandlePreviewNavigate(string source)
     {
-        var next = VisibleItems.FirstOrDefault(item => item.Resource?.Source == source);
+        var nextItem = VisibleItems.FirstOrDefault(item => item.Resource?.Source == source);
 
-        if (next?.Resource is { } resource)
+        if (nextItem?.Resource is { } resource)
         {
             _preview.NavigateTo(resource);
         }
@@ -1394,17 +1394,17 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private async Task HandleUpAsync()
     {
-        if (_currentFolder is { } current)
+        if (_currentFolder is { } currentFolder)
         {
-            await HandleFolderSelectedAsync(FolderTree.GetParent(current));
+            await HandleFolderSelectedAsync(FolderTree.GetParent(currentFolder));
         }
     }
 
-    private async Task HandleUploadCompletedAsync(IReadOnlyList<ResourceInfo> uploaded)
+    private async Task HandleUploadCompletedAsync(IReadOnlyList<ResourceInfo> uploadedResources)
     {
         _uploadPanel.Close();
 
-        await OnUploaded.InvokeAsync(uploaded);
+        await OnUploaded.InvokeAsync(uploadedResources);
         await RefreshProviderAsync();
     }
 
@@ -1413,12 +1413,12 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _rejectionMessage = null;
 
         if ((_uploadFilter ?? _collection.Filter) is { } filter
-            && files.FirstOrDefault(file => !filter.Accepts(file.Name, file.ContentType)) is { } refused)
+            && files.FirstOrDefault(file => !filter.Accepts(file.Name, file.ContentType)) is { } refusedFile)
         {
             await RejectAsync(
                 CatalogRejectionReason.ResourceKind,
                 0,
-                L["\"{Name}\" is not a kind of file this explorer accepts.", refused.Name].Value);
+                L["\"{Name}\" is not a kind of file this explorer accepts.", refusedFile.Name].Value);
 
             return;
         }

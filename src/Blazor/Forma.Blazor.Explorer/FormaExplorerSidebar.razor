@@ -42,12 +42,12 @@
             <ItemTemplate Context="item">
                 @if (item is ICatalogFolderItem folder)
                 {
-                    var allowed = GetActions(folder);
+                    var allowedCapabilities = GetActions(folder);
                     if (folder.Count is { } count)
                     {
                         <span class="forma-explorer-folder-count">@count</span>
                     }
-                    @if (allowed != CatalogItemCapabilities.None)
+                    @if (allowedCapabilities != CatalogItemCapabilities.None)
                     {
                         <span class="forma-explorer-folder-actions">
                             <FormaOverflowMenu Label="@L["Actions for {Name}", folder.Name]"
@@ -58,21 +58,21 @@
                                     <span title="@folder.Name">@folder.Name</span>
                                 </HeaderContent>
                                 <ChildContent>
-                                    @if (allowed.HasFlag(CatalogItemCapabilities.Create))
+                                    @if (allowedCapabilities.HasFlag(CatalogItemCapabilities.Create))
                                     {
                                         <FormaDropDownMenuItem data-action="folder-create" OnClick="() => CreateFolderAsync(folder)">
                                             <FormaIcon Icon="Glyph.FolderAdd" Size="IconSize.Small" />
                                             <span>@L["New Folder"]</span>
                                         </FormaDropDownMenuItem>
                                     }
-                                    @if (allowed.HasFlag(CatalogItemCapabilities.Rename))
+                                    @if (allowedCapabilities.HasFlag(CatalogItemCapabilities.Rename))
                                     {
                                         <FormaDropDownMenuItem data-action="folder-rename" OnClick="() => ItemInteraction.RequestRename(folder)">
                                             <FormaIcon Icon="Glyph.Pen" Size="IconSize.Small" />
                                             <span>@L["Rename Folder"]</span>
                                         </FormaDropDownMenuItem>
                                     }
-                                    @if (allowed.HasFlag(CatalogItemCapabilities.Delete))
+                                    @if (allowedCapabilities.HasFlag(CatalogItemCapabilities.Delete))
                                     {
                                         <FormaDropDownMenuItem data-action="folder-delete" IsDestructive="true" OnClick="() => OnFolderDelete.InvokeAsync(folder)">
                                             <FormaIcon Icon="Glyph.Delete" Size="IconSize.Small" />

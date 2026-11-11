@@ -43,19 +43,19 @@ internal sealed class ExplorerDataViewSource(Func<CatalogFolderTree> folders, Fu
         var page = await GetContent(tree).GetItemsAsync(query, request.CancellationToken);
 
         // A hidden item, or a file of a kind the explorer does not list, leaves the page while the position it stands in still counts.
-        var accepted = filter();
-        List<ICatalogItem> listed = [.. page.Items.Where(item => item.Visibility != CatalogItemVisibility.Hidden
-            && (accepted is null || item is ICatalogFolderItem || item.Resource is not { } resource || accepted.Accepts(resource)))];
+        var resourceFilter = filter();
+        List<ICatalogItem> listedItems = [.. page.Items.Where(item => item.Visibility != CatalogItemVisibility.Hidden
+            && (resourceFilter is null || item is ICatalogFolderItem || item.Resource is not { } resource || resourceFilter.Accepts(resource)))];
 
         if (!request.CancellationToken.IsCancellationRequested)
         {
             GroupSizes = page.GroupSizes;
-            _hasLeftItemsOut = (request.StartIndex > 0 && _hasLeftItemsOut) || listed.Count < page.Items.Count;
+            _hasLeftItemsOut = (request.StartIndex > 0 && _hasLeftItemsOut) || listedItems.Count < page.Items.Count;
         }
 
         // A count the store guarantees of what the whole query lists is the total shown, while no slice of the run left an item out;
         // the store's positions are what pages are cut in.
-        return new DataViewPage<ICatalogItem>(listed, _hasLeftItemsOut ? null : page.ListedCount)
+        return new DataViewPage<ICatalogItem>(listedItems, _hasLeftItemsOut ? null : page.ListedCount)
         {
             ReadCount = page.ReadCount ?? page.Items.Count,
             HasMore = page.HasMore,
