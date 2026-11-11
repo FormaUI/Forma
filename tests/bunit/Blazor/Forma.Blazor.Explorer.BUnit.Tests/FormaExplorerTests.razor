@@ -2024,7 +2024,7 @@
         }
 
         [Fact]
-        public void Should_list_names_as_stops_on_a_scrolling_pane_in_list_view()
+        public void Should_list_names_in_the_data_view_s_dense_list_each_led_by_its_actions_in_list_view()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2034,11 +2034,11 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.List" />);
 
             // Assert
-            var items = cut.FindAll(".forma-explorer-list .forma-explorer-list-item");
+            var items = cut.FindAll(".forma-explorer-list .forma-data-list-item");
             Assert.Multiple(
-                () => Assert.Equal(2, items.Count),
-                () => Assert.All(items, item => Assert.Contains("forma-freeze-pane-stop", item.ClassList)),
-                () => Assert.Equal("cover.jpg", cut.Find(".forma-explorer-list-item-name").TextContent),
+                () => Assert.Contains("forma-data-list-dense", cut.Find(".forma-explorer-list").ClassList),
+                () => Assert.Equal(["cover.jpg", "poster.jpg"], items.Select(item => item.QuerySelector(".forma-data-list-item-name")!.TextContent)),
+                () => Assert.All(items, item => Assert.NotNull(item.QuerySelector(".forma-data-list-item-thumbnail [data-item-control] .forma-explorer-action-bar"))),
                 () => Assert.Empty(cut.FindAll(".forma-explorer-list th")));
         }
 
@@ -2312,7 +2312,7 @@
             Assert.Empty(cut.FindAll(".forma-breadcrumb-chevron"));
         }
         [Fact]
-        public void Should_keep_the_view_mode_when_a_selection_change_re_renders_the_host()
+        public async Task Should_keep_the_view_mode_when_a_selection_change_re_renders_the_host()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -2323,7 +2323,7 @@
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Act
-            cut.Find(".forma-explorer-list .forma-explorer-list-item-open").Click();
+            await cut.Find(".forma-explorer-list input[type=checkbox]").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.NotNull(cut.Find(".forma-explorer-list"));

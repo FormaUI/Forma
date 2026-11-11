@@ -86,15 +86,23 @@
             }
             else
             {
-                <FormaExplorerListView Items="View.VisibleItems" />
+                @* The list is the data view's list at its dense step, its names flowing into as many columns as the width holds, which draws
+                   its groups and its next page; the item's actions lead its thumbnail, the box taking their place while selecting. *@
+                <FormaDataList TItem="ICatalogItem" Dense="true" class="forma-explorer-list" aria-label="@L["Media"]">
+                    <ThumbnailTemplate Context="item">
+                        @if (!Selection.IsSelectionModeActive)
+                        {
+                            <span class="forma-explorer-list-actions" data-item-control>
+                                <FormaExplorerActionBar Item="item" />
+                            </span>
+                        }
+                        @if (item.Resource is { } resource)
+                        {
+                            <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Cell" />
+                        }
+                    </ThumbnailTemplate>
+                </FormaDataList>
             }
-        }
-
-        @* The next page is the data view's to load, from its action after the items and as the reader reaches their end, which the cards and
-           the grid draw themselves. *@
-        @if (View.VisibleItems.Count > 0 && View.ViewMode == ExplorerViewMode.List)
-        {
-            @Content.MoreContent
         }
     </div>
 

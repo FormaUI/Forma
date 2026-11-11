@@ -190,6 +190,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`FormaFreezePane`](docs/component-catalog.md#formafreezepane) measures its frozen region again when a frozen part
   moves by a change of its style or class, as a grid's frozen columns do when a selection turns on; it kept the region
   it had measured, so the content came to rest beneath the frozen columns.
+- [`FormaExplorer`](docs/explorer-design.md#the-parts)'s list is the data view's list at its dense step, the names
+  flowing into as many columns as the width holds and the page growing downward, an item's actions leading its
+  thumbnail and the selection mode's box taking their place; the rows take the focus as the thumbnails do. The list
+  scrolled further columns sideways behind arrows. `FormaExplorerListView` is gone, and a stylesheet addressing its
+  `.forma-explorer-list-item` or `.forma-explorer-list-item-name` finds the list's `.forma-data-list-item` and
+  `.forma-data-list-item-name`.
 - [`FormaExplorer`](docs/explorer-design.md#the-parts)'s details are the data view's grid, the actions and name
   columns frozen as the others scroll, and its sort is the data view's: a column's header and the toolbar's sort
   menu set one sort, which the header marks and the menu shows. In the selection mode the grid's box column stands

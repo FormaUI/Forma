@@ -69,20 +69,33 @@
     z-index: 1;
 }
 
-/* A card or a row that can be dragged says so to the pointer, and an invisible item keeps its place undrawn. */
+/* An item that can be dragged says so to the pointer, and an invisible item keeps its place undrawn. */
 .forma-explorer-scroll ::deep .forma-data-card[draggable="true"],
-.forma-explorer-scroll ::deep .forma-data-grid-row[draggable="true"] {
+.forma-explorer-scroll ::deep .forma-data-grid-row[draggable="true"],
+.forma-explorer-scroll ::deep .forma-data-list-item[draggable="true"] {
     cursor: grab;
 }
 
 .forma-explorer-scroll ::deep .forma-data-card[draggable="true"]:active,
-.forma-explorer-scroll ::deep .forma-data-grid-row[draggable="true"]:active {
+.forma-explorer-scroll ::deep .forma-data-grid-row[draggable="true"]:active,
+.forma-explorer-scroll ::deep .forma-data-list-item[draggable="true"]:active {
     cursor: grabbing;
 }
 
 .forma-explorer-scroll ::deep .forma-data-card.is-invisible,
-.forma-explorer-scroll ::deep .forma-data-grid-row.is-invisible {
+.forma-explorer-scroll ::deep .forma-data-grid-row.is-invisible,
+.forma-explorer-scroll ::deep .forma-data-list-item.is-invisible {
     visibility: hidden;
+}
+
+/* --- List --- */
+/* The item's actions lead its thumbnail, exactly the actions trigger, so every name starts one small control in. */
+.forma-explorer-list-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--target-size-sm);
+    flex-shrink: 0;
 }
 
 /* --- Details --- */

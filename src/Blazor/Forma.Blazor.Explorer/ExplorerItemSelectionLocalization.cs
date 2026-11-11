@@ -32,10 +32,4 @@ internal readonly struct ExplorerItemSelectionLocalization
         => _selection.IsSelected(_item)
             ? _locale["Deselect {Name}", _item.Name].Value
             : _locale["Select {Name}", _item.Name].Value;
-
-    /// <summary>The accessible activation label appropriate to the current mode.</summary>
-    internal string ActivationLabel
-        => _selection.IsSelectionModeActive
-            ? SelectionLabel
-            : _locale["Preview {Name}", _item.Name].Value;
 }
