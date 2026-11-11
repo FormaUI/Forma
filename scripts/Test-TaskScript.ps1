@@ -113,6 +113,10 @@ function Invoke-Script {
     [pscustomobject]@{ Output = $output; Succeeded = $LASTEXITCODE -eq 0 }
 }
 
+$queuedCases = [System.Collections.Generic.List[hashtable]]::new()
+
+# A case is queued, and the queue runs where what the cases rely on, a held port or results made for them, still
+# stands.
 function Test-Case {
     param(
         [Parameter(Mandatory)] [string] $Name,
@@ -123,16 +127,41 @@ function Test-Case {
         [switch] $Fails
     )
 
-    $run = Invoke-Script -Script $Script -Arguments $Arguments
+    $queuedCases.Add(@{ Name = $Name; Script = $Script; Arguments = $Arguments; Expect = $Expect; Reject = $Reject; Fails = $Fails.IsPresent })
+}
 
-    $problems = @(
-        if ($Fails -and $run.Succeeded) { 'the run succeeded where it should have been refused' }
-        if (-not $Fails -and -not $run.Succeeded) { 'the run failed' }
-        foreach ($text in $Expect) { if ($run.Output -notmatch [regex]::Escape($text)) { "nothing said '$text'" } }
-        foreach ($text in $Reject) { if ($run.Output -match [regex]::Escape($text)) { "something said '$text'" } }
-    )
+# Runs the queued cases side by side, each script in a process of its own, and records them in the order they were
+# queued.
+function Invoke-QueuedCase {
+    if ($queuedCases.Count -eq 0) {
+        return
+    }
 
-    Add-Result -Name $Name -Problem $problems -Output $run.Output
+    $scriptDefinition = ${function:Invoke-Script}.ToString()
+    $throttle = [Math]::Max(2, [Environment]::ProcessorCount / 2)
+    $runs = @(0..($queuedCases.Count - 1) | ForEach-Object -ThrottleLimit $throttle -Parallel {
+        ${function:Invoke-Script} = $using:scriptDefinition
+        $scripts = $using:scripts
+        $repositoryRoot = $using:repositoryRoot
+        $case = ($using:queuedCases)[$_]
+        [pscustomobject]@{ Index = $_; Run = Invoke-Script -Script $case.Script -Arguments $case.Arguments }
+    }) | Sort-Object Index
+
+    foreach ($entry in $runs) {
+        $case = $queuedCases[$entry.Index]
+        $run = $entry.Run
+
+        $problems = @(
+            if ($case.Fails -and $run.Succeeded) { 'the run succeeded where it should have been refused' }
+            if (-not $case.Fails -and -not $run.Succeeded) { 'the run failed' }
+            foreach ($text in $case.Expect) { if ($run.Output -notmatch [regex]::Escape($text)) { "nothing said '$text'" } }
+            foreach ($text in $case.Reject) { if ($run.Output -match [regex]::Escape($text)) { "something said '$text'" } }
+        )
+
+        Add-Result -Name $case.Name -Problem $problems -Output $run.Output
+    }
+
+    $queuedCases.Clear()
 }
 
 Test-Case -Name 'stopping the build workers reports without stopping' -Script 'Stop-MsBuild.ps1' `
@@ -189,6 +218,8 @@ try {
 
     Test-Case -Name 'forcing does not stop what was never ours' -Script 'Start-Showcase.ps1' `
         -Arguments @('-Port', "$taken", '-Force', '-WhatIf') -Fails -Expect @('not this repository')
+
+    Invoke-QueuedCase
 }
 finally {
     $stranger.Stop()
@@ -265,10 +296,14 @@ try {
 
     Test-Case -Name 'a commit that is not a full SHA is refused' -Script 'Update-CheckIssue.ps1' `
         -Arguments @('-Results', $nightly, '-Commit', 'abc1234', '-Run', 'https://example.test/run', '-Repository', 'FormaUI/Forma', '-WhatIf') -Fails
+
+    Invoke-QueuedCase
 }
 finally {
     Remove-Item -LiteralPath $nightly -Recurse -Force -ErrorAction SilentlyContinue
 }
+
+Invoke-QueuedCase
 
 # ── Report ───────────────────────────────────────────────────────────────────
 

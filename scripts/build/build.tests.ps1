@@ -111,13 +111,16 @@ $cases = @(
 function Invoke-Case {
     [CmdletBinding()]
     [OutputType([psobject])]
-    param([Parameter(Mandatory)] [hashtable] $Case)
+    param(
+        [Parameter(Mandatory)] [hashtable] $Case,
+        [Parameter(Mandatory)] [string] $RepositoryRoot
+    )
 
     $script = if ($Case['Script'] -eq 'build.ps1') {
-        Join-Path $repositoryRoot 'build.ps1'
+        Join-Path $RepositoryRoot 'build.ps1'
     }
     else {
-        Join-Path $PSScriptRoot $Case['Script']
+        Join-Path $RepositoryRoot 'scripts' 'build' $Case['Script']
     }
 
     $arguments = @($Case['Arguments']) + '-WhatIf'
@@ -151,9 +154,17 @@ Write-Host ''
 Write-Host ("Checking the build in {0} ways" -f $cases.Count)
 Write-Host ''
 
-$results = foreach ($case in $cases) {
-    $result = Invoke-Case -Case $case
+# Each case runs a script of its own in a process of its own, so the cases run side by side and are reported in the
+# order they are listed.
+$caseDefinition = ${function:Invoke-Case}.ToString()
+$throttle = [Math]::Max(2, [Environment]::ProcessorCount / 2)
+$caseResults = @(0..($cases.Count - 1) | ForEach-Object -ThrottleLimit $throttle -Parallel {
+    ${function:Invoke-Case} = $using:caseDefinition
+    $result = Invoke-Case -Case ($using:cases)[$_] -RepositoryRoot $using:repositoryRoot
+    $result | Add-Member -NotePropertyName Index -NotePropertyValue $_ -PassThru
+}) | Sort-Object Index
 
+$results = foreach ($result in $caseResults) {
     $mark = if ($result.Passed) { 'ok  ' } else { 'FAIL' }
     Write-Host ("  {0} {1}" -f $mark, $result.Name)
 
