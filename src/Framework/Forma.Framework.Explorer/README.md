@@ -59,10 +59,10 @@ view's tree. Each part takes the narrower contract it needs as a cascading param
 | --- | --- |
 | `IExplorerConfigurationView` | The options in force, and whether the sidebar shows. |
 | `IExplorerLocationView`, `IExplorerLocationInteraction` | The current folder, the breadcrumbs, the folder tree and whether back, forward and up are open; moving between folders. |
-| `IExplorerContentView`, `IExplorerContentInteraction` | The items and groups shown, the view mode, sort, grouping and details columns; changing them and refreshing. |
+| `IExplorerContentView`, `IExplorerContentInteraction` | The items shown, the view mode, sort, grouping and details columns; changing them and refreshing. |
 | `IExplorerSearchView`, `IExplorerSearchInteraction` | The search text and placeholder; changing the search text. |
 | `IExplorerSelectionInteraction` | Toggling an item, toggling selection mode and clearing; parts read the selection as an `ICatalogSelectionView`. |
-| `IExplorerItemView`, `IExplorerItemInteraction` | The item actions, item options and pending confirmation; activating, dragging, renaming, deleting and confirming. |
+| `IExplorerItemView`, `IExplorerItemInteraction` | The item actions, item options and pending confirmation; dragging, renaming, deleting and confirming. |
 
 The state behind those contracts is held in:
 
@@ -72,7 +72,7 @@ The state behind those contracts is held in:
 | `ExplorerItemAction` | One operation offered on an item: its icon, label, required capabilities and what it runs. |
 | `ExplorerPendingAction` | A confirmation awaiting the reader: `ExplorerRenameAction<T>`, `ExplorerCreateFolderAction` or `ExplorerBatchAction<T>`. |
 | `ExplorerContentProvider` | The content of a location, its child folders from the folder tree before its files from a provider, sliced by position across both, the folders filling the grouping's leading group. |
-| `ExplorerGrouping`, `ExplorerItemGroup` | The groups an `ExplorerGroupField` bands the items into, defined once for a browsing sequence as a `CatalogGrouping` a store applies, led by the folders' group, and the shown items gathered into them, each group the items sharing an `ExplorerGroupBand`, such as names from A to H or sizes up to 1 MB, counted across the whole result. |
+| `ExplorerGrouping` | The groups an `ExplorerGroupField` bands the items into, defined once for a browsing sequence as a `CatalogGrouping` a store applies and the data view groups by, led by the folders' group, each group the items sharing an `ExplorerGroupBand`, such as names from A to H or sizes up to 1 MB. |
 | `ExplorerPreview` | The resource shown full-size, and the siblings a viewer steps through. |
 
 ## License

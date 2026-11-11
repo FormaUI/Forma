@@ -24,8 +24,33 @@ public sealed class ExplorerGroupingTests
     private static CatalogGrouping? Define(ExplorerGroupField field, CatalogSortDirection direction = CatalogSortDirection.Ascending, TimeZoneInfo? timeZone = null)
         => ExplorerGrouping.Define(field, direction, GetKindName, CultureInfo.InvariantCulture, Now, timeZone ?? TimeZoneInfo.Utc, DayOfWeek.Monday);
 
-    private static IReadOnlyList<ExplorerItemGroup> Group(ExplorerGroupField field, CatalogSortDirection direction = CatalogSortDirection.Ascending, params ResourceInfo[] resources)
-        => ExplorerGrouping.GroupBy(CatalogItem.ForAll(resources), Define(field, direction), GetKindName);
+    // A group the definition gathers items into, as the data view gathers them: its key, its band, a kind's label, and its items.
+    private sealed record Gathered(string Key, ExplorerGroupBand Band, string? KindLabel, IReadOnlyList<ICatalogItem> Items);
+
+    // Gathers the items into the definition's groups that hold any, in the order the groups stand, each keeping them in list order.
+    private static List<Gathered> Gather(IReadOnlyList<ICatalogItem> items, CatalogGrouping? grouping)
+    {
+        if (grouping is null)
+        {
+            return [];
+        }
+
+        return
+        [
+            .. items.GroupBy(grouping.IndexOf).OrderBy(group => group.Key).Select(group =>
+            {
+                var definition = grouping.Groups[group.Key];
+                var (band, label) = definition is CatalogKindGroup kind
+                    ? (ExplorerGroupBand.Kind, GetKindName(kind.Kind))
+                    : (Enum.Parse<ExplorerGroupBand>(definition.Key), null);
+
+                return new Gathered(definition.Key, band, label, [.. group]);
+            }),
+        ];
+    }
+
+    private static List<Gathered> Group(ExplorerGroupField field, CatalogSortDirection direction = CatalogSortDirection.Ascending, params ResourceInfo[] resources)
+        => Gather(CatalogItem.ForAll(resources), Define(field, direction));
 
     [Fact]
     public void Should_yield_no_groups_when_nothing_groups_the_items()
@@ -161,8 +186,8 @@ public sealed class ExplorerGroupingTests
         var items = CatalogItem.ForAll([CreateFile("late.png", modifiedAt: new DateTimeOffset(2026, 9, 15, 15, 0, 0, TimeSpan.Zero))]);
 
         // Act — the 15th at three in the afternoon UTC is the 16th at one in the morning ten hours ahead
-        var utc = ExplorerGrouping.GroupBy(items, Define(ExplorerGroupField.DateModified, timeZone: TimeZoneInfo.Utc), GetKindName);
-        var ahead = ExplorerGrouping.GroupBy(items, Define(ExplorerGroupField.DateModified, timeZone: zone), GetKindName);
+        var utc = Gather(items, Define(ExplorerGroupField.DateModified, timeZone: TimeZoneInfo.Utc));
+        var ahead = Gather(items, Define(ExplorerGroupField.DateModified, timeZone: zone));
 
         // Assert
         Assert.Multiple(
@@ -179,19 +204,6 @@ public sealed class ExplorerGroupingTests
 
         // Assert
         Assert.Equal(earlierThisMonth.From, earlierThisMonth.Before);
-    }
-
-    [Fact]
-    public void Should_count_each_group_by_the_whole_result_where_its_size_is_given()
-    {
-        // Arrange
-        var items = CatalogItem.ForAll([CreateFile("apple.png"), CreateFile("kite.png")]);
-
-        // Act
-        var groups = ExplorerGrouping.GroupBy(items, Define(ExplorerGroupField.Name), GetKindName, [new CatalogGroupSize(nameof(ExplorerGroupBand.NameAToH), 12)]);
-
-        // Assert
-        Assert.Equal([12, 1], groups.Select(group => group.Count));
     }
 
     [Fact]

@@ -24,9 +24,6 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
     /// <summary>Called after the manager's state changes.</summary>
     public Action? OnChanged { get; set; }
 
-    /// <summary>Called to activate an item.</summary>
-    public Func<ICatalogItem, Task>? OnActivate { get; set; }
-
     /// <summary>Called to drop an item onto a folder, or onto the top level when null.</summary>
     public Func<ICatalogItem, ICatalogFolderItem?, Task>? OnDrop { get; set; }
 
@@ -50,19 +47,6 @@ public sealed class ExplorerItemManager : IExplorerItemView, IExplorerItemIntera
 
     /// <summary>Supplies the currently selected items.</summary>
     public Func<IReadOnlyList<ICatalogItem>>? SelectedItems { get; set; }
-
-    /// <inheritdoc />
-    public Task ActivateAsync(ICatalogItem item)
-    {
-        ArgumentNullException.ThrowIfNull(item);
-
-        if (item.IsDisabled)
-        {
-            return Task.CompletedTask;
-        }
-
-        return OnActivate?.Invoke(item) ?? Task.CompletedTask;
-    }
 
     /// <inheritdoc />
     public void BeginDrag(ICatalogItem item)

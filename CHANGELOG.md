@@ -9,6 +9,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- `ExplorerItemGroup`, `ExplorerGrouping.GroupBy`, `IExplorerContentView.VisibleGroups` and `IsCollapsed`,
+  `IExplorerContentInteraction.ToggleGroupAsync`, `IExplorerItemInteraction.ActivateAsync` and
+  `ExplorerItemManager.OnActivate` are gone with the explorer's own views: the data view groups, folds and activates the
+  explorer's items, and `ExplorerGrouping.Define` gives the groups it gathers them into.
 - A [`FormaExplorer`](docs/explorer-design.md#decision-summary) opened with `SelectOnOpen` is a picker that keeps its
   choices as the reader moves between folders, where a move cleared them. Its selection bar stands beneath its
   toolbar throughout, its count a button opening the choices for review, each with the folder it stands in and a

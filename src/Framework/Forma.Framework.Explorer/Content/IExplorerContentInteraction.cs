@@ -15,9 +15,6 @@ public interface IExplorerContentInteraction
     /// <summary>Gathers the items into groups by the field.</summary>
     Task GroupByAsync(ExplorerGroupField field);
 
-    /// <summary>Toggles whether the group's items are folded away.</summary>
-    Task ToggleGroupAsync(ExplorerItemGroup group);
-
     /// <summary>Changes the layout the content is shown in.</summary>
     Task ChangeViewModeAsync(ExplorerViewMode mode);
 

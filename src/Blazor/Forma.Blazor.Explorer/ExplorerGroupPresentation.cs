@@ -21,10 +21,6 @@ internal static class ExplorerGroupPresentation
             _ => field.ToString(),
         };
 
-    /// <summary>The heading of <paramref name="group"/>.</summary>
-    public static string GetLabel(IStringLocale locale, ExplorerItemGroup group)
-        => GetLabel(locale, group.Band, group.KindLabel);
-
     /// <summary>The heading of a group in <paramref name="band"/>, a kind group's being <paramref name="kindLabel"/>.</summary>
     public static string GetLabel(IStringLocale locale, ExplorerGroupBand band, string? kindLabel)
         => band switch

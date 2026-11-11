@@ -76,54 +76,6 @@ public static class ExplorerGrouping
         return new CatalogGrouping(catalogField, [folderGroup, .. groups]);
     }
 
-    /// <summary>Gathers the items into the groups of <paramref name="grouping"/> that hold any, in the order the groups stand.</summary>
-    /// <param name="items">The items to group, each group keeping them in list order.</param>
-    /// <param name="grouping">The groups the items gather into, as <see cref="Define"/> built them.</param>
-    /// <param name="kindLabel">The label of a kind.</param>
-    /// <param name="sizes">How many items each group holds across the whole result, where a group the sizes leave out counts its own items.</param>
-    public static IReadOnlyList<ExplorerItemGroup> GroupBy(
-        IReadOnlyList<ICatalogItem> items,
-        CatalogGrouping? grouping,
-        Func<CatalogItemKind, string> kindLabel,
-        IReadOnlyList<CatalogGroupSize>? sizes = null)
-    {
-        ArgumentNullException.ThrowIfNull(items);
-        ArgumentNullException.ThrowIfNull(kindLabel);
-
-        if (grouping is null)
-        {
-            return [];
-        }
-
-        var members = new List<ICatalogItem>?[grouping.Groups.Count];
-
-        foreach (var item in items)
-        {
-            (members[grouping.IndexOf(item)] ??= []).Add(item);
-        }
-
-        var counts = sizes?.ToDictionary(size => size.Key, size => size.Count, StringComparer.Ordinal);
-        List<ExplorerItemGroup> result = [];
-
-        for (var index = 0; index < members.Length; index++)
-        {
-            if (members[index] is not { } groupItems)
-            {
-                continue;
-            }
-
-            var group = grouping.Groups[index];
-            var (band, label) = group is CatalogKindGroup kindGroup
-                ? (ExplorerGroupBand.Kind, kindLabel(kindGroup.Kind))
-                : (Enum.Parse<ExplorerGroupBand>(group.Key), null);
-            var count = counts?.GetValueOrDefault(group.Key, groupItems.Count) ?? groupItems.Count;
-
-            result.Add(new ExplorerItemGroup(group.Key, band, label, groupItems, count));
-        }
-
-        return result;
-    }
-
     private static List<CatalogGroup> DefineNameGroups()
         =>
         [

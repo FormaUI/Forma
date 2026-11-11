@@ -29,12 +29,6 @@ public interface IExplorerContentView
     /// <summary>The items currently shown.</summary>
     IReadOnlyList<ICatalogItem> VisibleItems { get; }
 
-    /// <summary>The shown items gathered into groups by <see cref="GroupField"/>.</summary>
-    IReadOnlyList<ExplorerItemGroup> VisibleGroups { get; }
-
-    /// <summary>Whether the group's items are folded away.</summary>
-    bool IsCollapsed(ExplorerItemGroup group);
-
     /// <summary>Whether the content is being read.</summary>
     bool IsFetching { get; }
 

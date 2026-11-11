@@ -5,10 +5,6 @@ using Forma.Framework.Catalog;
 /// <summary>What components presenting an explorer's items may ask it to do.</summary>
 public interface IExplorerItemInteraction
 {
-    /// <summary>Activates the item.</summary>
-    /// <remarks>An activated item is previewed, or has its selection toggled in selection mode.</remarks>
-    Task ActivateAsync(ICatalogItem item);
-
     /// <summary>Starts dragging the item.</summary>
     void BeginDrag(ICatalogItem item);
 

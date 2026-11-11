@@ -430,11 +430,7 @@ public sealed class ExplorerItemManagerTests
         // Arrange
         var manager = new ExplorerItemManager();
         var item = CreateItem("/media/photo.png", CatalogItemCapabilities.Drag | CatalogItemCapabilities.Move | CatalogItemCapabilities.Rename | CatalogItemCapabilities.Delete, isDisabled: true);
-        var activated = false;
-        manager.OnActivate = _ => { activated = true; return Task.CompletedTask; };
-
         // Act
-        await manager.ActivateAsync(item);
         manager.RequestRename(item);
         var renamePending = manager.PendingAction;
         manager.RequestDelete(item);
@@ -443,7 +439,6 @@ public sealed class ExplorerItemManagerTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.False(activated),
             () => Assert.Null(renamePending),
             () => Assert.Null(deletePending),
             () => Assert.False(dropped));
@@ -565,19 +560,8 @@ public sealed class ExplorerItemManagerTests
         manager.CancelAction();
         manager.RequestDeleteSelected();
         manager.ToggleUpload();
-        await manager.ActivateAsync(CreateItem("/media/photo.png"));
         await manager.DropOnItemAsync(null);
         await manager.RequestNewFolderAsync();
         await manager.ConfirmActionAsync();
-    }
-
-    [Fact]
-    public async Task Should_reject_activating_a_null_item()
-    {
-        // Arrange
-        var manager = new ExplorerItemManager();
-
-        // Act & Assert
-        await Assert.ThrowsAsync<ArgumentNullException>(() => manager.ActivateAsync(null!));
     }
 }

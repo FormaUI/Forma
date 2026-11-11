@@ -546,7 +546,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         _selection.IsSelectionModeActive = Options.SelectOnOpen;
 
         _itemManager.OnChanged = () => _ = InvokeAsync(StateHasChanged);
-        _itemManager.OnActivate = ActivateItemAsync;
         _itemManager.OnDrop = (target, folder) => RunAsync(() => HandleDropOnFolderAsync(target, folder));
         _itemManager.OnRequestNewFolder = () => RunAsync(() => OpenFolderDialogAsync(_currentFolder));
         _itemManager.OnRenameConfirmed = (target, newName) => RunAsync(() => ApplyRenameAsync(target, newName));
@@ -859,17 +858,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     ExplorerGroupField IExplorerContentView.GroupField => _groupField;
 
-    IReadOnlyList<ExplorerItemGroup> IExplorerContentView.VisibleGroups
-        => ExplorerGrouping.GroupBy(VisibleItems, Grouping, GetKindLabel, _source.GroupSizes);
-
-    // The data view folds the groups, so a group folded in one view stays folded in the others.
-    bool IExplorerContentView.IsCollapsed(ExplorerItemGroup group)
-    {
-        ArgumentNullException.ThrowIfNull(group);
-
-        return ContentView is { } content && content.Groups.FirstOrDefault(viewGroup => Equals(viewGroup.Key, group.Key)) is { } folded && content.IsFolded(folded);
-    }
-
     ICatalogSelectionView IExplorerView.Selection => _selection;
 
     bool IExplorerView.CanSelect(ICatalogItem item)
@@ -944,19 +932,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     Task IExplorerContentInteraction.GroupByAsync(ExplorerGroupField field)
         => RunAsync(() => HandleGroupFieldChangedAsync(field));
-
-    async Task IExplorerContentInteraction.ToggleGroupAsync(ExplorerItemGroup group)
-    {
-        ArgumentNullException.ThrowIfNull(group);
-
-        if (_dataView is not { } view)
-        {
-            return;
-        }
-
-        await (((IExplorerContentView)this).IsCollapsed(group) ? view.UnfoldGroupAsync(group.Key) : view.FoldGroupAsync(group.Key));
-        await InvokeAsync(StateHasChanged);
-    }
 
     Task IExplorerContentInteraction.ToggleDetailsColumnAsync(ExplorerDetailsColumns column)
         => RunAsync(() => HandleDetailsColumnToggledAsync(column));
@@ -1504,18 +1479,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
 
         _itemManager.BeginCreateFolder(parent);
-    }
-
-    private async Task ActivateItemAsync(ICatalogItem item)
-    {
-        if (_selection.IsSelectionModeActive && CanChoose(item))
-        {
-            await ChangeSelectionAsync(selection => selection.Toggle(item));
-            return;
-        }
-
-        await OpenItemAsync(item);
-        StateHasChanged();
     }
 
     private void OpenPreview(ResourceInfo resource)
