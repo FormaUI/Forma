@@ -26,17 +26,17 @@ if (args.Contains("--prepare-browser"))
     return Microsoft.Playwright.Program.Main(["install", "chromium"]);
 }
 
-var positional = args.Where(argument => !argument.StartsWith("--", StringComparison.Ordinal)).ToArray();
+var positionalArguments = args.Where(argument => !argument.StartsWith("--", StringComparison.Ordinal)).ToArray();
 var show = args.Contains("--show");
 
-if (positional.Length < 3)
+if (positionalArguments.Length < 3)
 {
     await Console.Error.WriteLineAsync("Usage: CheckScreenReaderSpeech <showcase address> <speech log> <transcript>").ConfigureAwait(false);
     return 2;
 }
 
-var baseUrl = positional[0].TrimEnd('/');
-var speech = new SpeechLog(positional[1]);
+var baseUrl = positionalArguments[0].TrimEnd('/');
+var speech = new SpeechLog(positionalArguments[1]);
 var transcript = new StringBuilder();
 
 Scenario[] scenarios =
@@ -73,9 +73,9 @@ catch (PlaywrightException exception)
     return 3;
 }
 
-await using var closing = browser.ConfigureAwait(false);
+await using var browserDisposal = browser.ConfigureAwait(false);
 
-var failures = 0;
+var failureCount = 0;
 
 foreach (var scenario in scenarios)
 {
@@ -102,7 +102,7 @@ foreach (var scenario in scenarios)
         catch (Exception exception) when (exception is PlaywrightException or TimeoutException)
         {
             transcript.AppendLine(CultureInfo.InvariantCulture, $"## {step.Description}: the action failed: {exception.Message.Split('\n')[0]}");
-            failures++;
+            failureCount++;
             break;
         }
 
@@ -118,7 +118,7 @@ foreach (var scenario in scenarios)
 
         if (outcome.Missing is not null)
         {
-            failures++;
+            failureCount++;
         }
 
         if (show)
@@ -130,10 +130,10 @@ foreach (var scenario in scenarios)
     await page.CloseAsync().ConfigureAwait(false);
 }
 
-await File.WriteAllTextAsync(positional[2], transcript.ToString()).ConfigureAwait(false);
+await File.WriteAllTextAsync(positionalArguments[2], transcript.ToString()).ConfigureAwait(false);
 await Console.Out.WriteAsync(transcript.ToString()).ConfigureAwait(false);
 
-return failures == 0 ? 0 : 1;
+return failureCount == 0 ? 0 : 1;
 
 // The archive of a hundred thousand nodes: a node focused, scrolled out of view, and the keys carrying on from it. A name is
 // expected as NVDA speaks it, its full stop read as "dot".
@@ -188,13 +188,13 @@ static Step[] CheckBoxState(string label)
 
 // The first time picker on its page: the field named and announced as a combobox, and the list's first two suggestions announced as
 // the down arrow highlights them.
-static Step[] TimePickerList(string label, string first, string second)
+static Step[] TimePickerList(string label, string firstSuggestion, string secondSuggestion)
 {
     return [
         new("open the page", null, []),
         new("focus the field", page => page.Locator(".forma-time-box input").First.FocusAsync(), [label, "combo box"]),
-        new("open the list", page => page.Keyboard.PressAsync("ArrowDown"), [first, "1 of 48"]),
-        new("move down the list", page => page.Keyboard.PressAsync("ArrowDown"), [second, "2 of 48"]),
+        new("open the list", page => page.Keyboard.PressAsync("ArrowDown"), [firstSuggestion, "1 of 48"]),
+        new("move down the list", page => page.Keyboard.PressAsync("ArrowDown"), [secondSuggestion, "2 of 48"]),
     ];
 }
 
@@ -243,9 +243,9 @@ static ILocator TreeNode(IPage page, int section, string name)
         .Filter(new() { Has = page.Locator(".forma-data-tree-node-name").GetByText(name, new() { Exact = true }) });
 }
 
-static async Task PressAsync(IPage page, string key, int times)
+static async Task PressAsync(IPage page, string key, int pressCount)
 {
-    for (var press = 0; press < times; press++)
+    for (var press = 0; press < pressCount; press++)
     {
         await page.Keyboard.PressAsync(key).ConfigureAwait(false);
     }
@@ -268,7 +268,7 @@ internal sealed record Step(string Description, Func<IPage, Task>? Act, string[]
 internal sealed record Utterance(int Sequence, string Text);
 
 /// <summary>What a step heard, and the first expected utterance it did not.</summary>
-internal sealed record Outcome(IReadOnlyList<Utterance> Heard, string? Missing);
+internal sealed record Outcome(IReadOnlyList<Utterance> HeardUtterances, string? MissingUtterance);
 
 /// <summary>The recorder's file, read from a mark onward.</summary>
 internal sealed class SpeechLog(string path)
@@ -282,37 +282,37 @@ internal sealed class SpeechLog(string path)
     /// <summary>Waits for the expected utterances, in order, among those recorded after the mark.</summary>
     /// <remarks>Each expected text is matched as whole words, after the one matched before it, further along the same utterance or in a later one,
     /// since NVDA speaks a control's name, role and state as one utterance or several; "9 items" is never matched by "19 items".</remarks>
-    public async Task<Outcome> WaitForAsync(int mark, string[] expected, TimeSpan timeout)
+    public async Task<Outcome> WaitForAsync(int mark, string[] expectedUtterances, TimeSpan timeout)
     {
         var deadline = DateTime.UtcNow + timeout;
 
         while (true)
         {
-            var heard = Read().Skip(mark).ToList();
-            var missing = FirstMissing(heard, expected);
+            var heardUtterances = Read().Skip(mark).ToList();
+            var missingUtterance = FirstMissing(heardUtterances, expectedUtterances);
 
-            if (missing is null || DateTime.UtcNow >= deadline)
+            if (missingUtterance is null || DateTime.UtcNow >= deadline)
             {
-                return new Outcome(heard, missing);
+                return new Outcome(heardUtterances, missingUtterance);
             }
 
             await Task.Delay(100).ConfigureAwait(false);
         }
     }
 
-    private static string? FirstMissing(List<Utterance> heard, string[] expected)
+    private static string? GetFirstMissingUtterance(List<Utterance> heardUtterances, string[] expectedUtterances)
     {
         var index = 0;
         var offset = 0;
 
-        foreach (var text in expected)
+        foreach (var text in expectedUtterances)
         {
             var words = new Regex($@"(?<!\w){Regex.Escape(text)}(?!\w)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
             Match? match = null;
 
-            for (; index < heard.Count; index++, offset = 0)
+            for (; index < heardUtterances.Count; index++, offset = 0)
             {
-                match = words.Match(heard[index].Text, offset);
+                match = words.Match(heardUtterances[index].Text, offset);
 
                 if (match.Success)
                 {

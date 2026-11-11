@@ -36,7 +36,7 @@ $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $scripts = Join-Path $repositoryRoot 'scripts'
-$approved = @((Get-Verb).Verb)
+$approvedVerbs = @((Get-Verb).Verb)
 
 $results = [System.Collections.Generic.List[psobject]]::new()
 
@@ -84,7 +84,7 @@ foreach ($entry in $files) {
             'task' {
                 $parts = $file.BaseName -split '-'
                 if ($parts.Count -ne 2) { 'is not named Verb-Noun' }
-                elseif ($parts[0] -notin $approved) { "opens with '$($parts[0])', which is not a verb PowerShell approves" }
+                elseif ($parts[0] -notin $approvedVerbs) { "opens with '$($parts[0])', which is not a verb PowerShell approves" }
             }
             'build' {
                 if ($file.BaseName -cnotmatch '^[a-z][a-z.]*$') { 'is a build script, so its name is the action in lowercase' }
@@ -190,7 +190,7 @@ function New-BoundPort {
 
 # Bound only long enough to learn a number nothing else holds, then released.
 $probe = New-BoundPort
-$free = $probe.LocalEndpoint.Port
+$freePort = $probe.LocalEndpoint.Port
 $probe.Stop()
 
 # The currency data is read from the network and rewrites a checked-in asset, so what runs here is what it
@@ -202,7 +202,7 @@ Test-Case -Name 'a CLDR release that is not a version is refused' -Script 'Updat
     -Arguments @('-CldrVersion', 'forty-eight', '-WhatIf') -Fails
 
 Test-Case -Name 'the Showcase describes the start it would make' -Script 'Start-Showcase.ps1' `
-    -Arguments @('-Port', "$free", '-WhatIf') -Expect @('dotnet run', "$free")
+    -Arguments @('-Port', "$freePort", '-WhatIf') -Expect @('dotnet run', "$freePort")
 
 Test-Case -Name 'a port outside the range is refused' -Script 'Start-Showcase.ps1' `
     -Arguments @('-Port', '70000', '-WhatIf') -Fails
@@ -210,14 +210,14 @@ Test-Case -Name 'a port outside the range is refused' -Script 'Start-Showcase.ps
 # Held rather than described, because what is being checked is that something else on the port is
 # recognized as something else, which only a real listener can show.
 $stranger = New-BoundPort
-$taken = $stranger.LocalEndpoint.Port
+$takenPort = $stranger.LocalEndpoint.Port
 
 try {
     Test-Case -Name 'a port held by a stranger is reported, not taken' -Script 'Start-Showcase.ps1' `
-        -Arguments @('-Port', "$taken", '-WhatIf') -Fails -Expect @('not this repository')
+        -Arguments @('-Port', "$takenPort", '-WhatIf') -Fails -Expect @('not this repository')
 
     Test-Case -Name 'forcing does not stop what was never ours' -Script 'Start-Showcase.ps1' `
-        -Arguments @('-Port', "$taken", '-Force', '-WhatIf') -Fails -Expect @('not this repository')
+        -Arguments @('-Port', "$takenPort", '-Force', '-WhatIf') -Fails -Expect @('not this repository')
 
     Invoke-QueuedCase
 }
@@ -326,12 +326,12 @@ foreach ($result in $results) {
     }
 }
 
-$failed = @($results | Where-Object { -not $_.Passed })
+$failedResults = @($results | Where-Object { -not $_.Passed })
 
 Write-Host ''
 
-if ($failed.Count -gt 0) {
-    Write-Host ("{0} of {1} checks failed." -f $failed.Count, $results.Count)
+if ($failedResults.Count -gt 0) {
+    Write-Host ("{0} of {1} checks failed." -f $failedResults.Count, $results.Count)
     exit 1
 }
 

@@ -61,7 +61,7 @@ function Get-Annotation {
     $candidates = @($Emoji, ($Emoji -replace [char]0xFE0F, ''))
 
     foreach ($candidate in $candidates) {
-        foreach ($source in @($annotations, $derived)) {
+        foreach ($source in @($annotations, $derivedAnnotations)) {
             $entry = $source.PSObject.Properties[$candidate]
             if ($null -ne $entry) {
                 return $entry.Value
@@ -77,11 +77,11 @@ $testData = (Invoke-WebRequest -Uri $emojiTestUrl -TimeoutSec 60).Content
 
 Write-Host 'Fetching CLDR annotations...'
 $annotations = (Invoke-RestMethod -Uri $annotationsUrl -TimeoutSec 60).annotations.annotations
-$derived = (Invoke-RestMethod -Uri $derivedAnnotationsUrl -TimeoutSec 60).annotationsDerived.annotations
+$derivedAnnotations = (Invoke-RestMethod -Uri $derivedAnnotationsUrl -TimeoutSec 60).annotationsDerived.annotations
 
 $entries = [System.Collections.Generic.List[object]]::new()
 $currentGroup = $null
-$skipped = 0
+$skippedCount = 0
 
 foreach ($line in ($testData -split "`r?`n")) {
     if ($line -match '^# group:\s*(.+?)\s*$') {
@@ -100,7 +100,7 @@ foreach ($line in ($testData -split "`r?`n")) {
 
     # Skin tones are offered as a modifier rather than as separate entries.
     if ($Matches['code'] -match '1F3F[B-F]') {
-        $skipped++
+        $skippedCount++
         continue
     }
 
@@ -109,21 +109,21 @@ foreach ($line in ($testData -split "`r?`n")) {
     # An annotation is whatever CLDR published, so each field is asked for rather than assumed: a derived
     # annotation carries no keywords, and an emoji CLDR has not named at all carries neither field.
     $keywords = @()
-    $spoken = $null
+    $spokenName = $null
 
     if ($null -ne $annotation) {
-        $default = $annotation.PSObject.Properties['default']
-        if ($null -ne $default) {
-            $keywords = @($default.Value | Where-Object { $_ })
+        $defaultProperty = $annotation.PSObject.Properties['default']
+        if ($null -ne $defaultProperty) {
+            $keywords = @($defaultProperty.Value | Where-Object { $_ })
         }
 
         $tts = $annotation.PSObject.Properties['tts']
         if ($null -ne $tts) {
-            $spoken = $tts.Value | Select-Object -First 1
+            $spokenName = $tts.Value | Select-Object -First 1
         }
     }
 
-    $name = if ($spoken) { [string]$spoken } else { $Matches['name'] }
+    $name = if ($spokenName) { [string]$spokenName } else { $Matches['name'] }
 
     $entries.Add([PSCustomObject]@{
             c = $emoji
@@ -161,10 +161,10 @@ foreach ($item in $artwork) {
     $drawings[$item.Id] = $item.Markup
 }
 
-$missing = @($entries | Where-Object { -not $drawings[$_.s] })
-if ($missing.Count -gt 0) {
-    $named = ($missing | Select-Object -First 8 | ForEach-Object { "$($_.s) ($($_.n))" }) -join ', '
-    throw "No Twemoji drawing for $($missing.Count) emoji: $named"
+$missingEntries = @($entries | Where-Object { -not $drawings[$_.s] })
+if ($missingEntries.Count -gt 0) {
+    $missingNames = ($missingEntries | Select-Object -First 8 | ForEach-Object { "$($_.s) ($($_.n))" }) -join ', '
+    throw "No Twemoji drawing for $($missingEntries.Count) emoji: $missingNames"
 }
 
 # The catalogs and sprites are checked in, so they are written with the endings they are stored with
@@ -197,14 +197,14 @@ foreach ($groupId in $groupIds.Values) {
         $symbols = @(foreach ($entry in ($members | Select-Object -Skip ($chunk * $chunkSize) -First $chunkSize)) {
                 $markup = $drawings[$entry.s]
                 $viewBox = [regex]::Match($markup, 'viewBox="([^"]+)"').Groups[1].Value
-                $inner = [regex]::Match($markup, '(?s)<svg[^>]*>(.*)</svg>').Groups[1].Value.Trim()
+                $innerMarkup = [regex]::Match($markup, '(?s)<svg[^>]*>(.*)</svg>').Groups[1].Value.Trim()
 
                 # A sprite shares one document, so gradient and clip ids have to be unique across all of it.
-                foreach ($id in ([regex]::Matches($inner, '\sid="([^"]+)"') | ForEach-Object { $_.Groups[1].Value })) {
-                    $inner = $inner -replace ('(\s(?:xlink:)?href="#|url\(#|\sid=")' + [regex]::Escape($id) + '\b'), ('${1}' + $entry.s + '-' + $id)
+                foreach ($id in ([regex]::Matches($innerMarkup, '\sid="([^"]+)"') | ForEach-Object { $_.Groups[1].Value })) {
+                    $innerMarkup = $innerMarkup -replace ('(\s(?:xlink:)?href="#|url\(#|\sid=")' + [regex]::Escape($id) + '\b'), ('${1}' + $entry.s + '-' + $id)
                 }
 
-                '    <symbol id="emoji-{0}" viewBox="{1}">{2}</symbol>' -f $entry.s, $viewBox, $inner
+                '    <symbol id="emoji-{0}" viewBox="{1}">{2}</symbol>' -f $entry.s, $viewBox, $innerMarkup
             })
 
         $sprite = @"
@@ -240,4 +240,4 @@ foreach ($groupId in $spriteSizes.Keys) {
 }
 Write-Host ("Catalogs in {0}" -f $catalogFolder)
 Write-Host ("Artwork  in {0}" -f $spriteFolder)
-Write-Host ("Skipped {0} skin-tone variants." -f $skipped)
+Write-Host ("Skipped {0} skin-tone variants." -f $skippedCount)

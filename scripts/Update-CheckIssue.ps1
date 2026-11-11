@@ -149,7 +149,7 @@ function Write-Issue {
     param(
         [Parameter(Mandatory)] [string] $Marker,
         [Parameter(Mandatory)] [string] $Title,
-        [Parameter(Mandatory)] [string] $Opening,
+        [Parameter(Mandatory)] [string] $OpeningText,
         [Parameter(Mandatory)] [string] $Occurrence,
         [string[]] $AddedLabel = @(),
         [string[]] $RemovedLabel = @()
@@ -158,7 +158,7 @@ function Write-Issue {
     $issue = Find-Issue -Marker $Marker
 
     if (-not $issue) {
-        $body = "$Opening`n`n$Occurrence`n`n$Marker"
+        $body = "$OpeningText`n`n$Occurrence`n`n$Marker"
         $labelText = (@($nightly) + $AddedLabel) -join ', '
 
         if ($PSCmdlet.ShouldProcess("$Repository, labeled $labelText", "Open the issue '$Title'")) {
@@ -214,9 +214,9 @@ foreach ($check in ($findings | Group-Object Name)) {
     $addedLabels = if ($isIntermittent -or $wasIntermittent) { @('flaky') } else { @('regression') }
     $removedLabels = if ($isIntermittent) { @('regression') } else { @() }
     $title = "Check failing: $(Format-Cell ($check.Name -replace '^Forma\.[\w.]+\.Tests\.', '') -Length 200)"
-    $opening = "The nightly run failed the check ``$($check.Name)``. Each later night it fails comments here."
+    $openingText = "The nightly run failed the check ``$($check.Name)``. Each later night it fails comments here."
 
-    Write-Issue -Marker $marker -Title $title -Opening $opening -Occurrence $table -AddedLabel $addedLabels -RemovedLabel $removedLabels
+    Write-Issue -Marker $marker -Title $title -OpeningText $openingText -Occurrence $table -AddedLabel $addedLabels -RemovedLabel $removedLabels
 }
 
 if ($interruptedChecks.Count -gt 0) {
@@ -227,12 +227,12 @@ if ($interruptedChecks.Count -gt 0) {
     ) -join "`n"
 
     Write-Issue -Marker '<!-- forma-device-unreachable -->' -Title 'An Android device the checks ran on went unreachable' `
-        -Opening "adb couldn't reach the device the checks ran on, so the checks it interrupted didn't run. Each later night it happens comments here; the job's description of the emulator says what it last showed." `
+        -OpeningText "adb couldn't reach the device the checks ran on, so the checks it interrupted didn't run. Each later night it happens comments here; the job's description of the emulator says what it last showed." `
         -Occurrence $list -AddedLabel @('infrastructure')
 }
 
 foreach ($job in $failedJobs) {
     Write-Issue -Marker "<!-- forma-job: $job -->" -Title "The nightly job $job failed outside its checks" `
-        -Opening "The nightly run's job $job failed with no failing or interrupted check among its results, so the failure is in what it ran around them." `
+        -OpeningText "The nightly run's job $job failed with no failing or interrupted check among its results, so the failure is in what it ran around them." `
         -Occurrence "Failed on $commitLink, in [the run]($Run)." -AddedLabel @('infrastructure')
 }

@@ -107,17 +107,17 @@ function Select-PortHolder {
         [Parameter(Mandatory)] [int] $Number
     )
 
-    $written = [regex]::Escape(":$Number") + '(\D|$)'
+    $portPattern = [regex]::Escape(":$Number") + '(\D|$)'
 
-    @($Process | Where-Object { $_.CommandLine -and $_.CommandLine -match $written })
+    @($Process | Where-Object { $_.CommandLine -and $_.CommandLine -match $portPattern })
 }
 
 if (Test-PortListening -Number $Port) {
     # Wrapped here because a function returning an empty collection returns nothing at all, and asking
     # nothing how many it holds is an error rather than zero.
-    $running = @(Select-PortHolder -Process @(Get-RunningShowcase) -Number $Port)
+    $runningShowcases = @(Select-PortHolder -Process @(Get-RunningShowcase) -Number $Port)
 
-    if ($running.Count -eq 0) {
+    if ($runningShowcases.Count -eq 0) {
         throw "Port $Port is taken by something that is not this repository's Showcase, so it is left alone. Pass -Port to listen elsewhere."
     }
 
@@ -125,7 +125,7 @@ if (Test-PortListening -Number $Port) {
         throw "The Showcase is already listening on port $Port. Pass -Force to stop it and start again, or -Port to listen elsewhere."
     }
 
-    foreach ($process in $running) {
+    foreach ($process in $runningShowcases) {
         if ($PSCmdlet.ShouldProcess("the Showcase ($($process.Id))", 'stop')) {
             Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue
         }
@@ -133,8 +133,8 @@ if (Test-PortListening -Number $Port) {
 
     # The port is released as the process ends rather than as it is asked to, and starting into a port
     # still held fails in a way that reads as though the address itself were wrong.
-    $waited = [System.Diagnostics.Stopwatch]::StartNew()
-    while ((Test-PortListening -Number $Port) -and $waited.Elapsed.TotalSeconds -lt 10) {
+    $waitStopwatch = [System.Diagnostics.Stopwatch]::StartNew()
+    while ((Test-PortListening -Number $Port) -and $waitStopwatch.Elapsed.TotalSeconds -lt 10) {
         Start-Sleep -Milliseconds 200
     }
 
@@ -142,7 +142,7 @@ if (Test-PortListening -Number $Port) {
         throw "Port $Port is still held ten seconds after the Showcase was stopped."
     }
 
-    Write-Host ("Stopped {0} Showcase process(es) holding port {1}." -f $running.Count, $Port)
+    Write-Host ("Stopped {0} Showcase process(es) holding port {1}." -f $runningShowcases.Count, $Port)
 }
 
 Write-Host ("Starting the Showcase on http://localhost:{0}" -f $Port)

@@ -49,9 +49,9 @@ public sealed class GlyphParserTests
             Assert.Multiple(() =>
             {
                 Assert.Equal(0.4, drawing.Paths[0].Opacity);
-                Assert.False(drawing.Paths[0].Filled);
+                Assert.False(drawing.Paths[0].IsFilled);
                 Assert.Equal(1, drawing.Paths[1].Opacity);
-                Assert.True(drawing.Paths[1].Filled);
+                Assert.True(drawing.Paths[1].IsFilled);
             });
         }
 

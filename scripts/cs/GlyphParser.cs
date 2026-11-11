@@ -63,12 +63,12 @@ internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
         foreach (Match element in Regex.Matches(root.Groups[2].Value, @"<path\s+([^>]+?)\s*/>"))
         {
             var attributeText = element.Groups[1].Value;
-            var filled = attributeText.Contains("fill=\"currentColor\"", StringComparison.Ordinal);
-            var solid = filled && attributeText.Contains("stroke=\"none\"", StringComparison.Ordinal);
+            var isFilled = attributeText.Contains("fill=\"currentColor\"", StringComparison.Ordinal);
+            var isSolid = isFilled && attributeText.Contains("stroke=\"none\"", StringComparison.Ordinal);
             foreach (Match attribute in Regex.Matches(attributeText, @"([\w-]+)=""[^""]*"""))
             {
-                var allowed = attribute.Groups[1].Value is "d" or "fill" or "stroke" or "opacity" || (solid && attribute.Groups[1].Value == "fill-rule");
-                if (!allowed)
+                var isAllowed = attribute.Groups[1].Value is "d" or "fill" or "stroke" or "opacity" || (isSolid && attribute.Groups[1].Value == "fill-rule");
+                if (!isAllowed)
                 {
                     throw new InvalidOperationException($"Forbidden attribute '{attribute.Groups[1].Value}' on a path in {file}");
                 }
@@ -81,7 +81,7 @@ internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
             }
 
             // A solid silhouette's edge is anti-aliased whatever the grid, so on the 32 grid it may sit on half units.
-            var decimals = solid && grid == 32 ? @"\d+\.(?!5\b)\d+" : @"\d+\.\d+";
+            var decimals = isSolid && grid == 32 ? @"\d+\.(?!5\b)\d+" : @"\d+\.\d+";
             if (Regex.IsMatch(data, decimals))
             {
                 throw new InvalidOperationException($"Coordinates off the grid are forbidden in {file}: {data}");
@@ -92,7 +92,7 @@ internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
 
             var opacityText = Regex.Match(attributeText, @"opacity=""([^""]+)""").Groups[1].Value;
             var opacity = opacityText.Length == 0 ? 1 : double.Parse(opacityText, CultureInfo.InvariantCulture);
-            paths.Add(new DrawingPath(data, filled && stroke > 0, opacity));
+            paths.Add(new DrawingPath(data, isFilled && stroke > 0, opacity));
         }
 
         if (paths.Count == 0)
@@ -166,7 +166,7 @@ internal sealed record Drawing(double Stroke, IReadOnlyList<DrawingPath> Paths)
 }
 
 /// <summary>One path of a drawing: its data, whether it is a solid mark inside a stroke drawing, and its opacity.</summary>
-internal sealed record DrawingPath(string Data, bool Filled, double Opacity);
+internal sealed record DrawingPath(string Data, bool IsFilled, double Opacity);
 
 /// <summary>One style of a glyph as the asset carries it: the width its paths are stroked at, and the paths.</summary>
 /// <remarks>A stroke of zero is the filled form, where each path is a silhouette rather than a line.</remarks>
@@ -184,9 +184,9 @@ internal static class GlyphDraft
     {
         var scale = (double)to / from;
 
-        var scaled = content.Replace($"viewBox=\"0 0 {from} {from}\"", $"viewBox=\"0 0 {to} {to}\"", StringComparison.Ordinal);
+        var scaledContent = content.Replace($"viewBox=\"0 0 {from} {from}\"", $"viewBox=\"0 0 {to} {to}\"", StringComparison.Ordinal);
 
-        return Regex.Replace(scaled, @"d=""([^""]+)""", match =>
+        return Regex.Replace(scaledContent, @"d=""([^""]+)""", match =>
         {
             var data = Regex.Replace(match.Groups[1].Value, @"([A-Za-z])\s*((?:-?\d+(?:\.\d+)?\s*)+)", segment =>
             {

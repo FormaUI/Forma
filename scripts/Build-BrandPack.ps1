@@ -34,12 +34,12 @@ if ($members.Count -eq 0) {
 }
 
 $marks = [ordered]@{}
-$missing = [System.Collections.Generic.List[string]]::new()
+$missingBrands = [System.Collections.Generic.List[string]]::new()
 
 foreach ($name in $members) {
     $source = Join-Path $brandsFolder "$name.svg"
     if (-not (Test-Path -LiteralPath $source)) {
-        $missing.Add($name)
+        $missingBrands.Add($name)
         continue
     }
 
@@ -55,16 +55,16 @@ foreach ($name in $members) {
     }
 }
 
-if ($missing.Count -gt 0) {
-    throw "No mark on hand for $($missing.Count) brand(s): $($missing -join ', '). Add each to a list in assets/Brands and run that list's fetch script."
+if ($missingBrands.Count -gt 0) {
+    throw "No mark on hand for $($missingBrands.Count) brand(s): $($missingBrands -join ', '). Add each to a list in assets/Brands and run that list's fetch script."
 }
 
-$unnamed = @(Get-ChildItem -LiteralPath $brandsFolder -Filter '*.svg' |
+$unnamedFiles = @(Get-ChildItem -LiteralPath $brandsFolder -Filter '*.svg' |
         Where-Object { $members -notcontains $_.BaseName } |
         ForEach-Object { $_.BaseName })
 
-if ($unnamed.Count -gt 0) {
-    throw "No Brand member for $($unnamed.Count) mark(s) on hand: $($unnamed -join ', '). Add each to $enumPath."
+if ($unnamedFiles.Count -gt 0) {
+    throw "No Brand member for $($unnamedFiles.Count) mark(s) on hand: $($unnamedFiles -join ', '). Add each to $enumPath."
 }
 
 # The asset is checked in, so it is written with the endings it is stored with rather than the ones this

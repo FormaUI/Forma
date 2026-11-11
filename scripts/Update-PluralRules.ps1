@@ -45,7 +45,7 @@ $decimalOperands = @('n')
 $categoryOrder = @('zero', 'one', 'two', 'few', 'many')
 
 # Emitted C# must not vary with the culture the generator happens to run under.
-$invariant = [Globalization.CultureInfo]::InvariantCulture
+$invariantCulture = [Globalization.CultureInfo]::InvariantCulture
 
 # A generated C# file is checked in, and .gitattributes declares every .cs file to be LF, so it is written
 # with the endings it is stored with rather than the ones the generating machine happens to use. Writing it
@@ -70,7 +70,7 @@ function ConvertTo-Relation {
 
     $operand = $Matches['operand'].Trim()
     $modulus = $Matches['modulus']
-    $negated = $Matches['comparison'] -eq '!='
+    $isNegated = $Matches['comparison'] -eq '!='
     $ranges = $Matches['ranges']
 
     if (-not $operandNames.ContainsKey($operand)) {
@@ -91,13 +91,13 @@ function ConvertTo-Relation {
     $tests = @(foreach ($range in $ranges -split ',') {
             $range = $range.Trim()
             if ($range -match '^(?<low>\d+)\.\.(?<high>\d+)$') {
-                $low = $Matches['low']
-                $high = $Matches['high']
+                $lowBound = $Matches['low']
+                $highBound = $Matches['high']
                 if ($isDecimal) {
-                    "InRange($expression, $low, $high)"
+                    "InRange($expression, $lowBound, $highBound)"
                 }
                 else {
-                    "$expression >= $low && $expression <= $high"
+                    "$expression >= $lowBound && $expression <= $highBound"
                 }
             }
             elseif ($range -match '^\d+$') {
@@ -108,19 +108,19 @@ function ConvertTo-Relation {
             }
         })
 
-    $joined = if ($tests.Count -eq 1) { $tests[0] } else { '(' + ($tests -join ' || ') + ')' }
+    $joinedTests = if ($tests.Count -eq 1) { $tests[0] } else { '(' + ($tests -join ' || ') + ')' }
 
     # A relation whose range list needs an inner && has to be bracketed before it is negated or joined.
-    if ($tests.Count -eq 1 -and $joined -match '&&') {
-        $joined = "($joined)"
+    if ($tests.Count -eq 1 -and $joinedTests -match '&&') {
+        $joinedTests = "($joinedTests)"
     }
 
-    if (-not $negated) {
-        return $joined
+    if (-not $isNegated) {
+        return $joinedTests
     }
 
     # The leading bracket may belong to a modulus rather than the whole relation, so always add one.
-    return "!($joined)"
+    return "!($joinedTests)"
 }
 
 function ConvertTo-Condition {
@@ -153,17 +153,17 @@ function Expand-Sample {
         }
 
         if ($item -match '^(?<low>[\d.]+)~(?<high>[\d.]+)$') {
-            $low = $Matches['low']
-            $high = $Matches['high']
-            $decimals = if ($low.Contains('.')) { $low.Length - $low.IndexOf('.') - 1 } else { 0 }
+            $lowBound = $Matches['low']
+            $highBound = $Matches['high']
+            $decimals = if ($lowBound.Contains('.')) { $lowBound.Length - $lowBound.IndexOf('.') - 1 } else { 0 }
             $step = [decimal][Math]::Pow(10, -$decimals)
 
-            $current = [decimal]::Parse($low, $invariant)
-            $ceiling = [decimal]::Parse($high, $invariant)
+            $currentValue = [decimal]::Parse($lowBound, $invariantCulture)
+            $ceiling = [decimal]::Parse($highBound, $invariantCulture)
 
-            while ($current -le $ceiling) {
-                $current.ToString("F$decimals", $invariant)
-                $current += $step
+            while ($currentValue -le $ceiling) {
+                $currentValue.ToString("F$decimals", $invariantCulture)
+                $currentValue += $step
             }
         }
         elseif ($item -match '^[\d.]+$') {
@@ -201,7 +201,7 @@ foreach ($property in $cardinals.PSObject.Properties) {
             $condition = if ($at -ge 0) { $text.Substring(0, $at).Trim() } else { $text.Trim() }
 
             if ($condition) {
-                '{0} ? PluralCategory.{1}' -f (ConvertTo-Condition -Text $condition), $invariant.TextInfo.ToTitleCase($category)
+                '{0} ? PluralCategory.{1}' -f (ConvertTo-Condition -Text $condition), $invariantCulture.TextInfo.ToTitleCase($category)
             }
         })
 
@@ -230,7 +230,7 @@ foreach ($property in $cardinals.PSObject.Properties) {
             continue
         }
 
-        $name = $invariant.TextInfo.ToTitleCase($category)
+        $name = $invariantCulture.TextInfo.ToTitleCase($category)
         foreach ($sample in Expand-Sample -Text ($rule.Value.Substring($at) -replace '@integer|@decimal', ',')) {
             $samples.Add([pscustomobject]@{ Locale = $locale; Count = $sample; Category = $name })
         }

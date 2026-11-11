@@ -93,15 +93,15 @@ $nvdaHome = Join-Path $tools 'nvda'
 # until they close, and Windows refuses to delete a file a program has loaded while letting it be moved.
 # A file that cannot be deleted is moved here, so the folder it was in can go, and every later run or
 # uninstall deletes what the programs holding it have since let go of.
-$held = Join-Path ([System.IO.Path]::GetTempPath()) 'FormaNvda' 'locked'
+$heldFolder = Join-Path ([System.IO.Path]::GetTempPath()) 'FormaNvda' 'locked'
 
 function Remove-Tree {
     param([Parameter(Mandatory)] [string] $Path)
 
-    $stuck = [System.Collections.Generic.List[string]]::new()
+    $stuckFiles = [System.Collections.Generic.List[string]]::new()
 
     if (-not (Test-Path -LiteralPath $Path)) {
-        return , $stuck
+        return , $stuckFiles
     }
 
     foreach ($file in Get-ChildItem -LiteralPath $Path -Recurse -File -Force) {
@@ -110,12 +110,12 @@ function Remove-Tree {
         }
         catch {
             try {
-                $destination = Join-Path $held ([guid]::NewGuid().ToString('N'))
+                $destination = Join-Path $heldFolder ([guid]::NewGuid().ToString('N'))
                 New-Item -ItemType Directory -Force -Path $destination | Out-Null
                 Move-Item -LiteralPath $file.FullName -Destination (Join-Path $destination $file.Name)
             }
             catch {
-                $stuck.Add($file.FullName)
+                $stuckFiles.Add($file.FullName)
             }
         }
     }
@@ -128,7 +128,7 @@ function Remove-Tree {
         }
     }
 
-    return , $stuck
+    return , $stuckFiles
 }
 
 function Remove-EmptyParent {
@@ -142,15 +142,15 @@ function Remove-EmptyParent {
 }
 
 function Clear-Held {
-    if (-not (Test-Path -LiteralPath $held)) {
+    if (-not (Test-Path -LiteralPath $heldFolder)) {
         return
     }
 
-    foreach ($file in Get-ChildItem -LiteralPath $held -Recurse -File -Force) {
+    foreach ($file in Get-ChildItem -LiteralPath $heldFolder -Recurse -File -Force) {
         Remove-Item -LiteralPath $file.FullName -Force -ErrorAction SilentlyContinue
     }
 
-    $folders = @(Get-ChildItem -LiteralPath $held -Recurse -Directory -Force | Sort-Object { $_.FullName.Length } -Descending) + @(Get-Item -LiteralPath $held)
+    $folders = @(Get-ChildItem -LiteralPath $heldFolder -Recurse -Directory -Force | Sort-Object { $_.FullName.Length } -Descending) + @(Get-Item -LiteralPath $heldFolder)
 
     foreach ($folder in $folders) {
         if (-not (Get-ChildItem -LiteralPath $folder.FullName -Force)) {
@@ -158,7 +158,7 @@ function Clear-Held {
         }
     }
 
-    Remove-EmptyParent -Path $held
+    Remove-EmptyParent -Path $heldFolder
 }
 
 if (-not $WhatIfPreference) {
@@ -168,11 +168,11 @@ if (-not $WhatIfPreference) {
 # ── Uninstall ────────────────────────────────────────────────────────────────
 
 if ($Uninstall) {
-    $stuck = [System.Collections.Generic.List[string]]::new()
+    $stuckFiles = [System.Collections.Generic.List[string]]::new()
 
-    foreach ($installed in @($nvdaHome, $browsers, $dotnetHome)) {
-        if ((Test-Path -LiteralPath $installed) -and $PSCmdlet.ShouldProcess($installed, 'remove what the screen reader check installed')) {
-            $stuck.AddRange((Remove-Tree -Path $installed))
+    foreach ($installedPath in @($nvdaHome, $browsers, $dotnetHome)) {
+        if ((Test-Path -LiteralPath $installedPath) -and $PSCmdlet.ShouldProcess($installedPath, 'remove what the screen reader check installed')) {
+            $stuckFiles.AddRange((Remove-Tree -Path $installedPath))
         }
     }
 
@@ -181,13 +181,13 @@ if ($Uninstall) {
         Remove-EmptyParent -Path $tools
     }
 
-    if ($stuck.Count -gt 0) {
-        Write-Warning ("{0} file(s) could be neither removed nor moved aside, and were left: {1}" -f $stuck.Count, ($stuck -join ', '))
+    if ($stuckFiles.Count -gt 0) {
+        Write-Warning ("{0} file(s) could be neither removed nor moved aside, and were left: {1}" -f $stuckFiles.Count, ($stuckFiles -join ', '))
         exit 1
     }
 
-    if (Test-Path -LiteralPath $held) {
-        Write-Host "Files still held by running programs were moved to $held. The next run or uninstall deletes them once those programs have closed."
+    if (Test-Path -LiteralPath $heldFolder) {
+        Write-Host "Files still held by running programs were moved to $heldFolder. The next run or uninstall deletes them once those programs have closed."
     }
 
     return
@@ -220,8 +220,8 @@ function Test-Sdk {
         return $false
     }
 
-    $listed = & $Dotnet --list-sdks 2>$null
-    return [bool]($listed | Where-Object { $_ -like "$sdkVersion *" })
+    $listedSdks = & $Dotnet --list-sdks 2>$null
+    return [bool]($listedSdks | Where-Object { $_ -like "$sdkVersion *" })
 }
 
 $dotnet = 'dotnet'
@@ -276,19 +276,19 @@ Get-ChildItem -LiteralPath $cache -Directory -Filter 'portable*' -ErrorAction Si
     ForEach-Object { Remove-Tree -Path $_.FullName | Out-Null }
 
 if (-not $nvda) {
-    $portable = Join-Path $cache "portable-$([DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))"
-    $nvda = Join-Path $portable 'nvda.exe'
+    $portableFolder = Join-Path $cache "portable-$([DateTime]::UtcNow.ToString('yyyyMMddHHmmss'))"
+    $nvda = Join-Path $portableFolder 'nvda.exe'
 
-    if ($PSCmdlet.ShouldProcess($portable, "make a portable copy of NVDA $NvdaVersion")) {
-        $copying = Start-Process -FilePath $launcher -ArgumentList '--create-portable-silent', "--portable-path=$portable" -PassThru
+    if ($PSCmdlet.ShouldProcess($portableFolder, "make a portable copy of NVDA $NvdaVersion")) {
+        $copyProcess = Start-Process -FilePath $launcher -ArgumentList '--create-portable-silent', "--portable-path=$portableFolder" -PassThru
 
-        if (-not $copying.WaitForExit(300000)) {
-            & taskkill /PID $copying.Id /T /F 2>&1 | Out-Null
+        if (-not $copyProcess.WaitForExit(300000)) {
+            & taskkill /PID $copyProcess.Id /T /F 2>&1 | Out-Null
             throw "Making the portable copy of NVDA did not finish within five minutes, so it was stopped."
         }
 
-        if ($copying.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $nvda)) {
-            throw "Making the portable copy of NVDA failed with exit code $($copying.ExitCode)."
+        if ($copyProcess.ExitCode -ne 0 -or -not (Test-Path -LiteralPath $nvda)) {
+            throw "Making the portable copy of NVDA failed with exit code $($copyProcess.ExitCode)."
         }
     }
 }
@@ -387,9 +387,9 @@ try {
             $env:ASPNETCORE_ENVIRONMENT = $previousEnvironment
 
             # The first start builds the Showcase, which takes a while.
-            $ready = [DateTime]::UtcNow.AddMinutes(5)
+            $readyDeadline = [DateTime]::UtcNow.AddMinutes(5)
 
-            while ([DateTime]::UtcNow -lt $ready -and -not $showcase.HasExited -and -not (Test-Showcase)) {
+            while ([DateTime]::UtcNow -lt $readyDeadline -and -not $showcase.HasExited -and -not (Test-Showcase)) {
                 Start-Sleep -Seconds 2
             }
 
@@ -425,10 +425,10 @@ try {
     }
 
     $previousSpeechLog = $env:FORMA_SPEECH_LOG
-    $previousAudible = $env:FORMA_SPEECH_AUDIBLE
+    $previousAudibleSetting = $env:FORMA_SPEECH_AUDIBLE
     $env:FORMA_SPEECH_LOG = $speechLog
     $env:FORMA_SPEECH_AUDIBLE = if ($Audible) { '1' } else { $null }
-    $started = Start-Process -FilePath $nvda -ArgumentList $arguments -PassThru
+    $nvdaProcess = Start-Process -FilePath $nvda -ArgumentList $arguments -PassThru
     $nvdaStarted = $true
     Push-Location -LiteralPath $repositoryRoot
 
@@ -456,12 +456,12 @@ try {
         Pop-Location
         Start-Process -FilePath $nvda -ArgumentList '-q' -Wait | Out-Null
 
-        if (-not $started.HasExited) {
-            $started.WaitForExit(10000) | Out-Null
+        if (-not $nvdaProcess.HasExited) {
+            $nvdaProcess.WaitForExit(10000) | Out-Null
         }
 
         $env:FORMA_SPEECH_LOG = $previousSpeechLog
-        $env:FORMA_SPEECH_AUDIBLE = $previousAudible
+        $env:FORMA_SPEECH_AUDIBLE = $previousAudibleSetting
 
         # NVDA has quit by now, so nothing holds the run's files.
         if ($outcome -eq 0) {

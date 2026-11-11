@@ -28,12 +28,12 @@ function Read-BrandList {
 
     $entries = [System.Collections.Generic.List[object]]::new()
     foreach ($line in (Get-Content -LiteralPath $Path)) {
-        $trimmed = $line.Trim()
-        if ($trimmed -eq '' -or $trimmed.StartsWith('#')) {
+        $trimmedLine = $line.Trim()
+        if ($trimmedLine -eq '' -or $trimmedLine.StartsWith('#')) {
             continue
         }
 
-        if ($trimmed -notmatch '^(?<name>[A-Z][A-Za-z0-9]*)\s+(?<slug>[a-z0-9-]+)(?:\s+"(?<title>[^"]+)")?$') {
+        if ($trimmedLine -notmatch '^(?<name>[A-Z][A-Za-z0-9]*)\s+(?<slug>[a-z0-9-]+)(?:\s+"(?<title>[^"]+)")?$') {
             throw "Malformed brand entry in $($Path): '$line'. Expected 'Name slug' or 'Name slug ""Title""'."
         }
 
@@ -149,26 +149,26 @@ function Remove-UnlistedBrandMarks {
     [CmdletBinding()]
     param([Parameter(Mandatory)] [string] $Folder)
 
-    $listed = @{}
+    $listedNames = @{}
     foreach ($list in (Get-ChildItem -LiteralPath $Folder -Filter '*.txt')) {
         foreach ($entry in (Read-BrandList -Path $list.FullName)) {
-            if ($listed.ContainsKey($entry.Name)) {
-                throw "$($entry.Name) is listed in both $($listed[$entry.Name]) and $($list.Name)."
+            if ($listedNames.ContainsKey($entry.Name)) {
+                throw "$($entry.Name) is listed in both $($listedNames[$entry.Name]) and $($list.Name)."
             }
 
-            $listed[$entry.Name] = $list.Name
+            $listedNames[$entry.Name] = $list.Name
         }
     }
 
-    $removed = 0
+    $removedCount = 0
     foreach ($file in (Get-ChildItem -LiteralPath $Folder -Filter '*.svg')) {
-        if (-not $listed.ContainsKey($file.BaseName)) {
+        if (-not $listedNames.ContainsKey($file.BaseName)) {
             Remove-Item -LiteralPath $file.FullName
-            $removed++
+            $removedCount++
         }
     }
 
-    return $removed
+    return $removedCount
 }
 
 Export-ModuleMember -Function Read-BrandList, Get-BrandMarkup, Write-BrandMark, Remove-UnlistedBrandMarks

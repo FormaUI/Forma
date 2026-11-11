@@ -69,9 +69,9 @@ function Initialize-BuildContext {
     $version = $null
 
     if (Test-Path -LiteralPath $properties) {
-        [xml] $declared = Get-Content -LiteralPath $properties -Raw
-        $prefix = $declared.SelectSingleNode('//PropertyGroup/VersionPrefix')
-        $suffix = $declared.SelectSingleNode('//PropertyGroup/VersionSuffix')
+        [xml] $declaredProperties = Get-Content -LiteralPath $properties -Raw
+        $prefix = $declaredProperties.SelectSingleNode('//PropertyGroup/VersionPrefix')
+        $suffix = $declaredProperties.SelectSingleNode('//PropertyGroup/VersionSuffix')
         $version = if ($prefix -and $suffix -and $suffix.InnerText) { "$($prefix.InnerText)-$($suffix.InnerText)" } elseif ($prefix) { $prefix.InnerText }
     }
 
@@ -177,7 +177,7 @@ function Set-StepTiming {
         [Parameter(Mandatory)] [string] $Name,
         [Parameter(Mandatory)] [string] $Target,
         [Parameter(Mandatory)] [string] $Description,
-        [Parameter(Mandatory)] [timespan] $Elapsed
+        [Parameter(Mandatory)] [timespan] $ElapsedTime
     )
 
     $timings = $null
@@ -195,7 +195,7 @@ function Set-StepTiming {
         $timings = @{}
     }
 
-    $timings["$Name|$Target|$Description"] = [math]::Round($Elapsed.TotalSeconds, 1)
+    $timings["$Name|$Target|$Description"] = [math]::Round($ElapsedTime.TotalSeconds, 1)
 
     if ($PSCmdlet.ShouldProcess($Path, 'record the step''s time')) {
         New-Item -ItemType Directory -Path (Split-Path -Parent $Path) -Force | Out-Null
@@ -244,18 +244,18 @@ function Invoke-BuildStep {
         [string] $Timings
     )
 
-    $last = if ($Timings) { Get-StepTiming -Path $Timings -Name $Name -Target $Target -Description $Description }
-    $heading = if ($last) { "-- $Name, {0:N0} s last time " -f $last.TotalSeconds } else { "-- $Name " }
+    $lastTiming = if ($Timings) { Get-StepTiming -Path $Timings -Name $Name -Target $Target -Description $Description }
+    $heading = if ($lastTiming) { "-- $Name, {0:N0} s last time " -f $lastTiming.TotalSeconds } else { "-- $Name " }
 
     Write-Host ''
     Write-Host $heading.PadRight(78, '-')
 
-    $started = [datetime]::UtcNow
-    $failed = $false
-    $ran = $false
+    $startedAt = [datetime]::UtcNow
+    $hasFailed = $false
+    $hasRun = $false
 
     if ($PSCmdlet.ShouldProcess($Target, $Description)) {
-        $ran = $true
+        $hasRun = $true
 
         try {
             # Only a native command writes an exit code, so clearing it first keeps a step that runs none
@@ -266,22 +266,22 @@ function Invoke-BuildStep {
             # be read as its return value.
             & $Command | Out-Host
 
-            $failed = $LASTEXITCODE -ne 0
+            $hasFailed = $LASTEXITCODE -ne 0
         }
         catch {
             # A command that cannot start throws instead of returning a code, and naming the step that
             # died is worth more than the exception that ends the run.
             Write-Host $_.Exception.Message
-            $failed = $true
+            $hasFailed = $true
         }
     }
 
-    $elapsed = [datetime]::UtcNow - $started
+    $elapsedTime = [datetime]::UtcNow - $startedAt
 
     # A failed step usually stops early, so only a passing one says how long the step takes.
-    if ($ran -and -not $failed -and $Timings) {
+    if ($hasRun -and -not $hasFailed -and $Timings) {
         try {
-            Set-StepTiming -Path $Timings -Name $Name -Target $Target -Description $Description -Elapsed $elapsed -WhatIf:$false
+            Set-StepTiming -Path $Timings -Name $Name -Target $Target -Description $Description -ElapsedTime $elapsedTime -WhatIf:$false
         }
         catch {
             Write-Host ("   the step's time could not be recorded: {0}" -f $_.Exception.Message)
@@ -290,8 +290,8 @@ function Invoke-BuildStep {
 
     [pscustomobject]@{
         Name    = $Name
-        Passed  = -not $failed
-        Elapsed = $elapsed
+        Passed  = -not $hasFailed
+        Elapsed = $elapsedTime
     }
 }
 
@@ -322,35 +322,35 @@ function Write-BuildSummary {
     Write-Host ''
     Write-Host ''.PadRight(78, '-')
 
-    $ran = @($Result | Where-Object { -not $_.PSObject.Properties['NotRun'] })
-    $notRun = @($Result | Where-Object { $_.PSObject.Properties['NotRun'] })
+    $completedSteps = @($Result | Where-Object { -not $_.PSObject.Properties['NotRun'] })
+    $notRunChecks = @($Result | Where-Object { $_.PSObject.Properties['NotRun'] })
 
-    foreach ($step in $ran) {
+    foreach ($step in $completedSteps) {
         $outcome = if ($step.Passed) { 'passed' } else { 'FAILED' }
         Write-Host ("{0,-10} {1,-7} {2,7:N1}s" -f $step.Name, $outcome, $step.Elapsed.TotalSeconds)
     }
 
-    foreach ($check in $notRun) {
+    foreach ($check in $notRunChecks) {
         Write-Host ("{0,-10} not run  {1}" -f $check.Name, $check.NotRun)
     }
 
     Write-Host ''
 
-    if ($ran.Count -eq 0) {
+    if ($completedSteps.Count -eq 0) {
         Write-Host 'Nothing ran, which is not the same as nothing being wrong.'
         return 1
     }
 
-    $failed = @($ran | Where-Object { -not $_.Passed })
-    $unrun = if ($notRun.Count -eq 0) { '' } elseif ($notRun.Count -eq 1) { '; 1 platform check could not run here' } else { "; $($notRun.Count) platform checks could not run here" }
+    $failedSteps = @($completedSteps | Where-Object { -not $_.Passed })
+    $unrunNote = if ($notRunChecks.Count -eq 0) { '' } elseif ($notRunChecks.Count -eq 1) { '; 1 platform check could not run here' } else { "; $($notRunChecks.Count) platform checks could not run here" }
 
-    if ($failed.Count -gt 0) {
-        Write-Host ("The build failed: {0} of {1} steps did not pass{2}." -f $failed.Count, $ran.Count, $unrun)
+    if ($failedSteps.Count -gt 0) {
+        Write-Host ("The build failed: {0} of {1} steps did not pass{2}." -f $failedSteps.Count, $completedSteps.Count, $unrunNote)
         return 1
     }
 
-    $plural = if ($ran.Count -eq 1) { 'step' } else { 'steps' }
-    Write-Host ("The build passed: {0} {1}{2}." -f $ran.Count, $plural, $unrun)
+    $plural = if ($completedSteps.Count -eq 1) { 'step' } else { 'steps' }
+    Write-Host ("The build passed: {0} {1}{2}." -f $completedSteps.Count, $plural, $unrunNote)
 
     return 0
 }
@@ -388,22 +388,22 @@ function Resolve-TestProject {
             ForEach-Object { Get-ChildItem -LiteralPath (Join-Path $Context.RepositoryRoot $_) -Filter '*.csproj' -File -Recurse -Depth 3 } |
             Where-Object { Select-String -LiteralPath $_.FullName -Pattern 'Microsoft.NET.Test.Sdk' -SimpleMatch -Quiet })
 
-    $exact = @($projects | Where-Object { $_.BaseName -eq $Name })
-    if ($exact.Count -eq 1) {
-        return $exact[0].FullName
+    $exactMatches = @($projects | Where-Object { $_.BaseName -eq $Name })
+    if ($exactMatches.Count -eq 1) {
+        return $exactMatches[0].FullName
     }
 
-    $partial = @($projects | Where-Object { $_.BaseName -like "*$Name*" })
+    $partialMatches = @($projects | Where-Object { $_.BaseName -like "*$Name*" })
 
-    if ($partial.Count -eq 1) {
-        return $partial[0].FullName
+    if ($partialMatches.Count -eq 1) {
+        return $partialMatches[0].FullName
     }
 
-    if ($partial.Count -eq 0) {
+    if ($partialMatches.Count -eq 0) {
         throw "No test project matches '$Name'. The projects are: $((($projects | Sort-Object BaseName).BaseName) -join ', ')"
     }
 
-    throw "'$Name' matches $($partial.Count) test projects: $((($partial | Sort-Object BaseName).BaseName) -join ', ')"
+    throw "'$Name' matches $($partialMatches.Count) test projects: $((($partialMatches | Sort-Object BaseName).BaseName) -join ', ')"
 }
 
 <#
@@ -529,9 +529,9 @@ function Get-RunFileArtifact {
 
     @(Get-ChildItem -LiteralPath $root -Directory -ErrorAction SilentlyContinue |
         Where-Object {
-            $held = @(Get-ChildItem -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue)
-            $unknown = @($held | Where-Object { $_.Name -notin $(if ($_.PSIsContainer) { $folders } else { $files }) })
-            $unknown.Count -eq 0
+            $heldItems = @(Get-ChildItem -LiteralPath $_.FullName -Force -ErrorAction SilentlyContinue)
+            $unknownItems = @($heldItems | Where-Object { $_.Name -notin $(if ($_.PSIsContainer) { $folders } else { $files }) })
+            $unknownItems.Count -eq 0
         })
 }
 
@@ -858,13 +858,13 @@ function Write-TestProgress {
     )
 
     begin {
-        $started = [datetime]::UtcNow
+        $startedAt = [datetime]::UtcNow
         $finishedCount = 0
         $passedCount = 0
         $failedCount = 0
         $skippedCount = 0
         $failedTests = [System.Collections.Generic.List[string]]::new()
-        $reported = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+        $reportedFiles = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
         $width = "$ProjectCount".Length
 
         Write-Host ("   running {0} test {1}{2}" -f $ProjectCount, $(if ($ProjectCount -eq 1) { 'project' } else { 'projects' }),
@@ -876,7 +876,7 @@ function Write-TestProgress {
                     Sort-Object LastWriteTimeUtc, Name)
 
             foreach ($file in $files) {
-                if ($reported.Contains($file.FullName)) {
+                if ($reportedFiles.Contains($file.FullName)) {
                     continue
                 }
 
@@ -898,12 +898,12 @@ function Write-TestProgress {
                     continue
                 }
 
-                $null = $reported.Add($file.FullName)
+                $null = $reportedFiles.Add($file.FullName)
                 $summary = & $element 'ResultSummary'
-                $failed = [int]$counters.GetAttribute('failed') + [int]$counters.GetAttribute('error')
+                $failedTestCount = [int]$counters.GetAttribute('failed') + [int]$counters.GetAttribute('error')
                 $total = [int]$counters.GetAttribute('total')
                 $finishedCount++
-                $failedCount += $failed
+                $failedCount += $failedTestCount
                 $passedCount += [int]$counters.GetAttribute('passed')
                 $skippedCount += [int]$counters.GetAttribute('notExecuted')
 
@@ -914,25 +914,25 @@ function Write-TestProgress {
                 # Each project writes its results under a folder named for it, holding one for its target.
                 $name = $file.Directory.Parent.Name
                 # The run's start includes the test host starting; its creation is when the tests began, as the runner times them.
-                $took = [datetimeoffset]$times.GetAttribute('finish') - [datetimeoffset]$times.GetAttribute('creation')
-                $duration = if ($took.TotalSeconds -lt 1) { '{0} ms' -f [int]$took.TotalMilliseconds } else { '{0} s' -f [int][math]::Round($took.TotalSeconds) }
+                $timeTaken = [datetimeoffset]$times.GetAttribute('finish') - [datetimeoffset]$times.GetAttribute('creation')
+                $duration = if ($timeTaken.TotalSeconds -lt 1) { '{0} ms' -f [int]$timeTaken.TotalMilliseconds } else { '{0} s' -f [int][math]::Round($timeTaken.TotalSeconds) }
 
-                $elapsed = [datetime]::UtcNow - $started
-                $remaining = if (-not $Estimate) {
+                $elapsedTime = [datetime]::UtcNow - $startedAt
+                $remainingText = if (-not $Estimate) {
                     ''
                 }
-                elseif ($Estimate -gt $elapsed) {
-                    ", about {0:m\:ss} left" -f ($Estimate - $elapsed)
+                elseif ($Estimate -gt $elapsedTime) {
+                    ", about {0:m\:ss} left" -f ($Estimate - $elapsedTime)
                 }
                 else {
                     ', past last time'
                 }
 
-                $outcome = if ($failed -gt 0 -or $summary.GetAttribute('outcome') -in 'Failed', 'Error', 'Aborted', 'Timeout') { 'FAILED' } else { 'passed' }
-                $counts = if ($failed -gt 0) { "{0} of {1} failed" -f $failed, $total } else { "{0} tests" -f $total }
+                $outcome = if ($failedTestCount -gt 0 -or $summary.GetAttribute('outcome') -in 'Failed', 'Error', 'Aborted', 'Timeout') { 'FAILED' } else { 'passed' }
+                $counts = if ($failedTestCount -gt 0) { "{0} of {1} failed" -f $failedTestCount, $total } else { "{0} tests" -f $total }
 
                 Write-Host ("   [{0}/{1}] {2} {3}, {4} in {5}  ({6:m\:ss} so far{7})" -f "$finishedCount".PadLeft($width), $ProjectCount, $outcome,
-                    $name, $counts, $duration, $elapsed, $remaining)
+                    $name, $counts, $duration, $elapsedTime, $remainingText)
             }
         }
     }
@@ -953,15 +953,15 @@ function Write-TestProgress {
     end {
         . $showFinished
 
-        $elapsed = [datetime]::UtcNow - $started
-        $unfinished = $ProjectCount - $finishedCount
+        $elapsedTime = [datetime]::UtcNow - $startedAt
+        $unfinishedCount = $ProjectCount - $finishedCount
 
         Write-Host ''
         Write-Host ("   {0} passed, {1} failed, {2} skipped, across {3} of {4} projects in {5:m\:ss}" -f
-            $passedCount, $failedCount, $skippedCount, $finishedCount, $ProjectCount, $elapsed)
+            $passedCount, $failedCount, $skippedCount, $finishedCount, $ProjectCount, $elapsedTime)
 
-        if ($unfinished -gt 0) {
-            Write-Host ("   {0} {1} gave no result" -f $unfinished, $(if ($unfinished -eq 1) { 'project' } else { 'projects' }))
+        if ($unfinishedCount -gt 0) {
+            Write-Host ("   {0} {1} gave no result" -f $unfinishedCount, $(if ($unfinishedCount -eq 1) { 'project' } else { 'projects' }))
         }
 
         if ($failedTests.Count -gt 0) {
@@ -1007,16 +1007,16 @@ function Start-TestLoad {
 
             $output = New-TemporaryFile
             $errors = New-TemporaryFile
-            $ran = 0
-            $failed = 0
+            $executedTestCount = 0
+            $failedTestCount = 0
 
             try {
                 while (-not $token.IsCancellationRequested) {
                     $process = Start-Process -FilePath 'dotnet' -ArgumentList 'test', '--project', $project, '--no-build', '--nologo', '-v:q', '--no-progress', '--no-ansi' -Environment @{ FORMA_WAIT_LOG = $null } -NoNewWindow -Wait -PassThru -RedirectStandardOutput $output -RedirectStandardError $errors
-                    $ran++
+                    $executedTestCount++
 
                     if ($process.ExitCode -ne 0) {
-                        $failed++
+                        $failedTestCount++
                     }
                 }
             }
@@ -1024,7 +1024,7 @@ function Start-TestLoad {
                 Remove-Item -LiteralPath $output, $errors -ErrorAction SilentlyContinue
             }
 
-            [pscustomobject]@{ Ran = $ran; Failed = $failed }
+            [pscustomobject]@{ Ran = $executedTestCount; Failed = $failedTestCount }
         }
 
         [pscustomobject]@{ Name = [System.IO.Path]::GetFileNameWithoutExtension($path); Job = $job }
@@ -1063,7 +1063,7 @@ function Stop-TestLoad {
     Write-Host ''
     Write-Host '   waiting for the load to finish the runs it is in'
     $Source.Cancel()
-    $loaded = $true
+    $isLoaded = $true
 
     foreach ($each in $Loader) {
         $loadErrors = $null
@@ -1071,7 +1071,7 @@ function Stop-TestLoad {
         Remove-Job -Job $each.Job -Force
 
         if ($loadErrors -or -not $report) {
-            $loaded = $false
+            $isLoaded = $false
             Write-Host ("   {0} could not load the machine: {1}" -f $each.Name, (@($loadErrors) | Select-Object -First 1))
         }
         else {
@@ -1080,7 +1080,7 @@ function Stop-TestLoad {
         }
     }
 
-    $loaded
+    $isLoaded
 }
 
 <#
@@ -1150,22 +1150,22 @@ function Get-WaitLogSummary {
     }
 
     $waits = @($records | Group-Object Location)
-    $slow = @($waits |
+    $slowWaits = @($waits |
             ForEach-Object {
-                $waited = @($_.Group | Where-Object Waited).Count
-                if ($waited -gt 0) {
-                    [pscustomobject]@{ Location = $_.Name; Waited = $waited; Reached = $_.Count }
+                $waitedCount = @($_.Group | Where-Object Waited).Count
+                if ($waitedCount -gt 0) {
+                    [pscustomobject]@{ Location = $_.Name; Waited = $waitedCount; Reached = $_.Count }
                 }
             } |
             Sort-Object { ($_.Location -split ':')[0] }, { [int](($_.Location -split ':')[-1]) })
 
-    if ($slow.Count -eq 0) {
+    if ($slowWaits.Count -eq 0) {
         return ("Every wait found its state already reached: {0} waits, reached {1} times." -f $waits.Count, $records.Count)
     }
 
-    "{0} of {1} waits needed time, as the times each waited of the times it was reached:" -f $slow.Count, $waits.Count
+    "{0} of {1} waits needed time, as the times each waited of the times it was reached:" -f $slowWaits.Count, $waits.Count
 
-    foreach ($wait in $slow) {
+    foreach ($wait in $slowWaits) {
         "  {0,5}/{1,-5} {2}" -f $wait.Waited, $wait.Reached, $wait.Location
     }
 }
@@ -1200,10 +1200,10 @@ function Test-SolutionFormat {
     Invoke-BuildStep -Name 'format' -Target $root -Description 'dotnet format whitespace --folder --verify-no-changes, past what git ignores' -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         # The folders git ignores, but the build's own, whose generated code the formatter skips, and which are too
         # many to name on one command line.
-        $ignored = @(git -C $root ls-files --others --ignored --exclude-standard --directory |
+        $ignoredPaths = @(git -C $root ls-files --others --ignored --exclude-standard --directory |
                 Where-Object { $_ -notmatch '(^|/)(bin|obj)/$' } |
                 ForEach-Object { $_.TrimEnd('/') })
-        $exclude = @(if ($ignored.Count -gt 0) { '--exclude'; $ignored })
+        $exclude = @(if ($ignoredPaths.Count -gt 0) { '--exclude'; $ignoredPaths })
 
         Push-Location -LiteralPath $root
         try {
@@ -1780,7 +1780,7 @@ function Test-BrowserCheck {
         $clearsOutputs = $true
 
         if ($Filter) {
-            $selected = @{}
+            $selectedChecks = @{}
 
             foreach ($project in @($exampleChecks, $checks)) {
                 $listedChecks = @(dotnet run --project $project -c Release -- -list tests -preEnumerateTheories -filterVSTest $Filter 2>&1 | ForEach-Object { "$_" })
@@ -1790,11 +1790,11 @@ function Test-BrowserCheck {
                     return
                 }
 
-                $selected[$project] = @($listedChecks | Where-Object { $_.Trim() -and $_ -notmatch '^xUnit\.net ' })
+                $selectedChecks[$project] = @($listedChecks | Where-Object { $_.Trim() -and $_ -notmatch '^xUnit\.net ' })
             }
 
-            $selectedSmokeChecks = $selected[$exampleChecks]
-            $selectedChecks = $selected[$checks]
+            $selectedSmokeChecks = $selectedChecks[$exampleChecks]
+            $selectedChecks = $selectedChecks[$checks]
 
             if ($selectedSmokeChecks.Count + $selectedChecks.Count -eq 0) {
                 throw "The filter $Filter selects no check among the examples' smoke checks and the browser checks."
@@ -1883,7 +1883,7 @@ function Test-BrowserCheck {
             }
         }
 
-        $previous = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Components = $env:FORMA_BROWSER_COMPONENTS; WebView = $env:FORMA_BROWSER_WEBVIEW; Android = $env:FORMA_BROWSER_ANDROID_CHECKS; Examples = $env:FORMA_BROWSER_EXAMPLES; Visible = $env:FORMA_BROWSER_VISIBLE }
+        $previousEnvironment = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Components = $env:FORMA_BROWSER_COMPONENTS; WebView = $env:FORMA_BROWSER_WEBVIEW; Android = $env:FORMA_BROWSER_ANDROID_CHECKS; Examples = $env:FORMA_BROWSER_EXAMPLES; Visible = $env:FORMA_BROWSER_VISIBLE }
 
         if (Test-Path -LiteralPath $resultsOutput) {
             Remove-Item -LiteralPath $resultsOutput -Recurse -Force
@@ -1952,13 +1952,13 @@ function Test-BrowserCheck {
             }
         }
         finally {
-            $env:FORMA_BROWSER_HOST = $previous.Host
-            $env:FORMA_BROWSER_FULL = $previous.Full
-            $env:FORMA_BROWSER_COMPONENTS = $previous.Components
-            $env:FORMA_BROWSER_WEBVIEW = $previous.WebView
-            $env:FORMA_BROWSER_ANDROID_CHECKS = $previous.Android
-            $env:FORMA_BROWSER_EXAMPLES = $previous.Examples
-            $env:FORMA_BROWSER_VISIBLE = $previous.Visible
+            $env:FORMA_BROWSER_HOST = $previousEnvironment.Host
+            $env:FORMA_BROWSER_FULL = $previousEnvironment.Full
+            $env:FORMA_BROWSER_COMPONENTS = $previousEnvironment.Components
+            $env:FORMA_BROWSER_WEBVIEW = $previousEnvironment.WebView
+            $env:FORMA_BROWSER_ANDROID_CHECKS = $previousEnvironment.Android
+            $env:FORMA_BROWSER_EXAMPLES = $previousEnvironment.Examples
+            $env:FORMA_BROWSER_VISIBLE = $previousEnvironment.Visible
             $loadFailed = -not (& $stopTestLoad -Loader $loaders -Source $stopLoad)
             $stopLoad.Dispose()
         }
@@ -2087,7 +2087,7 @@ function Test-MobileExample {
         }
 
         $build = Get-ChildItem -LiteralPath (Join-Path $example 'bin' 'Release') -Recurse -Filter '*-Signed.apk' | Sort-Object LastWriteTime | Select-Object -Last 1
-        $previous = $env:FORMA_BROWSER_ANDROID
+        $previousAndroid = $env:FORMA_BROWSER_ANDROID
 
         if (Test-Path -LiteralPath $resultsOutput) {
             Remove-Item -LiteralPath $resultsOutput -Recurse -Force
@@ -2101,7 +2101,7 @@ function Test-MobileExample {
             dotnet run --project $checks -c Release -- -result-ctrf (Join-Path $runResults 'maui.json')
         }
         finally {
-            $env:FORMA_BROWSER_ANDROID = $previous
+            $env:FORMA_BROWSER_ANDROID = $previousAndroid
         }
     }.GetNewClosure()
 }
@@ -2251,14 +2251,14 @@ function Clear-BuildOutput {
         # A build deletes what the build made. Installed packages under node_modules ship folders of their
         # own called bin, and .local holds work belonging to a person rather than to the repository, so
         # neither is the build's to remove however much it looks like output.
-        $excluded = 'node_modules', '.local'
+        $excludedFolders = 'node_modules', '.local'
         $separators = [char[]]@([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
 
         $folders = @(
             Get-ChildItem -LiteralPath $root -Include 'bin', 'obj' -Directory -Recurse -ErrorAction SilentlyContinue |
                 Where-Object {
                     $parts = $_.FullName.Substring($root.Length).Split($separators, [StringSplitOptions]::RemoveEmptyEntries)
-                    -not ($parts | Where-Object { $_ -in $excluded })
+                    -not ($parts | Where-Object { $_ -in $excludedFolders })
                 }
             Get-Item -LiteralPath (Join-Path $root 'artifacts') -ErrorAction SilentlyContinue
         )

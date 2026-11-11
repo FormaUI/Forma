@@ -42,7 +42,7 @@ if (args.Length < 3)
 var (enumPath, glyphsFolder, outputPath) = (args[0], args[1], args[2]);
 var format = args.Contains("--format");
 
-var declared = Regex.Matches(File.ReadAllText(enumPath), @"(?m)^\s{4}(\w+)(?:\s*=\s*\d+)?,\s*$")
+var declaredNames = Regex.Matches(File.ReadAllText(enumPath), @"(?m)^\s{4}(\w+)(?:\s*=\s*\d+)?,\s*$")
     .Select(match => match.Groups[1].Value)
     .Where(name => name != "None")
     .ToArray();
@@ -58,17 +58,17 @@ if (grids.Length == 0)
     throw new InvalidOperationException($"No grid folders (such as 32 or 24) under {glyphsFolder}");
 }
 
-var stray = Directory.GetFiles(glyphsFolder).Select(file => Path.GetFileName(file)!).ToArray();
-if (stray.Length > 0)
+var strayFiles = Directory.GetFiles(glyphsFolder).Select(file => Path.GetFileName(file)!).ToArray();
+if (strayFiles.Length > 0)
 {
-    throw new InvalidOperationException($"Files outside a grid folder ({stray.Length}): {string.Join(", ", stray)}");
+    throw new InvalidOperationException($"Files outside a grid folder ({strayFiles.Length}): {string.Join(", ", strayFiles)}");
 }
 
-var expected = declared.Select(name => $"{name}.svg").ToHashSet(StringComparer.Ordinal);
+var expectedFiles = declaredNames.Select(name => $"{name}.svg").ToHashSet(StringComparer.Ordinal);
 
 // glyph name -> grid size -> both styles on that grid
 var glyphs = new SortedDictionary<string, SortedDictionary<int, GlyphVariants>>(StringComparer.Ordinal);
-var complete = false;
+var isComplete = false;
 var report = new StringBuilder();
 
 // Every drawing that reads but would not draw as written, gathered so one run names them all.
@@ -78,15 +78,15 @@ foreach (var (folder, size) in grids)
 {
     var files = Directory.GetFiles(folder).Select(file => Path.GetFileName(file)!).ToHashSet(StringComparer.Ordinal);
 
-    var extra = files.Where(file => !expected.Contains(file)).ToArray();
-    if (extra.Length > 0)
+    var extraFiles = files.Where(file => !expectedFiles.Contains(file)).ToArray();
+    if (extraFiles.Length > 0)
     {
-        throw new InvalidOperationException($"Unexpected files in the {size} grid folder ({extra.Length}): {string.Join(", ", extra)}");
+        throw new InvalidOperationException($"Unexpected files in the {size} grid folder ({extraFiles.Length}): {string.Join(", ", extraFiles)}");
     }
 
-    var drawn = 0;
+    var drawnCount = 0;
 
-    foreach (var name in declared)
+    foreach (var name in declaredNames)
     {
         var strokePath = Path.Combine(folder, $"{name}.svg");
         if (!File.Exists(strokePath))
@@ -102,14 +102,14 @@ foreach (var (folder, size) in grids)
         }
 
         byGrid[size] = new GlyphVariants(stroke.ToStyle(), Derive(stroke, size));
-        drawn++;
+        drawnCount++;
     }
 
-    complete |= drawn == declared.Length;
-    report.Append(CultureInfo.InvariantCulture, $" {size}: {drawn}/{declared.Length} drawn;");
+    isComplete |= drawnCount == declaredNames.Length;
+    report.Append(CultureInfo.InvariantCulture, $" {size}: {drawnCount}/{declaredNames.Length} drawn;");
 }
 
-if (!complete)
+if (!isComplete)
 {
     throw new InvalidOperationException("No grid draws every glyph; one grid must be complete");
 }
@@ -148,7 +148,7 @@ using (var output = File.Create(outputPath))
     writer.Flush();
     output.WriteByte((byte)'\n');
 }
-Console.WriteLine($"Validated {declared.Length} glyphs on {grids.Length} grid(s):{report} wrote {outputPath}.");
+Console.WriteLine($"Validated {declaredNames.Length} glyphs on {grids.Length} grid(s):{report} wrote {outputPath}.");
 return 0;
 
 // Scales every drawing the target grid lacks from the source grid,
@@ -159,7 +159,7 @@ static int Draft(string glyphsFolder, int from, int to)
     var source = Path.Combine(glyphsFolder, from.ToString(CultureInfo.InvariantCulture));
     var target = Path.Combine(glyphsFolder, to.ToString(CultureInfo.InvariantCulture));
     Directory.CreateDirectory(target);
-    var written = 0;
+    var writtenCount = 0;
 
     foreach (var file in Directory.GetFiles(source, "*.svg"))
     {
@@ -170,10 +170,10 @@ static int Draft(string glyphsFolder, int from, int to)
         }
 
         File.WriteAllText(destination, GlyphDraft.Scale(File.ReadAllText(file), from, to));
-        written++;
+        writtenCount++;
     }
 
-    Console.WriteLine($"Drafted {written} glyph(s) on the {to} grid from the {from} grid into {target}.");
+    Console.WriteLine($"Drafted {writtenCount} glyph(s) on the {to} grid from the {from} grid into {target}.");
     return 0;
 }
 
@@ -194,7 +194,7 @@ static void WriteStyle(Utf8JsonWriter writer, GlyphStyle style)
             writer.WriteNumber("o", path.Opacity);
         }
 
-        if (path.Filled)
+        if (path.IsFilled)
         {
             writer.WriteBoolean("f", true);
         }
@@ -218,25 +218,25 @@ static GlyphStyle Derive(Drawing stroke, int grid)
     // Every path Skia returns is a native handle, and a shape operation makes a new one rather than writing
     // into the old, so the one it replaces would otherwise be dropped. They are collected as they are made
     // and released together, which keeps each step from having to know whether what it replaced is still read.
-    var owned = new List<SKPath>();
+    var ownedPaths = new List<SKPath>();
 
     try
     {
         var parts = stroke.Paths.Select(path =>
         {
             var skia = SKPath.ParseSvgPathData(path.Data) ?? throw new InvalidOperationException($"Unparseable path data: {path.Data}");
-            owned.Add(skia);
-            return new { path.Opacity, path.Filled, Skia = skia };
+            ownedPaths.Add(skia);
+            return new { path.Opacity, path.IsFilled, Skia = skia };
         }).ToArray();
 
         var candidates = parts
-            .Where(part => !part.Filled && part.Opacity >= 1)
+            .Where(part => !part.IsFilled && part.Opacity >= 1)
             .Select(part =>
             {
                 var region = ClosedRegion(part.Skia);
                 if (region is not null)
                 {
-                    owned.Add(region);
+                    ownedPaths.Add(region);
                 }
 
                 return (Part: part, Region: region);
@@ -249,8 +249,8 @@ static GlyphStyle Derive(Drawing stroke, int grid)
         var bodies = new List<SKPath>();
         foreach (var (part, region) in candidates)
         {
-            var enclosed = candidates.Any(other => other.Part != part && other.Region!.Contains(region!.TightBounds.Left, region.TightBounds.Top) && other.Region.Contains(region.TightBounds.Right, region.TightBounds.Bottom) && other.Region.Contains(region.TightBounds.MidX, region.TightBounds.MidY));
-            if (!enclosed)
+            var isEnclosed = candidates.Any(other => other.Part != part && other.Region!.Contains(region!.TightBounds.Left, region.TightBounds.Top) && other.Region.Contains(region.TightBounds.Right, region.TightBounds.Bottom) && other.Region.Contains(region.TightBounds.MidX, region.TightBounds.MidY));
+            if (!isEnclosed)
             {
                 bodies.Add(region!);
                 bodyParts.Add(part);
@@ -263,30 +263,30 @@ static GlyphStyle Derive(Drawing stroke, int grid)
         }
 
         var body = new SKPath();
-        owned.Add(body);
+        ownedPaths.Add(body);
         foreach (var region in bodies)
         {
             body = Combine(body, region, SKPathOp.Union);
         }
 
         var result = new SKPath(body);
-        owned.Add(result);
-        var faded = new List<(SKPath Path, double Opacity)>();
+        ownedPaths.Add(result);
+        var fadedPaths = new List<(SKPath Path, double Opacity)>();
 
         foreach (var part in parts)
         {
             var outline = part.Skia;
-            if (!part.Filled)
+            if (!part.IsFilled)
             {
                 outline = paint.GetFillPath(part.Skia) ?? new SKPath();
-                owned.Add(outline);
+                ownedPaths.Add(outline);
             }
 
             var isBody = bodyParts.Contains(part);
 
             if (part.Opacity < 1)
             {
-                faded.Add((outline, part.Opacity));
+                fadedPaths.Add((outline, part.Opacity));
                 continue;
             }
 
@@ -297,15 +297,15 @@ static GlyphStyle Derive(Drawing stroke, int grid)
             }
 
             var inside = outline.Op(body, SKPathOp.Intersect) ?? new SKPath();
-            owned.Add(inside);
+            ownedPaths.Add(inside);
             var outside = outline.Op(body, SKPathOp.Difference) ?? new SKPath();
-            owned.Add(outside);
+            ownedPaths.Add(outside);
             result = Combine(result, inside, SKPathOp.Difference);
             result = Combine(result, outside, SKPathOp.Union);
         }
 
-        var paths = new List<DrawingPath> { new(Data(result), Filled: false, Opacity: 1) };
-        paths.AddRange(faded.Select(item => new DrawingPath(Data(item.Path), Filled: false, item.Opacity)));
+        var paths = new List<DrawingPath> { new(Data(result), IsFilled: false, Opacity: 1) };
+        paths.AddRange(fadedPaths.Select(item => new DrawingPath(Data(item.Path), IsFilled: false, item.Opacity)));
 
         return new GlyphStyle(0, paths);
 
@@ -313,19 +313,19 @@ static GlyphStyle Derive(Drawing stroke, int grid)
         // of the one it did so that neither the old nor the new is released while the other is still read.
         SKPath Combine(SKPath path, SKPath other, SKPathOp operation)
         {
-            var combined = path.Op(other, operation);
-            if (combined is null)
+            var combinedPath = path.Op(other, operation);
+            if (combinedPath is null)
             {
                 return path;
             }
 
-            owned.Add(combined);
-            return combined;
+            ownedPaths.Add(combinedPath);
+            return combinedPath;
         }
     }
     finally
     {
-        foreach (var path in owned)
+        foreach (var path in ownedPaths)
         {
             path.Dispose();
         }
@@ -335,10 +335,10 @@ static GlyphStyle Derive(Drawing stroke, int grid)
 // The region a path's closed contours enclose, or null when it has none.
 static SKPath? ClosedRegion(SKPath path)
 {
-    var closed = new SKPath { FillType = SKPathFillType.Winding };
+    var closedPath = new SKPath { FillType = SKPathFillType.Winding };
     using var iterator = path.CreateRawIterator();
     var points = new SKPoint[4];
-    var current = new SKPath();
+    var currentPath = new SKPath();
     var hasClose = false;
 
     SKPathVerb verb;
@@ -349,34 +349,34 @@ static SKPath? ClosedRegion(SKPath path)
             case SKPathVerb.Move:
                 // Flush has already copied whatever this contour contributed, so the handle can go.
                 Flush();
-                current.Dispose();
-                current = new SKPath();
-                current.MoveTo(points[0]);
+                currentPath.Dispose();
+                currentPath = new SKPath();
+                currentPath.MoveTo(points[0]);
                 break;
-            case SKPathVerb.Line: current.LineTo(points[1]); break;
-            case SKPathVerb.Quad: current.QuadTo(points[1], points[2]); break;
-            case SKPathVerb.Conic: current.ConicTo(points[1], points[2], iterator.ConicWeight()); break;
-            case SKPathVerb.Cubic: current.CubicTo(points[1], points[2], points[3]); break;
-            case SKPathVerb.Close: hasClose = true; current.Close(); break;
+            case SKPathVerb.Line: currentPath.LineTo(points[1]); break;
+            case SKPathVerb.Quad: currentPath.QuadTo(points[1], points[2]); break;
+            case SKPathVerb.Conic: currentPath.ConicTo(points[1], points[2], iterator.ConicWeight()); break;
+            case SKPathVerb.Cubic: currentPath.CubicTo(points[1], points[2], points[3]); break;
+            case SKPathVerb.Close: hasClose = true; currentPath.Close(); break;
         }
     }
 
     Flush();
-    current.Dispose();
+    currentPath.Dispose();
 
-    if (closed.IsEmpty)
+    if (closedPath.IsEmpty)
     {
-        closed.Dispose();
+        closedPath.Dispose();
         return null;
     }
 
-    return closed;
+    return closedPath;
 
     void Flush()
     {
         if (hasClose)
         {
-            closed.AddPath(current);
+            closedPath.AddPath(currentPath);
         }
 
         hasClose = false;
@@ -391,8 +391,8 @@ static float Area(SKPath path)
 
 static string Data(SKPath path)
 {
-    using var simplified = path.Simplify();
-    return Regex.Replace((simplified ?? path).ToSvgPathData(), @"-?\d+\.\d+", match => float.Parse(match.Value, CultureInfo.InvariantCulture).ToString("0.##", CultureInfo.InvariantCulture));
+    using var simplifiedPath = path.Simplify();
+    return Regex.Replace((simplifiedPath ?? path).ToSvgPathData(), @"-?\d+\.\d+", match => float.Parse(match.Value, CultureInfo.InvariantCulture).ToString("0.##", CultureInfo.InvariantCulture));
 }
 
 /// <summary>Both styles of one glyph on one grid.</summary>

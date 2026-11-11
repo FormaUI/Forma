@@ -95,13 +95,13 @@ try {
     $core = Expand-Package -Package 'cldr-core' -Version $version -Destination $workspace
     $numbers = Expand-Package -Package 'cldr-numbers-full' -Version $version -Destination $workspace
 
-    $supplemental = (Read-Json -Path (Join-Path $core 'supplemental' 'currencyData.json')).supplemental
+    $supplementalData = (Read-Json -Path (Join-Path $core 'supplemental' 'currencyData.json')).supplemental
     $parentLocales = (Read-Json -Path (Join-Path $core 'supplemental' 'parentLocales.json')).supplemental.parentLocales.parentLocale
     Write-Host "CLDR $version"
 
     # The currencies some region holds as tender today: the ISO 4217 codes of money in use.
     $codes = [System.Collections.Generic.SortedSet[string]]::new([System.StringComparer]::Ordinal)
-    foreach ($entries in $supplemental.currencyData.region.Values) {
+    foreach ($entries in $supplementalData.currencyData.region.Values) {
         foreach ($entry in $entries) {
             foreach ($code in $entry.Keys) {
                 $record = $entry[$code]
@@ -114,7 +114,7 @@ try {
         }
     }
 
-    $fractions = $supplemental.currencyData.fractions
+    $fractions = $supplementalData.currencyData.fractions
     $defaultMinorUnits = [int] $fractions['DEFAULT']['_digits']
     $minorUnits = [ordered]@{}
     foreach ($code in $codes) {
@@ -134,14 +134,14 @@ try {
         }
 
         $currencies = (Read-Json -Path $path).main[$locale].numbers.currencies
-        $own = @{}
+        $ownSymbols = @{}
         foreach ($code in $currencies.Keys) {
             if ($currencies[$code].ContainsKey('symbol')) {
-                $own[$code] = $currencies[$code]['symbol']
+                $ownSymbols[$code] = $currencies[$code]['symbol']
             }
         }
 
-        $symbolsByLocale[$locale] = $own
+        $symbolsByLocale[$locale] = $ownSymbols
     }
 
     # CLDR's parent of a locale: the one it names, else the locale with its last subtag removed, else the root.
@@ -172,21 +172,21 @@ try {
     # A locale keeps only the symbols it changes, since the rest is what it inherits.
     $symbols = [ordered]@{}
     foreach ($locale in $locales) {
-        $changed = [ordered]@{}
+        $changedSymbols = [ordered]@{}
         foreach ($code in $codes) {
             if (-not ($symbolsByLocale.ContainsKey($locale) -and $symbolsByLocale[$locale].ContainsKey($code))) {
                 continue
             }
 
             $value = $symbolsByLocale[$locale][$code]
-            $inherited = if ($locale -eq 'und') { $code } else { Resolve-Symbol -Locale (Get-Parent -Locale $locale) -Code $code }
-            if ($value -cne $inherited) {
-                $changed[$code] = $value
+            $inheritedSymbol = if ($locale -eq 'und') { $code } else { Resolve-Symbol -Locale (Get-Parent -Locale $locale) -Code $code }
+            if ($value -cne $inheritedSymbol) {
+                $changedSymbols[$code] = $value
             }
         }
 
-        if ($changed.Count -gt 0) {
-            $symbols[$locale] = $changed
+        if ($changedSymbols.Count -gt 0) {
+            $symbols[$locale] = $changedSymbols
         }
     }
 
@@ -198,8 +198,8 @@ try {
     }
 
     # A snapshot missing what every caller relies on is refused rather than written.
-    foreach ($expected in 'USD', 'EUR', 'ILS', 'JPY', 'GBP') {
-        if (-not $codes.Contains($expected)) { throw "CLDR $version lists no tender $expected, so the currency data was not written." }
+    foreach ($expectedCode in 'USD', 'EUR', 'ILS', 'JPY', 'GBP') {
+        if (-not $codes.Contains($expectedCode)) { throw "CLDR $version lists no tender $expectedCode, so the currency data was not written." }
     }
 
     if ($locales -cnotcontains 'und') { throw "CLDR $version has no root locale, so the currency data was not written." }

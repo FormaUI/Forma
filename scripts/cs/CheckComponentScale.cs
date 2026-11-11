@@ -32,7 +32,7 @@ if (browser is null)
 }
 
 // Closed when the run ends, whichever way it ends.
-await using var closing = browser.ConfigureAwait(false);
+await using var browserDisposal = browser.ConfigureAwait(false);
 
 var page = await browser.NewPageAsync(new() { ViewportSize = new() { Width = 1280, Height = 1000 } }).ConfigureAwait(false);
 
@@ -80,9 +80,9 @@ foreach (var route in routes)
     }
 
     await page.WaitForTimeoutAsync(show ? 800 : 300).ConfigureAwait(false);
-    var measured = await page.EvaluateAsync<Measurement[]>(Probe).ConfigureAwait(false);
+    var measurements = await page.EvaluateAsync<Measurement[]>(Probe).ConfigureAwait(false);
 
-    foreach (var control in measured)
+    foreach (var control in measurements)
     {
         var off = control.Heights.Where(height => !scale.Contains(height)).ToArray();
 
@@ -92,7 +92,7 @@ foreach (var route in routes)
         }
     }
 
-    Console.WriteLine($"{route}: {measured.Length} kinds of control, {measured.Count(c => c.Heights.All(scale.Contains))} on the scale");
+    Console.WriteLine($"{route}: {measurements.Length} kinds of control, {measurements.Count(c => c.Heights.All(scale.Contains))} on the scale");
 }
 
 Console.WriteLine();
@@ -114,11 +114,11 @@ return 1;
 
 // Chrome is not the repository's to install, so its absence is reported with what to run rather than left
 // as a binding's exception to interpret.
-static async Task<IBrowser?> LaunchChromeAsync(IPlaywright playwright, bool visible)
+static async Task<IBrowser?> LaunchChromeAsync(IPlaywright playwright, bool isVisible)
 {
     try
     {
-        return await playwright.Chromium.LaunchAsync(new() { Channel = "chrome", Headless = !visible, SlowMo = visible ? 200 : 0 }).ConfigureAwait(false);
+        return await playwright.Chromium.LaunchAsync(new() { Channel = "chrome", Headless = !isVisible, SlowMo = isVisible ? 200 : 0 }).ConfigureAwait(false);
     }
     catch (PlaywrightException exception)
     {
