@@ -5,6 +5,7 @@
 @using Forma.Framework.Resources
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.DataView
+@using Forma.Blazor.Components.DataView.Interop
 @using Forma.Blazor.Components.Explorer
 @using Forma.Blazor.Components.Files
 @using Forma.Framework.Files
@@ -25,6 +26,16 @@
     private static List<string> GetItemNames<TComponent>(Bunit.IRenderedComponent<TComponent> cut)
         where TComponent : Microsoft.AspNetCore.Components.IComponent
         => [.. cut.FindAll(".forma-data-card-name").Select(node => node.TextContent.Trim())];
+
+    // The names the details' rows show, in order.
+    private static List<string> GetDetailsNames<TComponent>(Bunit.IRenderedComponent<TComponent> cut)
+        where TComponent : Microsoft.AspNetCore.Components.IComponent
+        => [.. cut.FindAll("tr.forma-data-grid-row .forma-explorer-details-name-text").Select(node => node.TextContent.Trim())];
+
+    // The details' row showing the name.
+    private static AngleSharp.Dom.IElement GetDetailsRow<TComponent>(Bunit.IRenderedComponent<TComponent> cut, string name)
+        where TComponent : Microsoft.AspNetCore.Components.IComponent
+        => cut.FindAll("tr.forma-data-grid-row").Single(row => row.QuerySelector(".forma-explorer-details-name-text")?.TextContent.Trim() == name);
 
     // The box the selection mode draws on a card.
     private static AngleSharp.Dom.IElement GetBox(AngleSharp.Dom.IElement card)
@@ -293,7 +304,7 @@
 
             // Act & Assert - Switch to Details
             cut.FindAll(".forma-explorer-view-button")[1].Click();
-            Assert.NotNull(cut.Find(".forma-explorer-details-table"));
+            Assert.NotNull(cut.Find("table.forma-data-grid.forma-explorer-details"));
 
             // Act & Assert - Switch to List
             cut.FindAll(".forma-explorer-view-button")[2].Click();
@@ -494,7 +505,7 @@
             await ctx.ChangeCultureAsync("de-DE");
 
             // Assert
-            Assert.Equal(modifiedAt.LocalDateTime.ToString("g", CultureInfo.GetCultureInfo("de-DE")), cut.Find(".forma-explorer-cell-modified").TextContent.Trim());
+            Assert.Equal(modifiedAt.LocalDateTime.ToString("g", CultureInfo.GetCultureInfo("de-DE")), cut.Find("td.forma-explorer-column-modified").TextContent.Trim());
         }
 
         [Fact]
@@ -510,7 +521,7 @@
             await ctx.ChangeCultureAsync("de-DE");
 
             // Assert
-            Assert.Equal("1,5 KB", cut.Find(".forma-explorer-cell-size").TextContent.Trim());
+            Assert.Equal("1,5 KB", cut.Find("td.forma-explorer-column-size").TextContent.Trim());
         }
 
         [Fact]
@@ -522,7 +533,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
 
             // Assert
-            Assert.Equal("—", cut.Find(".forma-explorer-cell-modified").TextContent.Trim());
+            Assert.Equal("—", cut.Find("td.forma-explorer-column-modified").TextContent.Trim());
         }
 
         [Fact]
@@ -537,14 +548,15 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Options="options" ViewMode="ExplorerViewMode.Details" />);
 
             // Assert
-            Assert.Single(cut.FindAll(".forma-explorer-cell-added"));
-            Assert.Empty(cut.FindAll(".forma-explorer-cell-kind"));
-            Assert.Empty(cut.FindAll(".forma-explorer-cell-size"));
-            Assert.Empty(cut.FindAll(".forma-explorer-cell-modified"));
+            Assert.Single(cut.FindAll("td.forma-explorer-column-added"));
+            Assert.Empty(cut.FindAll("td.forma-explorer-column-kind"));
+            Assert.Empty(cut.FindAll("td.forma-explorer-column-size"));
+            Assert.Empty(cut.FindAll("td.forma-explorer-column-modified"));
         }
 
         [Fact]
-        public void Should_announce_the_sorted_column_through_aria_sort()        {
+        public async Task Should_announce_the_sorted_column_through_aria_sort()
+        {
             // Arrange
             using var ctx = new FormaExplorerTests();
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/a.jpg")];
@@ -553,15 +565,83 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
 
             // Assert
-            Assert.Equal("ascending", cut.Find(".forma-explorer-column-name").GetAttribute("aria-sort"));
-            Assert.Equal("none", cut.Find(".forma-explorer-column-size").GetAttribute("aria-sort"));
+            Assert.Multiple(
+                () => Assert.Equal("ascending", cut.Find("th.forma-explorer-column-name").GetAttribute("aria-sort")),
+                () => Assert.Equal("none", cut.Find("th.forma-explorer-column-size").GetAttribute("aria-sort")),
+                () => Assert.Null(cut.Find("th.forma-explorer-column-actions").GetAttribute("aria-sort")));
 
             // Act
-            cut.Find(".forma-explorer-column-size").Click();
+            await cut.Find("th.forma-explorer-column-size .forma-data-grid-sort-button").ClickAsync(new MouseEventArgs());
 
             // Assert
-            Assert.Equal("ascending", cut.Find(".forma-explorer-column-size").GetAttribute("aria-sort"));
-            Assert.Equal("none", cut.Find(".forma-explorer-column-name").GetAttribute("aria-sort"));
+            Assert.Multiple(
+                () => Assert.Equal("ascending", cut.Find("th.forma-explorer-column-size").GetAttribute("aria-sort")),
+                () => Assert.Equal("none", cut.Find("th.forma-explorer-column-name").GetAttribute("aria-sort")));
+        }
+
+        [Fact]
+        public async Task Should_sort_the_details_by_a_pressed_header_and_reverse_it_on_a_second_press()
+        {
+            // Arrange - an order by size that differs from the order by name either way
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources =
+            [
+                new ImageResourceInfo("https://example.com/a.jpg") { Size = 500 },
+                new ImageResourceInfo("https://example.com/b.jpg") { Size = 1000 },
+                new ImageResourceInfo("https://example.com/c.jpg") { Size = 200 }
+            ];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
+
+            // Act
+            await cut.Find("th.forma-explorer-column-size .forma-data-grid-sort-button").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["c.jpg", "a.jpg", "b.jpg"], GetDetailsNames(cut)),
+                () => Assert.Equal("Size", cut.Find(".forma-explorer-sort-trigger-text").TextContent.Trim()));
+
+            // Act
+            await cut.Find("th.forma-explorer-column-size .forma-data-grid-sort-button").ClickAsync(new MouseEventArgs());
+            await cut.Find(".forma-explorer-sort-trigger").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["b.jpg", "a.jpg", "c.jpg"], GetDetailsNames(cut)),
+                () => Assert.Equal("Size", cut.Find(".forma-explorer-sort-trigger-text").TextContent.Trim()),
+                () => Assert.NotNull(cut.Find(".forma-explorer-toolbar [data-sort-field='Size'] .forma-dropdown-menu-item-check")),
+                () => Assert.NotNull(cut.Find(".forma-explorer-toolbar [data-sort-direction='Descending'] .forma-dropdown-menu-item-check")));
+        }
+
+        [Fact]
+        public async Task Should_mark_the_header_of_the_field_and_the_direction_chosen_from_the_sort_menu()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources =
+            [
+                new ImageResourceInfo("https://example.com/a.jpg") { Size = 500 },
+                new ImageResourceInfo("https://example.com/b.jpg") { Size = 1000 },
+                new ImageResourceInfo("https://example.com/c.jpg") { Size = 200 }
+            ];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
+
+            // Act
+            await SortByAsync(cut, CatalogSortField.Size);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("ascending", cut.Find("th.forma-explorer-column-size").GetAttribute("aria-sort")),
+                () => Assert.Equal("none", cut.Find("th.forma-explorer-column-name").GetAttribute("aria-sort")),
+                () => Assert.Equal(["c.jpg", "a.jpg", "b.jpg"], GetDetailsNames(cut)));
+
+            // Act
+            await cut.Find(".forma-explorer-sort-trigger").ClickAsync(new MouseEventArgs());
+            await cut.Find(".forma-explorer-toolbar [data-sort-direction='Descending']").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("descending", cut.Find("th.forma-explorer-column-size").GetAttribute("aria-sort")),
+                () => Assert.Equal(["b.jpg", "a.jpg", "c.jpg"], GetDetailsNames(cut)));
         }
 
         [Fact]
@@ -1143,6 +1223,42 @@
         }
 
         [Fact]
+        public void Should_draw_a_details_row_draggable_and_a_disabled_item_s_row_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ICatalogItem> items =
+            [
+                CatalogItem.For(new ImageResourceInfo("https://example.com/cover.jpg")),
+                new CatalogItem
+                {
+                    Key = "locked",
+                    Name = "locked.jpg",
+                    IsDisabled = true,
+                    Capabilities = CatalogItemCapabilities.Drag | CatalogItemCapabilities.Open | CatalogItemCapabilities.View | CatalogItemCapabilities.Move | CatalogItemCapabilities.Rename | CatalogItemCapabilities.Delete,
+                    Resource = new ImageResourceInfo("https://example.com/locked.jpg")
+                }
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" ViewMode="ExplorerViewMode.Details" />);
+
+            // Assert
+            var row = GetDetailsRow(cut, "cover.jpg");
+            var disabledRow = GetDetailsRow(cut, "locked.jpg");
+            Assert.Multiple(
+                () => Assert.Equal("true", row.GetAttribute("draggable")),
+                () => Assert.Null(row.GetAttribute("aria-disabled")),
+                () => Assert.DoesNotContain("forma-data-grid-row-disabled", row.ClassList),
+                () => Assert.NotNull(row.QuerySelector(".forma-explorer-action-bar")),
+                () => Assert.Equal("false", disabledRow.GetAttribute("draggable")),
+                () => Assert.Equal("true", disabledRow.GetAttribute("aria-disabled")),
+                () => Assert.Contains("forma-data-grid-row-disabled", disabledRow.ClassList),
+                () => Assert.Contains("is-disabled", disabledRow.ClassList),
+                () => Assert.Null(disabledRow.QuerySelector(".forma-explorer-action-bar")));
+        }
+
+        [Fact]
         public async Task Should_not_enter_a_folder_that_cannot_be_opened()
         {
             // Arrange
@@ -1429,7 +1545,7 @@
         }
 
         [Fact]
-        public void Should_hold_the_details_trigger_and_checkbox_in_the_same_leading_cell()
+        public void Should_lead_a_details_row_with_its_actions_and_with_the_grid_s_box_in_select_mode()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1437,17 +1553,23 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
 
             // Assert
-            var lead = cut.Find(".forma-explorer-details-row td");
-            Assert.NotNull(lead.QuerySelector(".forma-explorer-action-bar"));
-            Assert.Null(lead.QuerySelector(".forma-explorer-table-select"));
+            var lead = cut.Find("tr.forma-data-grid-row td");
+            Assert.Multiple(
+                () => Assert.Contains("forma-explorer-column-actions", lead.ClassList),
+                () => Assert.NotNull(lead.QuerySelector("[data-item-control] .forma-explorer-action-bar")),
+                () => Assert.Empty(cut.FindAll("table.forma-explorer-details input[type=checkbox]")));
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
 
-            // Assert
-            lead = cut.Find(".forma-explorer-details-row td");
-            Assert.NotNull(lead.QuerySelector(".forma-explorer-table-select"));
-            Assert.Null(lead.QuerySelector(".forma-explorer-action-bar"));
+            // Assert - the grid's selection column leads, frozen at the start, and the actions column is not drawn
+            lead = cut.Find("tr.forma-data-grid-row td");
+            Assert.Multiple(
+                () => Assert.Contains("forma-data-grid-select-column", lead.ClassList),
+                () => Assert.Contains(FormaFreezePane.FrozenClass, lead.ClassList),
+                () => Assert.NotNull(lead.QuerySelector("input[type=checkbox]")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-column-actions")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-action-bar")));
         }
 
         [Fact]
@@ -1461,17 +1583,18 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
 
             // Assert
-            var pane = cut.Find(".forma-explorer-details-wrapper .forma-freeze-pane");
+            var pane = cut.Find(".forma-freeze-pane.forma-data-grid-pane");
             Assert.Multiple(
                 () => Assert.Contains("forma-freeze-pane-arrows", pane.ClassList),
+                () => Assert.NotNull(pane.QuerySelector("table.forma-explorer-details")),
                 () => Assert.NotNull(pane.QuerySelector("th.forma-explorer-column-actions.forma-freeze-pane-frozen")),
                 () => Assert.NotNull(pane.QuerySelector("th.forma-explorer-column-name.forma-freeze-pane-frozen")),
-                () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-cell-actions.forma-freeze-pane-frozen")),
-                () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-cell-name.forma-freeze-pane-frozen")),
-                () => Assert.Null(pane.QuerySelector("td.forma-explorer-cell-kind.forma-freeze-pane-frozen")),
+                () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-column-actions.forma-freeze-pane-frozen")),
+                () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-column-name.forma-freeze-pane-frozen")),
+                () => Assert.Null(pane.QuerySelector("td.forma-explorer-column-kind.forma-freeze-pane-frozen")),
                 () => Assert.NotNull(pane.QuerySelector("th.forma-explorer-column-kind.forma-freeze-pane-stop")),
-                () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-cell-kind.forma-freeze-pane-stop")),
-                () => Assert.Null(pane.QuerySelector("td.forma-explorer-cell-name.forma-freeze-pane-stop")));
+                () => Assert.NotNull(pane.QuerySelector("td.forma-explorer-column-kind.forma-freeze-pane-stop")),
+                () => Assert.Null(pane.QuerySelector("td.forma-explorer-column-name.forma-freeze-pane-stop")));
         }
 
         [Fact]
@@ -1669,7 +1792,7 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Contains("is-headerless", cut.Find(".forma-explorer-details-table").ClassList),
+                () => Assert.Contains("forma-data-grid-headerless", cut.Find("table.forma-explorer-details").ClassList),
                 () => Assert.NotNull(cut.Find("th.forma-explorer-column-name")),
                 () => Assert.Equal([false], reported));
         }
@@ -1689,20 +1812,27 @@
             Assert.Multiple(
                 () => Assert.NotNull(cut.Find("th.forma-explorer-column-size")),
                 () => Assert.Empty(cut.FindAll("th.forma-explorer-column-kind")),
-                () => Assert.Contains("is-headerless", cut.Find(".forma-explorer-details-table").ClassList));
+                () => Assert.Contains("forma-data-grid-headerless", cut.Find("table.forma-explorer-details").ClassList));
         }
 
         [Fact]
         public async Task Should_resize_the_name_column_from_the_frozen_edge()
         {
-            // Arrange
+            // Arrange - every column measured forty wide, and a frozen region 240 wide
             using var ctx = new FormaExplorerTests();
             var probe = new DomProbe<ScrollState>(ctx);
             var router = new InputRouterProbe(ctx);
             IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ViewMode="ExplorerViewMode.Details" />);
-            var pane = cut.FindComponents<FormaFreezePane>().Last();
+            var grid = cut.FindComponent<FormaDataGrid<ICatalogItem>>();
+            var pane = grid.FindComponent<FormaFreezePane>();
             var runtimeId = pane.Find(".forma-freeze-pane").GetAttribute("data-rid")!;
+            var fit = new ColumnFitReport
+            {
+                AvailableWidth = 1000,
+                Columns = [.. cut.FindAll("table.forma-explorer-details thead th[data-column]").Select(cell => new ColumnWidth { Key = cell.GetAttribute("data-column")!, Width = 40 })]
+            };
+            await cut.InvokeAsync(() => grid.Instance.HandleColumnFitAsync(fit));
 
             // The pane asks for its viewport's extent once its frozen edge is to be drawn.
             await probe.ReportAsync(runtimeId, new ScrollState(false, true, 240, 38));
@@ -1712,8 +1842,11 @@
             var edge = pane.FindComponent<FormaSplitter>();
             await router.RouteAsync(edge.Instance.RootElement, "splitter.grow", "ArrowRight");
 
-            // Assert
-            Assert.Equal("--forma-explorer-frozen-extent: 248px;", cut.Find(".forma-explorer-details-wrapper").GetAttribute("style"));
+            // Assert - the name column, the last frozen, takes what the actions column leaves of the edge's 248
+            Assert.Multiple(
+                () => Assert.Contains("inline-size: 208px", cut.Find("th.forma-explorer-column-name").GetAttribute("style"), StringComparison.Ordinal),
+                () => Assert.Contains("inline-size: 208px", cut.Find("td.forma-explorer-column-name").GetAttribute("style"), StringComparison.Ordinal),
+                () => Assert.DoesNotContain("inline-size", cut.Find("th.forma-explorer-column-actions").GetAttribute("style"), StringComparison.Ordinal));
         }
 
         [Fact]
@@ -1816,7 +1949,7 @@
         }
 
         [Fact]
-        public void Should_gather_details_rows_under_group_headings_that_fold()
+        public async Task Should_gather_details_rows_under_group_headings_that_fold()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1826,23 +1959,23 @@
 
             // Act
             cut.Find(".forma-explorer-sort-trigger").Click();
-            cut.Find(".forma-explorer-toolbar [data-group-field='Kind']").Click();
+            await cut.Find(".forma-explorer-toolbar [data-group-field='Kind']").ClickAsync(new MouseEventArgs());
 
             // Assert
-            var headings = cut.FindAll(".forma-explorer-details-table .forma-explorer-group-heading");
+            var groups = cut.FindAll("table.forma-explorer-details tbody.forma-data-grid-group");
             Assert.Multiple(
-                () => Assert.Equal(["Image", "Video"], headings.Select(heading => heading.QuerySelector(".forma-explorer-group-label")!.TextContent)),
-                () => Assert.Equal(["2", "1"], headings.Select(heading => heading.QuerySelector(".forma-explorer-group-count")!.TextContent)),
-                () => Assert.Equal(3, cut.FindAll(".forma-explorer-details-row").Count),
+                () => Assert.Equal(["Image", "Video"], groups.Select(group => group.QuerySelector(".forma-data-grid-group-name")!.TextContent)),
+                () => Assert.Equal(["2", "1"], groups.Select(group => group.QuerySelector(".forma-data-grid-group-count")!.TextContent)),
+                () => Assert.Equal(3, cut.FindAll("tr.forma-data-grid-row").Count),
                 () => Assert.Equal([ExplorerGroupField.Kind], reported));
 
             // Act
-            headings[0].Click();
+            await cut.Find(".forma-data-grid-group-heading").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Multiple(
-                () => Assert.Single(cut.FindAll(".forma-explorer-details-row")),
-                () => Assert.Equal("false", cut.FindAll(".forma-explorer-group-heading")[0].GetAttribute("aria-expanded")));
+                () => Assert.Single(cut.FindAll("tr.forma-data-grid-row")),
+                () => Assert.Equal("false", cut.FindAll(".forma-data-grid-group-heading")[0].GetAttribute("aria-expanded")));
         }
 
         [Fact]
@@ -1863,7 +1996,7 @@
         }
 
         [Fact]
-        public void Should_keep_a_folded_group_folded_across_views_and_open_it_on_a_new_grouping()
+        public async Task Should_keep_a_folded_group_folded_across_views_and_open_it_on_a_new_grouping()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1876,15 +2009,18 @@
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal("false", cut.FindAll(".forma-explorer-group-heading")[0].GetAttribute("aria-expanded")),
-                () => Assert.Single(cut.FindAll(".forma-explorer-details-row")));
+                () => Assert.Equal("false", cut.FindAll(".forma-data-grid-group-heading")[0].GetAttribute("aria-expanded")),
+                () => Assert.Single(cut.FindAll("tr.forma-data-grid-row")));
 
             // Act
             cut.Find(".forma-explorer-sort-trigger").Click();
-            cut.Find(".forma-explorer-toolbar [data-group-field='Name']").Click();
+            await cut.Find(".forma-explorer-toolbar [data-group-field='Name']").ClickAsync(new MouseEventArgs());
 
             // Assert
-            Assert.All(cut.FindAll(".forma-explorer-group-heading"), heading => Assert.Equal("true", heading.GetAttribute("aria-expanded")));
+            Assert.Multiple(
+                () => Assert.NotEmpty(cut.FindAll(".forma-data-grid-group-heading")),
+                () => Assert.All(cut.FindAll(".forma-data-grid-group-heading"), heading => Assert.Equal("true", heading.GetAttribute("aria-expanded"))),
+                () => Assert.Equal(2, cut.FindAll("tr.forma-data-grid-row").Count));
         }
 
         [Fact]
@@ -1916,16 +2052,16 @@
 
             // Assert
             Assert.Equal(
-                cut.FindAll(".forma-explorer-details-table thead th").Count,
-                cut.Find(".forma-explorer-details-row").QuerySelectorAll("td").Length);
+                cut.FindAll("table.forma-explorer-details thead th").Count,
+                cut.Find("tr.forma-data-grid-row").QuerySelectorAll("td").Length);
 
             // Act
             cut.Find(".forma-explorer-select-mode-button").Click();
 
             // Assert
             Assert.Equal(
-                cut.FindAll(".forma-explorer-details-table thead th").Count,
-                cut.Find(".forma-explorer-details-row").QuerySelectorAll("td").Length);
+                cut.FindAll("table.forma-explorer-details thead th").Count,
+                cut.Find("tr.forma-data-grid-row").QuerySelectorAll("td").Length);
         }
 
         [Fact]

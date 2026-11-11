@@ -190,6 +190,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`FormaFreezePane`](docs/component-catalog.md#formafreezepane) measures its frozen region again when a frozen part
   moves by a change of its style or class, as a grid's frozen columns do when a selection turns on; it kept the region
   it had measured, so the content came to rest beneath the frozen columns.
+- [`FormaExplorer`](docs/explorer-design.md#the-parts)'s details are the data view's grid, the actions and name
+  columns frozen as the others scroll, and its sort is the data view's: a column's header and the toolbar's sort
+  menu set one sort, which the header marks and the menu shows. In the selection mode the grid's box column stands
+  where the actions column stood, and the rows take the focus as the thumbnails do. `FormaExplorerDetailsView` is
+  gone, and a stylesheet addressing the table's `.forma-explorer-details-row` or `.forma-explorer-details-table`
+  finds the grid's `.forma-data-grid-row` and `.forma-data-grid`.
 - [`FormaExplorer`](docs/explorer-design.md#the-parts)'s thumbnails are the data view's cards at their compact density,
   each the thumbnail and the name. They hold one tab stop with the selection mode off, the arrows moving the focus
   alone, a press or Enter opening a folder or previewing a file; in the selection mode a press or Space checks a

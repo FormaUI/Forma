@@ -69,17 +69,77 @@
     z-index: 1;
 }
 
-/* A card that can be dragged says so to the pointer, and an invisible item keeps its place in the cards undrawn. */
-.forma-explorer-scroll ::deep .forma-data-card[draggable="true"] {
+/* A card or a row that can be dragged says so to the pointer, and an invisible item keeps its place undrawn. */
+.forma-explorer-scroll ::deep .forma-data-card[draggable="true"],
+.forma-explorer-scroll ::deep .forma-data-grid-row[draggable="true"] {
     cursor: grab;
 }
 
-.forma-explorer-scroll ::deep .forma-data-card[draggable="true"]:active {
+.forma-explorer-scroll ::deep .forma-data-card[draggable="true"]:active,
+.forma-explorer-scroll ::deep .forma-data-grid-row[draggable="true"]:active {
     cursor: grabbing;
 }
 
-.forma-explorer-scroll ::deep .forma-data-card.is-invisible {
+.forma-explorer-scroll ::deep .forma-data-card.is-invisible,
+.forma-explorer-scroll ::deep .forma-data-grid-row.is-invisible {
     visibility: hidden;
+}
+
+/* --- Details --- */
+/* The columns keep their widths, so details wider than the pane scroll rather than squeeze; the actions column is exactly the
+   actions trigger, and a name that no longer fits is cut with an ellipsis and carried whole in its tooltip. */
+.forma-explorer-scroll ::deep .forma-explorer-column-actions {
+    inline-size: var(--target-size-sm);
+    padding-inline: var(--space-1);
+}
+
+.forma-explorer-scroll ::deep .forma-explorer-column-name,
+.forma-explorer-scroll ::deep .forma-explorer-column-kind {
+    min-inline-size: 6rem;
+}
+
+.forma-explorer-scroll ::deep .forma-explorer-column-size {
+    min-inline-size: 5.5rem;
+}
+
+.forma-explorer-scroll ::deep .forma-explorer-column-modified,
+.forma-explorer-scroll ::deep .forma-explorer-column-added {
+    min-inline-size: 9.5rem;
+}
+
+.forma-explorer-scroll ::deep .forma-explorer-column-kind,
+.forma-explorer-scroll ::deep .forma-explorer-column-size,
+.forma-explorer-scroll ::deep .forma-explorer-column-modified,
+.forma-explorer-scroll ::deep .forma-explorer-column-added {
+    white-space: nowrap;
+}
+
+.forma-explorer-details-name {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-inline-size: 0;
+}
+
+/* Isolated in the reading direction: a direction derived from the name would align a Latin one against it. */
+.forma-explorer-details-name-text {
+    font-weight: 500;
+    unicode-bidi: isolate;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forma-explorer-visually-hidden {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
 }
 
 /* --- Footer --- */

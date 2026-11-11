@@ -50,7 +50,39 @@
             }
             else if (View.ViewMode == ExplorerViewMode.Details)
             {
-                <FormaExplorerDetailsView Items="View.VisibleItems" />
+                @* The details are the data view's grid, which draws its groups and its next page: the actions and the name stay at the
+                   start as the other columns scroll, and a column's header sorts by the field the store sorts by. *@
+                <FormaDataGrid TItem="ICatalogItem" ShowHeader="View.ShowsDetailsHeader" class="forma-explorer-details" aria-label="@L["Media"]">
+                    <Columns>
+                        <FormaTemplateColumn TItem="ICatalogItem" Title="@L["Actions"]" Frozen="true" Visible="!Selection.IsSelectionModeActive" Class="forma-explorer-column-actions">
+                            <HeaderTemplate Context="column"><span class="forma-explorer-visually-hidden">@L["Actions"]</span></HeaderTemplate>
+                            <ChildContent Context="item">
+                                <span data-item-control><FormaExplorerActionBar Item="item" /></span>
+                            </ChildContent>
+                        </FormaTemplateColumn>
+                        <FormaTemplateColumn TItem="ICatalogItem" Title="@L["Name"]" Frozen="true" SortName="@GetSortName(CatalogSortField.Name)" SortBy="GetSort(CatalogSortField.Name)" Class="forma-explorer-column-name">
+                            <span class="forma-explorer-details-name">
+                                @if (context.Resource is { } resource)
+                                {
+                                    <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Cell" />
+                                }
+                                <span class="forma-explorer-details-name-text" title="@context.Name">@context.Name</span>
+                            </span>
+                        </FormaTemplateColumn>
+                        <FormaTemplateColumn TItem="ICatalogItem" Title="@L["Type"]" Visible="Shows(ExplorerDetailsColumns.Kind)" SortName="@GetSortName(CatalogSortField.Kind)" SortBy="GetSort(CatalogSortField.Kind)" Class="forma-explorer-column-kind">
+                            @context.GetLocalizedLabels(L).KindLabel
+                        </FormaTemplateColumn>
+                        <FormaTemplateColumn TItem="ICatalogItem" Title="@L["Size"]" Visible="Shows(ExplorerDetailsColumns.Size)" SortName="@GetSortName(CatalogSortField.Size)" SortBy="GetSort(CatalogSortField.Size)" Class="forma-explorer-column-size">
+                            <span dir="auto">@(context.Resource?.FormatSize(Context.CultureState.Culture) ?? Placeholder)</span>
+                        </FormaTemplateColumn>
+                        <FormaTemplateColumn TItem="ICatalogItem" Title="@L["Modified"]" Visible="Shows(ExplorerDetailsColumns.Modified)" SortName="@GetSortName(CatalogSortField.DateModified)" SortBy="GetSort(CatalogSortField.DateModified)" Class="forma-explorer-column-modified">
+                            @FormatDate(context.ModifiedAt)
+                        </FormaTemplateColumn>
+                        <FormaTemplateColumn TItem="ICatalogItem" Title="@L["Added"]" Visible="Shows(ExplorerDetailsColumns.Added)" SortName="@GetSortName(CatalogSortField.DateAdded)" SortBy="GetSort(CatalogSortField.DateAdded)" Class="forma-explorer-column-added">
+                            @FormatDate(context.CreatedAt)
+                        </FormaTemplateColumn>
+                    </Columns>
+                </FormaDataGrid>
             }
             else
             {
@@ -58,9 +90,9 @@
             }
         }
 
-        @* The next page is the data view's to load, from its action after the items and as the reader reaches their end, which the cards draw
-           themselves. *@
-        @if (View.VisibleItems.Count > 0 && View.ViewMode != ExplorerViewMode.Thumbnails)
+        @* The next page is the data view's to load, from its action after the items and as the reader reaches their end, which the cards and
+           the grid draw themselves. *@
+        @if (View.VisibleItems.Count > 0 && View.ViewMode == ExplorerViewMode.List)
         {
             @Content.MoreContent
         }

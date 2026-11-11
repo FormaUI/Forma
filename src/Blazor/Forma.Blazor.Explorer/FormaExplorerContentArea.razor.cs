@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Blazor.Components.DataView;
 using Forma.Framework.Catalog;
+using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Catalog.Selection;
 using Forma.Framework.Css;
 using Forma.Framework.Explorer;
@@ -27,8 +28,23 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
     // The width a thumbnail packs at.
     private static readonly CssLength ThumbnailSize = CssLength.FromRem(8.125);
 
+    // What a cell shows for a value the item does not have.
+    private const string Placeholder = "—";
+
     private ICatalogSelectionView Selection
         => Explorer.Selection;
+
+    private bool Shows(ExplorerDetailsColumns column)
+        => View.DetailsColumns.HasFlag(column);
+
+    private static string GetSortName(CatalogSortField field)
+        => ExplorerDataViewSorts.GetName(field);
+
+    private static DataViewSort<ICatalogItem> GetSort(CatalogSortField field)
+        => ExplorerDataViewSorts.GetSort(field);
+
+    private string FormatDate(DateTimeOffset? value)
+        => value?.LocalDateTime.ToString("g", Context.CultureState.Culture) ?? Placeholder;
 
     /// <inheritdoc />
     protected override Type LocalizationSourceType

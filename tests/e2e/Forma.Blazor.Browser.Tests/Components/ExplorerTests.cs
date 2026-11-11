@@ -146,6 +146,51 @@ public sealed class ExplorerTests
         }
     }
 
+    public sealed class ExplorerDetails(BrowserHost host)
+    {
+        private static readonly string[] ByName = ["Archive", "alpha.txt", "beta.txt", "gamma.txt"];
+
+        private static readonly string[] BySize = ["Archive", "beta.txt", "gamma.txt", "alpha.txt"];
+
+        private static readonly string[] BySizeDescending = ["Archive", "alpha.txt", "gamma.txt", "beta.txt"];
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_sort_by_a_column_s_header_and_by_the_toolbar_s_menu_alike(string runtime)
+        {
+            // Arrange — the details sorted by name, the folder first
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer-details");
+            await using var _ = context;
+            var names = page.Locator("#check .forma-explorer-details-name-text");
+            var nameHeader = page.Locator("#check th.forma-explorer-column-name");
+            var sizeHeader = page.Locator("#check th.forma-explorer-column-size");
+            var sortLabel = page.Locator("#check .forma-explorer-header-wide .forma-explorer-sort-trigger-text");
+            await ComponentChecks.WaitForInputScopeAsync(page, "#check .forma-data-view-region");
+            await Assertions.Expect(names).ToHaveTextAsync(ByName);
+            await Assertions.Expect(nameHeader).ToHaveAttributeAsync("aria-sort", "ascending");
+
+            // Act — the size header pressed, then pressed again
+            await sizeHeader.GetByRole(AriaRole.Button).ClickAsync();
+            await Assertions.Expect(names).ToHaveTextAsync(BySize);
+            await Assertions.Expect(sizeHeader).ToHaveAttributeAsync("aria-sort", "ascending");
+            await Assertions.Expect(nameHeader).ToHaveAttributeAsync("aria-sort", "none");
+            await Assertions.Expect(sortLabel).ToHaveTextAsync("Size");
+            await sizeHeader.GetByRole(AriaRole.Button).ClickAsync();
+            await Assertions.Expect(names).ToHaveTextAsync(BySizeDescending);
+            await Assertions.Expect(sizeHeader).ToHaveAttributeAsync("aria-sort", "descending");
+
+            // Act — Name chosen from the toolbar's sort menu
+            await page.Locator("#check .forma-explorer-header-wide .forma-explorer-sort-trigger").ClickAsync();
+            await page.Locator("[data-sort-field='Name']").ClickAsync();
+
+            // Assert — the header follows the menu
+            await Assertions.Expect(names).ToHaveTextAsync(ByName);
+            await Assertions.Expect(nameHeader).ToHaveAttributeAsync("aria-sort", "ascending");
+            await Assertions.Expect(sizeHeader).ToHaveAttributeAsync("aria-sort", "none");
+            await Assertions.Expect(sortLabel).ToHaveTextAsync("Name");
+        }
+    }
+
     public sealed class ExplorerScroll(BrowserHost host)
     {
         [Theory]

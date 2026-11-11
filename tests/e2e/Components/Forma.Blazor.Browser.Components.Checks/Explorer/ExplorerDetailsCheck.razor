@@ -1,0 +1,19 @@
+@page "/{Runtime}/explorer-details"
+@using Forma.Blazor.Components.Explorer
+@using Forma.Framework.Catalog
+@using Forma.Framework.Explorer.Content
+@using Forma.Framework.Resources
+
+@* A folder and three files of three sizes in the details, which a column's header and the toolbar's sort menu both sort. *@
+<FormaExplorer Id="check" Items="Items" Folders="Folders" ViewMode="ExplorerViewMode.Details" />
+
+@code {
+    private static readonly IReadOnlyList<ICatalogItem> Folders = CatalogItem.ForAll([new FolderResourceInfo("archive") { Name = "Archive" }]);
+
+    private static readonly IReadOnlyList<ICatalogItem> Items = CatalogItem.ForAll(
+    [
+        new DocumentResourceInfo("files/alpha.txt") { Size = 300 },
+        new DocumentResourceInfo("files/beta.txt") { Size = 100 },
+        new DocumentResourceInfo("files/gamma.txt") { Size = 200 },
+    ]);
+}
