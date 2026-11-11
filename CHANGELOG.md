@@ -12,6 +12,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`FormaDataView`](docs/data-view-design.md#accessibility-keyboard-and-direction) gives the focus back to an item
   whose box went while holding it, as turning the selection mode off takes the boxes away, in Safari too, which drops
   such a focus without saying so; it fell to the page there.
+- [`FormaDialog`](docs/component-catalog.md#formadialog) hands the focus back, as it closes, to what held it as the
+  dialog opened, and where that has gone, as a menu item does once its menu closes, to the nearest element around it
+  that can take the focus. A dialog opened from a menu, as an explorer item's Rename is, left the focus on the page.
 - The framework's members and parameters named for a bare participle or adjective, or for a plural that counts, are
   named for what they hold. Properties and constants: `CatalogRejection.Limit` was `Allowed`,
   `ExplorerHistory.CurrentSource` was `Current`, `IConfirmDialogService.CurrentRequest` was `Current`,
