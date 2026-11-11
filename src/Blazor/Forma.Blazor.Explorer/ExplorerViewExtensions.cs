@@ -11,6 +11,14 @@ internal static class ExplorerViewExtensions
     public static bool CanLeaveSelectMode(this IExplorerView view)
         => !view.Options.SelectOnOpen;
 
+    /// <summary>Whether the selection is kept across locations and offered for review, as a picker's is.</summary>
+    public static bool ReviewsSelection(this IExplorerView view)
+        => view.Options.SelectOnOpen;
+
+    /// <summary>Whether the controls offer to choose the current folder.</summary>
+    public static bool ShowsChooseFolderAction(this IExplorerView view)
+        => view.ReviewsSelection() && view.CurrentFolder is { } folder && view.CanSelect(folder);
+
     /// <summary>Whether the controls offer a new folder.</summary>
     public static bool ShowsNewFolderAction(this IExplorerView view)
         => !view.ShowsSidebar

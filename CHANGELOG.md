@@ -9,6 +9,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- A [`FormaExplorer`](docs/explorer-design.md#decision-summary) opened with `SelectOnOpen` is a picker that keeps its
+  choices as the reader moves between folders, where a move cleared them. Its selection bar stands beneath its
+  toolbar throughout, its count a button opening the choices for review, each with the folder it stands in and a
+  button removing it; where `AcceptedResourceKinds` names folders, Choose This Folder chooses the folder the reader is
+  in. `IExplorerView` declares `CanSelect` and `GetSelectedItemLocation`, and `IExplorerSelectionInteraction` declares
+  `DeselectAsync`.
 - [`FormaExplorer`](docs/explorer-design.md#decision-summary) follows a move to another folder itself, so a host that
   leaves `CurrentFolder` unbound, as the composer's stored-files dialog does, sees the breadcrumbs, Up and a new
   folder's place follow the reader; they stayed at All Media.

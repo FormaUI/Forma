@@ -60,7 +60,7 @@ callback, and an upload goes into the host's `IFileStore`.
   explorer's own options cover how it presents itself: dialog and resizable modes, sidebar
   and breadcrumb-menu visibility, the optional details columns and their header, the
   selection limit, whether the collection is paged or scrolls infinitely, the search
-  debounce, and selecting on open for a caller that exists only to choose, which starts in
+  debounce, and selecting on open for a caller that exists only to choose, a picker, which starts in
   selection mode with the toggle out of the toolbar.
 - **Constraints are ceilings the explorer refuses to cross.** The constraints name
   the resource kinds it lists and accepts, the kinds an upload may add where they differ,
@@ -73,6 +73,12 @@ callback, and an upload goes into the host's `IFileStore`.
   folders, while every folder is listed and entered whatever they name. A press on a folder
   that cannot be chosen enters it, in the selection mode too, so a caller choosing files
   reaches the files a folder holds.
+- **A picker keeps its choices across locations.** A successful move clears the selection of an
+  explorer that manages files, so a deletion never acts on what is out of sight; a picker keeps
+  its choices as the reader moves, offers them for review from its count, each with its name
+  and the folder it stands in, a folder in its parent and a file in the location it was chosen
+  in, since a file names no folder of its own, and each removable. Where the current folder can
+  be chosen, a picker offers to choose it, which All Media never can be.
 - **The explorer holds where the reader is.** A move the reader makes becomes the current
   folder whether or not the host binds it, and a folder the host gives replaces it.
 - **Effective capabilities.** What may be done to an item is its own set intersected with
@@ -105,7 +111,9 @@ A command area composes the address bar and the toolbar. The address bar carries
 forward, up and refresh with the breadcrumb menu and the search box; the toolbar carries
 selection, a new folder where no sidebar hosts one, upload, the view switch, the columns
 menu in the details view and a sort menu that also groups, the whole row scrolling behind
-arrows when it outgrows the width. While items are selected a selection bar stands in for
+arrows when it outgrows the width. A picker's selection bar stands beneath its toolbar throughout,
+its count a button opening the review, so the choices and the way to them stay in reach as
+the reader browses. Elsewhere, while items are selected, a selection bar stands in for
 the toolbar with delete, clear, the count and the way out of selection mode. Where the
 header has no room for the search box, the search stands as a glyph until pressed; at a
 phone's width the header collapses to the breadcrumb, the search glyph and one menu

@@ -1,11 +1,22 @@
 @namespace Forma.Blazor.Components.Explorer
 @inherits FormaComponentBase
 @using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Feedback
 @using Forma.Blazor.Components.Layout
+@using Forma.Framework.Browser.Interop.Behaviors
 
 <div class="forma-explorer-selection">
     <FormaCommandBar Class="forma-explorer-selection-bar" role="toolbar" aria-label="@L["Selection"]">
         <div class="forma-explorer-selection-actions">
+            @if (View.ShowsChooseFolderAction() && View.CurrentFolder is { } folder)
+            {
+                <FormaToggleButton Icon="Glyph.CircleCheck"
+                                   Label="@L["Choose This Folder"]"
+                                   ShowLabel="true"
+                                   Pressed="View.Selection.IsSelected(folder)"
+                                   class="forma-explorer-choose-folder-button"
+                                   OnClick="() => Interaction.ToggleSelectionAsync(folder)" />
+            }
             @if (View.ShowsDeleteAction())
             {
                 <FormaButton Variant="ButtonVariant.Danger" class="forma-explorer-delete-button" OnClick="ItemInteraction.RequestDeleteSelected">
@@ -13,10 +24,64 @@
                     @L["Delete"]
                 </FormaButton>
             }
-            <FormaToggleButton Icon="Glyph.SelectNone" Label="@L["Clear"]" ShowLabel="true" class="forma-explorer-clear-button" OnClick="Interaction.ClearSelectionAsync" />
+            @if (View.Selection.Count > 0)
+            {
+                <FormaToggleButton Icon="Glyph.SelectNone" Label="@L["Clear"]" ShowLabel="true" class="forma-explorer-clear-button" OnClick="ClearAsync" />
+            }
         </div>
         <div class="forma-explorer-selection-status">
-            <span class="forma-explorer-selection-label">@L["{SelectedCount} selected", View.Selection.Count]</span>
+            @if (View.ReviewsSelection())
+            {
+                <FormaButton @ref="ReviewButton"
+                             Variant="ButtonVariant.Ghost"
+                             class="forma-explorer-review-button"
+                             aria-expanded="@(IsReviewOpen ? "true" : "false")"
+                             aria-controls="@ReviewId"
+                             OnClick="ToggleReviewAsync">
+                    @L["{SelectedCount} Selected", View.Selection.Count]
+                </FormaButton>
+                <FormaPopover @ref="ReviewPopover"
+                              Anchor="@(ReviewButton?.RootElement ?? default)"
+                              Alignment="PopoverAlignment.End"
+                              KeepsFocus="true"
+                              OnOpened="FocusFirstRemoveAsync">
+                    <div id="@ReviewId" class="forma-explorer-review">
+                        @if (View.Selection.Count == 0)
+                        {
+                            <p class="forma-explorer-review-empty">@L["Nothing is selected."]</p>
+                        }
+                        else
+                        {
+                            <ul class="forma-explorer-review-list" aria-label="@L["Selected Items"]">
+                                @foreach (var item in View.Selection.Items)
+                                {
+                                    <li @key="item.Key" class="forma-explorer-review-item">
+                                        <span class="forma-explorer-review-text">
+                                            <span class="forma-explorer-review-name">@item.Name</span>
+                                            @if (GetLocationText(item) is { } location)
+                                            {
+                                                <span class="forma-explorer-review-location">@location</span>
+                                            }
+                                        </span>
+                                        <FormaButton @ref="RemoveButtons[item.Key]"
+                                                     Variant="ButtonVariant.Ghost"
+                                                     IconOnly="true"
+                                                     class="forma-explorer-review-remove"
+                                                     aria-label="@L["Remove {Name}", item.Name]"
+                                                     OnClick="() => RemoveAsync(item)">
+                                            <FormaIcon Icon="Glyph.Cross" Size="IconSize.Small" />
+                                        </FormaButton>
+                                    </li>
+                                }
+                            </ul>
+                        }
+                    </div>
+                </FormaPopover>
+            }
+            else
+            {
+                <span class="forma-explorer-selection-label">@L["{SelectedCount} selected", View.Selection.Count]</span>
+            }
             @if (View.CanLeaveSelectMode())
             {
                 <FormaCloseButton class="forma-explorer-exit-select-button"

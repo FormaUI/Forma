@@ -187,7 +187,7 @@ the items under collapsible headings by the same fields. `PageSize` sets the pag
 | `ShowFolderMenu` | Gives each breadcrumb a menu of that folder's children. |
 | `Resizable` | Lets the reader resize the explorer. |
 | `AsDialog` | Presents the explorer as dialog content. |
-| `SelectOnOpen` | Opens in selection mode and stays in it, for an explorer used to choose items. |
+| `SelectOnOpen` | Makes the explorer a picker, opening in selection mode and staying in it. A picker keeps its choices as the reader moves between folders, and its count opens them for review, each with the folder it stands in and a way to remove it; where the accepted kinds name folders, it offers Choose This Folder inside a folder. |
 | `MaxSelection` | Caps the selection; zero is unlimited, and one makes each choice replace the last. |
 | `InfiniteScroll` | `Off` pages; `Manual` appends the next page from a button, and `Automatic` as the reader reaches the end. |
 | `DetailsColumns`, `ShowDetailsHeader` | The details view's opening columns, of `Kind`, `Size`, `Modified` and `Added`, and its header. |

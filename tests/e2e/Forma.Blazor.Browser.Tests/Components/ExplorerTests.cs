@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
+using System.Text.RegularExpressions;
+
 /// <summary>The explorer's interactions, in every runtime.</summary>
 public sealed class ExplorerTests
 {
@@ -8,6 +10,8 @@ public sealed class ExplorerTests
         private static readonly string[] RootItemNames = ["Covers", "Races", "cover.txt", "lap-times.txt"];
 
         private static readonly string[] RacesItemNames = ["lap-times.txt"];
+
+        private static readonly string[] CoversItemNames = ["cover.txt"];
 
         // Each card's own tab index, as its element carries it, and its box's.
         private const string TabIndexes = """
@@ -38,6 +42,47 @@ public sealed class ExplorerTests
             await Assertions.Expect(races).ToHaveAttributeAsync("aria-selected", "true");
             await Assertions.Expect(sidebar.Locator("[role=treeitem]", new() { HasText = "All Media" })).ToHaveAttributeAsync("aria-selected", "false");
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Races");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_review_a_picker_s_choices_from_two_folders_remove_one_and_choose_a_folder(string runtime)
+        {
+            // Arrange — in a picker of files and folders, a file chosen in Covers and one in Races, each entered from the sidebar
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer");
+            await using var _ = context;
+            var picker = page.Locator("#picker");
+            var sidebar = picker.Locator(".forma-explorer-sidebar");
+            var names = picker.Locator(".forma-data-card-name");
+            var chosen = page.Locator("#chosen");
+            var review = picker.Locator(".forma-explorer-review-button");
+            await Assertions.Expect(names).ToHaveTextAsync(RootItemNames);
+            await ComponentChecks.WaitForInputRouteAsync(page, "#picker .forma-data-tree", "tree.choose");
+            await ComponentChecks.WaitForInputScopeAsync(page, "#picker .forma-data-view-region");
+            await sidebar.Locator("[role=treeitem]", new() { HasText = "Covers" }).Locator(".forma-data-tree-node-name").ClickAsync();
+            await Assertions.Expect(names).ToHaveTextAsync(CoversItemNames);
+            await names.GetByText("cover.txt", new() { Exact = true }).ClickAsync();
+            await Assertions.Expect(chosen).ToHaveTextAsync("cover.txt");
+            await sidebar.Locator("[role=treeitem]", new() { HasText = "Races" }).Locator(".forma-data-tree-node-name").ClickAsync();
+            await Assertions.Expect(names).ToHaveTextAsync(RacesItemNames);
+            await names.GetByText("lap-times.txt", new() { Exact = true }).ClickAsync();
+            await Assertions.Expect(chosen).ToHaveTextAsync("cover.txt, lap-times.txt");
+
+            // Act — the review opened on both, each with its folder, cover.txt removed from it, the review closed, and Races chosen
+            await review.ClickAsync();
+            var reviewed = picker.Locator(".forma-explorer-review-item");
+            await Assertions.Expect(reviewed).ToHaveTextAsync([new Regex(@"cover\.txt\s*Covers"), new Regex(@"lap-times\.txt\s*Races")]);
+            await picker.GetByRole(AriaRole.Button, new() { Name = "Remove cover.txt" }).ClickAsync();
+            await Assertions.Expect(reviewed).ToHaveCountAsync(1);
+            await Assertions.Expect(chosen).ToHaveTextAsync("lap-times.txt");
+            await Assertions.Expect(review).ToHaveTextAsync("1 Selected");
+            await page.Keyboard.PressAsync("Escape");
+            await Assertions.Expect(review).ToBeFocusedAsync();
+            await picker.GetByRole(AriaRole.Button, new() { Name = "Choose This Folder" }).ClickAsync();
+
+            // Assert
+            await Assertions.Expect(chosen).ToHaveTextAsync("Races, lap-times.txt");
+            await Assertions.Expect(picker.Locator(".forma-explorer-choose-folder-button")).ToHaveAttributeAsync("aria-pressed", "true");
         }
 
         [Theory]

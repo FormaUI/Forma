@@ -163,6 +163,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private readonly CatalogSelection _selection = new();
 
+    // Where each selected file was selected, by its key, null being the top level; a file the host selected has none.
+    private readonly Dictionary<string, ICatalogFolderItem?> _selectionLocations = [with(StringComparer.Ordinal)];
+
     // The location the reader is in, which a move the data view makes sets and a folder the host gives replaces.
     private ICatalogFolderItem? _currentFolder;
 
@@ -869,6 +872,30 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     ICatalogSelectionView IExplorerView.Selection => _selection;
 
+    bool IExplorerView.CanSelect(ICatalogItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        return !item.IsDisabled && CanChoose(item);
+    }
+
+    IReadOnlyList<ICatalogFolderItem>? IExplorerView.GetSelectedItemLocation(ICatalogItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        if (item is ICatalogFolderItem folder)
+        {
+            return FolderTree.GetParent(folder) is { } parent ? BuildBreadcrumbs(FolderTree, parent) : [];
+        }
+
+        if (!_selectionLocations.TryGetValue(item.Key, out var location))
+        {
+            return null;
+        }
+
+        return location is null ? [] : BuildBreadcrumbs(FolderTree, location);
+    }
+
     IExplorerItemView IExplorerView.Item => _itemManager;
 
     IReadOnlyList<ICatalogItem> IExplorerContentView.VisibleItems => VisibleItems;
@@ -900,6 +927,13 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         ArgumentNullException.ThrowIfNull(item);
 
         return item.IsDisabled || !CanChoose(item) ? Task.CompletedTask : ChangeSelectionAsync(selection => selection.Toggle(item));
+    }
+
+    Task IExplorerSelectionInteraction.DeselectAsync(ICatalogItem item)
+    {
+        ArgumentNullException.ThrowIfNull(item);
+
+        return _selection.IsSelected(item) ? RunAsync(() => ChangeSelectionAsync(selection => selection.Remove(item))) : Task.CompletedTask;
     }
 
     Task IExplorerContentInteraction.SortByAsync(CatalogSortField field)
@@ -999,16 +1033,42 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     /// <summary>Changes the selection and reports it.</summary>
     private async Task ChangeSelectionAsync(Action<CatalogSelection> change)
     {
+        HashSet<string> before = [.. _selection.Items.Select(item => item.Key)];
         change(_selection);
+        PlaceSelection(before);
 
         await SelectedChanged.InvokeAsync(_selection.Items);
 
         StateHasChanged();
     }
 
-    // The host's own selection is adopted without being reported back.
+    // The host's own selection is adopted without being reported back, a file it adds standing in no location the explorer knows.
     private void AdoptSelection(IReadOnlyList<ICatalogItem> selected)
-        => _selection.Replace(selected);
+    {
+        _selection.Replace(selected);
+        PlaceSelection([.. selected.Select(item => item.Key)]);
+    }
+
+    // A file the reader adds to the selection stands in the location it was added in, and one taken out has no location.
+    private void PlaceSelection(HashSet<string> before)
+    {
+        HashSet<string> selected = [];
+
+        foreach (var item in _selection.Items)
+        {
+            selected.Add(item.Key);
+
+            if (item is not ICatalogFolderItem && !before.Contains(item.Key))
+            {
+                _selectionLocations[item.Key] = _currentFolder;
+            }
+        }
+
+        foreach (var key in _selectionLocations.Keys.Where(key => !selected.Contains(key)).ToList())
+        {
+            _selectionLocations.Remove(key);
+        }
+    }
 
     // The data view's boxes change the explorer's selection, whose limit decides what it holds, files and folders together.
     private Task HandleViewSelectionChangedAsync(IReadOnlyList<ICatalogItem> items)
@@ -1122,8 +1182,8 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
-    // A move that succeeded becomes the location, clears the selection, records the visit unless it stepped through the history, and
-    // starts the location's sequence.
+    // A move that succeeded becomes the location, records the visit unless it stepped through the history, starts the location's
+    // sequence, and clears the selection, which a picker keeps across locations instead.
     private async Task HandleCurrentItemChangedAsync(ICatalogItem? item)
     {
         var folder = item as ICatalogFolderItem;
@@ -1141,7 +1201,12 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
         _collection.PageNumber = 1;
         StartSequence();
-        await ClearSelectionAsync();
+
+        if (!Options.SelectOnOpen)
+        {
+            await ClearSelectionAsync();
+        }
+
         await OnFolderChanged.InvokeAsync(folder);
     }
 

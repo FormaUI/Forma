@@ -65,6 +65,26 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["A Picker That Keeps Its Choices"]</h2>
+    <p class="description">@L["With SelectOnOpen, the explorer is a picker: it keeps its choices as the reader moves between folders, and its count opens them for review, each with the folder it stands in and a way to remove it. Its accepted kinds name folders as well as images, so it offers Choose This Folder inside a folder, where a press on a folder still chooses it and Enter enters it."]</p>
+    <div class="demo-box">
+        <FormaExplorer ItemsProvider="@(GetProvider("picker"))"
+                      Folders="_sampleFolderItems"
+                      TotalCount="_allMedia.Count"
+                      Options="@(new ExplorerOptions { SelectOnOpen = true })"
+                      Constraints="@(new CatalogConstraints { AcceptedResourceKinds = "contentType:image;folder" })"
+                      ItemOptions="ExplorerItemOptions.ReadOnly"
+                      SelectedChanged="@(items => HandleSelectedAsync("picker", items))" />
+        <ul class="demo-log">
+            @foreach (var resource in Log("picker"))
+            {
+                <li>@resource</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Details Columns"]</h2>
     <p class="description">@L["DetailsColumns picks which optional columns the details view opens with beside the name; the columns menu in the toolbar lets the reader add or remove them and hide the header afterwards. Nothing wraps, so a narrow explorer scrolls sideways rather than squeezing a column out."]</p>
     <div class="demo-box">

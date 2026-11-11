@@ -17,7 +17,7 @@
         {
             <div class="forma-explorer-header-compact">
                 <FormaExplorerCompactBar />
-                @if (View.Selection.Count > 0)
+                @if (View.Selection.Count > 0 || View.ReviewsSelection())
                 {
                     <FormaExplorerSelectionBar />
                 }

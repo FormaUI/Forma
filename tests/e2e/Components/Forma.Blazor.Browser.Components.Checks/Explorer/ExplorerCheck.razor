@@ -2,12 +2,24 @@
 @using Forma.Blazor.Components.Explorer
 @using Forma.Framework.Catalog
 @using Forma.Framework.Catalog.Requests
+@using Forma.Framework.Explorer
 @using Forma.Framework.Resources
 
 @* Two folders and a file in each, the folders and every file listed until a folder opens, the folder open and what is dropped on a folder named where the check reads them. *@
 <FormaExplorer Id="check" Items="_items" Folders="Folders" CurrentFolder="_currentFolder" OnFolderChanged="OpenFolder" OnDrop="Drop" />
 <output id="result">@(_currentFolder?.Name)</output>
 <output id="dropped">@_dropped</output>
+
+@* A picker of files and folders over the same two folders, whose host follows its moves without handing the folder back, the
+   choices it reports named where the check reads them. *@
+<FormaExplorer Id="picker"
+               Items="_pickerItems"
+               Folders="Folders"
+               OnFolderChanged="OpenPickerFolder"
+               Options="PickerOptions"
+               Constraints="PickerConstraints"
+               SelectedChanged="Choose" />
+<output id="chosen">@string.Join(", ", _chosen.Select(item => item.Name))</output>
 
 @code {
     private static readonly IReadOnlyList<ICatalogItem> Folders = CatalogItem.ForAll(
@@ -22,7 +34,13 @@
         ("races", new DocumentResourceInfo("files/lap-times.txt")),
     ];
 
+    private static readonly ExplorerOptions PickerOptions = new() { SelectOnOpen = true };
+
+    private static readonly CatalogConstraints PickerConstraints = new() { AcceptedResourceKinds = "contentType:text;folder" };
+
     private IReadOnlyList<ICatalogItem> _items = GetItems(null);
+    private IReadOnlyList<ICatalogItem> _pickerItems = GetItems(null);
+    private IReadOnlyList<ICatalogItem> _chosen = [];
     private ICatalogFolderItem? _currentFolder;
     private string? _dropped;
 
@@ -31,6 +49,12 @@
         _currentFolder = folder;
         _items = GetItems(folder?.Key);
     }
+
+    private void OpenPickerFolder(ICatalogFolderItem? folder)
+        => _pickerItems = GetItems(folder?.Key);
+
+    private void Choose(IReadOnlyList<ICatalogItem> chosen)
+        => _chosen = chosen;
 
     private void Drop(CatalogDropRequest request)
         => _dropped = $"{string.Join(", ", request.Items.Select(item => item.Name))} to {request.TargetFolder?.Name ?? "All Media"}";

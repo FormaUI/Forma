@@ -3396,6 +3396,177 @@
         }
     }
 
+    // A picker keeps its choices as the reader moves between folders, offers them for review from its count, each with where it
+    // stands, and offers the current folder where it can be chosen.
+    public sealed class Reviewing
+    {
+        private static readonly IReadOnlyList<ICatalogItem> TwoFolders =
+            CatalogItem.ForAll([new FolderResourceInfo("covers") { Name = "Covers" }, new FolderResourceInfo("races") { Name = "Races" }]);
+
+        private static FakeCatalogProvider CreateProvider()
+        {
+            var provider = new FakeCatalogProvider([]);
+            provider.FolderResources["covers"] = [new ImageResourceInfo("https://example.com/front.jpg")];
+            provider.FolderResources["races"] = [new ImageResourceInfo("https://example.com/sprint.jpg")];
+
+            return provider;
+        }
+
+        // Presses the card showing the name while the boxes are drawn, as the selection behavior reports a checking press.
+        private static Task CheckCardAsync<TComponent>(IRenderedComponent<TComponent> cut, string name)
+            where TComponent : class, Microsoft.AspNetCore.Components.IComponent
+        {
+            var token = int.Parse(ItemNamed(cut, name).GetAttribute("data-item")!, CultureInfo.InvariantCulture);
+
+            return cut.InvokeAsync(() => cut.FindComponent<FormaDataView<ICatalogItem>>().Instance.HandleCheckAsync(token));
+        }
+
+        private static Task GoUpAsync<TComponent>(IRenderedComponent<TComponent> cut)
+            where TComponent : class, Microsoft.AspNetCore.Components.IComponent
+            => cut.InvokeAsync(() => ((IExplorerLocationInteraction)cut.FindComponent<FormaExplorer>().Instance).GoUpAsync());
+
+        // Chooses front.jpg in Covers and sprint.jpg in Races, entering each folder from the top level.
+        private static async Task ChooseInTwoFoldersAsync<TComponent>(IRenderedComponent<TComponent> cut)
+            where TComponent : class, Microsoft.AspNetCore.Components.IComponent
+        {
+            await PressCardAsync(cut, "Covers");
+            await CheckCardAsync(cut, "front.jpg");
+            await GoUpAsync(cut);
+            await PressCardAsync(cut, "Races");
+            await CheckCardAsync(cut, "sprint.jpg");
+        }
+
+        private static IReadOnlyList<string> GetReviewedChoices<TComponent>(IRenderedComponent<TComponent> cut)
+            where TComponent : Microsoft.AspNetCore.Components.IComponent
+            => [.. cut.FindAll(".forma-explorer-review-item").Select(item => string.Join(" in ", item.QuerySelectorAll(".forma-explorer-review-name, .forma-explorer-review-location").Select(part => part.TextContent.Trim())))];
+
+        [Fact]
+        public async Task Should_keep_a_picker_s_choices_as_the_reader_moves_between_folders()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            List<IReadOnlyList<ICatalogItem>> reports = [];
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="CreateProvider()"
+                                                Folders="TwoFolders"
+                                                Options="@(new ExplorerOptions { SelectOnOpen = true })"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+
+            // Act
+            await ChooseInTwoFoldersAsync(cut);
+
+            // Assert
+            Assert.Equal(["front.jpg", "sprint.jpg"], reports[^1].Select(item => item.Name).Order());
+        }
+
+        [Fact]
+        public async Task Should_clear_the_selection_on_a_move_where_the_explorer_is_not_a_picker()
+        {
+            // Arrange - the selection mode on in an explorer that manages files
+            using var ctx = new FormaExplorerTests();
+            List<IReadOnlyList<ICatalogItem>> reports = [];
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="CreateProvider()"
+                                                Folders="TwoFolders"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+            cut.Find(".forma-explorer-select-mode-button").Click();
+            await PressCardAsync(cut, "Covers");
+            await CheckCardAsync(cut, "front.jpg");
+
+            // Act
+            await GoUpAsync(cut);
+
+            // Assert
+            Assert.Empty(reports[^1]);
+        }
+
+        [Fact]
+        public async Task Should_review_each_choice_with_the_folder_it_was_chosen_in_and_remove_one()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            List<IReadOnlyList<ICatalogItem>> reports = [];
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="CreateProvider()"
+                                                Folders="TwoFolders"
+                                                Options="@(new ExplorerOptions { SelectOnOpen = true })"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+            await ChooseInTwoFoldersAsync(cut);
+            var review = cut.Find(".forma-explorer-review-button");
+            var label = review.TextContent.Trim();
+
+            // Act - the review opened, then front.jpg removed from it
+            await review.ClickAsync(new MouseEventArgs());
+            var reviewed = GetReviewedChoices(cut);
+            await cut.Find(".forma-explorer-review-item .forma-explorer-review-remove").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("2 Selected", label),
+                () => Assert.Equal("true", cut.Find(".forma-explorer-review-button").GetAttribute("aria-expanded")),
+                () => Assert.Equal(["front.jpg in Covers", "sprint.jpg in Races"], reviewed.Order()),
+                () => Assert.Equal(["sprint.jpg"], reports[^1].Select(item => item.Name)),
+                () => Assert.Equal(["sprint.jpg in Races"], GetReviewedChoices(cut)));
+        }
+
+        [Fact]
+        public async Task Should_name_the_top_level_as_a_folder_s_location_and_leave_a_file_the_host_chose_without_one()
+        {
+            // Arrange - the host chose a file, and the reader the Covers folder at the top level
+            using var ctx = new FormaExplorerTests();
+            var chosen = CatalogItem.For(new ImageResourceInfo("https://example.com/poster.jpg"));
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="CreateProvider()"
+                                                Folders="TwoFolders"
+                                                Selected="@([chosen])"
+                                                Options="@(new ExplorerOptions { SelectOnOpen = true })" />);
+            await CheckCardAsync(cut, "Covers");
+
+            // Act
+            await cut.Find(".forma-explorer-review-button").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal(["Covers in All Media", "poster.jpg"], GetReviewedChoices(cut).Order());
+        }
+
+        [Fact]
+        public async Task Should_choose_the_folder_the_reader_is_in_where_the_accepted_kinds_take_folders()
+        {
+            // Arrange - inside Covers, in a picker that takes folders
+            using var ctx = new FormaExplorerTests();
+            List<IReadOnlyList<ICatalogItem>> reports = [];
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="CreateProvider()"
+                                                Folders="TwoFolders"
+                                                Constraints="@(new CatalogConstraints { AcceptedResourceKinds = "contentType:image;folder" })"
+                                                Options="@(new ExplorerOptions { SelectOnOpen = true })"
+                                                SelectedChanged="@(items => { reports.Add(items); return Task.CompletedTask; })" />);
+            var offeredAtTheTop = cut.FindAll(".forma-explorer-choose-folder-button").Count;
+            await PressCardAsync(cut, "Covers");
+
+            // Act
+            await cut.Find(".forma-explorer-choose-folder-button").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, offeredAtTheTop),
+                () => Assert.Equal("covers", Assert.Single(reports[^1]).Key),
+                () => Assert.Equal("true", cut.Find(".forma-explorer-choose-folder-button").GetAttribute("aria-pressed")));
+        }
+
+        [Fact]
+        public async Task Should_not_offer_to_choose_a_folder_the_accepted_kinds_leave_out()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="CreateProvider()"
+                                                Folders="TwoFolders"
+                                                Constraints="@(new CatalogConstraints { AcceptedResourceKinds = "contentType:image" })"
+                                                Options="@(new ExplorerOptions { SelectOnOpen = true })" />);
+
+            // Act
+            await PressCardAsync(cut, "Covers");
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-explorer-choose-folder-button"));
+        }
+    }
+
     // A selection holds files and folders together, and a deletion or a drop takes it whole: one request, validated whole before it is
     // raised, whose refusal or failure the host reports leaves the selection as it was.
     public sealed class MixedOperations

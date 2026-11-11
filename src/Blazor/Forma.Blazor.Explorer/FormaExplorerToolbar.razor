@@ -7,7 +7,8 @@
 @using Forma.Framework.Catalog.Queries
 
 <div class="forma-explorer-toolbar">
-    @if (View.Selection.Count > 0)
+    @* A picker keeps its toolbar and its selection side by side, so its choices stay in reach as the reader browses. *@
+    @if (View.Selection.Count > 0 && !View.ReviewsSelection())
     {
         <FormaExplorerSelectionBar />
     }
@@ -83,5 +84,9 @@
         </FormaDropDownMenu>
     </div>
     </FormaCommandBar>
+    }
+    @if (View.ReviewsSelection())
+    {
+        <FormaExplorerSelectionBar />
     }
 </div>

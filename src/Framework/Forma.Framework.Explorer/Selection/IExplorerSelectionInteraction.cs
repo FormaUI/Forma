@@ -15,4 +15,7 @@ public interface IExplorerSelectionInteraction
 
     /// <summary>Clears the current selection.</summary>
     Task ClearSelectionAsync();
+
+    /// <summary>Takes the item out of the selection.</summary>
+    Task DeselectAsync(ICatalogItem item);
 }

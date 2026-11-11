@@ -5,7 +5,11 @@
 
 /* The toolbar is a command bar: everything rides its track, the view controls at the far end while there is room,
    and the whole row scrolls behind arrows at the bar's ends once it outgrows the width. */
+/* A picker's selection stands in a row beneath the toolbar. */
 .forma-explorer-toolbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2);
     min-inline-size: 0;
     min-block-size: var(--target-size-md);
 }

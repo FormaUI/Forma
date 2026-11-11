@@ -231,7 +231,7 @@ public sealed partial class FormaExplorerPage
         _libraryCount = libraryResources.Count;
         _libraryStore = Store(libraryResources);
 
-        foreach (var key in new[] { "full", "phone", "readonly", "fixedfolders", "nosidebar", "nomenu" })
+        foreach (var key in new[] { "full", "phone", "picker", "readonly", "fixedfolders", "nosidebar", "nomenu" })
         {
             _providers[key] = _mediaStore;
         }
