@@ -43,6 +43,7 @@ $android = $platforms | Where-Object { $_.Name -eq 'android' }
 # what its output must and must not mention. Adding a case is adding a row.
 $cases = @(
     @{ Name = 'the gate runs every step'; Script = 'build.ps1'; Arguments = @(); Expect = @('-- build', '-- test', '-- format', '-- tasks', '-- tooling', '-- locales', '-- scripts', '-- browser') }
+    @{ Name = 'the gate runs the tests on the build it has just made'; Script = 'build.ps1'; Arguments = @('DotNet'); Expect = @('dotnet test, on the build already on disk') }
     @{ Name = 'the gate narrowed to .NET leaves the script tests and the browser out'; Script = 'build.ps1'; Arguments = @('DotNet'); Expect = @('-- build', '-- tasks', '-- tooling', '-- locales'); Reject = @('-- scripts', '-- browser') }
     @{ Name = 'the gate narrowed to scripts leaves the solution out'; Script = 'build.ps1'; Arguments = @('Scripts'); Expect = @('-- scripts'); Reject = @('-- build', '-- format', '-- browser') }
     @{ Name = 'the gate narrowed to the browser runs the browser check alone'; Script = 'build.ps1'; Arguments = @('Browser'); Expect = @('-- browser', 'drive them in a browser'); Reject = @('-- build', '-- scripts') }

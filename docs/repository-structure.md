@@ -571,7 +571,7 @@ final newline and charset, without compiling:
 
 ```powershell
 dotnet build Forma.slnx
-dotnet test Forma.slnx
+dotnet test Forma.slnx --no-build
 dotnet format whitespace . --folder --verify-no-changes --exclude <what git ignores>
 dotnet tool restore
 dotnet locali --path Forma.slnx --severity warning

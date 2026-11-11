@@ -2368,7 +2368,7 @@ function Invoke-Gate {
         $results.Add($build)
 
         if ($build.Passed) {
-            $results.Add((Test-Solution -Context $Context -WhatIf:$WhatIfPreference))
+            $results.Add((Test-Solution -Context $Context -NoBuild -WhatIf:$WhatIfPreference))
             $results.Add((Test-SolutionFormat -Context $Context -WhatIf:$WhatIfPreference))
         }
         else {
