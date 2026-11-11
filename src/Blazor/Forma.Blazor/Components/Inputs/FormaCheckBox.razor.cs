@@ -42,8 +42,17 @@ public sealed partial class FormaCheckBox : FormaInputBase<bool>
     private void HandleChange(ChangeEventArgs args)
         => CurrentValue = args.Value is true;
 
-    private Task HandleClickAsync(MouseEventArgs args)
-        => OnClick.InvokeAsync(args);
+    // The browser undoes a prevented click's toggle once the click ends, so the caller is told after it: a state drawn inside the click,
+    // as WebAssembly draws it, would be undone with the toggle while the component still holds it.
+    private async Task HandleClickAsync(MouseEventArgs args)
+    {
+        if (PreventDefault)
+        {
+            await Task.Yield();
+        }
+
+        await OnClick.InvokeAsync(args);
+    }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

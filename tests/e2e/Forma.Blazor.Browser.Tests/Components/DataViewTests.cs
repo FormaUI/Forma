@@ -647,6 +647,7 @@ public sealed class DataViewTests
             await WaitForFocusedItemAsync(page, "Row 4");
             await page.Keyboard.PressAsync("Space");
             await Assertions.Expect(selected).ToHaveTextAsync("1");
+            await Assertions.Expect(items.Nth(3).Locator("input[type=checkbox]")).ToBeCheckedAsync();
             await page.Keyboard.PressAsync("Enter");
             await Assertions.Expect(opened).ToHaveTextAsync("Row 4");
 
@@ -657,8 +658,9 @@ public sealed class DataViewTests
             await Assertions.Expect(items.Nth(3).Locator("input[type=checkbox]")).ToBeFocusedAsync();
             await items.Nth(4).GetByText("Row 5", new() { Exact = true }).ClickAsync();
 
-            // Assert — the press checked the fifth and opened nothing
+            // Assert — the press checked the fifth, its box drawn checked, and opened nothing
             await Assertions.Expect(selected).ToHaveTextAsync("2");
+            await Assertions.Expect(items.Nth(4).Locator("input[type=checkbox]")).ToBeCheckedAsync();
             await Assertions.Expect(opened).ToHaveTextAsync("Row 4");
         }
 
