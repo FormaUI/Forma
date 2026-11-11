@@ -9,6 +9,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- `CatalogProviderItems` is gone: [`FormaDataView`](docs/data-view-design.md) pages and appends a provider's items, and
+  `ReadAllAsync` reads a whole query where a surface needs every item.
 - `CatalogHistory` is `ExplorerHistory`, in `Forma.Framework.Explorer.Navigation`, the history of the folders an explorer
   has visited.
 - [`FormaExplorer`](docs/explorer-design.md#the-parts) takes its selection from the data view it browses through,
