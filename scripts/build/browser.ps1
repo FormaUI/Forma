@@ -17,8 +17,11 @@ Also checks every component in the Android check host's web view, on the attache
 Opens a visible browser window rather than a headless one.
 
 .PARAMETER Filter
-Narrows the examples' smoke checks and the browser checks, as dotnet test takes a filter. A filter that selects no
-check is refused before anything is published.
+Narrows the examples' smoke checks and the browser checks, as dotnet test takes a filter, Runtime=server among its
+terms narrowing them to one runtime. A filter that selects no check is refused before anything is published, and a
+filtered run builds only what the checks it selects read: the example hosts for the smoke checks and the Blazor
+Hybrid examples' checks, the WebView check host for checks in the web view, and the check hosts again into the
+folders the last run left, emptied first only for a download check.
 
 .PARAMETER Times
 Repeats the checks on the hosts published once, continuing past a failure, and lists each check that failed with how
@@ -36,6 +39,8 @@ They run from the output already on disk, so they are built first, as compile.ps
 
 .EXAMPLE
 ./scripts/build/browser.ps1 -Android
+.EXAMPLE
+./scripts/build/browser.ps1 -Filter 'FullyQualifiedName~ComposerTests&Runtime=server'
 .EXAMPLE
 ./scripts/build/browser.ps1 -Filter 'FullyQualifiedName~ComposerTests' -Times 5
 .EXAMPLE

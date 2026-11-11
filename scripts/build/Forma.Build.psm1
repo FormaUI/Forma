@@ -1628,6 +1628,12 @@ the device or emulator adb reaches, which must be attached, after the rest of th
 their own. The browser is headless unless -Visible asks for a
 browser window to watch, which also brings the WebView check host's native windows into sight.
 
+A filtered run builds what the checks it selects read and runs only the projects they stand in: the example hosts,
+packed and published as above, where it selects a smoke check or a check of the Blazor Hybrid examples, the
+WebView check host where it selects a check in the web view, and the check hosts into the folders the last run
+left, so only what changed is published again, unless it selects a download check, which counts a client's
+files. An unfiltered run, which the gate makes, builds and runs all of it, into emptied folders.
+
 Each run writes its results to a folder of its own under the browser output's results folder, which the step
 empties first. The step finishes every run it was asked for and then lists each check that failed, with how many
 of the runs that ran it failed it and its first error, so a check that fails sometimes shows as a rate. It fails if
@@ -1643,8 +1649,9 @@ Also checks every component in the Android check host's web view, on the attache
 Opens a visible browser window rather than a headless one.
 
 .PARAMETER Filter
-Narrows the examples' smoke checks and the browser checks, as dotnet test takes a filter. A filter that selects no
-check is refused before anything is published.
+Narrows the examples' smoke checks and the browser checks, as dotnet test takes a filter, Runtime=server among its
+terms narrowing them to one runtime. A filter that selects no check is refused before anything is published, and a
+filtered run builds what the checks it selects read.
 
 .PARAMETER Times
 Repeats the checks on the hosts published once, continuing past a failure.
@@ -1737,11 +1744,6 @@ function Test-BrowserCheck {
     }
 
     Invoke-BuildStep -Name 'browser' -Target $checks -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
-        # Asked first, since the step publishes for minutes before it reaches the MAUI example host.
-        if ($isWebViewPublished -and -not (dotnet workload list | Select-String -Pattern '^\s*maui-windows\s' -Quiet)) {
-            throw 'The MAUI example host needs the maui-windows workload: dotnet workload install maui-windows'
-        }
-
         if ($isAndroid) {
             if (-not (dotnet workload list | Select-String -Pattern '^\s*maui-android\s' -Quiet)) {
                 throw 'The Android check host needs the maui-android workload: dotnet workload install maui-android'
@@ -1753,9 +1755,15 @@ function Test-BrowserCheck {
         }
 
         # The checks a filter selects are listed before anything is published, so a filter that selects none is refused
-        # at once rather than after minutes of publishing.
+        # at once rather than after minutes of publishing, and a filtered run builds what the checks it selects read.
+        $runsSmokeChecks = $true
+        $runsChecks = $true
+        $needsExamples = $true
+        $needsWebView = $isWebViewPublished
+        $clearsOutputs = $true
+
         if ($Filter) {
-            $selectedCount = 0
+            $selected = @{}
 
             foreach ($project in @($exampleChecks, $checks)) {
                 $listedChecks = @(dotnet run --project $project -c Release -- -list tests -preEnumerateTheories -filterVSTest $Filter 2>&1 | ForEach-Object { "$_" })
@@ -1765,22 +1773,39 @@ function Test-BrowserCheck {
                     return
                 }
 
-                $selectedCount += @($listedChecks | Where-Object { $_.Trim() -and $_ -notmatch '^xUnit\.net ' }).Count
+                $selected[$project] = @($listedChecks | Where-Object { $_.Trim() -and $_ -notmatch '^xUnit\.net ' })
             }
 
-            if ($selectedCount -eq 0) {
+            $selectedSmokeChecks = $selected[$exampleChecks]
+            $selectedChecks = $selected[$checks]
+
+            if ($selectedSmokeChecks.Count + $selectedChecks.Count -eq 0) {
                 throw "The filter $Filter selects no check among the examples' smoke checks and the browser checks."
             }
+
+            # The example hosts serve the smoke checks and the Blazor Hybrid examples' checks, the WebView check host the
+            # checks in the web view, and the download checks count a client's files, which only an emptied folder holds
+            # alone; every other publish goes into the folder the last one left, which publishes only what changed.
+            $runsSmokeChecks = $selectedSmokeChecks.Count -gt 0
+            $runsChecks = $selectedChecks.Count -gt 0
+            $needsExamples = $runsSmokeChecks -or [bool]($selectedChecks -match '\.WebViewExampleTests\b')
+            $needsWebView = $isWebViewPublished -and [bool]($selectedChecks -match 'runtime: "webview"')
+            $clearsOutputs = [bool]($selectedChecks -match '\.DownloadTests\b')
         }
 
-        $publishes = @(@($hostProject, $hostOutput), @($fullProject, $fullOutput), @($componentsProject, $componentsOutput))
+        # Asked before anything is published, since the step publishes for minutes before it reaches the MAUI example host.
+        if ($needsExamples -and $isWebViewPublished -and -not (dotnet workload list | Select-String -Pattern '^\s*maui-windows\s' -Quiet)) {
+            throw 'The MAUI example host needs the maui-windows workload: dotnet workload install maui-windows'
+        }
 
-        if ($isWebViewPublished) {
+        $publishes = @(if ($runsChecks) { , @($hostProject, $hostOutput); , @($fullProject, $fullOutput); , @($componentsProject, $componentsOutput) })
+
+        if ($runsChecks -and $needsWebView) {
             $publishes += , @($webViewProject, $webViewOutput)
         }
 
         foreach ($publish in $publishes) {
-            if (Test-Path -LiteralPath $publish[1]) {
+            if ($clearsOutputs -and (Test-Path -LiteralPath $publish[1])) {
                 Remove-Item -LiteralPath $publish[1] -Recurse -Force
             }
 
@@ -1803,39 +1828,41 @@ function Test-BrowserCheck {
             $androidBuild = (Get-ChildItem -LiteralPath (Join-Path (Split-Path -Parent $androidProject) 'bin' 'Release') -Recurse -Filter '*-Signed.apk' | Sort-Object LastWriteTime | Select-Object -Last 1).FullName
         }
 
-        foreach ($folder in @($packagesOutput, $examplesOutput)) {
-            if (Test-Path -LiteralPath $folder) {
-                Remove-Item -LiteralPath $folder -Recurse -Force
+        if ($needsExamples) {
+            foreach ($folder in @($packagesOutput, $examplesOutput)) {
+                if (Test-Path -LiteralPath $folder) {
+                    Remove-Item -LiteralPath $folder -Recurse -Force
+                }
             }
-        }
 
-        # The packages are packed at the version a release would carry, so the examples are built from the packages a
-        # release publishes.
-        dotnet pack $solution -c Release -o $packagesOutput --nologo -v:q
-
-        if ($LASTEXITCODE -ne 0) {
-            return
-        }
-
-        $differences = @(& $testPackageFile -Directory $packagesOutput -ListPath $packageFiles -FoundPath $foundPackageFiles)
-
-        if ($differences.Count -gt 0) {
-            throw "The packages' files differ from eng/package-files.txt, and what the pack made is in $($foundPackageFiles):`n   $($differences -join "`n   ")"
-        }
-
-        & $clearExamplePackage -Examples $examples -Version $version
-
-        $exampleNames = @('Coordinated', 'Independent')
-
-        if ($isWebViewPublished) {
-            $exampleNames += @('Wpf', 'WinForms', 'Maui')
-        }
-
-        foreach ($example in $exampleNames) {
-            dotnet publish (Join-Path $examples "Forma.Examples.$example") -c Release -o (Join-Path $examplesOutput $example) "-p:FormaVersion=$version" --nologo -v:q
+            # The packages are packed at the version a release would carry, so the examples are built from the packages a
+            # release publishes.
+            dotnet pack $solution -c Release -o $packagesOutput --nologo -v:q
 
             if ($LASTEXITCODE -ne 0) {
                 return
+            }
+
+            $differences = @(& $testPackageFile -Directory $packagesOutput -ListPath $packageFiles -FoundPath $foundPackageFiles)
+
+            if ($differences.Count -gt 0) {
+                throw "The packages' files differ from eng/package-files.txt, and what the pack made is in $($foundPackageFiles):`n   $($differences -join "`n   ")"
+            }
+
+            & $clearExamplePackage -Examples $examples -Version $version
+
+            $exampleNames = @('Coordinated', 'Independent')
+
+            if ($isWebViewPublished) {
+                $exampleNames += @('Wpf', 'WinForms', 'Maui')
+            }
+
+            foreach ($example in $exampleNames) {
+                dotnet publish (Join-Path $examples "Forma.Examples.$example") -c Release -o (Join-Path $examplesOutput $example) "-p:FormaVersion=$version" --nologo -v:q
+
+                if ($LASTEXITCODE -ne 0) {
+                    return
+                }
             }
         }
 
@@ -1884,11 +1911,15 @@ function Test-BrowserCheck {
 
                 # The examples' smoke checks run first, since a host that doesn't start fails every check after it; every
                 # run reports, and any one failing fails the step.
-                dotnet run --project $exampleChecks -c Release @build -- @smokeArguments -result-ctrf (Join-Path $runResults 'examples.json')
-                $isFailed = $LASTEXITCODE -ne 0
+                if ($runsSmokeChecks) {
+                    dotnet run --project $exampleChecks -c Release @build -- @smokeArguments -result-ctrf (Join-Path $runResults 'examples.json')
+                    $isFailed = $LASTEXITCODE -ne 0
+                }
 
-                dotnet run --project $checks -c Release @build -- @checkArguments -result-ctrf (Join-Path $runResults 'checks.json')
-                $isFailed = $isFailed -or $LASTEXITCODE -ne 0
+                if ($runsChecks) {
+                    dotnet run --project $checks -c Release @build -- @checkArguments -result-ctrf (Join-Path $runResults 'checks.json')
+                    $isFailed = $isFailed -or $LASTEXITCODE -ne 0
+                }
 
                 # The Android checks run after the rest, in a run of their own, since an emulator sharing the machine
                 # with the other checks falls behind the waits of its own.
@@ -1915,7 +1946,7 @@ function Test-BrowserCheck {
             $stopLoad.Dispose()
         }
 
-        $expectedResults = @('examples.json', 'checks.json') + $(if ($isAndroid) { @('android.json') } else { @() })
+        $expectedResults = @(if ($runsSmokeChecks) { 'examples.json' }) + @(if ($runsChecks) { 'checks.json' }) + @(if ($isAndroid) { 'android.json' })
         $outcome = & $getBrowserCheckOutcome -Path $resultsOutput -RunCount $runs -ExpectedResult $expectedResults -Filter $Filter
 
         Write-Host ''

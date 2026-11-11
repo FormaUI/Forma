@@ -581,6 +581,12 @@ dotnet run --project src/Blazor/Forma.Blazor.Showcase
 [The verification design](verification-design.md#gates) sets out which gates a change runs before its commit, and
 what it leaves to the full runs in CI.
 
+**A filtered browser run builds what the checks it selects read.** `browser.ps1 -Filter` packs the solution and
+publishes the example hosts only where it selects a smoke check or a check of the Blazor Hybrid examples, publishes
+the WebView check host only for a check in the web view, and publishes the check hosts into the folders the last
+run left, emptying them first only for a download check, which counts a client's files. `Runtime=server` in the
+filter narrows the checks to one runtime. An unfiltered run, which the gate makes, builds all of it afresh.
+
 **The fast gate** builds the unit and bUnit suites and what they reference once, through a solution filter it writes
 under `artifacts/fast/`, and runs them from that build. It also runs the script tests and the task programs' tests,
 for feedback within minutes.
