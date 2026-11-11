@@ -209,6 +209,23 @@ jobs:
           TMPDIR: ${{ runner.temp }}
         run: dotnet workload install ${{ matrix.workload }}
 
+      # An Apple workload builds with the one Xcode its SDK pack is named for, which the Mac carries beside the default it
+      # selects.
+      - name: Select the Xcode the platform's workload names
+        if: matrix.platform != 'Android'
+        shell: bash
+        run: |
+          pack=$(ls -d "$DOTNET_ROOT"/packs/Microsoft.${{ matrix.platform }}.Sdk.net*_* | sort -V | tail -1)
+          version=${pack##*_}
+          xcode=$(ls -d /Applications/Xcode_"$version".app /Applications/Xcode_"$version".*.app 2>/dev/null | head -1)
+          if [ -z "$xcode" ]; then
+            echo "The workload in $pack builds with Xcode $version, which this Mac doesn't carry:"
+            ls -d /Applications/Xcode*.app
+            exit 1
+          fi
+          sudo xcode-select -s "$xcode"
+          xcodebuild -version
+
       # The mobile step drives the Android build on the device adb reaches, booted before the step starts.
       - name: Start an Android emulator
         if: matrix.platform == 'Android'
