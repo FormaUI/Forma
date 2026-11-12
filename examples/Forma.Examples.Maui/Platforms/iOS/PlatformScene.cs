@@ -4,6 +4,6 @@ using Foundation;
 
 /// <summary>The scene each of the application's native windows is shown in on iPadOS.</summary>
 [Register("SceneDelegate")]
-public class SceneDelegate : MauiUISceneDelegate
+public class PlatformScene : MauiUISceneDelegate
 {
 }
