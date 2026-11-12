@@ -44,7 +44,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     private RichTextEditor _canvas = default!;
     private DomTextEdits _edits = default!;
     private IDisposable? _editsRegistration;
-    private InputScope? _inputScope;
+    private InputRegistration _inputRegistration = default!;
 
     // The document the canvas shows: the one it last sent, until the composer's document departs from what the canvas committed.
     private string _canvasText = string.Empty;
@@ -87,6 +87,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     protected override void OnInitialized()
     {
         _canvas = new RichTextEditor(Context.JS);
+        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
         _selfReference = DotNetObjectReference.Create(this);
 
         // The canvas attaches empty, and the document is written into it as a text of .NET's own.
@@ -138,7 +139,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             // The composer's routes are registered on the editable itself, so they are answered before its native shortcuts.
             if (Composer is { } context)
             {
-                _inputScope = await InputRouter.RegisterAsync(_editorElement, new InputProfile { InputRoutes = context.KeyBindings.ToInputRoutes() }, _selfReference);
+                await _inputRegistration.SyncAsync(_editorElement, new InputProfile { InputRoutes = context.KeyBindings.ToInputRoutes() });
             }
 
             StateHasChanged();
@@ -151,10 +152,8 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         }
     }
 
-    /// <summary>Runs the composer command named by the action the router matched inside the canvas.</summary>
-    /// <remarks>The composer settles the canvas's edits, which it joined, before the command reads the document.</remarks>
-    [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
+    // The composer settles the canvas's edits, which it joined, before the command the router matched reads the document.
+    private Task HandleActionAsync(string action, InputInfo input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -490,12 +489,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             _editorPlugin.EmbedDialogRequested -= HandleEmbedDialogRequested;
         }
 
-        if (_inputScope is { } inputScope)
-        {
-            _inputScope = null;
-            await inputScope.DisposeAsync();
-        }
-
+        await _inputRegistration.DisposeAsync();
         _editsRegistration?.Dispose();
         _selfReference?.Dispose();
 

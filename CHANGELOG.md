@@ -14,6 +14,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
   of its first render still waits on the browser, as a page left the moment it appears takes what it shows, goes without
   an error. It went on to reach the browser through a context already disposed, whose `ObjectDisposedException` ended an
   interactive server circuit and showed WebAssembly's error bar.
+- A [`FormaToolbar`](docs/component-catalog.md#formatoolbar), a `FormaComposer` or a composer's plain or rich text
+  editor taken away while its shortcuts still register with the input router releases them once they do. They stayed
+  registered, so a shortcut pressed on a toolbar's target afterward was still taken from the page, and the call into the
+  toolbar gone logged an error to the console.
+- `HandleInputActionAsync` is gone from `FormaToolbar`, `FormaComposer`, `FormaPlainTextEditor` and
+  `FormaRichTextEditor`; only the input router called it. A host runs a toolbar's or a composer's command through its
+  `HandleCommandAsync`.
 
 ## `1.0.0-preview.5`
 

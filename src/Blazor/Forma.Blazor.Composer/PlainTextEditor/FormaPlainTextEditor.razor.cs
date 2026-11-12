@@ -11,7 +11,6 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>The canvas of the plain text editor.</summary>
 public sealed partial class FormaPlainTextEditor : FormaComponentBase
@@ -41,8 +40,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private ElementReference _textareaElement;
     private TextEntry _textEntry = default!;
     private DomTextEdits _edits = default!;
-    private DotNetObjectReference<FormaPlainTextEditor>? _selfReference;
-    private InputScope? _inputScope;
+    private InputRegistration _inputRegistration = default!;
     private CancellationTokenSource? _commitCancellation;
     private CancellationTokenSource? _selectionCancellation;
     private IDisposable? _editsRegistration;
@@ -75,7 +73,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     {
         _edits = new DomTextEdits(Context.DomEngine, Content, HandleTextChangedAsync);
         _textEntry = new TextEntry(Context.JS);
-        _selfReference = DotNetObjectReference.Create(this);
+        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
 
         _editsRegistration = Interaction?.JoinEdits(SettleAsync);
     }
@@ -100,14 +98,12 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
         // The composer's routes are registered on the textarea, ahead of its native shortcuts.
         if (firstRender && Composer is { } context)
         {
-            _inputScope = await InputRouter.RegisterAsync(_textareaElement, new InputProfile { InputRoutes = context.KeyBindings.ToInputRoutes() }, _selfReference);
+            await _inputRegistration.SyncAsync(_textareaElement, new InputProfile { InputRoutes = context.KeyBindings.ToInputRoutes() });
         }
     }
 
-    /// <summary>Runs the composer command named by the action the router matched inside the textarea.</summary>
-    /// <remarks>The composer settles the textarea's edits, which it joined, before the command reads the document.</remarks>
-    [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
+    // The composer settles the textarea's edits, which it joined, before the command the router matched reads the document.
+    private Task HandleActionAsync(string action, InputInfo input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -297,13 +293,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
 
         await _edits.DisposeAsync();
 
-        if (_inputScope is { } inputScope)
-        {
-            _inputScope = null;
-            await inputScope.DisposeAsync();
-        }
-
-        _selfReference?.Dispose();
+        await _inputRegistration.DisposeAsync();
         await _textEntry.DisposeAsync();
         await base.DisposeAsyncCore();
     }

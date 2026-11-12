@@ -887,6 +887,27 @@
         }
 
         [Fact]
+        public async Task Should_release_its_shortcuts_when_taken_away_while_they_register()
+        {
+            // Arrange — taken away while its shortcuts' registration still waits on the browser
+            using var ctx = new FormaToolbarTests();
+            var register = new HeldObjectReferenceHandler("register");
+            ctx.Router.AddInvocationHandler(register);
+            var groups = Group(new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold", ShortcutAriaKeys = "Control+B" });
+            var target = new ElementReference("toolbar-target");
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Target="target" />);
+            var toolbar = cut.FindComponent<FormaToolbar>();
+            await toolbar.InvokeAsync(() => toolbar.Instance.DisposeAsync().AsTask());
+            var scope = new FakeJSObjectReference((_, _) => null);
+
+            // Act
+            await cut.ReleaseAsync(() => register.Answer(Assert.Single(register.HeldCalls), scope));
+
+            // Assert
+            Assert.True(scope.IsDisposed);
+        }
+
+        [Fact]
         public void Should_attach_a_parsed_shortcut_when_a_target_is_given()
         {
             // Arrange

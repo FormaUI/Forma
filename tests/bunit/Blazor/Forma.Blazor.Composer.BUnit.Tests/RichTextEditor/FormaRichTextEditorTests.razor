@@ -247,6 +247,28 @@
         }
 
         [Fact]
+        public async Task Should_release_its_shortcuts_when_taken_away_while_they_first_register()
+        {
+            // Arrange — the editor taken away while its canvas's registration still waits on the browser
+            using var ctx = new FormaRichTextEditorTests();
+            var register = new HeldObjectReferenceHandler("register");
+            ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js").AddInvocationHandler(register);
+            ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+            var call = register.GetHeldCall(GetCanvas(cut));
+            var editor = cut.FindComponent<FormaRichTextEditor>();
+            await editor.InvokeAsync(() => editor.Instance.DisposeAsync().AsTask());
+            var scope = new FakeJSObjectReference((_, _) => null);
+
+            // Act
+            await cut.ReleaseAsync(() => register.Answer(call, scope));
+
+            // Assert
+            Assert.True(scope.IsDisposed);
+        }
+
+        [Fact]
         public void Should_announce_a_formatting_a_command_turned_on()
         {
             // Arrange

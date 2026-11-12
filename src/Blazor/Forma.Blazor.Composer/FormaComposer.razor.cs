@@ -23,7 +23,6 @@ using Forma.Framework.Resources;
 using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>The composer, an input that edits a document through the editor plugins it hosts.</summary>
 /// <param name="syntaxHighlighter">The host's syntax highlighter, where null classifies no code.</param>
@@ -41,8 +40,7 @@ public sealed partial class FormaComposer(
 
     private ComposerPluginCatalog _pluginCatalog = default!;
     private ComposerKeyBindingCatalog _keyBindingCatalog = ComposerKeyBindingCatalog.Empty;
-    private DotNetObjectReference<FormaComposer>? _selfReference;
-    private InputScope? _inputScope;
+    private InputRegistration _inputRegistration = default!;
     private static readonly FocusInteractionOptions TabOrderOptions = new() { RegionSelectors = [".forma-composer-canvas"] };
     private JSComposerAssetLoader _assetLoader = default!;
     private IComposerHistory _history = default!;
@@ -169,7 +167,7 @@ public sealed partial class FormaComposer(
     {
         JoinForm(SettleEditorAsync);
         _assetLoader = new JSComposerAssetLoader(Context.JS);
-        _selfReference = DotNetObjectReference.Create(this);
+        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
 
         _history = History ?? new ComposerHistory(Options.HistoryCapacity);
 
@@ -274,11 +272,7 @@ public sealed partial class FormaComposer(
             return;
         }
 
-        if (_inputScope is { } inputScope)
-        {
-            await inputScope.UpdateAsync(RootProfile);
-        }
-
+        await _inputRegistration.SyncAsync(RootElement, RootProfile);
         await LoadSurfaceAssetsAsync();
     }
 
@@ -332,7 +326,7 @@ public sealed partial class FormaComposer(
         _isJsStarted = true;
 
         // The shortcuts route through the composer's scope; the active editor also registers them on its editable element, ahead of the native control.
-        _inputScope = await InputRouter.RegisterAsync(RootElement, RootProfile, _selfReference);
+        await _inputRegistration.SyncAsync(RootElement, RootProfile);
 
         // Taken away while its shortcuts registered, it has no context left to arrange its tab order through.
         if (IsDisposed)
@@ -346,9 +340,8 @@ public sealed partial class FormaComposer(
         await LoadSurfaceAssetsAsync();
     }
 
-    /// <summary>Runs the composer command named by the action the router matched.</summary>
-    [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
+    // Runs the composer command named by the action the router matched.
+    private Task HandleActionAsync(string action, InputInfo input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -757,14 +750,8 @@ public sealed partial class FormaComposer(
     {
         _regionRegistry.Changed -= HandleRegionsChanged;
 
-        if (_inputScope is { } inputScope)
-        {
-            _inputScope = null;
-            await inputScope.DisposeAsync();
-        }
-
+        await _inputRegistration.DisposeAsync();
         CloseDialog();
-        _selfReference?.Dispose();
         await _assetLoader.DisposeAsync();
         await _ownPlugins.DisposeAsync();
         await base.DisposeAsyncCore();

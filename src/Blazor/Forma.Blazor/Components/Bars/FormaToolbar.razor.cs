@@ -12,7 +12,6 @@ using Forma.Framework.Input.Keyboard;
 using Forma.Framework.Toolbar;
 
 using Microsoft.AspNetCore.Components;
-using Microsoft.JSInterop;
 
 /// <summary>A toolbar of items and groups of items.</summary>
 public sealed partial class FormaToolbar : FormaElementBase
@@ -23,10 +22,9 @@ public sealed partial class FormaToolbar : FormaElementBase
     /// <summary>The owner every toolbar action is qualified under, which names an action <c>toolbar.{command}</c>.</summary>
     private const string ActionOwner = "toolbar";
 
-    private DotNetObjectReference<FormaToolbar>? _selfReference;
-    private InputScope? _inputScope;
-    private IReadOnlyList<(string Command, string Shortcut)> _registeredShortcuts = [];
-    private string? _registeredTargetId;
+    private InputRegistration _inputRegistration = default!;
+    private IReadOnlyList<(string Command, string Shortcut)> _shortcuts = [];
+    private InputProfile? _shortcutProfile;
     private static readonly FocusInteractionOptions RovingOptions = new() { RovingOrientation = FocusOrientation.Horizontal };
 
     private DomInteraction<FocusInteractionOptions>? _rovingFocus;
@@ -84,6 +82,10 @@ public sealed partial class FormaToolbar : FormaElementBase
         => Items.SelectMany(GetLeaves).OfType<ToolbarAction>();
 
     /// <inheritdoc />
+    protected override void OnInitialized()
+        => _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
@@ -108,48 +110,21 @@ public sealed partial class FormaToolbar : FormaElementBase
     {
         await RoveAsync(firstRender);
 
-        // Target lies outside the toolbar, so hiding the toolbar releases its shortcuts here.
-        // An unrendered @ref still arrives as a non-null ElementReference carrying no id, and registering it fails silently.
-        if (Hidden || Target is not { Id.Length: > 0 } target)
-        {
-            await ReleaseAsync();
-
-            return;
-        }
-
+        // The profile is made again only when the shortcuts change, so the registration updates only then.
         var shortcuts = Shortcuts;
 
-        if (target.Id == _registeredTargetId && shortcuts.SequenceEqual(_registeredShortcuts))
+        if (_shortcutProfile is null || !shortcuts.SequenceEqual(_shortcuts))
         {
-            return;
+            _shortcuts = shortcuts;
+            _shortcutProfile = new InputProfile { InputRoutes = ToRoutes(shortcuts) };
         }
 
-        var profile = new InputProfile { InputRoutes = ToRoutes(shortcuts) };
-
-        if (_inputScope is { } inputScope && target.Id == _registeredTargetId)
-        {
-            if (await inputScope.UpdateAsync(profile))
-            {
-                _registeredShortcuts = shortcuts;
-            }
-
-            return;
-        }
-
-        await ReleaseAsync();
-        _selfReference ??= DotNetObjectReference.Create(this);
-
-        if (await InputRouter.RegisterAsync(target, profile, _selfReference) is { } registeredScope)
-        {
-            _inputScope = registeredScope;
-            _registeredTargetId = target.Id;
-            _registeredShortcuts = shortcuts;
-        }
+        // Target lies outside the toolbar, so hiding the toolbar releases its shortcuts here.
+        await _inputRegistration.SyncAsync(Target ?? default, _shortcutProfile, shouldRegister: !Hidden);
     }
 
-    /// <summary>Runs the command of the action whose shortcut the router matched.</summary>
-    [JSInvokable]
-    public Task HandleInputActionAsync(string action, InputInfo input)
+    // Runs the command of the action whose shortcut the router matched.
+    private Task HandleActionAsync(string action, InputInfo input)
     {
         ArgumentNullException.ThrowIfNull(input);
 
@@ -183,8 +158,7 @@ public sealed partial class FormaToolbar : FormaElementBase
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()
     {
-        await ReleaseAsync();
-        _selfReference?.Dispose();
+        await _inputRegistration.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 
@@ -199,19 +173,6 @@ public sealed partial class FormaToolbar : FormaElementBase
         if (_rovingFocus is { } rovingFocus)
         {
             await rovingFocus.SyncAsync(RootElement, RovingOptions);
-        }
-    }
-
-    /// <summary>Releases the current input scope and the shortcuts registered on it.</summary>
-    private async Task ReleaseAsync()
-    {
-        _registeredShortcuts = [];
-        _registeredTargetId = null;
-
-        if (_inputScope is { } inputScope)
-        {
-            _inputScope = null;
-            await inputScope.DisposeAsync();
         }
     }
 
