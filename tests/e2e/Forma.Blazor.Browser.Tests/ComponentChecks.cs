@@ -146,6 +146,25 @@ public static partial class ComponentChecks
         await page.WaitForFunctionAsync("([selector, capability]) => window.formaDomWatcher.describe(document.querySelector(selector)).capabilities.includes(capability)", new[] { selector, capability }).ConfigureAwait(false);
     }
 
+    /// <summary>Waits until <paramref name="element"/> holds the focus, failing with what holds it instead.</summary>
+    /// <param name="page">The page.</param>
+    /// <param name="element">The element expected to hold the focus.</param>
+    /// <returns>A task that completes once the element holds the focus.</returns>
+    public static async Task ExpectFocusedAsync(IPage page, ILocator element)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        try
+        {
+            await Assertions.Expect(element).ToBeFocusedAsync().ConfigureAwait(false);
+        }
+        catch (PlaywrightException exception)
+        {
+            var focused = await page.EvaluateAsync<string>("() => document.activeElement === null ? 'nothing' : document.activeElement.outerHTML.slice(0, 300)").ConfigureAwait(false);
+            Assert.Fail($"{exception.Message}{Environment.NewLine}The focus was on {focused}");
+        }
+    }
+
     /// <summary>Waits until the input router has placed <paramref name="scope"/> among the page's layers, which it does as an open surface registers.</summary>
     /// <param name="scope">The surface's element.</param>
     /// <returns>A task that completes once the surface carries its layer.</returns>

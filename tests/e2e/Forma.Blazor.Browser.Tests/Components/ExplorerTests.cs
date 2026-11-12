@@ -250,13 +250,13 @@ public sealed class ExplorerTests
             // Act — into the items past what the view draws before them, through the first item's actions and out
             var first = await TabIntoItemsAsync(page);
             await page.Keyboard.PressAsync("Tab");
-            await Assertions.Expect(items.Nth(0).Locator("[data-item-actions]")).ToBeFocusedAsync();
+            await ComponentChecks.ExpectFocusedAsync(page, items.Nth(0).Locator("[data-item-actions]"));
             await page.Keyboard.PressAsync("Tab");
             var isLeft = !await page.EvaluateAsync<bool>(IsWithinItems);
 
             // Act — back in, on to Races, its Rename run from its actions and dismissed
             await page.Keyboard.PressAsync("Shift+Tab");
-            await Assertions.Expect(items.Nth(0).Locator("[data-item-actions]")).ToBeFocusedAsync();
+            await ComponentChecks.ExpectFocusedAsync(page, items.Nth(0).Locator("[data-item-actions]"));
             await page.Keyboard.PressAsync("Shift+Tab");
             await WaitForFocusedItemAsync(page, "Covers");
             await page.Keyboard.PressAsync(next);
