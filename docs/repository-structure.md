@@ -589,9 +589,10 @@ the WebView check host only for a check in the web view, and publishes the check
 run left, emptying them first only for a download check, which counts a client's files. `Runtime=server` in the
 filter narrows the checks to one runtime. An unfiltered run, which the gate makes, builds all of it afresh.
 
-**The fast gate** builds the unit and bUnit suites and what they reference once, through a solution filter it writes
-under `artifacts/fast/`, and runs them from that build. It also runs the script tests and the task programs' tests,
-for feedback within minutes.
+**The fast gate** builds the solution and every task program, so a change that breaks the Showcase, a check host or
+a task program fails it, and runs the unit and bUnit suites from that build, through a solution filter it writes under
+`artifacts/fast/`. It also runs the script tests and the task programs' tests, for feedback within minutes. The
+examples, which build from the packed packages, stay with the browser check.
 
 **The full gate runs every check the machine can.** On Windows that includes WebView2's checks. Where adb reaches a
 device and the `maui-android` workload is installed, it includes the components in Android's web view and the MAUI

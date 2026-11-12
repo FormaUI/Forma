@@ -93,9 +93,10 @@ failed, so a fix to a host's startup reaches both.
 ## Gates
 
 - **Fast,** `./build.ps1 Fast`: every unit and bUnit test, the JavaScript unit tests and the task programs'
-  tests. It restores and builds
-  the selected projects and their dependencies once, analyzers on, then runs the tests without rebuilding,
-  leaving out the example hosts, the browser hosts, packaging and the solution's unrelated projects. It runs on
+  tests. It restores and builds the whole solution and every task program once, analyzers on, so every commit
+  leaves everything the solution holds compiling, then runs the unit and bUnit tests without rebuilding,
+  leaving out packaging, the examples, which build from the packages, and every check that needs a published
+  host. It runs on
   ordinary feature pushes, on pull requests into `dev` and on integrated `dev` commits, and returns feedback in
   a few minutes: two where practical, five or six acceptable, and a routine push rarely tens. A selected suite
   that needs another platform than Linux runs in a job that can run it.

@@ -28,7 +28,8 @@ Narrows the gate:
   Scripts  the browser script tests
   Browser  the browser check, against a published host and its full client
   All      all three (default), naming each platform check the machine can't run
-  Fast     the unit and bUnit suites, built once and run, the browser script tests and the task programs' tests
+  Fast     the solution and the task programs, the unit and bUnit suites run from that build, the browser script
+           tests and the task programs' tests
 
 .PARAMETER Clean
 Delete build output. Used alone it only cleans; combined with a target, including 'All', it cleans first

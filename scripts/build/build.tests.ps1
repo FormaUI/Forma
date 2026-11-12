@@ -50,7 +50,7 @@ $cases = @(
     @{ Name = 'a clean on its own does not run the gate'; Script = 'build.ps1'; Arguments = @('-Clean'); Expect = @('-- clean'); Reject = @('-- build', '-- test') }
     @{ Name = 'a clean with a target cleans and then gates'; Script = 'build.ps1'; Arguments = @('All', '-Clean'); Expect = @('-- clean', '-- build', '-- scripts') }
     @{ Name = 'a target that does not exist is refused'; Script = 'build.ps1'; Arguments = @('Everything'); Fails = $true }
-    @{ Name = 'the fast gate builds the unit and bUnit suites once and runs them, the script tests and the task programs tests, and does no more'; Script = 'build.ps1'; Arguments = @('Fast'); Expect = @('-- build', 'unit and bUnit suites and what they reference', '-- test', 'the unit and bUnit suites, on the build already on disk', '-- scripts', '-- tasks', 'dotnet run, each test program'); Reject = @('-- format', '-- tooling', '-- locales', '-- browser', 'each entry point', 'not run') }
+    @{ Name = 'the fast gate builds the solution and the task programs, runs the unit and bUnit suites from that build, the script tests and the task programs tests, and does no more'; Script = 'build.ps1'; Arguments = @('Fast'); Expect = @('-- build', '-- test', 'the unit and bUnit suites, on the build already on disk', '-- scripts', '-- tasks', 'dotnet build, each entry point, then dotnet run, each test program'); Reject = @('-- format', '-- tooling', '-- locales', '-- browser', 'not run') }
     @{ Name = 'the gate runs the build cases with the scripts contracts'; Script = 'build.ps1'; Arguments = @(); Expect = @('-- tooling', "then run the build's own cases") }
     if ($android.CanRun) {
         @{ Name = 'the gate drives Android where a device is attached'; Script = 'build.ps1'; Arguments = @(); Expect = @('then the components on the attached Android device', '-- mobile'); Reject = @('android    not run') }
@@ -192,12 +192,12 @@ try {
     $context.TaskPrograms = $empty
     $step = Build-TaskProgram -Context $context 6>$null
 
-    # A folder whose one entry point tests nothing, run as the fast gate runs it, building nothing.
+    # A folder whose one entry point tests nothing, which the step refuses before it builds anything.
     $untested = Join-Path $empty 'untested'
     New-Item -ItemType Directory -Path $untested | Out-Null
     Set-Content -LiteralPath (Join-Path $untested 'Tool.cs') -Value @('#!/usr/bin/env dotnet', 'System.Console.WriteLine();')
     $context.TaskPrograms = $untested
-    $testsStep = Build-TaskProgram -Context $context -TestsOnly 6>$null
+    $testsStep = Build-TaskProgram -Context $context 6>$null
 
     $guard = [pscustomobject]@{
         Name     = 'building no task program at all, or running no test program, is a failure'

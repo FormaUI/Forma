@@ -29,8 +29,9 @@ permissions:
   pull-requests: read
 
 jobs:
-  # The unit and bUnit suites built once and run, the script tests and the task programs' tests: the feedback a routine
-  # push waits for, measured here from the job's start, setup and restore included.
+  # The solution and the task programs built, the unit and bUnit suites run from that build, the script tests and the
+  # task programs' tests: the feedback a routine push waits for, measured here from the job's start, setup and restore
+  # included.
   fast:
     name: fast (ubuntu-latest)
     runs-on: ubuntu-latest
