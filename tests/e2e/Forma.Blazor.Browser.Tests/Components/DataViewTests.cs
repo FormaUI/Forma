@@ -135,6 +135,7 @@ public sealed class DataViewTests
             await WaitForInputScopeAsync(page, "#check .forma-data-view-region");
             await GetName(page, "Alpha").ClickAsync();
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Alpha");
+            await Assertions.Expect(page.Locator("#check [role=listitem]", new() { HasText = "Alpha" }).Locator("[data-row-key]")).ToBeFocusedAsync();
 
             // Act
             await page.Keyboard.PressAsync("ArrowRight");
