@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.5`
 
-*Unreleased*
+*November 12, 2026*
 
 - A [`FormaDataView`](docs/data-view-design.md#accessibility-keyboard-and-direction) gives the focus back to an item
   whose box went while holding it, as turning the selection mode off takes the boxes away, in Safari too, which drops
