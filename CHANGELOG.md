@@ -5,6 +5,16 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.6`
+
+*Unreleased*
+
+- A [`FormaTextBox`](docs/component-catalog.md#formatextbox), `FormaPasswordBox`, `FormaTimePicker`,
+  `FormaDateTimePicker`, `FormaWindow`, `FormaDataTree`, `FormaComposer` or `FormaEmojiPicker` taken away while the work
+  of its first render still waits on the browser, as a page left the moment it appears takes what it shows, goes without
+  an error. It went on to reach the browser through a context already disposed, whose `ObjectDisposedException` ended an
+  interactive server circuit and showed WebAssembly's error bar.
+
 ## `1.0.0-preview.5`
 
 *November 12, 2026*

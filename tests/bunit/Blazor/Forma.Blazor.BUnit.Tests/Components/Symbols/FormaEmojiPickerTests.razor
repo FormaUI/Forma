@@ -57,6 +57,24 @@
         }
 
         [Fact]
+        public async Task Should_go_without_an_error_when_taken_away_while_its_first_sheet_loads()
+        {
+            // Arrange — taken away while its first sheet still loads
+            using var ctx = new FormaEmojiPickerTests();
+            var loader = ctx.HoldSpriteLoads();
+            var cut = ctx.Render(@<FormaEmojiPicker />);
+            var picker = cut.FindComponent<FormaEmojiPicker>();
+            var disposal = picker.InvokeAsync(() => picker.Instance.DisposeAsync().AsTask());
+
+            // Act
+            await cut.ReleaseAsync(loader.CompleteAll);
+            await disposal;
+
+            // Assert
+            Assert.False(ctx.Renderer.UnhandledException.IsCompleted);
+        }
+
+        [Fact]
         public void Should_render_only_the_first_chunk_until_scrolling_asks_for_more()
         {
             // Arrange

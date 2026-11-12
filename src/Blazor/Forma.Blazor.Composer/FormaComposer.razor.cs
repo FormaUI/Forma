@@ -333,6 +333,13 @@ public sealed partial class FormaComposer(
 
         // The shortcuts route through the composer's scope; the active editor also registers them on its editable element, ahead of the native control.
         _inputScope = await InputRouter.RegisterAsync(RootElement, RootProfile, _selfReference);
+
+        // Taken away while its shortcuts registered, it has no context left to arrange its tab order through.
+        if (IsDisposed)
+        {
+            return;
+        }
+
         // The canvas is where focus lands first; Tab then reaches the composer's own commands before leaving it.
         await Context.DomEngine.GetElement(RootElement).Focus.AttachAsync(TabOrderOptions);
         await _assetLoader.LoadAssetsAsync(_pluginCatalog.Plugins.SelectMany(plugin => plugin.Assets).Where(asset => asset.Loading == ComposerAssetLoading.Eager));

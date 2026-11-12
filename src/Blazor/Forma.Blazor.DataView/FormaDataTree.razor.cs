@@ -249,6 +249,12 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             await _inputRegistration.SyncAsync(RootElement, GetInputProfile(), shouldRegister: IsActive);
         }
 
+        // Taken away while its focus and keys were set up, it has no context left to attach the hand-off through.
+        if (IsDisposed)
+        {
+            return;
+        }
+
         // The hand-off watches the tree while it shows, and lets go of a root the tree no longer draws.
         if (firstRender)
         {

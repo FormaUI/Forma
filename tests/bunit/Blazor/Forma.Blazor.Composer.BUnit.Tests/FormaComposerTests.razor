@@ -13,6 +13,7 @@
 @using Microsoft.Extensions.Time.Testing
 @using Forma.Blazor.Components.Composer.Dialogs
 @using Forma.Framework.Localization
+@using Forma.Tests.Interop
 @using Forma.Tests.Localization
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
@@ -488,6 +489,28 @@
                 () => Assert.Equal(2, profiles.Count),
                 () => Assert.All(profiles, profile => Assert.Contains(profile.InputRoutes, route => route.Action == ComposerCommands.Undo)),
                 () => Assert.All(profiles, profile => Assert.Contains(profile.InputRoutes, route => route.Action == ComposerCommands.Redo && route.Bindings.Count == 2)));
+        }
+
+        [Fact]
+        public async Task Should_go_without_an_error_when_taken_away_while_its_shortcuts_first_register()
+        {
+            // Arrange — taken away while its own scope's registration still waits on the browser
+            using var ctx = new FormaComposerTests();
+            var register = new HeldObjectReferenceHandler("register");
+            ctx.Router.AddInvocationHandler(register);
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+            cut.WaitForAssertion(() => Assert.Single(cut.FindAll("textarea")));
+            var call = register.GetHeldCall(cut.Find(".forma-composer"));
+            var composer = cut.FindComponent<FormaComposer>();
+            var disposal = composer.InvokeAsync(() => composer.Instance.DisposeAsync().AsTask());
+
+            // Act
+            await cut.ReleaseAsync(() => register.Answer(call, new FakeJSObjectReference((_, _) => null)));
+            await disposal;
+
+            // Assert
+            Assert.False(ctx.Renderer.UnhandledException.IsCompleted);
         }
 
         [Fact]

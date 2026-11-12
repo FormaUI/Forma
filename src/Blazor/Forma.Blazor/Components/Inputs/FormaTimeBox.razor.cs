@@ -175,6 +175,12 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     {
         await _edits.SyncAsync(InputElement, _text, EditOptions);
 
+        // Taken away while its text synced, it has no context left to watch the field through.
+        if (IsDisposed)
+        {
+            return;
+        }
+
         if (firstRender)
         {
             _focusState = await Context.DomWatcher.GetElement(InputElement).Focus.WatchAsync(HandleFocusStateAsync);

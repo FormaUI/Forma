@@ -166,6 +166,12 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider? emojiProvider = nul
         {
             await LoadNextSheetAsync();
 
+            // Taken away while its first sheet loaded, it has no context left to watch the sentinel through.
+            if (IsDisposed)
+            {
+                return;
+            }
+
             // The observation starts inactive, so _sentinel holds it before its first state arrives.
             _sentinel = await Context.DomWatcher.GetElement(_sentinelElement).Intersection.WatchAsync(HandleSentinelAsync, SentinelOptions, shouldObserve: false);
         }

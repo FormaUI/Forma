@@ -599,6 +599,25 @@
         }
 
         [Fact]
+        public async Task Should_go_without_an_error_when_taken_away_while_it_first_attaches()
+        {
+            // Arrange — taken away while its first attach still waits on the browser
+            using var ctx = new FormaWindowTests();
+            var attach = new HeldObjectReferenceHandler("attach");
+            ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/components/Window.js").AddInvocationHandler(attach);
+            var cut = ctx.Render(@<FormaWindow Title="Folders" />);
+            var window = cut.FindComponent<FormaWindow>();
+            var disposal = window.InvokeAsync(() => window.Instance.DisposeAsync().AsTask());
+
+            // Act
+            await cut.ReleaseAsync(() => attach.Answer(Assert.Single(attach.HeldCalls), new FakeJSObjectReference((_, _) => null)));
+            await disposal;
+
+            // Assert
+            Assert.False(ctx.Renderer.UnhandledException.IsCompleted);
+        }
+
+        [Fact]
         public void Should_hide_its_children_when_minimized()
         {
             // Arrange

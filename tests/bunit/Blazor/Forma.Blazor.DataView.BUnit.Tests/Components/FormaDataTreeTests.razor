@@ -219,6 +219,28 @@
         }
 
         [Fact]
+        public async Task Should_go_without_an_error_when_taken_away_while_its_focus_is_first_watched()
+        {
+            // Arrange — taken away while its focus watch still waits on the browser
+            using var ctx = new FormaDataTreeTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Entry" Items="CreateEntries()" EnablePagination="false" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
+                    <FormaDataTree TItem="Entry" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
+            var tree = cut.FindComponent<FormaDataTree<Entry>>();
+            var disposal = tree.InvokeAsync(() => tree.Instance.DisposeAsync().AsTask());
+
+            // Act
+            await ReportFocusAsync(probe, cut, null);
+            await disposal;
+
+            // Assert
+            Assert.False(ctx.Renderer.UnhandledException.IsCompleted);
+        }
+
+        [Fact]
         public async Task Should_walk_a_virtualizing_sidebar_to_its_last_node()
         {
             // Arrange

@@ -151,6 +151,12 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
     {
         await _edits.SyncAsync(RootElement, CurrentValueAsString, EditOptions);
 
+        // Taken away while its text synced, it has no context left to watch the field through.
+        if (IsDisposed)
+        {
+            return;
+        }
+
         if (firstRender)
         {
             _autofillState = await Context.DomWatcher.GetElement(RootElement).Text.WatchAutofillAsync(HandleAutofillStateAsync, HasLabel);

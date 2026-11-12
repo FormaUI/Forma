@@ -312,6 +312,12 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
             }
         }
 
+        // Taken away while it attached, it has no context left to watch its focus through.
+        if (IsDisposed)
+        {
+            return;
+        }
+
         if (firstRender)
         {
             _focusState = await Context.DomWatcher.GetElement(RootElement).Focus.WatchAsync(HandleFocusStateAsync);
