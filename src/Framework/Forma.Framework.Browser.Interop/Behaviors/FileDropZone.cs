@@ -15,6 +15,10 @@ public sealed class FileDropZone(IJSEnvironment js)
     public ValueTask<bool> AttachAsync(ElementReference dropZone, string action, string activeClass)
         => AttachCoreAsync(dropZone, new AttachOptions { Action = action, ActiveClass = activeClass });
 
+    /// <summary>Empties the file input, so the same file chosen again is a change.</summary>
+    public ValueTask<bool> ClearAsync()
+        => InvokeAsync("clear");
+
     /// <summary>The options the script attaches with.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
     private sealed record AttachOptions

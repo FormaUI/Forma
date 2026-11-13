@@ -234,5 +234,32 @@
         }
     }
 
+    public sealed class Clearing
+    {
+        [Fact]
+        public async Task Should_clear_its_previews_and_its_input_so_the_same_image_is_taken_again()
+        {
+            // Arrange — an image chosen and shown
+            using var ctx = new FormaImagePickerTests();
+            var preview = ctx.JSInterop.SetupModule(PreviewPath).SetupModule("attach", _ => true);
+            var dropZone = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/FileDropZone.js").SetupModule("attach", _ => true);
+            preview.Mode = JSRuntimeMode.Loose;
+            dropZone.Mode = JSRuntimeMode.Loose;
+            var cut = ctx.Render(@<FormaImagePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("cover bytes", "cover.jpg", contentType: "image/jpeg"));
+            Assert.Single(cut.FindAll(".forma-image-picker-preview"));
+            var picker = cut.FindComponent<FormaImagePicker>();
+
+            // Act
+            await picker.InvokeAsync(picker.Instance.ClearAsync);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-image-picker-preview")),
+                () => Assert.Contains(preview.Invocations, invocation => invocation.Identifier == "clear"),
+                () => Assert.Contains(dropZone.Invocations, invocation => invocation.Identifier == "clear"));
+        }
+    }
+
     private const string PreviewPath = "./_content/forma/browser/scripts/behaviors/FilePreview.js";
 }

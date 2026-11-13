@@ -77,6 +77,16 @@ describe('FilePreview', () => {
         expect(urls.revoked).toContain(urls.created[0]);
     });
 
+    it('releases the thumbnails it holds when cleared', () => {
+        selectFiles('one.png', 'two.png');
+        const handle = attach(picker);
+        handle.show(['one.png', 'two.png']);
+
+        handle.clear();
+
+        expect(urls.outstanding).toHaveLength(0);
+    });
+
     // An image removed before it loaded fires neither load nor error.
     it('releases thumbnails that never settled when disposed', () => {
         selectFiles('one.png', 'two.png');

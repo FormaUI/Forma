@@ -219,6 +219,29 @@ public sealed partial class FilesTests
             await Assertions.Expect(page.Locator("#check img[data-forma-preview]")).ToHaveAttributeAsync("src", ObjectAddressPattern());
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("pixel.png (68 bytes)");
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_let_go_of_the_image_and_its_thumbnail_once_cleared_so_it_can_be_chosen_again(string runtime)
+        {
+            // Arrange — an image chosen and shown
+            var (context, page) = await OpenAsync(host, runtime, "image-picker");
+            await using var _ = context;
+            var input = page.Locator("#check input[type=file]");
+            await WaitForFileInputAsync(page, "#check input[type=file]");
+            await input.SetInputFilesAsync(new FilePayload { Name = "pixel.png", MimeType = "image/png", Buffer = PixelImage });
+            await Assertions.Expect(page.Locator("#check .forma-image-picker-name")).ToHaveTextAsync("pixel.png");
+
+            // Act
+            await page.Locator("#clear").ClickAsync();
+
+            // Assert — the input empty again, which a file dialog choosing the same image reads as a change
+            await Assertions.Expect(page.Locator("#check .forma-image-picker-preview")).ToHaveCountAsync(0);
+            await Assertions.Expect(input).ToHaveValueAsync(string.Empty);
+            await input.SetInputFilesAsync(new FilePayload { Name = "pixel.png", MimeType = "image/png", Buffer = PixelImage });
+            await Assertions.Expect(page.Locator("#check .forma-image-picker-name")).ToHaveTextAsync("pixel.png");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("pixel.png (68 bytes)");
+        }
     }
 
     private static FilePayload CreateTextFile()

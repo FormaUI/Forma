@@ -58,6 +58,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   end, where the two don't fit one line, and its heading shrinks, a word too long for the line breaking; its row didn't
   wrap, so a long heading widened the page. A [`FormaDialog`](docs/component-catalog.md#formadialog)'s title shrinks
   beside its close button the same way.
+- A [`FormaImagePicker`](docs/component-catalog.md#formaimagepicker) and a
+  [`FormaFilePicker`](docs/component-catalog.md#formafilepicker) have a `ClearAsync`, which lets go of the files chosen,
+  the image picker's previews and the refusals shown, and empties the file input, so a file dialog choosing the same
+  file again hands it over again. A host clears a picker once it has taken the files it was handed.
 
 ## `1.0.0-preview.5`
 

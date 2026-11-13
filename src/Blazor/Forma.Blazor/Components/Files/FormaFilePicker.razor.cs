@@ -96,6 +96,19 @@ public sealed partial class FormaFilePicker : FormaElementBase
         return false;
     }
 
+    /// <summary>Clears the files chosen and the refusals shown, so the same file chosen again is taken again.</summary>
+    public async Task ClearAsync()
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        _rejections.Clear();
+        await _fileDropZone.ClearAsync();
+        StateHasChanged();
+    }
+
     private async Task HandleChangeAsync(InputFileChangeEventArgs args)
     {
         _rejections.Clear();

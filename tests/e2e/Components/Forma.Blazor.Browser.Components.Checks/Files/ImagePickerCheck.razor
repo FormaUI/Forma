@@ -1,11 +1,20 @@
 @page "/{Runtime}/image-picker"
 
-@* A picker taking images, each one taken shown as a thumbnail and named with its size where the check reads it. *@
-<FormaImagePicker Id="check" OnFilesSelected="@(files => _pickedImages = files)" />
+@* A picker taking images, each one taken shown as a thumbnail and named with its size where the check reads it, and a button
+   clearing it. *@
+<FormaImagePicker @ref="_picker" Id="check" OnFilesSelected="@(files => _pickedImages = files)" />
+<FormaButton Id="clear" OnClick="ClearAsync">Clear</FormaButton>
 <output id="result">@string.Join(", ", _pickedImages.Select(FormatFile))</output>
 
 @code {
+    private FormaImagePicker _picker = default!;
     private IReadOnlyList<IBrowserFile> _pickedImages = [];
+
+    private async Task ClearAsync()
+    {
+        await _picker.ClearAsync();
+        _pickedImages = [];
+    }
 
     private static string FormatFile(IBrowserFile file)
         => $"{file.Name} ({file.Size.ToString(CultureInfo.InvariantCulture)} bytes)";

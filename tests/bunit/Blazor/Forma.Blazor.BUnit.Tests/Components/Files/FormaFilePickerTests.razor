@@ -172,4 +172,28 @@
             Assert.Equal(content, readBack);
         }
     }
+
+    public sealed class Clearing
+    {
+        [Fact]
+        public async Task Should_clear_its_refusals_and_its_input_so_the_same_file_is_taken_again()
+        {
+            // Arrange — a file refused as too large
+            using var ctx = new FormaFilePickerTests();
+            var dropZone = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/FileDropZone.js").SetupModule("attach", _ => true);
+            dropZone.Mode = JSRuntimeMode.Loose;
+            var cut = ctx.Render(@<FormaFilePicker Options="@(new FilePickerOptions { MaxFileSize = 4 })" OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("far too long a body", "brief.pdf", contentType: "application/pdf"));
+            Assert.Single(cut.FindAll(".forma-file-picker-rejections li"));
+            var picker = cut.FindComponent<FormaFilePicker>();
+
+            // Act
+            await picker.InvokeAsync(picker.Instance.ClearAsync);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-file-picker-rejections li")),
+                () => Assert.Contains(dropZone.Invocations, invocation => invocation.Identifier == "clear"));
+        }
+    }
 }

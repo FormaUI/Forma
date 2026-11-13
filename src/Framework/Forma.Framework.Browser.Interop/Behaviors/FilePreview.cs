@@ -16,4 +16,8 @@ public sealed class FilePreview(IJSEnvironment js)
     /// <summary>Renders one thumbnail per name, matching each against the file input's current selection.</summary>
     public ValueTask<bool> ShowAsync(IReadOnlyList<string> names)
         => InvokeAsync("show", names);
+
+    /// <summary>Lets go of the thumbnails shown, releasing the addresses still held for them.</summary>
+    public ValueTask<bool> ClearAsync()
+        => InvokeAsync("clear");
 }

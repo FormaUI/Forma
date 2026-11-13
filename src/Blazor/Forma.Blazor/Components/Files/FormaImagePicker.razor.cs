@@ -33,6 +33,8 @@ public sealed partial class FormaImagePicker : FormaElementBase
 
     private readonly List<string> _previewFileNames = [];
 
+    private FormaFilePicker FilePicker { get; set; } = default!;
+
     private string EffectivePrompt
         => Prompt ?? L["Drop images here or click to browse"];
 
@@ -59,6 +61,21 @@ public sealed partial class FormaImagePicker : FormaElementBase
         {
             _isPreviewPending = !await _preview.ShowAsync(_previewFileNames);
         }
+    }
+
+    /// <summary>Clears the images chosen, their previews and the refusals shown, so the same image chosen again is taken again.</summary>
+    public async Task ClearAsync()
+    {
+        if (IsDisposed)
+        {
+            return;
+        }
+
+        _previewFileNames.Clear();
+        _isPreviewPending = false;
+        await _preview.ClearAsync();
+        await FilePicker.ClearAsync();
+        StateHasChanged();
     }
 
     private async Task HandleFilesRejectedAsync(IReadOnlyList<RejectedFile> rejectedFiles)

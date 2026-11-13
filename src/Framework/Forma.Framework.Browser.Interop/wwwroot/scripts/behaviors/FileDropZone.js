@@ -30,6 +30,15 @@ class FileDropZone {
         });
     }
 
+    /** Empties the file input, so the same file chosen again is a change. */
+    clear() {
+        const input = this.#target.querySelector('input[type="file"]');
+
+        if (input) {
+            input.value = '';
+        }
+    }
+
     dispose() {
         this.#zone.dispose();
     }

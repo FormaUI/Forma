@@ -68,6 +68,11 @@ class FilePreview {
         });
     }
 
+    /** Lets go of the thumbnails shown, releasing the addresses still held for them. */
+    clear() {
+        this.#revoke();
+    }
+
     dispose() {
         this.#revoke();
     }

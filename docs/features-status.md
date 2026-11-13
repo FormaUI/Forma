@@ -26,7 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [A host's integration](#a-hosts-integration) | Fifteen findings, eight fixed |
+| [A host's integration](#a-hosts-integration) | Fifteen findings, nine fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -181,7 +181,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 | Upload refusals | `IFileStore.SaveAsync` refuses only by throwing, and `CatalogConstraints` has no per-file ceiling | Open: `SaveAsync` answering with the resource it saved or a refusal carrying its reason and arguments, and a ceiling on each file's size |
 | A link that looks like a button | `FormaButton` always renders a `<button>` | Open: `Href`, `Target` and `Rel` |
 | Type-ahead in the select | `FormaSelect` matches no typed label, and only `FormaDataTree` jumps, by one letter | Open: one type-ahead for the select, the menu and the tree |
-| Resetting the image picker | Neither `FormaFilePicker` nor `FormaImagePicker` can be cleared, and the file dialog can't choose the same file twice in a row | Open: a `ClearAsync` |
+| Resetting the image picker | Neither `FormaFilePicker` nor `FormaImagePicker` could be cleared, and the file dialog couldn't choose the same file twice in a row. Each now has a `ClearAsync`, which lets go of the files, previews and refusals and empties the file input; nothing clears on its own, since a host's handling of the files doesn't show that each was taken | Fixed |
 | The toast container's offsets | `FormaToastContainer` sat `--space-5` from the block-start and inline-end edges, with no hook of its own, and a toast could run past a narrow screen. It now reads `--forma-toast-container-inset-block-start` and `--forma-toast-container-inset-inline-end`, which the README shows, and keeps a toast between them | Fixed |
 | The page title's actions | `FormaPageTitle`'s row didn't wrap and its heading couldn't shrink. Its actions now move beneath the heading, still at the end, where the two don't fit one line, and a long word breaks; `FormaDialog`'s title shrinks beside its close button too | Fixed |
 | Localized routing | The culture router replaces the culture segment and keeps the rest of the path | Open decision: [its contract](#open-decisions) |

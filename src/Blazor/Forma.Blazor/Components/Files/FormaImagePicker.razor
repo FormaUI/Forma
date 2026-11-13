@@ -7,10 +7,11 @@
      style="@RootStyle"
      @attributes="AdditionalAttributes"
      @ref="RootElement">
-    <FormaFilePicker Options="@(Options with { Accept = ImageAccept })"
-                      Prompt="@EffectivePrompt"
-                      OnFilesRejected="HandleFilesRejectedAsync"
-                      OnFilesSelected="HandleFilesSelectedAsync" />
+    <FormaFilePicker @ref="FilePicker"
+                     Options="@(Options with { Accept = ImageAccept })"
+                     Prompt="@EffectivePrompt"
+                     OnFilesRejected="HandleFilesRejectedAsync"
+                     OnFilesSelected="HandleFilesSelectedAsync" />
 
     @if (_previewFileNames.Count > 0)
     {
