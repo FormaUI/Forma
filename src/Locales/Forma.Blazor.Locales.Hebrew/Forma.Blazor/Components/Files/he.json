@@ -3,7 +3,7 @@
   "FormaFilePicker": {
     "Drop files here or click to browse": "גררו קבצים לכאן או לחצו כדי לבחור",
     "\"{Name}\" isn't an accepted file type.": "\"{Name}\" אינו סוג קובץ מותר.",
-    "\"{Name}\" is too large.": "\"{Name}\" גדול מדי.",
+    "\"{Name}\" is larger than {Size}.": "\"{Name}\" גדול מ-\u2068{Size}\u2069.",
     "\"{Name}\" wasn't included — too many files at once.": "\"{Name}\" לא נכלל — יותר מדי קבצים בבת אחת."
   },
   "FormaFileUploader": {

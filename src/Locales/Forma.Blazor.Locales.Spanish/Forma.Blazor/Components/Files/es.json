@@ -3,7 +3,7 @@
   "FormaFilePicker": {
     "Drop files here or click to browse": "Suelta los archivos aquí o haz clic para buscarlos",
     "\"{Name}\" isn't an accepted file type.": "\"{Name}\" no es un tipo de archivo aceptado.",
-    "\"{Name}\" is too large.": "\"{Name}\" es demasiado grande.",
+    "\"{Name}\" is larger than {Size}.": "\"{Name}\" ocupa más de {Size}.",
     "\"{Name}\" wasn't included — too many files at once.": "\"{Name}\" no se incluyó: demasiados archivos a la vez."
   },
   "FormaFileUploader": {

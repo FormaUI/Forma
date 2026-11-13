@@ -77,6 +77,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   options it starts, and labels compare in the culture in force. Typed on the closed select, they open its list on that
   option, and nothing is chosen until the reader chooses it. A `FormaDataTree` searches its nodes the same way, where it
   matched a single letter.
+- A [`FormaFilePicker`](docs/component-catalog.md#formafilepicker) refusing a file too large names the size it went
+  past.
 
 ## `1.0.0-preview.5`
 

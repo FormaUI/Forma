@@ -4,6 +4,7 @@ using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Files;
 using Forma.Framework.Input.Interop;
+using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
@@ -37,6 +38,9 @@ public sealed partial class FormaFilePicker : FormaElementBase
     private FileDropZone _fileDropZone = default!;
 
     private readonly List<RejectedFile> _rejections = [];
+
+    // The size limit the refusals shown were judged against.
+    private long _judgedMaxFileSize;
 
     private string EffectivePrompt
         => Prompt ?? L["Drop files here or click to browse"];
@@ -143,6 +147,7 @@ public sealed partial class FormaFilePicker : FormaElementBase
 
             if (rejectedFiles.Count > 0)
             {
+                _judgedMaxFileSize = Options.MaxFileSize ?? 0;
                 _rejections.AddRange(rejectedFiles);
                 await OnFilesRejected.InvokeAsync(rejectedFiles);
             }
@@ -185,7 +190,7 @@ public sealed partial class FormaFilePicker : FormaElementBase
         return rejection.Reason switch
         {
             FileRejectionReason.DisallowedType => L["\"{Name}\" isn't an accepted file type.", name],
-            FileRejectionReason.TooLarge => L["\"{Name}\" is too large.", name],
+            FileRejectionReason.TooLarge => L["\"{Name}\" is larger than {Size}.", name, ResourceFormatter.FromByteCount(_judgedMaxFileSize, Context.CultureState.Culture)],
             FileRejectionReason.TooManyFiles => L["\"{Name}\" wasn't included \u2014 too many files at once.", name],
             _ => name
         };

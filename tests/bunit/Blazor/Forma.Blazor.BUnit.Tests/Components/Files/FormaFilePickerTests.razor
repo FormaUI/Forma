@@ -109,6 +109,23 @@
         }
 
         [Fact]
+        public void Should_name_the_size_a_file_too_large_went_past()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+            var cut = ctx.Render<FormaFilePicker>(parameters => parameters
+                .Add(picker => picker.Options, new FilePickerOptions { MaxFileSize = 4 })
+                .Add(picker => picker.OnFilesSelected, _ => Task.CompletedTask));
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("far too long a body", "brief.pdf", contentType: "application/pdf"));
+
+            // Act — the limit raised once the file was refused
+            cut.Render(parameters => parameters.Add(picker => picker.Options, new FilePickerOptions { MaxFileSize = 64 }));
+
+            // Assert
+            Assert.Equal("\"brief.pdf\" is larger than 4 B.", cut.Find(".forma-file-picker-rejections li").TextContent);
+        }
+
+        [Fact]
         public void Should_reject_files_beyond_the_selection_limit()
         {
             // Arrange
