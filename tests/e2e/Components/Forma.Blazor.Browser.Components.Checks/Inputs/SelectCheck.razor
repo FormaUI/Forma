@@ -9,7 +9,7 @@
 @code {
     private readonly Entry _model = new();
 
-    private readonly IReadOnlyList<SelectOption<int>> _statuses = [new(1, "Open"), new(2, "Closed")];
+    private readonly IReadOnlyList<SelectOption<int>> _statuses = [new(1, "Open"), new(2, "Closed"), new(3, "Cancelled"), new(4, "Archived")];
 
     private sealed class Entry
     {

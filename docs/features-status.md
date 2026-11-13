@@ -26,7 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [A host's integration](#a-hosts-integration) | Fifteen findings, eleven fixed |
+| [A host's integration](#a-hosts-integration) | Fifteen findings, twelve fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -180,7 +180,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 | A paged data view's reserved height | `FormaDataView` held a full page's height whenever it paged and never let it go, a single page included, as its design's rule said. It now holds it only while another page is known to exist, by its count, its source's `HasMore` or a page before the one shown, and lets it go once the set fits one page; the design says so | Fixed |
 | Upload refusals | `IFileStore.SaveAsync` refuses only by throwing, and `CatalogConstraints` has no per-file ceiling | Open: `SaveAsync` answering with the resource it saved or a refusal carrying its reason and arguments, and a ceiling on each file's size |
 | A link that looks like a button | `FormaButton` always rendered a `<button>`. Given an `Href`, it is now a link in the button's look, with `Target` and `Rel`; disabled or busy, it names no address and stays a link, and it neither submits nor reads a form | Fixed |
-| Type-ahead in the select | `FormaSelect` matches no typed label, and only `FormaDataTree` jumps, by one letter | Open: one type-ahead for the select, the menu and the tree |
+| Type-ahead in the select | `FormaSelect` matched no typed label, and only `FormaDataTree` jumped, by one letter. Both now search with one `TypeAhead`, a prefix built within a pause and a repeated character cycling, in the culture in force, the select opening on the match and choosing nothing | Fixed |
 | Resetting the image picker | Neither `FormaFilePicker` nor `FormaImagePicker` could be cleared, and the file dialog couldn't choose the same file twice in a row. Each now has a `ClearAsync`, which lets go of the files, previews and refusals and empties the file input; nothing clears on its own, since a host's handling of the files doesn't show that each was taken | Fixed |
 | The toast container's offsets | `FormaToastContainer` sat `--space-5` from the block-start and inline-end edges, with no hook of its own, and a toast could run past a narrow screen. It now reads `--forma-toast-container-inset-block-start` and `--forma-toast-container-inset-inline-end`, which the README shows, and keeps a toast between them | Fixed |
 | The page title's actions | `FormaPageTitle`'s row didn't wrap and its heading couldn't shrink. Its actions now move beneath the heading, still at the end, where the two don't fit one line, and a long word breaks; `FormaDialog`'s title shrinks beside its close button too | Fixed |

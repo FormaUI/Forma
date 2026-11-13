@@ -239,7 +239,7 @@
 
             // Assert
             var registration = Assert.Single(router.Registrations);
-            Assert.Equal(["select.open:ArrowDown,ArrowUp"], InputRouterProbe.GetRoutes(registration));
+            Assert.Equal(["select.open:ArrowDown,ArrowUp", "select.find:typing"], InputRouterProbe.GetRoutes(registration));
         }
 
         [Fact]
@@ -260,7 +260,7 @@
             var registration = router.Registrations.Last();
             Assert.Multiple(
                 () => Assert.Equal(cut.FindComponent<FormaPopover>().Instance.RootElement.Id, Assert.IsType<ElementReference>(registration.Arguments[0]).Id),
-                () => Assert.Equal(["select.next:ArrowDown", "select.previous:ArrowUp", "select.first:Home", "select.last:End", "select.close:Tab"], InputRouterProbe.GetRoutes(registration)));
+                () => Assert.Equal(["select.next:ArrowDown", "select.previous:ArrowUp", "select.first:Home", "select.last:End", "select.find:typing", "select.close:Tab"], InputRouterProbe.GetRoutes(registration)));
         }
 
         [Fact]
@@ -348,6 +348,56 @@
             Assert.Empty(cut.FindAll(".forma-select-popover"));
         }
 
+
+        [Fact]
+        public async Task Should_open_on_the_option_a_label_typed_on_the_closed_list_names_choosing_nothing()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+            var trigger = new ElementReference(cut.Find(".forma-select-trigger").GetAttribute("blazor:elementReference")!);
+
+            // Act
+            await router.RouteAsync(trigger, "select.find", "s");
+
+            // Assert — the list open on Swimming, the last option, which End reaches too, and nothing chosen
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+            var found = GetFocused(ctx.JSInterop).Last();
+            await router.RouteAsync(popover.RootElement, "select.last", "End");
+            Assert.Multiple(
+                () => Assert.True(popover.IsOpen),
+                () => Assert.Equal(GetFocused(ctx.JSInterop).Last(), found),
+                () => Assert.Null(model.Status));
+        }
+
+        [Fact]
+        public async Task Should_move_the_focus_to_the_option_a_label_typed_on_the_open_list_names_choosing_nothing()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+            cut.Find(".forma-select-trigger").Click();
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+
+            // Act
+            await router.RouteAsync(popover.RootElement, "select.find", "r");
+
+            // Assert — the focus on Running, the second option, which Home and an arrow down reach too, and nothing chosen
+            var found = GetFocused(ctx.JSInterop).Last();
+            await router.RouteAsync(popover.RootElement, "select.first", "Home");
+            await router.RouteAsync(popover.RootElement, "select.next", "ArrowDown");
+            Assert.Multiple(
+                () => Assert.Equal(GetFocused(ctx.JSInterop).Last(), found),
+                () => Assert.Null(model.Status));
+        }
 
         private static List<string> GetFocused(BunitJSInterop js)
             => [.. js.Invocations

@@ -66,11 +66,14 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
+    [Inject] private TimeProvider Clock { get; set; } = default!;
+
     private DataViewRegistration _dataViewRegistration = default!;
     private readonly Dictionary<object, ElementReference> _nodeElements = [];
     private readonly Dictionary<object, FormaCheckBox> _nodeMarkers = [];
     private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
     private InputRegistration _inputRegistration = default!;
+    private TypeAhead _typeAhead = default!;
     private InputProfile? _inputProfile;
     private bool _profileKeepsFocus;
     private bool _profileIsRightToLeft;
@@ -171,6 +174,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
         _isCompanion = SelectsCurrent;
         _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _typeAhead = new TypeAhead(Clock);
         _dataViewRegistration = new DataViewRegistration(ViewKey, () => L["Tree"], Glyph.FolderTree, this) { IsCompanion = _isCompanion };
         Interaction.RegisterView(_dataViewRegistration);
         View.Subscribe(HandleViewChangedAsync);
@@ -371,29 +375,23 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             case ChooseAction:
                 await HandleNodeClickAsync(node);
                 break;
-            case FindAction when input is InputKeyInfo { Key: var letter }:
-                await JumpToAsync(node, letter);
+            case FindAction when input is InputKeyInfo { Key: var character }:
+                await JumpToAsync(node, character);
                 break;
             default:
                 break;
         }
     }
 
-    // Type-ahead: the next visible node after the focused one whose name starts with the letter and that can take the focus, wrapping round to the first.
-    private async Task JumpToAsync(TItem from, string letter)
+    // Type-ahead: the visible node that can take the focus whose name starts with what the reader typed, searching on from the focused one.
+    private async Task JumpToAsync(TItem from, string character)
     {
         var visibleNodes = GetVisibleNodes();
-        var start = visibleNodes.FindIndex(candidate => IsSame(candidate, from));
+        var current = visibleNodes.FindIndex(candidate => IsSame(candidate, from));
 
-        for (var step = 1; step <= visibleNodes.Count; step++)
+        if (_typeAhead.Find(character, [.. visibleNodes.Select(View.ItemName)], current, Context.CultureState.Culture, index => View.CanFocus(visibleNodes[index])) is { } index)
         {
-            var candidate = visibleNodes[(start + step) % visibleNodes.Count];
-
-            if (View.CanFocus(candidate) && Context.CultureState.Culture.CompareInfo.IsPrefix(View.ItemName(candidate), letter, CompareOptions.IgnoreCase))
-            {
-                await MoveToAsync(candidate);
-                return;
-            }
+            await MoveToAsync(visibleNodes[index]);
         }
     }
 

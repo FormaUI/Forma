@@ -23,6 +23,29 @@ public sealed class PickersTests
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("2");
             await Assertions.Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
         }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_open_on_the_option_a_typed_label_names_and_choose_it_only_on_enter(string runtime)
+        {
+            // Arrange — the select focused on Open
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "select");
+            await using var _ = context;
+            var trigger = page.Locator("#check");
+            await ComponentChecks.WaitForInputScopeAsync(page, "#check");
+            await trigger.FocusAsync();
+
+            // Act — "c" opens the list on Closed, and "ca" moves on to Cancelled
+            await page.Keyboard.TypeAsync("ca");
+
+            // Assert — the focus on Cancelled, nothing chosen until Enter
+            var cancelled = page.GetByRole(AriaRole.Option, new() { Name = "Cancelled", Exact = true });
+            await Assertions.Expect(cancelled).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("1");
+            await page.Keyboard.PressAsync("Enter");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("3");
+            await Assertions.Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
+        }
     }
 
     public sealed class MultiSelect(BrowserHost host)

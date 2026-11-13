@@ -72,6 +72,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   back corrupted from every save; an address spelling its scheme in references is now judged by the scheme it spells.
 - `Glyph.Pause`, two solid upright bars, joins the icon set, the pause to set beside `TriangleRight`'s solid play
   triangle.
+- A [`FormaSelect`](docs/component-catalog.md#formaselect) moves to the option whose label a reader types: characters
+  typed within half a second of each other build a prefix, a character typed again on its own moves on through the
+  options it starts, and labels compare in the culture in force. Typed on the closed select, they open its list on that
+  option, and nothing is chosen until the reader chooses it. A `FormaDataTree` searches its nodes the same way, where it
+  matched a single letter.
 
 ## `1.0.0-preview.5`
 

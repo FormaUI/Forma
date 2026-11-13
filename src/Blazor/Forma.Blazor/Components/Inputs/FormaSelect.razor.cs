@@ -22,10 +22,17 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private const string FirstAction = "select.first";
     private const string LastAction = "select.last";
     private const string CloseAction = "select.close";
+    private const string FindAction = "select.find";
 
     private static readonly InputProfile TriggerProfile = new()
     {
-        InputRoutes = [new InputRoute(OpenAction, new KeyBinding("ArrowDown"), new KeyBinding("ArrowUp"))],
+        InputRoutes =
+        [
+            new InputRoute(OpenAction, new KeyBinding("ArrowDown"), new KeyBinding("ArrowUp")),
+
+            // A label typed on the closed list opens it on the option it names, choosing nothing.
+            new InputRoute(FindAction, new TypingBinding()),
+        ],
     };
 
     private static readonly IReadOnlyList<InputRoute> ListRoutes =
@@ -34,6 +41,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
         new InputRoute(PreviousAction, new KeyBinding("ArrowUp")),
         new InputRoute(FirstAction, new KeyBinding("Home")),
         new InputRoute(LastAction, new KeyBinding("End")),
+        new InputRoute(FindAction, new TypingBinding()),
 
         // Tab closes the list and still moves the focus on, so its default is kept.
         new InputRoute(CloseAction, new KeyBinding("Tab")) { PreventDefault = false, Propagation = InputPropagation.Continue },
@@ -59,11 +67,14 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
+    [Inject] private TimeProvider Clock { get; set; } = default!;
+
     private int _focusedIndex = -1;
     private ElementReference _anchorElement;
     private ElementReference[] _optionElements = [];
     private FormaPopover Popover { get; set; } = default!;
     private InputRegistration _trigger = default!;
+    private TypeAhead _typeAhead = default!;
 
     private string PopoverId
         => $"{ElementId}-popover";
@@ -83,7 +94,10 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _trigger = new InputRegistration(InputRouter, HandleActionAsync);
+    {
+        _trigger = new InputRegistration(InputRouter, HandleActionAsync);
+        _typeAhead = new TypeAhead(Clock);
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -117,8 +131,31 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
             FirstAction => FocusIndexAsync(0),
             LastAction => FocusIndexAsync(Options.Count - 1),
             CloseAction => Popover.CloseAsync(),
+            FindAction when input is InputKeyInfo { Key: var character } => FindAsync(character),
             _ => Task.CompletedTask,
         };
+    }
+
+    // The option the typed label names takes the focus, the list opening on it where it was closed; nothing is chosen until the reader
+    // chooses it.
+    private async Task FindAsync(string character)
+    {
+        var current = IsOpen ? _focusedIndex : Options.ToList().FindIndex(IsSelected);
+
+        if (_typeAhead.Find(character, [.. Options.Select(option => option.Label)], current, Context.CultureState.Culture) is not { } index)
+        {
+            return;
+        }
+
+        if (IsOpen)
+        {
+            await FocusIndexAsync(index);
+        }
+        else
+        {
+            _focusedIndex = index;
+            await Popover.OpenAsync(RootElement);
+        }
     }
 
     private SelectOption<TValue>? FindSelectedOption()
