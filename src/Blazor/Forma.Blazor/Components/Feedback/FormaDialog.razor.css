@@ -61,13 +61,17 @@ dialog.forma-dialog::backdrop {
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: var(--space-3);
     padding: var(--space-3) var(--space-5);
     border-bottom: 1px solid var(--border-color);
     background: var(--forma-dialog-header-bg-color, var(--chrome-titlebar-bg-color));
     flex-shrink: 0;
 }
 
+/* The title shrinks beside the close button, a long word breaking rather than pushing the button out. */
 .forma-dialog-header h5 {
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
     margin: 0;
     font-size: var(--font-size-lg);
     font-weight: 600;

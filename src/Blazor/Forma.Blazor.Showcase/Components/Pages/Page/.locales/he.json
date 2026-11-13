@@ -12,6 +12,9 @@
     "Edit Product": "עריכת מוצר",
     "Add New": "הוסף חדש",
     "Export": "ייצוא",
+    "A Title Too Long for One Line": "כותרת ארוכה מדי לשורה אחת",
+    "Where the title and its actions don't fit one line, the actions move beneath it and keep to the end, and a word too long for the line breaks.": "כשהכותרת והפעולות שלה אינן נכנסות בשורה אחת, הפעולות עוברות מתחתיה ונשארות בקצה, ומילה ארוכה מדי לשורה נשברת.",
+    "Quarterly Revenue for the Northern Distribution Centers": "הכנסות רבעוניות של מרכזי ההפצה הצפוניים",
     "Home": "ראשי",
     "Store": "חנות"
   }

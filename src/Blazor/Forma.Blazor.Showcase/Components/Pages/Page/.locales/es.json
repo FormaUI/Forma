@@ -12,6 +12,9 @@
     "Edit Product": "Editar producto",
     "Add New": "Agregar nuevo",
     "Export": "Exportar",
+    "A Title Too Long for One Line": "Un Título Demasiado Largo para una Línea",
+    "Where the title and its actions don't fit one line, the actions move beneath it and keep to the end, and a word too long for the line breaks.": "Cuando el título y sus acciones no caben en una línea, las acciones pasan debajo y se quedan al final, y una palabra demasiado larga para la línea se corta.",
+    "Quarterly Revenue for the Northern Distribution Centers": "Ingresos Trimestrales de los Centros de Distribución del Norte",
     "Home": "Inicio",
     "Store": "Tienda"
   }

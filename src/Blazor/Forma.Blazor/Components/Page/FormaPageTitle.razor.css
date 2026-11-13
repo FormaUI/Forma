@@ -1,9 +1,17 @@
+/* The heading and its breadcrumb beside the actions, which move beneath them, still at the end, when the two don't fit one line. */
 .forma-page-title {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-start;
     justify-content: space-between;
     gap: var(--space-4);
     margin-block-end: var(--space-5);
+}
+
+/* The heading grows into the line and shrinks below its content, a long word breaking rather than running past the edge. */
+.forma-page-title-text {
+    flex: 1 1 auto;
+    min-inline-size: 0;
 }
 
 .forma-page-title-heading {
@@ -11,6 +19,7 @@
     font-weight: 600;
     margin: 0;
     line-height: var(--line-height-target);
+    overflow-wrap: anywhere;
 }
 
 .forma-page-title-actions {
@@ -18,4 +27,5 @@
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2);
+    margin-inline-start: auto;
 }

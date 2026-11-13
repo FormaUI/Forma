@@ -54,6 +54,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   and inline-end edges as `--forma-toast-container-inset-block-start` and `--forma-toast-container-inset-inline-end`
   set, `--space-5` unless a host sets them, so a page with a sticky header moves its toasts below it, and a toast is
   never wider than the viewport between those offsets.
+- A [`FormaPageTitle`](docs/component-catalog.md#formapagetitle) moves its actions beneath its heading, still at the
+  end, where the two don't fit one line, and its heading shrinks, a word too long for the line breaking; its row didn't
+  wrap, so a long heading widened the page. A [`FormaDialog`](docs/component-catalog.md#formadialog)'s title shrinks
+  beside its close button the same way.
 
 ## `1.0.0-preview.5`
 
