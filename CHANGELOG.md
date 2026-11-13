@@ -23,6 +23,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `HandleCommandAsync`.
 - A [`FormaTabs`](docs/component-catalog.md#formatabs) inside a form leaves it unsubmitted as a tab is chosen, by a
   press, Enter or Space. Its tab buttons were the form's submit buttons, so choosing a tab submitted the form.
+- A [`FormaExplorer`](docs/component-catalog.md#formaexplorer) whose store answers its first query asynchronously lists
+  what the store answered. On an interactive server and in a web view, an answer arriving before the page had taken the
+  explorer's first render in left it showing that it loads until a refresh.
 
 ## `1.0.0-preview.5`
 

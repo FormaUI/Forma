@@ -3302,6 +3302,80 @@
                 () => Assert.Equal(["covers", "races"], provider.Queries.Select(query => query.FolderKey)),
                 () => Assert.Equal(["race.jpg"], GetItemNames(cut)));
         }
+
+        [Fact]
+        public async Task Should_list_what_its_store_held_once_it_answers_and_stop_loading()
+        {
+            // Arrange - the store's first answer held
+            using var ctx = new FormaExplorerTests();
+            var provider = new FakeCatalogProvider([new ImageResourceInfo("https://example.com/a.jpg"), new ImageResourceInfo("https://example.com/b.jpg")])
+            {
+                Gate = new TaskCompletionSource()
+            };
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" />);
+            Assert.Equal("true", cut.Find(".forma-explorer-scroll").GetAttribute("aria-busy"));
+            Assert.Equal("Loading media", cut.Find(".forma-explorer-empty p").TextContent);
+
+            // Act
+            await OpenGateAsync(cut, provider);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["a.jpg", "b.jpg"], GetItemNames(cut)),
+                () => Assert.Equal("false", cut.Find(".forma-explorer-scroll").GetAttribute("aria-busy")),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-empty")));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_folder_moved_to_when_the_folder_left_answers_late_despite_its_cancellation()
+        {
+            // Arrange - Covers' files held by a store that answers even once canceled, while the host moves to Races, whose files arrive at once
+            using var ctx = new FormaExplorerTests();
+            var folders = CatalogItem.ForAll([new FolderResourceInfo("covers") { Name = "Covers" }, new FolderResourceInfo("races") { Name = "Races" }]);
+            var provider = new FakeCatalogProvider([]) { Gate = new TaskCompletionSource(), GatedFolderKey = "covers", IgnoresCancellation = true };
+            provider.FolderResources["covers"] = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            provider.FolderResources["races"] = [new ImageResourceInfo("https://example.com/race.jpg")];
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" Folders="folders" CurrentFolder="@((ICatalogFolderItem)folders[0])" />);
+            var explorer = cut.FindComponent<FormaExplorer>();
+
+            // Act - Covers' answer arrives once Races' is drawn
+            explorer.Render(parameters => parameters.Add(p => p.CurrentFolder, (ICatalogFolderItem)folders[1]));
+            await provider.WhenAskedForAsync("races").WaitAsync(TestContext.Current.CancellationToken);
+            await cut.InvokeAsync(static () => { });
+            await OpenGateAsync(cut, provider);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["race.jpg"], GetItemNames(cut)),
+                () => Assert.Equal("false", cut.Find(".forma-explorer-scroll").GetAttribute("aria-busy")));
+        }
+
+        [Fact]
+        public async Task Should_go_without_an_error_when_taken_away_while_its_store_still_answers()
+        {
+            // Arrange - taken away while its store, which answers even once canceled, holds the first answer
+            using var ctx = new FormaExplorerTests();
+            var provider = new FakeCatalogProvider([new ImageResourceInfo("https://example.com/a.jpg")]) { Gate = new TaskCompletionSource(), IgnoresCancellation = true };
+            var cut = ctx.Render(@<FormaExplorer ItemsProvider="provider" />);
+            await ctx.DisposeComponentsAsync();
+
+            // Act
+            await OpenGateAsync(cut, provider);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(provider.Queries),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted));
+        }
+
+        // Opens the store's gate off the renderer, as the explorer's provider resumes off it, so the answer is queued on the renderer by
+        // the time the gate is open, and passes a turn on the renderer, which draws it.
+        private static async Task OpenGateAsync<TComponent>(Bunit.IRenderedComponent<TComponent> cut, FakeCatalogProvider provider)
+            where TComponent : Microsoft.AspNetCore.Components.IComponent
+        {
+            await Task.Run(provider.Gate!.SetResult, TestContext.Current.CancellationToken);
+            await cut.InvokeAsync(static () => { });
+        }
     }
 
     public sealed class Paging

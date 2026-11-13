@@ -1,0 +1,44 @@
+@page "/{Runtime}/explorer-loading"
+@using Forma.Blazor.Browser.Components.Checks.Services
+@using Forma.Blazor.Components.Explorer
+@using Forma.Framework.Catalog
+@using Forma.Framework.Catalog.Queries
+
+@* Two explorers over the checks' catalog: one whose store answers on its next turn, before the page has taken the explorer's first
+   render in, and one whose first answer waits until the check releases it. *@
+<FormaExplorer Id="answered" ItemsProvider="_answered" />
+<FormaExplorer Id="held" ItemsProvider="@(RendererInfo.IsInteractive ? _held : _catalog)" />
+<FormaButton Id="release" OnClick="_held.Release">Release</FormaButton>
+
+@code {
+    private readonly CheckCatalog _catalog = new();
+    private readonly AnsweringCatalog _answered = new(new CheckCatalog());
+    private readonly HeldCatalog _held = new(new CheckCatalog());
+
+    // A store whose every answer arrives on its next turn.
+    private sealed class AnsweringCatalog(ICatalogProvider catalog) : ICatalogProvider
+    {
+        public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+
+            return await catalog.GetItemsAsync(query, cancellationToken);
+        }
+    }
+
+    // A store whose first answer waits for its release, and whose later answers arrive at once.
+    private sealed class HeldCatalog(ICatalogProvider catalog) : ICatalogProvider
+    {
+        private readonly TaskCompletionSource _release = new();
+
+        public void Release()
+            => _release.TrySetResult();
+
+        public async ValueTask<CatalogPage> GetItemsAsync(CatalogQuery query, CancellationToken cancellationToken)
+        {
+            await _release.Task.WaitAsync(cancellationToken);
+
+            return await catalog.GetItemsAsync(query, cancellationToken);
+        }
+    }
+}

@@ -251,8 +251,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private IReadOnlyList<ICatalogItem>? _heldItems;
 
-    private FormaDataView<ICatalogItem>? _dataView;
-
     // Whether the move under way steps through the history rather than visiting, and whether it reached the folder it stepped to.
     private bool _isHistoryMove;
 
@@ -393,7 +391,26 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     // The content the data view holds, which it reads from the source once it has drawn.
     private IDataView<ICatalogItem>? ContentView
-        => _dataView;
+        => DataView;
+
+    // The data view the explorer arranges, which announces what it holds as it changes, the explorer's own parts drawing from it.
+    // It is heard from as it is captured, before the source's first answer can arrive, which may come before the page has taken
+    // the first render in.
+    private FormaDataView<ICatalogItem>? DataView
+    {
+        get;
+        set
+        {
+            if (ReferenceEquals(field, value))
+            {
+                return;
+            }
+
+            field?.Unsubscribe(HandleContentChangedAsync);
+            field = value;
+            field?.Subscribe(HandleContentChangedAsync);
+        }
+    }
 
     private DataViewAppendMode AppendMode
         => Options.InfiniteScroll switch
@@ -602,16 +619,6 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
     }
 
-    /// <inheritdoc />
-    protected override void OnAfterRender(bool firstRender)
-    {
-        // The data view announces what it holds as it changes, which the explorer's own parts draw from.
-        if (firstRender && _dataView is IDataView<ICatalogItem> content)
-        {
-            content.Subscribe(HandleContentChangedAsync);
-        }
-    }
-
     private Task HandleContentChangedAsync()
         => InvokeAsync(StateHasChanged);
 
@@ -678,7 +685,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     {
         StartSequence();
 
-        return _dataView?.RefreshDataAsync() ?? Task.CompletedTask;
+        return DataView?.RefreshDataAsync() ?? Task.CompletedTask;
     }
 
     // A new search, sort or grouping starts a browsing sequence of its own on the first page; a move back to the first page reads it
@@ -689,7 +696,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         StartSequence();
 
         // A sort the explorer chose becomes the data view's, which a grid's header shows, and which reads the first page again itself.
-        if (_dataView is { } view && !IsSortedAsExplorer(view))
+        if (DataView is { } view && !IsSortedAsExplorer(view))
         {
             _collection.PageNumber = 1;
 
@@ -697,7 +704,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
         }
 
         // A new grouping, or a page other than the first, reaches the data view as it renders, which reads the items again itself.
-        if (_collection.PageNumber != 1 || !ReferenceEquals(DataViewGrouping, _dataView?.GroupBy))
+        if (_collection.PageNumber != 1 || !ReferenceEquals(DataViewGrouping, DataView?.GroupBy))
         {
             _collection.PageNumber = 1;
             StateHasChanged();
@@ -705,7 +712,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return Task.CompletedTask;
         }
 
-        return _dataView?.RefreshDataAsync() ?? Task.CompletedTask;
+        return DataView?.RefreshDataAsync() ?? Task.CompletedTask;
     }
 
     private int RootFolderCount
@@ -932,14 +939,14 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        return _dataView is { } view ? view.ToggleSelectionAsync(item, !_selectedKeys.Contains(item.Key)) : Task.CompletedTask;
+        return DataView is { } view ? view.ToggleSelectionAsync(item, !_selectedKeys.Contains(item.Key)) : Task.CompletedTask;
     }
 
     Task IExplorerSelectionInteraction.DeselectAsync(ICatalogItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
 
-        return _dataView is { } view && _selectedKeys.Contains(item.Key) ? view.ToggleSelectionAsync(item, false) : Task.CompletedTask;
+        return DataView is { } view && _selectedKeys.Contains(item.Key) ? view.ToggleSelectionAsync(item, false) : Task.CompletedTask;
     }
 
     Task IExplorerContentInteraction.SortByAsync(CatalogSortField field)
@@ -1155,7 +1162,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     // Every move goes through the data view's change of location, which the explorer accepts or refuses before anything changes.
     private Task MoveToFolderAsync(ICatalogFolderItem? folder)
-        => _dataView is { } view ? view.MakeCurrentAsync(folder) : Task.CompletedTask;
+        => DataView is { } view ? view.MakeCurrentAsync(folder) : Task.CompletedTask;
 
     // A file, or a folder the reader may not open, is refused before the location changes.
     private void HandleCurrentItemChanging(DataViewCurrentItemChange<ICatalogItem> change)
@@ -1514,7 +1521,7 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     protected override ValueTask DisposeAsyncCore()
     {
         Context.CultureState.Unsubscribe(HandleCultureChangedAsync);
-        (_dataView as IDataView<ICatalogItem>)?.Unsubscribe(HandleContentChangedAsync);
+        DataView?.Unsubscribe(HandleContentChangedAsync);
         SearchDebouncer.Cancel();
 
         return base.DisposeAsyncCore();

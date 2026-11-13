@@ -299,6 +299,44 @@ public sealed class ExplorerTests
             => await page.WaitForFunctionAsync($"name => ({FocusedItem})() === name", name);
     }
 
+    public sealed class ExplorerLoading(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_list_what_its_store_answers_on_its_next_turn_without_a_refresh(string runtime)
+        {
+            // Act — the store's first answer arrives before the page has taken the explorer's first render in
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer-loading");
+            await using var _ = context;
+            var explorer = page.Locator("#answered");
+
+            // Assert
+            await Assertions.Expect(explorer.Locator(".forma-data-card-name", new() { HasText = "first.svg" })).ToBeVisibleAsync();
+            await Assertions.Expect(explorer.Locator(".forma-explorer-scroll")).ToHaveAttributeAsync("aria-busy", "false");
+            await Assertions.Expect(explorer).Not.ToContainTextAsync("Loading media");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_list_what_its_store_held_answers_once_it_is_released(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer-loading");
+            await using var _ = context;
+            var explorer = page.Locator("#held");
+            await Assertions.Expect(explorer.Locator(".forma-explorer-scroll")).ToHaveAttributeAsync("aria-busy", "true");
+            await Assertions.Expect(explorer).ToContainTextAsync("Loading media");
+
+            // Act
+            await page.Locator("#release").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(explorer.Locator(".forma-data-card-name", new() { HasText = "first.svg" })).ToBeVisibleAsync();
+            await Assertions.Expect(explorer.Locator(".forma-explorer-scroll")).ToHaveAttributeAsync("aria-busy", "false");
+            await Assertions.Expect(explorer).Not.ToContainTextAsync("Loading media");
+        }
+    }
+
     public sealed class ExplorerDetails(BrowserHost host)
     {
         private static readonly string[] ByName = ["Archive", "alpha.txt", "beta.txt", "gamma.txt"];
