@@ -14,7 +14,7 @@
     "Folder Path": "נתיב התיקייה",
     "\"{Name}\" is not a kind of file this explorer accepts.": "\"{Name}\" אינו סוג קובץ שהסייר הזה מקבל.",
     "\"{Name}\" is larger than {Size}.": "\"{Name}\" גדול מ-\u2068{Size}\u2069.",
-    "This explorer holds at most {Size}.": "הסייר הזה מכיל לכל היותר {Size}.",
+    "This explorer holds at most {Size}.": "הסייר הזה מכיל לכל היותר \u2068{Size}\u2069.",
     "\"{Name}\" can't be deleted.": "אי אפשר למחוק את \"{Name}\".",
     "\"{Name}\" can't be moved.": "אי אפשר להעביר את \"{Name}\".",
     "\"{Name}\" can't move into itself or a folder inside it.": "אי אפשר להעביר את \"{Name}\" לתוך עצמה או לתיקייה שבתוכה.",

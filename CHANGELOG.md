@@ -93,6 +93,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - `CatalogConstraints` takes a `MaxFileBytes`, the most bytes one file may hold, and a `FormaExplorer` refuses a file
   picked for upload past it, raising `OnRejected` with `CatalogRejectionReason.FileBytes`; the composer's
   `ExplorerPluginOptions` forwards one.
+- A `FormaExplorer`'s Hebrew refusal naming the most bytes it holds reads the size in its own direction, where the unit
+  stood before the number.
 - A [`FormaFilePicker`](docs/component-catalog.md#formafilepicker) refusing a file too large names the size it went
   past.
 
