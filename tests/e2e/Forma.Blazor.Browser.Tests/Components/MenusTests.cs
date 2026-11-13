@@ -39,6 +39,36 @@ public sealed class MenusTests
 
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_close_before_a_command_asks_for_confirmation_and_hold_the_focus_on_its_trigger_after(string runtime)
+        {
+            // Arrange — the menu opened
+            var (context, page) = await OpenAsync(host, runtime, "drop-down-menu");
+            await using var _ = context;
+            var trigger = page.Locator("#menu");
+            var menu = page.GetByRole(AriaRole.Menu);
+            var dialog = page.GetByRole(AriaRole.Dialog);
+            await trigger.ClickAsync();
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
+
+            // Act
+            await page.Locator("#delete").ClickAsync();
+
+            // Assert — the menu gone while the dialog asks
+            await Assertions.Expect(dialog).ToContainTextAsync("Delete the file?");
+            await Assertions.Expect(menu).ToBeHiddenAsync();
+            await Assertions.Expect(trigger).ToHaveAttributeAsync("aria-expanded", "false");
+
+            // Act
+            await dialog.GetByRole(AriaRole.Button, new() { Name = "Keep", Exact = true }).ClickAsync();
+
+            // Assert — the focus on the trigger once the dialog is answered
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Keep");
+            await Assertions.Expect(dialog).ToBeHiddenAsync();
+            await Assertions.Expect(trigger).ToBeFocusedAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_hold_tab_within_itself_and_wrap_at_either_end(string runtime)
         {
             // Arrange — the menu opened and moved to its last item

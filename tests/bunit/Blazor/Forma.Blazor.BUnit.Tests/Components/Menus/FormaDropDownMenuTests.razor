@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Bunit.Rendering
+@using Microsoft.AspNetCore.Components.Web
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
 @code {
@@ -734,6 +736,62 @@
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-dropdown-menu"));
+        }
+
+        [Fact]
+        public async Task Should_close_the_menu_before_an_ordinary_item_s_command_runs()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var isMenuShownAsRun = new List<bool>();
+            IRenderedComponent<ContainerFragment>? cut = null;
+            // A command that awaits, as one opening a dialog does, reads the page once what the activation changed is drawn.
+            async Task RecordMenuAsync()
+            {
+                await Task.Yield();
+                isMenuShownAsRun.Add(cut!.FindAll(".forma-dropdown-menu").Count > 0);
+            }
+            cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent><FormaDropDownMenuItem OnClick="RecordMenuAsync">Delete</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Act
+            await cut.Find(".forma-dropdown-menu-item").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal([false], isMenuShownAsRun);
+            Assert.Equal("false", cut.Find(".forma-dropdown-menu-trigger").GetAttribute("aria-expanded"));
+        }
+
+        [Fact]
+        public async Task Should_run_the_command_of_an_item_that_keeps_the_menu_open_while_it_stays_open()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var isMenuShownAsRun = new List<bool>();
+            IRenderedComponent<ContainerFragment>? cut = null;
+            // A command that awaits, as one opening a dialog does, reads the page once what the activation changed is drawn.
+            async Task RecordMenuAsync()
+            {
+                await Task.Yield();
+                isMenuShownAsRun.Add(cut!.FindAll(".forma-dropdown-menu").Count > 0);
+            }
+            cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent><FormaDropDownMenuItem KeepsOpen="true" OnClick="RecordMenuAsync">Wrap Text</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Act
+            await cut.Find(".forma-dropdown-menu-item").ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal([true], isMenuShownAsRun);
+            Assert.Single(cut.FindAll(".forma-dropdown-menu"));
         }
 
         [Fact]

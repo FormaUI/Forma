@@ -1,6 +1,9 @@
 @page "/{Runtime}/drop-down-menu"
+@using Forma.Framework.Feedback
+@inject IConfirmDialogService ConfirmService
 
-@* A menu of commands, two in a group, one past a divider and a last one that stays open as it draws another ahead of the rest, the command it last ran written where the check reads it. *@
+@* A menu of commands, two in a group, one past a divider asking for confirmation first, and a last one that stays open as it draws another
+   ahead of the rest, the command it last ran written where the check reads it. *@
 <FormaDropDownMenu Id="menu">
     <Trigger>Actions</Trigger>
     <ChildContent>
@@ -13,13 +16,17 @@
             <FormaDropDownMenuItem Id="duplicate" OnClick="@(() => _lastCommand = "Duplicate")">Duplicate</FormaDropDownMenuItem>
         </FormaDropDownMenuGroup>
         <FormaDropDownMenuDivider />
-        <FormaDropDownMenuItem Id="delete" IsDestructive="true" OnClick="@(() => _lastCommand = "Delete")">Delete</FormaDropDownMenuItem>
+        <FormaDropDownMenuItem Id="delete" IsDestructive="true" OnClick="DeleteAsync">Delete</FormaDropDownMenuItem>
         <FormaDropDownMenuItem Id="pin" KeepsOpen="true" OnClick="@(() => _isPinned = true)">Pin</FormaDropDownMenuItem>
     </ChildContent>
 </FormaDropDownMenu>
+<FormaConfirmDialog />
 <output id="result">@_lastCommand</output>
 
 @code {
     private string? _lastCommand;
     private bool _isPinned;
+
+    private async Task DeleteAsync()
+        => _lastCommand = await ConfirmService.ConfirmAsync("Delete the file?", "Delete", "Keep") ? "Delete" : "Keep";
 }

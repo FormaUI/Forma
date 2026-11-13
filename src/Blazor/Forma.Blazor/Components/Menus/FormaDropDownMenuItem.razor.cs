@@ -57,12 +57,14 @@ public sealed partial class FormaDropDownMenuItem : FormaElementBase
             return;
         }
 
-        await OnClick.InvokeAsync();
-
+        // An ordinary command runs once the menu has closed and handed the focus back to its trigger, so a dialog it opens stands
+        // alone and takes the focus from there; the item is gone by then, and only the host's callback runs.
         if (!KeepsOpen)
         {
             await Menu.RequestActivateAsync();
         }
+
+        await OnClick.InvokeAsync();
     }
 
     /// <inheritdoc />
