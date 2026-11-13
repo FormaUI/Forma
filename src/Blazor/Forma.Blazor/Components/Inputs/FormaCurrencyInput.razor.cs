@@ -111,6 +111,11 @@ public sealed partial class FormaCurrencyInput<TValue> : FormaElementBase
         _minDecimalPlaces = Math.Min(minorUnits, _maxDecimalPlaces);
     }
 
+    /// <summary>Focuses the amount, answering whether the focus was asked of an element, as the number input it draws answers.</summary>
+    /// <param name="preventScroll">Whether the page stays where it is rather than scrolling the amount into view.</param>
+    public ValueTask<bool> FocusAsync(bool preventScroll = false)
+        => NumberInput is null ? ValueTask.FromResult(false) : NumberInput.FocusAsync(preventScroll);
+
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder.Add("forma-currency-input");

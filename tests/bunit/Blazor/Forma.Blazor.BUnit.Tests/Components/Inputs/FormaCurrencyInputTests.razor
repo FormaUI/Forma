@@ -307,4 +307,31 @@
 
         public int? Quantity { get; set; }
     }
+
+    public sealed class Focusing
+    {
+        [Fact]
+        public async Task Should_focus_the_amount_of_the_number_input_it_draws()
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            var model = new Product();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Price" />
+            </FakeFormHost>);
+            var amount = cut.FindComponent<FormaCurrencyInput<decimal?>>();
+
+            // Act
+            var asked = await amount.InvokeAsync(() => amount.Instance.FocusAsync().AsTask());
+
+            // Assert
+            Assert.True(asked);
+            Assert.Equal([cut.Find("input").GetAttribute("blazor:elementReference")], GetFocusedIds(ctx.JSInterop));
+        }
+
+        private static List<string?> GetFocusedIds(BunitJSInterop js)
+            => [.. js.Invocations
+                .Where(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus")
+                .Select(invocation => Assert.IsType<ElementReference>(invocation.Arguments[0]).Id)];
+    }
 }

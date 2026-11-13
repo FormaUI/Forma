@@ -173,6 +173,10 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
         => HasLabel && Width is { } width ? $"inline-size: {width}" : null;
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         _edits = new DomTextEdits(Context.DomEngine, DisplayText, HandleTextChangedAsync);

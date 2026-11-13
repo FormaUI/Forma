@@ -442,6 +442,41 @@ public sealed partial class InputsTests
         await Assertions.Expect(input).Not.ToHaveClassAsync(HasValuePattern());
     }
 
+    public sealed class InputFocus(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_focus_a_field_once_its_tab_is_shown_and_the_control_of_each_composite_input(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "input-focus");
+            await using var _ = context;
+            var asked = page.Locator("#asked");
+
+            // Act — the summary, in a tab not shown
+            await page.Locator("#focus-summary").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(asked).ToHaveTextAsync("summary True");
+            await Assertions.Expect(page.Locator("#tab-details")).ToHaveAttributeAsync("aria-selected", "true");
+            await Assertions.Expect(page.Locator("#summary")).ToBeFocusedAsync();
+
+            // Act — the date-time picker
+            await page.Locator("#focus-publish").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(asked).ToHaveTextAsync("publish True");
+            await Assertions.Expect(page.Locator("#publish-date")).ToBeFocusedAsync();
+
+            // Act — the composer
+            await page.Locator("#focus-body").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(asked).ToHaveTextAsync("body True");
+            await Assertions.Expect(page.Locator("#body").GetByRole(AriaRole.Textbox)).ToBeFocusedAsync();
+        }
+    }
+
     public sealed class FieldDescription(BrowserHost host)
     {
         [Theory]

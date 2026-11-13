@@ -83,6 +83,10 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     }
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);

@@ -1,0 +1,63 @@
+@page "/{Runtime}/input-focus"
+@using Forma.Blazor.Components.Composer
+@using Forma.Framework.Composer.Documents
+
+@* A text box in a tab not shown, which a button shows and focuses once its tab is drawn, and a date-time picker and a composer each
+   focused by a button of its own, whether each was asked written where the check reads it. *@
+<FormaTabs Id="tabs" Label="Article" ActiveTabId="@_tab" ActiveTabIdChanged="tab => _tab = tab">
+    <FormaTab TabId="general" Title="General">The article's general settings.</FormaTab>
+    <FormaTab TabId="details" Title="Details">
+        <FormaTextBox @ref="_summary" Id="summary" @bind-Value="_article.Summary" Label="Summary" />
+    </FormaTab>
+</FormaTabs>
+<FormaButton Id="focus-summary" OnClick="ShowSummary">Focus Summary</FormaButton>
+
+<FormaDateTimePicker @ref="_publish" Id="publish" @bind-Value="_article.Publishes" Label="Publishes" />
+<FormaButton Id="focus-publish" OnClick="FocusPublishAsync">Focus Publishes</FormaButton>
+
+<FormaComposer @ref="_body" Id="body" @bind-Value="_article.Body" />
+<FormaButton Id="focus-body" OnClick="FocusBodyAsync">Focus Body</FormaButton>
+
+<output id="asked">@_asked</output>
+
+@code {
+    private readonly Article _article = new();
+    private FormaTextBox _summary = default!;
+    private FormaDateTimePicker<DateTime?> _publish = default!;
+    private FormaComposer _body = default!;
+    private string _tab = "general";
+    private bool _isSummaryFocusPending;
+    private string? _asked;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // The summary is focused once the render that shows its tab has reached the page.
+        if (_isSummaryFocusPending)
+        {
+            _isSummaryFocusPending = false;
+            _asked = $"summary {await _summary.FocusAsync(preventScroll: true)}";
+            StateHasChanged();
+        }
+    }
+
+    private void ShowSummary()
+    {
+        _tab = "details";
+        _isSummaryFocusPending = true;
+    }
+
+    private async Task FocusPublishAsync()
+        => _asked = $"publish {await _publish.FocusAsync()}";
+
+    private async Task FocusBodyAsync()
+        => _asked = $"body {await _body.FocusAsync()}";
+
+    private sealed class Article
+    {
+        public string? Summary { get; set; }
+
+        public DateTime? Publishes { get; set; }
+
+        public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.PlainText, string.Empty);
+    }
+}

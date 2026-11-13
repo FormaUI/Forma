@@ -41,7 +41,8 @@
         {
             <div class="forma-date-time-picker-controls">
                 <span id="@DateNameId" class="forma-date-time-picker-name" aria-hidden="true">@L["Date"]</span>
-                <FormaDateBox ElementId="@DateId"
+                <FormaDateBox @ref="DateBox"
+                              ElementId="@DateId"
                               OwnerRuntimeId="@Context.RuntimeId"
                               Date="@_date"
                               MinDate="@MinDate"

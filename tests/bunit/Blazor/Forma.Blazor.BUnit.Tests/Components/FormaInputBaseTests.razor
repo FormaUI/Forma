@@ -403,9 +403,128 @@
         }
     }
 
+    public sealed class Focusing
+    {
+        [Fact]
+        public async Task Should_focus_its_control_and_answer_that_it_asked()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var cut = RenderField(ctx);
+
+            // Act
+            var asked = await cut.InvokeAsync(() => cut.Instance.FocusAsync().AsTask());
+
+            // Assert
+            var focus = Assert.Single(GetFocusCalls(ctx.JSInterop));
+            Assert.Multiple(
+                () => Assert.True(asked),
+                () => Assert.Equal(cut.Find("input").GetAttribute("blazor:elementReference"), Assert.IsType<ElementReference>(focus.Arguments[0]).Id),
+                () => Assert.Equal(false, focus.Arguments[1]));
+        }
+
+        [Fact]
+        public async Task Should_leave_the_page_where_it_stands_when_asked()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var cut = RenderField(ctx);
+
+            // Act
+            await cut.InvokeAsync(() => cut.Instance.FocusAsync(preventScroll: true).AsTask());
+
+            // Assert
+            Assert.Equal(true, Assert.Single(GetFocusCalls(ctx.JSInterop)).Arguments[1]);
+        }
+
+        [Fact]
+        public async Task Should_answer_false_without_asking_before_it_is_drawn()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var cut = RenderField(ctx, isDrawn: false);
+
+            // Act
+            var asked = await cut.InvokeAsync(() => cut.Instance.FocusAsync().AsTask());
+
+            // Assert
+            Assert.False(asked);
+            Assert.Empty(GetFocusCalls(ctx.JSInterop));
+        }
+
+        [Fact]
+        public async Task Should_answer_false_without_asking_once_disposed()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var cut = RenderField(ctx);
+            await cut.InvokeAsync(() => cut.Instance.DisposeAsync().AsTask());
+
+            // Act
+            var asked = await cut.InvokeAsync(() => cut.Instance.FocusAsync().AsTask());
+
+            // Assert
+            Assert.False(asked);
+            Assert.Empty(GetFocusCalls(ctx.JSInterop));
+        }
+
+        [Fact]
+        public async Task Should_answer_false_without_asking_under_a_static_render()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var cut = RenderField(ctx);
+
+            // Act
+            var asked = await cut.InvokeAsync(() => cut.Instance.FocusAsync().AsTask());
+
+            // Assert
+            Assert.False(asked);
+            Assert.Empty(GetFocusCalls(ctx.JSInterop));
+        }
+
+        [Fact]
+        public async Task Should_answer_false_without_asking_while_its_host_disables_it()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var cut = RenderField(ctx, disabled: true);
+
+            // Act
+            var asked = await cut.InvokeAsync(() => cut.Instance.FocusAsync().AsTask());
+
+            // Assert
+            Assert.False(asked);
+            Assert.Empty(GetFocusCalls(ctx.JSInterop));
+        }
+
+        private static IRenderedComponent<Field> RenderField(FormaInputBaseTests ctx, bool isDrawn = true, bool disabled = false)
+        {
+            var model = new FakeModel();
+
+            return ctx.Render<Field>(parameters =>
+            {
+                parameters
+                    .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text)
+                    .Add(field => field.LeavesRootUncaptured, !isDrawn);
+
+                if (disabled)
+                {
+                    parameters.AddUnmatched("disabled", true);
+                }
+            });
+        }
+
+        private static List<JSRuntimeInvocation> GetFocusCalls(BunitJSInterop js)
+            => [.. js.Invocations.Where(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus")];
+    }
+
     public sealed class Field : FormaInputBase<string?>
     {
         [Parameter] public string? PartId { get; set; }
+
+        [Parameter] public bool LeavesRootUncaptured { get; set; }
 
         [Parameter] public Type? StringsSource { get; set; }
 
@@ -458,7 +577,11 @@
             builder.AddAttribute(4, "value", CurrentValueAsString);
             builder.AddMultipleAttributes(5, AdditionalAttributes);
             builder.AddAttribute(6, "aria-describedby", DescribedBy);
-            builder.AddElementReferenceCapture(7, element => RootElement = element);
+            if (!LeavesRootUncaptured)
+            {
+                builder.AddElementReferenceCapture(7, element => RootElement = element);
+            }
+
             builder.CloseElement();
         }
 

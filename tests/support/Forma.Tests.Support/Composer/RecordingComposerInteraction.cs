@@ -31,6 +31,9 @@ public sealed class RecordingComposerInteraction : IComposerInteraction
     /// <summary>The settling of the edits joined through <see cref="JoinEdits"/>, while joined.</summary>
     public Func<Task<bool>>? JoinedEdits { get; private set; }
 
+    /// <summary>The focus joined through <see cref="JoinFocus"/>, while joined.</summary>
+    public Func<bool, ValueTask<bool>>? JoinedFocus { get; private set; }
+
     /// <summary>Whether each report the editor made said its text can't follow the reader's edits, in order.</summary>
     public List<bool> TextFaults { get; } = [];
 
@@ -86,6 +89,26 @@ public sealed class RecordingComposerInteraction : IComposerInteraction
         JoinedEdits = settleEditsAsync;
 
         return new Joined(this, settleEditsAsync);
+    }
+
+    /// <inheritdoc />
+    public IDisposable JoinFocus(Func<bool, ValueTask<bool>> focusAsync)
+    {
+        JoinedFocus = focusAsync;
+
+        return new JoinedFocusRegistration(this, focusAsync);
+    }
+
+    /// <summary>The focus joined, taken out as the registration is disposed.</summary>
+    private sealed class JoinedFocusRegistration(RecordingComposerInteraction interaction, Func<bool, ValueTask<bool>> focusAsync) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (interaction.JoinedFocus == focusAsync)
+            {
+                interaction.JoinedFocus = null;
+            }
+        }
     }
 
     /// <summary>The edits joined, taken out as the registration is disposed.</summary>

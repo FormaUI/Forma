@@ -77,6 +77,10 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
         => DisplayName ?? Label;
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (typeof(TValue) != typeof(TimeOnly) && !IsNullable)

@@ -761,4 +761,31 @@
 
     private static string FormatInEnglish(string text)
         => CultureText.FormatTimes(text, CultureInfo.GetCultureInfo("en-US"));
+
+    public sealed class Focusing
+    {
+        [Fact]
+        public async Task Should_focus_its_date_trigger_ahead_of_its_time()
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            var model = new Booking();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker Id="starts" @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+            var picker = cut.FindComponent<FormaDateTimePicker<DateTime?>>();
+
+            // Act
+            var asked = await picker.InvokeAsync(() => picker.Instance.FocusAsync().AsTask());
+
+            // Assert
+            Assert.True(asked);
+            Assert.Equal([cut.Find("#starts-date").GetAttribute("blazor:elementReference")], GetFocusedIds(ctx.JSInterop));
+        }
+
+        private static List<string?> GetFocusedIds(BunitJSInterop js)
+            => [.. js.Invocations
+                .Where(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus")
+                .Select(invocation => Assert.IsType<ElementReference>(invocation.Arguments[0]).Id)];
+    }
 }

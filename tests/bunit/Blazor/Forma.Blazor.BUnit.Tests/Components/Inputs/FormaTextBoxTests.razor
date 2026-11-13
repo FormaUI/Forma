@@ -942,4 +942,50 @@
             Assert.Throws<ArgumentOutOfRangeException>(act);
         }
     }
+
+    public sealed class Focusing
+    {
+        [Fact]
+        public async Task Should_focus_its_input()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" />
+            </FakeFormHost>);
+            var box = cut.FindComponent<FormaTextBox>();
+
+            // Act
+            var asked = await box.InvokeAsync(() => box.Instance.FocusAsync().AsTask());
+
+            // Assert
+            Assert.True(asked);
+            Assert.Equal([cut.Find("input").GetAttribute("blazor:elementReference")], GetFocusedIds(ctx.JSInterop));
+        }
+
+        [Fact]
+        public async Task Should_answer_false_without_asking_while_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaTextBoxTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox @bind-Value="model.Text" Label="Name" Disabled="true" />
+            </FakeFormHost>);
+            var box = cut.FindComponent<FormaTextBox>();
+
+            // Act
+            var asked = await box.InvokeAsync(() => box.Instance.FocusAsync().AsTask());
+
+            // Assert
+            Assert.False(asked);
+            Assert.Empty(GetFocusedIds(ctx.JSInterop));
+        }
+
+        private static List<string?> GetFocusedIds(BunitJSInterop js)
+            => [.. js.Invocations
+                .Where(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus")
+                .Select(invocation => Assert.IsType<ElementReference>(invocation.Arguments[0]).Id)];
+    }
 }

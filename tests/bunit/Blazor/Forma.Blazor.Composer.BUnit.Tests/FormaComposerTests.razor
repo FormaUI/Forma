@@ -2072,6 +2072,25 @@
                 () => Assert.Equal("Plain words only.", description.TextContent),
                 () => Assert.Contains(description.Id, cut.Find("textarea").GetAttribute("aria-describedby")!.Split(' ')));
         }
+
+        [Fact]
+        public async Task Should_focus_its_editors_editable()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" />);
+            cut.WaitForAssertion(() => Assert.Single(cut.FindAll("textarea")));
+            var composer = cut.FindComponent<FormaComposer>();
+
+            // Act
+            var asked = await composer.InvokeAsync(() => composer.Instance.FocusAsync().AsTask());
+
+            // Assert
+            var focus = Assert.Single(ctx.JSInterop.Invocations, invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
+            Assert.True(asked);
+            Assert.Equal(cut.Find("textarea").GetAttribute("blazor:elementReference"), Assert.IsType<ElementReference>(focus.Arguments[0]).Id);
+        }
     }
 
     /// <summary>An input action handler that performs no action.</summary>

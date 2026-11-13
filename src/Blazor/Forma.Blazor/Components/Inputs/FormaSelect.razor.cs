@@ -78,6 +78,10 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
         => FindSelectedOption()?.Label ?? Placeholder ?? L["Select an Option"];
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _trigger = new InputRegistration(InputRouter, HandleActionAsync);
 

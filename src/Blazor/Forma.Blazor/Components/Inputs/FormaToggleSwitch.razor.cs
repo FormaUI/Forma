@@ -24,6 +24,10 @@ public sealed partial class FormaToggleSwitch : FormaInputBase<bool>
     private void HandleChange(ChangeEventArgs args) => CurrentValue = args.Value is true;
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder.Add("forma-toggle-switch-input");
 

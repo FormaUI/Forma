@@ -26,7 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [A host's integration](#a-hosts-integration) | Fifteen findings, four fixed |
+| [A host's integration](#a-hosts-integration) | Fifteen findings, five fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -176,7 +176,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 | The explorer's asynchronous first load | `FormaExplorer` heard from its data view only after its first render, which on the Server and in a web view runs once the page has taken that render in, so a store answering within that round trip announced its answer to nobody and the explorer showed it loading until a refresh. It now hears from the data view as it captures it | Fixed |
 | A menu runs its command before it closes | `FormaDropDownMenuItem` awaited its `OnClick` before it closed the menu, so a command opening a dialog kept the menu open while the dialog was up, and one removing its row left focus on a removed element. An item that doesn't keep the menu open now closes it, handing the focus back to its trigger, before its command runs; where the focus goes once a row is gone stays with the list or the host | Fixed |
 | A field's description | No input carried instructions in its `aria-describedby`, and `FormaField`'s `FooterContent` served the password box alone. Every input now takes a `Description`, drawn beneath it and named after the host's own ids, its field, a checkbox's label or the composer's frame drawing it | Fixed |
-| Focusing an input | No input has a focus operation, and the roots of `FormaDateTimePicker` and the composer are wrappers rather than what takes focus | Open: a `FocusAsync` on the input base |
+| Focusing an input | No input had a focus operation, and the roots of `FormaDateTimePicker` and the composer are wrappers rather than what takes the focus. Every input now has a `FocusAsync`, which focuses the control it is worked in and answers whether it asked an element, answering false before the input is drawn, once it is disposed, under a static render and while it is disabled | Fixed |
 | A paged data view's reserved height | `FormaDataView` holds a full page's height whenever it pages and never releases it, a single page included, as its design's rule says | Open: reserve only while another page exists, changing the design's rule |
 | Upload refusals | `IFileStore.SaveAsync` refuses only by throwing, and `CatalogConstraints` has no per-file ceiling | Open: `SaveAsync` answering with the resource it saved or a refusal carrying its reason and arguments, and a ceiling on each file's size |
 | A link that looks like a button | `FormaButton` always renders a `<button>` | Open: `Href`, `Target` and `Rel` |

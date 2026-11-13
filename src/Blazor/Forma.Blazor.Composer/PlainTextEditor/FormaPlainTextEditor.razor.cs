@@ -44,6 +44,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private CancellationTokenSource? _commitCancellation;
     private CancellationTokenSource? _selectionCancellation;
     private IDisposable? _editsRegistration;
+    private IDisposable? _focusRegistration;
     private DomObservation<TextSelectionWatchOptions, TextSelection>? _selection;
     private string? _typedContent;
     private string? _committedContent;
@@ -76,6 +77,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
         _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
 
         _editsRegistration = Interaction?.JoinEdits(SettleAsync);
+        _focusRegistration = Interaction?.JoinFocus(FocusEditableAsync);
     }
 
     /// <inheritdoc />
@@ -108,6 +110,19 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
         ArgumentNullException.ThrowIfNull(input);
 
         return Interaction?.ExecuteCommandAsync(action) ?? Task.CompletedTask;
+    }
+
+    // The textarea takes the focus the composer is given.
+    private async ValueTask<bool> FocusEditableAsync(bool preventScroll)
+    {
+        if (_textareaElement.Id is null)
+        {
+            return false;
+        }
+
+        await _textareaElement.FocusAsync(preventScroll);
+
+        return true;
     }
 
     // What reads the document reads the reader's edits made before it, applied and committed, and the selection as it stands.
@@ -273,6 +288,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     protected override async ValueTask DisposeAsyncCore()
     {
         _editsRegistration?.Dispose();
+        _focusRegistration?.Dispose();
 
         if (_commitCancellation is not null)
         {

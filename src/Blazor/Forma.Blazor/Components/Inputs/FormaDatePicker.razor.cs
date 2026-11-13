@@ -58,6 +58,10 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
         => _isShownCleared ? null : ToDate(Value);
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
     protected override void OnInitialized()
     {
         if (typeof(TValue) != typeof(DateOnly) && !IsNullable)

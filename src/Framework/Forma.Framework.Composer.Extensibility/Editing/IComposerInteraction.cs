@@ -28,6 +28,10 @@ public interface IComposerInteraction
     /// <returns>The registration, which takes the edits out as it is disposed.</returns>
     IDisposable JoinEdits(Func<Task<bool>> settleEditsAsync);
 
+    /// <summary>Takes the focus of the editor in the surface, which <paramref name="focusAsync"/> gives its editable element, leaving the page where it stands when asked, and answers with whether it asked an element for the focus, so the composer's own focus reaches the editor.</summary>
+    /// <returns>The registration, which takes the focus out as it is disposed.</returns>
+    IDisposable JoinFocus(Func<bool, ValueTask<bool>> focusAsync);
+
     /// <summary>Shows on the composer's field that the text of the editor in the surface can't follow the reader's edits while <paramref name="isFaulted"/>, and takes it off once it can.</summary>
     void ReportTextFault(bool isFaulted);
 }

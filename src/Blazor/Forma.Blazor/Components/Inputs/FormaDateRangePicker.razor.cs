@@ -60,6 +60,10 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
         => _draft.Span is { } span ? new DateRange(span.From, span.To) : Value;
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);

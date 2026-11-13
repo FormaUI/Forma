@@ -35,6 +35,14 @@ public sealed partial class FormaCompactRichTextEditor : FormaInputBase<Composer
         => Composer is null ? default : Composer.RootElement;
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
+    protected override ValueTask<bool> FocusControlAsync(bool preventScroll)
+        => Composer is null ? ValueTask.FromResult(false) : Composer.FocusAsync(preventScroll);
+
+    /// <inheritdoc />
     protected override bool TryParseValueFromString(
         string? value,
         [MaybeNullWhen(false)] out ComposerDocument result,

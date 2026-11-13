@@ -44,6 +44,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     private RichTextEditor _canvas = default!;
     private DomTextEdits _edits = default!;
     private IDisposable? _editsRegistration;
+    private IDisposable? _focusRegistration;
     private InputRegistration _inputRegistration = default!;
 
     // The document the canvas shows: the one it last sent, until the composer's document departs from what the canvas committed.
@@ -99,6 +100,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             ?? throw new InvalidOperationException($"{nameof(FormaRichTextEditor)} requires a cascaded {nameof(RichTextEditorPlugin)}.");
 
         _editsRegistration = Interaction?.JoinEdits(SettleAsync);
+        _focusRegistration = Interaction?.JoinFocus(FocusEditableAsync);
 
         _editorPlugin.CommandRequested += HandlePluginCommand;
         _editorPlugin.LinkDialogRequested += HandleLinkDialogRequested;
@@ -182,6 +184,19 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
         {
             Interaction?.ReportTextFault(change.IsFaulted);
         }
+    }
+
+    // The canvas takes the focus the composer is given.
+    private async ValueTask<bool> FocusEditableAsync(bool preventScroll)
+    {
+        if (_editorElement.Id is null)
+        {
+            return false;
+        }
+
+        await _editorElement.FocusAsync(preventScroll);
+
+        return true;
     }
 
     // What reads the document reads every edit the reader made in the canvas, its pause cut short.
@@ -491,6 +506,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
 
         await _inputRegistration.DisposeAsync();
         _editsRegistration?.Dispose();
+        _focusRegistration?.Dispose();
         _selfReference?.Dispose();
 
         // The edits are made before the plugin is checked, so disposal after a missing cascade finds none.

@@ -40,6 +40,10 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
         => Unit is null ? null : DisplayValue;
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);

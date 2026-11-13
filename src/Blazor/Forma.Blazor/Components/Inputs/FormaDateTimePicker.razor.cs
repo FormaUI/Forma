@@ -78,6 +78,8 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
 
     private FormaField? FieldContainer { get; set; }
 
+    private FormaDateBox? DateBox { get; set; }
+
     private FormaTimeBox? TimeBox { get; set; }
 
     /// <inheritdoc />
@@ -173,6 +175,10 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
             || MaxClock is { Second: not 0 }
             || (Step is { } step && step.Ticks % TimeSpan.TicksPerMinute != 0)
             || EffectiveListInterval.Ticks % TimeSpan.TicksPerMinute != 0;
+
+    /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -397,6 +403,20 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
         => UnderlyingType == typeof(DateTimeOffset)
             ? (TValue)(object)new DateTimeOffset(clock, EntryOffset)
             : (TValue)(object)DateTime.SpecifyKind(clock, EntryKind);
+
+    /// <inheritdoc />
+    protected override async ValueTask<bool> FocusControlAsync(bool preventScroll)
+    {
+        // The date comes first, so its trigger takes the focus the picker is given.
+        if (DateBox?.TriggerElement is not { Id: not null } trigger)
+        {
+            return false;
+        }
+
+        await trigger.FocusAsync(preventScroll);
+
+        return true;
+    }
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

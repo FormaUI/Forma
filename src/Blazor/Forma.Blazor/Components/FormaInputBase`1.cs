@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.JSInterop;
 
 /// <summary>The base of every Forma form input: the framework's input with the context, strings, log, host surface and disposal of any Forma component.</summary>
 /// <typeparam name="TValue">The value the input binds.</typeparam>
@@ -107,6 +108,10 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     protected bool HasDescription
         => !string.IsNullOrWhiteSpace(Description);
 
+    /// <summary>Whether the input's control can take the focus, which a disabled one can't.</summary>
+    protected virtual bool CanFocus
+        => AdditionalAttributes?.GetValueOrDefault("disabled") is null or false;
+
     /// <summary>The name the input's control posts its value under from a plain form: the host's own, or the bound value's, as Blazor's own inputs write it.</summary>
     protected string? ControlName
         => string.IsNullOrEmpty(NameAttributeValue) ? null : NameAttributeValue;
@@ -151,6 +156,26 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         }
 
         return base.SetParametersAsync(parameters);
+    }
+
+    /// <summary>Focuses the input's control, answering whether the focus was asked of an element.</summary>
+    /// <param name="preventScroll">Whether the page stays where it is rather than scrolling the control into view.</param>
+    /// <remarks>Before the input is first drawn, once it is disposed, under a static render, while it is disabled and once its circuit is gone, nothing is asked and the answer is false.</remarks>
+    public async ValueTask<bool> FocusAsync(bool preventScroll = false)
+    {
+        if (IsDisposed || !RendererInfo.IsInteractive || !CanFocus)
+        {
+            return false;
+        }
+
+        try
+        {
+            return await FocusControlAsync(preventScroll);
+        }
+        catch (JSDisconnectedException)
+        {
+            return false;
+        }
     }
 
     /// <inheritdoc />
@@ -252,6 +277,20 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     /// <summary>Adds the IDs of elements rendered by this component that describe the input.</summary>
     protected virtual void BuildDescribedBy(ICollection<string> ids)
     {
+    }
+
+    /// <summary>Focuses the element of the input that takes the focus, its root unless it says otherwise, answering whether the focus was asked of an element.</summary>
+    /// <param name="preventScroll">Whether the page stays where it is rather than scrolling the element into view.</param>
+    protected virtual async ValueTask<bool> FocusControlAsync(bool preventScroll)
+    {
+        if (RootElement.Id is null)
+        {
+            return false;
+        }
+
+        await RootElement.FocusAsync(preventScroll);
+
+        return true;
     }
 
     // A component its renderer has disposed takes no further render.

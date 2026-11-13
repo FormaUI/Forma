@@ -113,6 +113,10 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
         => Width is { } width ? $"inline-size: {width}" : null;
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
     protected override void OnParametersSet()
     {
         ArgumentNullException.ThrowIfNull(Options);

@@ -39,6 +39,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
   label, and a `FormaComposer` beneath its frame, where an editor plugin names it on its editable through
   `ComposerContext.DescribedBy`. `FormaField`'s `FooterContent` stays for anything else beneath a field, which no input
   reads as its description.
+- Every input has a `FocusAsync`, which focuses the control it is worked in, a `FormaDateTimePicker`'s date or a
+  `FormaComposer`'s editable among them, leaving the page where it stands when asked, and answers whether it asked an
+  element for the focus. Before the input is drawn, once it is disposed, under a static render, while it is disabled and
+  once its circuit is gone, it asks nothing and answers false. A `FormaCurrencyInput` hands it to the number input it
+  draws.
+- `IComposerInteraction` takes an editor's focus through `JoinFocus`, which an implementation of its own adds: it holds
+  the focus the editor hands it until the registration it answers with is disposed.
 
 ## `1.0.0-preview.5`
 

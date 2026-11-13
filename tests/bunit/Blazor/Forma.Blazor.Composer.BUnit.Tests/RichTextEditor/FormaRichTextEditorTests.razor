@@ -100,6 +100,28 @@
         }
 
         [Fact]
+        public async Task Should_take_the_focus_the_composer_is_given_on_its_canvas()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var editor = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js");
+            editor.SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+            cut.WaitForAssertion(() => Assert.Contains(editor.Invocations, invocation => invocation.Identifier == "attach"));
+            var composer = cut.FindComponent<FormaComposer>();
+
+            // Act
+            var asked = await composer.InvokeAsync(() => composer.Instance.FocusAsync().AsTask());
+
+            // Assert — the canvas is the element its script attached to
+            var canvas = Assert.IsType<ElementReference>(editor.Invocations.First(invocation => invocation.Identifier == "attach").Arguments[0]);
+            var focus = Assert.Single(ctx.JSInterop.Invocations, invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus");
+            Assert.True(asked);
+            Assert.Equal(canvas.Id, Assert.IsType<ElementReference>(focus.Arguments[0]).Id);
+        }
+
+        [Fact]
         public void Should_draw_a_pushed_marker_beside_the_block_it_names()
         {
             // Arrange

@@ -47,6 +47,7 @@ public sealed partial class FormaComposer(
     private readonly IComposerSyntaxHighlighter _syntaxHighlighter = syntaxHighlighter ?? NullSyntaxHighlighter.Instance;
     private IComposerEditorPlugin _activeEditor = default!;
     private Func<Task<bool>>? _settleEditorEditsAsync;
+    private Func<bool, ValueTask<bool>>? _focusEditorAsync;
     private IReadOnlyList<IComposerViewPlugin>? _activeViews;
     private IComposerViewPlugin? _activeView;
     private IReadOnlyList<IComposerPlugin> _surfacePlugins = [];
@@ -166,6 +167,10 @@ public sealed partial class FormaComposer(
             KeyBindings = _keyBindingCatalog,
             DescribedBy = DescribedBy,
         };
+
+    /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()
@@ -486,6 +491,15 @@ public sealed partial class FormaComposer(
         return new EditsRegistration(this, settleEditsAsync);
     }
 
+    IDisposable IComposerInteraction.JoinFocus(Func<bool, ValueTask<bool>> focusAsync)
+    {
+        ArgumentNullException.ThrowIfNull(focusAsync);
+
+        _focusEditorAsync = focusAsync;
+
+        return new FocusRegistration(this, focusAsync);
+    }
+
     void IComposerInteraction.ReportTextFault(bool isFaulted)
         => ReportTextFault(isFaulted, L["Your text didn't arrive in full. Edit it to try again."]);
 
@@ -714,6 +728,10 @@ public sealed partial class FormaComposer(
     }
 
     /// <inheritdoc />
+    protected override ValueTask<bool> FocusControlAsync(bool preventScroll)
+        => _focusEditorAsync is { } focusAsync ? focusAsync(preventScroll) : ValueTask.FromResult(false);
+
+    /// <inheritdoc />
     protected override bool TryParseValueFromString(
         string? value,
         [MaybeNullWhen(false)] out ComposerDocument result,
@@ -760,6 +778,18 @@ public sealed partial class FormaComposer(
         await _assetLoader.DisposeAsync();
         await _ownPlugins.DisposeAsync();
         await base.DisposeAsyncCore();
+    }
+
+    /// <summary>The focus of the editor in the surface, joined to the composer until the editor leaves.</summary>
+    private sealed class FocusRegistration(FormaComposer composer, Func<bool, ValueTask<bool>> focusAsync) : IDisposable
+    {
+        public void Dispose()
+        {
+            if (composer._focusEditorAsync == focusAsync)
+            {
+                composer._focusEditorAsync = null;
+            }
+        }
     }
 
     /// <summary>The edits of the editor in the surface, joined to the composer until the editor leaves.</summary>

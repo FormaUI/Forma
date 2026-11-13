@@ -40,6 +40,10 @@ public sealed partial class FormaCheckBox : FormaInputBase<bool>
         => false;
 
     /// <inheritdoc />
+    protected override bool CanFocus
+        => !Disabled && base.CanFocus;
+
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _checkBox = new CheckBox(Context.JS);
 
