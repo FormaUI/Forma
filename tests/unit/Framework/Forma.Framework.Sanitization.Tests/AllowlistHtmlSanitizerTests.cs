@@ -234,6 +234,53 @@ public sealed class AllowlistHtmlSanitizerTests
         }
 
         [Fact]
+        public void Should_resolve_the_character_references_of_an_attribute_value_and_escape_it_once()
+        {
+            // Act
+            var result = _sut.Sanitize("<a href=\"https://example.com/?a=1&amp;b=2\" title=\"&quot;Quoted&quot; &#x26; more\">Link</a>");
+
+            // Assert
+            Assert.Equal("<a href=\"https://example.com/?a=1&amp;b=2\" title=\"&quot;Quoted&quot; &amp; more\">Link</a>", result);
+        }
+
+        [Fact]
+        public void Should_refuse_an_address_whose_scheme_is_spelled_in_character_references()
+        {
+            // Act
+            var result = _sut.Sanitize("<a href=\"jav&#x61;script:alert(1)\">Link</a>");
+
+            // Assert
+            Assert.Equal("<a>Link</a>", result);
+        }
+
+        [Fact]
+        public void Should_escape_a_style_property_a_permissive_policy_keeps_in_the_documents_spelling()
+        {
+            // Arrange — a policy keeping every declaration as written
+            var sanitizer = new AllowlistHtmlSanitizer(new KeepingStylesPolicy());
+
+            // Act
+            var result = sanitizer.Sanitize("<p style=\"x&quot;onmouseover=alert(1): 1\">Text</p>");
+
+            // Assert
+            Assert.Equal("<p style=\"x&quot;onmouseover=alert(1): 1\">Text</p>", result);
+        }
+
+        [Fact]
+        public void Should_keep_a_quoted_font_name_in_a_style_through_a_second_pass()
+        {
+            // Arrange
+            var drafted = _sut.Sanitize("<p style=\"font-family: &quot;Segoe UI&quot;, sans-serif\">Text</p>");
+
+            // Act
+            var saved = _sut.Sanitize(drafted);
+
+            // Assert
+            Assert.Equal(drafted, saved);
+            Assert.Contains("&quot;Segoe UI&quot;", saved, StringComparison.Ordinal);
+        }
+
+        [Fact]
         public void Should_escape_markup_carried_inside_an_attribute_value()
         {
             // Act
@@ -251,6 +298,58 @@ public sealed class AllowlistHtmlSanitizerTests
 
             // Assert
             Assert.Equal("<video src=\"/v.mp4\" controls=\"\"></video>", result);
+        }
+    }
+
+    // The library's policy, but keeping every style declaration and property as the document spells it.
+    private sealed class KeepingStylesPolicy : IMarkupPolicy
+    {
+        public bool Allows(HtmlSubject subject, ReadOnlySpan<char> value, ReadOnlySpan<char> owner, out string? canonicalSpelling)
+        {
+            if (subject is HtmlSubject.StyleDeclaration or HtmlSubject.StyleProperty)
+            {
+                canonicalSpelling = null;
+
+                return true;
+            }
+
+            return RichContentMarkupPolicy.Default.Allows(subject, value, owner, out canonicalSpelling);
+        }
+    }
+
+    public sealed class RoundTrip
+    {
+        private readonly AllowlistHtmlSanitizer _sut = new();
+
+        // What the composer's built-in plugins write, each with the markup that must come through a save and a reload.
+        public static TheoryData<string, string> Constructs { get; } = new()
+        {
+            { "<p>Plain <strong>bold</strong> <em>italic</em> <u>underlined</u> <s>struck</s> <code>code</code></p>", "<u>underlined</u>" },
+            { "<h2>Heading</h2><blockquote><p>Quoted</p></blockquote>", "<blockquote>" },
+            { "<ul><li>One</li></ul><ol><li>Two</li></ol>", "<ol><li>Two</li></ol>" },
+            { "<p style=\"font-family: Georgia; font-size: 18px; color: rgb(10, 20, 30); background-color: rgb(250, 240, 200)\">Typography</p>", "font-family: Georgia" },
+            { "<p dir=\"rtl\" style=\"text-align: center\">Aligned</p>", "dir=\"rtl\"" },
+            { "<p><a href=\"https://example.com/\" target=\"_blank\" rel=\"noopener noreferrer\">Link</a> <a name=\"section\"></a></p>", "rel=\"noopener noreferrer\"" },
+            { "<figure class=\"forma-composer-image\"><img src=\"https://example.com/a.png\" alt=\"A harbor\"><figcaption>Caption</figcaption></figure>", "<figcaption>Caption</figcaption>" },
+            { "<div class=\"forma-composer-video\" data-video-url=\"https://example.com/v.mp4\" data-video-title=\"Launch\" data-autoplay=\"true\"><p><a href=\"https://example.com/v.mp4\" target=\"_blank\" rel=\"noopener noreferrer\">Launch</a></p></div>", "data-video-url=\"https://example.com/v.mp4\"" },
+            { "<div class=\"forma-composer-embed\" data-embed-type=\"poll\" data-embed-id=\"42\" data-settings=\"{&quot;open&quot;:true}\">[Embed: poll]</div>", "data-embed-id=\"42\"" },
+            { "<table><thead><tr><th>Header</th></tr></thead><tbody><tr><td>Cell</td></tr></tbody></table><hr>", "<th>Header</th>" },
+        };
+
+        [Theory]
+        [MemberData(nameof(Constructs))]
+        public void Should_keep_what_the_composer_writes_through_a_save_and_a_reload(string authored, string kept)
+        {
+            // Arrange — the composer's own pass, as the author writes
+            var drafted = _sut.Sanitize(authored);
+
+            // Act — the save endpoint's pass over what the composer sent
+            var saved = _sut.Sanitize(drafted);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(drafted, saved),
+                () => Assert.Contains(kept, saved, StringComparison.Ordinal));
         }
     }
 }

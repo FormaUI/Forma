@@ -66,6 +66,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   address in the `Target` and with the `Rel` it is given, so a reader can copy it, open it in another tab or follow it
   with a middle click. Disabled or busy, the link names no address and stays a link, and it keeps its address under a
   static render; a link given a submit or reset `Type`, or `ReadsForm`, is refused.
+- `AllowlistHtmlSanitizer` reads an attribute's value with its character references resolved, as a browser reads it,
+  judges what it reads and escapes it once, so a second pass over what it kept changes nothing. Each pass escaped a
+  reference's ampersand again, so an address holding `&amp;`, a quoted font name in a style or an embed's settings came
+  back corrupted from every save; an address spelling its scheme in references is now judged by the scheme it spells.
 
 ## `1.0.0-preview.5`
 

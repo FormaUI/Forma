@@ -1,6 +1,7 @@
 namespace Forma.Framework.Sanitization;
 
 using System.Buffers;
+using System.Net;
 using System.Text;
 
 /// <summary>An allowlist HTML sanitizer that applies an <see cref="IMarkupPolicy"/>.</summary>
@@ -8,7 +9,8 @@ using System.Text;
 /// Scans the document as spans in a single pass: an element, attribute or CSS declaration the policy
 /// refuses is dropped, an element whose content the policy refuses, such as <c>script</c> or <c>style</c>,
 /// is removed together with its content, an event handler attribute is always dropped, an address keeps
-/// only a URL the policy permits, and every kept attribute value is re-escaped.
+/// only a URL the policy permits, and every attribute value is read with its character references resolved,
+/// as the browser reads it, judged as read and escaped once as it is kept.
 /// </remarks>
 public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
 {
@@ -345,6 +347,13 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
             return;
         }
 
+        // The policy judges the value the browser acts on, its character references resolved, and it is escaped once as it is kept, so
+        // a second pass over what the first kept changes nothing.
+        if (value.Contains('&'))
+        {
+            value = WebUtility.HtmlDecode(value.ToString());
+        }
+
         if (UrlAttributeLookup.Contains(name))
         {
             if (!MarkupPolicy.Allows(HtmlSubject.Url, value, default, out _))
@@ -423,7 +432,16 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
                 output.Append("; ");
             }
 
-            AppendName(output, property, canonicalSpelling);
+            // A property kept in the document's spelling is escaped as its value is, since a resolved reference can put a quote in it.
+            if (canonicalSpelling is null)
+            {
+                AppendEscaped(output, property);
+            }
+            else
+            {
+                output.Append(canonicalSpelling);
+            }
+
             output.Append(": ");
             AppendEscaped(output, value);
             hasWritten = true;
