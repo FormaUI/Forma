@@ -295,6 +295,16 @@ follows from them, hover, focus, links, backdrops and borders among them:
 }
 ```
 
+A component's own hooks are named `--forma-{component}-{part}-{property}` and fall back to the theme's tokens, so a host
+sets one where it differs. A page with a sticky header moves the toasts below it:
+
+```css
+:root {
+    --forma-toast-container-inset-block-start: 4.5rem;
+    --forma-toast-container-inset-inline-end: 1rem;
+}
+```
+
 ## Localization
 
 Components localize themselves in the culture in force. With a locale pack installed and `AddJsonLocalization()`

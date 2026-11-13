@@ -1,12 +1,14 @@
 /*
     FormaToastContainer — scoped styles
-    Stacked toast notifications, positioned at the top-end corner.
+    Stacked toast notifications, positioned at the top-end corner, as far from the viewport's
+    block-start and inline-end edges as --forma-toast-container-inset-block-start and
+    --forma-toast-container-inset-inline-end set, a toast never wider than the viewport between them.
 */
 
 .forma-toast-container {
     position: fixed;
-    inset-block-start: var(--space-5);
-    inset-inline-end: var(--space-5);
+    inset-block-start: var(--forma-toast-container-inset-block-start, var(--space-5));
+    inset-inline-end: var(--forma-toast-container-inset-inline-end, var(--space-5));
     z-index: var(--z-index-toast);
     display: flex;
     flex-direction: column;
@@ -20,8 +22,10 @@
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    min-width: 17.5rem;
-    max-width: 26.25rem;
+    /* The room between the inline-end offset and as much again at the start, so a toast stays on a narrow screen. */
+    --forma-toast-room: calc(100vw - 2 * var(--forma-toast-container-inset-inline-end, var(--space-5)));
+    min-inline-size: min(17.5rem, var(--forma-toast-room));
+    max-inline-size: min(26.25rem, var(--forma-toast-room));
     padding: var(--space-3) var(--space-4);
     border-radius: var(--radius-lg);
     font-size: var(--font-size-sm);

@@ -50,6 +50,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   source's `HasMore` or by a page before the one shown, and lets a height it held go once a filter or a deletion leaves
   one page. A set that fits one page, or that its source neither counts nor says more of, takes its natural height; it
   was held at a full page's height whenever the view paged.
+- A [`FormaToastContainer`](docs/component-catalog.md#formatoastcontainer) stands as far from the viewport's block-start
+  and inline-end edges as `--forma-toast-container-inset-block-start` and `--forma-toast-container-inset-inline-end`
+  set, `--space-5` unless a host sets them, so a page with a sticky header moves its toasts below it, and a toast is
+  never wider than the viewport between those offsets.
 
 ## `1.0.0-preview.5`
 

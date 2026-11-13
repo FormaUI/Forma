@@ -26,7 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [A host's integration](#a-hosts-integration) | Fifteen findings, six fixed |
+| [A host's integration](#a-hosts-integration) | Fifteen findings, seven fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -182,7 +182,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 | A link that looks like a button | `FormaButton` always renders a `<button>` | Open: `Href`, `Target` and `Rel` |
 | Type-ahead in the select | `FormaSelect` matches no typed label, and only `FormaDataTree` jumps, by one letter | Open: one type-ahead for the select, the menu and the tree |
 | Resetting the image picker | Neither `FormaFilePicker` nor `FormaImagePicker` can be cleared, and the file dialog can't choose the same file twice in a row | Open: a `ClearAsync` |
-| The toast container's offsets | `FormaToastContainer` sits `--space-5` from the block-start and inline-end edges, with no hook of its own | Open: two offset hooks |
+| The toast container's offsets | `FormaToastContainer` sat `--space-5` from the block-start and inline-end edges, with no hook of its own, and a toast could run past a narrow screen. It now reads `--forma-toast-container-inset-block-start` and `--forma-toast-container-inset-inline-end`, which the README shows, and keeps a toast between them | Fixed |
 | The page title's actions | `FormaPageTitle`'s row doesn't wrap and its heading can't shrink | Open |
 | Localized routing | The culture router replaces the culture segment and keeps the rest of the path | Open decision: [its contract](#open-decisions) |
 | Localized references carried as data | No type carries a localization source, a key and arguments to resolve when displayed | Open decision: [its contract](#open-decisions) |
