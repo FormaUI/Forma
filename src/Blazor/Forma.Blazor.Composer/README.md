@@ -190,6 +190,30 @@ documents the store, and
 [`Forma.Framework.Sanitization`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Sanitization/README.md)
 the sanitizer and its policy.
 
+## Saving what authors write
+
+The sanitizer's policy decides what markup a document may hold, not the plugins chosen. A composer
+without `TypographyPlugin` or `ImagePlugin` offers no button for a font or a picture, yet pasted or
+submitted HTML still carries whatever the policy allows; a host that must refuse a construct
+narrows the policy.
+
+The composer sanitizes as the author writes, and the endpoint saving the document sanitizes again,
+because it cannot trust what the browser sent. Both apply one policy when the host registers it,
+as an `IMarkupPolicy` or an `IHtmlSanitizer`, ahead of Forma's registrars on the server and in a
+WebAssembly client alike, and resolves `IHtmlSanitizer` where it saves:
+
+```csharp
+using Forma.Framework.Sanitization;
+
+builder.Services.AddSingleton<IMarkupPolicy, ArticleMarkupPolicy>();
+
+app.MapPost("/articles/{id}", async (string id, ArticleBody body, IHtmlSanitizer sanitizer, ArticleStore store) =>
+    await store.SaveAsync(id, sanitizer.Sanitize(body.Html)));
+```
+
+What the composer kept passes that second pass unchanged, so a document saved and loaded again
+opens as the author left it.
+
 ## Rendering the document to readers
 
 The library's `forma-prose.css`, which `FormaPageHead` links, styles an authored document:
@@ -205,7 +229,22 @@ widget each stands for:
 <div class="forma-composer-embed" data-embed-type="…" data-embed-id="…" data-settings="…">…</div>
 ```
 
-The video placeholder holds a link to the address, so it reads as a link where it is left as is.
+A placeholder is a `div` its class names, whose attributes carry what it stands for, so a website
+and a native application render one stored document alike. A renderer replaces the whole `div`,
+reading its attributes rather than its content:
+
+| Placeholder | Attribute | Holds |
+| --- | --- | --- |
+| `forma-composer-video` | `data-video-url` | The video's address, always present |
+| | `data-video-title` | Its title, where the author gave one |
+| | `data-autoplay` | `true` where it plays as it is shown, and absent otherwise |
+| `forma-composer-embed` | `data-embed-type` | The kind of thing the host embeds |
+| | `data-embed-id` | Which one of that kind |
+| | `data-settings` | The settings the author gave it, where there are any |
+
+The video placeholder holds a paragraph linking to its address, named by its title or by the
+address, so it reads as a link where it is left as is; the embed placeholder holds `[Embed: …]`
+with its type, or its id where it has no type.
 
 ## Localization
 

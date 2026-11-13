@@ -186,7 +186,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 | The page title's actions | `FormaPageTitle`'s row didn't wrap and its heading couldn't shrink. Its actions now move beneath the heading, still at the end, where the two don't fit one line, and a long word breaks; `FormaDialog`'s title shrinks beside its close button too | Fixed |
 | Localized routing | The culture router replaces the culture segment and keeps the rest of the path | Open decision: [its contract](#open-decisions) |
 | Localized references carried as data | No type carries a localization source, a key and arguments to resolve when displayed | Open decision: [its contract](#open-decisions) |
-| The composer's integration guidance | The composer's README says to sanitize on the server, but not how authoring and saving share one policy, that the selected plugins don't set the policy, or how a stored video placeholder is rendered; the icon set has no pause glyph | Open |
+| The composer's integration guidance | The composer's README said to sanitize on the server, but not how authoring and saving share one policy, that the selected plugins don't set the policy, or how a stored video placeholder is rendered. It now says each, with every attribute a placeholder carries, and a sanitizer pass over what the composer kept changes nothing; the icon set has no pause glyph | Open: a pause glyph |
 
 <a id="open-decisions"></a>
 
