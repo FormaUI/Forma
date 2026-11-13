@@ -1433,6 +1433,16 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return;
         }
 
+        if (Constraints.MaxFileBytes > 0 && files.FirstOrDefault(file => file.Size > Constraints.MaxFileBytes) is { } largeFile)
+        {
+            await RejectAsync(
+                CatalogRejectionReason.FileBytes,
+                Constraints.MaxFileBytes,
+                L["\"{Name}\" is larger than {Size}.", largeFile.Name, ResourceFormatter.FromByteCount(Constraints.MaxFileBytes, Context.CultureState.Culture)].Value);
+
+            return;
+        }
+
         if (!await EnsureFolderHasRoomAsync(_currentFolder, files.Count)
             || !await EnsureExplorerHasRoomAsync(files.Count, files.Sum(file => file.Size)))
         {

@@ -24,6 +24,9 @@ public enum CatalogRejectionReason
     /// <summary>The catalog has reached its maximum total size.</summary>
     TotalBytes,
 
+    /// <summary>A file is larger than the maximum bytes of one file.</summary>
+    FileBytes,
+
     /// <summary>An item's capabilities, or what the catalog permits for its kind, leave the operation out.</summary>
     NotPermitted,
 

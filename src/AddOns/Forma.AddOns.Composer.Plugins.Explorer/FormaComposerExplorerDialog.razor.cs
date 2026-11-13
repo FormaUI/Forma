@@ -105,7 +105,7 @@ public sealed partial class FormaComposerExplorerDialog(ICatalogProvider? itemsP
 
         _itemOptions = ExplorerItemOptions.ReadOnly with { AllowUpload = Options.AllowUpload && _store is not null };
 
-        _constraints = new() { AcceptedResourceKinds = Options.AcceptedResourceKinds ?? EveryFile, AcceptedUploadKinds = Options.AcceptedUploadKinds };
+        _constraints = new() { AcceptedResourceKinds = Options.AcceptedResourceKinds ?? EveryFile, AcceptedUploadKinds = Options.AcceptedUploadKinds, MaxFileBytes = Options.MaxFileBytes };
     }
 
     ValueTask<ComposerInsertion?> IComposerInsertionDialog.TryConfirmAsync(CancellationToken cancellationToken)

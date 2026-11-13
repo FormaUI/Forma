@@ -90,6 +90,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `UploadFile` holding the store's `Refusal`.
 - A [`FormaExplorer`](docs/component-catalog.md#formaexplorer)'s upload panel stays open while it shows a file that
   failed or that its store refused. It closed once any file of the set was stored, taking with it what the rest came to.
+- `CatalogConstraints` takes a `MaxFileBytes`, the most bytes one file may hold, and a `FormaExplorer` refuses a file
+  picked for upload past it, raising `OnRejected` with `CatalogRejectionReason.FileBytes`; the composer's
+  `ExplorerPluginOptions` forwards one.
 - A [`FormaFilePicker`](docs/component-catalog.md#formafilepicker) refusing a file too large names the size it went
   past.
 

@@ -13,6 +13,7 @@
     "Refresh": "Actualizar",
     "Folder Path": "Ruta de la Carpeta",
     "\"{Name}\" is not a kind of file this explorer accepts.": "\"{Name}\" no es un tipo de archivo que este explorador acepte.",
+    "\"{Name}\" is larger than {Size}.": "\"{Name}\" ocupa más de {Size}.",
     "This explorer holds at most {Size}.": "Este explorador admite como máximo {Size}.",
     "\"{Name}\" can't be deleted.": "No se puede eliminar \"{Name}\".",
     "\"{Name}\" can't be moved.": "No se puede mover \"{Name}\".",

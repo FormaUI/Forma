@@ -64,10 +64,10 @@ callback, and an upload goes into the host's `IFileStore`.
   selection mode with the toggle out of the toolbar.
 - **Constraints are ceilings the explorer refuses to cross.** The constraints name
   the resource kinds it lists and accepts, the kinds an upload may add where they differ,
-  and the most top-level folders, subfolders,
-  nesting depth, items per folder, items and bytes it holds; an upload, a new folder or a
-  drop that would cross one is refused, announced in an alert region under the header and
-  reported through `OnRejected` with its reason.
+  and the most top-level folders, subfolders, nesting depth, items per folder, items and
+  bytes it holds, and bytes in one file; an upload, a new folder or a drop that would
+  cross one is refused, announced in an alert region under the header and reported
+  through `OnRejected` with its reason.
 - **Entering is apart from choosing.** The accepted kinds decide what can be chosen as
   well as what is listed: a listed file can be chosen, and a folder only where they name
   folders, while every folder is listed and entered whatever they name. A press on a folder

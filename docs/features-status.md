@@ -26,7 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [A host's integration](#a-hosts-integration) | Fifteen findings, twelve fixed |
+| [A host's integration](#a-hosts-integration) | Fifteen findings, thirteen fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -178,7 +178,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 | A field's description | No input carried instructions in its `aria-describedby`, and `FormaField`'s `FooterContent` served the password box alone. Every input now takes a `Description`, drawn beneath it and named after the host's own ids, its field, a checkbox's label or the composer's frame drawing it | Fixed |
 | Focusing an input | No input had a focus operation, and the roots of `FormaDateTimePicker` and the composer are wrappers rather than what takes the focus. Every input now has a `FocusAsync`, which focuses the control it is worked in and answers whether it asked an element, answering false before the input is drawn, once it is disposed, under a static render and while it is disabled | Fixed |
 | A paged data view's reserved height | `FormaDataView` held a full page's height whenever it paged and never let it go, a single page included, as its design's rule said. It now holds it only while another page is known to exist, by its count, its source's `HasMore` or a page before the one shown, and lets it go once the set fits one page; the design says so | Fixed |
-| Upload refusals | `IFileStore.SaveAsync` refuses only by throwing, and `CatalogConstraints` has no per-file ceiling | Open: `SaveAsync` answering with the resource it saved or a refusal carrying its reason and arguments, and a ceiling on each file's size |
+| Upload refusals | `IFileStore.SaveAsync` refused only by throwing, and `CatalogConstraints` had no per-file ceiling. `SaveAsync` now answers with the resource it saved or a `FileRefusal`, its reason and the limit the file went past, which `FormaFileUploader` words for the reader and reports apart from a failure; `CatalogConstraints.MaxFileBytes` refuses a file in `FormaExplorer` as it is picked, and the store still keeps its own limits | Fixed |
 | A link that looks like a button | `FormaButton` always rendered a `<button>`. Given an `Href`, it is now a link in the button's look, with `Target` and `Rel`; disabled or busy, it names no address and stays a link, and it neither submits nor reads a form | Fixed |
 | Type-ahead in the select | `FormaSelect` matched no typed label, and only `FormaDataTree` jumped, by one letter. Both now search with one `TypeAhead`, a prefix built within a pause and a repeated character cycling, in the culture in force, the select opening on the match and choosing nothing | Fixed |
 | Resetting the image picker | Neither `FormaFilePicker` nor `FormaImagePicker` could be cleared, and the file dialog couldn't choose the same file twice in a row. Each now has a `ClearAsync`, which lets go of the files, previews and refusals and empties the file input; nothing clears on its own, since a host's handling of the files doesn't show that each was taken | Fixed |

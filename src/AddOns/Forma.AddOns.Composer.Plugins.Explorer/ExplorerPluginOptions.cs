@@ -11,6 +11,9 @@ public sealed record ExplorerPluginOptions
     /// <summary>The kinds of resource that may be uploaded, in the same syntax, where null accepts the listed kinds.</summary>
     public string? AcceptedUploadKinds { get; set; }
 
+    /// <summary>The most bytes one uploaded file may hold, where zero allows any size.</summary>
+    public long MaxFileBytes { get; set; }
+
     /// <summary>Whether the dialog allows uploading new files.</summary>
     public bool AllowUpload { get; set; } = true;
 

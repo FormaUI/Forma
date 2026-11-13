@@ -313,6 +313,34 @@
     public sealed class Uploading
     {
         [Fact]
+        public async Task Should_refuse_a_file_beyond_the_ceiling_on_one_file()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var store = new FakeFileStore();
+            CatalogRejection? rejection = null;
+            var cut = ctx.Render(@<FormaExplorer Items="[]"
+                                                Store="store"
+                                                ItemOptions="ExplorerItemOptions.Default"
+                                                Constraints="@(new CatalogConstraints { MaxFileBytes = 4 })"
+                                                OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
+            await cut.Find(".forma-explorer-upload-button").ClickAsync(new());
+
+            // Act
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("far too long a body", "cover.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.NotNull(rejection);
+            Assert.Multiple(
+                () => Assert.Equal(CatalogRejectionReason.FileBytes, rejection.Reason),
+                () => Assert.Equal(4, rejection.Limit),
+                () => Assert.Equal("\"cover.jpg\" is larger than 4 B.", rejection.Message),
+                () => Assert.Equal(rejection.Message, cut.Find(".forma-explorer-rejection-text").TextContent.Trim()),
+                () => Assert.Empty(cut.FindAll(".forma-file-uploader")),
+                () => Assert.Empty(store.Saved));
+        }
+
+        [Fact]
         public async Task Should_keep_the_upload_panel_open_on_a_file_the_store_refused()
         {
             // Arrange

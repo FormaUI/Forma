@@ -252,7 +252,8 @@ public sealed partial class FormaExplorerPage
         MaxFolderItemCount = 3,
         MaxSubfolderCount = 1,
         MaxItemCount = 4,
-        MaxTotalBytes = 1_048_576
+        MaxTotalBytes = 1_048_576,
+        MaxFileBytes = 524_288
     };
 
     private readonly List<FolderResourceInfo> _constrainedFolders =

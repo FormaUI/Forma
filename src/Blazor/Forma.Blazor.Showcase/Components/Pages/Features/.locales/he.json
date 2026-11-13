@@ -227,7 +227,7 @@
     "A Phone-Width Explorer": "סייר ברוחב טלפון",
     "Held to a phone's width, the header collapses to one row: the folder path, a search glyph that opens the search across the row, and a menu holding navigation, actions, view mode and sorting.": "כשהוא מוגבל לרוחב של טלפון, הכותרת מתקפלת לשורה אחת: נתיב התיקיות, סמל חיפוש שפותח את החיפוש לרוחב השורה, ותפריט שמחזיק את הניווט, הפעולות, מצב התצוגה והמיון.",
     "Constraints": "אילוצים",
-    "This explorer accepts only images, holds two root folders, one subfolder each, nests two deep, and stops at four items or 1 MB. Trip any of them and the refusal is announced above the toolbar and reported to the host.": "הסייר הזה מקבל תמונות בלבד, מחזיק שתי תיקיות ראשיות, תיקייה אחת בתוך כל אחת, מקנן שתי רמות, ועוצר בארבעה פריטים או במגה-בייט אחד. חריגה מכל אחד מהם מוכרזת מעל סרגל הכלים ומדווחת למארח.",
+    "This explorer accepts only images, holds two root folders, one subfolder each, nests two deep, stops at four items or 1 MB, and takes no image over 512 KB. Trip any of them and the refusal is announced above the toolbar and reported to the host.": "הסייר הזה מקבל תמונות בלבד, מחזיק שתי תיקיות ראשיות, תיקייה אחת בתוך כל אחת, מקנן שתי רמות, עוצר בארבעה פריטים או במגה-בייט אחד, ואינו מקבל תמונה גדולה מ-512 KB. חריגה מכל אחד מהם מוכרזת מעל סרגל הכלים ומדווחת למארח.",
     "Refused ({Reason}): {Message}": "נדחה ({Reason}): {Message}",
     "Browse folders, preview media, select items, rename, delete, and upload.": "עיון בתיקיות, תצוגה מקדימה של מדיה, בחירת פריטים, שינוי שם, מחיקה והעלאה.",
     "Single Selection for a Cover Image": "בחירה יחידה עבור תמונת שער",

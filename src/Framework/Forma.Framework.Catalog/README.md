@@ -174,8 +174,9 @@ a deletion and a drop take files and folders alike, and a host that could not ca
 `CatalogConstraints` holds the kinds a collection lists and accepts, `AcceptedResourceKinds`, the
 kinds an upload may add where they differ, `AcceptedUploadKinds`, and the ceilings it keeps, each
 unlimited at zero: `MaxFolderDepth`, `MaxFolderRootCount`, `MaxSubfolderCount`,
-`MaxFolderItemCount`, `MaxItemCount` and `MaxTotalBytes`. A surface reports a refusal as a
-`CatalogRejection` of its `Reason`, the `Allowed` ceiling and a localized `Message`.
+`MaxFolderItemCount`, `MaxItemCount`, `MaxTotalBytes` and `MaxFileBytes`, the bytes of one file.
+A surface reports a refusal as a `CatalogRejection` of its `Reason`, the `Limit` it reached and a
+localized `Message`.
 
 ```csharp
 var constraints = new CatalogConstraints
@@ -183,6 +184,7 @@ var constraints = new CatalogConstraints
     AcceptedResourceKinds = "contentType:image;video",
     MaxFolderDepth = 3,
     MaxTotalBytes = 500L * 1024 * 1024,
+    MaxFileBytes = 20L * 1024 * 1024,
 };
 ```
 

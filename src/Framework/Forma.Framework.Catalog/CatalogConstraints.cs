@@ -31,4 +31,7 @@ public sealed record CatalogConstraints
 
     /// <summary>The maximum total bytes of the catalog.</summary>
     public long MaxTotalBytes { get; init; }
+
+    /// <summary>The maximum bytes of one file.</summary>
+    public long MaxFileBytes { get; init; }
 }

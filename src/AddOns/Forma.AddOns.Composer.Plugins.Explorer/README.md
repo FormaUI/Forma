@@ -61,6 +61,7 @@ an `IFileStore`.
 | --- | --- |
 | `AcceptedResourceKinds` | The files listed and chosen, as `globs:*.jpg;*.pdf` or `contentType:image;video`; every file when unset. |
 | `AcceptedUploadKinds` | The files that may be uploaded, in the same form; the listed kinds when unset. |
+| `MaxFileBytes` | The most bytes one uploaded file may hold; any size at zero, the default. |
 | `AllowUpload` | Whether the dialog offers upload. Defaults to `true`. |
 | `InsertMode` | Whether a file the browser can render is inserted as `Embed`, `Link` or `Both`. Defaults to `Embed`. |
 
