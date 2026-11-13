@@ -397,4 +397,106 @@
             Assert.False(cut.Find(".forma-button").HasAttribute("disabled"));
         }
     }
+
+    public sealed class Link
+    {
+        [Fact]
+        public void Should_draw_a_link_to_its_address_in_the_buttons_look()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Href="/articles/new" Target="_blank" Rel="noopener" Variant="ButtonVariant.Primary">New Article</FormaButton>);
+
+            // Assert
+            var link = cut.Find("a");
+            Assert.Multiple(
+                () => Assert.Equal("/articles/new", link.GetAttribute("href")),
+                () => Assert.Equal("_blank", link.GetAttribute("target")),
+                () => Assert.Equal("noopener", link.GetAttribute("rel")),
+                () => Assert.Null(link.GetAttribute("role")),
+                () => Assert.Contains("forma-button-primary", link.ClassList),
+                () => Assert.Empty(cut.FindAll("button")));
+        }
+
+        [Theory]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        public void Should_name_no_address_while_disabled_or_busy_and_stay_a_link(bool disabled, bool busy)
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Href="/articles/new" Disabled="disabled" Busy="busy">New Article</FormaButton>);
+
+            // Assert
+            var link = cut.Find("a");
+            Assert.Multiple(
+                () => Assert.False(link.HasAttribute("href")),
+                () => Assert.Equal("link", link.GetAttribute("role")),
+                () => Assert.Equal("true", link.GetAttribute("aria-disabled")),
+                () => Assert.Equal(disabled, link.ClassList.Contains("is-disabled")));
+        }
+
+        [Fact]
+        public void Should_take_no_press_while_disabled()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            var presses = 0;
+            var cut = ctx.Render(@<FormaButton Href="/articles/new" Disabled="true" OnClick="@(() => presses++)">New Article</FormaButton>);
+
+            // Act
+            var press = () => cut.Find("a").Click();
+
+            // Assert
+            Assert.Throws<MissingEventHandlerException>(press);
+            Assert.Equal(0, presses);
+        }
+
+        [Fact]
+        public void Should_stay_in_the_tab_order_while_busy()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Href="/articles/new" Busy="true">New Article</FormaButton>);
+
+            // Assert
+            Assert.Equal("0", cut.Find("a").GetAttribute("tabindex"));
+        }
+
+        [Fact]
+        public void Should_keep_its_address_under_a_static_render()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Href="/articles/new" OnClick="@(() => { })">New Article</FormaButton>);
+
+            // Assert
+            Assert.Equal("/articles/new", cut.Find("a").GetAttribute("href"));
+        }
+
+        [Theory]
+        [InlineData(ButtonType.Submit, false)]
+        [InlineData(ButtonType.Reset, false)]
+        [InlineData(ButtonType.Button, true)]
+        public void Should_refuse_an_address_on_a_button_that_works_a_form(ButtonType type, bool readsForm)
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            void Render() => ctx.Render(@<FormaButton Href="/articles/new" Type="type" ReadsForm="readsForm">Save</FormaButton>);
+
+            // Assert
+            Assert.Throws<ArgumentException>(Render);
+        }
+    }
 }

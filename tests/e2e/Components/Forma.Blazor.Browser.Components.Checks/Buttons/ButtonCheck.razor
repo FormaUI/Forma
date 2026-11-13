@@ -1,12 +1,15 @@
 @page "/{Runtime}/button"
 
-@* A button pressed, counted where the check reads it, and a primary, a secondary and a danger button under a theme that gives each variant's label a color of its own. *@
+@* A button pressed, counted where the check reads it, a primary, a secondary and a danger button under a theme that gives each variant's
+   label a color of its own, a primary link drawn as a button beside them, and a disabled one. *@
 <FormaButton Id="check" OnClick="@(() => _presses++)">Press</FormaButton>
 <output id="result">@_presses</output>
 <div style="--button-primary-text-color: rgb(250, 250, 250); --button-secondary-text-color: rgb(17, 34, 51); --button-danger-text-color: rgb(255, 238, 0);">
     <FormaButton Id="primary" Variant="ButtonVariant.Primary" OnClick="@(() => { })">Primary</FormaButton>
     <FormaButton Id="secondary" Variant="ButtonVariant.Secondary" OnClick="@(() => { })">Secondary</FormaButton>
     <FormaButton Id="danger" Variant="ButtonVariant.Danger" OnClick="@(() => { })">Danger</FormaButton>
+    <FormaButton Id="primary-link" Variant="ButtonVariant.Primary" Href="#top">Primary Link</FormaButton>
+    <FormaButton Id="disabled-link" Href="#top" Disabled="true">Disabled Link</FormaButton>
 </div>
 
 @code {

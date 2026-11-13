@@ -43,6 +43,32 @@ public sealed class ButtonsTests
                 await page.Mouse.UpAsync();
             }
         }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_draw_a_link_in_its_variant_s_look_and_a_disabled_one_without_its_address(string runtime)
+        {
+            // Arrange — a primary link beside the primary button, under the theme coloring its label
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "button");
+            await using var _ = context;
+            var link = page.Locator("#primary-link");
+            var disabled = page.Locator("#disabled-link");
+            var background = await page.Locator("#primary").EvaluateAsync<string>("element => getComputedStyle(element).backgroundColor");
+
+            // Act
+            await link.HoverAsync();
+
+            // Assert
+            await Assertions.Expect(link).ToHaveRoleAsync(AriaRole.Link);
+            await Assertions.Expect(link).ToHaveAttributeAsync("href", "#top");
+            await Assertions.Expect(link).ToHaveCSSAsync("color", "rgb(250, 250, 250)");
+            await Assertions.Expect(link).ToHaveCSSAsync("text-decoration-line", "none");
+            await page.Mouse.MoveAsync(0, 0);
+            await Assertions.Expect(link).ToHaveCSSAsync("background-color", background);
+            await Assertions.Expect(disabled).ToHaveRoleAsync(AriaRole.Link);
+            await Assertions.Expect(disabled).ToHaveAttributeAsync("aria-disabled", "true");
+            Assert.False(await disabled.EvaluateAsync<bool>("element => element.hasAttribute('href')"));
+        }
     }
 
     public sealed class CloseButton(BrowserHost host)

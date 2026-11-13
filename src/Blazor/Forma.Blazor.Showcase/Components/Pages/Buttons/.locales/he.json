@@ -32,7 +32,11 @@
     "Last action: {Action}": "פעולה אחרונה: {Action}",
     "none yet": "עדיין אין",
     "Saved.": "נשמר.",
-    "Not saved yet.": "עדיין לא נשמר."
+    "Not saved yet.": "עדיין לא נשמר.",
+    "As a Link": "כקישור",
+    "Given an Href, the button is a link in the button's look: its address can be copied, opened in another tab or followed with a middle click. Disabled or busy, it names no address and stays a link.": "כשניתן לו Href, הכפתור הוא קישור במראה של כפתור: אפשר להעתיק את הכתובת שלו, לפתוח אותה בכרטיסייה אחרת או לעבור אליה בלחיצה אמצעית. כשהוא מושבת או עסוק, הוא אינו מציין כתובת ונשאר קישור.",
+    "Open the Text Box": "פתיחת תיבת הטקסט",
+    "Source on GitHub": "קוד המקור ב-GitHub"
   },
   "FormaCloseButtonPage": {
     "The dismiss glyph every panel closes with. A ghost FormaButton drawn square, so the modal, the toast and the context toolbar share one shape, one focus ring and one touch target.": "סמל הסגירה שכל חלונית נסגרת איתו. FormaButton בסגנון ghost המצויר כריבוע, כך שהמודאל, ההודעה הצפה וסרגל ההקשר חולקים צורה אחת, טבעת מיקוד אחת ויעד מגע אחד.",

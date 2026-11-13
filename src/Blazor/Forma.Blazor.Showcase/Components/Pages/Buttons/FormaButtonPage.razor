@@ -67,6 +67,16 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["As a Link"]</h2>
+    <p class="description">@L["Given an Href, the button is a link in the button's look: its address can be copied, opened in another tab or followed with a middle click. Disabled or busy, it names no address and stays a link."]</p>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary" Href="/text-box">@L["Open the Text Box"]</FormaButton>
+        <FormaButton Href="https://github.com/FormaUI/Forma" Target="_blank" Rel="noopener">@L["Source on GitHub"]</FormaButton>
+        <FormaButton Href="/text-box" Disabled="true">@L["Disabled"]</FormaButton>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Inside a Form"]</h2>
     <p class="description">@L["Submit and reset buttons drive the surrounding form without any click handler of their own. A native reset clears the inputs but leaves the bound model alone, so the value below is what the form still holds."]</p>
     <div class="demo-box">

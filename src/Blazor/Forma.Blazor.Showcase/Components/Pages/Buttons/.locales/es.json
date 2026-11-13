@@ -33,7 +33,11 @@
     "Last action: {Action}": "Última acción: {Action}",
     "none yet": "ninguna todavía",
     "Saved.": "Guardado.",
-    "Not saved yet.": "Aún no guardado."
+    "Not saved yet.": "Aún no guardado.",
+    "As a Link": "Como Enlace",
+    "Given an Href, the button is a link in the button's look: its address can be copied, opened in another tab or followed with a middle click. Disabled or busy, it names no address and stays a link.": "Con un Href, el botón es un enlace con el aspecto del botón: su dirección se puede copiar, abrir en otra pestaña o seguir con un clic central. Deshabilitado u ocupado, no indica ninguna dirección y sigue siendo un enlace.",
+    "Open the Text Box": "Abrir el Cuadro de Texto",
+    "Source on GitHub": "Código Fuente en GitHub"
   },
   "FormaCloseButtonPage": {
     "The dismiss glyph every panel closes with. A ghost FormaButton drawn square, so the modal, the toast and the context toolbar share one shape, one focus ring and one touch target.": "El icono de cierre con el que se descarta cada panel. Un FormaButton ghost dibujado cuadrado, para que el modal, el toast y la barra contextual compartan una forma, un anillo de foco y un objetivo táctil.",

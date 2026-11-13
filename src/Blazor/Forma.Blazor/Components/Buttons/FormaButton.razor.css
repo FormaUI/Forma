@@ -1,7 +1,8 @@
 /* ============================================================
    FormaButton — CSS isolation
    Five variants and two sizes on the design tokens, with a
-   progress along the edge while busy.
+   progress along the edge while busy, on a button or a link
+   drawn as one, a disabled link marked with is-disabled.
    ============================================================ */
 
 /* ---------- base ---------- */
@@ -24,13 +25,14 @@
     border-radius: var(--forma-button-radius, var(--radius-sm));
     overflow: hidden;
     flex-shrink: 0;
+    text-decoration: none;
     cursor: pointer;
     touch-action: manipulation;
     transition: background-color 120ms ease, color 120ms ease;
 }
 
 /* Disabled is one neutral treatment for every variant; busy dims the variant's own color under the progress, disabled or not. */
-.forma-button:disabled {
+.forma-button:is(:disabled, .is-disabled) {
     background-color: var(--disabled-bg-color);
     color: var(--disabled-text-color);
     cursor: not-allowed;
@@ -93,51 +95,51 @@
     color: var(--forma-button-ghost-color, var(--button-quiet-text-color));
 }
 
-.forma-button-ghost:disabled {
+.forma-button-ghost:is(:disabled, .is-disabled) {
     background-color: transparent;
 }
 
 /* Hover and press darken the fill; a busy button holds still. */
 @media (hover: hover) {
-    .forma-button-primary:hover:not(:disabled):not([data-busy="true"]) {
+    .forma-button-primary:hover:not(:disabled, .is-disabled):not([data-busy="true"]) {
         background-color: var(--button-primary-hover-color);
     }
 
-    .forma-button-secondary:hover:not(:disabled):not([data-busy="true"]) {
+    .forma-button-secondary:hover:not(:disabled, .is-disabled):not([data-busy="true"]) {
         background-color: var(--button-secondary-hover-color);
     }
 
-    .forma-button-tertiary:hover:not(:disabled):not([data-busy="true"]) {
+    .forma-button-tertiary:hover:not(:disabled, .is-disabled):not([data-busy="true"]) {
         background-color: var(--button-quiet-hover-color);
     }
 
-    .forma-button-danger:hover:not(:disabled):not([data-busy="true"]) {
+    .forma-button-danger:hover:not(:disabled, .is-disabled):not([data-busy="true"]) {
         background-color: var(--button-danger-hover-color);
     }
 
-    .forma-button-ghost:hover:not(:disabled):not([data-busy="true"]) {
+    .forma-button-ghost:hover:not(:disabled, .is-disabled):not([data-busy="true"]) {
         background-color: var(--forma-button-ghost-hover-bg-color, var(--button-quiet-hover-color));
         color: var(--forma-button-ghost-hover-color, var(--button-quiet-text-color));
     }
 }
 
-.forma-button-primary:active:not(:disabled):not([data-busy="true"]) {
+.forma-button-primary:active:not(:disabled, .is-disabled):not([data-busy="true"]) {
     background-color: var(--button-primary-active-color);
 }
 
-.forma-button-secondary:active:not(:disabled):not([data-busy="true"]) {
+.forma-button-secondary:active:not(:disabled, .is-disabled):not([data-busy="true"]) {
     background-color: var(--button-secondary-active-color);
 }
 
-.forma-button-tertiary:active:not(:disabled):not([data-busy="true"]) {
+.forma-button-tertiary:active:not(:disabled, .is-disabled):not([data-busy="true"]) {
     background-color: var(--button-quiet-active-color);
 }
 
-.forma-button-danger:active:not(:disabled):not([data-busy="true"]) {
+.forma-button-danger:active:not(:disabled, .is-disabled):not([data-busy="true"]) {
     background-color: var(--button-danger-active-color);
 }
 
-.forma-button-ghost:active:not(:disabled):not([data-busy="true"]) {
+.forma-button-ghost:active:not(:disabled, .is-disabled):not([data-busy="true"]) {
     background-color: var(--button-quiet-active-color);
 }
 

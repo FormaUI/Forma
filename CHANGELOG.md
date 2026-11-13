@@ -62,6 +62,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   [`FormaFilePicker`](docs/component-catalog.md#formafilepicker) have a `ClearAsync`, which lets go of the files chosen,
   the image picker's previews and the refusals shown, and empties the file input, so a file dialog choosing the same
   file again hands it over again. A host clears a picker once it has taken the files it was handed.
+- A [`FormaButton`](docs/component-catalog.md#formabutton) given an `Href` is a link in the button's look, opening its
+  address in the `Target` and with the `Rel` it is given, so a reader can copy it, open it in another tab or follow it
+  with a middle click. Disabled or busy, the link names no address and stays a link, and it keeps its address under a
+  static render; a link given a submit or reset `Type`, or `ReadsForm`, is refused.
 
 ## `1.0.0-preview.5`
 
