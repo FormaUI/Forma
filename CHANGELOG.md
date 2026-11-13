@@ -21,6 +21,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - `HandleInputActionAsync` is gone from `FormaToolbar`, `FormaComposer`, `FormaPlainTextEditor` and
   `FormaRichTextEditor`; only the input router called it. A host runs a toolbar's or a composer's command through its
   `HandleCommandAsync`.
+- A [`FormaTabs`](docs/component-catalog.md#formatabs) inside a form leaves it unsubmitted as a tab is chosen, by a
+  press, Enter or Space. Its tab buttons were the form's submit buttons, so choosing a tab submitted the form.
 
 ## `1.0.0-preview.5`
 

@@ -14,6 +14,7 @@
                 var panelElementId = FormaTabs.GetPanelElementId(tab);
 
                 <button class="forma-tab-button @(isActive ? "active" : "") @(tab.Trailing && tab == _tabs.FirstOrDefault(candidate => candidate.Trailing) ? "forma-tab-button-trailing" : "")"
+                        type="button"
                         role="tab"
                         id="@tabElementId"
                         aria-selected="@isActive.ToString().ToLowerInvariant()"

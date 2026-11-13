@@ -270,6 +270,23 @@
         }
 
         [Fact]
+        public void Should_render_its_tabs_as_buttons_that_never_submit_a_form()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="One">First</FormaTab>
+                    <FormaTab Title="Two">Second</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            Assert.All(cut.FindAll(".forma-tab-button"), tab => Assert.Equal("button", tab.GetAttribute("type")));
+        }
+
+        [Fact]
         public void Should_set_tabpanel_role_on_panels()
         {
             // Arrange

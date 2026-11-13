@@ -26,7 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [A host's integration](#a-hosts-integration) | Fifteen findings open |
+| [A host's integration](#a-hosts-integration) | Fifteen findings, one fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -172,7 +172,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 
 | Finding | What the code does | State |
 | --- | --- | --- |
-| A tab submits its form | `FormaTabs` renders its tab buttons without a type, so inside a form choosing a tab, by press, Enter or Space, submits it. Every other button a component renders is typed, and every Enter a component consumes goes through the input router, which cancels the browser's default | Open: type its buttons |
+| A tab submits its form | `FormaTabs` rendered its tab buttons without a type, so inside a form choosing a tab, by press, Enter or Space, submitted it. Every other button a component renders is typed, and every Enter a component consumes goes through the input router, which cancels the browser's default | Fixed |
 | The explorer's asynchronous first load | Reported: a provider whose first answer completes asynchronously leaves `FormaExplorer` loading until a refresh | Open: reproduce, then fix |
 | A menu runs its command before it closes | `FormaDropDownMenuItem` awaits its `OnClick` before it closes the menu, so a command opening a dialog keeps the menu open while the dialog is up, and one removing its row leaves focus on a removed element | Open: close, then run the command |
 | A field's description | No input carries instructions in its `aria-describedby`; `FormaField`'s `FooterContent` serves the password box alone | Open: a `Description` on the input base |

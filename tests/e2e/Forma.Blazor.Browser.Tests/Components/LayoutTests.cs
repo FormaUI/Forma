@@ -379,11 +379,12 @@ public sealed class LayoutTests
     {
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
-        public async Task Should_select_the_tab_pressed_and_the_tab_the_arrow_keys_reach(string runtime)
+        public async Task Should_select_the_tab_pressed_and_the_tab_the_arrow_keys_reach_without_submitting_its_form(string runtime)
         {
             // Arrange
             var (context, page) = await OpenAsync(host, runtime, "tabs");
             await using var _ = context;
+            var general = page.Locator("#tab-general");
             var privacy = page.Locator("#tab-privacy");
             var advanced = page.Locator("#tab-advanced");
             await WaitForInputScopeAsync(page, "#tabs .forma-tab-list");
@@ -393,13 +394,18 @@ public sealed class LayoutTests
             await page.Keyboard.PressAsync("ArrowRight");
             await Assertions.Expect(advanced).ToBeFocusedAsync();
             await page.Keyboard.PressAsync("Enter");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("privacy advanced");
+            await page.Keyboard.PressAsync("Home");
+            await Assertions.Expect(general).ToBeFocusedAsync();
+            await page.Keyboard.PressAsync(" ");
 
             // Assert
-            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("privacy advanced");
-            await Assertions.Expect(advanced).ToHaveAttributeAsync("aria-selected", "true");
-            await Assertions.Expect(privacy).ToHaveAttributeAsync("aria-selected", "false");
-            await Assertions.Expect(page.Locator("#panel-advanced")).ToBeVisibleAsync();
-            await Assertions.Expect(page.Locator("#panel-privacy")).ToBeHiddenAsync();
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("privacy advanced general");
+            await Assertions.Expect(general).ToHaveAttributeAsync("aria-selected", "true");
+            await Assertions.Expect(advanced).ToHaveAttributeAsync("aria-selected", "false");
+            await Assertions.Expect(page.Locator("#panel-general")).ToBeVisibleAsync();
+            await Assertions.Expect(page.Locator("#panel-advanced")).ToBeHiddenAsync();
+            await Assertions.Expect(page.Locator("#submits")).ToHaveTextAsync("0");
         }
     }
 }

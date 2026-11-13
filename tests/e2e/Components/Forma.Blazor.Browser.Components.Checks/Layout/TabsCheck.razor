@@ -1,16 +1,21 @@
 @page "/{Runtime}/tabs"
 
-@* Three tabs whose selections, by press or by keyboard, show in order where the check reads them. *@
-<FormaTabs Id="tabs" Label="Settings" ActiveTabId="@_active" ActiveTabIdChanged="Select">
-    <FormaTab TabId="general" Title="General">General settings</FormaTab>
-    <FormaTab TabId="privacy" Title="Privacy">Privacy settings</FormaTab>
-    <FormaTab TabId="advanced" Title="Advanced">Advanced settings</FormaTab>
-</FormaTabs>
+@* Three tabs in a form, whose selections, by press or by keyboard, show in order where the check reads them, beside the times the form was submitted. *@
+<EditForm Model="_model" OnSubmit="() => _submits++">
+    <FormaTabs Id="tabs" Label="Settings" ActiveTabId="@_active" ActiveTabIdChanged="Select">
+        <FormaTab TabId="general" Title="General">General settings</FormaTab>
+        <FormaTab TabId="privacy" Title="Privacy">Privacy settings</FormaTab>
+        <FormaTab TabId="advanced" Title="Advanced">Advanced settings</FormaTab>
+    </FormaTabs>
+</EditForm>
 <output id="result">@(string.Join(' ', _selections))</output>
+<output id="submits">@_submits</output>
 
 @code {
+    private readonly object _model = new();
     private readonly List<string> _selections = [];
     private string _active = "general";
+    private int _submits;
 
     private void Select(string tabId)
     {
