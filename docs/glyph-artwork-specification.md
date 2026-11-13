@@ -409,6 +409,7 @@ glyph with no parts named is drawn from scratch on the grid.
 | `ParagraphDirectionRtl` | Mirror of `ParagraphDirectionLtr`: the pilcrow on the right, its bowl bulging right, beside an arrow pointing left from (11, 16) to (4, 16). |
 | `PasswordField` | Frame reduced to (4, 10)–(28, 22); three filled dots radius 2 inside it at x 9, 16 and 23, masking the characters. |
 | `Paste` | A clipboard: a rounded rect (7, 7)–(25, 28); a clip at the top from (12, 4) to (20, 4) with sides down to y 9; two lines inside at y 16 and 21. |
+| `Pause` | Two solid upright bars, radius-2 rounded rects (8, 7)–(13, 25) and (19, 7)–(24, 25), matching `TriangleRight`'s mass; on the 24 grid radius-1 rects (6, 5)–(10, 19) and (14, 5)–(18, 19). |
 | `PawPrint` | Fitted from the reference drawing: a pad as a rounded heart from its top at (16, 15) out to lobes at (7, 25) and (25, 25) and down to a notch at (16, 27); four toes as outlined ovals about 4 by 6, the inner pair upright at (12, 7) and (20, 7), the outer pair leaning outward at (6, 12) and (26, 12). |
 | `Pen` | Pencil. |
 | `PenNib` | A solid nib pointing down: a flat top from (8, 4) to (24, 4), sides bulging out to (28, 15) and (4, 15) and tapering to the tip at (16, 29); a breather hole radius 2.5 at (16, 15) and a slit 1 wide from the hole down to (16, 27), both knocked out. |

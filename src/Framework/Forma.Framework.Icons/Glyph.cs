@@ -786,6 +786,9 @@ public enum Glyph
     /// <summary>A clipboard holding a sheet, for pasting.</summary>
     Paste,
 
+    /// <summary>Two solid upright bars, for pausing.</summary>
+    Pause,
+
     /// <summary>An animal paw print.</summary>
     PawPrint,
 

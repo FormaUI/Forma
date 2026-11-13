@@ -26,7 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [A host's integration](#a-hosts-integration) | Fifteen findings, ten fixed |
+| [A host's integration](#a-hosts-integration) | Fifteen findings, eleven fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -186,7 +186,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 | The page title's actions | `FormaPageTitle`'s row didn't wrap and its heading couldn't shrink. Its actions now move beneath the heading, still at the end, where the two don't fit one line, and a long word breaks; `FormaDialog`'s title shrinks beside its close button too | Fixed |
 | Localized routing | The culture router replaces the culture segment and keeps the rest of the path | Open decision: [its contract](#open-decisions) |
 | Localized references carried as data | No type carries a localization source, a key and arguments to resolve when displayed | Open decision: [its contract](#open-decisions) |
-| The composer's integration guidance | The composer's README said to sanitize on the server, but not how authoring and saving share one policy, that the selected plugins don't set the policy, or how a stored video placeholder is rendered. It now says each, with every attribute a placeholder carries, and a sanitizer pass over what the composer kept changes nothing; the icon set has no pause glyph | Open: a pause glyph |
+| The composer's integration guidance | The composer's README said to sanitize on the server, but not how authoring and saving share one policy, that the selected plugins don't set the policy, or how a stored video placeholder is rendered. It now says each, with every attribute a placeholder carries, a sanitizer pass over what the composer kept changes nothing, and the icon set has a solid `Pause` beside `TriangleRight` | Fixed |
 
 <a id="open-decisions"></a>
 
