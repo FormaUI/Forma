@@ -16,13 +16,13 @@ public sealed class FakeStalledFileStore : IFileStore
         => ValueTask.FromResult(true);
 
     /// <inheritdoc />
-    public async ValueTask<ResourceInfo> SaveAsync(FileContent content, CancellationToken cancellationToken)
+    public async ValueTask<FileSaveResult> SaveAsync(FileContent content, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(content);
 
         _saving.TrySetResult();
         await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken).ConfigureAwait(false);
 
-        return new ResourceInfo($"/stored/{content.Name}") { Size = content.Size };
+        return FileSaveResult.Saved(new ResourceInfo($"/stored/{content.Name}") { Size = content.Size });
     }
 }

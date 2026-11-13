@@ -15,10 +15,13 @@ public enum UploadState
     /// <summary>Stopped by an error.</summary>
     Failed,
 
-    /// <summary>Passed over after an earlier file in the batch failed.</summary>
+    /// <summary>Turned away by the store, which said why.</summary>
+    Refused,
+
+    /// <summary>Passed over after an earlier file in the batch failed or was refused.</summary>
     Skipped,
 
-    /// <summary>Stored, then removed after another file in the batch failed.</summary>
+    /// <summary>Stored, then removed after another file in the batch failed or was refused.</summary>
     RolledBack,
 
     /// <summary>Abandoned when the upload was canceled.</summary>

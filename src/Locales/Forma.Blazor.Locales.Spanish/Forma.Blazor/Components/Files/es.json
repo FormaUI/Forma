@@ -11,6 +11,7 @@
     "Cancel": "Cancelar",
     "Canceled": "Cancelado",
     "Failed": "Falló",
+    "Refused": "Rechazado",
     "Rolled Back": "Revertido",
     "Skipped": "Omitido",
     "Stored": "Guardado",
@@ -20,7 +21,15 @@
     "Uploading {Started} of {Total}.": "Subiendo {Started} de {Total}.",
     "Waiting": "En Espera",
     "{Sent} of {Size}": "{Sent} de {Size}",
-    "{Remaining} left": "quedan {Remaining}"
+    "{Remaining} left": "quedan {Remaining}",
+    "\"{Name}\" isn't an accepted file type.": "\"{Name}\" no es un tipo de archivo aceptado.",
+    "\"{Name}\" is larger than {Size}.": "\"{Name}\" ocupa más de {Size}.",
+    "\"{Name}\" is too large.": "\"{Name}\" es demasiado grande.",
+    "\"{Name}\" is wider than {Width} [$ [Width] plural; one: pixel; other: pixels; $].": "\"{Name}\" mide más de {Width} [$ [Width] plural; one: píxel; other: píxeles; $] de ancho.",
+    "\"{Name}\" is too wide.": "\"{Name}\" es demasiado ancho.",
+    "\"{Name}\" is taller than {Height} [$ [Height] plural; one: pixel; other: pixels; $].": "\"{Name}\" mide más de {Height} [$ [Height] plural; one: píxel; other: píxeles; $] de alto.",
+    "\"{Name}\" is too tall.": "\"{Name}\" es demasiado alto.",
+    "\"{Name}\" was refused.": "\"{Name}\" fue rechazado."
   },
   "FormaFileViewer": {
     "Zoom": "Zoom",

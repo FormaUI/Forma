@@ -77,7 +77,10 @@ public sealed partial class FormaFileUploaderPage
     }
 
     private void Fail(string key, UploadFailure failure)
-        => GetEntries(key).Add(L["{Name} was refused: {Reason}", failure.Name, failure.Error.Message]);
+        => GetEntries(key).Add(L["{Name} couldn't be stored.", failure.Name]);
+
+    private void Refuse(string key, UploadRefusal refusal)
+        => GetEntries(key).Add(refusal.Message);
 
     private string DescribeHeldFiles(DefaultFileStore store)
     {

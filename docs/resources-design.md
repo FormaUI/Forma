@@ -43,20 +43,26 @@ without any of them knowing where bytes live.
   produced and moves them one at a time, owning the whole transfer, with a progress bar
   per file and a cancellation of the set that leaves what already landed in place. Where
   the bytes land is the host's, as an `IFileStore` that saves a file's content as the
-  resource it became and deletes one, reporting whether it did. The store comes from the
-  `Store` parameter or, when that is unset, from the host's registration, so one
-  registration serves every instance.
+  resource it became, or refuses it, and deletes one, reporting whether it did. The store
+  comes from the `Store` parameter or, when that is unset, from the host's registration,
+  so one registration serves every instance.
 - **`ResourceInfo` closes the chain.** It is what `FormaExplorer` can list, an item being
   a resource or nothing at all, so an upload feeds the browsing surface with no host-side
   conversion. `IFileStore` and
   `FileContent` live in `Forma.Framework.Resources` beside it, which carries no ASP.NET
   Core reference, so a host implements a store from a plain class library.
-- **Failure is per file, and a rollback that fails is a failure.** A failed file leaves the
-  rest of the set running unless `StopOnFailure` marks the remainder skipped;
-  `RollbackOnFailure` removes what already landed, and a store that reports it did not
-  remove a file is a failure rather than a silent success. The uploader composes beside a
-  picker rather than rendering one. The outcome reaches the host per file that did not
-  store, and once with the resources the stored files became. How the set runs and what
+- **A refusal is the store's answer; a failure is its error.** A store turns a file away
+  for its type, its size or its dimensions by answering with a refusal that carries the
+  reason and the limit the file went past, and the uploader words it for the reader in
+  their language; an exception is a failure, which the uploader marks as failed and
+  words no further. The store keeps its own limits whatever a picker checked first.
+- **Failure is per file, and a rollback that fails is a failure.** A file that failed or
+  was refused leaves the rest of the set running unless `StopOnFailure` marks the
+  remainder skipped; `RollbackOnFailure` removes what already landed, and a store that
+  reports it did not remove a file is a failure rather than a silent success. The
+  uploader composes beside a picker rather than rendering one. The outcome reaches the
+  host per file that did not store, a refusal apart from a failure, and once with the
+  resources the stored files became. How the set runs and what
   it reports travel in an options record, with presets for the progress and summary alone
   and for every measurement.
 - **The viewer resolves, then shows.** An ordered chain of `IResourceProvider`s resolves

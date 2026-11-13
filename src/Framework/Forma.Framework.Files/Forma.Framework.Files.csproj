@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <Description>The types Forma.Blazor's file components report and track: a file a picker declined and why, a file an uploader could not store and the error that stopped it, and the progress of each file in an upload.</Description>
+        <Description>The types Forma.Blazor's file components report and track: a file a picker declined and why, a file an uploader could not store and the error that stopped it, a file a store refused and why, and the progress of each file in an upload.</Description>
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 

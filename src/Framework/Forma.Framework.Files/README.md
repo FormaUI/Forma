@@ -1,8 +1,8 @@
 # Forma.Framework.Files
 
 The types `Forma.Blazor`'s file components report and track: a file a picker declined and why, a
-file an uploader could not store and the error that stopped it, and the progress of each file in
-an upload. A host names them in the handlers it gives `FormaFilePicker`, `FormaImagePicker` and
+file an uploader could not store and the error that stopped it, a file a store refused and why,
+and the progress of each file in an upload. A host names them in the handlers it gives `FormaFilePicker`, `FormaImagePicker` and
 `FormaFileUploader`.
 
 The package comes with `formaui-net.Blazor`, and its types are in the
@@ -17,10 +17,11 @@ becomes are the contracts of
 | `RejectedFile` | The `Name` of a file a picker declined and the `Reason` it declined it. |
 | `FileRejectionReason` | `DisallowedType`, a type outside the picker's `Accept`; `TooLarge`, over its `MaxFileSize`; `TooManyFiles`, beyond its `MaxFiles`. |
 | `UploadFailure` | The `Name` of a file whose upload failed and the `Error` that stopped it, thrown by the store while saving it, or while removing it again in a rollback. |
+| `UploadRefusal` | The `Name` of a file the store refused, its `FileRefusal`, and the localized `Message` the uploader shows beneath it. |
 
 A picker raises `OnFilesRejected` with its rejections and `OnFilesSelected` with the files it
-accepted. `FormaFileUploader` raises `OnFailed` once for each failure and `OnCompleted` with the
-`ResourceInfo` every stored file became.
+accepted. `FormaFileUploader` raises `OnRefused` once for each refusal, `OnFailed` once for each
+failure and `OnCompleted` with the `ResourceInfo` every stored file became.
 
 ```razor
 @using Forma.Blazor.Components.Files
@@ -34,6 +35,7 @@ accepted. `FormaFileUploader` raises `OnFailed` once for each failure and `OnCom
 
 <FormaFileUploader Files="_files"
                    OnCompleted="HandleCompleted"
+                   OnRefused="HandleRefused"
                    OnFailed="HandleFailed" />
 
 <ul role="status">
@@ -81,8 +83,11 @@ accepted. `FormaFileUploader` raises `OnFailed` once for each failure and `OnCom
         }
     }
 
+    private void HandleRefused(UploadRefusal refusal)
+        => _notes.Add(refusal.Message);
+
     private void HandleFailed(UploadFailure failure)
-        => _notes.Add($"{failure.Name} could not be stored: {failure.Error.Message}");
+        => _notes.Add($"{failure.Name} could not be stored.");
 }
 ```
 
@@ -100,9 +105,10 @@ upload, and draws a row for each `UploadFile` in it.
 | `UploadBatch.Add(name, size)`, `Clear()` | Adds a waiting file; empties the run and resets its clock. |
 | `UploadBatch.BeginUpload()`, `EndUpload()` | Starts and stops the run's clock. |
 | `UploadBatch.SetFileState(index, state, percent)` | Moves one file to a state; entering `Uploading` starts its clock and a later state stops it. |
+| `UploadBatch.RefuseFile(index, refusal)` | Moves one file to `Refused`, with the store's refusal of it. |
 | `UploadBatch.UpdateFileProgress(index, percent, transferred)` | Records how far one file's transfer has come. |
 | `UploadBatch.TransitionPendingFiles(startIndex, state)` | Moves every waiting file from a position on to a state. |
-| `UploadFile` | One file's `Name`, `TotalBytes`, `State`, `ProgressPercentage`, `BytesTransferred`, `Elapsed`, `BytesPerSecond` and `EstimatedTimeRemaining`. |
+| `UploadFile` | One file's `Name`, `TotalBytes`, `State`, `ProgressPercentage`, `BytesTransferred`, `Elapsed`, `BytesPerSecond`, `EstimatedTimeRemaining` and the store's `Refusal` of it. |
 
 | `UploadState` | What it means |
 | --- | --- |
@@ -110,8 +116,9 @@ upload, and draws a row for each `UploadFile` in it.
 | `Uploading` | Moving to the store. |
 | `Completed` | Stored. |
 | `Failed` | Stopped by an error. |
-| `Skipped` | Passed over because an earlier file failed under `FileUploaderOptions.StopOnFailure`. |
-| `RolledBack` | Stored, then removed because another file failed under `FileUploaderOptions.RollbackOnFailure`. |
+| `Refused` | Turned away by the store, which said why. |
+| `Skipped` | Passed over because an earlier file failed or was refused under `FileUploaderOptions.StopOnFailure`. |
+| `RolledBack` | Stored, then removed because another file failed or was refused under `FileUploaderOptions.RollbackOnFailure`. |
 | `Canceled` | Abandoned when the upload was canceled. |
 
 ## License

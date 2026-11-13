@@ -1,10 +1,10 @@
-namespace Forma.Blazor.BUnit.Tests.Support;
+namespace Forma.Tests.Resources;
 
 using System.Globalization;
 
 using Forma.Framework.Resources;
 
-/// <summary>A file store that records the files it saves and deletes, and can fail one named file or refuse every delete.</summary>
+/// <summary>A file store that records the files it saves and deletes, and can fail one named file, refuse the files it is given refusals for, or decline every delete.</summary>
 public sealed class FakeFileStore(string? failOn = null, bool deletes = true) : IFileStore
 {
     private readonly List<string> _deleted = [];
@@ -13,6 +13,9 @@ public sealed class FakeFileStore(string? failOn = null, bool deletes = true) : 
 
     /// <summary>The content read back from every file the store accepted, keyed by name.</summary>
     public Dictionary<string, string> Contents { get; } = [];
+
+    /// <summary>The refusal the store answers each named file with.</summary>
+    public Dictionary<string, FileRefusal> Refusals { get; } = [];
 
     /// <summary>The sources the store deleted, in the order it deleted them.</summary>
     public IReadOnlyList<string> Deleted
@@ -38,13 +41,18 @@ public sealed class FakeFileStore(string? failOn = null, bool deletes = true) : 
     }
 
     /// <inheritdoc />
-    public async ValueTask<ResourceInfo> SaveAsync(FileContent content, CancellationToken cancellationToken)
+    public async ValueTask<FileSaveResult> SaveAsync(FileContent content, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(content);
 
         if (content.Name == failOn)
         {
-            throw new InvalidOperationException(string.Create(CultureInfo.InvariantCulture, $"The store refused {content.Name}."));
+            throw new InvalidOperationException(string.Create(CultureInfo.InvariantCulture, $"The store could not write {content.Name}."));
+        }
+
+        if (Refusals.TryGetValue(content.Name, out var refusal))
+        {
+            return FileSaveResult.Refused(refusal);
         }
 
         using var reader = new StreamReader(content.Stream);
@@ -52,6 +60,6 @@ public sealed class FakeFileStore(string? failOn = null, bool deletes = true) : 
         Contents[content.Name] = await reader.ReadToEndAsync(cancellationToken).ConfigureAwait(false);
         _saved.Add(content.Name);
 
-        return new ResourceInfo($"/stored/{content.Name}") { Size = content.Size };
+        return FileSaveResult.Saved(new ResourceInfo($"/stored/{content.Name}") { Size = content.Size });
     }
 }

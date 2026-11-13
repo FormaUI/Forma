@@ -1,5 +1,7 @@
 namespace Forma.Framework.Files.Tests;
 
+using Forma.Framework.Resources;
+
 using Xunit;
 
 public sealed class UploadBatchTests
@@ -69,6 +71,26 @@ public sealed class UploadBatchTests
             () => Assert.NotNull(set[0].Duration),
             () => Assert.Equal(1, set.CompletedCount),
             () => Assert.False(set.HasPending));
+    }
+
+    [Fact]
+    public void Should_hold_why_the_store_refused_a_file()
+    {
+        // Arrange
+        var set = CreateSet(("one.png", 100), ("two.png", 100));
+        var refusal = new FileRefusal(FileRefusalReason.TooLarge, 64);
+        set.SetFileState(0, UploadState.Uploading, percent: 0);
+
+        // Act
+        set.RefuseFile(0, refusal);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(UploadState.Refused, set[0].State),
+            () => Assert.Same(refusal, set[0].Refusal),
+            () => Assert.NotNull(set[0].Duration),
+            () => Assert.Equal(0, set.CompletedCount),
+            () => Assert.Null(set[1].Refusal));
     }
 
     [Fact]

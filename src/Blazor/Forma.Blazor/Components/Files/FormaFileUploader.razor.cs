@@ -30,6 +30,9 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     /// <summary>The callback invoked with each file that failed to store.</summary>
     [Parameter] public EventCallback<UploadFailure> OnFailed { get; set; }
 
+    /// <summary>The callback invoked with each file the store refused.</summary>
+    [Parameter] public EventCallback<UploadRefusal> OnRefused { get; set; }
+
     /// <summary>How the set runs and which transfer measurements are shown beside each file.</summary>
     [Parameter] public FileUploaderOptions Options { get; set; } = FileUploaderOptions.Default;
 
@@ -164,6 +167,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         {
             UploadState.Completed => Glyph.Check,
             UploadState.Failed => Glyph.Warning,
+            UploadState.Refused => Glyph.CircleError,
             UploadState.Skipped => Glyph.FastForward,
             UploadState.RolledBack => Glyph.Undo,
             UploadState.Canceled => Glyph.Prohibited,
@@ -263,8 +267,9 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
 
         var token = _cancellation.Token;
         var failures = new List<UploadFailure>();
+        var refusals = new List<UploadRefusal>();
         var storedResources = new List<(int Index, ResourceInfo Resource)>();
-        var anyFailed = false;
+        var isAnyLeftOut = false;
 
         if (ShowsTimeMetrics)
         {
@@ -282,7 +287,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
                     break;
                 }
 
-                var outcome = await StoreFileAsync(index, files[index], failures, storedResources, token);
+                var outcome = await StoreFileAsync(index, files[index], failures, refusals, storedResources, token);
 
                 if (outcome == StoreOutcome.Canceled)
                 {
@@ -291,9 +296,9 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
                     break;
                 }
 
-                if (outcome == StoreOutcome.Failed)
+                if (outcome is StoreOutcome.Failed or StoreOutcome.Refused)
                 {
-                    anyFailed = true;
+                    isAnyLeftOut = true;
 
                     if (Options.StopOnFailure)
                     {
@@ -304,7 +309,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
                 }
             }
 
-            if (anyFailed && Options.RollbackOnFailure && storedResources.Count > 0)
+            if (isAnyLeftOut && Options.RollbackOnFailure && storedResources.Count > 0)
             {
                 await RollbackAsync(storedResources, failures);
                 storedResources.Clear();
@@ -316,6 +321,11 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
             _cancellation?.Dispose();
             _cancellation = null;
             Rerender();
+        }
+
+        foreach (var refusal in refusals)
+        {
+            await OnRefused.InvokeAsync(refusal);
         }
 
         foreach (var failure in failures)
@@ -372,11 +382,26 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         {
             UploadState.Completed => L["Stored"],
             UploadState.Failed => L["Failed"],
+            UploadState.Refused => L["Refused"],
             UploadState.Skipped => L["Skipped"],
             UploadState.RolledBack => L["Rolled Back"],
             UploadState.Canceled => L["Canceled"],
             UploadState.Uploading => L["Uploading"],
             _ => L["Waiting"]
+        };
+
+    // The sentence that tells the reader why the store refused a file.
+    private string GetRefusalText(string name, FileRefusal refusal)
+        => refusal switch
+        {
+            { Reason: FileRefusalReason.DisallowedType } => L["\"{Name}\" isn't an accepted file type.", name],
+            { Reason: FileRefusalReason.TooLarge, Limit: { } size } => L["\"{Name}\" is larger than {Size}.", name, ResourceFormatter.FromByteCount(size, Context.CultureState.Culture)],
+            { Reason: FileRefusalReason.TooLarge } => L["\"{Name}\" is too large.", name],
+            { Reason: FileRefusalReason.TooWide, Limit: { } width } => L["\"{Name}\" is wider than {Width} [$ [Width] plural; one: pixel; other: pixels; $].", name, width],
+            { Reason: FileRefusalReason.TooWide } => L["\"{Name}\" is too wide.", name],
+            { Reason: FileRefusalReason.TooTall, Limit: { } height } => L["\"{Name}\" is taller than {Height} [$ [Height] plural; one: pixel; other: pixels; $].", name, height],
+            { Reason: FileRefusalReason.TooTall } => L["\"{Name}\" is too tall.", name],
+            _ => L["\"{Name}\" was refused.", name]
         };
 
     private void MarkPendingFrom(int startIndex, UploadState state)
@@ -391,6 +416,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         int index,
         IBrowserFile file,
         List<UploadFailure> failures,
+        List<UploadRefusal> refusals,
         List<(int Index, ResourceInfo Resource)> stored,
         CancellationToken cancellationToken)
     {
@@ -401,7 +427,18 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
             // The file's own size is the read ceiling.
             await using var content = new UploadFileStream(file.OpenReadStream(file.Size, cancellationToken), read => ReportProgress(index, read));
 
-            stored.Add((index, await _activeStore.SaveAsync(new FileContent(file.Name, file.ContentType, file.Size, content), cancellationToken)));
+            var result = await _activeStore.SaveAsync(new FileContent(file.Name, file.ContentType, file.Size, content), cancellationToken);
+
+            if (!result.IsSaved)
+            {
+                _batch.RefuseFile(index, result.Refusal);
+                Rerender();
+                refusals.Add(new UploadRefusal(file.Name, result.Refusal, GetRefusalText(file.Name, result.Refusal)));
+
+                return StoreOutcome.Refused;
+            }
+
+            stored.Add((index, result.Resource));
             SetUploadState(index, UploadState.Completed, 100);
 
             return StoreOutcome.Stored;
@@ -442,6 +479,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     {
         Stored,
         Failed,
+        Refused,
         Canceled
     }
 }

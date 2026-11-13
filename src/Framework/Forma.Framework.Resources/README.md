@@ -48,13 +48,28 @@ var cover = new ImageResourceInfo("/media/cover.jpg")
 
 | Member | What it does |
 | --- | --- |
-| `IFileStore.SaveAsync(content, cancellationToken)` | Stores a `FileContent` and returns the `ResourceInfo` it became. `FormaFileUploader` saves each file through it. |
+| `IFileStore.SaveAsync(content, cancellationToken)` | Stores a `FileContent` and returns a `FileSaveResult`, the `ResourceInfo` it became or the store's `FileRefusal` of it. `FormaFileUploader` saves each file through it. |
 | `IFileStore.DeleteAsync(resource, cancellationToken)` | Removes a resource the store saved, and returns whether it did. |
 | `IResourceProvider.GetResourceAsync(source, cancellationToken)` | The resource an address names, or `null` for an address another provider handles. |
 | `IResourceContentReader.OpenAsync(source, cancellationToken)` | A stream over the bytes behind an address, which the caller disposes, or `null` when the reader has no such address. |
 
 `FileContent` carries a file's `Name`, `ContentType`, `Size` and open `Stream`; the caller owns the
 stream and disposes it after `SaveAsync` returns.
+
+A store answers `FileSaveResult.Saved(resource)` for a file it kept and
+`FileSaveResult.Refused(refusal)` for one it turns away for a reason the reader can act on, and
+throws only for a failure. A `FileRefusal` carries its `Reason` and the `Limit` the file went past:
+
+| `FileRefusalReason` | The file | `Limit` |
+| --- | --- | --- |
+| `DisallowedType` | Is of a type the store doesn't take. | None. |
+| `TooLarge` | Holds more bytes than the store takes in one file. | The most bytes. |
+| `TooWide` | Is an image wider than the store takes. | The most pixels across. |
+| `TooTall` | Is an image taller than the store takes. | The most pixels down. |
+
+`FormaFileUploader` shows a refused file as refused, beneath it a sentence in the reader's language
+that names the limit, and a failed file as failed. A store enforces its own limits, whatever a
+picker checked before it.
 
 `FormaFileViewer` asks each registered `IResourceProvider` in registration order, and the first
 resource returned decides how the address is shown. `BrowserResourceProvider`, which recognizes
@@ -83,23 +98,31 @@ and [`formaui-net.AddOns.Resources.Office`](https://github.com/FormaUI/Forma/blo
 provide `MarkdownResourceProvider` and `OfficeResourceProvider`, which convert documents to a
 `MarkupResourceInfo` through the host's `IResourceContentReader`.
 
-A store and a reader over a folder whose files are served under `/uploads/`:
+A store and a reader over a folder whose files are served under `/uploads/`, the store taking
+no file over 10 MB:
 
 ```csharp
 using Forma.Framework.Resources;
 
 public sealed class UploadFolderStore(string folder) : IFileStore
 {
-    public async ValueTask<ResourceInfo> SaveAsync(FileContent content, CancellationToken cancellationToken)
+    private const long MaxFileBytes = 10 * 1024 * 1024;
+
+    public async ValueTask<FileSaveResult> SaveAsync(FileContent content, CancellationToken cancellationToken)
     {
+        if (content.Size > MaxFileBytes)
+        {
+            return FileSaveResult.Refused(new FileRefusal(FileRefusalReason.TooLarge, MaxFileBytes));
+        }
+
         await using var destination = File.Create(Path.Combine(folder, content.Name));
         await content.Stream.CopyToAsync(destination, cancellationToken);
 
-        return new FileResourceInfo($"/uploads/{content.Name}")
+        return FileSaveResult.Saved(new FileResourceInfo($"/uploads/{content.Name}")
         {
             ContentType = content.ContentType,
             Size = content.Size,
-        };
+        });
     }
 
     public ValueTask<bool> DeleteAsync(ResourceInfo resource, CancellationToken cancellationToken)

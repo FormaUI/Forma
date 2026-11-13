@@ -1409,7 +1409,10 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
 
     private async Task HandleUploadCompletedAsync(IReadOnlyList<ResourceInfo> uploadedResources)
     {
-        _uploadPanel.Close();
+        if (!_uploadPanel.HasFileLeftOut)
+        {
+            _uploadPanel.Close();
+        }
 
         await OnUploaded.InvokeAsync(uploadedResources);
         await RefreshProviderAsync();

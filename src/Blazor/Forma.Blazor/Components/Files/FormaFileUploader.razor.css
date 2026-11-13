@@ -1,10 +1,12 @@
 /* ============================================================
    FormaFileUploader — CSS isolation
    The list of files, one line each: name and size, then rate,
-   progress, time and state in fixed columns the totals share.
+   progress, time and state in fixed columns the totals share,
+   and beneath a refused file the store's reason.
    ============================================================ */
 
 .forma-file-uploader {
+    --forma-file-uploader-mark-size: 1rem;
     --forma-file-uploader-bar-size: 8rem;
     --forma-file-uploader-rate-size: 5.5rem;
     --forma-file-uploader-time-size: 5rem;
@@ -34,7 +36,7 @@
 
 .forma-file-uploader-mark {
     flex-shrink: 0;
-    inline-size: 1rem;
+    inline-size: var(--forma-file-uploader-mark-size);
     text-align: center;
     color: var(--text-secondary-color);
 }
@@ -44,8 +46,22 @@
 }
 
 .forma-file-uploader-failed .forma-file-uploader-mark,
-.forma-file-uploader-failed .forma-file-uploader-state {
+.forma-file-uploader-failed .forma-file-uploader-state,
+.forma-file-uploader-refused .forma-file-uploader-mark,
+.forma-file-uploader-refused .forma-file-uploader-state {
     color: var(--danger-color);
+}
+
+.forma-file-uploader-refused {
+    flex-wrap: wrap;
+}
+
+/* A line of its own, starting under the name past the mark's column. */
+.forma-file-uploader-reason {
+    flex-basis: 100%;
+    padding-inline-start: calc(var(--forma-file-uploader-mark-size) + var(--space-2));
+    color: var(--text-primary-color);
+    overflow-wrap: anywhere;
 }
 
 .forma-file-uploader-name {

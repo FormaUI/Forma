@@ -12,6 +12,7 @@
 @using Forma.Framework.Explorer
 @using Forma.Framework.Browser.Interop.Focus
 @using Forma.Framework.Browser.Interop.Scrolling
+@using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.Time.Testing
 @using Bunit.Rendering
@@ -306,6 +307,52 @@
 
             // Assert
             Assert.Equal("alert", cut.Find(".forma-explorer-rejection-region").GetAttribute("role"));
+        }
+    }
+
+    public sealed class Uploading
+    {
+        [Fact]
+        public async Task Should_keep_the_upload_panel_open_on_a_file_the_store_refused()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var store = new FakeFileStore { Refusals = { ["big.jpg"] = new FileRefusal(FileRefusalReason.TooLarge, 4) } };
+            IReadOnlyList<ResourceInfo>? uploaded = null;
+            var cut = ctx.Render(@<FormaExplorer Items="[]"
+                                                Store="store"
+                                                ItemOptions="ExplorerItemOptions.Default"
+                                                OnUploaded="@(resources => { uploaded = resources; return Task.CompletedTask; })" />);
+            await cut.Find(".forma-explorer-upload-button").ClickAsync(new());
+
+            // Act
+            cut.FindComponent<InputFile>().UploadFiles(
+                InputFileContent.CreateFromText("small", "cover.jpg", contentType: "image/jpeg"),
+                InputFileContent.CreateFromText("far too long a body", "big.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["cover.jpg"], store.Saved),
+                () => Assert.Equal("/stored/cover.jpg", Assert.Single(uploaded!).Source),
+                () => Assert.Equal("\"big.jpg\" is larger than 4 B.", cut.Find(".forma-explorer-upload-panel .forma-file-uploader-reason").TextContent));
+        }
+
+        [Fact]
+        public async Task Should_close_the_upload_panel_once_every_file_is_stored()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var store = new FakeFileStore();
+            var cut = ctx.Render(@<FormaExplorer Items="[]" Store="store" ItemOptions="ExplorerItemOptions.Default" />);
+            await cut.Find(".forma-explorer-upload-button").ClickAsync(new());
+
+            // Act
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("small", "cover.jpg", contentType: "image/jpeg"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["cover.jpg"], store.Saved),
+                () => Assert.Empty(cut.FindAll(".forma-explorer-upload-panel")));
         }
     }
 

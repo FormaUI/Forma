@@ -36,6 +36,11 @@
                 }
 
                 <span class="forma-file-uploader-state">@GetStateText(upload.State)</span>
+
+                @if (upload.Refusal is { } refusal)
+                {
+                    <span class="forma-file-uploader-reason">@GetRefusalText(upload.Name, refusal)</span>
+                }
             </li>
         }
     </ul>

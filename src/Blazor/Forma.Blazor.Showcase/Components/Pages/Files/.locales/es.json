@@ -37,7 +37,7 @@
     "A Slow Store, and Canceling It": "Un Almacén Lento, y Cancelarlo",
     "This store pauses between reads so the progress bar is watchable and the cancel action is reachable. Anything not yet stored when you cancel is marked canceled.": "Este almacén pausa entre lecturas para que la barra de progreso se pueda observar y la acción de cancelar sea alcanzable. Todo lo que aún no se haya guardado al cancelar se marca como cancelado.",
     "Stored at {Source}": "Guardado en {Source}",
-    "{Name} was refused: {Reason}": "{Name} fue rechazado: {Reason}",
+    "{Name} couldn't be stored.": "No se pudo guardar {Name}.",
     "The store is holding nothing.": "El almacén no contiene nada.",
     "The store is holding: {Names}": "El almacén contiene: {Names}"
   },

@@ -72,6 +72,26 @@ public sealed partial class FilesTests
             await Assertions.Expect(page.Locator("#check")).ToHaveAttributeAsync("aria-busy", "false");
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("notes.txt (5 bytes)");
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_say_why_the_store_refused_the_file_picked(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "file-uploader");
+            await using var _ = context;
+            var input = page.Locator("#refusing-picker input[type=file]");
+            await WaitForFileInputAsync(page, "#refusing-picker input[type=file]");
+
+            // Act
+            await input.SetInputFilesAsync(CreateTextFile());
+
+            // Assert
+            await Assertions.Expect(page.Locator("#refusing .forma-file-uploader-state")).ToHaveTextAsync("Refused");
+            await Assertions.Expect(page.Locator("#refusing .forma-file-uploader-reason")).ToHaveTextAsync("\"notes.txt\" is larger than 4 B.");
+            await Assertions.Expect(page.Locator("#refusing [role=status]")).ToHaveTextAsync("Stored 0 of 1.");
+            await Assertions.Expect(page.Locator("#refusal")).ToHaveTextAsync("\"notes.txt\" is larger than 4 B.");
+        }
     }
 
     public sealed class FileViewer(BrowserHost host)

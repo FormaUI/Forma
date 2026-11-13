@@ -146,7 +146,8 @@ Three surfaces stay on `FormaExplorer` rather than on the region they appear ove
 each is reached from more than one of them: the preview lightbox, which activation, the
 action menu and `FormaFileViewer`'s sibling stepping all drive through the explorer; the
 confirmation modals, since one rename dialog serves items and folders alike; and the upload
-panel, whose completion re-reads the items and reports what was uploaded.
+panel, whose completion re-reads the items and reports what was uploaded, closing the panel
+unless a file failed or the store refused it, which the panel stays open to show.
 
 The details view keeps every column it is configured with, its headers sorting, its name
 column resized by dragging the frozen edge; the columns menu adds or removes the optional

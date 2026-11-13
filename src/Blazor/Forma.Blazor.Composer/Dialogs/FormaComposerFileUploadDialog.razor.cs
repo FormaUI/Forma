@@ -59,6 +59,9 @@ public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = nu
     private void HandleFailed(UploadFailure failure)
         => Messages.Add(L["\"{Name}\" could not be uploaded.", failure.Name].Value);
 
+    private void HandleRefused(UploadRefusal refusal)
+        => Messages.Add(refusal.Message);
+
     // Uploads are held until confirm, since handing them over closes the dialog.
     private void HandleCompleted(IReadOnlyList<ResourceInfo> uploadedResources)
         => _uploadedResources.AddRange(uploadedResources);

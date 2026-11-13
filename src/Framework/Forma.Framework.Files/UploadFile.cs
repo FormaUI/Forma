@@ -2,6 +2,8 @@ namespace Forma.Framework.Files;
 
 using System.Diagnostics;
 
+using Forma.Framework.Resources;
+
 /// <summary>One file moving into a store, with how far its transfer has come.</summary>
 /// <param name="Name">The file's name.</param>
 /// <param name="TotalBytes">How many bytes the file holds.</param>
@@ -21,6 +23,9 @@ public sealed record UploadFile(string Name, long TotalBytes)
 
     /// <summary>How many of the file's bytes have reached the store.</summary>
     public long BytesTransferred { get; init; }
+
+    /// <summary>The store's refusal of the file.</summary>
+    public FileRefusal? Refusal { get; init; }
 
     /// <summary>How long the transfer has been running, or ran in total.</summary>
     public TimeSpan Elapsed

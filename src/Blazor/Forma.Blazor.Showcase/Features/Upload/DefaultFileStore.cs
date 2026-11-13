@@ -55,7 +55,7 @@ internal sealed class DefaultFileStore(SandboxAssets sandbox) : IFileStore
     }
 
     /// <inheritdoc />
-    public async ValueTask<ResourceInfo> SaveAsync(FileContent content, CancellationToken cancellationToken)
+    public async ValueTask<FileSaveResult> SaveAsync(FileContent content, CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(content);
 
@@ -71,7 +71,7 @@ internal sealed class DefaultFileStore(SandboxAssets sandbox) : IFileStore
 
             if (RefusesOver is { } ceiling && content.Size > ceiling)
             {
-                throw new InvalidOperationException($"{content.Name} is {content.Size} bytes, past this store's {ceiling} byte limit.");
+                return FileSaveResult.Refused(new FileRefusal(FileRefusalReason.TooLarge, ceiling));
             }
 
             var destinationPath = sandbox.GetUploadPath(content.Name);
@@ -109,10 +109,10 @@ internal sealed class DefaultFileStore(SandboxAssets sandbox) : IFileStore
                 throw;
             }
 
-            return new ResourceInfo(SandboxAssets.GetUploadSource(content.Name))
+            return FileSaveResult.Saved(new ResourceInfo(SandboxAssets.GetUploadSource(content.Name))
             {
                 Size = content.Size
-            };
+            });
         }
         finally
         {

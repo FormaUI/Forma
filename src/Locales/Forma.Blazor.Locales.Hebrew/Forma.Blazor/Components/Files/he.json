@@ -11,6 +11,7 @@
     "Cancel": "ביטול",
     "Canceled": "בוטל",
     "Failed": "נכשל",
+    "Refused": "נדחה",
     "Rolled Back": "בוטל והוסר",
     "Skipped": "דולג",
     "Stored": "נשמר",
@@ -20,7 +21,15 @@
     "Uploading {Started} of {Total}.": "מעלה {Started} מתוך {Total}.",
     "Waiting": "ממתין",
     "{Sent} of {Size}": "{Sent} מתוך {Size}",
-    "{Remaining} left": "נותרו {Remaining}"
+    "{Remaining} left": "נותרו {Remaining}",
+    "\"{Name}\" isn't an accepted file type.": "\"{Name}\" אינו סוג קובץ מותר.",
+    "\"{Name}\" is larger than {Size}.": "\"{Name}\" גדול מ-\u2068{Size}\u2069.",
+    "\"{Name}\" is too large.": "\"{Name}\" גדול מדי.",
+    "\"{Name}\" is wider than {Width} [$ [Width] plural; one: pixel; other: pixels; $].": "\"{Name}\" רחב מ[$ [Width] plural; one: פיקסל אחד; two: שני פיקסלים; other: -{Width} פיקסלים; $].",
+    "\"{Name}\" is too wide.": "\"{Name}\" רחב מדי.",
+    "\"{Name}\" is taller than {Height} [$ [Height] plural; one: pixel; other: pixels; $].": "\"{Name}\" גבוה מ[$ [Height] plural; one: פיקסל אחד; two: שני פיקסלים; other: -{Height} פיקסלים; $].",
+    "\"{Name}\" is too tall.": "\"{Name}\" גבוה מדי.",
+    "\"{Name}\" was refused.": "\"{Name}\" נדחה."
   },
   "FormaFileViewer": {
     "Zoom": "זום",

@@ -52,6 +52,8 @@
             {
                 <FormaFileUploader Files="_uploadPanel.PickedFiles"
                                    Store="Store"
+                                   OnFailed="_uploadPanel.MarkFileLeftOut"
+                                   OnRefused="_uploadPanel.MarkFileLeftOut"
                                    OnCompleted="HandleUploadCompletedAsync" />
             }
         </div>

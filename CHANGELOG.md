@@ -77,6 +77,19 @@ set out. What Forma gained before its first release, month by month, is in [the 
   options it starts, and labels compare in the culture in force. Typed on the closed select, they open its list on that
   option, and nothing is chosen until the reader chooses it. A `FormaDataTree` searches its nodes the same way, where it
   matched a single letter.
+- `IFileStore.SaveAsync` answers with a `FileSaveResult`: `FileSaveResult.Saved(resource)` for a file it kept, or
+  `FileSaveResult.Refused(refusal)` for one it turns away, its `FileRefusal` carrying a `FileRefusalReason`,
+  `DisallowedType`, `TooLarge`, `TooWide` or `TooTall`, and the `Limit` the file went past. A store of a host's own wraps
+  the resource it returned in `FileSaveResult.Saved`, and answers with `FileSaveResult.Refused` where it threw to refuse a
+  file, keeping exceptions for failures.
+- A [`FormaFileUploader`](docs/component-catalog.md#formafileuploader) shows a file its store refused as refused, with
+  a sentence beneath it in the reader's language naming the limit, and raises `OnRefused` with an `UploadRefusal`
+  carrying that sentence; `StopOnFailure` and `RollbackOnFailure` treat a refusal as they treat a failure. A store
+  could refuse only by throwing, and a refused file showed as failed, with nothing to say why. `UploadState.Refused`,
+  between `Failed` and `Skipped`, marks such a file in an `UploadBatch`, which `RefuseFile` moves it to, its
+  `UploadFile` holding the store's `Refusal`.
+- A [`FormaExplorer`](docs/component-catalog.md#formaexplorer)'s upload panel stays open while it shows a file that
+  failed or that its store refused. It closed once any file of the set was stored, taking with it what the rest came to.
 - A [`FormaFilePicker`](docs/component-catalog.md#formafilepicker) refusing a file too large names the size it went
   past.
 

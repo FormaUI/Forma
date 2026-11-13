@@ -50,7 +50,8 @@
         <FormaFileUploader Store="@Store("small")"
                        Files="@GetSelectedFiles("small")"
                        OnCompleted="@(resources => Complete("small", resources))"
-                       OnFailed="@(failure => Fail("small", failure))" />
+                       OnFailed="@(failure => Fail("small", failure))"
+                       OnRefused="@(refusal => Refuse("small", refusal))" />
         <p class="demo-note">@DescribeHeldFiles(Store("small"))</p>
         <ul class="demo-log">
             @foreach (var line in Log("small"))
@@ -70,7 +71,8 @@
                        Files="@GetSelectedFiles("stop")"
                        Options="@(new FileUploaderOptions { StopOnFailure = true })"
                        OnCompleted="@(resources => Complete("stop", resources))"
-                       OnFailed="@(failure => Fail("stop", failure))" />
+                       OnFailed="@(failure => Fail("stop", failure))"
+                       OnRefused="@(refusal => Refuse("stop", refusal))" />
         <p class="demo-note">@DescribeHeldFiles(Store("stop"))</p>
         <ul class="demo-log">
             @foreach (var line in Log("stop"))
@@ -90,7 +92,8 @@
                        Files="@GetSelectedFiles("rollback")"
                        Options="@(new FileUploaderOptions { RollbackOnFailure = true })"
                        OnCompleted="@(resources => Complete("rollback", resources))"
-                       OnFailed="@(failure => Fail("rollback", failure))" />
+                       OnFailed="@(failure => Fail("rollback", failure))"
+                       OnRefused="@(refusal => Refuse("rollback", refusal))" />
         <p class="demo-note">@DescribeHeldFiles(Store("rollback"))</p>
         <ul class="demo-log">
             @foreach (var line in Log("rollback"))

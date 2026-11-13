@@ -242,7 +242,7 @@
         }
 
         [Fact]
-        public void Should_carry_on_after_a_file_the_store_refuses()
+        public void Should_carry_on_after_a_file_the_store_fails_on()
         {
             // Arrange
             using var ctx = new FormaFileUploaderTests();
@@ -268,6 +268,62 @@
                 Assert.Equal("Stored", cut.FindAll(".forma-file-uploader-state")[1].TextContent);
                 Assert.Equal("Stored 1 of 2.", cut.Find(".forma-file-uploader-summary").TextContent);
             });
+        }
+
+        [Fact]
+        public void Should_say_why_the_store_refused_a_file_and_carry_on()
+        {
+            // Arrange
+            using var ctx = new FormaFileUploaderTests();
+            var store = new FakeFileStore { Refusals = { ["cover.jpg"] = new FileRefusal(FileRefusalReason.TooLarge, 4096) } };
+            var refusals = new List<UploadRefusal>();
+            var failures = new List<UploadFailure>();
+            IReadOnlyList<IBrowserFile> files =
+            [
+                new FakeBrowserFile("cover.jpg", "bytes"),
+                new FakeBrowserFile("notes.txt", "text")
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaFileUploader Store="store"
+                                                 Files="files"
+                                                 OnRefused="@(refusal => { refusals.Add(refusal); return Task.CompletedTask; })"
+                                                 OnFailed="@(failure => { failures.Add(failure); return Task.CompletedTask; })" />);
+
+            // Assert
+            var refusal = Assert.Single(refusals);
+            Assert.Multiple(
+                () => Assert.Equal(["notes.txt"], store.Saved),
+                () => Assert.Empty(failures),
+                () => Assert.Equal(new UploadRefusal("cover.jpg", new FileRefusal(FileRefusalReason.TooLarge, 4096), "\"cover.jpg\" is larger than 4 KB."), refusal),
+                () => Assert.Equal("Refused", cut.FindAll(".forma-file-uploader-state")[0].TextContent),
+                () => Assert.Equal(refusal.Message, cut.Find(".forma-file-uploader-refused .forma-file-uploader-reason").TextContent),
+                () => Assert.Single(cut.FindAll(".forma-file-uploader-reason")),
+                () => Assert.Equal("Stored", cut.FindAll(".forma-file-uploader-state")[1].TextContent),
+                () => Assert.Equal("Stored 1 of 2.", cut.Find(".forma-file-uploader-summary").TextContent));
+        }
+
+        [Theory]
+        [InlineData(FileRefusalReason.DisallowedType, null, "\"cover.jpg\" isn't an accepted file type.")]
+        [InlineData(FileRefusalReason.TooLarge, 1_572_864L, "\"cover.jpg\" is larger than 1.5 MB.")]
+        [InlineData(FileRefusalReason.TooLarge, null, "\"cover.jpg\" is too large.")]
+        [InlineData(FileRefusalReason.TooWide, 4000L, "\"cover.jpg\" is wider than 4000 pixels.")]
+        [InlineData(FileRefusalReason.TooWide, 1L, "\"cover.jpg\" is wider than 1 pixel.")]
+        [InlineData(FileRefusalReason.TooWide, null, "\"cover.jpg\" is too wide.")]
+        [InlineData(FileRefusalReason.TooTall, 3000L, "\"cover.jpg\" is taller than 3000 pixels.")]
+        [InlineData(FileRefusalReason.TooTall, null, "\"cover.jpg\" is too tall.")]
+        public void Should_word_each_refusal_with_the_limit_the_file_went_past(FileRefusalReason reason, long? limit, string expected)
+        {
+            // Arrange
+            using var ctx = new FormaFileUploaderTests();
+            var store = new FakeFileStore { Refusals = { ["cover.jpg"] = new FileRefusal(reason, limit) } };
+            IReadOnlyList<IBrowserFile> files = [new FakeBrowserFile("cover.jpg", "bytes")];
+
+            // Act
+            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" />);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-file-uploader-reason").TextContent);
         }
 
         [Fact]
@@ -366,6 +422,54 @@
                 Assert.Empty(store.Saved);
                 Assert.Equal("Failed", cut.FindAll(".forma-file-uploader-state")[0].TextContent);
                 Assert.Equal("Skipped", cut.FindAll(".forma-file-uploader-state")[1].TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_skip_the_rest_of_the_set_after_a_refusal_when_StopOnFailure_is_on()
+        {
+            // Arrange
+            using var ctx = new FormaFileUploaderTests();
+            var store = new FakeFileStore { Refusals = { ["big.jpg"] = new FileRefusal(FileRefusalReason.TooLarge, 4) } };
+            IReadOnlyList<IBrowserFile> files =
+            [
+                new FakeBrowserFile("big.jpg", "first"),
+                new FakeBrowserFile("good.txt", "second")
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FileUploaderOptions { StopOnFailure = true })" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(store.Saved);
+                Assert.Equal("Refused", cut.FindAll(".forma-file-uploader-state")[0].TextContent);
+                Assert.Equal("Skipped", cut.FindAll(".forma-file-uploader-state")[1].TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_undo_what_it_stored_after_a_refusal_when_RollbackOnFailure_is_on()
+        {
+            // Arrange
+            using var ctx = new FormaFileUploaderTests();
+            var store = new FakeFileStore { Refusals = { ["big.jpg"] = new FileRefusal(FileRefusalReason.TooLarge, 4) } };
+            IReadOnlyList<IBrowserFile> files =
+            [
+                new FakeBrowserFile("good.txt", "first"),
+                new FakeBrowserFile("big.jpg", "second")
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FileUploaderOptions { RollbackOnFailure = true })" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(["/stored/good.txt"], store.Deleted);
+                Assert.Equal("Rolled Back", cut.FindAll(".forma-file-uploader-state")[0].TextContent);
+                Assert.Equal("Refused", cut.FindAll(".forma-file-uploader-state")[1].TextContent);
             });
         }
 

@@ -2,6 +2,8 @@ namespace Forma.Framework.Files;
 
 using System.Diagnostics;
 
+using Forma.Framework.Resources;
+
 /// <summary>The files of one upload run as a whole: its clock, its aggregates, and each file's place in it.</summary>
 public sealed class UploadBatch
 {
@@ -94,6 +96,15 @@ public sealed class UploadBatch
             StartTimestamp = isStarting ? Stopwatch.GetTimestamp() : file.StartTimestamp,
             Duration = isStarting || file.StartTimestamp == 0 ? null : Stopwatch.GetElapsedTime(file.StartTimestamp)
         };
+    }
+
+    /// <summary>Moves one file to <see cref="UploadState.Refused"/>, with the store's refusal of it.</summary>
+    public void RefuseFile(int index, FileRefusal refusal)
+    {
+        ArgumentNullException.ThrowIfNull(refusal);
+
+        SetFileState(index, UploadState.Refused);
+        _files[index] = _files[index] with { Refusal = refusal };
     }
 
     /// <summary>Moves every file still pending, from the given position on, to a state.</summary>

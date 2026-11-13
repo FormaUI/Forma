@@ -19,10 +19,10 @@ public sealed record FileUploaderOptions
     /// <summary>Whether the upload begins as soon as a new set of files arrives.</summary>
     public bool AutoStart { get; init; } = true;
 
-    /// <summary>Whether a failed file removes everything the set already stored.</summary>
+    /// <summary>Whether a file that fails or is refused removes everything the set already stored.</summary>
     public bool RollbackOnFailure { get; init; }
 
-    /// <summary>Whether the upload stops at the first failed file.</summary>
+    /// <summary>Whether the upload stops at the first file that fails or is refused.</summary>
     public bool StopOnFailure { get; init; }
 
     /// <summary>Whether the uploader shows how much of each file has reached the store, against its total.</summary>

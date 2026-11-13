@@ -1,4 +1,5 @@
 @page "/{Runtime}/file-uploader"
+@using Forma.Blazor.Browser.Components.Checks.Services
 @using Forma.Framework.Resources
 
 @* A picker handing its files to an uploader, which writes them to the host's store, the files stored named with their sizes where the check reads them. *@
@@ -6,9 +7,17 @@
 <FormaFileUploader Id="check" Files="_pickedFiles" OnCompleted="@(resources => _storedResources = resources)" />
 <output id="result">@string.Join(", ", _storedResources.Select(FormatResource))</output>
 
+@* A second pair writing to a store that takes no file over four bytes, its refusal's message where the check reads it. *@
+<FormaFilePicker Id="refusing-picker" OnFilesSelected="@(files => _refusedFiles = files)" />
+<FormaFileUploader Id="refusing" Files="_refusedFiles" Store="_refusingStore" OnRefused="@(refusal => _refusalMessage = refusal.Message)" />
+<output id="refusal">@_refusalMessage</output>
+
 @code {
+    private readonly MemoryFileStore _refusingStore = new() { MaxFileBytes = 4 };
     private IReadOnlyList<IBrowserFile>? _pickedFiles;
+    private IReadOnlyList<IBrowserFile>? _refusedFiles;
     private IReadOnlyList<ResourceInfo> _storedResources = [];
+    private string? _refusalMessage;
 
     private static string FormatResource(ResourceInfo resource)
         => $"{resource.Name} ({resource.Size?.ToString(CultureInfo.InvariantCulture)} bytes)";
