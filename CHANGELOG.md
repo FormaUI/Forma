@@ -26,6 +26,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`FormaExplorer`](docs/component-catalog.md#formaexplorer) whose store answers its first query asynchronously lists
   what the store answered. On an interactive server and in a web view, an answer arriving before the page had taken the
   explorer's first render in left it showing that it loads until a refresh.
+- A [`FormaPopover`](docs/component-catalog.md#formapopover) closing after a press inside it in a WebKit browser, as a
+  menu does once an item is pressed or a select once an option is, hands the focus back to its trigger. WebKit focuses
+  no button it presses, so the focus fell to the page and stayed there.
 
 ## `1.0.0-preview.5`
 

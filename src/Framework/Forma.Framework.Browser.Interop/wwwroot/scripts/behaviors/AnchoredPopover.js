@@ -78,10 +78,13 @@ class AnchoredPopover {
         this.#position();
     }
 
-    /** Hides the popover and releases the listeners held for it, first returning focus inside it to the trigger when asked. */
+    /** Hides the popover and releases the listeners held for it, first returning to the trigger, when asked, a focus inside it or one fallen to the page. */
     close(returnsFocus = false) {
-        // Focused where it stands, so a trigger in a sticky part leaves its scroller in place.
-        if (returnsFocus && this.#trigger && this.#popover.contains(document.activeElement)) {
+        // WebKit focuses no button it presses, so a press inside leaves the focus on the page, which returns as a focus inside does.
+        const focused = document.activeElement;
+
+        if (returnsFocus && this.#trigger && (focused === null || focused === document.body || this.#popover.contains(focused))) {
+            // Focused where it stands, so a trigger in a sticky part leaves its scroller in place.
             this.#trigger.focus({ preventScroll: true });
         }
 

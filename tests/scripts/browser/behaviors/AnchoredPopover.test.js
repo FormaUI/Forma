@@ -195,6 +195,18 @@ describe('AnchoredPopover', () => {
         expect(document.activeElement).toBe(anchor);
     });
 
+    it('returns focus to the trigger on a close that asks for it while focus has fallen to the page', () => {
+        popover.innerHTML = '<button id="inside">Inside</button>';
+        const handle = attach(popover, { anchor });
+        handle.open(anchor);
+        popover.querySelector('#inside').focus();
+        popover.querySelector('#inside').blur();
+
+        handle.close(true);
+
+        expect(document.activeElement).toBe(anchor);
+    });
+
     it('leaves focus alone on a close that asks for it while focus is elsewhere', () => {
         document.body.insertAdjacentHTML('beforeend', '<button id="elsewhere">Elsewhere</button>');
         const handle = attach(popover, { anchor });
