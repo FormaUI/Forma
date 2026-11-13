@@ -21,6 +21,13 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["With a Description"]</h2>
+        <div class="demo-box">
+            <FormaCheckBox @bind-Value="Model.IsSubscribed" Description="@L["One email a week, never more."]">@L["Subscribe to updates"]</FormaCheckBox>
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Disabled"]</h2>
         <div class="demo-box demo-row">
             <FormaCheckBox @bind-Value="Model.OffValue" Disabled="true">@L["Off"]</FormaCheckBox>

@@ -43,7 +43,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
 
     /// <inheritdoc />
     protected override bool HasFieldContainer
-        => HasLabel;
+        => HasLabel || HasDescription;
 
     // The value the box renders, which a render never writes back over the reader's typing.
     private string? ShownText

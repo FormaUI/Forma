@@ -5,7 +5,7 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
-/// <summary>Field chrome — the label, required marker and validation messages around a form element.</summary>
+/// <summary>Field chrome — the label, required marker, description and validation messages around a form element.</summary>
 public sealed partial class FormaField : FormaElementBase
 {
     /// <summary>The label text.</summary>
@@ -30,7 +30,10 @@ public sealed partial class FormaField : FormaElementBase
     /// <remarks>An element carrying the forma-field-input class takes the field's box, with the label floating over its value.</remarks>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
-    /// <summary>The content beneath the element, ahead of the validation messages, such as a password's strength.</summary>
+    /// <summary>The instructions beneath the element, which the element names as its description.</summary>
+    [Parameter] public string? Description { get; set; }
+
+    /// <summary>The content beneath the element and its description, ahead of the validation messages, such as a password's strength.</summary>
     [Parameter] public RenderFragment? FooterContent { get; set; }
 
     /// <summary>The model field whose validation messages render beneath the element.</summary>
@@ -46,6 +49,9 @@ public sealed partial class FormaField : FormaElementBase
 
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
+
+    private bool HasDescription
+        => !string.IsNullOrWhiteSpace(Description);
 
     private string? GroupRole
         => Grouped ? "group" : null;

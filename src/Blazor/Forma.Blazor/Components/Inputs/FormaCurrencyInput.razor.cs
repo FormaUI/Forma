@@ -33,6 +33,9 @@ public sealed partial class FormaCurrencyInput<TValue> : FormaElementBase
     /// <summary>The placeholder text shown when the amount is empty.</summary>
     [Parameter] public string? Placeholder { get; set; }
 
+    /// <summary>The instructions shown beneath the amount, which describe it.</summary>
+    [Parameter] public string? Description { get; set; }
+
     /// <summary>Whether an amount that can be empty is marked as required.</summary>
     [Parameter] public bool Required { get; set; }
 

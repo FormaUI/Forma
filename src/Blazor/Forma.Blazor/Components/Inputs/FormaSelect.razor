@@ -3,7 +3,7 @@
 @using Forma.Framework.Browser.Interop.Behaviors
 @inherits FormaInputBase<TValue>
 
-<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Required="@Required" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Description="@Description" Required="@Required" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         @if (!RendererInfo.IsInteractive && IsPostable)
         {

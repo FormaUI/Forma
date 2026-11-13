@@ -25,6 +25,10 @@
             </label>
         }
     </div>
+    @if (HasDescription)
+    {
+        <div id="@EffectiveElementIds.DescriptionId" class="forma-field-description">@Description</div>
+    }
     @FooterContent
     @if (ShowsMessages)
     {

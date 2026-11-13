@@ -1,6 +1,6 @@
 /* ============================================================
    FormaField — CSS isolation
-   The label, required marker and validation messages around an input
+   The label, required marker, description and validation messages around an input
    element the wrapping component renders, reached with ::deep, spaced from
    its neighbors by the layout that holds it, with one message line's room
    beneath the element wherever it shows a form's messages. The element and
@@ -135,6 +135,13 @@
 /* ---------- required asterisk ---------- */
 .forma-field-required {
     color: var(--forma-required-color, var(--danger-color));
+}
+
+/* ---------- description ---------- */
+.forma-field-description {
+    padding-block-start: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary-color);
 }
 
 /* ---------- validation messages ---------- */

@@ -31,6 +31,9 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     /// <summary>The style the host adds to the root element.</summary>
     [Parameter] public string? Style { get; set; }
 
+    /// <summary>The instructions shown beneath the input, which describe it.</summary>
+    [Parameter] public string? Description { get; set; }
+
     [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
     [Inject] private IServiceProvider Services { get; set; } = default!;
     [Inject] private ICultureState CultureState { get; set; } = default!;
@@ -93,12 +96,16 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         }
     }
 
-    /// <summary>The ids of the label and validation-message container of the field the input composes.</summary>
+    /// <summary>The ids of the label, description and validation-message container of the field the input composes.</summary>
     protected FieldElementIds FieldElementIds { get; } = new();
 
     /// <summary>Whether the input is drawn inside its field container.</summary>
     protected virtual bool HasFieldContainer
         => true;
+
+    /// <summary>Whether the input has instructions to show beneath it.</summary>
+    protected bool HasDescription
+        => !string.IsNullOrWhiteSpace(Description);
 
     /// <summary>The name the input's control posts its value under from a plain form: the host's own, or the bound value's, as Blazor's own inputs write it.</summary>
     protected string? ControlName
@@ -114,6 +121,11 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
             if (AdditionalAttributes?.GetValueOrDefault("aria-describedby")?.ToString() is { } host && !string.IsNullOrWhiteSpace(host))
             {
                 ids.Add(host);
+            }
+
+            if (HasDescription)
+            {
+                ids.Add(FieldElementIds.DescriptionId);
             }
 
             BuildDescribedBy(ids);

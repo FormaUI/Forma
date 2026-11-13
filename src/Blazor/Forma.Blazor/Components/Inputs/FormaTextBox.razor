@@ -28,9 +28,9 @@
                 aria-required="@(Required ? "true" : null)" />;
 }
 
-@if (HasLabel)
+@if (HasLabel || HasDescription)
 {
-    <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Required="@Required" style="@FieldStyle">
+    <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Description="@Description" Required="@Required" style="@FieldStyle">
         <ChildContent>
             @box
         </ChildContent>

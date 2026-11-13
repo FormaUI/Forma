@@ -36,6 +36,10 @@ public sealed partial class FormaCheckBox : FormaInputBase<bool>
         => Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive);
 
     /// <inheritdoc />
+    protected override bool HasFieldContainer
+        => false;
+
+    /// <inheritdoc />
     protected override void OnInitialized()
         => _checkBox = new CheckBox(Context.JS);
 

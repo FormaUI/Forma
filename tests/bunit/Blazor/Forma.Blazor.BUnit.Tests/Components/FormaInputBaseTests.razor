@@ -1,6 +1,7 @@
 @inherits FormaBunitContext
 @using System.Diagnostics.CodeAnalysis
 @using System.Globalization
+@using Forma.Blazor.Models
 @using Forma.Framework.Css
 @using Forma.Framework.Culture
 @using Forma.Tests.Culture
@@ -273,7 +274,7 @@
         }
 
         [Fact]
-        public async Task Should_be_described_by_the_hosts_ids_then_its_parts_then_the_fields_messages()
+        public async Task Should_be_described_by_the_hosts_ids_then_its_description_then_its_parts_then_the_fields_messages()
         {
             // Arrange
             using var ctx = new FormaInputBaseTests();
@@ -283,6 +284,7 @@
                 .AddCascadingValue(editContext)
                 .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text)
                 .Add(field => field.Id, "name")
+                .Add(field => field.Description, "Lowercase letters only.")
                 .Add(field => field.PartId, "name-hint")
                 .AddUnmatched("aria-describedby", "host-note"));
 
@@ -291,7 +293,8 @@
             await cut.InvokeAsync(editContext.NotifyValidationStateChanged);
 
             // Assert
-            Assert.Equal($"host-note name-hint {cut.Instance.OwnFieldElementIds.MessageContainerId}", cut.Find("input").GetAttribute("aria-describedby"));
+            var ids = cut.Instance.OwnFieldElementIds;
+            Assert.Equal($"host-note {ids.DescriptionId} name-hint {ids.MessageContainerId}", cut.Find("input").GetAttribute("aria-describedby"));
         }
 
         [Fact]
@@ -312,6 +315,91 @@
 
             // Assert
             Assert.Null(cut.Find("input").GetAttribute("aria-describedby"));
+        }
+    }
+
+    public sealed class Descriptions
+    {
+        private const string Instructions = "Shown beneath it.";
+
+        public static TheoryData<string> Inputs { get; } =
+        [
+            "check-box", "color-picker", "currency-input", "date-picker", "date-range-picker", "date-time-picker", "multi-select",
+            "number-input", "labeled-number-input", "password-box", "select", "slider", "text-area", "text-box", "labeled-text-box",
+            "time-picker", "toggle-switch",
+        ];
+
+        [Theory]
+        [MemberData(nameof(Inputs))]
+        public void Should_show_its_description_beneath_it_and_be_described_by_it(string input)
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            ctx.JSInterop.Mode = JSRuntimeMode.Loose;
+            var model = new DescribedModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">@CreateInput(input, model)</FakeFormHost>);
+
+            // Assert
+            var description = cut.Find("[id$='-description']");
+            var described = cut.FindAll("input, textarea, button, select")
+                .Where(element => element.GetAttribute("aria-describedby")?.Split(' ').Contains(description.Id) == true);
+            Assert.Multiple(
+                () => Assert.Equal(Instructions, description.TextContent.Trim()),
+                () => Assert.NotEmpty(described));
+        }
+
+        private RenderFragment CreateInput(string input, DescribedModel model)
+            => input switch
+            {
+                "check-box" => @<FormaCheckBox @bind-Value="model.Flag" Description="@Instructions">Subscribe</FormaCheckBox>,
+                "color-picker" => @<FormaColorPicker @bind-Value="model.Color" Label="Background" Description="@Instructions" />,
+                "currency-input" => @<FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Price" Description="@Instructions" />,
+                "date-picker" => @<FormaDatePicker @bind-Value="model.Date" Label="Start Date" Description="@Instructions" />,
+                "date-range-picker" => @<FormaDateRangePicker @bind-Value="model.Range" Label="Period" Description="@Instructions" />,
+                "date-time-picker" => @<FormaDateTimePicker @bind-Value="model.Moment" Label="Starts" Description="@Instructions" />,
+                "multi-select" => @<FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="Categories" Label="Categories" Description="@Instructions" />,
+                "number-input" => @<FormaNumberInput @bind-Value="model.Price" Description="@Instructions" />,
+                "labeled-number-input" => @<FormaNumberInput @bind-Value="model.Price" Label="Price" Description="@Instructions" />,
+                "password-box" => @<FormaPasswordBox @bind-Value="model.Text" Label="Password" Description="@Instructions" />,
+                "select" => @<FormaSelect TValue="int?" @bind-Value="model.Status" Options="Statuses" Label="Status" Description="@Instructions" />,
+                "slider" => @<FormaSlider @bind-Value="model.Ratio" Label="Duration" Min="0.5" Max="5" Description="@Instructions" />,
+                "text-area" => @<FormaTextArea @bind-Value="model.Text" Label="Notes" Description="@Instructions" />,
+                "text-box" => @<FormaTextBox @bind-Value="model.Text" Description="@Instructions" />,
+                "labeled-text-box" => @<FormaTextBox @bind-Value="model.Text" Label="Slug" Description="@Instructions" />,
+                "time-picker" => @<FormaTimePicker @bind-Value="model.Time" Label="Starts" Description="@Instructions" />,
+                "toggle-switch" => @<FormaToggleSwitch @bind-Value="model.Flag" Label="Notify" Description="@Instructions" />,
+                _ => throw new ArgumentOutOfRangeException(nameof(input), input, null),
+            };
+
+        private static readonly IReadOnlyList<SelectOption<int>> Categories = [new(1, "News"), new(2, "Sport")];
+
+        private static readonly IReadOnlyList<SelectOption<int?>> Statuses = [new(1, "Draft"), new(2, "Published")];
+
+        private sealed class DescribedModel
+        {
+            public bool Flag { get; set; }
+
+            public string? Text { get; set; }
+
+            public string Color { get; set; } = "#336699";
+
+            public decimal Price { get; set; }
+
+            public DateOnly? Date { get; set; }
+
+            public DateRange? Range { get; set; }
+
+            public DateTime? Moment { get; set; }
+
+            public TimeOnly? Time { get; set; }
+
+            public List<int> Categories { get; set; } = [];
+
+            public int? Status { get; set; }
+
+            public double Ratio { get; set; } = 1;
         }
     }
 

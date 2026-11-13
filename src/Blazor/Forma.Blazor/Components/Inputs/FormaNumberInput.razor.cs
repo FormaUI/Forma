@@ -108,7 +108,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override bool HasFieldContainer
-        => HasLabel;
+        => HasLabel || HasDescription;
 
     // A number that cannot be empty is required whatever the host says, since clearing it reports the field required.
     private bool IsRequired

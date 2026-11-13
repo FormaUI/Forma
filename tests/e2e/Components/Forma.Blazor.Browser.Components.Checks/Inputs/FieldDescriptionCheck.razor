@@ -1,0 +1,34 @@
+@page "/{Runtime}/field-description"
+@using Forma.Blazor.Components.Composer
+@using Forma.Framework.Composer.Documents
+
+@* Inputs of each kind in a form, each with instructions beneath it that the check reads as its description. *@
+<EditForm Model="_model">
+    <FormaTextBox Id="slug" @bind-Value="_model.Slug" Label="Slug" Description="Lowercase letters, digits and dashes." />
+    <FormaTextBox Id="code" @bind-Value="_model.Code" Placeholder="Code" Description="Six characters from the invitation." />
+    <FormaCheckBox Id="subscribe" @bind-Value="_model.Subscribes" Description="One email a week, never more.">Subscribe</FormaCheckBox>
+    <FormaSelect Id="status" TValue="string" @bind-Value="_model.Status" Options="Statuses" Label="Status" Description="Published articles appear at once." />
+    <FormaDateTimePicker Id="publish" @bind-Value="_model.Publishes" Label="Publishes" Description="In the newsroom's time zone." />
+    <FormaComposer Id="body" @bind-Value="_model.Body" Description="Plain words only." />
+</EditForm>
+
+@code {
+    private static readonly IReadOnlyList<SelectOption<string>> Statuses = [new("draft", "Draft"), new("published", "Published")];
+
+    private readonly Article _model = new();
+
+    private sealed class Article
+    {
+        public string? Slug { get; set; }
+
+        public string? Code { get; set; }
+
+        public bool Subscribes { get; set; }
+
+        public string? Status { get; set; } = "draft";
+
+        public DateTime? Publishes { get; set; }
+
+        public ComposerDocument Body { get; set; } = new(ComposerDocumentFormat.PlainText, string.Empty);
+    }
+}

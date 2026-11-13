@@ -16,6 +16,12 @@
     border-color: var(--focus-color);
 }
 
+.forma-composer-description {
+    padding-block-start: var(--space-1);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary-color);
+}
+
 .forma-composer-resizable {
     resize: vertical;
     resize: block;

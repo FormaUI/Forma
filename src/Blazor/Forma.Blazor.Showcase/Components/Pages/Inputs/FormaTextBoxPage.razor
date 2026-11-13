@@ -36,6 +36,19 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Instructions Beneath It"]</h2>
+    <p class="description">@L["A Description sits beneath the box, and a screen reader reads it after the box's name, whether the box is labeled or bare. It holds plain text; anything else beneath a field, such as a strength meter, belongs in the field's footer."]</p>
+    <div class="demo-box">
+        <div class="demo-stack">
+            <EditForm Model="_model" FormName="textbox-description">
+                <FormaTextBox @bind-Value="_model.Slug" Label="@L["Slug"]" Description="@L["Lowercase letters, digits and dashes."]" />
+            </EditForm>
+            <FormaTextBox @bind-Value="_model.Handle" Placeholder="@L["Handle"]" aria-label="@L["Handle"]" Description="@L["Shown beside every comment you post."]" />
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Naming the Field"]</h2>
     <p class="description">@L["The text box carries no label of its own, so naming it is the caller's job and there are two ways to do it. A visible label is bound through Id; where no visible label belongs, aria-label names it instead. A placeholder is not a name — it disappears as soon as anyone types."]</p>
     <div class="demo-box">

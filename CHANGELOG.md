@@ -33,6 +33,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`FormaPopover`](docs/component-catalog.md#formapopover) closing after a press inside it in a WebKit browser, as a
   menu does once an item is pressed or a select once an option is, hands the focus back to its trigger. WebKit focuses
   no button it presses, so the focus fell to the page and stayed there.
+- Every input takes a `Description`, instructions drawn beneath it and named in its `aria-describedby` after the host's
+  own ids and ahead of the form's messages. Its [`FormaField`](docs/component-catalog.md#formafield) draws it, and an
+  unlabeled `FormaTextBox` or `FormaNumberInput` given one draws a field to hold it; a `FormaCheckBox` draws it under its
+  label, and a `FormaComposer` beneath its frame, where an editor plugin names it on its editable through
+  `ComposerContext.DescribedBy`. `FormaField`'s `FooterContent` stays for anything else beneath a field, which no input
+  reads as its description.
 
 ## `1.0.0-preview.5`
 

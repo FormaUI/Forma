@@ -118,6 +118,10 @@ public sealed partial class FormaComposer(
     private ComposerDocument? _sanitizedValue;
     private DocumentConverterRegistry _converterRegistry = new();
 
+    /// <inheritdoc />
+    protected override bool HasFieldContainer
+        => false;
+
     // The composer's own scope answers the shortcuts of every plugin in play.
     private InputProfile RootProfile
         => new() { InputRoutes = _keyBindingCatalog.ToInputRoutes() };
@@ -160,6 +164,7 @@ public sealed partial class FormaComposer(
             Regions = _regionRegistry,
             SyntaxHighlighter = _syntaxHighlighter,
             KeyBindings = _keyBindingCatalog,
+            DescribedBy = DescribedBy,
         };
 
     /// <inheritdoc />

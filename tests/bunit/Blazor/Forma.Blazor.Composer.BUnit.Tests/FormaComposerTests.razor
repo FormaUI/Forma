@@ -2054,6 +2054,24 @@
             Assert.Empty(cut.FindAll("button[aria-label='Attach Files']"));
             Assert.Empty(cut.FindAll("button[aria-label='Selection Bar']"));
         }
+
+        [Fact]
+        public void Should_show_its_description_beneath_it_and_name_it_on_its_editor()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Description="Plain words only." />);
+            cut.WaitForAssertion(() => Assert.Single(cut.FindAll("textarea")));
+
+            // Assert
+            var description = cut.Find(".forma-composer-description");
+            Assert.Multiple(
+                () => Assert.Equal("Plain words only.", description.TextContent),
+                () => Assert.Contains(description.Id, cut.Find("textarea").GetAttribute("aria-describedby")!.Split(' ')));
+        }
     }
 
     /// <summary>An input action handler that performs no action.</summary>

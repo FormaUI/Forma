@@ -94,9 +94,24 @@
     cursor: not-allowed;
 }
 
+.forma-checkbox-description {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary-color);
+}
+
+/* A labeled box's description starts under the label's text, past the box and the gap beside it. */
+.forma-checkbox-label + .forma-checkbox-description {
+    padding-inline-start: calc(1rem + var(--space-2));
+}
+
 @media (pointer: coarse) {
     .forma-checkbox {
         inline-size: 1.5rem;
         block-size: 1.5rem;
+    }
+
+    .forma-checkbox-label + .forma-checkbox-description {
+        padding-inline-start: calc(1.5rem + var(--space-2));
     }
 }

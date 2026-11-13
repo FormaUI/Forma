@@ -3,7 +3,7 @@
 @using Forma.Framework.Browser.Interop.Behaviors
 @using Forma.Blazor.Models
 
-<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Description="@Description" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-date-range-picker">
             <div class="forma-date-range-picker-trigger-wrapper" @ref="_anchorElement">

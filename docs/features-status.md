@@ -26,7 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [A host's integration](#a-hosts-integration) | Fifteen findings, three fixed |
+| [A host's integration](#a-hosts-integration) | Fifteen findings, four fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -175,7 +175,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 | A tab submits its form | `FormaTabs` rendered its tab buttons without a type, so inside a form choosing a tab, by press, Enter or Space, submitted it. Every other button a component renders is typed, and every Enter a component consumes goes through the input router, which cancels the browser's default | Fixed |
 | The explorer's asynchronous first load | `FormaExplorer` heard from its data view only after its first render, which on the Server and in a web view runs once the page has taken that render in, so a store answering within that round trip announced its answer to nobody and the explorer showed it loading until a refresh. It now hears from the data view as it captures it | Fixed |
 | A menu runs its command before it closes | `FormaDropDownMenuItem` awaited its `OnClick` before it closed the menu, so a command opening a dialog kept the menu open while the dialog was up, and one removing its row left focus on a removed element. An item that doesn't keep the menu open now closes it, handing the focus back to its trigger, before its command runs; where the focus goes once a row is gone stays with the list or the host | Fixed |
-| A field's description | No input carries instructions in its `aria-describedby`; `FormaField`'s `FooterContent` serves the password box alone | Open: a `Description` on the input base |
+| A field's description | No input carried instructions in its `aria-describedby`, and `FormaField`'s `FooterContent` served the password box alone. Every input now takes a `Description`, drawn beneath it and named after the host's own ids, its field, a checkbox's label or the composer's frame drawing it | Fixed |
 | Focusing an input | No input has a focus operation, and the roots of `FormaDateTimePicker` and the composer are wrappers rather than what takes focus | Open: a `FocusAsync` on the input base |
 | A paged data view's reserved height | `FormaDataView` holds a full page's height whenever it pages and never releases it, a single page included, as its design's rule says | Open: reserve only while another page exists, changing the design's rule |
 | Upload refusals | `IFileStore.SaveAsync` refuses only by throwing, and `CatalogConstraints` has no per-file ceiling | Open: `SaveAsync` answering with the resource it saved or a refusal carrying its reason and arguments, and a ceiling on each file's size |

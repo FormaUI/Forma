@@ -50,4 +50,7 @@ public sealed record ComposerContext
 
     /// <summary>The key bindings the composer and its plugins answer.</summary>
     public ComposerKeyBindingCatalog KeyBindings { get; init; } = ComposerKeyBindingCatalog.Empty;
+
+    /// <summary>The space-separated ids of the elements describing the document, which an editor's editable element names as its description.</summary>
+    public string? DescribedBy { get; init; }
 }

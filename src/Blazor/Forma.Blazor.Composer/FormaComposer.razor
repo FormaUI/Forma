@@ -71,6 +71,10 @@
             <FormaComposerStatusStrip OnCommand="HandleCommandAsync" />
         }
     </div>
+    @if (HasDescription)
+    {
+        <div id="@FieldElementIds.DescriptionId" class="forma-composer-description">@Description</div>
+    }
 
     @if (_isAttachOpen)
     {

@@ -1,7 +1,7 @@
 @namespace Forma.Blazor.Components.Inputs
 @inherits FormaInputBase<string>
 
-<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" LabelMode="FieldLabelMode.Pinned">
+<FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Description="@Description" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-color-picker">
             <input id="@ElementId"

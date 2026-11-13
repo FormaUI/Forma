@@ -442,6 +442,28 @@ public sealed partial class InputsTests
         await Assertions.Expect(input).Not.ToHaveClassAsync(HasValuePattern());
     }
 
+    public sealed class FieldDescription(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_describe_each_input_by_the_instructions_beneath_it(string runtime)
+        {
+            // Act
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "field-description");
+            await using var _ = context;
+
+            // Assert
+            await Assertions.Expect(page.Locator("#slug")).ToHaveAccessibleDescriptionAsync("Lowercase letters, digits and dashes.");
+            await Assertions.Expect(page.Locator("#code")).ToHaveAccessibleDescriptionAsync("Six characters from the invitation.");
+            await Assertions.Expect(page.Locator("#subscribe")).ToHaveAccessibleDescriptionAsync("One email a week, never more.");
+            await Assertions.Expect(page.Locator("#status")).ToHaveAccessibleDescriptionAsync("Published articles appear at once.");
+            await Assertions.Expect(page.Locator("#publish-date")).ToHaveAccessibleDescriptionAsync("In the newsroom's time zone.");
+            await Assertions.Expect(page.Locator("#publish-time")).ToHaveAccessibleDescriptionAsync("In the newsroom's time zone.");
+            await Assertions.Expect(page.Locator("#body").GetByRole(AriaRole.Textbox)).ToHaveAccessibleDescriptionAsync("Plain words only.");
+            await Assertions.Expect(page.GetByText("Plain words only.")).ToBeVisibleAsync();
+        }
+    }
+
     [GeneratedRegex(@"\bhas-value\b")]
     private static partial Regex HasValuePattern();
 }

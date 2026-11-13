@@ -13,6 +13,7 @@
                                    value="true"
                                    checked="@CurrentValue"
                                    disabled="@IsDisabled"
+                                   aria-describedby="@DescribedBy"
                                    @onchange="HandleChange"
                                    @onclick="HandleClickAsync"
                                    @onclick:preventDefault="@PreventDefault" />;
@@ -28,4 +29,8 @@ else
         @input
         @ChildContent
     </label>
+}
+@if (HasDescription)
+{
+    <div id="@FieldElementIds.DescriptionId" class="forma-checkbox-description">@Description</div>
 }
