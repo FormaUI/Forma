@@ -26,6 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
+| [A host's integration](#a-hosts-integration) | Fifteen findings open |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -163,11 +164,36 @@ Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.5` are published, as [
 
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
 
+<a id="a-hosts-integration"></a>
+
+## A host's integration
+
+Reviewing a host's integration against Forma's source turned up fifteen findings, listed here in the order they are taken, each with what the code does and its state.
+
+| Finding | What the code does | State |
+| --- | --- | --- |
+| A tab submits its form | `FormaTabs` renders its tab buttons without a type, so inside a form choosing a tab, by press, Enter or Space, submits it. Every other button a component renders is typed, and every Enter a component consumes goes through the input router, which cancels the browser's default | Open: type its buttons |
+| The explorer's asynchronous first load | Reported: a provider whose first answer completes asynchronously leaves `FormaExplorer` loading until a refresh | Open: reproduce, then fix |
+| A menu runs its command before it closes | `FormaDropDownMenuItem` awaits its `OnClick` before it closes the menu, so a command opening a dialog keeps the menu open while the dialog is up, and one removing its row leaves focus on a removed element | Open: close, then run the command |
+| A field's description | No input carries instructions in its `aria-describedby`; `FormaField`'s `FooterContent` serves the password box alone | Open: a `Description` on the input base |
+| Focusing an input | No input has a focus operation, and the roots of `FormaDateTimePicker` and the composer are wrappers rather than what takes focus | Open: a `FocusAsync` on the input base |
+| A paged data view's reserved height | `FormaDataView` holds a full page's height whenever it pages and never releases it, a single page included, as its design's rule says | Open: reserve only while another page exists, changing the design's rule |
+| Upload refusals | `IFileStore.SaveAsync` refuses only by throwing, and `CatalogConstraints` has no per-file ceiling | Open: `SaveAsync` answering with the resource it saved or a refusal carrying its reason and arguments, and a ceiling on each file's size |
+| A link that looks like a button | `FormaButton` always renders a `<button>` | Open: `Href`, `Target` and `Rel` |
+| Type-ahead in the select | `FormaSelect` matches no typed label, and only `FormaDataTree` jumps, by one letter | Open: one type-ahead for the select, the menu and the tree |
+| Resetting the image picker | Neither `FormaFilePicker` nor `FormaImagePicker` can be cleared, and the file dialog can't choose the same file twice in a row | Open: a `ClearAsync` |
+| The toast container's offsets | `FormaToastContainer` sits `--space-5` from the block-start and inline-end edges, with no hook of its own | Open: two offset hooks |
+| The page title's actions | `FormaPageTitle`'s row doesn't wrap and its heading can't shrink | Open |
+| Localized routing | The culture router replaces the culture segment and keeps the rest of the path | Open decision: [its contract](#open-decisions) |
+| Localized references carried as data | No type carries a localization source, a key and arguments to resolve when displayed | Open decision: [its contract](#open-decisions) |
+| The composer's integration guidance | The composer's README says to sanitize on the server, but not how authoring and saving share one policy, that the selected plugins don't set the policy, or how a stored video placeholder is rendered; the icon set has no pause glyph | Open |
+
 <a id="open-decisions"></a>
 
 ## Open decisions
 
-Every decision raised so far is decided.
+- **Localized routing's contract.** How a host gives one route identity a path and parameters of its own in each culture, deciding whether a translated destination exists and where to fall back, for link generation and culture switching alike.
+- **Localized references' contract.** A type carrying a localization source, a literal key and arguments, resolved in the current culture when displayed and checked by the linter where it is declared.
 
 <a id="deferred"></a>
 
