@@ -80,6 +80,10 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase
     private bool IsFullyCollapsed
         => ExpandableFolders.All(folder => !View.IsOpen(folder));
 
+    // Whether a folder's row can offer actions, so a row offering none keeps their room and every count ends at one edge.
+    private bool OffersFolderActions
+        => (ItemOptions.AllowedFolderCapabilities & FolderActions) != CatalogItemCapabilities.None;
+
     private string? TreeSizeStyle
         => _treeHeight is { } height
             ? new CssStyleBuilder().Add("block-size", CssLength.FromRem(height)).ToString()

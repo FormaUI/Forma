@@ -97,6 +97,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   stood before the number.
 - A [`FormaFilePicker`](docs/component-catalog.md#formafilepicker) refusing a file too large names the size it went
   past.
+- A `FormaExplorer`'s sidebar ends every folder's count at one edge. A folder offering no actions, All Media among
+  them, drew its count in the room the others keep for their actions' menu.
 
 ## `1.0.0-preview.5`
 

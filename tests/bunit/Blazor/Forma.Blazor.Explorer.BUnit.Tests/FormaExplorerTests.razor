@@ -1256,6 +1256,38 @@
         }
 
         [Fact]
+        public void Should_keep_the_room_of_the_actions_on_a_folder_offering_none_where_folders_can()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="@(CatalogItem.ForAll([folder]))" ItemOptions="ExplorerItemOptions.Default" />);
+
+            // Assert — All Media offers no actions, so it keeps their room beside its count where Races draws its menu
+            var room = GetFolderRow(cut, "All Media").QuerySelector(".forma-explorer-folder-actions-room");
+            Assert.Multiple(
+                () => Assert.Equal("true", room?.GetAttribute("aria-hidden")),
+                () => Assert.NotNull(GetFolderRow(cut, "Races").QuerySelector(".forma-explorer-folder-actions")),
+                () => Assert.Null(GetFolderRow(cut, "Races").QuerySelector(".forma-explorer-folder-actions-room")));
+        }
+
+        [Fact]
+        public void Should_keep_no_room_for_actions_where_no_folder_can_offer_them()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var folder = new FolderResourceInfo("races") { Name = "Races" };
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="[]" Folders="@(CatalogItem.ForAll([folder]))" ItemOptions="ExplorerItemOptions.ReadOnly" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-explorer-folder-actions-room"));
+        }
+
+        [Fact]
         public void Should_hide_every_mutating_action_when_options_are_read_only()
         {
             // Arrange

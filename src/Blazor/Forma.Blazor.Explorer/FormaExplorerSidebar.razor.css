@@ -74,6 +74,18 @@
     }
 }
 
+/* A row without actions keeps the room of their trigger, so its count ends where every other row's does. */
+.forma-explorer-folder-actions-room {
+    flex-shrink: 0;
+    inline-size: var(--target-size-sm);
+}
+
+@media (pointer: coarse) {
+    .forma-explorer-folder-actions-room {
+        inline-size: var(--target-size-touch);
+    }
+}
+
 /* A disabled folder: the disabled control colors, and a pointer that says so. */
 .forma-explorer-folder-tree ::deep .forma-data-tree-node.is-disabled {
     cursor: not-allowed;
