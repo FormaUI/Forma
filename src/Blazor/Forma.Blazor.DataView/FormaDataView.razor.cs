@@ -111,6 +111,13 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private int _readCount;
     private int? _positionCount;
     private bool _hasMore;
+
+    // Whether the source said, as it last answered, that it holds positions past the slice.
+    private bool _isMoreReported;
+
+    // Whether the region is held at a full page's height.
+    private bool _isPageHeightHeld;
+
     private Task? _appendTask;
     private bool _isLoadingMore;
     private bool _isAppendFailed;
@@ -523,6 +530,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool ShowsPaginator
         => EnablePagination && !IsAppending && PagedCount is { } total && total > PageSize;
 
+    // A full page's height is held while another page is known to exist, by the count, the source's word or a page before this one, so a
+    // short last page keeps it; a set known to fit one page, or one its source says nothing about, takes its natural height.
+    private bool HoldsPageHeight
+        => EnablePagination && !Virtualize && !IsAppending && (ShowsPaginator || _isMoreReported || _page > 1);
+
     // The pages are cut in the source's positions, where its slices leave some out.
     private int? PagedCount
         => _positionCount ?? _totalItemCount;
@@ -768,15 +780,21 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, _isAttachedToMove, PositionAttribute, _isAttachedToSeek, ItemRootSelector, ItemActionsSelector, _isAttachedToGather, _isAttachedToCheckOnPress);
         }
 
-        // Only a paged data view that does not virtualize holds a height for a short page.
-        if (EnablePagination && !Virtualize && !IsAppending)
+        if (HoldsPageHeight)
         {
             if (!_heightReservation.IsAttached)
             {
                 await _heightReservation.AttachAsync(_regionElement);
             }
 
+            _isPageHeightHeld = true;
             await _heightReservation.ReserveAsync(PageSize);
+        }
+        else if (_isPageHeightHeld)
+        {
+            // The set no longer runs past one page, as a filter or a deletion leaves it, so the height held is let go.
+            _isPageHeightHeld = false;
+            await _heightReservation.ReleaseAsync();
         }
     }
 
@@ -920,6 +938,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         _positionCount = page.PositionCount;
         var total = page.PositionCount ?? page.TotalCount;
         _hasMore = pageReadCount > 0 && (page.HasMore ?? (total is { } count ? _readCount < count : pageReadCount >= PageSize));
+        _isMoreReported = page.HasMore is true;
     }
 
     // The action after the items, which reads the next page, or offers it again where the last attempt failed.

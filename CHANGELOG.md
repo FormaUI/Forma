@@ -46,6 +46,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   draws.
 - `IComposerInteraction` takes an editor's focus through `JoinFocus`, which an implementation of its own adds: it holds
   the focus the editor hands it until the registration it answers with is disposed.
+- A paged `FormaDataView` holds a full page's height only while another page is known to exist, by its count, by its
+  source's `HasMore` or by a page before the one shown, and lets a height it held go once a filter or a deletion leaves
+  one page. A set that fits one page, or that its source neither counts nor says more of, takes its natural height; it
+  was held at a full page's height whenever the view paged.
 
 ## `1.0.0-preview.5`
 

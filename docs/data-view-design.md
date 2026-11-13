@@ -341,7 +341,12 @@ header, stuck to its top and the footer outside it. The data view caps itself at
 it is given: against an auto-height ancestor the cap resolves to none and the view takes
 the height of its items, and inside a bounded shell the items scroll while the pinned
 parts and the footer stay put. A paged data view holds its region at the height of a full
-page, so a short last page does not shrink it.
+page while another page is known to exist, so a short last page does not shrink it: its
+count runs past one page, its source says it holds more, or a page comes before the one
+shown. A set known to fit one page
+takes its natural height, and a height held is let go once a filter or a deletion leaves
+one page. A source that counts nothing and says nothing leaves the view at its natural
+height too, since a full first page does not show that another follows.
 
 `Virtualize` is for the bounded case with paging off or appended, appended over the items
 loaded so far, reading on by the source's positions: the engine renders only the items

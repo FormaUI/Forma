@@ -54,7 +54,13 @@ class HeightReservation {
         this.#target.style.minBlockSize = `${this.#reservedHeight}px`;
     }
 
-    dispose() {
+    /** Lets the container take its natural height again, forgetting the height it held. */
+    release() {
+        this.#reservedHeight = undefined;
         this.#target.style.minBlockSize = '';
+    }
+
+    dispose() {
+        this.release();
     }
 }

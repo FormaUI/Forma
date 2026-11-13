@@ -16,4 +16,8 @@ internal sealed class HeightReservation(IJSEnvironment js)
     /// <summary>Measures the rows currently laid out and holds the container at a full page of them.</summary>
     public ValueTask<bool> ReserveAsync(int pageSize)
         => InvokeAsync("reserve", pageSize);
+
+    /// <summary>Lets the container take its natural height again, forgetting the height it held.</summary>
+    public ValueTask<bool> ReleaseAsync()
+        => InvokeAsync("release");
 }

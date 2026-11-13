@@ -34,6 +34,100 @@
         private sealed record Product(int Id, string Name);
     }
 
+    public sealed class PageHeight
+    {
+        [Fact]
+        public void Should_hold_a_full_pages_height_while_the_set_runs_past_one_page()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var reservation = SetUpReservation(ctx);
+
+            // Act
+            ctx.Render(@<FormaDataView Items="CreateProducts(25)" PageSize="10" ItemName="@(product => product.Name)"><FormaDataList TItem="Product" /></FormaDataView>);
+
+            // Assert
+            Assert.Contains(reservation.Invocations, invocation => invocation.Identifier == "reserve" && Equals(invocation.Arguments[0], 10));
+        }
+
+        [Fact]
+        public void Should_take_its_natural_height_for_a_set_known_to_fit_one_page()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var reservation = SetUpReservation(ctx);
+
+            // Act
+            ctx.Render(@<FormaDataView Items="CreateProducts(3)" PageSize="10" ItemName="@(product => product.Name)"><FormaDataList TItem="Product" /></FormaDataView>);
+
+            // Assert
+            Assert.DoesNotContain(reservation.Invocations, invocation => invocation.Identifier == "reserve");
+        }
+
+        [Fact]
+        public void Should_let_the_height_it_held_go_once_the_set_fits_one_page()
+        {
+            // Arrange — the set runs past one page, then a filter leaves three items
+            using var ctx = new FormaDataViewTests();
+            var reservation = SetUpReservation(ctx);
+            var cut = ctx.Render(@<FormaDataView Items="CreateProducts(25)" PageSize="10" ItemName="@(product => product.Name)"><FormaDataList TItem="Product" /></FormaDataView>);
+            var view = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            view.Render(parameters => parameters.Add(dataView => dataView.Items, CreateProducts(3)));
+
+            // Assert
+            Assert.Equal("release", reservation.Invocations.Last().Identifier);
+        }
+
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(null, false)]
+        public void Should_hold_a_full_pages_height_for_an_uncounted_set_only_on_its_sources_word(bool? hasMore, bool isHeld)
+        {
+            // Arrange — a full page from a source that counts nothing
+            using var ctx = new FormaDataViewTests();
+            var reservation = SetUpReservation(ctx);
+            DataViewItemsProvider<Product> provider = request => ValueTask.FromResult(
+                new DataViewPage<Product>([.. Enumerable.Range(1, 10).Select(id => new Product(id, $"Product {id}"))], null) { HasMore = hasMore });
+
+            // Act
+            ctx.Render(@<FormaDataView TItem="Product" ItemsProvider="provider" PageSize="10" ItemName="@(product => product.Name)"><FormaDataList TItem="Product" /></FormaDataView>);
+
+            // Assert
+            Assert.Equal(isHeld, reservation.Invocations.Any(invocation => invocation.Identifier == "reserve"));
+        }
+
+        [Fact]
+        public void Should_keep_a_full_pages_height_on_the_last_page_of_an_uncounted_set()
+        {
+            // Arrange — the second page of a source that counts nothing, which says nothing follows it
+            using var ctx = new FormaDataViewTests();
+            var reservation = SetUpReservation(ctx);
+            DataViewItemsProvider<Product> provider = request => ValueTask.FromResult(
+                new DataViewPage<Product>([new Product(11, "Product 11")], null) { HasMore = false });
+
+            // Act
+            ctx.Render(@<FormaDataView TItem="Product" ItemsProvider="provider" PageSize="10" Page="2" ItemName="@(product => product.Name)"><FormaDataList TItem="Product" /></FormaDataView>);
+
+            // Assert
+            Assert.Contains(reservation.Invocations, invocation => invocation.Identifier == "reserve");
+        }
+
+        private static BunitJSModuleInterop SetUpReservation(FormaDataViewTests ctx)
+        {
+            var reservation = ctx.JSInterop.SetupModule("./_content/Forma.Blazor.DataView/scripts/HeightReservation.js").SetupModule("attach", _ => true);
+            reservation.Mode = JSRuntimeMode.Loose;
+
+            return reservation;
+        }
+
+        private static IQueryable<Product> CreateProducts(int count)
+            => Enumerable.Range(1, count).Select(id => new Product(id, $"Product {id}")).AsQueryable();
+
+        private sealed record Product(int Id, string Name);
+    }
+
     public sealed class TabOrder
     {
         private static IQueryable<Product> CreateProducts() => Enumerable.Range(1, 3)
