@@ -46,6 +46,28 @@ public sealed class PickersTests
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("3");
             await Assertions.Expect(page.GetByRole(AriaRole.Listbox)).ToBeHiddenAsync();
         }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_go_on_through_a_space_a_typed_label_holds(string runtime)
+        {
+            // Arrange — the select focused on Open
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "select");
+            await using var _ = context;
+            var trigger = page.Locator("#check");
+            await ComponentChecks.WaitForInputScopeAsync(page, "#check");
+            await trigger.FocusAsync();
+
+            // Act — "on" names Online, and the space typed after it moves on to On Hold rather than choosing Online
+            await page.Keyboard.TypeAsync("on h");
+
+            // Assert — the focus on On Hold, nothing chosen until Enter
+            var onHold = page.GetByRole(AriaRole.Option, new() { Name = "On Hold", Exact = true });
+            await Assertions.Expect(onHold).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("1");
+            await page.Keyboard.PressAsync("Enter");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("6");
+        }
     }
 
     public sealed class MultiSelect(BrowserHost host)

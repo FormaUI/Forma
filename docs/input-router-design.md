@@ -168,7 +168,7 @@ A binding is matched by the rules of its family:
 
 | Family | Matches by |
 | --- | --- |
-| Keyboard (`keydown`, `keyup`) | The key, compared without regard to case; Control, Meta, and Alt absent unless stated; Shift either way unless stated. A typing binding names no key and matches any printable character other than a space, one composed through AltGr included, for type-ahead; a binding naming the key is more specific and wins |
+| Keyboard (`keydown`, `keyup`) | The key, compared without regard to case; Control, Meta, and Alt absent unless stated; Shift either way unless stated. A typing binding names no key and matches any printable character, one composed through AltGr included, for type-ahead, and a space typed within the type-ahead's pause of the last character a typing binding matched, so a typed label can hold one; a binding naming the key is more specific and wins |
 | Pointer (`pointerdown`, `pointerup`, `pointermove`) | The button that changed, the buttons held (for a move during a gesture), the device (`mouse`, `pen`, `touch`), and only the modifiers it states |
 | Click (`click`, `dblclick`) | The button, and only the modifiers it states; dispatched on the click itself, so one raised from the keyboard, with no press before it, resolves like any other |
 | Wheel | The axis the turn mostly moves along, and only the modifiers it states |
@@ -218,7 +218,7 @@ input**, of what the control consumes natively:
 | `input[type=radio]` | Arrows, Space |
 | `input[type=checkbox]` | Space |
 | `select` | Arrows, Home, End, PageUp, PageDown, typing, Enter, Space |
-| `button`, button-like `input` types, `a[href]`, `summary`, `[role=button]`, `[role=link]` | Enter, Space |
+| `button`, button-like `input` types, `a[href]`, `summary`, `[role=button]`, `[role=link]` | Enter, Space, but a space that goes on typing |
 | `video[controls]`, `audio[controls]` | Arrows, Home, End, Enter, Space |
 | `[contenteditable]` | Typing, every arrow, Home, End, PageUp, PageDown, Enter, Backspace, Delete, the editing shortcuts, Ctrl+B/I/U, wheel when it scrolls |
 | Any element that scrolls on its own | Wheel along the axis it scrolls |

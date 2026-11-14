@@ -26,6 +26,15 @@ function key(target, key, init = {}) {
     return event;
 }
 
+// A key typed at a moment of the test's choosing, since a space goes on typing only within a pause of the last character.
+function type(target, key, timeStamp) {
+    const event = new KeyboardEvent('keydown', { key, bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'timeStamp', { value: timeStamp });
+    target.dispatchEvent(event);
+
+    return event;
+}
+
 function press(target, init = {}) {
     const event = new PointerEvent('pointerdown', { bubbles: true, cancelable: true, pointerId: 1, pointerType: 'mouse', ...init });
     target.dispatchEvent(event);
@@ -262,6 +271,56 @@ describe('InputRouter binding matching', () => {
         const space = key(option(), ' ');
 
         expect(find).toHaveBeenCalledTimes(2);
+        expect(space.defaultPrevented).toBe(false);
+    });
+
+    it('goes on typing through a space typed within the pause of the last typed character', () => {
+        const find = vi.fn();
+        scope(list(), { routes: [route('test.find', find, { type: 'keydown', typing: true, pause: 500 })] });
+
+        type(option(), 'n', 1000);
+        const space = type(option(), ' ', 1400);
+        type(option(), 'y', 1800);
+
+        expect(find.mock.calls.map(([event]) => event.key)).toEqual(['n', ' ', 'y']);
+        expect(space.defaultPrevented).toBe(true);
+    });
+
+    it('leaves a space typed after the pause to the button it is typed on', () => {
+        const find = vi.fn();
+        scope(list(), { routes: [route('test.find', find, { type: 'keydown', typing: true, pause: 500 })] });
+
+        type(option(), 'n', 1000);
+        const space = type(option(), ' ', 1600);
+
+        expect(find).toHaveBeenCalledOnce();
+        expect(space.defaultPrevented).toBe(false);
+    });
+
+    it('goes on typing in the scope the focus moved to, from a character another scope took', () => {
+        const opened = vi.fn();
+        const find = vi.fn();
+        scope(grid(), { routes: [route('test.open', opened, { type: 'keydown', typing: true, pause: 500 })] });
+        scope(list(), { routes: [route('test.find', find, { type: 'keydown', typing: true, pause: 500 })] });
+
+        type(cell(), 'n', 1000);
+        const space = type(option(), ' ', 1300);
+
+        expect(opened).toHaveBeenCalledOnce();
+        expect(find).toHaveBeenCalledOnce();
+        expect(space.defaultPrevented).toBe(true);
+    });
+
+    it('ends the typing with the registration whose route took the last character', () => {
+        const find = vi.fn();
+        const typing = scope(list(), { routes: [route('test.find', find, { type: 'keydown', typing: true, pause: 500 })] });
+
+        type(option(), 'n', 1000);
+        typing.dispose();
+        scope(list(), { routes: [route('test.find', find, { type: 'keydown', typing: true, pause: 500 })] });
+        const space = type(option(), ' ', 1100);
+
+        expect(find).toHaveBeenCalledOnce();
         expect(space.defaultPrevented).toBe(false);
     });
 

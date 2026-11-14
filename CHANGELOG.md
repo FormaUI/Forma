@@ -73,10 +73,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - `Glyph.Pause`, two solid upright bars, joins the icon set, the pause to set beside `TriangleRight`'s solid play
   triangle.
 - A [`FormaSelect`](docs/component-catalog.md#formaselect) moves to the option whose label a reader types: characters
-  typed within half a second of each other build a prefix, a character typed again on its own moves on through the
-  options it starts, and labels compare in the culture in force. Typed on the closed select, they open its list on that
-  option, and nothing is chosen until the reader chooses it. A `FormaDataTree` searches its nodes the same way, where it
-  matched a single letter.
+  typed within half a second of each other build a prefix, a space among them, a character typed again on its own
+  moves on through the options it starts, and labels compare in the culture in force. Typed on the closed select, they
+  open its list on that option, and nothing is chosen until the reader chooses it. A `FormaDataTree` searches its nodes
+  the same way, where it matched a single letter.
+- A `TypingBinding` also matches a space typed within `TypeAhead.Pause` of the last character a typing binding matched,
+  and the input router leaves that space to the typing route rather than to the button holding the focus, so a label
+  typed into a type-ahead can hold one.
 - `IFileStore.SaveAsync` answers with a `FileSaveResult`: `FileSaveResult.Saved(resource)` for a file it kept, or
   `FileSaveResult.Refused(refusal)` for one it turns away, its `FileRefusal` carrying a `FileRefusalReason`,
   `DisallowedType`, `TooLarge`, `TooWide` or `TooTall`, and the `Limit` the file went past. A store of a host's own wraps

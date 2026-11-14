@@ -109,6 +109,10 @@ let activationCount = 0;
 let documentListeners = null;
 let suppressedClick = null;
 let pendingPress = null;
+
+// When a typing route last ran, the pause its binding gives a space to go on typing in, and the registration it ran
+// for, whose disposal ends the typing.
+let typed = null;
 const dispatchedEvents = new WeakSet();
 
 // The text fields, and the editable elements an editor's script owns, edited since they last reported a change.
@@ -428,6 +432,10 @@ class Registration {
         this.#isDisposed = true;
         this.release();
         this.#scope.remove(this);
+
+        if (typed?.registration === this) {
+            typed = null;
+        }
     }
 
     dismiss(action, reason) {
@@ -812,6 +820,10 @@ function apply(event, resolution) {
     commitEdit();
 
     if (resolution.route) {
+        if (resolution.binding.typing === true) {
+            typed = { at: event.timeStamp, pause: resolution.binding.pause, registration: resolution.registration };
+        }
+
         resolution.registration.run(resolution.route, resolution.binding, event);
         return;
     }
@@ -1042,10 +1054,10 @@ function matches(binding, event) {
 function matchesFamily(binding, event) {
     switch (Families[event.type]) {
         case 'keyboard':
-            // A typing binding matches any printable character other than a space, whatever modifiers composing it took,
-            // so a space keeps its own default where nothing else routes it.
+            // A typing binding matches any printable character, whatever modifiers composing it took, and a space only
+            // where it goes on typing, so any other space keeps its own default where nothing else routes it.
             if (binding.typing === true) {
-                return isTyping(event) && event.key.trim() !== '';
+                return isTyping(event) && (event.key.trim() !== '' || continuesTyping(event));
             }
 
             return (binding.key == null || binding.key.toLowerCase() === event.key.toLowerCase()) && modifiersMatch(binding, event, true);
@@ -1126,8 +1138,9 @@ function nativeClaims(element, event) {
         return inputClaims(element, event);
     }
 
+    // A space that goes on typing is left to the scope typing reaches, so a typed label can hold one.
     if (event.type === 'keydown' && (element instanceof HTMLButtonElement || element.matches('a[href], summary, [role="button"], [role="link"]'))) {
-        return event.key === 'Enter' || event.key === ' ';
+        return event.key === 'Enter' || (event.key === ' ' && !continuesTyping(event));
     }
 
     // The browser's own transport: arrows seek and set the volume, Home and End jump, Enter and Space play and pause.
@@ -1199,6 +1212,11 @@ function editsText(event, { claimsVerticalKeys = false, claimsPagingKeys = false
     const key = event.key.toLowerCase();
 
     return (event.ctrlKey || event.metaKey) && (EditingShortcuts.has(key) || (claimsRichShortcuts && RichEditingShortcuts.has(key)));
+}
+
+// A space typed within the pause of the last character a typing route took goes on typing.
+function continuesTyping(event) {
+    return event.key === ' ' && typed !== null && event.timeStamp - typed.at <= typed.pause;
 }
 
 // A character typed through AltGr arrives with Control and Alt both held.

@@ -146,7 +146,7 @@ scopes further out.
 | Binding | What it matches |
 | --- | --- |
 | `KeyBinding(key)` | A key on `keydown`, or on `keyup` with `Released`. `KeyBinding.Shortcut(key, shift)` adds the platform's primary modifier. |
-| `TypingBinding` | Any printable character typed other than a space. |
+| `TypingBinding` | Any printable character typed, and a space typed within `TypeAhead.Pause` of the last character a typing binding matched, so a typed label can hold one. |
 | `ClickBinding` | A click, or a double click with `IsDouble`, by `Button`. |
 | `PointerBinding` | A press, or a release or move by `Phase`, by `Button`, `Buttons` held and `PointerType`. `PointerBinding.Down` and `PointerBinding.Drag` cover the common cases. |
 | `WheelBinding` | A wheel turn along an `Axis`; `WheelBinding.Any` matches every turn. |
