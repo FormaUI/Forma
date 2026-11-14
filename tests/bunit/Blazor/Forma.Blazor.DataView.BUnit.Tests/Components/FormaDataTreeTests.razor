@@ -159,7 +159,7 @@
         }
 
         [Fact]
-        public void Should_open_a_node_from_its_disclosure_and_show_its_children_a_level_deeper()
+        public async Task Should_open_a_node_from_its_disclosure_and_show_its_children_a_level_deeper()
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
@@ -170,7 +170,7 @@
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
 
             // Act
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
             // Assert
@@ -186,14 +186,14 @@
                 () => Assert.Null(children[1].QuerySelector("button.forma-data-tree-disclosure-button")));
 
             // Act — pressed again
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(2, cut.FindAll("[role=treeitem]").Count);
         }
 
         [Fact]
-        public void Should_draw_the_visible_nodes_in_one_run_saying_each_level_and_place_while_virtualizing()
+        public async Task Should_draw_the_visible_nodes_in_one_run_saying_each_level_and_place_while_virtualizing()
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
@@ -204,7 +204,7 @@
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
 
             // Act
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
             // Assert — no group holds the children, so each node says its level, its siblings' count and its place among them
@@ -276,7 +276,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
             await ReportFocusAsync(probe, cut, null);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
             await ReportFocusAsync(probe, cut, cut.Find(".forma-data-tree-node"));
 
@@ -302,7 +302,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
             await ReportFocusAsync(probe, cut, null);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
             await ReportFocusAsync(probe, cut, cut.Find(".forma-data-tree-node"));
 
@@ -317,7 +317,7 @@
         }
 
         [Fact]
-        public void Should_keep_an_opened_node_open_when_the_data_view_is_given_a_new_source()
+        public async Task Should_keep_an_opened_node_open_when_the_data_view_is_given_a_new_source()
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
@@ -326,7 +326,7 @@
                     <FormaDataTree TItem="Entry" />
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
             // Act — the same entries as a new queryable, then with a file added under the open folder
@@ -354,7 +354,7 @@
                     <FormaDataTree TItem="Entry" />
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
             // Act — a file added under the open folder and a folder at the root
@@ -384,7 +384,7 @@
                     </FormaDataGrid>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
             // Act — Pictures, the second page's only root, goes, and a file is added under the open folder
@@ -400,7 +400,7 @@
         }
 
         [Fact]
-        public void Should_presume_a_node_opens_until_its_children_come_back_empty()
+        public async Task Should_presume_a_node_opens_until_its_children_come_back_empty()
         {
             // Arrange — no HasChildren, so every node offers to open
             using var ctx = new FormaDataTreeTests();
@@ -409,11 +409,11 @@
                     <FormaDataTree TItem="Entry" />
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
             // Act — the file opens, comes back with nothing, and becomes a leaf
-            cut.FindAll("button.forma-data-tree-disclosure-button")[2].Click();
+            await cut.FindAll("button.forma-data-tree-disclosure-button")[2].ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]")[2].GetAttribute("aria-expanded") is null);
 
             // Assert
@@ -421,7 +421,7 @@
         }
 
         [Fact]
-        public void Should_show_only_the_nodes_the_filter_admits()
+        public async Task Should_show_only_the_nodes_the_filter_admits()
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
@@ -432,7 +432,7 @@
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
 
             // Act
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
 
             // Assert
@@ -711,7 +711,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
             await ReportFocusAsync(probe, cut, null);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
             var grid = cut.FindComponent<FormaDataGrid<Entry>>();
             grid.Render();
@@ -839,7 +839,7 @@
         }
 
         [Fact]
-        public void Should_ask_a_provider_for_a_node_s_children()
+        public async Task Should_ask_a_provider_for_a_node_s_children()
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
@@ -857,7 +857,7 @@
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
 
             // Act
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
             // Assert
@@ -1231,7 +1231,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
             await ReportFocusAsync(probe, cut, null);
-            cut.FindAll("button.forma-data-tree-disclosure-button")[1].Click();
+            await cut.FindAll("button.forma-data-tree-disclosure-button")[1].ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 3);
             await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[2]);
 
@@ -1249,7 +1249,7 @@
             using var ctx = new FormaDataTreeTests();
             var probe = new DomProbe<FocusState>(ctx);
             var cut = await RenderOpenDocumentsAsync(ctx, probe);
-            cut.FindAll("button.forma-data-tree-disclosure-button")[1].Click();
+            await cut.FindAll("button.forma-data-tree-disclosure-button")[1].ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 5);
             await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[2]);
 
@@ -1267,12 +1267,12 @@
             using var ctx = new FormaDataTreeTests();
             var probe = new DomProbe<FocusState>(ctx);
             var cut = await RenderOpenDocumentsAsync(ctx, probe);
-            cut.FindAll("button.forma-data-tree-disclosure-button")[1].Click();
+            await cut.FindAll("button.forma-data-tree-disclosure-button")[1].ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 5);
             await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[2]);
 
             // Act — Documents closed from its disclosure
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
 
             // Assert
             cut.WaitForAssertion(() => Assert.Equal("Documents", LastFocused(ctx, cut)));
@@ -1314,7 +1314,7 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
             await ReportFocusAsync(probe, cut, null);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
             await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[1]);
 
@@ -1404,7 +1404,7 @@
         }
 
         [Fact]
-        public void Should_open_a_named_node_inside_a_closed_one_as_the_reader_opens_that()
+        public async Task Should_open_a_named_node_inside_a_closed_one_as_the_reader_opens_that()
         {
             // Arrange — Reports named open inside Documents, which is not
             using var ctx = new FormaDataTreeTests();
@@ -1416,7 +1416,7 @@
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
 
             // Act
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 5);
 
             // Assert
@@ -1439,7 +1439,7 @@
                     </FormaDataGrid>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
             var engine = cut.FindComponent<FormaDataView<Entry>>();
 
@@ -1516,7 +1516,7 @@
         }
 
         [Fact]
-        public void Should_reveal_in_a_plain_tree_the_node_the_host_makes_current()
+        public async Task Should_reveal_in_a_plain_tree_the_node_the_host_makes_current()
         {
             // Arrange — Documents opened and closed again, so the data view knows the way to Reports
             using var ctx = new FormaDataTreeTests();
@@ -1525,9 +1525,9 @@
                     <FormaDataTree TItem="Entry" />
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
             var reports = CreateEntries().Single(entry => entry.Id == 3);
 
@@ -1696,14 +1696,14 @@
             using var ctx = new FormaDataTreeTests();
             var probe = new DomProbe<FocusState>(ctx);
             var cut = await RenderOpenDocumentsAsync(ctx, probe, hasMarkers: false);
-            cut.FindAll("button.forma-data-tree-disclosure-button")[1].Click();
+            await cut.FindAll("button.forma-data-tree-disclosure-button")[1].ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 5);
             await ReportFocusAsync(probe, cut, cut.FindAll(".forma-data-tree-node")[2]);
             await ReportFocusAsync(probe, cut, null);
             var focuses = CountFocuses(ctx);
 
             // Act — Reports closed from its disclosure
-            cut.FindAll("button.forma-data-tree-disclosure-button")[1].Click();
+            await cut.FindAll("button.forma-data-tree-disclosure-button")[1].ClickAsync(new MouseEventArgs());
 
             // Assert — the page's focus left where it is
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
@@ -1769,7 +1769,7 @@
             => [.. drawn.Where(entry => entry.Value != before.GetValueOrDefault(entry.Key)).Select(entry => entry.Key).Order()];
 
         // Documents opened beneath Pictures: Documents, Reports, Notes.txt and Pictures, in a tree whose boxes check.
-        private static IRenderedComponent<IComponent> RenderOpenDocuments(FormaDataTreeTests ctx, Dictionary<int, int> drawn)
+        private static async Task<IRenderedComponent<IComponent>> RenderOpenDocumentsAsync(FormaDataTreeTests ctx, Dictionary<int, int> drawn)
         {
             var cut = ctx.Render(
                 @<FormaDataView Items="CreateEntries()" EnablePagination="false" EnableCheckedSelection="true" ItemName="@(entry => entry.Name)" ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" HasChildren="@(entry => entry.IsFolder)">
@@ -1778,7 +1778,7 @@
                     </FormaDataTree>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
-            cut.Find("button.forma-data-tree-disclosure-button").Click();
+            await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
             return cut;
@@ -1790,7 +1790,7 @@
             // Arrange
             using var ctx = new FormaDataTreeTests();
             var drawn = new Dictionary<int, int>();
-            var cut = RenderOpenDocuments(ctx, drawn);
+            var cut = await RenderOpenDocumentsAsync(ctx, drawn);
             var before = new Dictionary<int, int>(drawn);
 
             // Act — Notes.txt is the third node
@@ -1801,16 +1801,16 @@
         }
 
         [Fact]
-        public void Should_draw_again_only_the_node_that_opened_and_the_nodes_it_showed()
+        public async Task Should_draw_again_only_the_node_that_opened_and_the_nodes_it_showed()
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
             var drawn = new Dictionary<int, int>();
-            var cut = RenderOpenDocuments(ctx, drawn);
+            var cut = await RenderOpenDocumentsAsync(ctx, drawn);
             var before = new Dictionary<int, int>(drawn);
 
             // Act — Pictures, the fourth node, opens onto Beach.jpg
-            cut.FindAll("button.forma-data-tree-disclosure-button")[2].Click();
+            await cut.FindAll("button.forma-data-tree-disclosure-button")[2].ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 5);
 
             // Assert
@@ -1818,12 +1818,12 @@
         }
 
         [Fact]
-        public void Should_draw_no_node_again_when_the_data_view_renders_with_nothing_changed()
+        public async Task Should_draw_no_node_again_when_the_data_view_renders_with_nothing_changed()
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
             var drawn = new Dictionary<int, int>();
-            var cut = RenderOpenDocuments(ctx, drawn);
+            var cut = await RenderOpenDocumentsAsync(ctx, drawn);
             var before = new Dictionary<int, int>(drawn);
 
             // Act
@@ -1836,12 +1836,12 @@
         }
 
         [Fact]
-        public void Should_draw_every_node_again_when_the_tree_is_given_another_thumbnail()
+        public async Task Should_draw_every_node_again_when_the_tree_is_given_another_thumbnail()
         {
             // Arrange
             using var ctx = new FormaDataTreeTests();
             var drawn = new Dictionary<int, int>();
-            var cut = RenderOpenDocuments(ctx, drawn);
+            var cut = await RenderOpenDocumentsAsync(ctx, drawn);
             var before = new Dictionary<int, int>(drawn);
 
             // Act
@@ -1890,7 +1890,7 @@
             </FormaDataView>);
         cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 2);
         await ReportFocusAsync(probe, cut, null);
-        cut.Find("button.forma-data-tree-disclosure-button").Click();
+        await cut.Find("button.forma-data-tree-disclosure-button").ClickAsync(new MouseEventArgs());
         cut.WaitForState(() => cut.FindAll("[role=treeitem]").Count == 4);
 
         return cut;

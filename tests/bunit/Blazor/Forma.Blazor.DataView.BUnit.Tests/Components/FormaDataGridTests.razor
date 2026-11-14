@@ -222,7 +222,7 @@
         }
 
         [Fact]
-        public void Should_sort_within_each_group()
+        public async Task Should_sort_within_each_group()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -237,7 +237,7 @@
             cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
 
             // Act
-            cut.Find("thead button").Click();
+            await cut.Find("thead button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "ascending");
 
             // Assert
@@ -246,7 +246,7 @@
         }
 
         [Fact]
-        public void Should_fold_a_group_from_its_heading_and_open_it_again()
+        public async Task Should_fold_a_group_from_its_heading_and_open_it_again()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -261,7 +261,7 @@
             cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
 
             // Act
-            cut.Find("tbody.forma-data-grid-group button").Click();
+            await cut.Find("tbody.forma-data-grid-group button").ClickAsync(new MouseEventArgs());
 
             // Assert
             var folded = cut.FindAll("tbody.forma-data-grid-group")[0];
@@ -270,14 +270,14 @@
             Assert.Equal(3, cut.FindAll("tbody.forma-data-grid-group")[1].QuerySelectorAll("tr.forma-data-grid-row").Length);
 
             // Act — pressed again
-            cut.Find("tbody.forma-data-grid-group button").Click();
+            await cut.Find("tbody.forma-data-grid-group button").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(3, cut.FindAll("tbody.forma-data-grid-group")[0].QuerySelectorAll("tr.forma-data-grid-row").Length);
         }
 
         [Fact]
-        public void Should_keep_a_fold_across_a_reload()
+        public async Task Should_keep_a_fold_across_a_reload()
         {
             // Arrange — the fold is the engine's, so a sort that reloads the items leaves it standing
             using var ctx = new FormaDataGridTests();
@@ -290,10 +290,10 @@
                     </FormaDataGrid>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
-            cut.Find("tbody.forma-data-grid-group button").Click();
+            await cut.Find("tbody.forma-data-grid-group button").ClickAsync(new MouseEventArgs());
 
             // Act
-            cut.Find("thead button").Click();
+            await cut.Find("thead button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "ascending");
 
             // Assert
@@ -301,7 +301,7 @@
         }
 
         [Fact]
-        public void Should_open_every_group_again_under_a_new_grouping()
+        public async Task Should_open_every_group_again_under_a_new_grouping()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -314,7 +314,7 @@
                     </FormaDataGrid>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
-            cut.Find("tbody.forma-data-grid-group button").Click();
+            await cut.Find("tbody.forma-data-grid-group button").ClickAsync(new MouseEventArgs());
 
             // Act
             var dataView = cut.FindComponent<FormaDataView<Product>>();
@@ -370,7 +370,7 @@
         }
 
         [Fact]
-        public void Should_ask_a_provider_for_the_grouping_s_key_before_the_sort_s()
+        public async Task Should_ask_a_provider_for_the_grouping_s_key_before_the_sort_s()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -391,7 +391,7 @@
             cut.WaitForState(() => cut.FindAll("tbody.forma-data-grid-group").Count == 2);
 
             // Act
-            cut.Find("thead button").Click();
+            await cut.Find("thead button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "ascending");
 
             // Assert
@@ -426,7 +426,7 @@
         }
 
         [Fact]
-        public void Should_leave_a_folded_group_s_items_unread_while_virtualizing()
+        public async Task Should_leave_a_folded_group_s_items_unread_while_virtualizing()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -441,7 +441,7 @@
             cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-row").Count == 6);
 
             // Act
-            cut.Find(".forma-data-grid-group-heading").Click();
+            await cut.Find(".forma-data-grid-group-heading").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-row").Count == 3);
 
             // Assert
@@ -644,7 +644,7 @@
         }
 
         [Fact]
-        public void Should_offer_the_page_the_set_and_clearing_from_the_master_menu()
+        public async Task Should_offer_the_page_the_set_and_clearing_from_the_master_menu()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -659,7 +659,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead .forma-data-grid-master-menu").Click();
+            await cut.Find("thead .forma-data-grid-master-menu").ClickAsync(new MouseEventArgs());
 
             // Assert
             var items = cut.FindAll(".forma-dropdown-menu [role=menuitem]");
@@ -670,7 +670,7 @@
         }
 
         [Fact]
-        public void Should_select_the_whole_set_from_the_master_menu()
+        public async Task Should_select_the_whole_set_from_the_master_menu()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -684,17 +684,17 @@
                     </FormaDataGrid>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
-            cut.Find("thead .forma-data-grid-master-menu").Click();
+            await cut.Find("thead .forma-data-grid-master-menu").ClickAsync(new MouseEventArgs());
 
             // Act
-            cut.FindAll(".forma-dropdown-menu [role=menuitem]")[1].Click();
+            await cut.FindAll(".forma-dropdown-menu [role=menuitem]")[1].ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(25, changedTo!.Count);
         }
 
         [Fact]
-        public void Should_clear_the_whole_selection_from_the_master_menu()
+        public async Task Should_clear_the_whole_selection_from_the_master_menu()
         {
             // Arrange — the selection spans both pages
             using var ctx = new FormaDataGridTests();
@@ -708,17 +708,17 @@
                     </FormaDataGrid>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
-            cut.Find("thead .forma-data-grid-master-menu").Click();
+            await cut.Find("thead .forma-data-grid-master-menu").ClickAsync(new MouseEventArgs());
 
             // Act
-            cut.FindAll(".forma-dropdown-menu [role=menuitem]")[2].Click();
+            await cut.FindAll(".forma-dropdown-menu [role=menuitem]")[2].ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Empty(changedTo!);
         }
 
         [Fact]
-        public void Should_not_offer_the_set_from_the_master_menu_when_the_page_holds_everything()
+        public async Task Should_not_offer_the_set_from_the_master_menu_when_the_page_holds_everything()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -733,7 +733,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead .forma-data-grid-master-menu").Click();
+            await cut.Find("thead .forma-data-grid-master-menu").ClickAsync(new MouseEventArgs());
 
             // Assert
             var items = cut.FindAll(".forma-dropdown-menu [role=menuitem]");
@@ -808,7 +808,7 @@
             // Act
             await cut.Find("thead input[type=checkbox]").ClickAsync(new MouseEventArgs());
             Assert.Single(cut.FindAll(".forma-data-view-select-set"));
-            cut.Find(".forma-data-view-select-set").Click();
+            await cut.Find(".forma-data-view-select-set").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(25, changedTo!.Count);
@@ -864,7 +864,7 @@
         }
 
         [Fact]
-        public void Should_not_offer_the_set_from_the_master_menu_over_an_items_provider()
+        public async Task Should_not_offer_the_set_from_the_master_menu_over_an_items_provider()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -882,7 +882,7 @@
             cut.WaitForState(() => cut.FindAll("thead input[type=checkbox]").Count == 1);
 
             // Act
-            cut.Find("thead .forma-data-grid-master-menu").Click();
+            await cut.Find("thead .forma-data-grid-master-menu").ClickAsync(new MouseEventArgs());
 
             // Assert
             var items = cut.FindAll(".forma-dropdown-menu [role=menuitem]");
@@ -891,7 +891,7 @@
         }
 
         [Fact]
-        public void Should_keep_an_item_selected_by_key_when_the_provider_returns_a_fresh_copy()
+        public async Task Should_keep_an_item_selected_by_key_when_the_provider_returns_a_fresh_copy()
         {
             // Arrange — every fetch materializes items equal to the selected one in nothing but the key
             using var ctx = new FormaDataGridTests();
@@ -909,7 +909,7 @@
             cut.WaitForState(() => cut.FindAll("nav.forma-pagination").Count == 1);
 
             // Act
-            cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            await cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.Markup.Contains("Fresh Item 11", StringComparison.Ordinal));
 
             // Assert
@@ -1722,7 +1722,7 @@
         }
 
         [Fact]
-        public void Should_fetch_the_slices_again_when_the_sort_changes_while_virtualizing()
+        public async Task Should_fetch_the_slices_again_when_the_sort_changes_while_virtualizing()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -1748,7 +1748,7 @@
             var before = sliceRequests;
 
             // Act
-            cut.Find("thead button").Click();
+            await cut.Find("thead button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => sliceRequests > before);
 
             // Assert
@@ -1887,7 +1887,7 @@
         }
 
         [Fact]
-        public void Should_return_to_the_first_page_when_pagination_is_turned_off()
+        public async Task Should_return_to_the_first_page_when_pagination_is_turned_off()
         {
             // Arrange — page forward so a stale index would survive the round trip
             using var ctx = new FormaDataGridTests();
@@ -1900,8 +1900,8 @@
                     </FormaDataGrid>
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Count == 1);
-            cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
-            cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").Click();
+            await cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
+            await cut.Find(".forma-pagination-navigation-input .forma-pagination-navigation-button-next").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.Markup.Contains("Item 25", StringComparison.Ordinal));
 
             // Act
@@ -1986,7 +1986,7 @@
         }
 
         [Fact]
-        public void Should_write_the_sort_to_the_address_under_the_prefix()
+        public async Task Should_write_the_sort_to_the_address_under_the_prefix()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -2001,7 +2001,7 @@
             cut.WaitForState(() => cut.FindAll("thead button").Count == 1);
 
             // Act
-            cut.Find("thead button").Click();
+            await cut.Find("thead button").ClickAsync(new MouseEventArgs());
 
             // Assert
             var navigation = ctx.Services.GetRequiredService<NavigationManager>();
@@ -2009,7 +2009,7 @@
         }
 
         [Fact]
-        public void Should_write_a_property_column_s_path_to_the_address_rather_than_its_title()
+        public async Task Should_write_a_property_column_s_path_to_the_address_rather_than_its_title()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -2024,7 +2024,7 @@
             cut.WaitForState(() => cut.FindAll("thead button").Count == 1);
 
             // Act
-            cut.Find("thead button").Click();
+            await cut.Find("thead button").ClickAsync(new MouseEventArgs());
 
             // Assert
             var navigation = ctx.Services.GetRequiredService<NavigationManager>();
@@ -2119,7 +2119,7 @@
         }
 
         [Fact]
-        public void Should_sort_by_a_header_and_mark_it()
+        public async Task Should_sort_by_a_header_and_mark_it()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -2134,7 +2134,7 @@
             cut.WaitForState(() => cut.FindAll("thead button").Count == 1);
 
             // Act
-            cut.Find("thead button").Click();
+            await cut.Find("thead button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "descending");
 
             // Assert
@@ -2730,7 +2730,7 @@
             await FitAsync(cut, availableWidth: 320);
 
             // Act
-            cut.Find(".forma-data-grid-columns-menu").Click();
+            await cut.Find(".forma-data-grid-columns-menu").ClickAsync(new MouseEventArgs());
 
             // Assert — the highest priority is never listed
             var items = cut.FindAll(".forma-dropdown-menu [role^=menuitem]");
@@ -2760,10 +2760,10 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
             await FitAsync(cut, availableWidth: 320);
-            cut.Find(".forma-data-grid-columns-menu").Click();
+            await cut.Find(".forma-data-grid-columns-menu").ClickAsync(new MouseEventArgs());
 
             // Act — choose the dropped note
-            cut.FindAll(".forma-dropdown-menu [role^=menuitem]")[1].Click();
+            await cut.FindAll(".forma-dropdown-menu [role^=menuitem]")[1].ClickAsync(new MouseEventArgs());
 
             // Assert — the choice wins over the width
             Assert.Equal(["Id", "Title", "Note"], GetHeaderTitles(cut));
@@ -2791,10 +2791,10 @@
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
             await FitAsync(cut, availableWidth: 1000);
-            cut.Find(".forma-data-grid-columns-menu").Click();
+            await cut.Find(".forma-data-grid-columns-menu").ClickAsync(new MouseEventArgs());
 
             // Act
-            cut.Find(".forma-dropdown-menu [role^=menuitem]").Click();
+            await cut.Find(".forma-dropdown-menu [role^=menuitem]").ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Equal(["Id"], GetHeaderTitles(cut));
@@ -3261,7 +3261,7 @@
             await cut.InvokeAsync(() => grid.Instance.BeginEdit(employees[0]));
 
             // Act
-            cut.Find("tbody .forma-date-box-clear").Click();
+            await cut.Find("tbody .forma-date-box-clear").ClickAsync(new MouseEventArgs());
             await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
 
             // Assert

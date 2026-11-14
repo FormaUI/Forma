@@ -240,7 +240,7 @@
         }
 
         [Fact]
-        public void Should_fold_a_group_from_its_heading()
+        public async Task Should_fold_a_group_from_its_heading()
         {
             // Arrange
             using var ctx = new FormaDataListTests();
@@ -251,7 +251,7 @@
             cut.WaitForState(() => cut.FindAll(".forma-data-list-group").Count == 2);
 
             // Act
-            cut.Find(".forma-data-list-group button").Click();
+            await cut.Find(".forma-data-list-group button").ClickAsync(new MouseEventArgs());
 
             // Assert
             var groups = cut.FindAll(".forma-data-list-group");
@@ -345,7 +345,7 @@
         }
 
         [Fact]
-        public void Should_fold_a_group_under_its_heading_while_virtualizing()
+        public async Task Should_fold_a_group_under_its_heading_while_virtualizing()
         {
             // Arrange
             using var ctx = new FormaDataListTests();
@@ -356,7 +356,7 @@
             cut.WaitForState(() => cut.FindAll(".forma-data-list-item").Count == 3);
 
             // Act
-            cut.Find(".forma-data-group-heading").Click();
+            await cut.Find(".forma-data-group-heading").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll(".forma-data-list-item").Count == 2);
 
             // Assert

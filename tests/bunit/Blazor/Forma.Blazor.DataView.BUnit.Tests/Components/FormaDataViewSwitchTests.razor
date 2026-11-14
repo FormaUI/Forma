@@ -4,6 +4,7 @@
 @using Forma.Framework.Localization
 @using Forma.Tests.Localization
 @using Microsoft.AspNetCore.Components
+@using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
 
 @code {
@@ -71,7 +72,7 @@
         }
 
         [Fact]
-        public void Should_show_the_view_pressed_on_the_switch_and_report_it()
+        public async Task Should_show_the_view_pressed_on_the_switch_and_report_it()
         {
             // Arrange
             using var ctx = new FormaDataViewSwitchTests();
@@ -80,7 +81,7 @@
             cut.WaitForState(() => cut.FindAll(".forma-data-view-switch button").Count == 3);
 
             // Act
-            cut.FindAll(".forma-data-view-switch button")[2].Click();
+            await cut.FindAll(".forma-data-view-switch button")[2].ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Multiple(
@@ -106,7 +107,7 @@
         }
 
         [Fact]
-        public void Should_write_a_view_other_than_the_first_to_the_address_and_read_it_back()
+        public async Task Should_write_a_view_other_than_the_first_to_the_address_and_read_it_back()
         {
             // Arrange
             using var ctx = new FormaDataViewSwitchTests();
@@ -115,7 +116,7 @@
             cut.WaitForState(() => cut.FindAll(".forma-data-view-switch button").Count == 3);
 
             // Act
-            cut.FindAll(".forma-data-view-switch button")[1].Click();
+            await cut.FindAll(".forma-data-view-switch button")[1].ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Contains("shop-view=list", navigation.Uri, StringComparison.Ordinal);
@@ -129,24 +130,24 @@
         }
 
         [Fact]
-        public void Should_drop_the_view_from_the_address_when_the_first_shows_again()
+        public async Task Should_drop_the_view_from_the_address_when_the_first_shows_again()
         {
             // Arrange
             using var ctx = new FormaDataViewSwitchTests();
             var navigation = ctx.Services.GetRequiredService<NavigationManager>();
             var cut = ctx.Render(CreateThreeViews(address: new DataViewAddressOptions("shop")));
             cut.WaitForState(() => cut.FindAll(".forma-data-view-switch button").Count == 3);
-            cut.FindAll(".forma-data-view-switch button")[1].Click();
+            await cut.FindAll(".forma-data-view-switch button")[1].ClickAsync(new MouseEventArgs());
 
             // Act
-            cut.FindAll(".forma-data-view-switch button")[0].Click();
+            await cut.FindAll(".forma-data-view-switch button")[0].ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.DoesNotContain("shop-view", navigation.Uri, StringComparison.Ordinal);
         }
 
         [Fact]
-        public void Should_take_the_data_view_as_a_parameter_when_composed_outside_it()
+        public async Task Should_take_the_data_view_as_a_parameter_when_composed_outside_it()
         {
             // Arrange
             using var ctx = new FormaDataViewSwitchTests();
@@ -156,7 +157,7 @@
 
             // Act
             var outside = ctx.Render(@<FormaDataViewSwitch DataView="engine" />);
-            outside.FindAll("button")[2].Click();
+            await outside.FindAll("button")[2].ClickAsync(new MouseEventArgs());
 
             // Assert
             Assert.Single(dataView.FindAll(".forma-data-cards"));

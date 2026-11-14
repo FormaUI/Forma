@@ -188,7 +188,7 @@
         }
 
         [Fact]
-        public void Should_fold_a_group_from_its_heading()
+        public async Task Should_fold_a_group_from_its_heading()
         {
             // Arrange
             using var ctx = new FormaDataCardsTests();
@@ -199,7 +199,7 @@
             cut.WaitForState(() => cut.FindAll(".forma-data-cards-group").Count == 2);
 
             // Act
-            cut.Find(".forma-data-cards-group button").Click();
+            await cut.Find(".forma-data-cards-group button").ClickAsync(new MouseEventArgs());
 
             // Assert
             var groups = cut.FindAll(".forma-data-cards-group");

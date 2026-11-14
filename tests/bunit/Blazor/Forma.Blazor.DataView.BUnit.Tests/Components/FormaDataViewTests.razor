@@ -540,7 +540,7 @@
                     <FormaDataList TItem="Product" />
                 </FormaDataView>);
             cut.WaitForState(() => cut.FindAll("[role=listitem] .forma-data-list-item-name").Count == 4);
-            cut.Find(".forma-data-group-heading").Click();
+            await cut.Find(".forma-data-group-heading").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.FindAll(".forma-data-list-item").Count == 2);
             var engine = cut.FindComponent<FormaDataView<Product>>();
 
@@ -1212,9 +1212,9 @@
             var engine = cut.FindComponent<FormaDataView<Product>>();
 
             // Act — two presses of the sorted header, then a cleared sort
-            cut.Find("thead button").Click();
+            await cut.Find("thead button").ClickAsync(new MouseEventArgs());
             cut.WaitForState(() => cut.Find("thead th").GetAttribute("aria-sort") == "descending");
-            cut.Find("thead button").Click();
+            await cut.Find("thead button").ClickAsync(new MouseEventArgs());
             var afterTwo = cut.Find("thead th").GetAttribute("aria-sort");
             await engine.InvokeAsync(() => engine.Instance.SortByAsync("Name", ByName.Sort, DataViewSortDirection.Descending));
             await engine.InvokeAsync(() => engine.Instance.ClearSortAsync());
