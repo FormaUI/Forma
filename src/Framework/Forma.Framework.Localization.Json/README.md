@@ -112,8 +112,10 @@ localized, so `RequireMatchingLocalization` accepts it and `GetAllStrings` lists
 A lookup walks the locale's UI culture, `CultureInfo.CurrentUICulture` unless the locale was bound to another
 through `WithCulture`, out through its parents, taking the first culture
 whose files carry the key: an `es-419` reader gets the `es` entry where no `es-419` file has one.
-Within a culture, the assembly's own files are read first, then the locale packs, then the host's
-folder, each overriding the one before. Each file is read once per factory.
+Within a culture, the assembly's own files are read first, then the locale packs, then each client
+the application names, then the application's own files, then the folder beside it, each overriding
+the one before. Within one of them, two files giving a key different texts are a conflict, settled by
+the file whose name sorts last and logged once as a warning. Each file is read once per factory.
 
 ## Outside the container
 

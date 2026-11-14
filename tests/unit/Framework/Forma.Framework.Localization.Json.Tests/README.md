@@ -21,7 +21,7 @@ folder named for it, so a malformed file troubles no other type.
 
 | Type | Namespace | What it covers | Files |
 |---|---|---|---|
-| `Colocated` | `…Tests.Fixtures` | The default layout in two cultures, regional fallback to a parent, and the default paths still read beside the ones the config adds | `Fixtures/Colocated/.locales/{he,es}.json` |
+| `Colocated` | `…Tests.Fixtures` | The `.locales` layout, which the config's first path reads, in two cultures, and regional fallback to a parent | `Fixtures/Colocated/.locales/{he,es}.json` |
 | `Unlocalized` | `…Tests.Fixtures` | No file in any culture, so the key comes back | none |
 | `GenericArity<T>` | `…Tests.Fixtures` | The `` `1 `` arity dropped from the name | `Fixtures/GenericArity/.locales/he.json` |
 | `MainAssembly` | `…Tests.Fixtures.Beside` | A file beside its type, kept in the main assembly | `Fixtures/Beside/MainAssembly.he.json` |
