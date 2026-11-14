@@ -1,5 +1,6 @@
 namespace Forma.Framework.Localization.Json;
 
+using System.Collections.Frozen;
 using System.Globalization;
 
 using Forma.Framework.Localization;
@@ -12,6 +13,9 @@ using Forma.Framework.Localization.Files;
 /// <param name="boundUICulture">The culture that chooses the strings, or <see langword="null"/> to read the current one.</param>
 internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocation location, CultureInfo? boundCulture = null, CultureInfo? boundUICulture = null) : IStringLocale
 {
+    // What a bound locale read for its UI culture and each culture it falls back to, nearest first, each read on first use.
+    private readonly FrozenDictionary<string, JsonResourceEntry>?[] _boundEntries = new FrozenDictionary<string, JsonResourceEntry>?[CountCultures(boundUICulture)];
+
     private CultureInfo Culture
         => boundCulture ?? CultureInfo.CurrentCulture;
 
@@ -64,17 +68,14 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
     {
         var seenKeys = new HashSet<string>(StringComparer.Ordinal);
 
-        for (var culture = UICulture; culture.Name.Length != 0; culture = culture.Parent)
+        var index = 0;
+        for (var culture = UICulture; culture.Name.Length != 0; culture = culture.Parent, index++)
         {
-            var file = context.Cache.Read(location, culture);
-            if (file is not null)
+            foreach (var entry in Read(culture, index))
             {
-                foreach (var entry in file)
+                if (seenKeys.Add(entry.Key))
                 {
-                    if (seenKeys.Add(entry.Key))
-                    {
-                        yield return new LocalizedText(entry.Key, entry.Value.Format, ResourceNotFound: false, location.BaseName);
-                    }
+                    yield return new LocalizedText(entry.Key, entry.Value.Format, ResourceNotFound: false, location.BaseName);
                 }
             }
 
@@ -138,10 +139,10 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
 
     private bool TryFind(string name, out JsonResourceEntry entry)
     {
-        for (var culture = UICulture; culture.Name.Length != 0; culture = culture.Parent)
+        var index = 0;
+        for (var culture = UICulture; culture.Name.Length != 0; culture = culture.Parent, index++)
         {
-            var file = context.Cache.Read(location, culture);
-            if (file is not null && file.TryGetValue(name, out entry))
+            if (Read(culture, index).TryGetValue(name, out entry))
             {
                 return true;
             }
@@ -152,4 +153,20 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         return false;
     }
 
+    // A bound locale keeps what it read for each of its cultures, so a later lookup reads none of them again.
+    private FrozenDictionary<string, JsonResourceEntry> Read(CultureInfo culture, int index)
+        => boundUICulture is null
+            ? context.Cache.Read(location, culture)
+            : _boundEntries[index] ??= context.Cache.Read(location, culture);
+
+    private static int CountCultures(CultureInfo? uiCulture)
+    {
+        var count = 0;
+        for (var culture = uiCulture; culture is not null && culture.Name.Length != 0; culture = culture.Parent)
+        {
+            count++;
+        }
+
+        return count;
+    }
 }

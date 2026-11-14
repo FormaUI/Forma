@@ -2,7 +2,7 @@ namespace Forma.Framework.Localization.Language;
 
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Text;
+using System.Runtime.CompilerServices;
 
 using Forma.Framework.Localization.Parser;
 using Forma.Framework.Localization.Parser.Syntax;
@@ -15,6 +15,12 @@ using Microsoft.Extensions.Logging.Abstractions;
 /// <param name="logger">The logger an argument that is not a count is reported to; null discards.</param>
 public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? logger = null)
 {
+    // How many characters an evaluation writes on the stack before it moves to a pooled buffer.
+    private const int StackLength = 256;
+
+    // What reading a format found, kept for as long as the format lives.
+    private static readonly ConditionalWeakTable<string, LocaleParseResult> ParseResults = [];
+
     private readonly IPluralRuleSet _rules = rules ?? throw new ArgumentNullException(nameof(rules));
     private readonly ILogger _logger = logger ?? NullLogger.Instance;
     private readonly ConcurrentDictionary<string, byte> _reportedFormats = new(StringComparer.Ordinal);
@@ -41,38 +47,46 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         ArgumentNullException.ThrowIfNull(displayCulture);
         ArgumentNullException.ThrowIfNull(arguments);
 
+        if (!format.Contains(LocaleExpressionParser.OpeningDelimiter, StringComparison.Ordinal))
+        {
+            return format;
+        }
+
         // An expression the parser rejected stays in the text as written.
-        var parseResult = LocaleExpressionParser.Parse(format, KnownKeywords);
+        var parseResult = ParseResults.GetValue(format, static text => LocaleExpressionParser.Parse(text, KnownKeywords));
         if (parseResult.Expressions.Count == 0)
         {
             return format;
         }
 
-        var builder = new StringBuilder(format.Length);
+        // The count is formatted in the display culture before it is written, so the builder is given none to format with.
+        var builder = new DefaultInterpolatedStringHandler(0, 0, null, stackalloc char[StackLength]);
         var position = 0;
 
-        foreach (var expression in parseResult.Expressions)
+        var expressions = parseResult.Expressions;
+        for (var index = 0; index < expressions.Count; index++)
         {
-            builder.Append(format, position, expression.Span.Start - position);
+            var expression = expressions[index];
+            builder.AppendFormatted(format.AsSpan(position, expression.Span.Start - position));
 
             if (expression.KeywordSpan.Slice(format).SequenceEqual(Keyword.Name))
             {
-                AppendField(builder, format, expression, localeCulture, displayCulture, arguments);
+                AppendField(ref builder, format, expression, localeCulture, displayCulture, arguments);
             }
             else
             {
-                builder.Append(format, expression.Span.Start, expression.Span.Length);
+                builder.AppendFormatted(format.AsSpan(expression.Span.Start, expression.Span.Length));
             }
 
             position = expression.Span.End;
         }
 
-        builder.Append(format, position, format.Length - position);
+        builder.AppendFormatted(format.AsSpan(position));
 
-        return builder.ToString();
+        return builder.ToStringAndClear();
     }
 
-    private void AppendField(StringBuilder builder, string text, LocaleExpression expression, CultureInfo localeCulture, CultureInfo displayCulture, IReadOnlyList<LocalizedArgument> arguments)
+    private void AppendField(ref DefaultInterpolatedStringHandler builder, string text, LocaleExpression expression, CultureInfo localeCulture, CultureInfo displayCulture, IReadOnlyList<LocalizedArgument> arguments)
     {
         var name = expression.NameSpan.Slice(text);
         if (name.IsEmpty)
@@ -100,22 +114,22 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
             var hash = remainingText.IndexOf('#');
             if (hash < 0)
             {
-                builder.Append(remainingText);
+                builder.AppendFormatted(remainingText);
 
                 return;
             }
 
-            builder.Append(remainingText[..hash]);
+            builder.AppendFormatted(remainingText[..hash]);
 
             if (hash + 1 < remainingText.Length && remainingText[hash + 1] == '#')
             {
-                builder.Append('#');
+                builder.AppendLiteral("#");
                 remainingText = remainingText[(hash + 2)..];
 
                 continue;
             }
 
-            builder.Append(display);
+            builder.AppendFormatted(display);
             remainingText = remainingText[(hash + 1)..];
         }
     }
@@ -124,11 +138,11 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
     {
         var name = GetCategoryName(category);
 
-        foreach (var field in fields)
+        for (var index = 0; index < fields.Count; index++)
         {
-            if (field.NameSpan.Slice(text).SequenceEqual(name))
+            if (fields[index].NameSpan.Slice(text).SequenceEqual(name))
             {
-                return field.ValueSpan;
+                return fields[index].ValueSpan;
             }
         }
 

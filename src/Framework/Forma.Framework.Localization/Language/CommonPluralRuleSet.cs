@@ -12,7 +12,7 @@ public sealed partial class CommonPluralRuleSet : IPluralRuleSet
         ArgumentNullException.ThrowIfNull(locale);
 
         // CLDR keys a few entries by script or region, so the fullest identifier is tried before its language.
-        var candidate = locale;
+        var candidate = locale.AsSpan();
         while (candidate.Length != 0)
         {
             if (SelectExact(candidate, operands) is { } category)
@@ -20,7 +20,7 @@ public sealed partial class CommonPluralRuleSet : IPluralRuleSet
                 return category;
             }
 
-            var subtag = candidate.LastIndexOf('-', StringComparison.Ordinal);
+            var subtag = candidate.LastIndexOf('-');
             if (subtag < 0)
             {
                 return null;

@@ -1,13 +1,22 @@
 namespace Forma.Framework.Localization;
 
 using System.Globalization;
-using System.Text;
+using System.Runtime.CompilerServices;
 
 using Forma.Framework.Culture;
 
 /// <summary>Renders a composite format whose holes name their arguments.</summary>
 public static class LocalizedFormat
 {
+    // How many characters a rendering writes on the stack before it moves to a pooled buffer.
+    private const int StackLength = 256;
+
+    // How many characters a value written through its hole's format takes on the stack before it is written to a string instead.
+    private const int FormattedLength = 128;
+
+    // The names a format's holes use, read once for as long as the format lives.
+    private static readonly ConditionalWeakTable<string, string[]> HoleNames = [];
+
     /// <summary>Pairs values with the names a format's holes use, in the order those holes first appear.</summary>
     /// <param name="format">The format the names are read from.</param>
     /// <param name="values">The values to pair, one per distinct hole.</param>
@@ -17,7 +26,7 @@ public static class LocalizedFormat
         ArgumentNullException.ThrowIfNull(format);
 
         var names = GetNames(format);
-        if (names.Count == 0)
+        if (names.Length == 0)
         {
             return values.Length switch
             {
@@ -29,15 +38,15 @@ public static class LocalizedFormat
             };
         }
 
-        if (values.Length != names.Count)
+        if (values.Length != names.Length)
         {
             throw new ArgumentException(
-                $"'{format}' names {names.Count} hole(s) but {values.Length} value(s) were supplied.",
+                $"'{format}' names {names.Length} hole(s) but {values.Length} value(s) were supplied.",
                 nameof(values));
         }
 
-        var arguments = new LocalizedArgument[names.Count];
-        for (var index = 0; index < names.Count; index++)
+        var arguments = new LocalizedArgument[names.Length];
+        for (var index = 0; index < names.Length; index++)
         {
             arguments[index] = new LocalizedArgument(names[index], values[index]);
         }
@@ -63,24 +72,28 @@ public static class LocalizedFormat
             return format;
         }
 
-        var builder = new StringBuilder(format.Length);
+        // Each value is formatted in the culture before it is written, so the builder is given none to format with.
+        var builder = new DefaultInterpolatedStringHandler(0, 0, null, stackalloc char[StackLength]);
 
         foreach (var segment in LocalizedSegment.Parse(format))
         {
             if (!segment.IsHole)
             {
-                builder.Append(segment.Text);
+                builder.AppendFormatted(segment.Text);
 
                 continue;
             }
 
-            Append(builder, segment, arguments, culture, uiCulture);
+            Append(ref builder, segment, arguments, culture, uiCulture);
         }
 
-        return builder.ToString();
+        return builder.ToStringAndClear();
     }
 
-    private static List<string> GetNames(string format)
+    private static string[] GetNames(string format)
+        => format.AsSpan().ContainsAny('{', '}') ? HoleNames.GetValue(format, static text => [.. ReadNames(text)]) : [];
+
+    private static List<string> ReadNames(string format)
     {
         var names = new List<string>();
 
@@ -101,41 +114,54 @@ public static class LocalizedFormat
         return names;
     }
 
-    private static void Append(StringBuilder builder, LocalizedSegment segment, IReadOnlyList<LocalizedArgument> arguments, CultureInfo culture, CultureInfo uiCulture)
+    // A value is written in the culture it is rendered in, padded to the hole's alignment.
+    private static void Append(ref DefaultInterpolatedStringHandler builder, LocalizedSegment segment, IReadOnlyList<LocalizedArgument> arguments, CultureInfo culture, CultureInfo uiCulture)
     {
         if (!TryFind(segment.Name, arguments, out var value))
         {
-            Restate(builder, segment);
+            Restate(ref builder, segment);
 
             return;
         }
 
-        // A value that takes no culture, such as a record printing its members, reads the ambient one.
-        var text = value switch
+        switch (value)
         {
-            null => string.Empty,
-            string writtenText => writtenText,
-            IFormattable formattable => formattable.ToString(segment.Format.IsEmpty ? null : segment.Format.ToString(), culture),
-            _ => AmbientCulture.Run(culture, uiCulture, () => value.ToString()) ?? string.Empty,
-        };
+            case null or string:
+                builder.AppendFormatted((string?)value, segment.Alignment);
+                break;
 
-        var padding = Math.Abs(segment.Alignment) - text.Length;
-        if (padding <= 0)
-        {
-            builder.Append(text);
+            case ISpanFormattable formattable:
+                AppendFormatted(ref builder, formattable, segment, culture);
+                break;
 
-            return;
+            case IFormattable formattable:
+                builder.AppendFormatted(formattable.ToString(GetFormat(segment), culture), segment.Alignment);
+                break;
+
+            // A value that takes no culture, such as a record printing its members, reads the ambient one.
+            default:
+                builder.AppendFormatted(AmbientCulture.Run(culture, uiCulture, () => value.ToString()) ?? string.Empty, segment.Alignment);
+                break;
         }
-
-        if (segment.Alignment < 0)
-        {
-            builder.Append(text).Append(' ', padding);
-
-            return;
-        }
-
-        builder.Append(' ', padding).Append(text);
     }
+
+    // A value is formatted where the hole writes it, through the hole's format, so it needs no string of its own.
+    private static void AppendFormatted(ref DefaultInterpolatedStringHandler builder, ISpanFormattable value, LocalizedSegment segment, CultureInfo culture)
+    {
+        Span<char> formatted = stackalloc char[FormattedLength];
+
+        if (value.TryFormat(formatted, out var charsWritten, segment.Format, culture))
+        {
+            builder.AppendFormatted(formatted[..charsWritten], segment.Alignment);
+        }
+        else
+        {
+            builder.AppendFormatted(value.ToString(GetFormat(segment), culture), segment.Alignment);
+        }
+    }
+
+    private static string? GetFormat(LocalizedSegment segment)
+        => segment.Format.IsEmpty ? null : segment.Format.ToString();
 
     private static bool TryFind(ReadOnlySpan<char> name, IReadOnlyList<LocalizedArgument> arguments, out object? value)
     {
@@ -154,20 +180,23 @@ public static class LocalizedFormat
         return false;
     }
 
-    private static void Restate(StringBuilder builder, LocalizedSegment segment)
+    private static void Restate(ref DefaultInterpolatedStringHandler builder, LocalizedSegment segment)
     {
-        builder.Append('{').Append(segment.Name);
+        builder.AppendLiteral("{");
+        builder.AppendFormatted(segment.Name);
 
         if (segment.Alignment != 0)
         {
-            builder.Append(',').Append(segment.Alignment.ToString(CultureInfo.InvariantCulture));
+            builder.AppendLiteral(",");
+            builder.AppendLiteral(segment.Alignment.ToString(CultureInfo.InvariantCulture));
         }
 
         if (!segment.Format.IsEmpty)
         {
-            builder.Append(':').Append(segment.Format);
+            builder.AppendLiteral(":");
+            builder.AppendFormatted(segment.Format);
         }
 
-        builder.Append('}');
+        builder.AppendLiteral("}");
     }
 }

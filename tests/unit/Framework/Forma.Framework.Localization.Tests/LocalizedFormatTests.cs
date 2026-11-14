@@ -76,4 +76,34 @@ public sealed class LocalizedFormatTests
         // Assert
         Assert.Equal("[x   ]", rendered);
     }
+
+    [Fact]
+    public void Should_format_a_value_by_the_culture_rather_than_a_formatter_it_offers()
+    {
+        // Arrange
+        var culture = new CultureOfferingFormatter("en");
+
+        // Act
+        var rendered = LocalizedFormat.Render("{count} of {total:N0}, {label,3}", [new LocalizedArgument("count", 5), new LocalizedArgument("total", 5000), new LocalizedArgument("label", "x")], culture, culture);
+
+        // Assert
+        Assert.Equal("5 of 5,000,   x", rendered);
+    }
+
+    /// <summary>A culture that offers a formatter of its own, which brackets whatever it formats.</summary>
+    /// <param name="name">The culture's name.</param>
+    private sealed class CultureOfferingFormatter(string name) : CultureInfo(name)
+    {
+        /// <inheritdoc />
+        public override object? GetFormat(Type? formatType)
+            => formatType == typeof(ICustomFormatter) ? new BracketingFormatter() : base.GetFormat(formatType);
+
+        /// <summary>A formatter that brackets whatever it formats.</summary>
+        private sealed class BracketingFormatter : ICustomFormatter
+        {
+            /// <inheritdoc />
+            public string Format(string? format, object? arg, IFormatProvider? formatProvider)
+                => $"<{arg}>";
+        }
+    }
 }

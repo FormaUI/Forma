@@ -46,7 +46,7 @@ public readonly record struct PluralOperands
     {
         var absoluteValue = Math.Abs(value);
 
-        var scale = (decimal.GetBits(absoluteValue)[3] >> 16) & 0xFF;
+        var scale = (int)absoluteValue.Scale;
 
         var truncatedValue = decimal.Truncate(absoluteValue);
         var integerPart = truncatedValue > long.MaxValue ? long.MaxValue : (long)truncatedValue;

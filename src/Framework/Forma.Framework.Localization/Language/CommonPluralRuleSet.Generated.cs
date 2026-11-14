@@ -6,7 +6,7 @@ namespace Forma.Framework.Localization.Language;
 
 public sealed partial class CommonPluralRuleSet
 {
-    private static PluralCategory? SelectExact(string locale, PluralOperands operands)
+    private static PluralCategory? SelectExact(ReadOnlySpan<char> locale, PluralOperands operands)
         => locale switch
         {
             "af" or "an" or "asa" or "az" or "bal" or "bem" or "bez" or "bg" or "brx" or "ce" or "cgg" or "chr" or "ckb" or "dv" or "ee" or "el" or "eo" or "eu" or "fo" or "fur" or "gsw" or "ha" or "haw" or "hu" or "jgo" or "jmc" or "ka" or "kaj" or "kcg" or "kk" or "kkj" or "kl" or "ks" or "ksb" or "ku" or "ky" or "lb" or "lg" or "mas" or "mgo" or "ml" or "mn" or "mr" or "nah" or "nb" or "nd" or "ne" or "nn" or "nnh" or "no" or "nr" or "ny" or "nyn" or "om" or "or" or "os" or "pap" or "ps" or "rm" or "rof" or "rwk" or "saq" or "sd" or "sdh" or "seh" or "sn" or "so" or "sq" or "ss" or "ssy" or "st" or "syr" or "ta" or "te" or "teo" or "tig" or "tk" or "tn" or "tr" or "ts" or "ug" or "uz" or "ve" or "vo" or "vun" or "wae" or "xh" or "xog"

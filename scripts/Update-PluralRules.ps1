@@ -253,7 +253,7 @@ namespace Forma.Framework.Localization.Language;
 
 public sealed partial class CommonPluralRuleSet
 {
-    private static PluralCategory? SelectExact(string locale, PluralOperands operands)
+    private static PluralCategory? SelectExact(ReadOnlySpan<char> locale, PluralOperands operands)
         => locale switch
         {
 $($switchArms -join "`n`n")

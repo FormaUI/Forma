@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 public sealed class JsonStringLocaleFactory : IStringLocaleFactory
 {
     private readonly ConcurrentDictionary<string, IStringLocale> _locales = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<Type, IStringLocale> _localesByType = new();
     private readonly JsonLocaleContext _context;
 
     /// <summary>Creates a factory with the default options.</summary>
@@ -57,13 +58,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
     {
         ArgumentNullException.ThrowIfNull(resourceSource);
 
-        // The open generic definition names the type its files are read for.
-        var source = resourceSource.IsConstructedGenericType ? resourceSource.GetGenericTypeDefinition() : resourceSource;
-        var assembly = source.Assembly;
-        var assemblyName = assembly.GetName().Name ?? string.Empty;
-        var typeName = NormalizeTypeName(source.FullName ?? source.Name);
-
-        return GetOrAdd(assembly, GetBaseName(assemblyName, typeName), typeName);
+        return _localesByType.GetOrAdd(resourceSource, static (type, factory) => factory.CreateForType(type), this);
     }
 
     /// <inheritdoc />
@@ -76,6 +71,17 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         var relativeName = TrimPrefix(baseName, location + ".");
 
         return GetOrAdd(assembly, Qualify(location, relativeName), $"{location}.{relativeName}");
+    }
+
+    private IStringLocale CreateForType(Type resourceSource)
+    {
+        // The open generic definition names the type its files are read for.
+        var source = resourceSource.IsConstructedGenericType ? resourceSource.GetGenericTypeDefinition() : resourceSource;
+        var assembly = source.Assembly;
+        var assemblyName = assembly.GetName().Name ?? string.Empty;
+        var typeName = NormalizeTypeName(source.FullName ?? source.Name);
+
+        return GetOrAdd(assembly, GetBaseName(assemblyName, typeName), typeName);
     }
 
     private static string GetLocalesPath(string path)

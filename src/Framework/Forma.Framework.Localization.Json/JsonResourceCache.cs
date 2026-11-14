@@ -15,7 +15,7 @@ internal sealed class JsonResourceCache
     private readonly ILocaleFileFormat _format;
     private readonly ConcurrentDictionary<Assembly, EmbeddedLocaleSource> _embeddedByAssembly = new();
     private readonly ConcurrentDictionary<string, EmbeddedLocaleSource> _embeddedByAssemblyName = new(StringComparer.Ordinal);
-    private readonly ConcurrentDictionary<CacheKey, FrozenDictionary<string, JsonResourceEntry>?> _files = new();
+    private readonly ConcurrentDictionary<CacheKey, FrozenDictionary<string, JsonResourceEntry>> _files = new();
     private readonly ConcurrentDictionary<(LocaleConflict Conflict, string CultureName), byte> _reportedConflicts = new();
     private readonly LocalePackSource[] _packs;
     private readonly LocaleSource[] _host;
@@ -39,12 +39,13 @@ internal sealed class JsonResourceCache
     }
 
     /// <summary>The translations for a location in one culture.</summary>
-    public FrozenDictionary<string, JsonResourceEntry>? Read(ResourceLocation location, CultureInfo culture)
-        => _files.GetOrAdd(new CacheKey(location, culture.Name), Load);
+    public FrozenDictionary<string, JsonResourceEntry> Read(ResourceLocation location, CultureInfo culture)
+        => _files.GetOrAdd(new CacheKey(location, culture.Name), static (key, cache) => cache.Load(key), this);
 
-    private FrozenDictionary<string, JsonResourceEntry>? Load(CacheKey key)
+    private FrozenDictionary<string, JsonResourceEntry> Load(CacheKey key)
     {
-        var (assembly, _, typeName) = key.Location;
+        var assembly = key.Location.Assembly;
+        var typeName = key.Location.TypeName;
         var assemblyName = assembly.GetName().Name ?? string.Empty;
         var embeddedSource = _embeddedByAssembly.GetOrAdd(assembly, static (owner, format) => new EmbeddedLocaleSource(owner, format), _format);
         _embeddedByAssemblyName[assemblyName] = embeddedSource;
@@ -60,7 +61,7 @@ internal sealed class JsonResourceCache
 
         if (entries.Count == 0)
         {
-            return null;
+            return [];
         }
 
         // A null value is a translation that is deliberately the key itself.
