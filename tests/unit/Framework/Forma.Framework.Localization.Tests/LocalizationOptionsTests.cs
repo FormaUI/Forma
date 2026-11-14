@@ -42,34 +42,26 @@ public sealed class LocalizationOptionsTests
         }
 
         [Fact]
-        public void Should_take_the_application_as_a_host_s_assembly_where_its_build_embedded_the_host_s_files()
+        public void Should_take_the_application_as_an_assembly_whose_files_it_reads()
         {
-            // Arrange
+            // Arrange — an application embedding files of its own alone, which it reads for any assembly they name
             using var loggerFactory = new FakeLoggerFactory();
-            var client = new FakeAssembly("Contoso.Client") { Resources = { [LocalePackSource.HostResourcePrefix + "Contoso.Library.he.json"] = "{}" } };
-            var server = new FakeAssembly("Contoso.Server") { Resources = { ["Contoso.Server.Strings.he.json"] = "{}" } };
+            var application = new FakeAssembly("Contoso.App") { Resources = { ["Contoso.App.Strings.he.json"] = "{}" } };
 
             // Act
-            var clientOptions = new LocalizationOptions().WithRecordedLocales(client, loggerFactory.CreateLogger("packs"));
-            var serverOptions = new LocalizationOptions().WithRecordedLocales(server, loggerFactory.CreateLogger("packs"));
+            var options = new LocalizationOptions().WithRecordedLocales(application, loggerFactory.CreateLogger("packs"));
 
             // Assert
-            Assert.Multiple(
-                () => Assert.Equal([client], clientOptions.HostLocaleAssemblies),
-                () => Assert.Empty(serverOptions.HostLocaleAssemblies));
+            Assert.Equal([application], options.HostLocaleAssemblies);
         }
 
         [Fact]
         public void Should_place_each_assembly_the_application_names_before_its_own_and_both_before_the_ones_named()
         {
-            // Arrange — a server naming the localization library as its client, embedding a host's files of its own, with options naming another
+            // Arrange — a server naming the localization library as its client, with options naming another
             using var loggerFactory = new FakeLoggerFactory();
             var client = typeof(LocalizationOptions).Assembly;
-            var server = new FakeAssembly("Contoso.Server")
-            {
-                Attributes = { new LocaleReferenceAttribute(client.GetName().Name!) },
-                Resources = { [LocalePackSource.HostResourcePrefix + "Contoso.Library.he.json"] = "{}" },
-            };
+            var server = new FakeAssembly("Contoso.Server") { Attributes = { new LocaleReferenceAttribute(client.GetName().Name!) } };
             var named = new FakeAssembly("Contoso.Named");
 
             // Act
@@ -92,13 +84,13 @@ public sealed class LocalizationOptionsTests
             // Assert
             var entry = Assert.Single(loggerFactory.Entries);
             Assert.Multiple(
-                () => Assert.Empty(configured.HostLocaleAssemblies),
+                () => Assert.Equal([server], configured.HostLocaleAssemblies),
                 () => Assert.Equal(LogLevel.Warning, entry.Level),
                 () => Assert.Contains("Contoso.Missing", entry.Message, StringComparison.Ordinal));
         }
 
         [Fact]
-        public void Should_return_the_same_options_when_the_build_recorded_none()
+        public void Should_add_the_application_alone_when_its_build_recorded_nothing()
         {
             // Arrange
             using var loggerFactory = new FakeLoggerFactory();
@@ -109,7 +101,9 @@ public sealed class LocalizationOptionsTests
             var configured = options.WithRecordedLocales(application, loggerFactory.CreateLogger("packs"));
 
             // Assert
-            Assert.Same(options, configured);
+            Assert.Multiple(
+                () => Assert.Same(options.LocalePacks, configured.LocalePacks),
+                () => Assert.Equal([application], configured.HostLocaleAssemblies));
         }
     }
 }

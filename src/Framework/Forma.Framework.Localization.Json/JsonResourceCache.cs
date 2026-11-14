@@ -32,7 +32,7 @@ internal sealed class JsonResourceCache
         _logger = logger;
         _layered = [
             .. packs.Select(pack => new LocalePackSource(pack, format, GetRootNamespace)),
-            .. (hostAssemblies ?? []).Select(host => new LocalePackSource(host, format, GetRootNamespace, LocalePackSource.HostResourcePrefix)),
+            .. (hostAssemblies ?? []).Select(host => new ApplicationLocaleSource(host, format, GetRootNamespace)),
             new HostLocaleSource(localesPath, format, GetRootNamespace),
         ];
     }

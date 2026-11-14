@@ -27,10 +27,10 @@ public sealed class LocaleAssemblyLoaderTests
         public void Should_read_them_from_the_assembly_its_build_marked_as_the_application_where_the_runtime_names_no_entry()
         {
             // Arrange — on a runtime naming no entry assembly, as .NET for Android's: the application its build marked, a library recording
-            // a pack for its own use, a client embedding a host's files and naming none, the framework, and a dynamic assembly.
+            // a pack for its own use, a client embedding files for another assembly and naming none, the framework, and a dynamic assembly.
             var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute(), new LocalePackAttribute("Contoso.Hebrew") } };
             var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute("Contoso.Spanish") } };
-            var client = new FakeAssembly("Contoso.Client") { Resources = { [LocalePackSource.HostResourcePrefix + "Contoso.Library.he.json"] = "{}" } };
+            var client = new FakeAssembly("Contoso.Client") { Resources = { ["Contoso.Client..locales.Contoso.Library.he.json"] = "{}" } };
             var framework = new FakeAssembly("System.Runtime") { Resources = { ["System.Runtime.Strings.resources"] = string.Empty } };
             var dynamic = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("Contoso.Dynamic"), AssemblyBuilderAccess.Run);
 

@@ -122,6 +122,15 @@ set out. What Forma gained before its first release, month by month, is in [the 
   assembly's types in a culture once, with the `LocaleConflict`s among its files, each saying whether it is between
   shared entries, and the sections each type reads, whether their entries win or not; `LocaleSource.Read` answers one
   entry for each key; and `LocaleFileNames.TryRead` reads a file's name as the default reading does.
+- Every locale file is embedded under its project's root namespace and its path with every `/` made a `.`, named by
+  the build, so a culture folder such as `es-419` keeps its name and a project's root `.locales` may hold a folder per
+  culture, `.locales/es/Accounts.Admin.json`. An application's files for another assembly are embedded and named as
+  its own are and read from beneath its root by `ApplicationLocaleSource`, so the reserved prefix `.locales.` is gone,
+  with `LocalePackSource.HostResourcePrefix`, `LocalePackSource`'s `resourcePrefix` and
+  `LocaleAssemblyLoader.EmbedsHostFiles`: a project that embedded a file under `.locales.` itself embeds it under its
+  root namespace instead. A library embeds its files for another assembly too, which are read only from an application;
+  an application is always read for other assemblies' strings; a server records each client it references that embeds
+  a locale file; and a pack's culture check reads a culture folder as well as a file's name, as the runtime does.
 - `LocalizableText` carries text to localize when it is shown, its source type, its key and its holes' values, as a
   registry's labels need, and `IStringLocaleFactory.Localize` looks it up in the current cultures or a culture
   state's, localizing a value that is a `LocalizableText` in turn. `LocalizableText.For<TSource>` marks its key

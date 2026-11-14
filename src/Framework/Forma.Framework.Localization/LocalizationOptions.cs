@@ -21,12 +21,12 @@ public sealed record LocalizationOptions
     /// <summary>The locale packs read for every assembly beside its own files, in the order given.</summary>
     public IReadOnlyList<Assembly> LocalePacks { get; init; } = [];
 
-    /// <summary>The assemblies a host's own locale files are embedded in, read where the host's folder is read, before it, in the order given.</summary>
+    /// <summary>The applications whose embedded locale files are read for other assemblies' types, before the folder beside the running application, in the order given.</summary>
     public IReadOnlyList<Assembly> HostLocaleAssemblies { get; init; } = [];
 
-    /// <summary>The options with what an application's build recorded in its assembly: the packs it references, placed before the ones named, each once, and the assemblies carrying a host's files, each one it names and then its own where its build embedded them, placed before the ones named, each once.</summary>
-    /// <param name="application">The assembly whose build recorded the packs and embedded the host's files.</param>
-    /// <param name="logger">Where a pack or an assembly carrying a host's files that cannot be loaded is reported.</param>
+    /// <summary>The options with what an application's build recorded in its assembly: the packs it references, placed before the ones named, each once, and the applications whose files it reads, each one it names and then itself, placed before the ones named, each once.</summary>
+    /// <param name="application">The application, whose build recorded the packs and the applications it names.</param>
+    /// <param name="logger">Where a pack or a named application that cannot be loaded is reported.</param>
     public LocalizationOptions WithRecordedLocales(Assembly application, ILogger logger)
     {
         ArgumentNullException.ThrowIfNull(application);

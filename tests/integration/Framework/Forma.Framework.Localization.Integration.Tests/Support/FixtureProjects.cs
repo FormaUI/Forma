@@ -87,12 +87,39 @@ public sealed class FixtureProjects : IDisposable
             .Select(item => item.GetProperty("_Parameter1").GetString()!)];
     }
 
+    /// <summary>What a build of the project <paramref name="name"/> prints where running <paramref name="target"/> fails, and null where it succeeds.</summary>
+    /// <param name="name">The project's name.</param>
+    /// <param name="target">The target to run.</param>
+    public async Task<string?> GetFailureAsync(string name, string target)
+    {
+        var (exitCode, output) = await RunAsync(name, target, []).ConfigureAwait(false);
+
+        return exitCode == 0 ? null : output;
+    }
+
     /// <inheritdoc />
     public void Dispose()
         => Directory.Delete(_folder, recursive: true);
 
-    // Runs the target, restoring first, and reads the item type's items after it, which MSBuild prints as JSON alone.
+    // Runs the target and reads the item type's items after it, which MSBuild prints as JSON alone.
     private async Task<IReadOnlyList<JsonElement>> GetItemsAsync(string name, string target, string itemType)
+    {
+        var (exitCode, output) = await RunAsync(name, target, [$"-getItem:{itemType}"]).ConfigureAwait(false);
+
+        if (exitCode != 0)
+        {
+            throw new InvalidOperationException($"MSBuild failed on {name}: {output}");
+        }
+
+        using var document = JsonDocument.Parse(output);
+
+        return document.RootElement.GetProperty("Items").TryGetProperty(itemType, out var items)
+            ? [.. items.EnumerateArray().Select(item => item.Clone())]
+            : [];
+    }
+
+    // Runs the target, restoring first, and answers its exit code and everything it printed.
+    private async Task<(int ExitCode, string Output)> RunAsync(string name, string target, IEnumerable<string> arguments)
     {
         var start = new ProcessStartInfo("dotnet")
         {
@@ -102,7 +129,7 @@ public sealed class FixtureProjects : IDisposable
             UseShellExecute = false,
         };
 
-        foreach (var argument in (string[])["msbuild", Path.Combine(name, $"{name}.csproj"), "-restore", $"-t:{target}", $"-getItem:{itemType}", "-nologo", "-nodeReuse:false"])
+        foreach (var argument in (string[])["msbuild", Path.Combine(name, $"{name}.csproj"), "-restore", $"-t:{target}", .. arguments, "-nologo", "-nodeReuse:false"])
         {
             start.ArgumentList.Add(argument);
         }
@@ -116,15 +143,6 @@ public sealed class FixtureProjects : IDisposable
         using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(5));
         await process.WaitForExitAsync(timeout.Token).ConfigureAwait(false);
 
-        if (process.ExitCode != 0)
-        {
-            throw new InvalidOperationException($"MSBuild failed on {name}: {await output.ConfigureAwait(false)}{await error.ConfigureAwait(false)}");
-        }
-
-        using var document = JsonDocument.Parse(await output.ConfigureAwait(false));
-
-        return document.RootElement.GetProperty("Items").TryGetProperty(itemType, out var items)
-            ? [.. items.EnumerateArray().Select(item => item.Clone())]
-            : [];
+        return (process.ExitCode, await output.ConfigureAwait(false) + await error.ConfigureAwait(false));
     }
 }

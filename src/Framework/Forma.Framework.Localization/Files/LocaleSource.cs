@@ -115,6 +115,12 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         return _roots.GetOrAdd(assemblyName, CreateRoot).RootNamespace;
     }
 
+    /// <summary>Where an assembly's names begin: the folder its config sits in, and the folder the config names beneath it, or where the source's names begin by default.</summary>
+    /// <param name="assemblyName">The assembly's name.</param>
+    /// <exception cref="LocaleConfigException">The assembly's config file is malformed, or the source holds more than one for it.</exception>
+    internal string GetRootDir(string assemblyName)
+        => _roots.GetOrAdd(assemblyName, CreateRoot).RootDir;
+
     /// <summary>Every name the source's own store holds, config files included, written with <see cref="FolderSeparator"/> between folders.</summary>
     protected abstract IEnumerable<string> EnumerateNames();
 

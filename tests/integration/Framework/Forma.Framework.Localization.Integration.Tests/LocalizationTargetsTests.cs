@@ -55,9 +55,30 @@ public sealed class LocalizationTargetsTests
         }
 
         [Fact]
-        public async Task Should_embed_each_file_once_where_a_project_s_own_item_and_a_host_s_folder_share_its_root_locales()
+        public async Task Should_keep_a_culture_folder_s_name_as_written()
         {
-            // Arrange — a client keeping its own root file and a host's folder in one .locales, with an item of its own for its own files
+            // Arrange — culture folders in the root .locales, one of them regional, which the SDK's own naming would spell es_419
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Library");
+            projects.WriteLocaleFile("Contoso.Library/.locales/es/Accounts.Admin.json", "es");
+            projects.WriteLocaleFile("Contoso.Library/.locales/es-419/Accounts.Admin.json", "es-419");
+
+            // Act
+            var resources = await projects.GetEmbeddedResourcesAsync("Contoso.Library");
+
+            // Assert
+            Assert.Equal(
+                [
+                    (".locales/es-419/Accounts.Admin.json", "Contoso.Library..locales.es-419.Accounts.Admin.json", "false"),
+                    (".locales/es/Accounts.Admin.json", "Contoso.Library..locales.es.Accounts.Admin.json", "false"),
+                ],
+                resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_embed_each_file_once_where_the_project_embeds_some_of_its_root_locales_itself()
+        {
+            // Arrange — a client keeping its own root file and a folder for another assembly in one .locales, with an item of its own for the files directly in a .locales
             using var projects = new FixtureProjects();
             projects.WriteProject("Contoso.Client", Client, """<EmbeddedResource Include="**\.locales\*.json" WithCulture="false" />""");
             projects.WriteLocaleFile("Contoso.Client/.locales/es.json", "es");
@@ -70,7 +91,7 @@ public sealed class LocalizationTargetsTests
             // Assert
             Assert.Equal(
                 [
-                    (".locales/Forma.Blazor/Components/Bars/es.json", ".locales.Forma.Blazor.Components.Bars.es.json", "false"),
+                    (".locales/Forma.Blazor/Components/Bars/es.json", "Contoso.Client..locales.Forma.Blazor.Components.Bars.es.json", "false"),
                     (".locales/es.json", "Contoso.Client..locales.es.json", "false"),
                     ("Layout/.locales/es.json", "Contoso.Client.Layout..locales.es.json", "false"),
                 ],
@@ -117,10 +138,10 @@ public sealed class LocalizationTargetsTests
         }
     }
 
-    public sealed class HostFiles
+    public sealed class OtherAssembliesFiles
     {
         [Fact]
-        public async Task Should_embed_a_host_s_files_in_an_application_under_their_path_after_the_prefix()
+        public async Task Should_embed_an_application_s_files_for_another_assembly_as_its_own_are()
         {
             // Arrange
             using var projects = new FixtureProjects();
@@ -134,16 +155,16 @@ public sealed class LocalizationTargetsTests
             // Assert
             Assert.Equal(
                 [
-                    (".locales/Forma.Blazor/Components/Bars/he.json", ".locales.Forma.Blazor.Components.Bars.he.json", "false"),
-                    (".locales/Forma.Blazor/he.json", ".locales.Forma.Blazor.he.json", "false"),
+                    (".locales/Forma.Blazor/Components/Bars/he.json", "Contoso.Server..locales.Forma.Blazor.Components.Bars.he.json", "false"),
+                    (".locales/Forma.Blazor/he.json", "Contoso.Server..locales.Forma.Blazor.he.json", "false"),
                 ],
                 resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
         }
 
         [Fact]
-        public async Task Should_leave_a_host_s_folder_out_of_a_library()
+        public async Task Should_embed_a_library_s_file_for_another_assembly_as_any_other()
         {
-            // Arrange — a library's folder for another assembly, which only an application overrides
+            // Arrange — a library's folder for another assembly, which the runtime reads only from an application
             using var projects = new FixtureProjects();
             projects.WriteProject("Contoso.Library");
             projects.WriteLocaleFile("Contoso.Library/.locales/Forma.Blazor/Components/Bars/he.json");
@@ -152,7 +173,7 @@ public sealed class LocalizationTargetsTests
             var resources = await projects.GetEmbeddedResourcesAsync("Contoso.Library");
 
             // Assert
-            Assert.Empty(resources);
+            Assert.Equal([(".locales/Forma.Blazor/Components/Bars/he.json", "Contoso.Library..locales.Forma.Blazor.Components.Bars.he.json", "false")], resources);
         }
     }
 
@@ -182,7 +203,7 @@ public sealed class LocalizationTargetsTests
     public sealed class Servers
     {
         [Fact]
-        public async Task Should_record_the_client_a_server_references_whose_build_embeds_a_host_s_files()
+        public async Task Should_record_the_client_a_server_references_whose_build_embeds_files_for_another_assembly()
         {
             // Arrange
             using var projects = new FixtureProjects();
@@ -198,9 +219,9 @@ public sealed class LocalizationTargetsTests
         }
 
         [Fact]
-        public async Task Should_record_nothing_for_a_client_whose_build_embeds_no_host_s_files()
+        public async Task Should_record_a_client_whose_build_embeds_its_own_strings_alone()
         {
-            // Arrange — a client with its own strings alone
+            // Arrange
             using var projects = new FixtureProjects();
             projects.WriteProject("Contoso.Client", Client);
             projects.WriteLocaleFile("Contoso.Client/Components/.locales/he.json");
@@ -210,7 +231,67 @@ public sealed class LocalizationTargetsTests
             var named = await projects.GetAssemblyAttributeArgumentsAsync("Contoso.Server", LocaleReferenceAttribute);
 
             // Assert
+            Assert.Equal(["Contoso.Client"], named);
+        }
+
+        [Fact]
+        public async Task Should_record_nothing_for_a_client_with_no_locale_files_or_a_library()
+        {
+            // Arrange — a client with no locale files, and a library with some, which isn't an application
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Client", Client);
+            projects.WriteProject("Contoso.Library");
+            projects.WriteLocaleFile("Contoso.Library/.locales/he.json");
+            projects.WriteProject("Contoso.Server", Server, """<ProjectReference Include="..\Contoso.Client\Contoso.Client.csproj" /><ProjectReference Include="..\Contoso.Library\Contoso.Library.csproj" />""");
+
+            // Act
+            var named = await projects.GetAssemblyAttributeArgumentsAsync("Contoso.Server", LocaleReferenceAttribute);
+
+            // Assert
             Assert.Empty(named);
+        }
+    }
+
+    public sealed class Packs
+    {
+        // What a pack of Hebrew declares.
+        private const string HebrewPack = "<IsLocalePack>true</IsLocalePack><LocalePackCulture>he</LocalePackCulture>";
+
+        [Fact]
+        public async Task Should_accept_a_pack_s_files_whose_culture_a_folder_or_a_name_gives()
+        {
+            // Arrange — the culture in a name, in a folder before the assembly's name, and in a .locales folder
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Locales.Hebrew", HebrewPack);
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor/Components/Bars/he.json");
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/he/Forma.Blazor.Composer.json");
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor.Explorer/.locales/he.json");
+
+            // Act
+            var failure = await projects.GetFailureAsync("Contoso.Locales.Hebrew", "CheckLocalePackCulture");
+
+            // Assert
+            Assert.Null(failure);
+        }
+
+        [Fact]
+        public async Task Should_refuse_a_pack_s_file_for_another_culture_or_for_none()
+        {
+            // Arrange — a Spanish folder, and a name with no culture at all
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Locales.Hebrew", HebrewPack);
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor/he.json");
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/es/Forma.Blazor.Composer.json", "es");
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor.Explorer/Strings.json");
+
+            // Act
+            var failure = await projects.GetFailureAsync("Contoso.Locales.Hebrew", "CheckLocalePackCulture");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("Forma.Blazor.Composer.json", failure, StringComparison.Ordinal),
+                () => Assert.Contains("Strings.json", failure, StringComparison.Ordinal),
+                () => Assert.DoesNotContain(Path.Combine("Forma.Blazor", "he.json"), failure, StringComparison.Ordinal));
         }
     }
 }

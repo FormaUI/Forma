@@ -6,7 +6,7 @@ using Forma.Framework.Localization.Files;
 
 using Microsoft.Extensions.Logging;
 
-/// <summary>Reads what an application's build recorded of its locales: the locale packs it was built against, from the <see cref="LocalePackAttribute"/>s its build wrote into it, and the assemblies carrying a host's files, its own where its build embedded them and each one a <see cref="LocaleReferenceAttribute"/> names.</summary>
+/// <summary>Reads what an application's build recorded of its locales: the locale packs it was built against, from the <see cref="LocalePackAttribute"/>s its build wrote into it, and the applications whose files it reads, itself and each one a <see cref="LocaleReferenceAttribute"/> names.</summary>
 public static class LocaleAssemblyLoader
 {
     /// <summary>The name of every pack the assembly was built against, in the order the attributes were written, each named once.</summary>
@@ -34,16 +34,7 @@ public static class LocaleAssemblyLoader
             : [.. loadedAssemblies.Where(assembly => assembly.IsDefined(typeof(LocaleApplicationAttribute), inherit: false))];
     }
 
-    /// <summary>Whether the assembly's build embedded a host's files in it, under <see cref="LocalePackSource.HostResourcePrefix"/>.</summary>
-    /// <param name="assembly">The assembly.</param>
-    public static bool EmbedsHostFiles(Assembly assembly)
-    {
-        ArgumentNullException.ThrowIfNull(assembly);
-
-        return !assembly.IsDynamic && assembly.GetManifestResourceNames().Any(name => name.StartsWith(LocalePackSource.HostResourcePrefix, StringComparison.Ordinal));
-    }
-
-    /// <summary>The assemblies carrying a host's files the application reads: each one its attributes name, loaded by name, in their order, then the application itself where its build embedded them.</summary>
+    /// <summary>The applications whose files the application reads: each one its attributes name, loaded by name, in their order, then the application itself.</summary>
     /// <param name="application">The assembly whose build recorded them.</param>
     /// <param name="logger">Where a named assembly that cannot be loaded is reported.</param>
     public static IReadOnlyList<Assembly> LoadHostLocaleAssemblies(Assembly application, ILogger logger)
@@ -60,7 +51,8 @@ public static class LocaleAssemblyLoader
             }
         }
 
-        if (EmbedsHostFiles(application) && !assemblies.Contains(application))
+        // A dynamic assembly embeds no resources a source could list.
+        if (!application.IsDynamic && !assemblies.Contains(application))
         {
             assemblies.Add(application);
         }

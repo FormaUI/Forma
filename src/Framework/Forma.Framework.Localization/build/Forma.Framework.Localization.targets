@@ -4,15 +4,15 @@
         What the build does for an assembly that localizes. This file ships in the library's package,
         named for the package there, and is imported into every project that references it, directly or
         through another package. For any project it embeds the config file and every locale file, found
-        by the $localization entry each one carries, so a project names none of them; for an application
-        it embeds the host's files for other assemblies apart from its own, since a browser has no folder
-        to read them from, an application MAUI packages has none beside it, and a server's build copies
-        none beside its binary, and marks the assembly as the application; for a server it records the
-        client it references whose build embedded a host's files; and for a locale pack, a project that
-        declared IsLocalePack, it does the rest: a pack is a project of nothing but locale files, for
-        other assemblies' types, so it compiles no code, embeds every locale file beneath it under its
-        own path so that a resource name spells the tree a reader sees, and carries in its own package a
-        targets file that records the pack in whatever references it, since nothing else would.
+        by the $localization entry each one carries, under the project's root namespace and the file's
+        path, so a project names none of them and a browser, with no folder to read, an application MAUI
+        packages, with none beside it, and a server, whose build copies none beside its binary, read them
+        all; for an application it marks the assembly as the application; for a server it records the
+        client it references that is an application embedding locale files; and for a locale pack, a
+        project that declared IsLocalePack, it does the rest: a pack is a project of nothing but locale
+        files, for other assemblies' types, so it compiles no code, embeds every locale file beneath it
+        under its own path so that a resource name spells the tree a reader sees, and carries in its own
+        package a targets file that records the pack in whatever references it, since nothing else would.
     -->
 
     <!-- An assembly's config file sits at its root and is embedded whenever it is there, since the SDK embeds nothing by default and would ship it as content instead. -->
@@ -30,10 +30,8 @@
         The project's locale files: every JSON file carrying the $localization entry, in a .locales folder
         or anywhere outside a folder whose name starts with a dot, outside the build output, and left to
         an item that embeds it, which keeps the name it gives the file, or to an item in the project file
-        that copies it beside the output, which keeps it a file there. A file inside an assembly's folder in the root
-        .locales is a host's, for that assembly, which only an application embeds, and every other file
-        is the project's own. An application is a WebAssembly client, a server built on
-        the Web SDK, or a Blazor Hybrid application, known as an application referencing its platform's
+        that copies it beside the output, which keeps it a file there. An application is a WebAssembly
+        client, a server built on the Web SDK, or a Blazor Hybrid application, known as an application referencing its platform's
         web view package, its output an executable or, on Android, whose build compiles an application's
         code as a library, the project the Android SDK marks as an application.
     -->
@@ -51,39 +49,33 @@
         <ItemGroup Condition="'@(_LocaleFileCandidate)' != ''">
             <_LocaleFile Include="@(_LocaleFileCandidate)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch($([System.IO.File]::ReadAllText('%(_LocaleFileCandidate.FullPath)')), '&quot;\$localization&quot;\s*:'))" />
         </ItemGroup>
-        <ItemGroup Condition="'@(_LocaleFile)' != ''">
-            <_HostLocaleFile Include="@(_LocaleFile)" Condition="$([System.Text.RegularExpressions.Regex]::IsMatch('%(_LocaleFile.Identity)', '^\.locales[\\/][^\\/]+[\\/]'))" />
-            <_OwnLocaleFile Include="@(_LocaleFile)" Exclude="@(_HostLocaleFile)" />
-        </ItemGroup>
     </Target>
 
     <!--
-        Embeds the project's own locale files under the names their paths form, and, in an application, the
-        host's under their paths in the root .locales with their folders joined by dots, after the prefix
-        .locales., which the build reserves for a host's files and which no resource name it forms otherwise
-        starts with; an embedded file is no content, which a server would otherwise copy beside its binary.
+        Embeds the project's locale files under the project's root namespace and their paths with the
+        folders joined by dots, named here rather than by the SDK, which would make a culture folder such
+        as es-419 into es_419; an embedded file is no content, which a server would otherwise copy beside
+        its binary.
     -->
     <Target Name="EmbedLocaleFiles" BeforeTargets="AssignTargetPaths" DependsOnTargets="CollectLocaleFiles" Condition="'$(IsLocalePack)' != 'true'">
+        <PropertyGroup>
+            <_LocaleResourcePrefix Condition="'$(RootNamespace)' != ''">$(RootNamespace).</_LocaleResourcePrefix>
+        </PropertyGroup>
         <ItemGroup>
-            <EmbeddedResource Include="@(_OwnLocaleFile)" WithCulture="false" />
-            <Content Remove="@(_OwnLocaleFile)" />
-            <None Remove="@(_OwnLocaleFile)" />
-        </ItemGroup>
-        <ItemGroup Condition="'$(_IsLocaleApplication)' == 'true' and '@(_HostLocaleFile)' != ''">
-            <EmbeddedResource Include="@(_HostLocaleFile)" WithCulture="false" LogicalName=".locales.$([System.String]::Copy('%(_HostLocaleFile.Identity)').Substring(9).Replace('\', '.').Replace('/', '.'))" />
-            <Content Remove="@(_HostLocaleFile)" />
-            <None Remove="@(_HostLocaleFile)" />
+            <EmbeddedResource Include="@(_LocaleFile)" WithCulture="false" LogicalName="$(_LocaleResourcePrefix)$([System.String]::Copy('%(_LocaleFile.Identity)').Replace('\', '.').Replace('/', '.'))" />
+            <Content Remove="@(_LocaleFile)" />
+            <None Remove="@(_LocaleFile)" />
         </ItemGroup>
     </Target>
 
-    <!-- Answers a server referencing this project with the project's assembly where its build embeds a host's files, which the server reads too. -->
+    <!-- Answers a server referencing this project with the project's assembly where it is an application embedding locale files, which the server reads too. -->
     <Target Name="GetHostLocaleAssemblyName" DependsOnTargets="CollectLocaleFiles" Returns="@(_HostLocaleAssemblyName)">
         <ItemGroup>
-            <_HostLocaleAssemblyName Include="$(AssemblyName)" Condition="'$(_IsLocaleApplication)' == 'true' and '@(_HostLocaleFile)' != ''" />
+            <_HostLocaleAssemblyName Include="$(AssemblyName)" Condition="'$(_IsLocaleApplication)' == 'true' and '@(_LocaleFile)' != ''" />
         </ItemGroup>
     </Target>
 
-    <!-- Records each referenced project whose build embeds a host's files, as a Web App's server references its client, so the server reads them as well as its own. -->
+    <!-- Records each referenced project that is an application embedding locale files, as a Web App's server references its client, so the server reads them as well as its own. -->
     <Target Name="RecordHostLocaleAssemblies" BeforeTargets="GetAssemblyAttributes" Condition="'@(ProjectReference)' != ''">
         <MSBuild Projects="@(ProjectReference)" Targets="GetHostLocaleAssemblyName" SkipNonexistentTargets="true">
             <Output TaskParameter="TargetOutputs" ItemName="_ReferencedHostLocaleAssembly" />
@@ -130,9 +122,9 @@
 
     <!--
         A pack declares the culture it carries, or several separated by semicolons, which its own
-        assembly then states as metadata, and the build refuses a file of any other culture, so one
-        package is one language by construction rather than by care. A file's culture is the last
-        dotted part of its name.
+        assembly then states as metadata, and the build refuses a file of any other culture, or of
+        none, so one package is one language by construction rather than by care. A file's culture is
+        read as the runtime reads it, from a culture folder or the file's name.
     -->
     <ItemGroup Condition="'$(IsLocalePack)' == 'true' and '$(LocalePackCulture)' != ''">
         <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
@@ -144,13 +136,102 @@
     <Target Name="CheckLocalePackCulture" BeforeTargets="CoreCompile" Condition="'$(IsLocalePack)' == 'true'">
         <Error Condition="'$(LocalePackCulture)' == ''" Text="A locale pack declares the culture it carries in LocalePackCulture, one or several separated by semicolons; this project declares none." />
         <ItemGroup>
-            <_LocaleFile Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.json'">
-                <Culture>$([System.String]::Copy('%(Filename)').Substring($([MSBuild]::Add($([System.String]::Copy('%(Filename)').LastIndexOf('.')), 1))))</Culture>
-            </_LocaleFile>
-            <_LocaleFileOfAnotherCulture Include="@(_LocaleFile)" Condition="!$([System.String]::Copy(';$(LocalePackCulture);').Contains(';%(Culture);'))" />
+            <_PackLocaleFile Include="@(EmbeddedResource)" Condition="'%(Extension)' == '.json'" LocaleName="%(RelativeDir)%(Filename)" />
         </ItemGroup>
-        <Error Condition="'@(_LocaleFileOfAnotherCulture)' != ''" Text="This locale pack declares the culture '$(LocalePackCulture)', and @(_LocaleFileOfAnotherCulture->'%(Identity)', ', ') is for another." />
+        <ReadLocaleFileCultures Files="@(_PackLocaleFile)" Condition="'@(_PackLocaleFile)' != ''">
+            <Output TaskParameter="ReadFiles" ItemName="_ReadPackLocaleFile" />
+        </ReadLocaleFileCultures>
+        <ItemGroup>
+            <_LocaleFileOfAnotherCulture Include="@(_ReadPackLocaleFile)" Condition="!$([System.String]::Copy(';$(LocalePackCulture);').Contains(';%(Culture);'))" />
+        </ItemGroup>
+        <Error Condition="'@(_LocaleFileOfAnotherCulture)' != ''" Text="This locale pack declares the culture '$(LocalePackCulture)', and @(_LocaleFileOfAnotherCulture->'%(Identity)', ', ') is for another or for none." />
     </Target>
+
+    <!--
+        Reads each file's culture from its name as the runtime's default reading does: a folder and a dot
+        separate the name alike, the .locales folder is left out, a name with an empty part has none, and
+        the first part that is a culture, written as .NET names it, is the file's. Each file is answered
+        with its culture in the Culture metadata, empty where it has none.
+    -->
+    <UsingTask TaskName="ReadLocaleFileCultures" TaskFactory="RoslynCodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.Core.dll">
+        <ParameterGroup>
+            <Files ParameterType="Microsoft.Build.Framework.ITaskItem[]" Required="true" />
+            <ReadFiles ParameterType="Microsoft.Build.Framework.ITaskItem[]" Output="true" />
+        </ParameterGroup>
+        <Task>
+            <Using Namespace="System.Globalization" />
+            <Using Namespace="System.Reflection" />
+            <Code Type="Fragment" Language="cs"><![CDATA[
+// The task compiles against .NET Standard, which lacks the overload the runtime calls, so it is found where MSBuild runs
+// on .NET; MSBuild on .NET Framework knows the predefined cultures alone.
+var predefinedCulture = typeof(CultureInfo).GetMethod("GetCultureInfo", new[] { typeof(string), typeof(bool) });
+
+// A culture's name starts with a language of two or three lowercase letters, which tells a part such as a type's name
+// apart without asking .NET, which answers a name it doesn't know by throwing.
+bool IsCulture(string part)
+{
+    var hyphen = part.IndexOf('-');
+    var language = hyphen >= 0 ? part.Substring(0, hyphen) : part;
+    if (language.Length < 2 || language.Length > 3)
+    {
+        return false;
+    }
+
+    foreach (var letter in language)
+    {
+        if (letter < 'a' || letter > 'z')
+        {
+            return false;
+        }
+    }
+
+    try
+    {
+        var culture = predefinedCulture is null ? CultureInfo.GetCultureInfo(part) : (CultureInfo)predefinedCulture.Invoke(null, new object[] { part, true });
+
+        return string.Equals(culture.Name, part, StringComparison.Ordinal);
+    }
+    catch (CultureNotFoundException)
+    {
+        return false;
+    }
+    catch (TargetInvocationException exception) when (exception.InnerException is CultureNotFoundException)
+    {
+        return false;
+    }
+}
+
+ReadFiles = new ITaskItem[Files.Length];
+for (var index = 0; index < Files.Length; index++)
+{
+    var parts = Files[index].GetMetadata("LocaleName").Split('.', '/', '\\');
+    var culture = string.Empty;
+
+    for (var part = 0; part < parts.Length; part++)
+    {
+        // The .locales folder's leading dot leaves an empty part before its name.
+        if (parts[part].Length == 0 && part + 1 < parts.Length && parts[part + 1] == "locales")
+        {
+            part++;
+        }
+        else if (parts[part].Length == 0)
+        {
+            culture = string.Empty;
+            break;
+        }
+        else if (culture.Length == 0 && IsCulture(parts[part]))
+        {
+            culture = parts[part];
+        }
+    }
+
+    var readFile = new TaskItem(Files[index]);
+    readFile.SetMetadata("Culture", culture);
+    ReadFiles[index] = readFile;
+}
+]]></Code>
+        </Task>
+    </UsingTask>
 
     <!-- Answers a project that references this pack directly rather than through its package, which imports no targets file, so that it can record the pack itself. -->
     <Target Name="GetLocalePackName" Condition="'$(IsLocalePack)' == 'true'" Returns="$(AssemblyName)" />
