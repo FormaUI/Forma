@@ -55,6 +55,12 @@ A source reads an assembly's files for a culture once, at the first lookup that 
 keeps the entries they hold. The first lookup in a culture therefore reads every file the
 assembly has for it; every later lookup in that culture finds an entry already read.
 
+A culture's satellite assembly found missing is missing for the factory that looked, since
+WebAssembly loads a culture's satellites when the culture is chosen, and a miss remembered longer
+could hide one loaded since. A locale bound to a culture keeps what it read for that culture and its
+parents itself, one for each component that binds one, since a cache shared by every component of a
+type would be keyed by culture instances, which a host can create without end.
+
 ## Reading a file
 
 A file is read into entries by its place, its name and its sections. Every source applies the

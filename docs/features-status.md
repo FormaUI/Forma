@@ -26,7 +26,6 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [Locale files in any layout](#locale-files-in-any-layout) | In progress: five of eight steps landed |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -77,7 +76,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | Design tokens, backdrops and theming | [Styling and theming](../README.md#styling-and-theming) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
 | The culture state and the switch | [Culture design](culture-design.md) | Implemented, coordinated across a page's circuits and WebAssembly runtimes, in an application's own cultures where it provides them | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Culture addresses | [Culture addresses](culture-design.md#culture-addresses) | Implemented, in coordination, in every runtime | [March 2026](../FEATURE-HISTORY.md#2026-03) |
-| Localization and locale packs | [Localization design](localization-design.md) | Implemented, every locale file embedded by the build from its entry, a WebAssembly client and a Web App's server reading the host's strings | [March 2026](../FEATURE-HISTORY.md#2026-03) |
+| Localization and locale packs | [Localization design](localization-design.md) | Implemented: every locale file, in whatever layout its project chose, read into one entry, a culture, an assembly, a type and a key with its text, and embedded by the build from its entry; the text chosen by culture, then source; a conflict within a source logged by the runtime and reported by the locale lint as an error; a WebAssembly client and a Web App's server reading the host's strings | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | The input router | [Input router design](input-router-design.md) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | The browser transfer, text edits and the edit boundary | [Browser transfer design](browser-transfer-design.md) | Implemented: every value a reader can make large crosses under Blazor's default hub limit, in every runtime; text fields and the rich text editor send their edits; an action in a form, a host's own form's submit and validation among them, waits for every field, a composer among them | [November 2026](../FEATURE-HISTORY.md#2026-11) |
 | The DOM watcher and engine | [DOM watcher and engine design](dom-watcher-engine-design.md) | Implemented for focus, scrolling and intersection; [the rest](#the-dom-watcher-and-engine) open | [October 2026](../FEATURE-HISTORY.md#2026-10) |
@@ -165,12 +164,6 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
 Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.5` are published, as [the changelog](../CHANGELOG.md) lists them. `release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
 
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
-
-<a id="locale-files-in-any-layout"></a>
-
-## Locale files in any layout
-
-A project lays its locale files out as it likes, one folder per language as readily as a `.locales` folder per namespace, and every file is read into one entry, a culture, an assembly, a type and a key with its text, which everything after reading works on: lookups, precedence, conflicts and the linter. [The localization design](localization-design.md) states it, and [its implementation plan](localization-layout-implementation-plan.md) the eight steps, from a baseline of lookup costs through the runtime and the speed of its lookups, the build and a Locali release to the documents.
 
 <a id="a-hosts-integration"></a>
 
