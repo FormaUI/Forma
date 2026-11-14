@@ -111,6 +111,25 @@ public sealed class MenusTests
             // Assert
             await Assertions.Expect(page.Locator("#unpin")).ToBeFocusedAsync();
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_move_to_the_item_whose_label_the_typed_characters_begin(string runtime)
+        {
+            // Arrange — the menu opened on Rename
+            var (context, page) = await OpenAsync(host, runtime, "drop-down-menu");
+            await using var _ = context;
+            await page.Locator("#menu").ClickAsync();
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = page.GetByRole(AriaRole.Menu) }));
+            await Assertions.Expect(page.Locator("#rename")).ToBeFocusedAsync();
+
+            // Act — "d" reaches Duplicate, and "de" moves on to Delete
+            await page.Keyboard.TypeAsync("de");
+
+            // Assert — the focus on Delete, nothing run
+            await Assertions.Expect(page.Locator("#delete")).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator("#result")).ToBeEmptyAsync();
+        }
     }
 
     public sealed class OverflowMenu(BrowserHost host)

@@ -76,10 +76,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
   typed within half a second of each other build a prefix, a space among them, a character typed again on its own
   moves on through the options it starts, and labels compare in the culture in force. Typed on the closed select, they
   open its list on that option, and nothing is chosen until the reader chooses it. A `FormaDataTree` searches its nodes
-  the same way, where it matched a single letter.
+  the same way, where it matched a single letter, and a [`FormaDropDownMenu`](docs/component-catalog.md#formadropdownmenu)
+  its items, each by the label it is read by.
 - A `TypingBinding` also matches a space typed within `TypeAhead.Pause` of the last character a typing binding matched,
   and the input router leaves that space to the typing route rather than to the button holding the focus, so a label
-  typed into a type-ahead can hold one.
+  typed into a type-ahead can hold one. `ElementLabels`, among the browser operations, reads the label each element is
+  read by.
 - `IFileStore.SaveAsync` answers with a `FileSaveResult`: `FileSaveResult.Saved(resource)` for a file it kept, or
   `FileSaveResult.Refused(refusal)` for one it turns away, its `FileRefusal` carrying a `FileRefusalReason`,
   `DisallowedType`, `TooLarge`, `TooWide` or `TooTall`, and the `Limit` the file went past. A store of a host's own wraps

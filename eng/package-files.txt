@@ -244,6 +244,7 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/operations/Clipboard.js
     staticwebassets/scripts/operations/DocumentOrder.js
     staticwebassets/scripts/operations/Download.js
+    staticwebassets/scripts/operations/ElementLabels.js
     staticwebassets/scripts/operations/Embedding.js
     staticwebassets/scripts/operations/Playback.js
     staticwebassets/scripts/operations/Pointer.js

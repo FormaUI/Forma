@@ -181,6 +181,7 @@ wrapper.
 | `Clipboard` | Places text on the clipboard. |
 | `DocumentOrder` | Reads the order elements stand in within the document. |
 | `Download` | Hands the reader a file to save. |
+| `ElementLabels` | Reads the label each element is read by, its own `aria-label` or its text. |
 | `Embedding` | Loads a third-party embed script and has it process the markup rendered since. |
 | `Playback` | Mutes a media element, resuming it if it is paused. |
 | `Print` | Prints the page, or a piece of markup dressed in the page's stylesheets. |

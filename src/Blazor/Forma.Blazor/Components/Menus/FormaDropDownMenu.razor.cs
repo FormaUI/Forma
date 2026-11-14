@@ -21,6 +21,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     private const string PreviousAction = "menu.previous";
     private const string FirstAction = "menu.first";
     private const string LastAction = "menu.last";
+    private const string FindAction = "menu.find";
 
     private static readonly InputProfile TriggerProfile = new()
     {
@@ -37,6 +38,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         new InputRoute(PreviousAction, new KeyBinding("ArrowUp")),
         new InputRoute(FirstAction, new KeyBinding("Home")),
         new InputRoute(LastAction, new KeyBinding("End")),
+        new InputRoute(FindAction, new TypingBinding()),
     ];
 
     /// <summary>The content of the trigger button.</summary>
@@ -56,9 +58,13 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
+    [Inject] private TimeProvider Clock { get; set; } = default!;
+
     private readonly List<FormaDropDownMenuItem> _items = [];
     private FormaDropDownMenuItem? _focusedItem;
     private DocumentOrder _documentOrder = default!;
+    private ElementLabels _elementLabels = default!;
+    private TypeAhead _typeAhead = default!;
 
     private bool _openAtLastItem;
     private ElementReference _anchorElement;
@@ -87,6 +93,8 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     {
         _trigger = new InputRegistration(InputRouter, HandleActionAsync);
         _documentOrder = new DocumentOrder(Context.JS);
+        _elementLabels = new ElementLabels(Context.JS);
+        _typeAhead = new TypeAhead(Clock);
     }
 
     // The trigger's keys route on the trigger, and the menu's on the popover.
@@ -114,6 +122,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
             PreviousAction => MoveFocusAsync(-1),
             FirstAction => FocusEndAsync(atLastItem: false),
             LastAction => FocusEndAsync(atLastItem: true),
+            FindAction when input is InputKeyInfo { Key: var character } => FindAsync(character),
             _ => Task.CompletedTask,
         };
     }
@@ -152,6 +161,24 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         var start = index < 0 ? (delta > 0 ? 0 : items.Count - 1) : index + delta;
 
         await FocusAsync(FindEnabled(items, start, delta));
+    }
+
+    // The item whose label the typed characters begin takes the focus, its label read as the page shows it.
+    private async Task FindAsync(string character)
+    {
+        var items = await GetItemsAsync();
+
+        if (await _elementLabels.ReadAsync([.. items.Select(item => item.RootElement)]) is not { } labels || labels.Length != items.Count)
+        {
+            return;
+        }
+
+        var current = _focusedItem is null ? -1 : items.IndexOf(_focusedItem);
+
+        if (_typeAhead.Find(character, labels, current, Context.CultureState.Culture, index => !items[index].Disabled) is { } index)
+        {
+            await FocusAsync(items[index]);
+        }
     }
 
     // The order is read at each move, since the page can reorder the items it keeps; where the browser can't be asked,
@@ -203,6 +230,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     {
         await _trigger.DisposeAsync();
         await _documentOrder.DisposeAsync();
+        await _elementLabels.DisposeAsync();
         await base.DisposeAsyncCore();
     }
 }

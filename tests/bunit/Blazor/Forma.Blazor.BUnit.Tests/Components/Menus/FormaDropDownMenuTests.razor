@@ -268,7 +268,7 @@
             var registration = router.Registrations.Last();
             Assert.Multiple(
                 () => Assert.Equal(cut.FindComponent<FormaPopover>().Instance.RootElement.Id, Assert.IsType<ElementReference>(registration.Arguments[0]).Id),
-                () => Assert.Equal(["menu.next:ArrowDown", "menu.previous:ArrowUp", "menu.first:Home", "menu.last:End"], InputRouterProbe.GetRoutes(registration)));
+                () => Assert.Equal(["menu.next:ArrowDown", "menu.previous:ArrowUp", "menu.first:Home", "menu.last:End", "menu.find:typing"], InputRouterProbe.GetRoutes(registration)));
         }
 
         [Fact]
@@ -305,6 +305,78 @@
                 () => Assert.Equal(focused[1], focused[3]),
                 () => Assert.Equal(focused[1], focused[4]),
                 () => Assert.Equal(focused[0], focused[5]));
+        }
+
+        [Fact]
+        public async Task Should_move_the_focus_to_the_item_whose_label_the_typed_character_begins()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
+            var popover = OpenLabeledMenu(ctx);
+
+            // Act
+            await router.RouteAsync(popover.RootElement, "menu.find", "n");
+
+            // Assert — the focus on Notes, which End reaches too
+            var found = GetFocused(ctx.JSInterop).Last();
+            await router.RouteAsync(popover.RootElement, "menu.last", "End");
+            Assert.Equal(GetFocused(ctx.JSInterop).Last(), found);
+        }
+
+        [Fact]
+        public async Task Should_pass_over_a_disabled_item_the_typed_character_begins()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
+            var popover = OpenLabeledMenu(ctx);
+            var opened = GetFocused(ctx.JSInterop).Count;
+
+            // Act
+            await router.RouteAsync(popover.RootElement, "menu.find", "a");
+
+            // Assert — Archive is disabled, so the focus stays where the menu opened it
+            Assert.Equal(opened, GetFocused(ctx.JSInterop).Count);
+        }
+
+        [Fact]
+        public async Task Should_move_on_through_the_items_a_character_typed_again_begins()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
+            var popover = OpenLabeledMenu(ctx);
+            var print = GetFocused(ctx.JSInterop).Last();
+
+            // Act
+            await router.RouteAsync(popover.RootElement, "menu.find", "p");
+            var pin = GetFocused(ctx.JSInterop).Last();
+            await router.RouteAsync(popover.RootElement, "menu.find", "p");
+
+            // Assert — Pin, then round again to Print, where the menu opened
+            Assert.Multiple(
+                () => Assert.NotEqual(print, pin),
+                () => Assert.Equal(print, GetFocused(ctx.JSInterop).Last()));
+        }
+
+        // A menu of Print, Pin, a disabled Archive and Notes, opened on Print, its labels read as the page shows them.
+        private static FormaPopover OpenLabeledMenu(FormaDropDownMenuTests ctx)
+        {
+            ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/ElementLabels.js").Setup<JSTransfer>("read", _ => true).SetResult(InlineTransfer.Of<string[]>(["Print", "Pin", "Archive", "Notes"]));
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                        <FormaDropDownMenuItem>Pin</FormaDropDownMenuItem>
+                        <FormaDropDownMenuItem Disabled="true">Archive</FormaDropDownMenuItem>
+                        <FormaDropDownMenuItem>Notes</FormaDropDownMenuItem>
+                    </ChildContent>
+                </FormaDropDownMenu>);
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            return cut.FindComponent<FormaPopover>().Instance;
         }
 
         [Fact]
