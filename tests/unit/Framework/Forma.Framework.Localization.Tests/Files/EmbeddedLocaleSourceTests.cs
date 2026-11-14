@@ -28,8 +28,8 @@ public sealed class EmbeddedLocaleSourceTests
             var assembly = new FakeAssembly(Assembly);
             var format = new FakeLocaleFileFormat();
             AddFile(assembly, format, "Contoso.Widgets..locales.he.fake", CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "root file")))));
-            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateToolbarSection("folder file"));
-            AddFile(assembly, format, "Contoso.Widgets.Bars.Toolbar..locales.he.fake", CreateEntries(("Bold", "type's own file")));
+            AddFile(assembly, format, "Contoso.Widgets.Bars..locales.he.fake", CreateSections(("Toolbar", CreateEntries(("Italic", "folder file")))));
+            AddFile(assembly, format, "Contoso.Widgets.Bars.Toolbar..locales.he.fake", CreateEntries(("Underline", "type's own file")));
 
             // Act
             var entries = Read(assembly, format);
@@ -38,10 +38,10 @@ public sealed class EmbeddedLocaleSourceTests
             Assert.Equal(
                 [
                     new("Contoso.Widgets..locales.he.fake", "Bars.Toolbar", "Bold", "root file"),
-                    new("Contoso.Widgets.Bars..locales.he.fake", "Toolbar", "Bold", "folder file"),
-                    new("Contoso.Widgets.Bars.Toolbar..locales.he.fake", string.Empty, "Bold", "type's own file"),
+                    new("Contoso.Widgets.Bars..locales.he.fake", "Toolbar", "Italic", "folder file"),
+                    new("Contoso.Widgets.Bars.Toolbar..locales.he.fake", string.Empty, "Underline", "type's own file"),
                 ],
-                entries);
+                [.. entries.OrderBy(entry => entry.Key, StringComparer.Ordinal)]);
         }
 
         [Fact]

@@ -25,6 +25,9 @@ public sealed class FakeLocaleSource : LocaleSource
     /// <summary>The config files, each keyed by its name.</summary>
     public Dictionary<string, LocaleConfig> Configs { get; } = new(StringComparer.Ordinal);
 
+    /// <summary>The names of files the source lists that cannot be read.</summary>
+    public HashSet<string> Malformed { get; } = [with(StringComparer.Ordinal)];
+
     /// <summary>The names opened so far, in order.</summary>
     public List<string> Requests { get; } = [];
 
@@ -34,7 +37,7 @@ public sealed class FakeLocaleSource : LocaleSource
 
     /// <inheritdoc />
     protected override IEnumerable<string> EnumerateNames()
-        => Files.Keys.Concat(Configs.Keys);
+        => Files.Keys.Concat(Malformed).Concat(Configs.Keys);
 
     /// <inheritdoc />
     protected override string GetDefaultRootDir(string assemblyName)
@@ -45,8 +48,12 @@ public sealed class FakeLocaleSource : LocaleSource
     {
         Requests.Add(name);
 
-        return Files.ContainsKey(name) ? new MemoryStream() : null;
+        return Files.ContainsKey(name) || Malformed.Contains(name) ? new MemoryStream() : null;
     }
+
+    /// <inheritdoc />
+    protected override LocaleFile? ReadFile(string name, string cultureName)
+        => Malformed.Contains(name) ? throw new LocaleFileException($"'{name}' is not a locale file.") : base.ReadFile(name, cultureName);
 
     /// <inheritdoc />
     protected override LocaleConfig ReadConfig(string name)

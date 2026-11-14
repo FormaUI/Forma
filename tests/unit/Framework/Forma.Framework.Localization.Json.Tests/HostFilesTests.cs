@@ -39,9 +39,9 @@ public sealed class HostFilesTests
         }
 
         [Fact]
-        public void Should_prefer_a_parent_folders_file_over_the_roots_file()
+        public void Should_settle_a_key_a_parent_folders_file_and_the_roots_both_give_by_the_file_whose_name_sorts_last()
         {
-            // Arrange
+            // Arrange — the host's root file and a parent folder's both translate the key, and the parent folder's name sorts last.
             using var culture = new CultureScope("he");
             var strings = CreateLocale<HostOverridden>();
 
@@ -53,9 +53,9 @@ public sealed class HostFilesTests
         }
 
         [Fact]
-        public void Should_prefer_the_file_in_the_types_own_folder_over_every_other()
+        public void Should_settle_a_key_every_host_file_gives_by_the_file_whose_name_sorts_last()
         {
-            // Arrange
+            // Arrange — every one of the host's files translates the key, and the type folder's name sorts after the others.
             using var culture = new CultureScope("he");
             var strings = CreateLocale<HostOverridden>();
 

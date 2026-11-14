@@ -36,7 +36,7 @@ public sealed class LocalePackSourceTests
             var pack = new FakeAssembly(Pack);
             var format = new FakeLocaleFileFormat();
             var folderFile = AddFile(pack, format, "Contoso.Widgets.Bars.he.fake", CreateToolbarSection("folder file"));
-            var typeFile = AddFile(pack, format, "Contoso.Widgets.Bars..locales.Toolbar.he.fake", CreateEntries(("Bold", "type's own file")));
+            var typeFile = AddFile(pack, format, "Contoso.Widgets.Bars..locales.Toolbar.he.fake", CreateEntries(("Italic", "type's own file")));
 
             // Act
             var entries = Read(pack, format);
@@ -45,9 +45,9 @@ public sealed class LocalePackSourceTests
             Assert.Equal(
                 [
                     new(folderFile, "Toolbar", "Bold", "folder file"),
-                    new(typeFile, string.Empty, "Bold", "type's own file"),
+                    new(typeFile, string.Empty, "Italic", "type's own file"),
                 ],
-                entries);
+                [.. entries.OrderBy(entry => entry.Key, StringComparer.Ordinal)]);
         }
 
         [Fact]

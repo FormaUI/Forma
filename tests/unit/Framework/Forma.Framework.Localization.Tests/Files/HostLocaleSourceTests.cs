@@ -73,24 +73,19 @@ public sealed class HostLocaleSourceTests
         }
 
         [Fact]
-        public void Should_read_a_file_in_both_places_as_a_duplicate()
+        public void Should_settle_a_key_both_places_translate_by_the_file_whose_name_sorts_last()
         {
             // Arrange
             using var folder = new TempDirectory();
             var format = new FakeLocaleFileFormat();
             var folderFile = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the file in the folder itself"));
-            var localesFile = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the file in the folder's own .locales"));
+            WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the file in the folder's own .locales"));
 
             // Act
             var entries = Read(folder, format);
 
             // Assert
-            Assert.Equal(
-                [
-                    new LocaleSourceEntry(localesFile, "Toolbar", "Bold", "the file in the folder's own .locales"),
-                    new LocaleSourceEntry(folderFile, "Toolbar", "Bold", "the file in the folder itself"),
-                ],
-                entries);
+            Assert.Equal([new LocaleSourceEntry(folderFile, "Toolbar", "Bold", "the file in the folder itself")], entries);
         }
     }
 

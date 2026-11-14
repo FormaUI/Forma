@@ -221,7 +221,9 @@ again.
 
 **Which entry wins.** The assembly's own files are read first, then each locale pack, then the
 host's files: each client the application names, then the application's own, then the folder beside
-it, each overriding the one before; within each, a file closer to the type wins.
+it, each overriding the one before. Within each, a type's own entry wins over a `$shared` one, and two files
+giving one key different texts are a conflict: the file whose name sorts last, ordinally, is shown, and the conflict
+is logged once as a warning naming both files.
 
 **Another layout.** An assembly that keeps its files elsewhere, or whose root namespace differs
 from its name, states it in a `.locale.json` at the project root, which the build embeds and which

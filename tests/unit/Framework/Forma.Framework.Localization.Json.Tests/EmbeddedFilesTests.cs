@@ -1,9 +1,12 @@
 namespace Forma.Framework.Localization.Json.Tests;
 
 using Forma.Framework.Localization.Json.Tests.Fixtures;
+using Forma.Framework.Localization.Json.Tests.Fixtures.Conflicted;
 using Forma.Framework.Localization.Json.Tests.Fixtures.Grouped;
 using Forma.Tests.Localization.Rooted;
 using Forma.Tests.Localization.Rooted.Bars;
+
+using Microsoft.Extensions.Logging;
 
 public sealed class EmbeddedFilesTests
 {
@@ -41,6 +44,31 @@ public sealed class EmbeddedFilesTests
         }
     }
 
+    public sealed class Conflicts
+    {
+        [Fact]
+        public void Should_show_the_text_of_the_file_whose_name_sorts_last_and_warn_of_the_conflict_once()
+        {
+            // Arrange — the type's folder's file stands closest, and a rooted section in another folder's file, whose name sorts last, translates the same key.
+            using var culture = new CultureScope("he");
+            using var loggerFactory = new FakeLoggerFactory();
+            var strings = new JsonStringLocaleFactory(new LocalizationOptions(), loggerFactory).Create(typeof(Conflicted));
+
+            // Act
+            var saved = strings["Save"];
+            var opened = strings["Open"];
+
+            // Assert
+            var warning = Assert.Single(loggerFactory.Entries, entry => entry.Level == LogLevel.Warning && entry.Message.Contains(".Conflicted.", StringComparison.Ordinal));
+            Assert.Multiple(
+                () => Assert.Equal("rooted section", saved.Value),
+                () => Assert.Equal("folder file", opened.Value),
+                () => Assert.Contains("Fixtures.Conflicted..locales.he.json", warning.Message, StringComparison.Ordinal),
+                () => Assert.Contains("Fixtures.Wording..locales.he.json", warning.Message, StringComparison.Ordinal),
+                () => Assert.Contains("'Save'", warning.Message, StringComparison.Ordinal));
+        }
+    }
+
     public sealed class Nesting
     {
         [Fact]
@@ -58,9 +86,9 @@ public sealed class EmbeddedFilesTests
         }
 
         [Fact]
-        public void Should_prefer_a_nested_types_own_file_over_the_outer_types()
+        public void Should_settle_a_key_the_outer_and_nested_types_files_both_give_by_the_file_whose_name_sorts_last()
         {
-            // Arrange
+            // Arrange — the outer type's file and the nested type's own both translate the key, and the nested type's name sorts last.
             using var culture = new CultureScope("he");
             var strings = CreateLocale<Outer.Inner>();
 
@@ -131,9 +159,9 @@ public sealed class EmbeddedFilesTests
     public sealed class Precedence
     {
         [Fact]
-        public void Should_prefer_the_file_in_the_types_own_folder_over_the_parent_folders_file()
+        public void Should_settle_a_key_the_types_folder_and_its_parents_file_both_give_by_the_file_whose_name_sorts_last()
         {
-            // Arrange
+            // Arrange — the type's own folder's file and its parent folder's both translate the key, and the type folder's name sorts last.
             using var culture = new CultureScope("he");
             var strings = CreateLocale<GroupedSecond>();
 

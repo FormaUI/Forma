@@ -2,7 +2,6 @@ namespace Forma.Framework.Localization.Files;
 
 using System.Collections.Concurrent;
 using System.Collections.Frozen;
-using System.Text;
 
 /// <summary>A store locale files are read from, each file placed at the anchor its assembly's paths read it for.</summary>
 /// <param name="format">The format the files are written in.</param>
@@ -13,7 +12,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
 
     private readonly ConcurrentDictionary<string, LocaleRoot> _roots = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<AnchorsKey, FrozenDictionary<string, string[]>> _anchors = new();
-    private readonly ConcurrentDictionary<RootedSectionsKey, FrozenDictionary<string, string[]>> _rootedSections = new();
+    private readonly ConcurrentDictionary<TranslationsKey, LocaleTranslations> _translations = new();
     private readonly ConcurrentDictionary<string, LocaleFile?> _files = new(StringComparer.Ordinal);
     private IReadOnlyList<string>? _names;
 
@@ -31,64 +30,33 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     protected virtual StringComparison NameComparison
         => StringComparison.Ordinal;
 
-    /// <summary>The translations for a type in one culture, in the order they apply.</summary>
-    /// <remarks>
-    /// The entries are read anchor by anchor from the root down to the type, and within an anchor by the paths in their
-    /// order and then the rooted sections naming the anchor, so a later entry overrides an earlier one.
-    /// </remarks>
+    /// <summary>The translations the source holds for a type in one culture, one for each key, as the source settles them.</summary>
+    /// <remarks>A key's shared entries give way to deeper ones and to the type's own, and two files giving one translation different texts are a conflict, which <see cref="ReadTranslations"/> lists and the file whose name sorts last settles.</remarks>
     /// <param name="assemblyName">The name of the assembly the type lives in.</param>
     /// <param name="typeName">The type's full name.</param>
     /// <param name="cultureName">The culture the files are named for.</param>
     /// <exception cref="LocaleConfigException">The assembly's config file is malformed, or the source holds more than one for it.</exception>
+    /// <exception cref="LocaleFileException">A file standing for a part of the type's name is malformed.</exception>
     public IReadOnlyList<LocaleSourceEntry> Read(string assemblyName, string typeName, string cultureName)
     {
-        ArgumentException.ThrowIfNullOrEmpty(assemblyName);
         ArgumentException.ThrowIfNullOrEmpty(typeName);
+
+        var entries = new Dictionary<string, LocaleSourceEntry>(StringComparer.Ordinal);
+        ReadTranslations(assemblyName, cultureName).Collect(typeName, entries);
+
+        return [.. entries.Values];
+    }
+
+    /// <summary>Every translation the source holds for an assembly's types in one culture, read from every file the assembly's paths place in the culture, once.</summary>
+    /// <param name="assemblyName">The name of the assembly the types live in.</param>
+    /// <param name="cultureName">The culture the files are named for.</param>
+    /// <exception cref="LocaleConfigException">The assembly's config file is malformed, or the source holds more than one for it.</exception>
+    public LocaleTranslations ReadTranslations(string assemblyName, string cultureName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(assemblyName);
         ArgumentException.ThrowIfNullOrEmpty(cultureName);
 
-        var root = _roots.GetOrAdd(assemblyName, CreateRoot);
-        var segments = typeName.Split('.');
-        var rootSegments = root.RootNamespace.Split('.');
-
-        var isUnderRoot = IsUnderRootNamespace(segments, rootSegments);
-        var anchor = isUnderRoot && segments.Length > 1 ? segments[rootSegments.Length..] : segments;
-        var anchors = _anchors.GetOrAdd(new AnchorsKey(assemblyName, cultureName, !isUnderRoot), CreateAnchors);
-        var rootedSections = _rootedSections.GetOrAdd(new RootedSectionsKey(assemblyName, cultureName), CreateRootedSections);
-
-        var entries = new List<LocaleSourceEntry>();
-        var anchorKey = new StringBuilder();
-
-        for (var depth = 0; depth <= anchor.Length; depth++)
-        {
-            if (depth > 1)
-            {
-                anchorKey.Append(AnchorKeySeparator);
-            }
-
-            if (depth > 0)
-            {
-                anchorKey.Append(anchor[depth - 1]);
-            }
-
-            var key = anchorKey.ToString();
-            foreach (var name in anchors.GetValueOrDefault(key, []))
-            {
-                if (_files.GetOrAdd(name, ReadFile, cultureName) is { } file)
-                {
-                    file.Collect(anchor, depth, entries, GetDisplayName(name));
-                }
-            }
-
-            foreach (var name in rootedSections.GetValueOrDefault(key, []))
-            {
-                if (_files.GetOrAdd(name, ReadFile, cultureName) is { } file)
-                {
-                    file.CollectRooted(anchor, depth, entries, GetDisplayName(name));
-                }
-            }
-        }
-
-        return entries;
+        return _translations.GetOrAdd(new TranslationsKey(assemblyName, cultureName), CreateTranslations);
     }
 
     /// <summary>The full name of every type or namespace the assembly's paths place a file at in one culture.</summary>
@@ -230,7 +198,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     }
 
     // A type outside any namespace belongs to the root, and a type starting elsewhere is read by its full name.
-    private static bool IsUnderRootNamespace(string[] segments, string[] rootSegments)
+    internal static bool IsUnderRootNamespace(string[] segments, string[] rootSegments)
         => segments.Length == 1
             || (segments.Length > rootSegments.Length && segments.AsSpan(0, rootSegments.Length).SequenceEqual(rootSegments));
 
@@ -327,51 +295,64 @@ public abstract class LocaleSource(ILocaleFileFormat format)
             nameComparer);
     }
 
-    // A rooted section is found by reading every file the paths place in the culture once, and is placed at the anchor it names whatever file carries it.
-    private FrozenDictionary<string, string[]> CreateRootedSections(RootedSectionsKey key)
+    // Every file the paths place in the culture is read once, its translations placed by the name it stands for and its
+    // rooted sections by the names they spell, which every reading of names takes, as a type may be counted either way.
+    private LocaleTranslations CreateTranslations(TranslationsKey key)
     {
-        var names = new List<(string AnchorKey, string Name)>();
+        var root = _roots.GetOrAdd(key.AssemblyName, CreateRoot);
+        var underRoot = new LocaleNames(root.RootNamespace);
+        var outsideRoot = new LocaleNames(string.Empty);
+        var conflicts = new List<LocaleConflict>();
+        var placedUnderRoot = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var isOutsideRootNamespace in (ReadOnlySpan<bool>)[false, true])
         {
+            var names = isOutsideRootNamespace ? outsideRoot : underRoot;
             var anchors = _anchors.GetOrAdd(new AnchorsKey(key.AssemblyName, key.CultureName, isOutsideRootNamespace), CreateAnchors);
-            foreach (var name in anchors.Values.SelectMany(placed => placed).Distinct(StringComparer.Ordinal))
+
+            foreach (var (anchorKey, fileNames) in anchors)
             {
-                LocaleFile? file;
-                try
-                {
-                    file = _files.GetOrAdd(name, ReadFile, key.CultureName);
-                }
-                catch (LocaleFileException)
-                {
-                    // A file that cannot be read carries no rooted section; reading its own type reports what is wrong with it.
-                    continue;
-                }
+                string[] anchor = anchorKey.Length == 0 ? [] : anchorKey.Split(AnchorKeySeparator);
 
-                if (file is null)
+                foreach (var name in fileNames)
                 {
-                    continue;
-                }
-
-                foreach (var (sectionName, _) in file.Root.Sections)
-                {
-                    if (LocaleFile.GetRootedSegments(sectionName) is { } segments)
+                    LocaleFile? file;
+                    try
                     {
-                        names.Add((string.Join(AnchorKeySeparator, segments), name));
+                        file = _files.GetOrAdd(name, ReadFile, key.CultureName);
                     }
+                    catch (LocaleFileException exception)
+                    {
+                        // A file that cannot be read is reported by every type beneath the name it stands for.
+                        names.AddBroken(string.Join('.', anchor), exception);
+                        continue;
+                    }
+
+                    if (file is null)
+                    {
+                        continue;
+                    }
+
+                    // A file read under the root namespace records its conflicts there, since reading it in full as well
+                    // names types no assembly has; a file read in full alone records them in full.
+                    if (!isOutsideRootNamespace)
+                    {
+                        placedUnderRoot.Add(name);
+                    }
+
+                    var recordsConflicts = !isOutsideRootNamespace || !placedUnderRoot.Contains(name);
+                    names.Add(anchor, file, GetDisplayName(name), [underRoot, outsideRoot], recordsConflicts ? conflicts : null);
                 }
             }
         }
 
-        return names
-            .Distinct()
-            .GroupBy(placed => placed.AnchorKey, placed => placed.Name, StringComparer.Ordinal)
-            .ToFrozenDictionary(group => group.Key, group => group.ToArray(), StringComparer.Ordinal);
+        // A file placed at two names under the root namespace meets a rival at each, so a conflict is listed once.
+        return new LocaleTranslations(root.RootNamespace, underRoot, outsideRoot, [.. conflicts.Distinct()]);
     }
 
     private readonly record struct AnchorsKey(string AssemblyName, string CultureName, bool IsOutsideRootNamespace);
 
-    private readonly record struct RootedSectionsKey(string AssemblyName, string CultureName);
+    private readonly record struct TranslationsKey(string AssemblyName, string CultureName);
 
     private readonly record struct PlacedFile(string Name, int PathIndex, int Order);
 }

@@ -18,8 +18,8 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets/.locales/he.fake"] = new(CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "root file"), ("Italic", "root file"))))),
-                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Italic", "folder file"), ("Underline", "folder file"))))),
+                ["Contoso.Widgets/.locales/he.fake"] = new(CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "root file"))))),
+                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Italic", "folder file"))))),
                 ["Contoso.Widgets/Bars/Toolbar/.locales/he.fake"] = new(CreateEntries(("Underline", "type's own file"))),
             },
         };
@@ -31,12 +31,10 @@ public sealed class LocaleSourceTests
         Assert.Equal(
             [
                 new("Contoso.Widgets/.locales/he.fake", "Bars.Toolbar", "Bold", "root file"),
-                new("Contoso.Widgets/.locales/he.fake", "Bars.Toolbar", "Italic", "root file"),
                 new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Italic", "folder file"),
-                new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Underline", "folder file"),
                 new("Contoso.Widgets/Bars/Toolbar/.locales/he.fake", string.Empty, "Underline", "type's own file"),
             ],
-            entries);
+            ByKey(entries));
     }
 
     [Fact]
@@ -47,7 +45,7 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "folder file"), ("Italic", "folder file"))))),
+                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "folder file"))))),
                 ["Contoso.Widgets/Bars/.locales/Toolbar.he.fake"] = new(CreateEntries(("Italic", "type's own file"))),
             },
         };
@@ -59,10 +57,9 @@ public sealed class LocaleSourceTests
         Assert.Equal(
             [
                 new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Bold", "folder file"),
-                new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Italic", "folder file"),
                 new("Contoso.Widgets/Bars/.locales/Toolbar.he.fake", string.Empty, "Italic", "type's own file"),
             ],
-            entries);
+            ByKey(entries));
     }
 
     [Fact]
@@ -73,7 +70,7 @@ public sealed class LocaleSourceTests
         {
             Files =
             {
-                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "folder file"), ("Italic", "folder file"))))),
+                ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "folder file"))))),
                 ["Contoso.Widgets/Strings/.locales/he.fake"] = new(CreateSections(("@.Bars.Toolbar", CreateEntries(("Italic", "rooted section"))))),
             },
         };
@@ -85,10 +82,9 @@ public sealed class LocaleSourceTests
         Assert.Equal(
             [
                 new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Bold", "folder file"),
-                new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Italic", "folder file"),
                 new("Contoso.Widgets/Strings/.locales/he.fake", "@.Bars.Toolbar", "Italic", "rooted section"),
             ],
-            entries);
+            ByKey(entries));
     }
 
     [Fact]
@@ -275,21 +271,20 @@ public sealed class LocaleSourceTests
         var sectioned = source.Read(Assembly, Toolbar, "he");
         var unsectioned = source.Read(Assembly, "Contoso.Widgets.Bars.Ruler", "he");
 
-        // Assert
+        // Assert — the type's own entry wins over the shared one
         Assert.Multiple(
             () => Assert.Equal(
                 [
-                    new("Contoso.Widgets/Bars/.locales/he.fake", "$shared", "Bold", "shared"),
-                    new("Contoso.Widgets/Bars/.locales/he.fake", "$shared", "Italic", "shared"),
                     new("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Bold", "own"),
+                    new("Contoso.Widgets/Bars/.locales/he.fake", "$shared", "Italic", "shared"),
                 ],
-                sectioned),
+                ByKey(sectioned)),
             () => Assert.Equal(
                 [
                     new LocaleSourceEntry("Contoso.Widgets/Bars/.locales/he.fake", "$shared", "Bold", "shared"),
                     new LocaleSourceEntry("Contoso.Widgets/Bars/.locales/he.fake", "$shared", "Italic", "shared"),
                 ],
-                unsectioned));
+                ByKey(unsectioned)));
     }
 
     [Fact]
@@ -455,4 +450,98 @@ public sealed class LocaleSourceTests
         // Assert
         Assert.Equal(["Contoso.Widgets.Fabrikam.Gadgets", "Fabrikam.Gadgets"], anchorNames);
     }
+
+    public sealed class Conflicts
+    {
+        [Fact]
+        public void Should_keep_the_text_of_the_file_whose_name_sorts_last_whichever_stands_closer_to_the_type()
+        {
+            // Arrange — the type's own file stands closest, and a rooted section in a file whose name sorts after it translates the key too.
+            const string Own = "Contoso.Widgets/Bars/Toolbar/.locales/he.fake";
+            const string Rooted = "Contoso.Widgets/Strings/.locales/he.fake";
+            var source = new FakeLocaleSource
+            {
+                Files =
+                {
+                    [Own] = new(CreateEntries(("Bold", "type's own file"))),
+                    [Rooted] = new(CreateSections(("@.Bars.Toolbar", CreateEntries(("Bold", "rooted section"))))),
+                },
+            };
+
+            // Act
+            var entries = source.Read(Assembly, Toolbar, "he");
+            var conflicts = source.ReadTranslations(Assembly, "he").Conflicts;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([new LocaleSourceEntry(Rooted, "@.Bars.Toolbar", "Bold", "rooted section")], entries),
+                () => Assert.Equal([new LocaleConflict("Contoso.Widgets.Bars.Toolbar", "Bold", Rooted, Own)], conflicts));
+        }
+
+        [Fact]
+        public void Should_find_no_conflict_in_two_files_giving_a_key_the_same_text()
+        {
+            // Arrange
+            var source = new FakeLocaleSource
+            {
+                Files =
+                {
+                    ["Contoso.Widgets/.locales/he.fake"] = new(CreateSections(("Bars.Toolbar", CreateEntries(("Bold", "same"))))),
+                    ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "same"))))),
+                },
+            };
+
+            // Act
+            var conflicts = source.ReadTranslations(Assembly, "he").Conflicts;
+
+            // Assert
+            Assert.Empty(conflicts);
+        }
+
+        [Fact]
+        public void Should_take_a_types_own_entry_over_a_shared_one_from_a_file_whose_name_sorts_last()
+        {
+            // Arrange — a shared entry is a default for every type beneath it, not a rival to a type's own.
+            var source = new FakeLocaleSource
+            {
+                Files =
+                {
+                    ["Contoso.Widgets/Bars/.locales/Toolbar.he.fake"] = new(CreateEntries(("Bold", "own"))),
+                    ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections().WithShared(("Bold", "shared"))),
+                },
+            };
+
+            // Act
+            var entries = source.Read(Assembly, Toolbar, "he");
+            var conflicts = source.ReadTranslations(Assembly, "he").Conflicts;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([new LocaleSourceEntry("Contoso.Widgets/Bars/.locales/Toolbar.he.fake", string.Empty, "Bold", "own")], entries),
+                () => Assert.Empty(conflicts));
+        }
+
+        [Fact]
+        public void Should_report_a_malformed_file_for_a_type_beneath_it_alone()
+        {
+            // Arrange
+            var source = new FakeLocaleSource
+            {
+                Files = { ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "folder file"))))) },
+                Malformed = { "Contoso.Widgets/Panels/.locales/he.fake" },
+            };
+
+            // Act
+            var entries = source.Read(Assembly, Toolbar, "he");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(entries),
+                () => Assert.Throws<LocaleFileException>(() => source.Read(Assembly, "Contoso.Widgets.Panels.Panel", "he")));
+        }
+    }
+
+    // A source settles one text for each key, in no order a test can rely on, so entries are compared by key.
+    private static IReadOnlyList<LocaleSourceEntry> ByKey(IReadOnlyList<LocaleSourceEntry> entries)
+        => [.. entries.OrderBy(entry => entry.Key, StringComparer.Ordinal)];
 }
