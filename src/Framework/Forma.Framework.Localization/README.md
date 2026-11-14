@@ -180,57 +180,73 @@ call's type argument.
 
 ## Where locale files live
 
-**In the assembly.** A folder keeps its locale files in a `.locales` folder of its own, one file
-per culture. A file named for the culture alone holds a section per type in the folder; a file
-named for a type holds that type's entries. Both of these localize the
-`UploadStatus` above, in a folder `Uploads`:
+**One model.** Every locale file is read into entries: a culture, an assembly, a type and a key, with
+the text the type shows for that key in that culture. Where a file sits and what it is named only
+say which entries it holds, so a project lays its files out as it likes, and the layout never changes
+which text a type shows.
+
+**In the assembly.** A file's folders and name spell the type it is for, past the project's root
+namespace. A folder and a dot separate the name alike, a `.locales` folder is left out wherever it
+sits, and the part that is a culture, written as .NET names it, is the file's culture, whether it is
+a folder or part of the name. These hold the same entry for the `UploadStatus` above, in a folder
+`Uploads`:
 
 ```text
 Uploads/.locales/he.json                   { "UploadStatus": { "Saved": "נשמר" } }
 Uploads/.locales/UploadStatus.he.json      { "Saved": "נשמר" }
+.locales/he/Uploads.json                   { "UploadStatus": { "Saved": "נשמר" } }
+.locales/he/Uploads/UploadStatus.json      { "Saved": "נשמר" }
 ```
 
-A folder's file may also sit higher up, spelling the rest of the name in its sections. A regional
-culture's file, `es-419.json`, holds only what differs from its parent's.
+A file may also sit higher up, spelling the rest of the name in its sections. A regional culture's
+files, such as those for `es-419`, hold only what differs from its parent's.
 
 **Embedded by the build.** The build embeds every locale file it finds by the `$localization` entry
 each one carries, wherever it sits in the project, outside the build output and outside a folder
-whose name starts with a dot but `.locales`, so a project names none of them; a file the project
-embeds through an item of its own keeps the name that item gives it, and one an item in the project
-file copies beside its output stays a file there.
+whose name starts with a dot but `.locales`, under the project's root namespace and the file's path
+with every `/` made a `.`, so a project names none of them and a culture folder such as `es-419`
+keeps its name. A file the project embeds through an item of its own keeps the name that item
+gives it, and one an item in the project file copies beside its output stays a file there.
 
-**In the host.** An application rewords a string, or adds a language the library never shipped, in
-its root `.locales` folder, beside its own root files: a folder named for the assembly, then the
-type's namespace as folders, holding only the keys it changes:
+**Another assembly's strings.** An application rewords a string, or adds a language the library
+never shipped, in its own files, under a name that starts with the assembly's name and goes on with
+the type's namespace past that assembly's root namespace:
 
 ```text
-.locales/Forma.Blazor/Components/Bars/he.json             { "FormaSelectionToolbar": { "Clear Selection": "בטל בחירה" } }
-.locales/Forma.Blazor/Components/Bars/fr.json             { "FormaSelectionToolbar": { "Clear Selection": "Effacer la sélection" } }
+.locales/Forma.Blazor/Components/Bars/he.json    { "FormaSelectionToolbar": { "Clear Selection": "בטל בחירה" } }
+.locales/fr/Forma.Blazor/Components/Bars.json    { "FormaSelectionToolbar": { "Clear Selection": "Effacer la sélection" } }
 ```
 
 An application, a WebAssembly client, a server built on the Web SDK or a Blazor Hybrid application,
-embeds these in its assembly, under resource names starting with `.locales.`, so a browser and an
-application MAUI packages, with no folder to read, read them too. A Web App's server reads its
-client's as well: its build records each client it references whose build embedded such files with
-`LocaleReferenceAttribute`, so a Web App keeps the files both runtimes read in its client. A library
-embeds none, since rewording another assembly's strings is the application's choice.
+reads these from its own assembly, so a browser and an application MAUI packages, with no folder to
+read, read them too. A Web App's server reads its client's as well: its build records each client it
+references that embeds locale files with `LocaleReferenceAttribute`, so a Web App keeps the files
+both runtimes read in its client. A library's files are read for its own types alone, since
+rewording another assembly's strings is the application's choice.
 
 **Beside the running application.** A `.locales` folder beside the application's binary, which
 `LocalesPath` names and no build fills, is read last, so a string can change there without building
-again.
+again. It is read by the same rule, with folders where an embedded name has dots.
 
-**Which entry wins.** The assembly's own files are read first, then each locale pack, then the
-host's files: each client the application names, then the application's own, then the folder beside
-it, each overriding the one before. Within each, a type's own entry wins over a `$shared` one, and two files
-giving one key different texts are a conflict: the file whose name sorts last, ordinally, is shown, and the conflict
-is logged once as a warning naming both files.
+**Which text wins.** For one type, one key and one reader's culture:
 
-**Another layout.** An assembly that keeps its files elsewhere, or whose root namespace differs
-from its name, states it in a `.locale.json` at the project root, which the build embeds and which
-the build needs nothing from, since it finds the files by their entry:
+1. **The culture.** The reader's culture, then each of its parents: `es-419`, then `es`. A more
+   specific culture wins, so an `es-419` reader sees a library's `es-419` text over an
+   application's `es` one.
+2. **The source.** The type's own assembly, then each locale pack, then each client the
+   application names, then the application's own files, then the folder beside it, each
+   overriding the one before.
+3. **Within one source,** a type's own entry wins over a `$shared` one, and two files giving one
+   key different texts are a conflict: the file whose name sorts last, ordinally, is shown, and
+   the conflict is logged once as a warning naming both files.
+
+**Another layout.** An assembly that keeps its files in a layout the default reading has no rule
+for, or whose root namespace differs from its name, states it in a `.locale.json` at the project
+root, which the build embeds and which the build needs nothing from, since it finds the files by
+their entry:
 
 ```json
-{ "paths": ["$RootDir/$AnchorName.$Culture$Extension"] }
+{ "paths": ["$RootDir/strings-$Culture/$AnchorName$Extension"] }
 ```
 
 | Key | What it says |
@@ -238,9 +254,10 @@ the build needs nothing from, since it finds the files by their entry:
 | `rootNamespace` | The root namespace a type's name is counted from. |
 | `rootDir` | The folder beneath the project root where the files begin, written with `/`. |
 | `localesDir` | The name of the folder of locale files; `.locales` by default. |
-| `paths` | The paths the files are read by, in order, replacing the default ones. |
+| `paths` | The paths the files are read by, in order, replacing the default reading. |
 
-A host's folder follows the type's name whatever layout the assembly chose.
+An application's files for another assembly follow that assembly's names, whatever layout the
+assembly chose.
 
 ## Locale packs
 
@@ -268,15 +285,17 @@ and referencing this package, whose build does the rest:
 </Project>
 ```
 
-Its files are laid out as a host's folder is, a folder per assembly:
+Its files are laid out as an application's files for another assembly are, each name starting with
+the assembly's name, its culture a folder or part of the name:
 
 ```text
 Forma.Blazor/Components/Bars/fr.json      { "FormaSelectionToolbar": { "Clear Selection": "Effacer la sélection" } }
 Forma.Blazor.Composer/fr.json             { "FormaComposer": { "Bold": "Gras" } }
 ```
 
-The build refuses a file of any culture the pack does not declare. An application references a
-pack directly; a class library or a test that references one names it in `LocalePacks` instead.
+The build refuses a file of any culture the pack does not declare, or of none, reading a file's
+culture as the runtime does. An application references a pack directly; a class library or a test
+that references one names it in `LocalePacks` instead.
 
 ## Settings
 
@@ -288,7 +307,7 @@ pack directly; a class library or a test that references one names it in `Locale
 | `RequireMatchingLocalization` | `false` | Throws `LocalizationNotFoundException` for a key no locale file localizes, so a development build finds what is missing. |
 | `LocalesPath` | `.locales` | The host's folder of locale files beside the running application, relative to its base directory; empty reads none. |
 | `LocalePacks` | none | Locale packs read beside the ones the application's build recorded. |
-| `HostLocaleAssemblies` | none | Assemblies carrying a host's embedded files, read beside the ones the application's build recorded. |
+| `HostLocaleAssemblies` | none | Applications whose embedded files are read for other assemblies' strings, beside the ones the application's build recorded. |
 
 ## Reference
 

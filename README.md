@@ -328,7 +328,8 @@ A key with no localization renders as written.
 ### Where locale files live
 
 The application's own strings live beside the components they belong to, as a library's do: a `.locales` folder in
-each folder, with a file per culture holding a section per type.
+each folder, with a file per culture holding a section per type. One folder per culture at the root reads the same,
+`.locales/he/Components/Pages.json`, and the localization library's README has every layout and which text wins.
 
 The application's root `.locales` also holds a folder for each assembly whose strings it rewords, or adds a language
 to that has no pack. The first folder is the assembly's name, and the folders below it are the namespace past that
