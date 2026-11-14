@@ -180,26 +180,44 @@ call's type argument.
 
 ## Where locale files live
 
-**One model.** Every locale file is read into entries: a culture, an assembly, a type and a key, with
-the text the type shows for that key in that culture. Where a file sits and what it is named only
-say which entries it holds, so a project lays its files out as it likes, and the layout never changes
-which text a type shows.
+**One canonical form.** The runtime reads every locale file, whatever its layout, into entries of
+one form, and works on those entries alone: which text a lookup finds, which text wins and what is a
+conflict never depend on where a file sat or what it was named, which an entry keeps only to name
+its file in a message. An entry is a culture, an assembly, a type and a key, with the text the type
+shows for that key in that culture:
 
-**In the assembly.** A file's folders and name spell the type it is for, past the project's root
-namespace. A folder and a dot separate the name alike, a `.locales` folder is left out wherever it
-sits, and the part that is a culture, written as .NET names it, is the file's culture, whether it is
-a folder or part of the name. These hold the same entry for the `UploadStatus` above, in a folder
-`Uploads`:
+```text
+culture · assembly · type · key → text
+he · Contoso.App · Contoso.App.Uploads.UploadStatus · "Saved" → "נשמר"
+```
+
+Each of these files, in the project of `Contoso.App`, is read into that one entry, so a project lays
+its files out as it likes:
 
 ```text
 Uploads/.locales/he.json                   { "UploadStatus": { "Saved": "נשמר" } }
 Uploads/.locales/UploadStatus.he.json      { "Saved": "נשמר" }
+Uploads.he.json                            { "UploadStatus": { "Saved": "נשמר" } }
 .locales/he/Uploads.json                   { "UploadStatus": { "Saved": "נשמר" } }
 .locales/he/Uploads/UploadStatus.json      { "Saved": "נשמר" }
+.locales/he.json                           { "Uploads": { "UploadStatus": { "Saved": "נשמר" } } }
 ```
 
-A file may also sit higher up, spelling the rest of the name in its sections. A regional culture's
-files, such as those for `es-419`, hold only what differs from its parent's.
+The same entry arrives from elsewhere too, each holding `{ "UploadStatus": { "Saved": "נשמר" } }`;
+only its source differs, which decides precedence, as *Which text wins* below sets out:
+
+| File | Where it sits |
+| --- | --- |
+| `Contoso.App/Uploads/he.json` | In a locale pack |
+| `.locales/he/Contoso.App/Uploads.json` | In an application that rewords `Contoso.App`'s strings |
+| `strings-he/Uploads.json` | In `Contoso.App`, read by the path `$RootDir/strings-$Culture/$AnchorName$Extension` its `.locale.json` states |
+
+**The default reading.** A file's folders and name spell the type it is for, past the project's root
+namespace. A folder and a dot separate the name alike, a `.locales` folder is left out wherever it
+sits, and the first part that is a culture, written as .NET names it, `he` or `es-419` but never
+`ES`, is the file's culture, whether it is a folder or part of the name. Every other part goes on
+the type's name, and a file's sections spell the rest of it. A regional culture's files, such as
+those for `es-419`, hold only what differs from its parent's.
 
 **Embedded by the build.** The build embeds every locale file it finds by the `$localization` entry
 each one carries, wherever it sits in the project, outside the build output and outside a folder
@@ -215,6 +233,13 @@ the type's namespace past that assembly's root namespace:
 ```text
 .locales/Forma.Blazor/Components/Bars/he.json    { "FormaSelectionToolbar": { "Clear Selection": "בטל בחירה" } }
 .locales/fr/Forma.Blazor/Components/Bars.json    { "FormaSelectionToolbar": { "Clear Selection": "Effacer la sélection" } }
+```
+
+They are read into the library's own entries, from the application's source:
+
+```text
+he · Forma.Blazor · Forma.Blazor.Components.Bars.FormaSelectionToolbar · "Clear Selection" → "בטל בחירה"
+fr · Forma.Blazor · Forma.Blazor.Components.Bars.FormaSelectionToolbar · "Clear Selection" → "Effacer la sélection"
 ```
 
 An application, a WebAssembly client, a server built on the Web SDK or a Blazor Hybrid application,
@@ -243,7 +268,9 @@ again. It is read by the same rule, with folders where an embedded name has dots
 **Another layout.** An assembly that keeps its files in a layout the default reading has no rule
 for, or whose root namespace differs from its name, states it in a `.locale.json` at the project
 root, which the build embeds and which the build needs nothing from, since it finds the files by
-their entry:
+their entry. A path is notation, as the default reading is: it says where a file sits and how its
+name spells a type, and what a file read by it holds is the same entries, so `strings-he/Uploads.json`
+read by this path holds the entry `.locales/he/Uploads.json` does by default:
 
 ```json
 { "paths": ["$RootDir/strings-$Culture/$AnchorName$Extension"] }
