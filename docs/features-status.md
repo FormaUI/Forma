@@ -26,7 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [A host's integration](#a-hosts-integration) | Fifteen findings, fourteen fixed |
+| [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -185,7 +185,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 | The toast container's offsets | `FormaToastContainer` sat `--space-5` from the block-start and inline-end edges, with no hook of its own, and a toast could run past a narrow screen. It now reads `--forma-toast-container-inset-block-start` and `--forma-toast-container-inset-inline-end`, which the README shows, and keeps a toast between them | Fixed |
 | The page title's actions | `FormaPageTitle`'s row didn't wrap and its heading couldn't shrink. Its actions now move beneath the heading, still at the end, where the two don't fit one line, and a long word breaks; `FormaDialog`'s title shrinks beside its close button too | Fixed |
 | Localized routing | The culture router replaced the culture segment and kept the rest of the path. A host's `ICultureDestinationResolver` now names where a page leads in another culture, its own address there or a fallback, and every switch, link and web view following its application's culture goes there; publication stays the host's | Fixed |
-| Localized references carried as data | No type carried a localization source, a key and arguments to resolve when displayed. `LocalizableText` now does, localized by `IStringLocaleFactory.Localize` in the cultures in force when it is shown, its key parameter marked `[LocaleKey]` | Open: the linter checking a key `[LocaleKey]` marks as it checks a lookup, in Locali |
+| Localized references carried as data | No type carried a localization source, a key and arguments to resolve when displayed. `LocalizableText` now does, localized by `IStringLocaleFactory.Localize` in the cultures in force when it is shown, its key parameter marked `[LocaleKey]`, which the locale lint checks as it checks a lookup | Fixed |
 | The composer's integration guidance | The composer's README said to sanitize on the server, but not how authoring and saving share one policy, that the selected plugins don't set the policy, or how a stored video placeholder is rendered. It now says each, with every attribute a placeholder carries, a sanitizer pass over what the composer kept changes nothing, and the icon set has a solid `Pause` beside `TriangleRight` | Fixed |
 
 <a id="deferred"></a>
