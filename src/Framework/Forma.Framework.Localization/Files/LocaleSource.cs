@@ -14,6 +14,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     private readonly ConcurrentDictionary<AnchorsKey, FrozenDictionary<string, string[]>> _anchors = new();
     private readonly ConcurrentDictionary<TranslationsKey, LocaleTranslations> _translations = new();
     private readonly ConcurrentDictionary<string, LocaleFile?> _files = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<(string Name, string LocalesDir), LocaleFileName?> _fileNames = new();
     private IReadOnlyList<string>? _names;
 
     /// <summary>The format the files are written in.</summary>
@@ -309,36 +310,43 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     {
         var nameComparer = StringComparer.FromComparison(NameComparison);
         var assemblyParts = key.AssemblyName.Split('.');
-        var namesRoot = NamesStartWithAssemblyName ? string.Empty : rootDir;
+        var rootParts = NamesStartWithAssemblyName || rootDir.Length == 0 ? [] : LocaleFileNames.Split(rootDir);
+        var rootNamespaceParts = root.RootNamespace.Split('.');
         var placedFiles = new Dictionary<string, List<string>>(nameComparer);
 
         foreach (var name in GetNames().Concat(EnumerateCultureNames(key.CultureName)))
         {
+            // A name is read once whatever culture or reading asks for it, and only where it can be for the culture asked for.
             if (TryGetConfigFolder(name, out _)
-                || !LocaleRoot.IsBeneath(namesRoot, name, FolderSeparator, NameComparison)
-                || !LocaleFileNames.TryRead(namesRoot.Length == 0 ? name : name[(namesRoot.Length + 1)..], root.LocalesDir, Format.Extension, NameComparison, out var culture, out var parts, out _)
-                || !string.Equals(culture, key.CultureName, StringComparison.Ordinal))
+                || !LocaleFileNames.HasPart(name, key.CultureName)
+                || _fileNames.GetOrAdd((name, root.LocalesDir), ReadFileName) is not { } fileName
+                || !string.Equals(fileName.Culture, key.CultureName, StringComparison.Ordinal)
+                || !LocaleFileNames.StartsWith(fileName.Parts, rootParts, NameComparison))
             {
                 continue;
             }
 
+            var start = rootParts.Length;
+
             if (NamesStartWithAssemblyName)
             {
-                if (!LocaleFileNames.StartsWith(parts, assemblyParts, NameComparison))
+                if (!LocaleFileNames.StartsWith(fileName.Parts.AsSpan(start), assemblyParts, NameComparison))
                 {
                     continue;
                 }
 
-                parts = parts[assemblyParts.Length..];
+                start += assemblyParts.Length;
             }
 
-            // The root's own file speaks for the root namespace only.
-            if (key.IsOutsideRootNamespace && parts.Length == 0)
+            // Read in full, a name starting with the root namespace stands for types the reading under the root namespace
+            // answers, so it reaches no type here, and the root's own file speaks for the root namespace only.
+            if (key.IsOutsideRootNamespace
+                && (start == fileName.Parts.Length || LocaleFileNames.StartsWith(fileName.Parts.AsSpan(start), rootNamespaceParts, StringComparison.Ordinal)))
             {
                 continue;
             }
 
-            var anchorKey = string.Join(AnchorKeySeparator, parts);
+            var anchorKey = string.Join(AnchorKeySeparator, fileName.Parts, start, fileName.Parts.Length - start);
             if (!placedFiles.TryGetValue(anchorKey, out var files))
             {
                 placedFiles[anchorKey] = files = [];
@@ -350,6 +358,11 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         return placedFiles.ToFrozenDictionary(pair => pair.Key, pair => pair.Value.Distinct(nameComparer).ToArray(), nameComparer);
     }
 
+    private LocaleFileName? ReadFileName((string Name, string LocalesDir) key)
+        => LocaleFileNames.TryRead(key.Name, key.LocalesDir, Format.Extension, NameComparison, out var culture, out var parts, out var isInLocalesDir)
+            ? new LocaleFileName(culture, parts, isInLocalesDir)
+            : null;
+
     // Every file the paths place in the culture is read once, its translations placed by the name it stands for and its
     // rooted sections by the names they spell, which every reading of names takes, as a type may be counted either way.
     private LocaleTranslations CreateTranslations(TranslationsKey key)
@@ -357,7 +370,6 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         var root = _roots.GetOrAdd(key.AssemblyName, CreateRoot);
         var underRoot = new LocaleNames(root.RootNamespace);
         var outsideRoot = new LocaleNames(string.Empty);
-        var conflicts = new List<LocaleConflict>();
         var placedUnderRoot = new HashSet<string>(StringComparer.Ordinal);
 
         foreach (var isOutsideRootNamespace in (ReadOnlySpan<bool>)[false, true])
@@ -380,7 +392,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
                     {
                         // Outside a folder of locale files, the default reading takes only what reads as a locale file;
                         // anywhere else, a file that cannot be read is reported by every type beneath the name it stands for.
-                        if (root.Paths is not null || IsInLocalesDir(name, root.LocalesDir))
+                        if (root.Paths is not null || _fileNames.GetOrAdd((name, root.LocalesDir), ReadFileName) is { IsInLocalesDir: true })
                         {
                             names.AddBroken(string.Join('.', anchor), exception);
                         }
@@ -401,21 +413,20 @@ public abstract class LocaleSource(ILocaleFileFormat format)
                     }
 
                     var recordsConflicts = !isOutsideRootNamespace || !placedUnderRoot.Contains(name);
-                    names.Add(anchor, file, GetDisplayName(name), [underRoot, outsideRoot], recordsConflicts ? conflicts : null);
+                    names.Add(anchor, file, GetDisplayName(name), [underRoot, outsideRoot], recordsConflicts);
                 }
             }
         }
 
-        // A file placed at two names under the root namespace meets a rival at each, so a conflict is listed once.
-        return new LocaleTranslations(root.RootNamespace, underRoot, outsideRoot, [.. conflicts.Distinct()]);
+        return new LocaleTranslations(root.RootNamespace, underRoot, outsideRoot);
     }
-
-    private bool IsInLocalesDir(string name, string localesDir)
-        => LocaleFileNames.TryRead(name, localesDir, Format.Extension, NameComparison, out _, out _, out var isInLocalesDir) && isInLocalesDir;
 
     private readonly record struct AnchorsKey(string AssemblyName, string CultureName, bool IsOutsideRootNamespace);
 
     private readonly record struct TranslationsKey(string AssemblyName, string CultureName);
+
+    // What the default reading took from a file's name.
+    private sealed record LocaleFileName(string Culture, string[] Parts, bool IsInLocalesDir);
 
     private readonly record struct PlacedFile(string Name, int PathIndex, int Order);
 }

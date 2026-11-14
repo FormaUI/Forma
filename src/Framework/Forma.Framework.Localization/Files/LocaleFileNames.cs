@@ -6,12 +6,26 @@ using System.Globalization;
 /// <summary>What the default reading takes from a locale file's name: the culture it is for, and the parts of the name it stands for.</summary>
 internal static class LocaleFileNames
 {
+    // A name of more parts than this is read through the slower path that splits it whole.
+    private const int MostParts = 64;
+
     private static readonly ConcurrentDictionary<string, bool> Cultures = new(StringComparer.Ordinal);
 
     /// <summary>Whether a part of a name is a culture, written as .NET names it.</summary>
     /// <param name="part">The part.</param>
-    public static bool IsCulture(string part)
-        => HasCultureShape(part) && Cultures.GetOrAdd(part, static candidate =>
+    public static bool IsCulture(ReadOnlySpan<char> part)
+    {
+        if (!HasCultureShape(part))
+        {
+            return false;
+        }
+
+        if (Cultures.GetAlternateLookup<ReadOnlySpan<char>>().TryGetValue(part, out var isCulture))
+        {
+            return isCulture;
+        }
+
+        return Cultures.GetOrAdd(part.ToString(), static candidate =>
         {
             try
             {
@@ -22,15 +36,33 @@ internal static class LocaleFileNames
                 return false;
             }
         });
-
-    // A culture's name starts with a language of two or three lowercase letters, so a part such as a type's name is told
-    // apart without asking .NET, which answers a name it doesn't know by throwing.
-    private static bool HasCultureShape(string part)
-    {
-        var language = part.IndexOf('-', StringComparison.Ordinal) is var hyphen and >= 0 ? part.AsSpan(0, hyphen) : part;
-
-        return language.Length is 2 or 3 && !language.ContainsAnyExceptInRange('a', 'z');
     }
+
+    /// <summary>Whether a name holds a part written exactly so, told without reading the name whole.</summary>
+    /// <param name="name">The name.</param>
+    /// <param name="part">The part.</param>
+    public static bool HasPart(string name, string part)
+    {
+        var text = name.AsSpan();
+        Span<Range> ranges = stackalloc Range[MostParts];
+        var count = text.SplitAny(ranges, "./");
+
+        for (var index = 0; index < count; index++)
+        {
+            if (text[ranges[index]].SequenceEqual(part))
+            {
+                return true;
+            }
+        }
+
+        // A name of very many parts is left for the reading of it whole to judge.
+        return count == MostParts;
+    }
+
+    /// <summary>The parts of a name written with folders, dots or both.</summary>
+    /// <param name="name">The name.</param>
+    public static string[] Split(string name)
+        => name.Split(['.', '/']);
 
     /// <summary>Reads a file's name, from where its source's names begin, into the culture it is for and the parts of the name it stands for.</summary>
     /// <remarks>
@@ -56,20 +88,130 @@ internal static class LocaleFileNames
             return false;
         }
 
-        var segments = name[..^extension.Length].Replace('/', '.').Split('.');
-        var localesSegments = localesDir.Replace('/', '.').Split('.');
+        var text = name.AsSpan(0, name.Length - extension.Length);
+        Span<Range> ranges = stackalloc Range[MostParts];
+        var count = text.SplitAny(ranges, "./");
+
+        if (count == MostParts)
+        {
+            return TryReadSplit(text.ToString(), localesDir, comparison, out culture, out parts, out isInLocalesDir);
+        }
+
+        Span<Range> locales = stackalloc Range[MostParts];
+        var localesCount = localesDir.AsSpan().SplitAny(locales, "./");
+        Span<bool> kept = stackalloc bool[count];
+        var keptCount = 0;
+
+        for (var index = 0; index < count; index++)
+        {
+            if (StartsWith(text, ranges[index..count], localesDir, locales[..localesCount], comparison))
+            {
+                index += localesCount - 1;
+                isInLocalesDir = true;
+            }
+            else if (text[ranges[index]].IsEmpty)
+            {
+                // An empty part spells no name, so the file is no locale file of the default reading.
+                return false;
+            }
+            else if (culture.Length == 0 && IsCulture(text[ranges[index]]))
+            {
+                culture = text[ranges[index]].ToString();
+            }
+            else
+            {
+                kept[index] = true;
+                keptCount++;
+            }
+        }
+
+        if (culture.Length == 0)
+        {
+            return false;
+        }
+
+        parts = new string[keptCount];
+        for (int index = 0, written = 0; index < count; index++)
+        {
+            if (kept[index])
+            {
+                parts[written++] = text[ranges[index]].ToString();
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>Whether a name's parts begin with another's.</summary>
+    /// <param name="parts">The name's parts.</param>
+    /// <param name="start">The parts it begins with.</param>
+    /// <param name="comparison">How names compare.</param>
+    public static bool StartsWith(ReadOnlySpan<string> parts, ReadOnlySpan<string> start, StringComparison comparison)
+    {
+        if (parts.Length < start.Length)
+        {
+            return false;
+        }
+
+        for (var offset = 0; offset < start.Length; offset++)
+        {
+            if (!string.Equals(parts[offset], start[offset], comparison))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // A culture's name starts with a language of two or three lowercase letters, so a part such as a type's name is told
+    // apart without asking .NET, which answers a name it doesn't know by throwing.
+    private static bool HasCultureShape(ReadOnlySpan<char> part)
+    {
+        var hyphen = part.IndexOf('-');
+        var language = hyphen >= 0 ? part[..hyphen] : part;
+
+        return language.Length is 2 or 3 && !language.ContainsAnyExceptInRange('a', 'z');
+    }
+
+    private static bool StartsWith(ReadOnlySpan<char> text, ReadOnlySpan<Range> ranges, ReadOnlySpan<char> localesDir, ReadOnlySpan<Range> locales, StringComparison comparison)
+    {
+        if (ranges.Length < locales.Length)
+        {
+            return false;
+        }
+
+        for (var offset = 0; offset < locales.Length; offset++)
+        {
+            if (!text[ranges[offset]].Equals(localesDir[locales[offset]], comparison))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // A name of very many parts is read by splitting it whole.
+    private static bool TryReadSplit(string text, string localesDir, StringComparison comparison, out string culture, out string[] parts, out bool isInLocalesDir)
+    {
+        culture = string.Empty;
+        parts = [];
+        isInLocalesDir = false;
+
+        var segments = Split(text);
+        var localesSegments = Split(localesDir);
         var kept = new List<string>(segments.Length);
 
         for (var index = 0; index < segments.Length; index++)
         {
-            if (StartsWith(segments, index, localesSegments, comparison))
+            if (StartsWith(segments.AsSpan(index), localesSegments, comparison))
             {
                 index += localesSegments.Length - 1;
                 isInLocalesDir = true;
             }
             else if (segments[index].Length == 0)
             {
-                // An empty part spells no name, so the file is no locale file of the default reading.
                 return false;
             }
             else if (culture.Length == 0 && IsCulture(segments[index]))
@@ -85,30 +227,5 @@ internal static class LocaleFileNames
         parts = [.. kept];
 
         return culture.Length > 0;
-    }
-
-    /// <summary>Whether a name's parts begin with another's.</summary>
-    /// <param name="parts">The name's parts.</param>
-    /// <param name="start">The parts it begins with.</param>
-    /// <param name="comparison">How names compare.</param>
-    public static bool StartsWith(string[] parts, string[] start, StringComparison comparison)
-        => StartsWith(parts, 0, start, comparison);
-
-    private static bool StartsWith(string[] parts, int index, string[] start, StringComparison comparison)
-    {
-        if (parts.Length - index < start.Length)
-        {
-            return false;
-        }
-
-        for (var offset = 0; offset < start.Length; offset++)
-        {
-            if (!string.Equals(parts[index + offset], start[offset], comparison))
-            {
-                return false;
-            }
-        }
-
-        return true;
     }
 }

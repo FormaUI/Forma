@@ -16,7 +16,7 @@ internal sealed class JsonResourceCache
     private readonly ConcurrentDictionary<Assembly, EmbeddedLocaleSource> _embeddedByAssembly = new();
     private readonly ConcurrentDictionary<string, EmbeddedLocaleSource> _embeddedByAssemblyName = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<CacheKey, FrozenDictionary<string, JsonResourceEntry>?> _files = new();
-    private readonly ConcurrentDictionary<LocaleTranslations, byte> _reportedTranslations = new(ReferenceEqualityComparer.Instance);
+    private readonly ConcurrentDictionary<(LocaleConflict Conflict, string CultureName), byte> _reportedConflicts = new();
     private readonly LocalePackSource[] _packs;
     private readonly LocaleSource[] _host;
     private readonly ILogger _logger;
@@ -50,12 +50,13 @@ internal sealed class JsonResourceCache
         _embeddedByAssemblyName[assemblyName] = embeddedSource;
 
         var entries = new Dictionary<string, LocaleSourceEntry>(StringComparer.Ordinal);
+        var conflicts = new List<LocaleConflict>();
         foreach (var source in (LocaleSource[])[embeddedSource, .. _packs, .. _host])
         {
-            var translations = source.ReadTranslations(assemblyName, key.CultureName);
-            ReportConflicts(translations, key.CultureName);
-            translations.Collect(typeName, entries);
+            source.ReadTranslations(assemblyName, key.CultureName).Collect(typeName, entries, conflicts);
         }
+
+        ReportConflicts(conflicts, key.CultureName);
 
         if (entries.Count == 0)
         {
@@ -69,17 +70,15 @@ internal sealed class JsonResourceCache
             StringComparer.Ordinal);
     }
 
-    // A source's conflicts are reported once, the first time its translations are read for any type.
-    private void ReportConflicts(LocaleTranslations translations, string cultureName)
+    // A conflict is reported once, the first time a type it touches is read, however many types beneath a shared entry meet it.
+    private void ReportConflicts(List<LocaleConflict> conflicts, string cultureName)
     {
-        if (translations.Conflicts.Count == 0 || !_reportedTranslations.TryAdd(translations, 0))
+        foreach (var conflict in conflicts)
         {
-            return;
-        }
-
-        foreach (var conflict in translations.Conflicts)
-        {
-            JsonLocalizationLog.TranslationConflict(_logger, conflict.FileName, conflict.OtherFileName, conflict.Key, conflict.TypeName, cultureName);
+            if (_reportedConflicts.TryAdd((conflict, cultureName), 0))
+            {
+                JsonLocalizationLog.TranslationConflict(_logger, conflict.FileName, conflict.OtherFileName, conflict.Key, conflict.TypeName, cultureName);
+            }
         }
     }
 
