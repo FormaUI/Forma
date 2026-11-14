@@ -51,7 +51,7 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_unescape_a_doubled_brace_in_a_translation()
+    public void Should_unescape_a_doubled_brace_in_a_text()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -136,7 +136,7 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_serve_an_escaped_reserved_name_as_an_ordinary_translation()
+    public void Should_serve_an_escaped_reserved_name_as_an_ordinary_entry()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -192,7 +192,7 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_report_a_translated_key_as_found()
+    public void Should_report_a_localized_key_as_found()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -220,7 +220,7 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_format_values_into_the_key_when_untranslated()
+    public void Should_format_values_into_the_key_when_unlocalized()
     {
         // Arrange
         using var culture = new CultureScope("en");
@@ -248,7 +248,7 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_keep_positional_values_with_their_holes_when_a_translation_reorders_them()
+    public void Should_keep_positional_values_with_their_holes_when_a_text_reorders_them()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -550,7 +550,7 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_evaluate_the_plural_expression_in_a_translation()
+    public void Should_evaluate_the_plural_expression_in_a_text()
     {
         // Arrange
         const string Key = "[$ plural; one: # file; other: # files; $]";
@@ -588,7 +588,7 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_evaluate_the_plural_expression_in_the_key_when_untranslated()
+    public void Should_evaluate_the_plural_expression_in_the_key_when_unlocalized()
     {
         // Arrange
         const string Key = "[$ plural; one: # file; other: # files; $]";
@@ -608,7 +608,7 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_evaluate_an_untranslated_key_with_the_source_language_rules()
+    public void Should_evaluate_an_unlocalized_key_with_the_source_language_rules()
     {
         // Arrange — the key is Hebrew, whose dual the displayed language does not have.
         const string Key = "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";
@@ -646,7 +646,7 @@ public sealed class JsonStringLocaleTests
     }
 
     [Fact]
-    public void Should_format_an_untranslated_count_for_the_reader()
+    public void Should_format_an_unlocalized_count_for_the_reader()
     {
         // Arrange — the key is English, but its count belongs to the culture on screen.
         const string Key = "[$ plural; one: # file; other: # files; $]";

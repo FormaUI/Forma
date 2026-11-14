@@ -9,6 +9,6 @@ internal static class CultureDestinations
         var (from, address) = router.ReadAddress(relativeAddress);
         var destination = resolver is null ? null : await resolver.ResolveAsync(from, to, address, cancellationToken).ConfigureAwait(false);
 
-        return destination ?? CultureDestination.Translated(address);
+        return destination ?? CultureDestination.Localized(address);
     }
 }

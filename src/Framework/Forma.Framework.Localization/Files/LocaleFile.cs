@@ -4,7 +4,7 @@ namespace Forma.Framework.Localization.Files;
 /// <param name="Root">The file's top-level node.</param>
 public sealed record LocaleFile(LocaleSection Root)
 {
-    /// <summary>Every translation the file declares, each with the part of a type's name its sections complete, in the order the file writes them.</summary>
+    /// <summary>Every entry the file declares, each with the part of a type's name its sections complete, in the order the file writes them.</summary>
     /// <remarks>A shared section's entries are listed under the section's reserved name.</remarks>
     public IReadOnlyList<LocaleFileEntry> GetEntries()
     {

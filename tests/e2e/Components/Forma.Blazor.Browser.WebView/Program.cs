@@ -83,7 +83,7 @@ internal static class Program
     }
 
     private static void AddRouting(IServiceCollection services)
-        => services.AddSingleton<ICultureDestinationResolver, TranslatedProbe>().AddFormaCultureRouting(new CultureRouterOptions
+        => services.AddSingleton<ICultureDestinationResolver, LocalizedProbe>().AddFormaCultureRouting(new CultureRouterOptions
         {
             DefaultCulture = "en",
             Switch = CultureSwitchMode.InPlace,

@@ -9,7 +9,7 @@ public sealed class RequireMatchingLocalizationTests
         => new JsonStringLocaleFactory(new LocalizationOptions { RequireMatchingLocalization = require }).Create(typeof(TSource));
 
     [Fact]
-    public void Should_fall_back_to_the_key_when_a_translation_is_not_required()
+    public void Should_fall_back_to_the_key_when_a_localization_is_not_required()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -27,7 +27,7 @@ public sealed class RequireMatchingLocalizationTests
     }
 
     [Fact]
-    public void Should_throw_for_a_key_with_no_translation()
+    public void Should_throw_for_a_key_with_no_localization()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -41,7 +41,7 @@ public sealed class RequireMatchingLocalizationTests
     }
 
     [Fact]
-    public void Should_throw_for_a_key_with_arguments_and_no_translation()
+    public void Should_throw_for_a_key_with_arguments_and_no_localization()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -52,7 +52,7 @@ public sealed class RequireMatchingLocalizationTests
     }
 
     [Fact]
-    public void Should_throw_from_resolve_for_a_key_with_no_translation()
+    public void Should_throw_from_resolve_for_a_key_with_no_localization()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -63,7 +63,7 @@ public sealed class RequireMatchingLocalizationTests
     }
 
     [Fact]
-    public void Should_not_throw_for_a_key_that_is_translated()
+    public void Should_not_throw_for_a_key_that_is_localized()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -91,7 +91,7 @@ public sealed class RequireMatchingLocalizationTests
     }
 
     [Fact]
-    public void Should_read_a_null_translation_as_the_key_itself()
+    public void Should_read_a_null_text_as_the_key_itself()
     {
         // Arrange — the file writes null rather than repeating the key.
         using var culture = new CultureScope("he");
@@ -109,7 +109,7 @@ public sealed class RequireMatchingLocalizationTests
     }
 
     [Fact]
-    public void Should_list_a_null_translation_as_the_key_itself()
+    public void Should_list_a_null_text_as_the_key_itself()
     {
         // Arrange
         using var culture = new CultureScope("he");
@@ -123,7 +123,7 @@ public sealed class RequireMatchingLocalizationTests
     }
 
     [Fact]
-    public void Should_inflect_a_null_translation_by_the_source_language()
+    public void Should_inflect_a_null_text_by_the_source_language()
     {
         // Arrange — French counts zero as singular, but the key it stands for is English.
         using var culture = new CultureScope("fr");

@@ -5,7 +5,7 @@ using System.Text.Json;
 
 using Forma.Framework.Localization.Files;
 
-/// <summary>The JSON format a locale file is written in: an object whose text values are translations and whose nested objects are sections.</summary>
+/// <summary>The JSON format a locale file is written in: an object whose text properties are entries and whose nested objects are sections.</summary>
 public sealed class JsonLocaleFileFormat : ILocaleFileFormat
 {
     private static readonly JsonReaderOptions ReaderOptions = new()
@@ -116,7 +116,7 @@ public sealed class JsonLocaleFileFormat : ILocaleFileFormat
                 var section = ReadSection(ref reader, findings, isRoot: false);
                 if (section.Sections.Count > 0 || section.SharedEntries.Count > 0)
                 {
-                    findings.Report($"'{findings.FileName}' nests '{(section.Sections.Count > 0 ? section.Sections[0].Key : LocalizationSchema.SharedKey)}' inside '{name}', which holds translations alone.");
+                    findings.Report($"'{findings.FileName}' nests '{(section.Sections.Count > 0 ? section.Sections[0].Key : LocalizationSchema.SharedKey)}' inside '{name}', which holds entries alone.");
                 }
 
                 sharedEntries.AddRange(section.Entries);

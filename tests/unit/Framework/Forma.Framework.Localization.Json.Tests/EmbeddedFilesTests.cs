@@ -49,7 +49,7 @@ public sealed class EmbeddedFilesTests
         [Fact]
         public void Should_show_the_text_of_the_file_whose_name_sorts_last_and_warn_of_the_conflict_once()
         {
-            // Arrange — the type's folder's file stands closest, and a rooted section in another folder's file, whose name sorts last, translates the same key.
+            // Arrange — the type's folder's file stands closest, and a rooted section in another folder's file, whose name sorts last, localizes the same key.
             using var culture = new CultureScope("he");
             using var loggerFactory = new FakeLoggerFactory();
             var strings = new JsonStringLocaleFactory(new LocalizationOptions(), loggerFactory).Create(typeof(Conflicted));
@@ -88,7 +88,7 @@ public sealed class EmbeddedFilesTests
         [Fact]
         public void Should_settle_a_key_the_outer_and_nested_types_files_both_give_by_the_file_whose_name_sorts_last()
         {
-            // Arrange — the outer type's file and the nested type's own both translate the key, and the nested type's name sorts last.
+            // Arrange — the outer type's file and the nested type's own both localize the key, and the nested type's name sorts last.
             using var culture = new CultureScope("he");
             var strings = CreateLocale<Outer.Inner>();
 
@@ -161,7 +161,7 @@ public sealed class EmbeddedFilesTests
         [Fact]
         public void Should_settle_a_key_the_types_folder_and_its_parents_file_both_give_by_the_file_whose_name_sorts_last()
         {
-            // Arrange — the type's own folder's file and its parent folder's both translate the key, and the type folder's name sorts last.
+            // Arrange — the type's own folder's file and its parent folder's both localize the key, and the type folder's name sorts last.
             using var culture = new CultureScope("he");
             var strings = CreateLocale<GroupedSecond>();
 

@@ -48,7 +48,7 @@ public sealed class LocalizedPatternTests
     }
 
     [Fact]
-    public void Should_keep_the_order_a_translation_reverses()
+    public void Should_keep_the_order_a_text_reverses()
     {
         // Arrange
         var pattern = new LocalizedPattern(

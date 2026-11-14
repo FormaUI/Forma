@@ -44,7 +44,7 @@ if (HostModes.UsesCultureAddresses)
 
 if (HostModes.UsesCultureAddresses)
 {
-    builder.Services.AddSingleton<ICultureDestinationResolver, TranslatedPages>();
+    builder.Services.AddSingleton<ICultureDestinationResolver, LocalizedPages>();
 }
 
 builder.Services.AddSingleton<DelayedSwitches>();

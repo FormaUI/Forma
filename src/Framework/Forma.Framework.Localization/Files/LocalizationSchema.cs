@@ -3,10 +3,10 @@ namespace Forma.Framework.Localization.Files;
 /// <summary>The shape of the entry every localization file carries to declare what it is.</summary>
 public static class LocalizationSchema
 {
-    /// <summary>The field naming who wrote the translations.</summary>
+    /// <summary>The field naming who wrote the entries.</summary>
     public const string AuthorField = "Author";
 
-    /// <summary>The field naming the culture the file carries translations for.</summary>
+    /// <summary>The field naming the culture the file carries entries for.</summary>
     public const string CultureField = "Culture";
 
     /// <summary>The schema version this build defines.</summary>
@@ -24,7 +24,7 @@ public static class LocalizationSchema
     /// <summary>The prefix marking a top-level section's name as counted from the assembly's root.</summary>
     public const string RootedSectionPrefix = "@.";
 
-    /// <summary>The field naming the revision the translations are at.</summary>
+    /// <summary>The field naming the revision the entries are at.</summary>
     public const string RevisionField = "Revision";
 
     /// <summary>The field naming the schema the file is written for.</summary>

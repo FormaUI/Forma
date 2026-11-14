@@ -537,7 +537,7 @@ public sealed class LocaleSourceTests
         [Fact]
         public void Should_keep_the_text_of_the_file_whose_name_sorts_last_whichever_stands_closer_to_the_type()
         {
-            // Arrange — the type's own file stands closest, and a rooted section in a file whose name sorts after it translates the key too.
+            // Arrange — the type's own file stands closest, and a rooted section in a file whose name sorts after it localizes the key too.
             const string Own = "Contoso.Widgets/Bars/Toolbar/.locales/he.fake";
             const string Rooted = "Contoso.Widgets/Strings/.locales/he.fake";
             var source = new FakeLocaleSource
@@ -551,7 +551,7 @@ public sealed class LocaleSourceTests
 
             // Act
             var entries = source.Read(Assembly, Toolbar, "he");
-            var conflicts = source.ReadTranslations(Assembly, "he").Conflicts;
+            var conflicts = source.ReadEntries(Assembly, "he").Conflicts;
 
             // Assert
             Assert.Multiple(
@@ -573,7 +573,7 @@ public sealed class LocaleSourceTests
             };
 
             // Act
-            var conflicts = source.ReadTranslations(Assembly, "he").Conflicts;
+            var conflicts = source.ReadEntries(Assembly, "he").Conflicts;
 
             // Assert
             Assert.Empty(conflicts);
@@ -594,7 +594,7 @@ public sealed class LocaleSourceTests
 
             // Act
             var entries = source.Read(Assembly, Toolbar, "he");
-            var conflicts = source.ReadTranslations(Assembly, "he").Conflicts;
+            var conflicts = source.ReadEntries(Assembly, "he").Conflicts;
 
             // Assert
             Assert.Multiple(

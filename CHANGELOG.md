@@ -107,7 +107,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A `FormaFileUploader`'s Hebrew byte count and time left read in order. The byte count read its total before what had
   been sent, and the time left its unit before its number.
 - Under culture routing a page can have an address of its own in each culture. A host's `ICultureDestinationResolver`
-  names where a page leads in another culture, a `CultureDestination` that is its address there, `Translated`, or a
+  names where a page leads in another culture, a `CultureDestination` that is its address there, `Localized`, or a
   `Fallback` the host sends the reader to in its place, and every switch by address goes there, through
   `ICultureSwitch` or `CultureSwitcher` and as a web view follows its application's culture. `CultureSwitcher`'s
   `GetDestinationAsync` and `GetDestinationUriAsync` give a link the same destination, `IsFallback` included. A switch
@@ -115,10 +115,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - `CultureCoordinatorRegistration` takes an `ICultureDestinationSource`, which culture routing registers, and its
   receiver answers the coordinator's `ResolveDestinationAsync`; the coordinator's `register` takes whether the scope
   names destinations.
-- Two locale files of one source giving a translation different texts are a conflict: the runtime shows the text of
+- Two locale files of one source giving an entry different texts are a conflict: the runtime shows the text of
   the file whose name sorts last, ordinally, and logs the conflict once as a warning naming both files. The file closer
   to the type won before, so a project that laid a deeper file over a shallower one for the same key keeps the key in
-  one of them, or gives both the same text. `LocaleSource.ReadTranslations` reads what a source holds for an
+  one of them, or gives both the same text. `LocaleSource.ReadEntries` reads what a source holds for an
   assembly's types in a culture once, with the `LocaleConflict`s among its files, and `LocaleSource.Read` answers one
   entry for each key.
 - `LocalizableText` carries text to localize when it is shown, its source type, its key and its holes' values, as a

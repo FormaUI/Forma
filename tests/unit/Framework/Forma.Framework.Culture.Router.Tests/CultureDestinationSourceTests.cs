@@ -49,7 +49,7 @@ public sealed class CultureDestinationSourceTests
         public async Task Should_hand_the_resolver_both_routes_and_the_address_without_its_culture_segment()
         {
             // Arrange
-            var resolver = new RecordingResolver(_ => CultureDestination.Translated("hadashot/hagmar?page=2"));
+            var resolver = new RecordingResolver(_ => CultureDestination.Localized("hadashot/hagmar?page=2"));
             await using var provider = CreateServices(resolver);
             var source = provider.GetRequiredService<ICultureDestinationSource>();
 
@@ -68,7 +68,7 @@ public sealed class CultureDestinationSourceTests
         public async Task Should_read_the_route_the_address_names_and_leave_out_its_segment()
         {
             // Arrange
-            var resolver = new RecordingResolver(_ => CultureDestination.Translated("/news/the-final"));
+            var resolver = new RecordingResolver(_ => CultureDestination.Localized("/news/the-final"));
             await using var provider = CreateServices(resolver);
             var source = provider.GetRequiredService<ICultureDestinationSource>();
 
@@ -104,7 +104,7 @@ public sealed class CultureDestinationSourceTests
             var source = provider.GetRequiredService<ICultureDestinationSource>();
 
             // Act
-            var destination = await source.ResolveAsync("news/an-untranslated-story", "he", TestContext.Current.CancellationToken);
+            var destination = await source.ResolveAsync("news/an-unlocalized-story", "he", TestContext.Current.CancellationToken);
 
             // Assert
             Assert.Equal("/he/hadashot", destination);
@@ -114,7 +114,7 @@ public sealed class CultureDestinationSourceTests
         public async Task Should_name_nothing_for_a_token_no_route_carries()
         {
             // Arrange
-            var resolver = new RecordingResolver(_ => CultureDestination.Translated("ailleurs"));
+            var resolver = new RecordingResolver(_ => CultureDestination.Localized("ailleurs"));
             await using var provider = CreateServices(resolver);
             var source = provider.GetRequiredService<ICultureDestinationSource>();
 

@@ -39,7 +39,7 @@
 
 <div class="demo-section">
     <h2>@L["A Hit and a Miss"]</h2>
-    <p class="description">@L["A key with no translation is returned as written and flagged, so nothing ever renders blank. In English both rows miss, because English is the language the keys are written in and carries no file of its own."]</p>
+    <p class="description">@L["A key with no localization is returned as written and flagged, so nothing ever renders blank. In English both rows miss, because English is the language the keys are written in and carries no file of its own."]</p>
     <div class="demo-box">
         @foreach (var text in new[] { L["Save"], L[AbsentKey] })
         {
@@ -54,7 +54,7 @@
                         <td><bdi>@text.Value</bdi></td>
                     </tr>
                     <tr>
-                        <th>@L["Translation"]</th>
+                        <th>@L["Localization"]</th>
                         <td><span class="demo-chip">@(text.ResourceNotFound ? L["missing"] : L["found"])</span></td>
                     </tr>
                     <tr>
@@ -69,7 +69,7 @@
 
 <div class="demo-section">
     <h2>@L["Holes Filled with Values"]</h2>
-    <p class="description">@L["Arguments stay as objects rather than text, so a format specifier written into a translation still reaches the value."]</p>
+    <p class="description">@L["Arguments stay as objects rather than text, so a format specifier written into a locale file still reaches the value."]</p>
     <div class="demo-box">
         <div class="demo-row">
             <label class="demo-field">@L["Written"] <input type="number" class="demo-number" @bind="_writtenCount" @bind:event="oninput" /></label>
@@ -81,7 +81,7 @@
 
 <div class="demo-section">
     <h2>@L["Values Paired by Position"]</h2>
-    <p class="description">@L["The names mark where the holes are, and the values are paired with them in the order the key writes them, so any expression can be passed. A translation refers to the holes by name, so it may put them in another order — the Hebrew here does."]</p>
+    <p class="description">@L["The names mark where the holes are, and the values are paired with them in the order the key writes them, so any expression can be passed. A localized text refers to the holes by name, so it may put them in another order — the Hebrew here does."]</p>
     <div class="demo-box">
         <p>@L["Stored {Stored} of {Total}.", _writtenCount, _allowedCount]</p>
     </div>
@@ -164,7 +164,7 @@
 
 <div class="demo-section">
     <h2>@L["The Language the Keys Are Written In"]</h2>
-    <p class="description">@L["This key has no translation, so it is shown exactly as authored — in Hebrew. Its plural forms have to follow Hebrew, whatever language is on screen, and SourceLanguage is what says so."]</p>
+    <p class="description">@L["This key has no localization, so it is shown exactly as authored — in Hebrew. Its plural forms have to follow Hebrew, whatever language is on screen, and SourceLanguage is what says so."]</p>
     <div class="demo-box">
         <table class="demo-table">
             <thead>
@@ -263,7 +263,7 @@
 </div>
 
 @code {
-    private const string AbsentKey = "No translation exists for this sentence.";
+    private const string AbsentKey = "No localization exists for this sentence.";
     private const string PluralKey = "[$ plural; one: # file; other: # files; $]";
     private const string IncompleteKey = "[$ plural; one: # file; $]";
     private const string HebrewSourceKey = "[$ plural; one: פריט אחד; two: שני פריטים; other: # פריטים; $]";

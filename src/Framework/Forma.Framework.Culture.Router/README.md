@@ -258,10 +258,10 @@ A page may have an address of its own in each culture, `/news/the-final` in Engl
 `/he/hadashot/hagmar` in Hebrew, and a page one culture has may be missing from another. The host says
 where each page leads through an `ICultureDestinationResolver`, which hands it the route the page is
 shown in, the route the reader is going to, and the page's address relative to the application's root,
-without its culture segment and with its query. It answers `CultureDestination.Translated(address)` with
+without its culture segment and with its query. It answers `CultureDestination.Localized(address)` with
 the page's address in the other culture, `CultureDestination.Fallback(address)` with the address it sends
 the reader to in its place, such as the section's index, or `null` for the same address in that culture.
-Whether a translation exists, or is published, is the host's to decide; the router knows only addresses.
+Whether a page exists in another culture, or is published, is the host's to decide; the router knows only addresses.
 
 ```csharp
 using Forma.Framework.Culture.Router;
@@ -275,8 +275,8 @@ public sealed class StoryDestinations(IStoryCatalog stories) : ICultureDestinati
             return null;
         }
 
-        return await stories.FindTranslationAsync(story, to.UICulture, cancellationToken) is { } translation
-            ? CultureDestination.Translated(translation.Address)
+        return await stories.FindLocalizedAsync(story, to.UICulture, cancellationToken) is { } localized
+            ? CultureDestination.Localized(localized.Address)
             : CultureDestination.Fallback(stories.GetSectionAddress(story.Section, to.UICulture));
     }
 }
@@ -299,7 +299,7 @@ routes lead elsewhere than the page:
 
 @foreach (var (route, destination) in _destinations)
 {
-    <a href="@Switcher.GetUri(route, destination.RelativeAddress)" title="@(destination.IsFallback ? "Not translated yet" : null)">@route.Token</a>
+    <a href="@Switcher.GetUri(route, destination.RelativeAddress)" title="@(destination.IsFallback ? "Not localized yet" : null)">@route.Token</a>
 }
 
 @code {

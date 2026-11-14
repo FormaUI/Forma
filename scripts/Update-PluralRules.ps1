@@ -6,7 +6,7 @@
 Regenerates the CLDR plural rules and the samples that verify them.
 
 .DESCRIPTION
-Reads the published CLDR cardinal plural data, translates each rule condition into C#, and writes
+Reads the published CLDR cardinal plural data, turns each rule condition into C#, and writes
 the generated rule switch beside a file holding CLDR's own sample counts for the conformance test.
 
 .PARAMETER CldrVersion

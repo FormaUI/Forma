@@ -146,14 +146,14 @@ public sealed class CultureSwitcherTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(CultureDestination.Translated("news/the-final?page=2"), destination),
+                () => Assert.Equal(CultureDestination.Localized("news/the-final?page=2"), destination),
                 () => Assert.Equal("http://localhost/he/news/the-final?page=2", address.AbsoluteUri));
         }
 
         [Theory]
         [InlineData("http://localhost/news/the-final", "he", false, "http://localhost/he/hadashot/hagmar")]
         [InlineData("http://localhost/he/hadashot/hagmar", "en", false, "http://localhost/news/the-final")]
-        [InlineData("http://localhost/news/an-untranslated-story", "he", true, "http://localhost/he/hadashot")]
+        [InlineData("http://localhost/news/an-unlocalized-story", "he", true, "http://localhost/he/hadashot")]
         public async Task Should_lead_to_the_destination_the_host_names(string address, string token, bool isFallback, string expected)
         {
             // Arrange
@@ -180,8 +180,8 @@ public sealed class CultureSwitcherTests
             public ValueTask<CultureDestination?> ResolveAsync(CultureRoute from, CultureRoute to, string relativeAddress, CancellationToken cancellationToken)
                 => ValueTask.FromResult<CultureDestination?>((relativeAddress, to.Token) switch
                 {
-                    ("news/the-final", "he") => CultureDestination.Translated("hadashot/hagmar"),
-                    ("hadashot/hagmar", "en") => CultureDestination.Translated("news/the-final"),
+                    ("news/the-final", "he") => CultureDestination.Localized("hadashot/hagmar"),
+                    ("hadashot/hagmar", "en") => CultureDestination.Localized("news/the-final"),
                     (_, "he") => CultureDestination.Fallback("hadashot"),
                     _ => null
                 });

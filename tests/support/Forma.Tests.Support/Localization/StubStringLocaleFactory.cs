@@ -2,9 +2,9 @@ namespace Forma.Tests.Localization;
 
 using Forma.Framework.Localization;
 
-/// <summary>A string locale factory whose locales all serve the same translations, keeping the type each locale was asked for.</summary>
-/// <param name="translations">The translations every locale serves.</param>
-public sealed class StubStringLocaleFactory(IReadOnlyDictionary<string, string> translations) : IStringLocaleFactory
+/// <summary>A string locale factory whose locales all serve the same entries, keeping the type each locale was asked for.</summary>
+/// <param name="entries">The entries every locale serves.</param>
+public sealed class StubStringLocaleFactory(IReadOnlyDictionary<string, string> entries) : IStringLocaleFactory
 {
     private readonly List<Type> _requestedTypes = [];
 
@@ -17,10 +17,10 @@ public sealed class StubStringLocaleFactory(IReadOnlyDictionary<string, string> 
     {
         _requestedTypes.Add(resourceSource);
 
-        return new StubStringLocale(translations);
+        return new StubStringLocale(entries);
     }
 
     /// <inheritdoc />
     public IStringLocale Create(string baseName, string location)
-        => new StubStringLocale(translations);
+        => new StubStringLocale(entries);
 }

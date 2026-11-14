@@ -12,7 +12,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
 
     private readonly ConcurrentDictionary<string, LocaleRoot> _roots = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<AnchorsKey, FrozenDictionary<string, string[]>> _anchors = new();
-    private readonly ConcurrentDictionary<TranslationsKey, LocaleTranslations> _translations = new();
+    private readonly ConcurrentDictionary<EntriesKey, LocaleEntries> _entries = new();
     private readonly ConcurrentDictionary<string, LocaleFile?> _files = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<(string Name, string LocalesDir), LocaleFileName?> _fileNames = new();
     private IReadOnlyList<string>? _names;
@@ -31,8 +31,8 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     protected virtual StringComparison NameComparison
         => StringComparison.Ordinal;
 
-    /// <summary>The translations the source holds for a type in one culture, one for each key, as the source settles them.</summary>
-    /// <remarks>A key's shared entries give way to deeper ones and to the type's own, and two files giving one translation different texts are a conflict, which <see cref="ReadTranslations"/> lists and the file whose name sorts last settles.</remarks>
+    /// <summary>The entries the source holds for a type in one culture, one for each key, as the source settles them.</summary>
+    /// <remarks>A key's shared entries give way to deeper ones and to the type's own, and two files giving one entry different texts are a conflict, which <see cref="ReadEntries"/> lists and the file whose name sorts last settles.</remarks>
     /// <param name="assemblyName">The name of the assembly the type lives in.</param>
     /// <param name="typeName">The type's full name.</param>
     /// <param name="cultureName">The culture the files are named for.</param>
@@ -43,21 +43,21 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         ArgumentException.ThrowIfNullOrEmpty(typeName);
 
         var entries = new Dictionary<string, LocaleSourceEntry>(StringComparer.Ordinal);
-        ReadTranslations(assemblyName, cultureName).Collect(typeName, entries);
+        ReadEntries(assemblyName, cultureName).Collect(typeName, entries);
 
         return [.. entries.Values];
     }
 
-    /// <summary>Every translation the source holds for an assembly's types in one culture, read from every file the assembly's paths place in the culture, once.</summary>
+    /// <summary>Every entry the source holds for an assembly's types in one culture, read from every file the assembly's paths place in the culture, once.</summary>
     /// <param name="assemblyName">The name of the assembly the types live in.</param>
     /// <param name="cultureName">The culture the files are named for.</param>
     /// <exception cref="LocaleConfigException">The assembly's config file is malformed, or the source holds more than one for it.</exception>
-    public LocaleTranslations ReadTranslations(string assemblyName, string cultureName)
+    public LocaleEntries ReadEntries(string assemblyName, string cultureName)
     {
         ArgumentException.ThrowIfNullOrEmpty(assemblyName);
         ArgumentException.ThrowIfNullOrEmpty(cultureName);
 
-        return _translations.GetOrAdd(new TranslationsKey(assemblyName, cultureName), CreateTranslations);
+        return _entries.GetOrAdd(new EntriesKey(assemblyName, cultureName), CreateEntries);
     }
 
     /// <summary>The full name of every type or namespace the assembly's paths place a file at in one culture.</summary>
@@ -363,9 +363,9 @@ public abstract class LocaleSource(ILocaleFileFormat format)
             ? new LocaleFileName(culture, parts, isInLocalesDir)
             : null;
 
-    // Every file the paths place in the culture is read once, its translations placed by the name it stands for and its
+    // Every file the paths place in the culture is read once, its entries placed by the name it stands for and its
     // rooted sections by the names they spell, which every reading of names takes, as a type may be counted either way.
-    private LocaleTranslations CreateTranslations(TranslationsKey key)
+    private LocaleEntries CreateEntries(EntriesKey key)
     {
         var root = _roots.GetOrAdd(key.AssemblyName, CreateRoot);
         var underRoot = new LocaleNames(root.RootNamespace);
@@ -418,12 +418,12 @@ public abstract class LocaleSource(ILocaleFileFormat format)
             }
         }
 
-        return new LocaleTranslations(root.RootNamespace, underRoot, outsideRoot);
+        return new LocaleEntries(root.RootNamespace, underRoot, outsideRoot);
     }
 
     private readonly record struct AnchorsKey(string AssemblyName, string CultureName, bool IsOutsideRootNamespace);
 
-    private readonly record struct TranslationsKey(string AssemblyName, string CultureName);
+    private readonly record struct EntriesKey(string AssemblyName, string CultureName);
 
     // What the default reading took from a file's name.
     private sealed record LocaleFileName(string Culture, string[] Parts, bool IsInLocalesDir);

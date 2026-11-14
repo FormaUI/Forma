@@ -1924,11 +1924,11 @@
             // Arrange
             using var ctx = new FormaComposerTests();
             using var culture = new CultureFixture("en");
-            var translations = new CultureTranslationDictionary(new Dictionary<string, IReadOnlyDictionary<string, string>>
+            var entries = new CultureEntryDictionary(new Dictionary<string, IReadOnlyDictionary<string, string>>
             {
                 ["he"] = new Dictionary<string, string> { ["Redo"] = "בצע שוב" },
             });
-            ctx.Services.AddSingleton<IStringLocaleFactory>(new StubStringLocaleFactory(translations));
+            ctx.Services.AddSingleton<IStringLocaleFactory>(new StubStringLocaleFactory(entries));
             var model = new HtmlModel();
             var plugins = ComposerDefinition.Create(composer => composer
                 .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())

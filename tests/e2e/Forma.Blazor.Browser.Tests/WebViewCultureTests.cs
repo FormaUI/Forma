@@ -125,10 +125,10 @@ public sealed class WebViewCultureTests
     [Fact]
     public async Task Should_move_a_web_view_s_address_to_the_page_the_host_names_in_the_switched_culture()
     {
-        // Arrange — the second web view opened on the probe at its address of its own, translated-probe, which is sonda-traducida in Spanish
+        // Arrange — the second web view opened on the probe at its address of its own, localized-probe, which is sonda-traducida in Spanish
         await using var application = await WebViewCheckHost.StartAsync();
         var first = await application.GetWebViewAsync("A");
-        await first.Locator("#start-path").FillAsync("/en/translated-probe");
+        await first.Locator("#start-path").FillAsync("/en/localized-probe");
         await first.Locator("#start-path").BlurAsync();
         await first.Locator("#open").ClickAsync();
         var second = await application.GetWebViewAsync("B");

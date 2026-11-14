@@ -60,11 +60,11 @@
             // Arrange
             using var ctx = new FormaInputInspectorTests();
             using var culture = new CultureFixture("en");
-            var translations = new CultureTranslationDictionary(new Dictionary<string, IReadOnlyDictionary<string, string>>
+            var entries = new CultureEntryDictionary(new Dictionary<string, IReadOnlyDictionary<string, string>>
             {
                 ["he"] = new Dictionary<string, string> { ["Pause"] = "השהה" },
             });
-            ctx.Services.AddSingleton<IStringLocaleFactory>(new StubStringLocaleFactory(translations));
+            ctx.Services.AddSingleton<IStringLocaleFactory>(new StubStringLocaleFactory(entries));
             var cut = ctx.Render(@<FormaInputInspector />);
 
             // Act

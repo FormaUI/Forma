@@ -64,7 +64,7 @@ public sealed class JsonLocaleFileFormatTests
     }
 
     [Fact]
-    public void Should_read_an_escaped_reserved_name_as_an_ordinary_translation()
+    public void Should_read_an_escaped_reserved_name_as_an_ordinary_entry()
     {
         // Arrange
         var file = Read("""{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "$$localization": "a", "$$shared": "b", "$$tools": "c" }""");

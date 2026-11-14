@@ -243,7 +243,7 @@ public sealed class LocalePackTests
         [InlineData(false)]
         public void Should_read_no_pack_a_library_records_for_its_own_use_whichever_loads_first(bool isLibraryFirst)
         {
-            // Arrange — the application, recording no pack, and a library recording one that translates the key
+            // Arrange — the application, recording no pack, and a library recording one that localizes the key
             using var culture = new CultureScope("fr");
             var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute() } };
             var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute(TestAssembly) } };

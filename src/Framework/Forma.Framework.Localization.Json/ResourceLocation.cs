@@ -2,7 +2,7 @@ namespace Forma.Framework.Localization.Json;
 
 using System.Reflection;
 
-/// <summary>Where a type's translations are read from, one instance standing for each location a factory reads.</summary>
+/// <summary>Where a type's entries are read from, one instance standing for each location a factory reads.</summary>
 /// <param name="assembly">The assembly the type lives in.</param>
 /// <param name="assemblyName">The assembly's name.</param>
 /// <param name="baseName">The resource base name a lookup reports as searched.</param>

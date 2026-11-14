@@ -17,7 +17,7 @@ public sealed record CultureDestination
 
     /// <summary>The page's own address in the other culture.</summary>
     /// <param name="relativeAddress">The address relative to the application's root, escaped, without its culture segment and with its query.</param>
-    public static CultureDestination Translated(string relativeAddress)
+    public static CultureDestination Localized(string relativeAddress)
     {
         ArgumentNullException.ThrowIfNull(relativeAddress);
 

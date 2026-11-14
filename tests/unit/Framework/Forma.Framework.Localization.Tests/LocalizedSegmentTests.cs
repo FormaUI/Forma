@@ -145,7 +145,7 @@ public sealed class LocalizedSegmentTests
     }
 
     [Fact]
-    public void Should_report_holes_in_the_order_the_translation_puts_them()
+    public void Should_report_holes_in_the_order_the_text_puts_them()
     {
         // Act
         var segments = Collect("{total} \u05dc\u05e4\u05e0\u05d9 {stored}");

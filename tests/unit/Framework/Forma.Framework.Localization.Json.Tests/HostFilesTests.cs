@@ -41,7 +41,7 @@ public sealed class HostFilesTests
         [Fact]
         public void Should_settle_a_key_a_parent_folders_file_and_the_roots_both_give_by_the_file_whose_name_sorts_last()
         {
-            // Arrange — the host's root file and a parent folder's both translate the key, and the parent folder's name sorts last.
+            // Arrange — the host's root file and a parent folder's both localize the key, and the parent folder's name sorts last.
             using var culture = new CultureScope("he");
             var strings = CreateLocale<HostOverridden>();
 
@@ -55,7 +55,7 @@ public sealed class HostFilesTests
         [Fact]
         public void Should_settle_a_key_every_host_file_gives_by_the_file_whose_name_sorts_last()
         {
-            // Arrange — every one of the host's files translates the key, and the type folder's name sorts after the others.
+            // Arrange — every one of the host's files localizes the key, and the type folder's name sorts after the others.
             using var culture = new CultureScope("he");
             var strings = CreateLocale<HostOverridden>();
 

@@ -185,7 +185,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
             : count.ToString(specifier.ToString(), culture);
     }
 
-    // The name comes from the translation, so it can name an argument that is not a count, or none at all.
+    // The name comes from the entry's text, so it can name an argument that is not a count, or none at all.
     private decimal ToDecimal(ReadOnlySpan<char> name, string format, object? value)
     {
         try

@@ -2,10 +2,10 @@
 
 ## Scope
 
-How localized strings are read from locale files and resolved. Authoritative for the translation
+How localized strings are read from locale files and resolved. Authoritative for the entries
 every file is read into, the default reading of a file's place and name, the paths a project may
 state instead, the `.locale.json` config that shapes reading, the locale packs an assembly's
-strings may ship in, and the order translations apply in. The contract a component reads strings
+strings may ship in, and the order entries apply in. The contract a component reads strings
 through, holes, plural forms and the file format are the `Forma.Framework.Localization` README's;
 the checks run over the files are the [Locali](https://github.com/FormaUI/Locali) linter's,
 `dotnet locali`.
@@ -17,15 +17,15 @@ namespace's code, one folder per culture holding a file per namespace, a file pe
 it brings from another system. Which layout it chose never changes what a file means, which text
 wins, or what the linter reports.
 
-Forma answers this with one model, the **translation**: a culture, an assembly, a type and a key,
+Forma answers this with one model, the **entry**: a culture, an assembly, a type and a key,
 with the text the type shows for that key in that culture. Reading turns every file into
-translations, by the default reading or by paths the project states, and reading is the one step
-that knows a file's place or name. Everything after it works on translations alone: finding a
+entries, by the default reading or by paths the project states, and reading is the one step
+that knows a file's place or name. Everything after it works on entries alone: finding a
 string, deciding which source wins, reporting a conflict, listing a type's strings, and the
-linter's rules about coverage and holes. A translation remembers the file it came from only to name
+linter's rules about coverage and holes. An entry remembers the file it came from only to name
 it in a message.
 
-## Translations
+## Entries
 
 ```text
 culture · assembly · type · key → text
@@ -38,24 +38,24 @@ es · Forma.Blazor · Forma.Blazor.Components.Bars.FormaToolbar · "Bold" → "N
 | Assembly | The assembly the type lives in. |
 | Type | The type's full name. |
 | Key | The English source text the type looks up. |
-| Text | The translation, or the key itself where a file declares the source text right with a JSON `null`. |
+| Text | What the type shows for the key in the culture, or the key itself where a file declares the source text right with a JSON `null`. |
 
-The assembly is part of what a translation is for, because a type's full name doesn't say it:
+The assembly is part of what an entry is for, because a type's full name doesn't say it:
 `Forma.Blazor.Components.Bars.FormaToolbar` lives in `Forma.Blazor`, and
 `Forma.Blazor.Components.DataView.FormaDataGrid` in `Forma.Blazor.DataView`, two assemblies whose
 types share the start of a namespace. The runtime looks a type's strings up assembly by assembly.
 
-A translation also has a **source**, the place that ships it: the type's own assembly, a locale
+An entry also has a **source**, the place that ships it: the type's own assembly, a locale
 pack, an application, or the folder beside the running application. The source decides precedence,
 which [Precedence](#precedence) sets out.
 
 A source reads an assembly's files for a culture once, at the first lookup that needs them, and
-keeps the translations they hold. The first lookup in a culture therefore reads every file the
-assembly has for it; every later lookup in that culture finds a translation already read.
+keeps the entries they hold. The first lookup in a culture therefore reads every file the
+assembly has for it; every later lookup in that culture finds an entry already read.
 
 ## Reading a file
 
-A file is read into translations by its place, its name and its sections. Every source applies the
+A file is read into entries by its place, its name and its sections. Every source applies the
 default reading below, unless a project states [paths](#paths) for its own files.
 
 1. **Culture.** A folder named for a culture, or the last part of the file's name:
@@ -121,7 +121,7 @@ folder. The culture wins, and the linter reports the assembly's name where the a
 
 A project may state another layout as paths in its `.locale.json`, which replace the default
 reading for its files. A path is notation, as the default reading is: it says where a file sits and
-how its name spells a type's, and what a file read by it holds is the same translations. A path
+how its name spells a type's, and what a file read by it holds is the same entries. A path
 reads a layout the default reading has no rule for, such as a culture inside a folder's name,
 `strings-es/Accounts.Admin.json`, read by `$RootDir/strings-$Culture/$AnchorName$Extension`.
 
@@ -344,7 +344,7 @@ say, so a file declares no root and no path of its own.
 
 ## Precedence
 
-For one type, one key and one reader's culture, a translation is chosen in this order:
+For one type, one key and one reader's culture, the text is chosen in this order:
 
 1. **The culture.** The reader's culture, then each of its parents: `es-419`, then `es`. A more
    specific culture wins over a later source, so an `es-419` reader sees a library's `es-419` text
@@ -354,11 +354,11 @@ For one type, one key and one reader's culture, a translation is chosen in this 
    them, then the application itself, then the folder beside the running application. A later
    source wins, so an application rewords a library, and a pack overrides what the assembly ships,
    since a host installing a pack asked for it.
-3. **Within one source,** a translation given two different texts is a conflict, whatever files and
+3. **Within one source,** an entry given two different texts is a conflict, whatever files and
    layouts gave them. The linter reports it as an error, and the runtime keeps the text from the
    file whose name sorts last, ordinally, so the outcome never depends on the order files are
    found, and logs the conflict once as a warning naming both files, for a host that runs no
-   linter. Two files giving one translation the same text are no conflict.
+   linter. Two files giving one entry the same text aren't a conflict.
 4. **Within one file,** what the file's own rules say: a section's own key wins over the file's
    `$shared` one, and a deeper node's shared entries over a higher node's.
 
@@ -367,11 +367,11 @@ For one type, one key and one reader's culture, a translation is chosen in this 
 | # | Question | Decision |
 |---|---|---|
 | L1 | Is reading a file a build setting or a library feature? | A library feature. The build embeds every locale file wherever it sits, and files are read at runtime, so every consumer gets it by referencing the package. |
-| L2 | What is canonical? | The translation: a culture, an assembly, a type and a key, with its text. Every layout, the default reading or paths a project states, is notation read into translations, and everything after reading works on translations alone, so where a file sits never changes what it means, which text wins or what the linter reports. |
+| L2 | What is canonical? | The entry: a culture, an assembly, a type and a key, with its text. Every layout, the default reading or paths a project states, is notation read into entries, and everything after reading works on entries alone, so where a file sits never changes what it means, which text wins or what the linter reports. |
 | L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also survives into resource names as a doubled dot, which no namespace produces. |
 | L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds localized strings alone, so neither carries the other's keys. |
 | L5 | What marks an assembly's root? | Its `.locale.json`, which sits at the assembly's root and nowhere else; an assembly with none is rooted at its project's root namespace and read by the defaults. |
-| L6 | Does an application's file for another assembly follow that assembly's layout? | No. It is read by the same rule as every file, its name starting with the assembly's name, whatever layout the assembly chose for its own files; the translation is the one currency every source trades in. |
+| L6 | Does an application's file for another assembly follow that assembly's layout? | No. It is read by the same rule as every file, its name starting with the assembly's name, whatever layout the assembly chose for its own files; the entry is the one currency every source trades in. |
 | L7 | Can a file be named for an assembly whose root namespace is not its name? | Yes. A name starting with the assembly's name goes on from its root namespace, and a stated path names `$AssemblyName` outright. |
 | L8 | Are a name's parts namespaces? | No. They are parts of a type's full name, which take in containing types and the type itself; a folder is related to a name only by the reading. |
 | L9 | Does `.locale.json` cascade? | No. It is per assembly: one file, applying to every file of the assembly, with nothing layered above or beneath it. A cascade is how a compile-time file such as `.editorconfig` reaches a tree, and a runtime file an assembly ships has no tree to reach. |
@@ -386,9 +386,9 @@ For one type, one key and one reader's culture, a translation is chosen in this 
 | L18 | Where does an application keep its strings for other assemblies, and how do they reach a runtime with no file system? | Among its locale files, in names starting with the assembly's name. The build embeds them as it embeds every locale file, so a WebAssembly client, a MAUI application and a server read them from the application's assembly. |
 | L19 | How does a Web App's server read its client's files? | Through `LocaleReferenceAttribute`, which the server's build writes for each referenced application that embedded locale files, naming its assembly; the server reads them before its own. The runtime finds the application by its entry assembly or, with none, by the mark its build writes into the application alone. |
 | L20 | What decides which text a reader sees? | The culture first, then the source, and nothing about a file's place or name. A more specific culture wins over a later source, and a later source over an earlier one. |
-| L21 | What happens when one source gives a translation two texts? | It is a conflict: the linter reports it as an error, and the runtime keeps the text from the file whose name sorts last, ordinally, so the outcome is fixed while the error stands, and logs the conflict once as a warning naming both files, since a host that runs no linter would otherwise show one of two texts without knowing. The same text twice is no conflict. |
+| L21 | What happens when one source gives an entry two texts? | It is a conflict: the linter reports it as an error, and the runtime keeps the text from the file whose name sorts last, ordinally, so the outcome is fixed while the error stands, and logs the conflict once as a warning naming both files, since a host that runs no linter would otherwise show one of two texts without knowing. The same text twice isn't a conflict. |
 | L22 | Can a culture be a folder? | Yes. A folder named for a culture holds files for it, a file per namespace or per type named with dots, so a project keeps one folder per language instead of a `.locales` folder per namespace. |
 | L23 | How is a culture told from a part of a name? | A culture is written as .NET names it and compared exactly, so `he` is a culture and the type `He` is not; a file in a culture folder carries no culture in its name. The build, the runtime and the linter decide it the same way, and the linter reports a part of a name that is a culture in another case and names no type, which would otherwise be read as part of a name in silence. |
 | L24 | What if an assembly is named for a culture? | The culture wins wherever the two meet, and the linter reports the assembly's name where it is built, the one place the name can change. |
-| L25 | Do stated paths remain? | Yes. A path is notation read into the same translations, and it reads layouts the default reading has no rule for, so a project bringing files from another system keeps them where they are. A project's paths replace the default reading for its files. |
-| L26 | When is a file read? | Once per source and culture, at the first lookup that needs it; every later lookup finds a translation already read. |
+| L25 | Do stated paths remain? | Yes. A path is notation read into the same entries, and it reads layouts the default reading has no rule for, so a project bringing files from another system keeps them where they are. A project's paths replace the default reading for its files. |
+| L26 | When is a file read? | Once per source and culture, at the first lookup that needs it; every later lookup finds an entry already read. |

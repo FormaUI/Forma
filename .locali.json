@@ -1,10 +1,10 @@
 {
-  // The library ships its translations in locale packs and a host overrides them from its folder; a tree that keeps them another way says so on a later line.
+  // The library ships its strings in locale packs and a host overrides them from its folder; a tree that keeps them another way says so on a later line.
   "localeSources": {
     "**": ["pack", "host"],
-    // An add-on embeds its own translations, since it ships as one package with no pack beside it.
+    // An add-on embeds its own locale files, since it ships as one package with no pack beside it.
     "src/AddOns/**": ["embedded"],
-    // The pages embed their own translations, and the folder beside the application holds the host's.
+    // The pages embed their own locale files, and the folder beside the application holds the host's.
     "src/Blazor/Forma.Blazor.Showcase/**": ["embedded", "host"],
     // The tests read a host's folder; every other arrangement they cover is a fixture, left unread on purpose.
     "tests/unit/Framework/Forma.Framework.Localization.Json.Tests/**": ["host"],
@@ -16,7 +16,7 @@
     "tests/support/Forma.Tests.Support/**": ["embedded", "satellite"]
   },
   "ignoreDiagnostics": {
-    // The page shows a hit and a miss side by side, so its miss is a sentence no file translates; it demonstrates a plural that omits 'other' on purpose; and its tables read each key from the row that lists it.
+    // The page shows a hit and a miss side by side, so its miss is a sentence no file localizes; it demonstrates a plural that omits 'other' on purpose; and its tables read each key from the row that lists it.
     "src/Blazor/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0204", "LOC0207", "LOC0208"],
     // The emoji picker reads a group's title from the group, whose title is its localization key.
     "src/Blazor/Forma.Blazor/Components/Symbols/FormaEmojiPicker.razor.cs": ["LOC0208"],

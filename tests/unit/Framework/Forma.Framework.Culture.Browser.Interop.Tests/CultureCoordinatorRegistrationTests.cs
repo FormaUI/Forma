@@ -471,7 +471,7 @@ public sealed class CultureCoordinatorRegistrationTests
             using var fixture = new CultureFixture("en-US");
             using var loggerFactory = new FakeLoggerFactory();
             var browser = new FakeCultureCoordinatorBrowser();
-            var source = new FakeDestinationSource { Answer = (_, _) => throw new InvalidOperationException("The story's translations couldn't be read.") };
+            var source = new FakeDestinationSource { Answer = (_, _) => throw new InvalidOperationException("The story's addresses in other cultures couldn't be read.") };
             await using var provider = CreateServices(browser, source, loggerFactory);
             await using var scope = provider.CreateAsyncScope();
             await GetRegistration(scope).RegisterAsync();

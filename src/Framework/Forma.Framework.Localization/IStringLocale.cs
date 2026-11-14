@@ -27,8 +27,8 @@ public interface IStringLocale
     /// <param name="values">One value per distinct hole, in the order the holes first appear in the key.</param>
     LocalizedPattern Resolve(string name, params object?[] values);
 
-    /// <summary>Every translation available for the UI culture the locale looks its strings up in.</summary>
-    /// <param name="includeParentCultures">Whether to include translations inherited from parent cultures.</param>
+    /// <summary>Every string available for the UI culture the locale looks its strings up in.</summary>
+    /// <param name="includeParentCultures">Whether to include strings inherited from parent cultures.</param>
     IEnumerable<LocalizedText> GetAllStrings(bool includeParentCultures);
 
     /// <summary>Returns a locale that uses the specified formatting and UI cultures, sharing the underlying localization resources. The original locale is unchanged.</summary>

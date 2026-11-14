@@ -9,7 +9,7 @@ using Forma.Framework.Localization.Files;
 
 using Microsoft.Extensions.Logging;
 
-/// <summary>A cache of the translations for a type in one culture, merged from the files embedded in the type's assembly, the locale packs and the host's own files, those embedded in the host's assemblies and then its folder's, a later source winning.</summary>
+/// <summary>A cache of the entries for a type in one culture, merged from the files embedded in the type's assembly, the locale packs and the host's own files, those embedded in the host's assemblies and then its folder's, a later source winning.</summary>
 internal sealed class JsonResourceCache
 {
     private readonly ILocaleFileFormat _format;
@@ -37,7 +37,7 @@ internal sealed class JsonResourceCache
         ];
     }
 
-    /// <summary>The translations for a location in one culture.</summary>
+    /// <summary>The entries for a location in one culture.</summary>
     public FrozenDictionary<string, JsonResourceEntry> Read(ResourceLocation location, CultureInfo culture)
         => _files.GetOrAdd(new CacheKey(location, culture.Name), static (key, cache) => cache.Load(key), this);
 
@@ -54,10 +54,10 @@ internal sealed class JsonResourceCache
 
         var entries = new Dictionary<string, LocaleSourceEntry>(StringComparer.Ordinal);
         var conflicts = new List<LocaleConflict>();
-        embeddedSource.ReadTranslations(assemblyName, key.CultureName).Collect(typeName, entries, conflicts);
+        embeddedSource.ReadEntries(assemblyName, key.CultureName).Collect(typeName, entries, conflicts);
         foreach (var source in _layered)
         {
-            source.ReadTranslations(assemblyName, key.CultureName).Collect(typeName, entries, conflicts);
+            source.ReadEntries(assemblyName, key.CultureName).Collect(typeName, entries, conflicts);
         }
 
         ReportConflicts(conflicts, key.CultureName);
@@ -67,7 +67,7 @@ internal sealed class JsonResourceCache
             return [];
         }
 
-        // A null value is a translation that is deliberately the key itself.
+        // A null value says the text is deliberately the key itself.
         return entries.ToFrozenDictionary(
             entry => entry.Key,
             entry => new JsonResourceEntry(entry.Key, entry.Value.Value ?? entry.Key, entry.Value.Value is null),
@@ -81,7 +81,7 @@ internal sealed class JsonResourceCache
         {
             if (_reportedConflicts.TryAdd((conflict, cultureName), 0))
             {
-                JsonLocalizationLog.TranslationConflict(_logger, conflict.FileName, conflict.OtherFileName, conflict.Key, conflict.TypeName, cultureName);
+                JsonLocalizationLog.EntryConflict(_logger, conflict.FileName, conflict.OtherFileName, conflict.Key, conflict.TypeName, cultureName);
             }
         }
     }
@@ -93,5 +93,5 @@ internal sealed class JsonResourceCache
     private readonly record struct CacheKey(ResourceLocation Location, string CultureName);
 }
 
-/// <summary>A translation together with the key it was read under.</summary>
+/// <summary>An entry's text together with the key it was read under.</summary>
 internal readonly record struct JsonResourceEntry(string Name, string Format, bool IsSourceText);

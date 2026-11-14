@@ -169,7 +169,7 @@ Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.5` are published, as [
 
 ## Locale files in any layout
 
-A project lays its locale files out as it likes, one folder per language as readily as a `.locales` folder per namespace, and every file is read into one translation, a culture, an assembly, a type and a key with its text, which everything after reading works on: lookups, precedence, conflicts and the linter. [The localization design](localization-design.md) states it, and [its implementation plan](localization-layout-implementation-plan.md) the eight steps, from a baseline of lookup costs through the runtime and the speed of its lookups, the build and a Locali release to the documents.
+A project lays its locale files out as it likes, one folder per language as readily as a `.locales` folder per namespace, and every file is read into one entry, a culture, an assembly, a type and a key with its text, which everything after reading works on: lookups, precedence, conflicts and the linter. [The localization design](localization-design.md) states it, and [its implementation plan](localization-layout-implementation-plan.md) the eight steps, from a baseline of lookup costs through the runtime and the speed of its lookups, the build and a Locali release to the documents.
 
 <a id="a-hosts-integration"></a>
 

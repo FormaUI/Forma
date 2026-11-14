@@ -47,7 +47,7 @@ public sealed class LocaleAssemblyLoaderTests
         public void Should_keep_the_application_s_packs_in_its_order_whichever_assembly_loads_first(bool isLibraryFirst)
         {
             // Arrange — the application records a pack and the host names a second, which a library records for its own use; a later pack
-            // overrides an earlier one, so the order decides which of two conflicting translations is read.
+            // overrides an earlier one, so the order decides which of two conflicting entries is read.
             using var loggerFactory = new FakeLoggerFactory();
             var recorded = typeof(LocalizationOptions).Assembly;
             var named = typeof(LocaleAssemblyLoaderTests).Assembly;

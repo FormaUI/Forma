@@ -59,12 +59,12 @@ public sealed class CultureTests(BrowserHost host)
     [MemberData(nameof(Routing))]
     public async Task Should_link_and_switch_to_the_address_the_host_gives_the_page_in_the_other_culture(string routing)
     {
-        // Arrange — a page at culture/translated in English and culture/meturgam in Hebrew
+        // Arrange — a page at culture/localized in English and culture/meturgam in Hebrew
         var (context, page) = await host.OpenPageAsync(await GetAddressAsync(routing));
         await using var _ = context;
-        await page.GotoAsync("culture/translated");
+        await page.GotoAsync("culture/localized");
         await WaitForPanelAsync(page);
-        var link = await page.Locator("#translated-he").GetAttributeAsync("href");
+        var link = await page.Locator("#localized-he").GetAttributeAsync("href");
 
         // Act
         await page.Locator("#switch-state").ClickAsync();

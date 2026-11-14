@@ -23,7 +23,7 @@ public sealed class LocaleNameTests
     [InlineData("count ")]
     [InlineData("items.Length")]
     [InlineData("a-b")]
-    public void Should_reject_anything_a_translation_could_not_spell(string name)
+    public void Should_reject_anything_a_text_could_not_spell(string name)
     {
         // Assert
         Assert.False(LocaleName.IsValid(name));

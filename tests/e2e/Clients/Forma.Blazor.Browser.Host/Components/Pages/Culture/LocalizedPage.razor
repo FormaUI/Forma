@@ -1,13 +1,13 @@
-@page "/culture/translated"
-@page "/{culture}/culture/translated"
+@page "/culture/localized"
+@page "/{culture}/culture/localized"
 @page "/culture/meturgam"
 @page "/{culture}/culture/meturgam"
 @inherits CultureRoutePage
 @inject IServiceProvider Services
 
 @* A page with an address of its own in each culture, the link to it in Hebrew where the check reads it. *@
-<h1 id="page">translated</h1>
-<a id="translated-he" href="@_hebrewAddress">he</a>
+<h1 id="page">localized</h1>
+<a id="localized-he" href="@_hebrewAddress">he</a>
 <CulturePanel @rendermode="HostModes.Island" />
 
 @code {

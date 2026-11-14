@@ -76,7 +76,7 @@
         }
 
         [Fact]
-        public void Should_speak_the_readers_language_from_its_own_translations()
+        public void Should_speak_the_readers_language_from_its_own_locale_files()
         {
             // Arrange
             using var culture = new CultureFixture("he");
@@ -492,7 +492,7 @@
         }
 
         [Fact]
-        public void Should_label_its_command_from_its_own_translations_and_its_group_from_the_composers()
+        public void Should_label_its_command_from_its_own_locale_files_and_its_group_from_the_composers()
         {
             // Arrange
             using var culture = new CultureFixture("he");

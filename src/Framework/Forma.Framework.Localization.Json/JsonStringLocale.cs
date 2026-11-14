@@ -133,7 +133,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         if (!isFound && context.Options.RequireMatchingLocalization)
         {
             throw new LocalizationNotFoundException(
-                $"'{location.BaseName}' carries no translation of '{name}' for '{UICulture.Name}'.");
+                $"'{location.BaseName}' carries no localization of '{name}' for '{UICulture.Name}'.");
         }
     }
 

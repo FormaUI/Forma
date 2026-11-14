@@ -148,7 +148,7 @@ public sealed class PluralExpressionEvaluatorTests
     }
 
     [Fact]
-    public void Should_fall_back_to_other_when_the_translation_omits_the_chosen_field()
+    public void Should_fall_back_to_other_when_the_text_omits_the_chosen_field()
     {
         // Arrange
         var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.Many));

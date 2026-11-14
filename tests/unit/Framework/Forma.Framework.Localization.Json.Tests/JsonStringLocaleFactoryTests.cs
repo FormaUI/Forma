@@ -126,7 +126,7 @@ public sealed class JsonStringLocaleFactoryTests
         using var culture = new CultureScope("he");
         var strings = provider.GetRequiredService<IStringLocale<Colocated>>();
 
-        // Assert — only the host's factory refuses a key no file translates.
-        Assert.Throws<LocalizationNotFoundException>(() => strings["No file translates this"]);
+        // Assert — only the host's factory refuses a key no file localizes.
+        Assert.Throws<LocalizationNotFoundException>(() => strings["No file localizes this"]);
     }
 }

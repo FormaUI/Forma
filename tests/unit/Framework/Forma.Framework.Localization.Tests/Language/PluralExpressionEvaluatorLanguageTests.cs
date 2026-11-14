@@ -35,7 +35,7 @@ public sealed class PluralExpressionEvaluatorLanguageTests
     }
 
     [Fact]
-    public void Should_fall_back_to_other_when_the_language_needs_a_field_the_translation_omits()
+    public void Should_fall_back_to_other_when_the_language_needs_a_field_the_text_omits()
     {
         // Act
         var evaluated = Evaluator.Evaluate(English, CultureInfo.GetCultureInfo("ar"), [LocalizedArgument.Unnamed(11)]);

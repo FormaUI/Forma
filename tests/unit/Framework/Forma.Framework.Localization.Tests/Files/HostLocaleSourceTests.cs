@@ -73,7 +73,7 @@ public sealed class HostLocaleSourceTests
         }
 
         [Fact]
-        public void Should_settle_a_key_both_places_translate_by_the_file_whose_name_sorts_last()
+        public void Should_settle_a_key_both_places_localize_by_the_file_whose_name_sorts_last()
         {
             // Arrange
             using var folder = new TempDirectory();

@@ -3,15 +3,15 @@ namespace Forma.Framework.Localization.Files;
 using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 
-/// <summary>Every translation one source holds for an assembly's types in one culture, read from the source's files once.</summary>
-public sealed class LocaleTranslations
+/// <summary>Every entry one source holds for an assembly's types in one culture, read from the source's files once.</summary>
+public sealed class LocaleEntries
 {
     private readonly string _rootNamespace;
     private readonly LocaleNames _underRoot;
     private readonly LocaleNames _outsideRoot;
     private readonly Lazy<IReadOnlyList<LocaleConflict>> _conflicts;
 
-    internal LocaleTranslations(string rootNamespace, LocaleNames underRoot, LocaleNames outsideRoot)
+    internal LocaleEntries(string rootNamespace, LocaleNames underRoot, LocaleNames outsideRoot)
     {
         _rootNamespace = rootNamespace;
         _underRoot = underRoot;
@@ -19,11 +19,11 @@ public sealed class LocaleTranslations
         _conflicts = new(() => [.. underRoot.GetConflicts().Concat(outsideRoot.GetConflicts()).Distinct()]);
     }
 
-    /// <summary>The translations two files of the source give different texts.</summary>
+    /// <summary>The entries two files of the source give different texts.</summary>
     public IReadOnlyList<LocaleConflict> Conflicts
         => _conflicts.Value;
 
-    /// <summary>Writes the translations the source holds for a type into <paramref name="entries"/>, keyed by their English source text, so each key is left with the text the source gives it.</summary>
+    /// <summary>Writes the entries the source holds for a type into <paramref name="entries"/>, keyed by their English source text, so each key is left with the text the source gives it.</summary>
     /// <remarks>
     /// A key's shared entries are written first, those of a shallower namespace before a deeper one's, and the type's own
     /// last, so a type's own entry wins over a shared one and a deeper shared entry over a shallower one. Of two files
@@ -31,8 +31,8 @@ public sealed class LocaleTranslations
     /// every type beneath the name it stands for.
     /// </remarks>
     /// <param name="typeName">The type's full name.</param>
-    /// <param name="entries">The entries the translations are written into.</param>
-    /// <param name="conflicts">The conflicts the type's translations meet, added to as they are written.</param>
+    /// <param name="entries">The entries written to, keyed by their English source text.</param>
+    /// <param name="conflicts">The conflicts the type's entries meet, added to as they are written.</param>
     /// <exception cref="LocaleFileException">A file standing for a part of the type's name is malformed.</exception>
     public void Collect(string typeName, IDictionary<string, LocaleSourceEntry> entries, ICollection<LocaleConflict>? conflicts = null)
     {
@@ -56,7 +56,7 @@ public sealed class LocaleTranslations
 }
 
 /// <summary>The sections a source's files hold for the names counted one way, from the root namespace or in full, keyed by those names.</summary>
-/// <remarks>A section's translations are copied out only when a type it holds is read, so reading a culture's files costs what parsing them costs.</remarks>
+/// <remarks>A section's entries are copied out only when a type it holds is read, so reading a culture's files costs what parsing them costs.</remarks>
 /// <param name="rootNamespace">The namespace the names are counted from, empty for full names, which a conflict's type is named in full by.</param>
 internal sealed class LocaleNames(string rootNamespace)
 {
@@ -92,10 +92,10 @@ internal sealed class LocaleNames(string rootNamespace)
         AddSection(file.Root, [.. anchor], fileName, string.Empty, recordsConflicts);
     }
 
-    /// <summary>Writes the translations for a name into entries: its shared entries from the shallowest namespace down, then its own.</summary>
+    /// <summary>Writes a name's entries into <paramref name="entries"/>: its shared entries from the shallowest namespace down, then its own.</summary>
     /// <param name="name">The name, its segments joined with dots.</param>
-    /// <param name="entries">The entries the translations are written into.</param>
-    /// <param name="conflicts">The conflicts the translations meet, added to as they are written.</param>
+    /// <param name="entries">The entries written to, keyed by their English source text.</param>
+    /// <param name="conflicts">The conflicts the entries meet, added to as they are written.</param>
     public void Collect(ReadOnlySpan<char> name, IDictionary<string, LocaleSourceEntry> entries, ICollection<LocaleConflict>? conflicts)
     {
         foreach (var (anchor, exception) in _broken)

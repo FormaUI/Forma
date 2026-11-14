@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <Description>FormaDataView, the collection component of the Forma component library.</Description>
-        <!-- The component borrows the product's namespace, so its translations embed and resolve as the product's own do. -->
+        <!-- The component borrows the product's namespace, so its locale files embed and resolve as the product's own do. -->
         <RootNamespace>Forma.Blazor.Components.DataView</RootNamespace>
         <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
     </PropertyGroup>

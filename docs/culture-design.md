@@ -602,7 +602,7 @@ a page leads in another culture is the host's to say, through a destination reso
 culture routing: handed the route a page is shown in, the route a reader is going to, and the page's
 address without its culture segment, the resolver names the page's address in the other culture, or a
 fallback the host sends the reader to in its place, or nothing, which is the same address in that culture.
-Whether a translation exists, and whether it is published, stay the host's: the router reads and builds
+Whether a page exists in another culture, and whether it is published, stay the host's: the router reads and builds
 addresses, and the resolver alone knows what a page is.
 
 One resolution serves every way a reader reaches another culture:

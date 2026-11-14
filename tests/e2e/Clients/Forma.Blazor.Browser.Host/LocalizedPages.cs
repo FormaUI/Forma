@@ -2,8 +2,8 @@ namespace Forma.Blazor.Browser.Host;
 
 using Forma.Framework.Culture.Router;
 
-/// <summary>The culture checks' page with an address of its own in each culture: <c>culture/translated</c> in English and <c>culture/meturgam</c> in Hebrew.</summary>
-public sealed class TranslatedPages : ICultureDestinationResolver
+/// <summary>The culture checks' page with an address of its own in each culture: <c>culture/localized</c> in English and <c>culture/meturgam</c> in Hebrew.</summary>
+public sealed class LocalizedPages : ICultureDestinationResolver
 {
     /// <inheritdoc />
     public ValueTask<CultureDestination?> ResolveAsync(CultureRoute from, CultureRoute to, string relativeAddress, CancellationToken cancellationToken)
@@ -17,8 +17,8 @@ public sealed class TranslatedPages : ICultureDestinationResolver
 
         return ValueTask.FromResult<CultureDestination?>((path, to.Token) switch
         {
-            ("culture/translated", "he") => CultureDestination.Translated("culture/meturgam" + query),
-            ("culture/meturgam", "en") => CultureDestination.Translated("culture/translated" + query),
+            ("culture/localized", "he") => CultureDestination.Localized("culture/meturgam" + query),
+            ("culture/meturgam", "en") => CultureDestination.Localized("culture/localized" + query),
             _ => null
         });
     }
