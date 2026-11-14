@@ -140,6 +140,44 @@ foreach (var segment in pattern.EnumerateSegments())
 
 Segments come in the order the localized string writes them.
 
+### Text carried as data
+
+A registry, a menu's entries or a list of sections, carries a label it can't localize where it is
+built, since nothing has a culture yet and the reader may switch language later. A `LocalizableText`
+carries what the lookup needs instead: the type whose locale holds the key, the key, and the values for
+its holes, raw. `Localize` looks it up when the text is shown, in the current cultures or a culture
+state's, and a value that is itself a `LocalizableText` is localized in turn:
+
+```csharp
+using Forma.Framework.Localization;
+
+public sealed record Section(string Address, LocalizableText Title);
+
+public static class Sections
+{
+    public static IReadOnlyList<Section> All { get; } =
+    [
+        new("sports", LocalizableText.For<SectionMenu>("Sports")),
+        new("results", LocalizableText.For<SectionMenu>("{Count} results today", 12)),
+    ];
+}
+```
+
+```razor
+@inject IStringLocaleFactory Locales
+@inject ICultureState CultureState
+
+@foreach (var section in Sections.All)
+{
+    <a href="@section.Address">@Locales.Localize(section.Title, CultureState)</a>
+}
+```
+
+The text holds no string and no culture, so it reads the language in force when it is shown. Two
+`LocalizableText`s are equal where their sources, keys and values are. The key parameter of
+`LocalizableText.For` carries `[LocaleKey]`, which marks an argument as a key looked up in the locale of the
+call's type argument.
+
 ## Where locale files live
 
 **In the assembly.** A folder keeps its locale files in a `.locales` folder of its own, one file

@@ -25,6 +25,8 @@
     "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Symbols/FormaIconPage.razor": ["LOC0208"],
     // The localizer forwards a plugin's title to the plugin's own locale and then the composer's; the title is the plugin's key, not one written here.
     "src/Blazor/Forma.Blazor.Composer/ComposerPluginLocalizer.cs": ["LOC0208"],
+    // Text carried as data is looked up by the key it was made with, written as text where it is made.
+    "src/Framework/Forma.Framework.Localization/StringLocaleFactoryExtensions.cs": ["LOC0208"],
     // A history command's title arrives from the line that builds it, where it is written as text.
     "src/Blazor/Forma.Blazor.Composer/FormaComposerCommandBar.razor.cs": ["LOC0208"],
     // A format's name comes from the table that lists the formats, where each is written as text.

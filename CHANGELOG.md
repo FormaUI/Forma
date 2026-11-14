@@ -110,6 +110,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - `CultureCoordinatorRegistration` takes an `ICultureDestinationSource`, which culture routing registers, and its
   receiver answers the coordinator's `ResolveDestinationAsync`; the coordinator's `register` takes whether the scope
   names destinations.
+- `LocalizableText` carries text to localize when it is shown, its source type, its key and its holes' values, as a
+  registry's labels need, and `IStringLocaleFactory.Localize` looks it up in the current cultures or a culture
+  state's, localizing a value that is a `LocalizableText` in turn. `LocalizableText.For<TSource>` marks its key
+  `[LocaleKey]`.
 
 ## `1.0.0-preview.5`
 
