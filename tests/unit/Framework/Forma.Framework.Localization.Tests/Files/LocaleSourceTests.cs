@@ -578,6 +578,28 @@ public sealed class LocaleSourceTests
     public sealed class Conflicts
     {
         [Fact]
+        public void Should_name_a_conflict_in_the_root_s_shared_entries_by_the_root_namespace()
+        {
+            // Arrange — two files for the root give its shared key different texts.
+            const string LocalesFile = "Contoso.Widgets/.locales/he.fake";
+            const string RootFile = "Contoso.Widgets/he.fake";
+            var source = new FakeLocaleSource
+            {
+                Files =
+                {
+                    [LocalesFile] = new(CreateSections().WithShared(("Close", "locales folder"))),
+                    [RootFile] = new(CreateSections().WithShared(("Close", "root"))),
+                },
+            };
+
+            // Act
+            var conflicts = source.ReadEntries(Assembly, "he").Conflicts;
+
+            // Assert
+            Assert.Equal([new LocaleConflict(Assembly, "Close", RootFile, LocalesFile, IsShared: true)], conflicts);
+        }
+
+        [Fact]
         public void Should_mark_a_conflict_between_shared_entries_as_shared()
         {
             // Arrange — the root file's section for the Bars namespace and the Bars folder's file share one key with different texts.

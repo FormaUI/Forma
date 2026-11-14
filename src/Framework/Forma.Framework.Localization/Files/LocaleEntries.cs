@@ -206,8 +206,9 @@ internal sealed class LocaleNames(string rootNamespace)
         return next < 0 ? -1 : dot + 1 + next;
     }
 
+    // An empty part adds nothing, so the root's own name is its namespace alone.
     private static string Join(string first, string second)
-        => first.Length == 0 ? second : $"{first}.{second}";
+        => first.Length == 0 ? second : second.Length == 0 ? first : $"{first}.{second}";
 
     private static IReadOnlyList<KeyValuePair<string, string?>> GetEntries(LocaleNode node, bool isShared)
         => isShared ? node.Section.SharedEntries : node.Section.Entries;
