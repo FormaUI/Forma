@@ -261,17 +261,6 @@ public sealed class LocalePathTests
         }
     }
 
-    public sealed class Defaults
-    {
-        [Fact]
-        public void Should_read_a_folders_own_locales_folder_and_a_file_named_for_a_segment_by_default()
-            => Assert.Equal([CultureInOwnDir, InParentsDir], LocalePath.Defaults.Select(path => path.Text));
-
-        [Fact]
-        public void Should_read_a_hosts_folder_as_every_source_does_and_then_as_its_locales_root()
-            => Assert.Equal([CultureInOwnDir, InParentsDir, CultureInHostDir, NamedInHostDir], LocalePath.HostDefaults.Select(path => path.Text));
-    }
-
     public sealed class Parsing
     {
         [Fact]

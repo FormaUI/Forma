@@ -406,10 +406,10 @@ public sealed class LocaleSourceTests
     }
 
     [Fact]
-    public void Should_name_no_anchor_for_a_file_no_path_reads()
+    public void Should_name_no_anchor_for_a_file_whose_name_carries_no_culture()
     {
         // Arrange
-        const string Name = "Contoso.Widgets/Bars.he.fake";
+        const string Name = "Contoso.Widgets/Bars.fake";
         var source = new FakeLocaleSource { Files = { [Name] = new(CreateEntries(("Bold", "any"))) } };
 
         // Act
@@ -449,6 +449,87 @@ public sealed class LocaleSourceTests
 
         // Assert
         Assert.Equal(["Contoso.Widgets.Fabrikam.Gadgets", "Fabrikam.Gadgets"], anchorNames);
+    }
+
+    public sealed class DefaultReading
+    {
+        [Theory]
+        [InlineData("Contoso.Widgets/.locales/he/Bars.fake")]
+        [InlineData("Contoso.Widgets/.locales/he.Bars.fake")]
+        [InlineData("Contoso.Widgets/Bars/.locales/he.fake")]
+        [InlineData("Contoso.Widgets/Bars.he.fake")]
+        [InlineData("Contoso.Widgets/he/Bars.fake")]
+        public void Should_read_a_folders_file_whichever_layout_names_it(string name)
+        {
+            // Arrange
+            var source = new FakeLocaleSource { Files = { [name] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "read"))))) } };
+
+            // Act
+            var entries = source.Read(Assembly, Toolbar, "he");
+
+            // Assert
+            Assert.Equal([new LocaleSourceEntry(name, "Toolbar", "Bold", "read")], entries);
+        }
+
+        [Theory]
+        [InlineData("Contoso.Widgets/.locales/he/Bars.Toolbar.fake")]
+        [InlineData("Contoso.Widgets/.locales/he/Bars/Toolbar.fake")]
+        [InlineData("Contoso.Widgets/Bars/.locales/Toolbar.he.fake")]
+        public void Should_read_a_types_own_file_with_folders_and_dots_alike(string name)
+        {
+            // Arrange
+            var source = new FakeLocaleSource { Files = { [name] = new(CreateEntries(("Bold", "read"))) } };
+
+            // Act
+            var entries = source.Read(Assembly, Toolbar, "he");
+
+            // Assert
+            Assert.Equal([new LocaleSourceEntry(name, string.Empty, "Bold", "read")], entries);
+        }
+
+        [Fact]
+        public void Should_read_a_part_written_as_a_culture_in_another_case_as_part_of_the_name()
+        {
+            // Arrange — He is a type, never the culture he.
+            const string Name = "Contoso.Widgets/.locales/he/Bars.He.fake";
+            var source = new FakeLocaleSource { Files = { [Name] = new(CreateEntries(("Bold", "the type He"))) } };
+
+            // Act
+            var entries = source.Read(Assembly, "Contoso.Widgets.Bars.He", "he");
+
+            // Assert
+            Assert.Equal([new LocaleSourceEntry(Name, string.Empty, "Bold", "the type He")], entries);
+        }
+
+        [Fact]
+        public void Should_read_no_file_for_another_culture()
+        {
+            // Arrange
+            var source = new FakeLocaleSource { Files = { ["Contoso.Widgets/.locales/es/Bars.Toolbar.fake"] = new(CreateEntries(("Bold", "Negrita"))) } };
+
+            // Act
+            var entries = source.Read(Assembly, Toolbar, "he");
+
+            // Assert
+            Assert.Empty(entries);
+        }
+
+        [Fact]
+        public void Should_pass_over_a_file_outside_any_folder_of_locale_files_that_reads_as_no_locale_file()
+        {
+            // Arrange — data the assembly embeds for its own use, named like a culture's file.
+            var source = new FakeLocaleSource
+            {
+                Files = { ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "folder file"))))) },
+                Malformed = { "Contoso.Widgets/he.fake" },
+            };
+
+            // Act
+            var entries = source.Read(Assembly, Toolbar, "he");
+
+            // Assert
+            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets/Bars/.locales/he.fake", "Toolbar", "Bold", "folder file")], entries);
+        }
     }
 
     public sealed class Conflicts

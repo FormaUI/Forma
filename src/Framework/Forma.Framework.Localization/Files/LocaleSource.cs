@@ -22,9 +22,9 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <summary>The character written between folders in this source's names: <see cref="Path.AltDirectorySeparatorChar"/> for a file path, <c>.</c> for an embedded resource's name.</summary>
     protected abstract char FolderSeparator { get; }
 
-    /// <summary>The paths this source reads an assembly's files by when its <c>.locale.json</c> states none.</summary>
-    protected virtual IReadOnlyList<LocalePath> DefaultPaths
-        => LocalePath.Defaults;
+    /// <summary>Whether every name the source holds starts with the name of the assembly whose strings it holds, as a pack's and a host's do.</summary>
+    protected virtual bool NamesStartWithAssemblyName
+        => false;
 
     /// <summary>How this source compares names.</summary>
     protected virtual StringComparison NameComparison
@@ -228,12 +228,12 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     {
         if (GetConfig(assemblyName) is not var (folder, config))
         {
-            return new LocaleRoot(GetDefaultRootDir(assemblyName), assemblyName, LocaleConfig.DefaultLocalesDir, DefaultPaths);
+            return new LocaleRoot(GetDefaultRootDir(assemblyName), assemblyName, LocaleConfig.DefaultLocalesDir, null);
         }
 
         var rootDir = config.RootDir is { } written ? JoinFolders(folder, written) : folder;
 
-        return new LocaleRoot(rootDir, config.RootNamespace ?? assemblyName, config.LocalesDir ?? LocaleConfig.DefaultLocalesDir, config.Paths ?? DefaultPaths);
+        return new LocaleRoot(rootDir, config.RootNamespace ?? assemblyName, config.LocalesDir ?? LocaleConfig.DefaultLocalesDir, config.Paths);
     }
 
     // A rootDir is written with '/' and sits beneath the config file's own folder.
@@ -244,11 +244,18 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         return folder.Length == 0 ? writtenRoot : $"{folder}{FolderSeparator}{writtenRoot}";
     }
 
-    // Each file is placed at every anchor the assembly's paths read it for, in the order of the paths.
+    // Each file is placed at the anchor the default reading takes from its name, or at every anchor the assembly's stated
+    // paths read it for, in the order of the paths.
     private FrozenDictionary<string, string[]> CreateAnchors(AnchorsKey key)
     {
         var root = _roots.GetOrAdd(key.AssemblyName, CreateRoot);
         var rootDir = key.IsOutsideRootNamespace ? GetRootDirOutsideRootNamespace(root.RootDir) : root.RootDir;
+
+        if (root.Paths is not { } paths)
+        {
+            return PlaceByName(key, root, rootDir);
+        }
+
         var rootNamespace = key.IsOutsideRootNamespace ? string.Empty : root.RootNamespace;
 
         var nameComparer = StringComparer.FromComparison(NameComparison);
@@ -264,9 +271,9 @@ public abstract class LocaleSource(ILocaleFileFormat format)
                 continue;
             }
 
-            for (var pathIndex = 0; pathIndex < root.Paths.Count; pathIndex++)
+            for (var pathIndex = 0; pathIndex < paths.Count; pathIndex++)
             {
-                var path = root.Paths[pathIndex];
+                var path = paths[pathIndex];
 
                 // A path standing for the root alone speaks for the root namespace only.
                 if ((key.IsOutsideRootNamespace && path.IsRootOnly) || !matcher.TryGetAnchor(path, name, out var anchor))
@@ -293,6 +300,54 @@ public abstract class LocaleSource(ILocaleFileFormat format)
                 .Distinct(nameComparer)
                 .ToArray(),
             nameComparer);
+    }
+
+    // The default reading: a name is read from where the assembly's names begin or, in a source whose names start with an
+    // assembly's name, from the source's root with that name leading the parts its culture and folders of locale files
+    // leave, so the culture can stand before the assembly's name or after it.
+    private FrozenDictionary<string, string[]> PlaceByName(AnchorsKey key, LocaleRoot root, string rootDir)
+    {
+        var nameComparer = StringComparer.FromComparison(NameComparison);
+        var assemblyParts = key.AssemblyName.Split('.');
+        var namesRoot = NamesStartWithAssemblyName ? string.Empty : rootDir;
+        var placedFiles = new Dictionary<string, List<string>>(nameComparer);
+
+        foreach (var name in GetNames().Concat(EnumerateCultureNames(key.CultureName)))
+        {
+            if (TryGetConfigFolder(name, out _)
+                || !LocaleRoot.IsBeneath(namesRoot, name, FolderSeparator, NameComparison)
+                || !LocaleFileNames.TryRead(namesRoot.Length == 0 ? name : name[(namesRoot.Length + 1)..], root.LocalesDir, Format.Extension, NameComparison, out var culture, out var parts, out _)
+                || !string.Equals(culture, key.CultureName, StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (NamesStartWithAssemblyName)
+            {
+                if (!LocaleFileNames.StartsWith(parts, assemblyParts, NameComparison))
+                {
+                    continue;
+                }
+
+                parts = parts[assemblyParts.Length..];
+            }
+
+            // The root's own file speaks for the root namespace only.
+            if (key.IsOutsideRootNamespace && parts.Length == 0)
+            {
+                continue;
+            }
+
+            var anchorKey = string.Join(AnchorKeySeparator, parts);
+            if (!placedFiles.TryGetValue(anchorKey, out var files))
+            {
+                placedFiles[anchorKey] = files = [];
+            }
+
+            files.Add(name);
+        }
+
+        return placedFiles.ToFrozenDictionary(pair => pair.Key, pair => pair.Value.Distinct(nameComparer).ToArray(), nameComparer);
     }
 
     // Every file the paths place in the culture is read once, its translations placed by the name it stands for and its
@@ -323,8 +378,13 @@ public abstract class LocaleSource(ILocaleFileFormat format)
                     }
                     catch (LocaleFileException exception)
                     {
-                        // A file that cannot be read is reported by every type beneath the name it stands for.
-                        names.AddBroken(string.Join('.', anchor), exception);
+                        // Outside a folder of locale files, the default reading takes only what reads as a locale file;
+                        // anywhere else, a file that cannot be read is reported by every type beneath the name it stands for.
+                        if (root.Paths is not null || IsInLocalesDir(name, root.LocalesDir))
+                        {
+                            names.AddBroken(string.Join('.', anchor), exception);
+                        }
+
                         continue;
                     }
 
@@ -349,6 +409,9 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         // A file placed at two names under the root namespace meets a rival at each, so a conflict is listed once.
         return new LocaleTranslations(root.RootNamespace, underRoot, outsideRoot, [.. conflicts.Distinct()]);
     }
+
+    private bool IsInLocalesDir(string name, string localesDir)
+        => LocaleFileNames.TryRead(name, localesDir, Format.Extension, NameComparison, out _, out _, out var isInLocalesDir) && isInLocalesDir;
 
     private readonly record struct AnchorsKey(string AssemblyName, string CultureName, bool IsOutsideRootNamespace);
 

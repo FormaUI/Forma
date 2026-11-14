@@ -24,8 +24,8 @@ public sealed class HostLocaleSource(string path, ILocaleFileFormat format, Func
         => Path.AltDirectorySeparatorChar;
 
     /// <inheritdoc />
-    protected override IReadOnlyList<LocalePath> DefaultPaths
-        => LocalePath.HostDefaults;
+    protected override bool NamesStartWithAssemblyName
+        => true;
 
     // Names are compared as the file system the host most likely runs on compares them.
     /// <inheritdoc />

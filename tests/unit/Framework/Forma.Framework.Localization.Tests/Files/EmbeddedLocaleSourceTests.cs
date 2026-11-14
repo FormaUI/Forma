@@ -45,7 +45,7 @@ public sealed class EmbeddedLocaleSourceTests
         }
 
         [Fact]
-        public void Should_not_read_a_file_beside_its_type_unless_a_setting_names_that_form()
+        public void Should_read_a_file_beside_its_type_outside_any_folder_of_locale_files()
         {
             // Arrange
             var assembly = new FakeAssembly(Assembly);
@@ -56,7 +56,7 @@ public sealed class EmbeddedLocaleSourceTests
             var entries = Read(assembly, format);
 
             // Assert
-            Assert.Empty(entries);
+            Assert.Equal([new LocaleSourceEntry("Contoso.Widgets.Bars.Toolbar.he.fake", string.Empty, "Bold", "beside the type")], entries);
         }
     }
 

@@ -4,8 +4,8 @@ namespace Forma.Framework.Localization.Files;
 /// <param name="RootDir">Where the source's names begin, written with the source's separator.</param>
 /// <param name="RootNamespace">The root namespace anchors are counted from.</param>
 /// <param name="LocalesDir">The name <c>$LocalesDir</c> stands for.</param>
-/// <param name="Paths">The paths the assembly's files are read by.</param>
-internal sealed record LocaleRoot(string RootDir, string RootNamespace, string LocalesDir, IReadOnlyList<LocalePath> Paths)
+/// <param name="Paths">The paths the assembly states its files are read by, or null for the default reading.</param>
+internal sealed record LocaleRoot(string RootDir, string RootNamespace, string LocalesDir, IReadOnlyList<LocalePath>? Paths)
 {
     /// <summary>Whether a name sits beneath a folder, which every name does beneath the empty one.</summary>
     /// <param name="folder">The folder, written with the separator.</param>

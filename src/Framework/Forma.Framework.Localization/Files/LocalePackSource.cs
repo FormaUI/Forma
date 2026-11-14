@@ -23,8 +23,8 @@ public sealed class LocalePackSource(Assembly pack, ILocaleFileFormat format, Fu
         => '.';
 
     /// <inheritdoc />
-    protected override IReadOnlyList<LocalePath> DefaultPaths
-        => LocalePath.HostDefaults;
+    protected override bool NamesStartWithAssemblyName
+        => true;
 
     /// <inheritdoc />
     protected override IEnumerable<string> EnumerateNames()

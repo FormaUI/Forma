@@ -6,22 +6,6 @@ using Forma.Framework.Localization.Parser.Syntax;
 /// <summary>The path of a locale file, written from a source's root with tokens for what varies by anchor, culture and source.</summary>
 public sealed class LocalePath
 {
-    /// <summary>The paths a source reads by default: a folder's own <c>.locales</c> folder, holding one file per culture for everything the folder completes, and in the same folder one file per culture named for a segment beneath the folder.</summary>
-    public static IReadOnlyList<LocalePath> Defaults { get; } =
-    [
-        Parse("$RootDir/$AnchorName/$LocalesDir/$Culture$Extension"),
-        Parse("$RootDir/$ParentName/$LocalesDir/$CurrentName.$Culture$Extension"),
-    ];
-
-    /// <summary>The paths a host's folder reads by: the default paths, and the same two files directly inside the folder.</summary>
-    /// <remarks>Files in both places are both read for the same anchor, in the order of the paths.</remarks>
-    public static IReadOnlyList<LocalePath> HostDefaults { get; } =
-    [
-        .. Defaults,
-        Parse("$RootDir/$AnchorName/$Culture$Extension"),
-        Parse("$RootDir/$ParentName/$CurrentName.$Culture$Extension"),
-    ];
-
     private LocalePath(string text, IReadOnlyList<LocalePathPart> parts)
     {
         Text = text;

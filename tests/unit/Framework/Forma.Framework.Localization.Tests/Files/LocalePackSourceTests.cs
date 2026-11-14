@@ -29,6 +29,24 @@ public sealed class LocalePackSourceTests
 
     public sealed class Layouts
     {
+        [Theory]
+        [InlineData("he.Contoso.Widgets.Bars.fake")]
+        [InlineData("Contoso.Widgets.he.Bars.fake")]
+        [InlineData("Contoso.Widgets.Bars.he.fake")]
+        public void Should_read_a_file_whose_culture_stands_before_or_after_the_assemblys_name(string name)
+        {
+            // Arrange
+            var pack = new FakeAssembly(Pack);
+            var format = new FakeLocaleFileFormat();
+            var file = AddFile(pack, format, name, CreateToolbarSection("read"));
+
+            // Act
+            var entries = Read(pack, format);
+
+            // Assert
+            Assert.Equal([new LocaleSourceEntry(file, "Toolbar", "Bold", "read")], entries);
+        }
+
         [Fact]
         public void Should_read_a_folders_file_and_a_types_own_file_as_a_hosts_folder_does()
         {
