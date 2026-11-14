@@ -39,19 +39,43 @@ public sealed class LocaleEntries
         ArgumentException.ThrowIfNullOrEmpty(typeName);
         ArgumentNullException.ThrowIfNull(entries);
 
-        // A type outside any namespace is read under the root namespace by its own name.
+        var names = GetNames(typeName, out var nameStart);
+        names.Collect(typeName.AsSpan(nameStart), entries, conflicts);
+    }
+
+    /// <summary>Every section of the source's files a type reads, whether or not its entries win, in the order they are written.</summary>
+    /// <param name="typeName">The type's full name.</param>
+    /// <exception cref="LocaleFileException">A file standing for a part of the type's name is malformed.</exception>
+    public IReadOnlyList<LocaleSourceSection> GetSections(string typeName)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(typeName);
+
+        var names = GetNames(typeName, out var nameStart);
+        var sections = new List<LocaleSourceSection>();
+        names.CollectSections(typeName.AsSpan(nameStart), sections);
+
+        return [.. sections.Distinct()];
+    }
+
+    // The names a type is read by, and where its name starts among them: from the root namespace for a type beneath it,
+    // and in full for one outside it. A type outside any namespace is read under the root namespace by its own name.
+    private LocaleNames GetNames(string typeName, out int nameStart)
+    {
+        nameStart = 0;
+
         if (!typeName.Contains('.', StringComparison.Ordinal))
         {
-            _underRoot.Collect(typeName, entries, conflicts);
+            return _underRoot;
         }
-        else if (typeName.Length > _rootNamespace.Length && typeName[_rootNamespace.Length] == '.' && typeName.StartsWith(_rootNamespace, StringComparison.Ordinal))
+
+        if (typeName.Length > _rootNamespace.Length && typeName[_rootNamespace.Length] == '.' && typeName.StartsWith(_rootNamespace, StringComparison.Ordinal))
         {
-            _underRoot.Collect(typeName.AsSpan(_rootNamespace.Length + 1), entries, conflicts);
+            nameStart = _rootNamespace.Length + 1;
+
+            return _underRoot;
         }
-        else
-        {
-            _outsideRoot.Collect(typeName, entries, conflicts);
-        }
+
+        return _outsideRoot;
     }
 }
 
@@ -98,13 +122,7 @@ internal sealed class LocaleNames(string rootNamespace)
     /// <param name="conflicts">The conflicts the entries meet, added to as they are written.</param>
     public void Collect(ReadOnlySpan<char> name, IDictionary<string, LocaleSourceEntry> entries, ICollection<LocaleConflict>? conflicts)
     {
-        foreach (var (anchor, exception) in _broken)
-        {
-            if (IsPrefix(anchor, name))
-            {
-                exception.Throw();
-            }
-        }
+        ThrowIfBroken(name);
 
         if (_shared.Count > 0)
         {
@@ -122,6 +140,32 @@ internal sealed class LocaleNames(string rootNamespace)
         if (_own.Count > 0)
         {
             Write(_own.GetAlternateLookup<ReadOnlySpan<char>>(), name, isShared: false, entries, conflicts);
+        }
+    }
+
+    /// <summary>Adds the sections a name reads to <paramref name="sections"/>, in the order <see cref="Collect"/> writes their entries: its shared sections from the shallowest namespace down, then its own.</summary>
+    /// <param name="name">The name, its segments joined with dots.</param>
+    /// <param name="sections">The sections the name's are added to.</param>
+    public void CollectSections(ReadOnlySpan<char> name, ICollection<LocaleSourceSection> sections)
+    {
+        ThrowIfBroken(name);
+
+        if (_shared.Count > 0)
+        {
+            var lookup = _shared.GetAlternateLookup<ReadOnlySpan<char>>();
+            AddSections(lookup, string.Empty, isShared: true, sections);
+
+            for (var end = name.IndexOf('.'); end >= 0; end = NextDot(name, end))
+            {
+                AddSections(lookup, name[..end], isShared: true, sections);
+            }
+
+            AddSections(lookup, name, isShared: true, sections);
+        }
+
+        if (_own.Count > 0)
+        {
+            AddSections(_own.GetAlternateLookup<ReadOnlySpan<char>>(), name, isShared: false, sections);
         }
     }
 
@@ -169,7 +213,38 @@ internal sealed class LocaleNames(string rootNamespace)
         => isShared ? node.Section.SharedEntries : node.Section.Entries;
 
     private static LocaleSourceEntry ToEntry(LocaleNode node, string key, string? value, bool isShared)
-        => new(node.FileName, isShared ? Join(node.SectionName, LocalizationSchema.SharedKey) : node.SectionName, key, value);
+        => new(node.FileName, GetTypeName(node, isShared), key, value);
+
+    // A shared entry is reported under its section's name and the shared section's reserved name.
+    private static string GetTypeName(LocaleNode node, bool isShared)
+        => isShared ? Join(node.SectionName, LocalizationSchema.SharedKey) : node.SectionName;
+
+    // Sections giving one name are listed in the order their entries are applied, by their files' names.
+    private static void AddSections(Dictionary<string, LocaleNodes>.AlternateLookup<ReadOnlySpan<char>> lookup, ReadOnlySpan<char> name, bool isShared, ICollection<LocaleSourceSection> sections)
+    {
+        if (!lookup.TryGetValue(name, out var nodes))
+        {
+            return;
+        }
+
+        IEnumerable<LocaleNode> ordered = nodes.Rest is null ? [nodes.First] : nodes.ToList().OrderBy(node => node.FileName, StringComparer.Ordinal);
+        foreach (var node in ordered)
+        {
+            sections.Add(new LocaleSourceSection(node.FileName, GetTypeName(node, isShared)));
+        }
+    }
+
+    // A file the source could not read throws for every name beneath the one it stands for.
+    private void ThrowIfBroken(ReadOnlySpan<char> name)
+    {
+        foreach (var (anchor, exception) in _broken)
+        {
+            if (IsPrefix(anchor, name))
+            {
+                exception.Throw();
+            }
+        }
+    }
 
     private void Write(Dictionary<string, LocaleNodes>.AlternateLookup<ReadOnlySpan<char>> lookup, ReadOnlySpan<char> name, bool isShared, IDictionary<string, LocaleSourceEntry> entries, ICollection<LocaleConflict>? conflicts)
     {
@@ -207,7 +282,7 @@ internal sealed class LocaleNames(string rootNamespace)
                 if (settled.TryGetValue(key, out var existing) && !string.Equals(existing.Value, value, StringComparison.Ordinal)
                     && node.RecordsConflicts && conflicts is not null)
                 {
-                    conflicts.Add(new LocaleConflict(Join(rootNamespace, name), key, node.FileName, existing.FileName));
+                    conflicts.Add(new LocaleConflict(Join(rootNamespace, name), key, node.FileName, existing.FileName, isShared));
                 }
 
                 settled[key] = ToEntry(node, key, value, isShared);

@@ -119,8 +119,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   the file whose name sorts last, ordinally, and logs the conflict once as a warning naming both files. The file closer
   to the type won before, so a project that laid a deeper file over a shallower one for the same key keeps the key in
   one of them, or gives both the same text. `LocaleSource.ReadEntries` reads what a source holds for an
-  assembly's types in a culture once, with the `LocaleConflict`s among its files, and `LocaleSource.Read` answers one
-  entry for each key.
+  assembly's types in a culture once, with the `LocaleConflict`s among its files, each saying whether it is between
+  shared entries, and the sections each type reads, whether their entries win or not; `LocaleSource.Read` answers one
+  entry for each key; and `LocaleFileNames.TryRead` reads a file's name as the default reading does.
 - `LocalizableText` carries text to localize when it is shown, its source type, its key and its holes' values, as a
   registry's labels need, and `IStringLocaleFactory.Localize` looks it up in the current cultures or a culture
   state's, localizing a value that is a `LocalizableText` in turn. `LocalizableText.For<TSource>` marks its key

@@ -1,10 +1,12 @@
 namespace Forma.Framework.Localization.Files;
 
 using System.Collections.Concurrent;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Runtime.InteropServices;
 
-/// <summary>What the default reading takes from a locale file's name: the culture it is for, and the parts of the name it stands for.</summary>
-internal static class LocaleFileNames
+/// <summary>The default reading of a locale file's name: the culture the file is for, and the parts of the name it stands for.</summary>
+public static class LocaleFileNames
 {
     // A name of more parts than this is read through the slower path that splits it whole.
     private const int MostParts = 64;
@@ -41,7 +43,7 @@ internal static class LocaleFileNames
     /// <summary>Whether a name holds a part written exactly so, told without reading the name whole.</summary>
     /// <param name="name">The name.</param>
     /// <param name="part">The part.</param>
-    public static bool HasPart(string name, string part)
+    internal static bool HasPart(string name, string part)
     {
         var text = name.AsSpan();
         Span<Range> ranges = stackalloc Range[MostParts];
@@ -61,7 +63,7 @@ internal static class LocaleFileNames
 
     /// <summary>The parts of a name written with folders, dots or both.</summary>
     /// <param name="name">The name.</param>
-    public static string[] Split(string name)
+    internal static string[] Split(string name)
         => name.Split(['.', '/']);
 
     /// <summary>Reads a file's name, from where its source's names begin, into the culture it is for and the parts of the name it stands for.</summary>
@@ -74,10 +76,43 @@ internal static class LocaleFileNames
     /// <param name="localesDir">The name of a folder of locale files, written with <c>/</c>.</param>
     /// <param name="extension">The extension the backend's files carry.</param>
     /// <param name="comparison">How names compare.</param>
-    /// <param name="culture">The culture the file is for.</param>
-    /// <param name="parts">The parts of the name the file stands for, empty for the root.</param>
-    /// <param name="isInLocalesDir">Whether the file sits in a folder of locale files.</param>
-    public static bool TryRead(string name, string localesDir, string extension, StringComparison comparison, out string culture, out string[] parts, out bool isInLocalesDir)
+    /// <param name="fileName">What the reading took from the name.</param>
+    public static bool TryRead(string name, string localesDir, string extension, StringComparison comparison, [NotNullWhen(true)] out LocaleFileName? fileName)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentException.ThrowIfNullOrEmpty(localesDir);
+        ArgumentException.ThrowIfNullOrEmpty(extension);
+
+        fileName = TryRead(name, localesDir, extension, comparison, out var culture, out var parts, out var isInLocalesDir)
+            ? new LocaleFileName(culture, ImmutableCollectionsMarshal.AsImmutableArray(parts), isInLocalesDir)
+            : null;
+
+        return fileName is not null;
+    }
+
+    /// <summary>Whether a name's parts begin with another's.</summary>
+    /// <param name="parts">The name's parts.</param>
+    /// <param name="start">The parts it begins with.</param>
+    /// <param name="comparison">How names compare.</param>
+    internal static bool StartsWith(ReadOnlySpan<string> parts, ReadOnlySpan<string> start, StringComparison comparison)
+    {
+        if (parts.Length < start.Length)
+        {
+            return false;
+        }
+
+        for (var offset = 0; offset < start.Length; offset++)
+        {
+            if (!string.Equals(parts[offset], start[offset], comparison))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    private static bool TryRead(string name, string localesDir, string extension, StringComparison comparison, out string culture, out string[] parts, out bool isInLocalesDir)
     {
         culture = string.Empty;
         parts = [];
@@ -136,28 +171,6 @@ internal static class LocaleFileNames
             if (kept[index])
             {
                 parts[written++] = text[ranges[index]].ToString();
-            }
-        }
-
-        return true;
-    }
-
-    /// <summary>Whether a name's parts begin with another's.</summary>
-    /// <param name="parts">The name's parts.</param>
-    /// <param name="start">The parts it begins with.</param>
-    /// <param name="comparison">How names compare.</param>
-    public static bool StartsWith(ReadOnlySpan<string> parts, ReadOnlySpan<string> start, StringComparison comparison)
-    {
-        if (parts.Length < start.Length)
-        {
-            return false;
-        }
-
-        for (var offset = 0; offset < start.Length; offset++)
-        {
-            if (!string.Equals(parts[offset], start[offset], comparison))
-            {
-                return false;
             }
         }
 

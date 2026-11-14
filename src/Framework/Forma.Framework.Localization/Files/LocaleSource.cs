@@ -321,7 +321,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
                 || !LocaleFileNames.HasPart(name, key.CultureName)
                 || _fileNames.GetOrAdd((name, root.LocalesDir), ReadFileName) is not { } fileName
                 || !string.Equals(fileName.Culture, key.CultureName, StringComparison.Ordinal)
-                || !LocaleFileNames.StartsWith(fileName.Parts, rootParts, NameComparison))
+                || !LocaleFileNames.StartsWith(fileName.Parts.AsSpan(), rootParts, NameComparison))
             {
                 continue;
             }
@@ -330,7 +330,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
 
             if (NamesStartWithAssemblyName)
             {
-                if (!LocaleFileNames.StartsWith(fileName.Parts.AsSpan(start), assemblyParts, NameComparison))
+                if (!LocaleFileNames.StartsWith(fileName.Parts.AsSpan()[start..], assemblyParts, NameComparison))
                 {
                     continue;
                 }
@@ -341,12 +341,12 @@ public abstract class LocaleSource(ILocaleFileFormat format)
             // Read in full, a name starting with the root namespace stands for types the reading under the root namespace
             // answers, so it reaches no type here, and the root's own file speaks for the root namespace only.
             if (key.IsOutsideRootNamespace
-                && (start == fileName.Parts.Length || LocaleFileNames.StartsWith(fileName.Parts.AsSpan(start), rootNamespaceParts, StringComparison.Ordinal)))
+                && (start == fileName.Parts.Length || LocaleFileNames.StartsWith(fileName.Parts.AsSpan()[start..], rootNamespaceParts, StringComparison.Ordinal)))
             {
                 continue;
             }
 
-            var anchorKey = string.Join(AnchorKeySeparator, fileName.Parts, start, fileName.Parts.Length - start);
+            var anchorKey = string.Join(AnchorKeySeparator, fileName.Parts.AsSpan()[start..]);
             if (!placedFiles.TryGetValue(anchorKey, out var files))
             {
                 placedFiles[anchorKey] = files = [];
@@ -359,9 +359,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     }
 
     private LocaleFileName? ReadFileName((string Name, string LocalesDir) key)
-        => LocaleFileNames.TryRead(key.Name, key.LocalesDir, Format.Extension, NameComparison, out var culture, out var parts, out var isInLocalesDir)
-            ? new LocaleFileName(culture, parts, isInLocalesDir)
-            : null;
+        => LocaleFileNames.TryRead(key.Name, key.LocalesDir, Format.Extension, NameComparison, out var fileName) ? fileName : null;
 
     // Every file the paths place in the culture is read once, its entries placed by the name it stands for and its
     // rooted sections by the names they spell, which every reading of names takes, as a type may be counted either way.
@@ -424,9 +422,6 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     private readonly record struct AnchorsKey(string AssemblyName, string CultureName, bool IsOutsideRootNamespace);
 
     private readonly record struct EntriesKey(string AssemblyName, string CultureName);
-
-    // What the default reading took from a file's name.
-    private sealed record LocaleFileName(string Culture, string[] Parts, bool IsInLocalesDir);
 
     private readonly record struct PlacedFile(string Name, int PathIndex, int Order);
 }

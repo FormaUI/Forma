@@ -532,8 +532,73 @@ public sealed class LocaleSourceTests
         }
     }
 
+    public sealed class Sections
+    {
+        [Fact]
+        public void Should_list_every_section_a_type_reads_including_one_whose_entries_lose()
+        {
+            // Arrange — the category file's section for the type gives a key the type's own file, whose name sorts last, gives too.
+            const string Root = "Contoso.Widgets/.locales/he.fake";
+            const string Category = "Contoso.Widgets/Bars/.locales/he.fake";
+            const string Own = "Contoso.Widgets/Bars/Toolbar/.locales/he.fake";
+            var source = new FakeLocaleSource
+            {
+                Files =
+                {
+                    [Root] = new(CreateSections().WithShared(("Close", "root"))),
+                    [Category] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "bold"))))),
+                    [Own] = new(CreateEntries(("Bold", "bold"))),
+                },
+            };
+
+            // Act
+            var sections = source.ReadEntries(Assembly, "he").GetSections(Toolbar);
+
+            // Assert
+            Assert.Equal([new LocaleSourceSection(Root, "$shared"), new LocaleSourceSection(Category, "Toolbar"), new LocaleSourceSection(Own, string.Empty)], sections);
+        }
+
+        [Fact]
+        public void Should_list_nothing_for_a_type_no_file_reaches()
+        {
+            // Arrange
+            var source = new FakeLocaleSource
+            {
+                Files = { ["Contoso.Widgets/Bars/.locales/he.fake"] = new(CreateSections(("Toolbar", CreateEntries(("Bold", "bold"))))) },
+            };
+
+            // Act
+            var sections = source.ReadEntries(Assembly, "he").GetSections("Contoso.Widgets.Menus.Menu");
+
+            // Assert
+            Assert.Empty(sections);
+        }
+    }
+
     public sealed class Conflicts
     {
+        [Fact]
+        public void Should_mark_a_conflict_between_shared_entries_as_shared()
+        {
+            // Arrange — the root file's section for the Bars namespace and the Bars folder's file share one key with different texts.
+            const string Root = "Contoso.Widgets/.locales/he.fake";
+            const string Category = "Contoso.Widgets/Bars/.locales/he.fake";
+            var source = new FakeLocaleSource
+            {
+                Files =
+                {
+                    [Root] = new(CreateSections(("Bars", CreateSections().WithShared(("Close", "root"))))),
+                    [Category] = new(CreateSections().WithShared(("Close", "category"))),
+                },
+            };
+
+            // Act
+            var conflicts = source.ReadEntries(Assembly, "he").Conflicts;
+
+            // Assert
+            Assert.Equal([new LocaleConflict("Contoso.Widgets.Bars", "Close", Category, Root, IsShared: true)], conflicts);
+        }
+
         [Fact]
         public void Should_keep_the_text_of_the_file_whose_name_sorts_last_whichever_stands_closer_to_the_type()
         {
@@ -556,7 +621,7 @@ public sealed class LocaleSourceTests
             // Assert
             Assert.Multiple(
                 () => Assert.Equal([new LocaleSourceEntry(Rooted, "@.Bars.Toolbar", "Bold", "rooted section")], entries),
-                () => Assert.Equal([new LocaleConflict("Contoso.Widgets.Bars.Toolbar", "Bold", Rooted, Own)], conflicts));
+                () => Assert.Equal([new LocaleConflict("Contoso.Widgets.Bars.Toolbar", "Bold", Rooted, Own, IsShared: false)], conflicts));
         }
 
         [Fact]

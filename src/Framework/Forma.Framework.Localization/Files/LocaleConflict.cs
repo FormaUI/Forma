@@ -5,4 +5,5 @@ namespace Forma.Framework.Localization.Files;
 /// <param name="Key">The English source text the entry is keyed by.</param>
 /// <param name="FileName">The file whose text the source keeps.</param>
 /// <param name="OtherFileName">The file whose text the source sets aside.</param>
-public readonly record struct LocaleConflict(string TypeName, string Key, string FileName, string OtherFileName);
+/// <param name="IsShared">Whether the entry is shared by the types beneath the namespace <paramref name="TypeName"/> names, rather than a type's own.</param>
+public readonly record struct LocaleConflict(string TypeName, string Key, string FileName, string OtherFileName, bool IsShared);
