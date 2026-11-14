@@ -121,7 +121,7 @@ a page whose load initialized nothing, so a Web App page without `FormaPageHead`
 A string is looked up synchronously in every runtime, so each locale file a lookup reads is in the client
 before the first lookup. The library's packs are embedded in their assemblies, and a host's own locale
 files are embedded in its client assembly the same way, by the package's targets, as the
-[localization design](localization-design.md#host-files) sets out, so a host's string switches with the
+[localization design](localization-design.md#the-applications-files) sets out, so a host's string switches with the
 library's.
 
 ## The culture across the handoff

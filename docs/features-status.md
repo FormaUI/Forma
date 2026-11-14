@@ -26,6 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
+| [Locale files in any layout](#locale-files-in-any-layout) | Designed; seven steps open |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -163,6 +164,12 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
 Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.5` are published, as [the changelog](../CHANGELOG.md) lists them. `release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
 
 - Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
+
+<a id="locale-files-in-any-layout"></a>
+
+## Locale files in any layout
+
+A project lays its locale files out as it likes, one folder per language as readily as a `.locales` folder per namespace, and every file is read into one translation, a culture, an assembly, a type and a key with its text, which everything after reading works on: lookups, precedence, conflicts and the linter. [The localization design](localization-design.md) states it, and [its implementation plan](localization-layout-implementation-plan.md) the seven steps, from a baseline of lookup costs through the runtime, the build and a Locali release to the documents.
 
 <a id="a-hosts-integration"></a>
 
