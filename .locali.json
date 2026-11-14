@@ -44,13 +44,6 @@
     "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Menus/.locales/es.json": ["LOC0113"],
     "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Symbols/.locales/es.json": ["LOC0113"]
   },
-  "excludeFiles": [
-    // The fixtures are malformed on purpose, each proving what its test asserts.
-    "*/Fixtures/*",
-    // The fixtures prove two files standing for one anchor are both read: a host's root file in both forms, and a root's file beside one named for the assembly.
-    "tests/unit/Framework/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/es.json",
-    "tests/unit/Framework/Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.Json.Tests/.locales/es.json",
-    "tests/support/Forma.Tests.Support/Localization/Rooted/Strings/.locales/he.json",
-    "tests/support/Forma.Tests.Support/Localization/Rooted/Strings/Forma.Tests.Support.he.json"
-  ]
+  // The fixtures are malformed on purpose, each proving what its test asserts.
+  "excludeFiles": ["*/Fixtures/*"]
 }
