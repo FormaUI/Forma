@@ -1787,7 +1787,7 @@ function Test-BrowserCheck {
             $runsSmokeChecks = $selectedSmokeChecks.Count -gt 0
             $runsChecks = $selectedChecks.Count -gt 0
             $needsExamples = $runsSmokeChecks -or [bool]($selectedChecks -match '\.WebViewExampleTests\b')
-            $needsWebView = $isWebViewPublished -and [bool]($selectedChecks -match 'runtime: "webview"')
+            $needsWebView = $isWebViewPublished -and [bool]($selectedChecks -match 'runtime: "webview"|\.WebView(?!Example)\w*Tests\b')
             $clearsOutputs = [bool]($selectedChecks -match '\.DownloadTests\b')
         }
 
