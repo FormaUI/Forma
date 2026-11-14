@@ -25,7 +25,9 @@ string, deciding which source wins, reporting a conflict, listing a type's strin
 linter's rules about coverage and holes. An entry remembers the file it came from only to name
 it in a message.
 
-## Entries
+## Locales
+
+A locale provides text for a culture. Each entry identifies the assembly, type, and key the text belongs to:
 
 ```text
 culture · assembly · type · key → text
