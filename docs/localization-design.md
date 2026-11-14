@@ -117,7 +117,10 @@ Rewording another assembly's strings is an application's choice, so the runtime 
 an application and in a pack, and the linter reports one in a library.
 
 An assembly named for a culture would make `.locales/es/` both a culture folder and that assembly's
-folder. The culture wins, and the linter reports the assembly's name where the assembly is built.
+folder, and since an embedded file's name starts with the project's root namespace, a root namespace
+with a part that is a culture, `Contoso.my.Widgets`, would give every file the project embeds that
+culture. The culture wins, and the linter reports the root namespace where the assembly is built,
+the assembly's name unless the project names another.
 
 ## Paths
 
@@ -181,13 +184,14 @@ carry in the assembly itself.
 
 ## The application's files
 
-An application's locale files are a source of their own, after every pack, holding its own strings
-and its strings for other assemblies alike. An application is a WebAssembly client, a server built
-on the Web SDK, or a Blazor Hybrid application, which the build knows as an application referencing
-its platform's web view package, WPF's, Windows Forms' or MAUI's, its output an executable or, on
-Android, the project the Android SDK marks as an application. A WebAssembly client has no file
-system to read a folder from and an application MAUI packages has none beside it, so the
-application's files are embedded as every assembly's are.
+An application's locale files for other assemblies are a source of their own, after every pack,
+read beneath the application's root by names starting with an assembly's name; its files for its
+own types are its assembly's own, read first, as every assembly's are. An application is a
+WebAssembly client, a server built on the Web SDK, or a Blazor Hybrid application, which the build
+knows as an application referencing its platform's web view package, WPF's, Windows Forms' or
+MAUI's, its output an executable or, on Android, the project the Android SDK marks as an
+application. A WebAssembly client has no file system to read a folder from and an application MAUI
+packages has none beside it, so the application's files are embedded as every assembly's are.
 
 A Web App's server renders its client's components too, so it reads its client's files as well as
 its own. As the server builds, it asks each project it references whether that project is an
@@ -391,6 +395,6 @@ For one type, one key and one reader's culture, the text is chosen in this order
 | L21 | What happens when one source gives an entry two texts? | It is a conflict: the linter reports it as an error, and the runtime keeps the text from the file whose name sorts last, ordinally, so the outcome is fixed while the error stands, and logs the conflict once as a warning naming both files, since a host that runs no linter would otherwise show one of two texts without knowing. The same text twice isn't a conflict. |
 | L22 | Can a culture be a folder? | Yes. A folder named for a culture holds files for it, a file per namespace or per type named with dots, so a project keeps one folder per language instead of a `.locales` folder per namespace. |
 | L23 | How is a culture told from a part of a name? | A culture is written as .NET names it and compared exactly, so `he` is a culture and the type `He` is not; a file in a culture folder carries no culture in its name. The build, the runtime and the linter decide it the same way, and the linter reports a part of a name that is a culture in another case and names no type, which would otherwise be read as part of a name in silence. |
-| L24 | What if an assembly is named for a culture? | The culture wins wherever the two meet, and the linter reports the assembly's name where it is built, the one place the name can change. |
+| L24 | What if an assembly is named for a culture? | The culture wins wherever the two meet, and the linter reports a culture in the root namespace the project embeds its files under, the assembly's name unless the project names another, where it is built, the one place the name can change. |
 | L25 | Do stated paths remain? | Yes. A path is notation read into the same entries, and it reads layouts the default reading has no rule for, so a project bringing files from another system keeps them where they are. A project's paths replace the default reading for its files. |
 | L26 | When is a file read? | Once per source and culture, at the first lookup that needs it; every later lookup finds an entry already read. |

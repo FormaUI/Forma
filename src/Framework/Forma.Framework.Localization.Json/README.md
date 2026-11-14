@@ -72,8 +72,7 @@ Under `es`, `Progress(3, 9)` renders `Se guardaron 3 de 9.` and `FileCount(1)` r
 and how a host overrides one.
 
 A file named for its type, `Uploads/.locales/UploadStatus.es.json`, holds that type's entries at
-its top level. `WithCulture="false"` keeps such a file in the main assembly; without it the SDK
-moves the file into the culture's satellite assembly, which is read all the same.
+its top level.
 
 ## The file
 
