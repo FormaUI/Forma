@@ -31,6 +31,8 @@ public sealed partial class FormaFilePicker : FormaElementBase
 
     private bool _isAttached;
 
+    private bool _isClearPending;
+
     private ElementReference _dropZoneElement;
 
     private bool _isBusy;
@@ -77,6 +79,12 @@ public sealed partial class FormaFilePicker : FormaElementBase
             await InputRouter.ConfigureAsync();
             _isAttached = await _fileDropZone.AttachAsync(_dropZoneElement, DropAction, DraggingClass);
         }
+
+        // A clear asked for before the script attached waits for it, so a file chosen as the page loads is still let go of.
+        if (_isClearPending && _fileDropZone.IsAttached)
+        {
+            _isClearPending = !await _fileDropZone.ClearAsync();
+        }
     }
 
     // A drop bypasses the browse dialog's own Accept filter, so every file is matched here.
@@ -109,12 +117,14 @@ public sealed partial class FormaFilePicker : FormaElementBase
         }
 
         _rejections.Clear();
-        await _fileDropZone.ClearAsync();
+        _isClearPending = !await _fileDropZone.ClearAsync();
         StateHasChanged();
     }
 
     private async Task HandleChangeAsync(InputFileChangeEventArgs args)
     {
+        // A choice made after a clear still waiting on the script is the one the input keeps.
+        _isClearPending = false;
         _rejections.Clear();
 
         if (args.FileCount == 0)

@@ -212,5 +212,44 @@
                 () => Assert.Empty(cut.FindAll(".forma-file-picker-rejections li")),
                 () => Assert.Contains(dropZone.Invocations, invocation => invocation.Identifier == "clear"));
         }
+
+        [Fact]
+        public async Task Should_empty_its_input_once_its_script_attaches_when_cleared_before()
+        {
+            // Arrange — cleared while its drop zone still waits on the input router's configuration to attach
+            using var ctx = new FormaFilePickerTests();
+            var configure = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js").SetupVoid("configure", _ => true);
+            var dropZone = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/FileDropZone.js").SetupModule("attach", _ => true);
+            dropZone.Mode = JSRuntimeMode.Loose;
+            var cut = ctx.Render(@<FormaFilePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            var picker = cut.FindComponent<FormaFilePicker>();
+            await picker.InvokeAsync(picker.Instance.ClearAsync);
+
+            // Act
+            await cut.ReleaseAsync(() => configure.SetVoidResult());
+
+            // Assert
+            Assert.Single(dropZone.Invocations, invocation => invocation.Identifier == "clear");
+        }
+
+        [Fact]
+        public async Task Should_keep_a_file_chosen_after_a_clear_still_waiting_on_its_script()
+        {
+            // Arrange — cleared while its drop zone still waits to attach, then a file chosen
+            using var ctx = new FormaFilePickerTests();
+            var configure = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js").SetupVoid("configure", _ => true);
+            var dropZone = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/FileDropZone.js").SetupModule("attach", _ => true);
+            dropZone.Mode = JSRuntimeMode.Loose;
+            var cut = ctx.Render(@<FormaFilePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            var picker = cut.FindComponent<FormaFilePicker>();
+            await picker.InvokeAsync(picker.Instance.ClearAsync);
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("Hello", "notes.txt", contentType: "text/plain"));
+
+            // Act
+            await cut.ReleaseAsync(() => configure.SetVoidResult());
+
+            // Assert
+            Assert.DoesNotContain(dropZone.Invocations, invocation => invocation.Identifier == "clear");
+        }
     }
 }
