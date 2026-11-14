@@ -42,6 +42,11 @@ if (HostModes.UsesCultureAddresses)
     });
 }
 
+if (HostModes.UsesCultureAddresses)
+{
+    builder.Services.AddSingleton<ICultureDestinationResolver, TranslatedPages>();
+}
+
 builder.Services.AddSingleton<DelayedSwitches>();
 builder.Services.AddScoped<NavigationRecorder>();
 

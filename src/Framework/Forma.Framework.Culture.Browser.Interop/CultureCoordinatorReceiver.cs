@@ -17,4 +17,9 @@ public sealed class CultureCoordinatorReceiver
     [JSInvokable]
     public Task ApplyAsync(string culture, string uiCulture, string documentKey, int number)
         => _registration.ApplyAsync(culture, uiCulture, new CultureVersion(documentKey, number));
+
+    /// <summary>The address, relative to the application's root and with its culture segment, the page at <paramref name="relativeAddress"/> leads to in the route <paramref name="token"/> names, or <see langword="null"/> for that page's own address there.</summary>
+    [JSInvokable]
+    public Task<string?> ResolveDestinationAsync(string relativeAddress, string token)
+        => _registration.ResolveDestinationAsync(relativeAddress, token);
 }

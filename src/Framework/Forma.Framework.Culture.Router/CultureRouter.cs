@@ -212,6 +212,19 @@ public sealed partial class CultureRouter : ICultureAddressing
         };
     }
 
+    /// <summary>The route the culture segment of <paramref name="relativeAddress"/>, escaped and relative to the application's root, names, the default route where it names none, and the address without that segment, its query kept.</summary>
+    internal (CultureRoute Route, string Address) ReadAddress(string relativeAddress)
+    {
+        var queryStart = relativeAddress.IndexOf('?', StringComparison.Ordinal);
+        var path = queryStart < 0 ? relativeAddress : relativeAddress[..queryStart];
+        var query = queryStart < 0 ? string.Empty : relativeAddress[queryStart..];
+        var segments = GetSegments(path);
+
+        return segments.Length > 0 && FindRoute(Uri.UnescapeDataString(segments[0])) is { } route
+            ? (route, string.Join('/', segments.Skip(1)) + query)
+            : (DefaultRoute, path.TrimStart('/') + query);
+    }
+
     /// <summary>Whether <paramref name="segment"/> is a registered route's token or alias, in any case.</summary>
     internal bool IsToken(string segment)
         => _routesByToken.ContainsKey(segment);

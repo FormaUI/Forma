@@ -101,6 +101,15 @@ set out. What Forma gained before its first release, month by month, is in [the 
   them, drew its count in the room the others keep for their actions' menu.
 - A `FormaFileUploader`'s Hebrew byte count and time left read in order. The byte count read its total before what had
   been sent, and the time left its unit before its number.
+- Under culture routing a page can have an address of its own in each culture. A host's `ICultureDestinationResolver`
+  names where a page leads in another culture, a `CultureDestination` that is its address there, `Translated`, or a
+  `Fallback` the host sends the reader to in its place, and every switch by address goes there, through
+  `ICultureSwitch` or `CultureSwitcher` and as a web view follows its application's culture. `CultureSwitcher`'s
+  `GetDestinationAsync` and `GetDestinationUriAsync` give a link the same destination, `IsFallback` included. A switch
+  went to the current page's address in the other culture alone.
+- `CultureCoordinatorRegistration` takes an `ICultureDestinationSource`, which culture routing registers, and its
+  receiver answers the coordinator's `ResolveDestinationAsync`; the coordinator's `register` takes whether the scope
+  names destinations.
 
 ## `1.0.0-preview.5`
 

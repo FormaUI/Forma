@@ -181,6 +181,24 @@ function fakeReceiver() {
     };
 }
 
+// A receiver whose scope names destinations, answering each request for one through `answer` and recording it.
+function destinationReceiver(answer) {
+    const receiver = fakeReceiver();
+    const deliver = receiver.invokeMethodAsync.bind(receiver);
+    receiver.resolutions = [];
+    receiver.invokeMethodAsync = (method, ...args) => {
+        if (method !== 'ResolveDestinationAsync') {
+            return deliver(method, ...args);
+        }
+
+        receiver.resolutions.push(args);
+
+        return answer(...args);
+    };
+
+    return receiver;
+}
+
 function describeDelivery({ culture, uiCulture, number }) {
     return `${culture}/${uiCulture} #${number}`;
 }
@@ -1257,6 +1275,129 @@ describe('CultureCoordinator', () => {
             expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
             expect(other.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
             expect(readRouteCookie()).toBeNull();
+        });
+    });
+
+    describe('destinations', () => {
+        beforeEach(() => {
+            window.happyDOM.setURL('http://localhost/news/the-final?page=2#comments');
+        });
+
+        it('switches in place to the destination the receiver names, asking with the address from the root', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = destinationReceiver(() => Promise.resolve('/he/hadashot/hagmar?page=2'));
+            const registration = await coordinator.register('a', receiver, 'server', null, true);
+
+            // Act
+            const switching = registration.request('he', 'he', 'rtl');
+            await settle();
+            await registration.reportLanding('he', 1);
+
+            // Assert
+            await expect(switching).resolves.toBe('accepted');
+            expect(receiver.resolutions).toEqual([['news/the-final?page=2', 'he']]);
+            expect(blazor.navigations).toEqual(['http://localhost/he/hadashot/hagmar?page=2']);
+        });
+
+        it('loads the destination the receiver names as a new document where the switch doesn\'t stay in place', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy({ switchesInPlace: false }) });
+            coordinator.track(fakeBlazor());
+            const registration = await coordinator.register('a', destinationReceiver(() => Promise.resolve('/he/hadashot/hagmar')), 'server', null, true);
+            const assign = vi.spyOn(window.location, 'assign').mockImplementation(() => {});
+
+            // Act
+            registration.request('he', 'he', 'rtl');
+            await settle();
+
+            // Assert
+            expect(assign).toHaveBeenCalledWith('http://localhost/he/hadashot/hagmar');
+        });
+
+        it.each([
+            ['names none', () => Promise.resolve(null)],
+            ['fails', () => Promise.reject(new Error('The circuit is gone.'))],
+        ])('switches to the page\'s own address in the route where the receiver %s', async (_, answer) => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const registration = await coordinator.register('a', destinationReceiver(answer), 'server', null, true);
+
+            // Act
+            registration.request('he', 'he', 'rtl');
+            await settle();
+
+            // Assert
+            expect(blazor.navigations).toEqual(['http://localhost/he/news/the-final?page=2']);
+        });
+
+        it('asks nothing of a receiver whose scope names no destinations', async () => {
+            // Arrange
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: addressPolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = destinationReceiver(() => Promise.resolve('/he/hadashot/hagmar'));
+            const registration = await coordinator.register('a', receiver);
+
+            // Act
+            registration.request('he', 'he', 'rtl');
+            await settle();
+
+            // Assert
+            expect(receiver.resolutions).toEqual([]);
+            expect(blazor.navigations).toEqual(['http://localhost/he/news/the-final?page=2']);
+        });
+
+        describe('following', () => {
+            function followingStart() {
+                return startOf({ culture: 'en', uiCulture: 'en', direction: 'ltr', policy: { ...addressPolicy(), 'data-follows': '', 'data-web-view': '' } });
+            }
+
+            beforeEach(() => {
+                window.Blazor = fakeBlazor();
+            });
+
+            afterEach(() => {
+                delete window.Blazor;
+            });
+
+            it('follows a pair to the destination the receiver names, keeping the fragment', async () => {
+                // Arrange
+                const coordinator = await loadStandalone();
+                const receiver = destinationReceiver(() => Promise.resolve('/he/hadashot/hagmar?page=2'));
+                const registration = await coordinator.register('a', receiver, 'webview', followingStart(), true);
+
+                // Act
+                registration.follow('he', 'he', 'rtl');
+                await settle();
+
+                // Assert
+                expect(receiver.resolutions).toEqual([['news/the-final?page=2', 'he']]);
+                expect(window.Blazor.navigations).toEqual(['http://localhost/he/hadashot/hagmar?page=2#comments']);
+                expect(window.Blazor.navigationOptions).toEqual([{ replaceHistoryEntry: true, historyEntryState: coordinator.FollowMark }]);
+            });
+
+            it('moves the page for the last pair it follows, whichever destination arrives first', async () => {
+                // Arrange
+                const coordinator = await loadStandalone();
+                const answers = [];
+                const receiver = destinationReceiver(() => new Promise(resolve => answers.push(resolve)));
+                const registration = await coordinator.register('a', receiver, 'webview', followingStart(), true);
+                registration.follow('he', 'he', 'rtl');
+                registration.follow('en', 'en', 'ltr');
+
+                // Act
+                answers[1]('/news/the-final?page=2&last');
+                answers[0]('/he/hadashot/hagmar?page=2');
+                await settle();
+
+                // Assert
+                expect(window.Blazor.navigations).toEqual(['http://localhost/news/the-final?page=2&last#comments']);
+            });
         });
     });
 

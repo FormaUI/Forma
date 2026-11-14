@@ -469,8 +469,8 @@ The address decides a page's culture, and the state follows the address, never t
 and the culture it shows never disagree. A host with culture addresses switches through the switch, as every
 host does, or through the switcher, one per user scope beside the application's one `CultureRouter`, which
 switches to a route's pair through the switch. Under [the address policy](#switch-policies) a switch refuses a
-pair no route carries before it requests anything; the coordinator builds the current page's address in the
-route carrying the pair and navigates to it, and accepts the record of the navigation that request becomes,
+pair no route carries before it requests anything; the coordinator builds the address the current page leads
+to in the route carrying the pair, [its own unless the host names another](#addresses-of-their-own), and navigates to it, and accepts the record of the navigation that request becomes,
 once it lands. The switcher's current route is the route carrying the culture state's pair, so work reads the
 route in force. A host without culture addresses switches under the cookie policy or the state alone.
 
@@ -595,6 +595,35 @@ A framework request, one under `/_` such as the circuit's negotiation or its dis
 its path without the culture segment: it takes the culture its segment names before the cookie's and writes
 no cookie, so the old page's disconnect beacon, arriving after a switch, can't set the cookie back.
 
+### Addresses of their own
+
+A page may have an address of its own in each culture, and one culture may lack a page another has. Where
+a page leads in another culture is the host's to say, through a destination resolver it registers beside
+culture routing: handed the route a page is shown in, the route a reader is going to, and the page's
+address without its culture segment, the resolver names the page's address in the other culture, or a
+fallback the host sends the reader to in its place, or nothing, which is the same address in that culture.
+Whether a translation exists, and whether it is published, stay the host's: the router reads and builds
+addresses, and the resolver alone knows what a page is.
+
+One resolution serves every way a reader reaches another culture:
+
+- **A link** a page renders takes the destination's address, in a static render too, so a language menu
+  points where a switch goes, and can mark a fallback as one.
+- **A switch by address** asks for its destination before it navigates: the coordinator, which builds
+  every destination, asks the registration of the scope that requested the switch, and the scope asks the
+  resolver. The switch then navigates there as it navigates to any address, in place or by a full load,
+  and the state follows the landing, whose address names its culture, so a switch through
+  `ICultureSwitch` and one through the switcher go to the same place.
+- **A web view following its application's culture** asks its own scope for the address it moves to, since
+  each web view shows a page of its own; an answer arriving after another follow began, or after the web
+  view moved on, moves nothing.
+
+The resolver names an address without its culture segment, and the router adds the segment of the route
+it was asked for, so a destination always carries the culture the switch requested. A scope whose resolver
+names nothing, or throws, goes to the page's own address in the route, as without a resolver, the failure
+logged; a page whose scope registered none asks nothing, and its switches go to the page's own address
+in each route.
+
 ## WebAssembly
 
 WebAssembly takes part in the contract. Under coordinated pages, the default, a runtime's state registers
@@ -689,8 +718,9 @@ under Blazor Hybrid the application's culture decides, and each web view's addre
 
 - **A navigation a web view makes,** a link or `NavigateTo`, landing at an address in another culture,
   requests a switch to that address's pair; once the coordinator accepts it, every web view follows it.
-- **Every web view follows an accepted switch** by replacing its address with the same page, query and
-  fragment in the route carrying the pair, in place of the current history entry. The replacement carries
+- **Every web view follows an accepted switch** by replacing its address with the page it leads to in the
+  route carrying the pair, [its own unless the host names another](#addresses-of-their-own), query and
+  fragment kept, in place of the current history entry. The replacement carries
   Forma's mark, and its landing requests nothing. Blazor runs the web view's navigation handlers for it as
   for any navigation, and a handler that guards the user's work tells it from a navigation away by that
   mark, since the page and the work stay. The mark is the replacement's alone: once it lands, its history

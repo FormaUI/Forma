@@ -59,7 +59,8 @@ public static class ServiceCollectionExtensions
             provider.GetRequiredService<ApplicationCultureCoordinator>().DocumentIntegration,
             provider.GetJSRuntime(),
             provider.GetRequiredService<ILogger<CultureCoordinatorRegistration>>(),
-            provider.GetService<ICultureProvider>()));
+            provider.GetService<ICultureProvider>(),
+            provider.GetService<ICultureDestinationSource>()));
         services.AddFormaCultureSwitchPolicy();
         services.AddFormaCultureCoordination();
         services.TryAddSingleton<ICultureSwitch>(provider => new ApplicationCultureSwitch(provider.GetRequiredService<ApplicationCultureCoordinator>(), provider.GetService<ICultureAddressing>()));

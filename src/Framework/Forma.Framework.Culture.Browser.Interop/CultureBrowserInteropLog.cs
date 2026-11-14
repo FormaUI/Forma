@@ -20,6 +20,9 @@ internal static partial class CultureBrowserInteropLog
     [LoggerMessage(Level = LogLevel.Error, Message = "The application's culture provider couldn't give the culture state of {RuntimeId} the cultures {Culture} and {UICulture} the page's culture coordinator delivered.")]
     public static partial void CultureNotProvided(ILogger logger, Exception exception, string culture, string uiCulture, Guid runtimeId);
 
+    [LoggerMessage(Level = LogLevel.Error, Message = "The destinations of {RuntimeId} couldn't name where the page leads in the route {Token}, so the switch goes to the page's own address there.")]
+    public static partial void DestinationNotResolved(ILogger logger, Exception exception, string token, Guid runtimeId);
+
     [LoggerMessage(Level = LogLevel.Warning, Message = "The culture state of {RuntimeId} couldn't register with the page's culture coordinator.")]
     public static partial void RegistrationFailed(ILogger logger, Exception exception, Guid runtimeId);
 }

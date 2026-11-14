@@ -11,8 +11,9 @@ using Microsoft.JSInterop;
 /// <summary>Switches a user scope to another route, and builds the current page's address in each.</summary>
 /// <remarks>
 /// A switch requests the route's pair through the culture switch, which, where culture addresses decide the culture,
-/// navigates to the current page's address in the route; the culture state follows the address once the navigation
-/// lands, so an address and the culture it shows never disagree.
+/// navigates to the page the current one leads to in the route, the one the host's <see cref="ICultureDestinationResolver"/>
+/// names or the current page's own address there; the culture state follows the address once the navigation lands, so an
+/// address and the culture it shows never disagree.
 /// </remarks>
 public sealed class CultureSwitcher
 {
@@ -23,9 +24,10 @@ public sealed class CultureSwitcher
     private readonly CultureCoordinatorRegistration _registration;
     private readonly ILogger<CultureSwitcher> _logger;
     private readonly ICultureScopeStart? _scopeStart;
+    private readonly ICultureDestinationResolver? _destinationResolver;
 
-    /// <summary>Creates the switcher over the application's routes and the user scope's culture state, culture switch, navigation, registration with the page's culture coordinator and, where its render mode starts nothing of its own, its part in the culture.</summary>
-    public CultureSwitcher(CultureRouter cultureRouter, ICultureState cultureState, ICultureSwitch cultureSwitch, NavigationManager navigationManager, CultureCoordinatorRegistration registration, ILogger<CultureSwitcher> logger, ICultureScopeStart? scopeStart = null)
+    /// <summary>Creates the switcher over the application's routes and the user scope's culture state, culture switch, navigation, registration with the page's culture coordinator, its part in the culture where its render mode starts nothing of its own, and the host's destinations where pages have addresses of their own in each culture.</summary>
+    public CultureSwitcher(CultureRouter cultureRouter, ICultureState cultureState, ICultureSwitch cultureSwitch, NavigationManager navigationManager, CultureCoordinatorRegistration registration, ILogger<CultureSwitcher> logger, ICultureScopeStart? scopeStart = null, ICultureDestinationResolver? destinationResolver = null)
     {
         ArgumentNullException.ThrowIfNull(cultureRouter);
         ArgumentNullException.ThrowIfNull(cultureState);
@@ -41,6 +43,7 @@ public sealed class CultureSwitcher
         _registration = registration;
         _logger = logger;
         _scopeStart = scopeStart;
+        _destinationResolver = destinationResolver;
     }
 
     /// <summary>The route of the culture state's pair, or the default route where none carries it.</summary>
@@ -58,6 +61,25 @@ public sealed class CultureSwitcher
         return GetUri(route, fragmentStart < 0 ? address : address[..fragmentStart]);
     }
 
+    /// <summary>The destination the current page leads to in the culture of <paramref name="route"/>: the one the host's <see cref="ICultureDestinationResolver"/> names, or the current page's own address there.</summary>
+    public ValueTask<CultureDestination> GetDestinationAsync(CultureRoute route, CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(route);
+
+        var address = ReadAddress().Address;
+        var fragmentStart = address.IndexOf('#', StringComparison.Ordinal);
+
+        return CultureDestinations.ResolveAsync(_cultureRouter, _destinationResolver, fragmentStart < 0 ? address : address[..fragmentStart], route, cancellationToken);
+    }
+
+    /// <summary>The address of the destination the current page leads to in the culture of <paramref name="route"/>, query included, as <see cref="GetDestinationAsync"/> finds it.</summary>
+    public async ValueTask<Uri> GetDestinationUriAsync(CultureRoute route, CancellationToken cancellationToken = default)
+    {
+        var destination = await GetDestinationAsync(route, cancellationToken).ConfigureAwait(false);
+
+        return GetUri(route, destination.RelativeAddress);
+    }
+
     /// <summary>The address <paramref name="relativeAddress"/>, relative to the application's root, in the culture of <paramref name="route"/>, query included.</summary>
     public Uri GetUri(CultureRoute route, string relativeAddress)
     {
@@ -67,7 +89,7 @@ public sealed class CultureSwitcher
         return new Uri(ReadAddress().Root, _cultureRouter.GetUrl(route, relativeAddress).TrimStart('/'));
     }
 
-    /// <summary>Switches to the pair of <paramref name="route"/>, which navigates to the current page's address in it.</summary>
+    /// <summary>Switches to the pair of <paramref name="route"/>, which navigates to the page the current one leads to in it.</summary>
     /// <remarks>
     /// Under <see cref="CultureSwitchMode.FullLoad"/> the address loads as a new document, whose coordinator starts from the
     /// pair the address names, so the switch never completes in this document. Under <see cref="CultureSwitchMode.InPlace"/>

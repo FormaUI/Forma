@@ -92,7 +92,8 @@ that is a route's token.
 
 A page or component switches through `ICultureSwitch`, as every Forma host does, or through
 `CultureSwitcher.SwitchToAsync` with a route. Under culture routing a switch is a navigation to the
-current page's address in the route carrying the pair: by default it loads the address as a new
+page the current one leads to in the route carrying the pair, its own address there unless
+[the host names another](#addresses-of-their-own-in-each-culture): by default it loads the address as a new
 document, which starts in the pair its address names; under `CultureSwitchMode.InPlace` it stays in the
 document, completing once its navigation's landing was accepted, as canceled where the navigation was
 canceled or replaced by another, and with `TimeoutException` where it didn't land within `SwitchTimeout`, as a
@@ -105,7 +106,9 @@ anything changes.
 | `CurrentRoute` | The route carrying the culture state's pair, or the default route. |
 | `GetUri(route)` | The current page's address in a route, query string included. |
 | `GetUri(route, relativeAddress)` | An address relative to the application's root, such as `about?tab=2`, in a route. |
-| `SwitchToAsync(route)` | Switches to a route's pair, navigating to the current page's address in it. |
+| `GetDestinationAsync(route)` | The `CultureDestination` the current page leads to in a route. |
+| `GetDestinationUriAsync(route)` | The destination's address, query string included. |
+| `SwitchToAsync(route)` | Switches to a route's pair, navigating to the page the current one leads to in it. |
 
 ```razor
 @using Forma.Framework.Culture.Router
@@ -248,6 +251,75 @@ a request does, and a relative URL escaped, as a link writes it:
 
 `GetUri` over the current route keeps a link in the reader's route, and over another route links the
 same page there.
+
+## Addresses of their own in each culture
+
+A page may have an address of its own in each culture, `/news/the-final` in English and
+`/he/hadashot/hagmar` in Hebrew, and a page one culture has may be missing from another. The host says
+where each page leads through an `ICultureDestinationResolver`, which hands it the route the page is
+shown in, the route the reader is going to, and the page's address relative to the application's root,
+without its culture segment and with its query. It answers `CultureDestination.Translated(address)` with
+the page's address in the other culture, `CultureDestination.Fallback(address)` with the address it sends
+the reader to in its place, such as the section's index, or `null` for the same address in that culture.
+Whether a translation exists, or is published, is the host's to decide; the router knows only addresses.
+
+```csharp
+using Forma.Framework.Culture.Router;
+
+public sealed class StoryDestinations(IStoryCatalog stories) : ICultureDestinationResolver
+{
+    public async ValueTask<CultureDestination?> ResolveAsync(CultureRoute from, CultureRoute to, string relativeAddress, CancellationToken cancellationToken)
+    {
+        if (await stories.FindAsync(from.UICulture, relativeAddress, cancellationToken) is not { } story)
+        {
+            return null;
+        }
+
+        return await stories.FindTranslationAsync(story, to.UICulture, cancellationToken) is { } translation
+            ? CultureDestination.Translated(translation.Address)
+            : CultureDestination.Fallback(stories.GetSectionAddress(story.Section, to.UICulture));
+    }
+}
+```
+
+```csharp
+builder.Services.AddFormaCultureRouting(options);
+builder.Services.AddScoped<ICultureDestinationResolver, StoryDestinations>();
+```
+
+Every switch by address goes where the resolver says, through `CultureSwitcher.SwitchToAsync`, through
+`ICultureSwitch` and as a web view follows its application's culture, and a link takes its address from
+`GetDestinationUriAsync`, which a static render reaches too. `IsFallback` tells a language menu which
+routes lead elsewhere than the page:
+
+```razor
+@using Forma.Framework.Culture.Router
+@inject CultureRouter Router
+@inject CultureSwitcher Switcher
+
+@foreach (var (route, destination) in _destinations)
+{
+    <a href="@Switcher.GetUri(route, destination.RelativeAddress)" title="@(destination.IsFallback ? "Not translated yet" : null)">@route.Token</a>
+}
+
+@code {
+    private List<(CultureRoute Route, CultureDestination Destination)> _destinations = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        foreach (var route in Router.Routes)
+        {
+            _destinations.Add((route, await Switcher.GetDestinationAsync(route)));
+        }
+    }
+}
+```
+
+The pages declare each of their addresses, `@page "/news/{slug}"` and `@page "/hadashot/{slug}"`, and under
+culture-bearing interactive routes `@page "/{culture}/news/{slug}"` and `@page "/{culture}/hadashot/{slug}"`
+too. Register the resolver in every runtime that switches: a WebAssembly runtime's culture belongs to the
+application, so it reaches the resolver from the application's services, where it is a singleton. A
+resolver that throws is logged, and the switch goes to the page's own address in the other culture.
 
 ## License
 

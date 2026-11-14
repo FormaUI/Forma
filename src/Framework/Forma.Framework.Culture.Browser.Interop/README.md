@@ -44,6 +44,12 @@ the same way, under a policy whose attributes `GetPolicyAttributes` gives:
 - The document of a web view holding a culture of its own, given `isWebView: true` alone, accepts its own
   switches.
 
+Where the scope's services carry an `ICultureDestinationSource` that `ResolvesDestinations`, as culture
+routing's does once a host registers a destination resolver, the coordinator asks the registration for the
+address each switch by address navigates to, and each address a following document moves to, through the
+source's `ResolveAsync`; a source that names none, or throws, leaves the page's own address in the route,
+and one that throws is logged as an error under `CultureCoordinatorRegistration`.
+
 A switch completes once its own runtime's state has applied the pair it accepted. An enhanced
 navigation's landing changes the page's pair to the one its response was rendered in, and a switch
 requested while a navigation is in flight waits for it to land. The package's JavaScript initializer,

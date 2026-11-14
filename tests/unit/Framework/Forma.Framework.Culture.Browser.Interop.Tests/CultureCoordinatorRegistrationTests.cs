@@ -389,4 +389,112 @@ public sealed class CultureCoordinatorRegistrationTests
                 () => Assert.Single(((FakeCultureState)GetCultureState(scope)).AppliedCultures));
         }
     }
+
+    public sealed class Destinations
+    {
+        private static ServiceProvider CreateServices(FakeCultureCoordinatorBrowser browser, ICultureDestinationSource? source, FakeLoggerFactory? loggerFactory = null)
+        {
+            var services = new ServiceCollection().AddSingleton<IJSRuntime>(browser.Runtime);
+
+            if (source is not null)
+            {
+                services.AddSingleton(source);
+            }
+
+            if (loggerFactory is not null)
+            {
+                services.AddSingleton<ILoggerFactory>(loggerFactory).AddSingleton(typeof(ILogger<>), typeof(Logger<>));
+            }
+
+            return services.AddFormaCultureCoordination().BuildServiceProvider();
+        }
+
+        private static CultureCoordinatorReceiver GetReceiver(FakeCultureCoordinatorBrowser browser)
+            => ((DotNetObjectReference<CultureCoordinatorReceiver>)Assert.Single(browser.Module.Recorder.GetCalls("register")).Arguments[1]!).Value;
+
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(false, false)]
+        public async Task Should_tell_the_page_whether_its_source_names_destinations(bool resolves, bool expected)
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = CreateServices(browser, new FakeDestinationSource { ResolvesDestinations = resolves });
+            await using var scope = provider.CreateAsyncScope();
+
+            // Act
+            await GetRegistration(scope).RegisterAsync();
+
+            // Assert
+            Assert.Equal(expected, Assert.Single(browser.Module.Recorder.GetCalls("register")).Arguments[4]);
+        }
+
+        [Fact]
+        public async Task Should_tell_the_page_it_names_no_destination_without_a_source()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = CreateServices(browser, source: null);
+            await using var scope = provider.CreateAsyncScope();
+
+            // Act
+            await GetRegistration(scope).RegisterAsync();
+
+            // Assert
+            Assert.Equal(false, Assert.Single(browser.Module.Recorder.GetCalls("register")).Arguments[4]);
+        }
+
+        [Fact]
+        public async Task Should_hand_the_page_the_destination_its_source_names()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser();
+            var source = new FakeDestinationSource { Answer = (address, token) => $"/{token}/hadashot/hagmar?from={address}" };
+            await using var provider = CreateServices(browser, source);
+            await using var scope = provider.CreateAsyncScope();
+            await GetRegistration(scope).RegisterAsync();
+
+            // Act
+            var destination = await GetReceiver(browser).ResolveDestinationAsync("news/the-final", "he");
+
+            // Assert
+            Assert.Equal("/he/hadashot/hagmar?from=news/the-final", destination);
+        }
+
+        [Fact]
+        public async Task Should_log_a_source_that_throws_and_leave_the_pages_own_address()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = new FakeCultureCoordinatorBrowser();
+            var source = new FakeDestinationSource { Answer = (_, _) => throw new InvalidOperationException("The story's translations couldn't be read.") };
+            await using var provider = CreateServices(browser, source, loggerFactory);
+            await using var scope = provider.CreateAsyncScope();
+            await GetRegistration(scope).RegisterAsync();
+
+            // Act
+            var destination = await GetReceiver(browser).ResolveDestinationAsync("news/the-final", "he");
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(
+                () => Assert.Null(destination),
+                () => Assert.Equal(LogLevel.Error, entry.Level));
+        }
+
+        // A source that names destinations through `Answer`.
+        private sealed class FakeDestinationSource : ICultureDestinationSource
+        {
+            public bool ResolvesDestinations { get; init; } = true;
+
+            public Func<string, string, string?> Answer { get; init; } = (_, _) => null;
+
+            public ValueTask<string?> ResolveAsync(string relativeAddress, string token, CancellationToken cancellationToken)
+                => ValueTask.FromResult(Answer(relativeAddress, token));
+        }
+    }
 }

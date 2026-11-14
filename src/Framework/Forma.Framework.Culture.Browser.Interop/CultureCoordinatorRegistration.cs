@@ -1,5 +1,6 @@
 namespace Forma.Framework.Culture.Browser.Interop;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using Forma.Framework.JavaScript.Interop;
@@ -21,6 +22,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
 
     private readonly ICultureStateIntegration _integration;
     private readonly ICultureProvider? _cultureProvider;
+    private readonly ICultureDestinationSource? _destinationSource;
     private readonly DotNetObjectReference<CultureCoordinatorReceiver> _receiverReference;
     private readonly JSEnvironment _environment;
     private readonly string _identity = Guid.CreateVersion7().ToString("N");
@@ -36,12 +38,14 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     /// <param name="js">The scope's JS runtime.</param>
     /// <param name="logger">The logger the registration writes what it absorbs to.</param>
     /// <param name="cultureProvider">The application's culture provider, which gives the culture for each name the coordinator delivers, where the application registered one.</param>
-    public CultureCoordinatorRegistration(ICultureStateIntegration integration, IJSRuntime js, ILogger<CultureCoordinatorRegistration> logger, ICultureProvider? cultureProvider = null)
+    /// <param name="destinationSource">The destinations a switch navigates to, where pages have addresses of their own in each culture.</param>
+    public CultureCoordinatorRegistration(ICultureStateIntegration integration, IJSRuntime js, ILogger<CultureCoordinatorRegistration> logger, ICultureProvider? cultureProvider = null, ICultureDestinationSource? destinationSource = null)
     {
         ArgumentNullException.ThrowIfNull(integration);
 
         _integration = integration;
         _cultureProvider = cultureProvider;
+        _destinationSource = destinationSource;
         _receiverReference = DotNetObjectReference.Create(new CultureCoordinatorReceiver(this));
         _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());
         _module = new JSModule(_environment, ModulePath);
@@ -58,7 +62,8 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
             services.GetRequiredService<ICultureStateIntegration>(),
             services.GetJSRuntime(),
             services.GetRequiredService<ILogger<CultureCoordinatorRegistration>>(),
-            services.GetService<ICultureProvider>());
+            services.GetService<ICultureProvider>(),
+            services.GetService<ICultureDestinationSource>());
     }
 
     /// <summary>Registers the culture state with the page's coordinator, as each connection to the browser comes up, and adopts the pair the page accepted.</summary>
@@ -123,6 +128,28 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         if (outcome == "timed-out")
         {
             throw new TimeoutException($"The switch to the culture '{culture.Name}' with the UI culture '{uiCulture.Name}' navigated, but the navigation didn't land within the culture routing's switch timeout; a navigation handler may have refused it. The page still follows the navigation should it land.");
+        }
+    }
+
+    /// <summary>The address, relative to the application's root and with its culture segment, the page at <paramref name="relativeAddress"/> leads to in the route <paramref name="token"/> names, or <see langword="null"/> for that page's own address there.</summary>
+    /// <remarks>A source that throws leaves the page's own address in the route, so the switch still navigates.</remarks>
+    [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
+    internal async Task<string?> ResolveDestinationAsync(string relativeAddress, string token)
+    {
+        if (_destinationSource is not { ResolvesDestinations: true } destinationSource)
+        {
+            return null;
+        }
+
+        try
+        {
+            return await destinationSource.ResolveAsync(relativeAddress, token, CancellationToken.None).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            CultureBrowserInteropLog.DestinationNotResolved(_environment.Logger, ex, token, _environment.RuntimeId);
+
+            return null;
         }
     }
 
@@ -258,7 +285,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         {
             // A runtime in the browser is a WebAssembly one, whose registration a closing circuit leaves in place.
             var runtime = OperatingSystem.IsBrowser() ? "webassembly" : "server";
-            var registration = await GetModule().InvokeAsync<IJSObjectReference>("register", _identity, _receiverReference, runtime, start).ConfigureAwait(false);
+            var registration = await GetModule().InvokeAsync<IJSObjectReference>("register", _identity, _receiverReference, runtime, start, _destinationSource?.ResolvesDestinations ?? false).ConfigureAwait(false);
 
             if (_registration is { } replacedRegistration && !ReferenceEquals(replacedRegistration, registration))
             {

@@ -43,6 +43,10 @@ let replacements = [];
 let traversalAddress = null;
 let hasLanded = false;
 
+// How many readdresses a following document began, so a destination its registration names late moves the page only for
+// the last.
+let readdressOrder = 0;
+
 /** Reads the page's culture marker and the switch's policy from the document's head, once, as the document loads. */
 export function initialize(head = document.head) {
     if (initialization !== null) {
@@ -73,9 +77,10 @@ export function initialize(head = document.head) {
 /**
  * Registers the culture state named `identity` with the receiver every accepted pair is delivered to, recovering its live
  * registration where it has one, and completes once the state has adopted the accepted pair. On a page the document's
- * load didn't initialize the coordinator on, a standalone app's, `start` starts it.
+ * load didn't initialize the coordinator on, a standalone app's, `start` starts it. Where `resolvesDestinations`, the
+ * receiver names the address each switch by address navigates to.
  */
-export async function register(identity, receiver, runtime = 'server', start = null) {
+export async function register(identity, receiver, runtime = 'server', start = null, resolvesDestinations = false) {
     const { error } = getInitialization(start);
 
     if (error) {
@@ -90,6 +95,7 @@ export async function register(identity, receiver, runtime = 'server', start = n
     }
 
     registration.receiver = receiver;
+    registration.resolvesDestinations = resolvesDestinations;
     await registration.deliver(acceptedPair);
 
     return registration;
@@ -149,6 +155,7 @@ class CultureCoordinatorRegistration {
     #runtime;
     #lastLanding = 0;
     receiver = null;
+    resolvesDestinations = false;
 
     constructor(identity, runtime) {
         this.#identity = identity;
@@ -184,7 +191,11 @@ class CultureCoordinatorRegistration {
             }
 
             if (route !== null) {
-                return { landing: navigate(policy, route, this) };
+                const destination = this.resolvesDestinations
+                    ? await this.resolveDestination(policy, route, location.href)
+                    : buildDestination(policy, route, location.href);
+
+                return { landing: navigate(policy, route, this, destination) };
             }
 
             persist(culture, uiCulture);
@@ -252,7 +263,7 @@ class CultureCoordinatorRegistration {
         }
 
         if (isAdopting) {
-            readdress(policy, acceptedPair);
+            readdress(policy, acceptedPair, this);
 
             return;
         }
@@ -274,8 +285,30 @@ class CultureCoordinatorRegistration {
         }
 
         if (policy?.kind === 'address') {
-            readdress(policy, pair);
+            readdress(policy, pair, this);
         }
+    }
+
+    /**
+     * The address the page at `href` leads to in `route`, as this registration's receiver names it, or the page's own
+     * address in the route where it names none or can't be reached.
+     */
+    async resolveDestination(policy, route, href) {
+        const relativeAddress = getRelativeAddress(policy, href);
+
+        if (relativeAddress !== null) {
+            try {
+                const resolved = await this.receiver.invokeMethodAsync('ResolveDestinationAsync', relativeAddress, route.token);
+
+                if (typeof resolved === 'string') {
+                    return `${new URL(href).origin}${policy.root}${resolved.replace(/^\/+/, '')}`;
+                }
+            } catch {
+                // A receiver gone with its circuit leaves the page's own address, as a page without destinations takes.
+            }
+        }
+
+        return buildDestination(policy, route, href);
     }
 
     /** Delivers an accepted pair to this registration's state, completing once the state has applied it. */
@@ -414,12 +447,11 @@ function accept(pair, excludedRegistrations = []) {
     return acceptedPair;
 }
 
-// A switch by address navigates to the current page's address in its route: a full load leaves the document, and an
-// in-place navigation completes once its landing is accepted, or as timed out where none arrives within the policy's
-// timeout, as one a navigation handler refused doesn't; a newer switch supersedes it, which completes it as canceled.
-function navigate(policy, route, requester) {
-    const destination = buildDestination(policy, route, location.href);
-
+// A switch by address navigates to `destination`, the page the current one leads to in its route: a full load leaves the
+// document, and an in-place navigation completes once its landing is accepted, or as timed out where none arrives within
+// the policy's timeout, as one a navigation handler refused doesn't; a newer switch supersedes it, which completes it as
+// canceled.
+function navigate(policy, route, requester, destination) {
     if (isSamePair(acceptedPair, route) && isSameAddress(destination, location.href)) {
         return Promise.resolve('accepted');
     }
@@ -468,17 +500,33 @@ function takePendingSwitch() {
     return waitingSwitch;
 }
 
-// A following document moves its page into the route carrying `pair`, keeping its page, query and fragment, in place of the
-// current history entry and under the mark a navigation handler reads.
-function readdress(policy, pair) {
+// A following document moves its page to the one it leads to in the route carrying `pair`, its query and fragment kept, in
+// place of the current history entry and under the mark a navigation handler reads. A destination `registration` names
+// arrives later, and moves the page only where no later readdress began and the page is where it was.
+function readdress(policy, pair, registration) {
     const route = findRouteByPair(policy, pair.culture, pair.uiCulture);
 
     if (route === null) {
         return;
     }
 
-    const destination = buildDestination(policy, route, location.href);
+    if (!registration.resolvesDestinations) {
+        replaceAddress(buildDestination(policy, route, location.href));
 
+        return;
+    }
+
+    const order = ++readdressOrder;
+    const href = location.href;
+
+    registration.resolveDestination(policy, route, href).then(destination => {
+        if (order === readdressOrder && isSameAddress(withoutHash(href), location.href)) {
+            replaceAddress(destination);
+        }
+    });
+}
+
+function replaceAddress(destination) {
     if (isSameAddress(destination, location.href)) {
         return;
     }
@@ -571,6 +619,19 @@ function readCookie(name) {
     const entry = document.cookie.split('; ').find(cookie => cookie.startsWith(prefix));
 
     return entry === undefined ? null : decodeURIComponent(entry.slice(prefix.length));
+}
+
+// The address `href` holds relative to the application's root, its query kept and its fragment dropped, or null outside it.
+function getRelativeAddress(policy, href) {
+    const url = new URL(href);
+    const rootPath = policy.root.toLowerCase();
+    const path = url.pathname.toLowerCase();
+
+    if (path.startsWith(rootPath)) {
+        return `${url.pathname.slice(rootPath.length)}${url.search}`;
+    }
+
+    return path === rootPath.slice(0, -1) ? url.search : null;
 }
 
 /**

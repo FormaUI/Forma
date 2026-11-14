@@ -1,0 +1,25 @@
+@page "/culture/translated"
+@page "/{culture}/culture/translated"
+@page "/culture/meturgam"
+@page "/{culture}/culture/meturgam"
+@inherits CultureRoutePage
+@inject IServiceProvider Services
+
+@* A page with an address of its own in each culture, the link to it in Hebrew where the check reads it. *@
+<h1 id="page">translated</h1>
+<a id="translated-he" href="@_hebrewAddress">he</a>
+<CulturePanel @rendermode="HostModes.Island" />
+
+@code {
+    private string? _hebrewAddress;
+
+    // Registered only where the host switches through culture addresses.
+    protected override async Task OnInitializedAsync()
+    {
+        if (Services.GetService<CultureSwitcher>() is { } switcher)
+        {
+            var hebrew = Services.GetRequiredService<CultureRouter>().Routes.Single(route => route.Token == "he");
+            _hebrewAddress = (await switcher.GetDestinationUriAsync(hebrew)).AbsoluteUri;
+        }
+    }
+}

@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Browser.Tests;
 
+using System.Text.RegularExpressions;
+
 /// <summary>The one culture a Blazor Hybrid application holds across its web views, as the culture design's Blazor Hybrid section states it, in the WebView check host's web views under culture routing.</summary>
 /// <remarks>Each check starts an application of its own; its first web view, <c>A</c>, starts at <c>/en/probe</c> on the application's UI thread, which carries <c>en-US</c> as an assigned culture, and its culture routes are <c>en</c>, <c>es</c> for <c>es-ES</c> and <c>he</c>, every address carrying one.</remarks>
 [Collection(WebViewChecks.Name)]
@@ -118,6 +120,28 @@ public sealed class WebViewCultureTests
         await Assertions.Expect(second.Locator("#draft")).ToHaveValueAsync("kept");
         await Assertions.Expect(second.Locator("#navigations li")).ToHaveTextAsync(["changing /es/probe state=forma-culture intercepted=False", "changed /es/probe state=forma-culture intercepted=False"]);
         Assert.Equal(entries, await second.EvaluateAsync<int>("() => history.length"));
+    }
+
+    [Fact]
+    public async Task Should_move_a_web_view_s_address_to_the_page_the_host_names_in_the_switched_culture()
+    {
+        // Arrange — the second web view opened on the probe at its address of its own, translated-probe, which is sonda-traducida in Spanish
+        await using var application = await WebViewCheckHost.StartAsync();
+        var first = await application.GetWebViewAsync("A");
+        await first.Locator("#start-path").FillAsync("/en/translated-probe");
+        await first.Locator("#start-path").BlurAsync();
+        await first.Locator("#open").ClickAsync();
+        var second = await application.GetWebViewAsync("B");
+        await Assertions.Expect(second.Locator("#segment")).ToHaveTextAsync("en");
+
+        // Act
+        await first.Locator("#switch").ClickAsync();
+
+        // Assert
+        await Assertions.Expect(first.Locator("#segment")).ToHaveTextAsync("es");
+        await Assertions.Expect(second.Locator("#segment")).ToHaveTextAsync("es");
+        await Assertions.Expect(second).ToHaveURLAsync(new Regex("/es/sonda-traducida$"));
+        await Assertions.Expect(first).ToHaveURLAsync(new Regex("/es/probe$"));
     }
 
     [Fact]

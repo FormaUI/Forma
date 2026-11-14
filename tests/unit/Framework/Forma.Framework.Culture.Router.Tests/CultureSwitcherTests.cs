@@ -15,9 +15,10 @@ public sealed class CultureSwitcherTests
 {
     private static readonly CultureInfo Hebrew = CultureInfo.GetCultureInfo("he");
 
-    private static ServiceProvider CreateServices(FakeNavigationManager navigationManager, CultureSwitchMode cultureSwitchMode = CultureSwitchMode.FullLoad)
+    private static ServiceProvider CreateServices(FakeNavigationManager navigationManager, CultureSwitchMode cultureSwitchMode = CultureSwitchMode.FullLoad, ICultureDestinationResolver? destinationResolver = null)
         => new ServiceCollection()
             .AddSingleton<NavigationManager>(navigationManager)
+            .AddDestinationResolver(destinationResolver)
             .AddSingleton<IJSRuntime>(new RecordingJSRuntime((_, _) => null))
             .AddScoped<ICultureSwitch, TestCultureSwitch>()
             .AddFormaCultureRouting(new CultureRouterOptions
@@ -126,4 +127,71 @@ public sealed class CultureSwitcherTests
                 () => Assert.Empty(navigationManager.Navigations));
         }
     }
+
+    public sealed class Destinations
+    {
+        [Fact]
+        public async Task Should_lead_to_the_current_pages_own_address_where_the_host_resolves_none()
+        {
+            // Arrange
+            using var fixture = new CultureFixture();
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri("http://localhost/news/the-final?page=2#comments")));
+            await using var scope = provider.CreateAsyncScope();
+            var switcher = scope.ServiceProvider.GetRequiredService<CultureSwitcher>();
+            var hebrew = GetRoute(scope.ServiceProvider, "he");
+
+            // Act
+            var destination = await switcher.GetDestinationAsync(hebrew, TestContext.Current.CancellationToken);
+            var address = await switcher.GetDestinationUriAsync(hebrew, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(CultureDestination.Translated("news/the-final?page=2"), destination),
+                () => Assert.Equal("http://localhost/he/news/the-final?page=2", address.AbsoluteUri));
+        }
+
+        [Theory]
+        [InlineData("http://localhost/news/the-final", "he", false, "http://localhost/he/hadashot/hagmar")]
+        [InlineData("http://localhost/he/hadashot/hagmar", "en", false, "http://localhost/news/the-final")]
+        [InlineData("http://localhost/news/an-untranslated-story", "he", true, "http://localhost/he/hadashot")]
+        public async Task Should_lead_to_the_destination_the_host_names(string address, string token, bool isFallback, string expected)
+        {
+            // Arrange
+            using var fixture = new CultureFixture();
+            var resolver = new NewsResolver();
+            await using var provider = CreateServices(new FakeNavigationManager(new Uri("http://localhost/"), new Uri(address)), destinationResolver: resolver);
+            await using var scope = provider.CreateAsyncScope();
+            var switcher = scope.ServiceProvider.GetRequiredService<CultureSwitcher>();
+            var route = GetRoute(scope.ServiceProvider, token);
+
+            // Act
+            var destination = await switcher.GetDestinationAsync(route, TestContext.Current.CancellationToken);
+            var destinationAddress = await switcher.GetDestinationUriAsync(route, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(isFallback, destination.IsFallback),
+                () => Assert.Equal(expected, destinationAddress.AbsoluteUri));
+        }
+
+        // The one story both cultures carry, at an address of its own in each, and the news section where Hebrew lacks a story.
+        private sealed class NewsResolver : ICultureDestinationResolver
+        {
+            public ValueTask<CultureDestination?> ResolveAsync(CultureRoute from, CultureRoute to, string relativeAddress, CancellationToken cancellationToken)
+                => ValueTask.FromResult<CultureDestination?>((relativeAddress, to.Token) switch
+                {
+                    ("news/the-final", "he") => CultureDestination.Translated("hadashot/hagmar"),
+                    ("hadashot/hagmar", "en") => CultureDestination.Translated("news/the-final"),
+                    (_, "he") => CultureDestination.Fallback("hadashot"),
+                    _ => null
+                });
+        }
+    }
+}
+
+// Registers the host's destination resolver where a test gives one.
+file static class DestinationResolverRegistration
+{
+    public static IServiceCollection AddDestinationResolver(this IServiceCollection services, ICultureDestinationResolver? resolver)
+        => resolver is null ? services : services.AddSingleton(resolver);
 }

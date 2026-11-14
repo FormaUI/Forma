@@ -55,6 +55,28 @@ public sealed class CultureTests(BrowserHost host)
             () => Assert.Equal("Ada", typed));
     }
 
+    [Theory]
+    [MemberData(nameof(Routing))]
+    public async Task Should_link_and_switch_to_the_address_the_host_gives_the_page_in_the_other_culture(string routing)
+    {
+        // Arrange — a page at culture/translated in English and culture/meturgam in Hebrew
+        var (context, page) = await host.OpenPageAsync(await GetAddressAsync(routing));
+        await using var _ = context;
+        await page.GotoAsync("culture/translated");
+        await WaitForPanelAsync(page);
+        var link = await page.Locator("#translated-he").GetAttributeAsync("href");
+
+        // Act
+        await page.Locator("#switch-state").ClickAsync();
+
+        // Assert
+        await WaitForDocumentAsync(page, "he/rtl");
+        await Assertions.Expect(page.Locator("#switch-outcome")).ToHaveTextAsync("accepted");
+        Assert.Multiple(
+            () => Assert.EndsWith("/he/culture/meturgam", new Uri(link!).AbsolutePath, StringComparison.Ordinal),
+            () => Assert.EndsWith("/he/culture/meturgam", new Uri(page.Url).AbsolutePath, StringComparison.Ordinal));
+    }
+
     [Fact]
     public async Task Should_time_out_a_switch_whose_navigation_a_guard_refuses_leaving_the_culture_as_it_was()
     {

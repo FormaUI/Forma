@@ -8,7 +8,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 /// <summary>Registers culture routing.</summary>
 public static class ServiceCollectionExtensions
 {
-    /// <summary>Registers the culture router over <paramref name="options"/> as the page's culture addressing, and the switcher each user scope switches through over the culture services the product's registrar registers.</summary>
+    /// <summary>Registers the culture router over <paramref name="options"/> as the page's culture addressing, the switcher each user scope switches through over the culture services the product's registrar registers, and the destinations a switch navigates to, by the host's <see cref="ICultureDestinationResolver"/> where it registers one.</summary>
     /// <exception cref="ArgumentException">The options register no route, a default that isn't a route's token, a token claimed twice or containing a slash, or an hreflang that isn't a language with an optional script and region.</exception>
     public static IServiceCollection AddFormaCultureRouting(this IServiceCollection services, CultureRouterOptions options)
     {
@@ -18,6 +18,7 @@ public static class ServiceCollectionExtensions
         services.TryAddSingleton(new CultureRouter(options));
         services.TryAddSingleton<ICultureAddressing>(provider => provider.GetRequiredService<CultureRouter>());
         services.TryAddScoped<CultureSwitcher>();
+        services.TryAddTransient<ICultureDestinationSource>(provider => new CultureDestinationSource(provider.GetRequiredService<CultureRouter>(), provider.GetService<ICultureDestinationResolver>()));
 
         return services;
     }
