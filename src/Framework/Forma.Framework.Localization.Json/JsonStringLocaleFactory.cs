@@ -70,7 +70,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         var assembly = Assembly.Load(new AssemblyName(location));
         var relativeName = TrimPrefix(baseName, location + ".");
 
-        return GetOrAdd(assembly, Qualify(location, relativeName), $"{location}.{relativeName}");
+        return GetOrAdd(assembly, assembly.GetName().Name ?? string.Empty, Qualify(location, relativeName), $"{location}.{relativeName}");
     }
 
     private IStringLocale CreateForType(Type resourceSource)
@@ -81,7 +81,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         var assemblyName = assembly.GetName().Name ?? string.Empty;
         var typeName = NormalizeTypeName(source.FullName ?? source.Name);
 
-        return GetOrAdd(assembly, GetBaseName(assemblyName, typeName), typeName);
+        return GetOrAdd(assembly, assemblyName, GetBaseName(assemblyName, typeName), typeName);
     }
 
     private static string GetLocalesPath(string path)
@@ -115,6 +115,6 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
     private static string Qualify(string assemblyName, string relativeName)
         => $"{assemblyName}.{relativeName}";
 
-    private IStringLocale GetOrAdd(Assembly assembly, string baseName, string typeName)
-        => _locales.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocale(_context, new ResourceLocation(assembly, baseName, typeName)));
+    private IStringLocale GetOrAdd(Assembly assembly, string assemblyName, string baseName, string typeName)
+        => _locales.GetOrAdd($"{assembly.FullName}|{baseName}", _ => new JsonStringLocale(_context, new ResourceLocation(assembly, assemblyName, baseName, typeName)));
 }

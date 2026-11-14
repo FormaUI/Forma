@@ -17,8 +17,7 @@ internal sealed class JsonResourceCache
     private readonly ConcurrentDictionary<string, EmbeddedLocaleSource> _embeddedByAssemblyName = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<CacheKey, FrozenDictionary<string, JsonResourceEntry>> _files = new();
     private readonly ConcurrentDictionary<(LocaleConflict Conflict, string CultureName), byte> _reportedConflicts = new();
-    private readonly LocalePackSource[] _packs;
-    private readonly LocaleSource[] _host;
+    private readonly LocaleSource[] _layered;
     private readonly ILogger _logger;
 
     /// <summary>Creates a cache reading files in one format.</summary>
@@ -31,8 +30,8 @@ internal sealed class JsonResourceCache
     {
         _format = format;
         _logger = logger;
-        _packs = [.. packs.Select(pack => new LocalePackSource(pack, format, GetRootNamespace))];
-        _host = [
+        _layered = [
+            .. packs.Select(pack => new LocalePackSource(pack, format, GetRootNamespace)),
             .. (hostAssemblies ?? []).Select(host => new LocalePackSource(host, format, GetRootNamespace, LocalePackSource.HostResourcePrefix)),
             new HostLocaleSource(localesPath, format, GetRootNamespace),
         ];
@@ -44,15 +43,19 @@ internal sealed class JsonResourceCache
 
     private FrozenDictionary<string, JsonResourceEntry> Load(CacheKey key)
     {
-        var assembly = key.Location.Assembly;
-        var typeName = key.Location.TypeName;
-        var assemblyName = assembly.GetName().Name ?? string.Empty;
+        var (assembly, assemblyName, typeName) = (key.Location.Assembly, key.Location.AssemblyName, key.Location.TypeName);
         var embeddedSource = _embeddedByAssembly.GetOrAdd(assembly, static (owner, format) => new EmbeddedLocaleSource(owner, format), _format);
-        _embeddedByAssemblyName[assemblyName] = embeddedSource;
+
+        // Of two assemblies of one name, the one read last names the root namespace.
+        if (!_embeddedByAssemblyName.TryGetValue(assemblyName, out var namedSource) || namedSource != embeddedSource)
+        {
+            _embeddedByAssemblyName[assemblyName] = embeddedSource;
+        }
 
         var entries = new Dictionary<string, LocaleSourceEntry>(StringComparer.Ordinal);
         var conflicts = new List<LocaleConflict>();
-        foreach (var source in (LocaleSource[])[embeddedSource, .. _packs, .. _host])
+        embeddedSource.ReadTranslations(assemblyName, key.CultureName).Collect(typeName, entries, conflicts);
+        foreach (var source in _layered)
         {
             source.ReadTranslations(assemblyName, key.CultureName).Collect(typeName, entries, conflicts);
         }

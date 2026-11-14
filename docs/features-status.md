@@ -26,7 +26,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
 | [Release](#release) | A locale pack proven from a feed |
-| [Locale files in any layout](#locale-files-in-any-layout) | Designed; seven steps open |
+| [Locale files in any layout](#locale-files-in-any-layout) | In progress: four of eight steps landed |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -169,7 +169,7 @@ Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.5` are published, as [
 
 ## Locale files in any layout
 
-A project lays its locale files out as it likes, one folder per language as readily as a `.locales` folder per namespace, and every file is read into one translation, a culture, an assembly, a type and a key with its text, which everything after reading works on: lookups, precedence, conflicts and the linter. [The localization design](localization-design.md) states it, and [its implementation plan](localization-layout-implementation-plan.md) the seven steps, from a baseline of lookup costs through the runtime, the build and a Locali release to the documents.
+A project lays its locale files out as it likes, one folder per language as readily as a `.locales` folder per namespace, and every file is read into one translation, a culture, an assembly, a type and a key with its text, which everything after reading works on: lookups, precedence, conflicts and the linter. [The localization design](localization-design.md) states it, and [its implementation plan](localization-layout-implementation-plan.md) the eight steps, from a baseline of lookup costs through the runtime and the speed of its lookups, the build and a Locali release to the documents.
 
 <a id="a-hosts-integration"></a>
 

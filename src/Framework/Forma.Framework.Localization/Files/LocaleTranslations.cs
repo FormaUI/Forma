@@ -6,14 +6,14 @@ using System.Runtime.InteropServices;
 /// <summary>Every translation one source holds for an assembly's types in one culture, read from the source's files once.</summary>
 public sealed class LocaleTranslations
 {
-    private readonly string[] _rootSegments;
+    private readonly string _rootNamespace;
     private readonly LocaleNames _underRoot;
     private readonly LocaleNames _outsideRoot;
     private readonly Lazy<IReadOnlyList<LocaleConflict>> _conflicts;
 
     internal LocaleTranslations(string rootNamespace, LocaleNames underRoot, LocaleNames outsideRoot)
     {
-        _rootSegments = rootNamespace.Split('.');
+        _rootNamespace = rootNamespace;
         _underRoot = underRoot;
         _outsideRoot = outsideRoot;
         _conflicts = new(() => [.. underRoot.GetConflicts().Concat(outsideRoot.GetConflicts()).Distinct()]);
@@ -39,11 +39,19 @@ public sealed class LocaleTranslations
         ArgumentException.ThrowIfNullOrEmpty(typeName);
         ArgumentNullException.ThrowIfNull(entries);
 
-        var segments = typeName.Split('.');
-        var isUnderRoot = LocaleSource.IsUnderRootNamespace(segments, _rootSegments);
-        var anchor = isUnderRoot && segments.Length > 1 ? segments[_rootSegments.Length..] : segments;
-
-        (isUnderRoot ? _underRoot : _outsideRoot).Collect(string.Join('.', anchor), entries, conflicts);
+        // A type outside any namespace is read under the root namespace by its own name.
+        if (!typeName.Contains('.', StringComparison.Ordinal))
+        {
+            _underRoot.Collect(typeName, entries, conflicts);
+        }
+        else if (typeName.Length > _rootNamespace.Length && typeName[_rootNamespace.Length] == '.' && typeName.StartsWith(_rootNamespace, StringComparison.Ordinal))
+        {
+            _underRoot.Collect(typeName.AsSpan(_rootNamespace.Length + 1), entries, conflicts);
+        }
+        else
+        {
+            _outsideRoot.Collect(typeName, entries, conflicts);
+        }
     }
 }
 
@@ -88,7 +96,7 @@ internal sealed class LocaleNames(string rootNamespace)
     /// <param name="name">The name, its segments joined with dots.</param>
     /// <param name="entries">The entries the translations are written into.</param>
     /// <param name="conflicts">The conflicts the translations meet, added to as they are written.</param>
-    public void Collect(string name, IDictionary<string, LocaleSourceEntry> entries, ICollection<LocaleConflict>? conflicts)
+    public void Collect(ReadOnlySpan<char> name, IDictionary<string, LocaleSourceEntry> entries, ICollection<LocaleConflict>? conflicts)
     {
         foreach (var (anchor, exception) in _broken)
         {
@@ -103,9 +111,9 @@ internal sealed class LocaleNames(string rootNamespace)
             var lookup = _shared.GetAlternateLookup<ReadOnlySpan<char>>();
             Write(lookup, string.Empty, isShared: true, entries, conflicts);
 
-            for (var end = name.IndexOf('.', StringComparison.Ordinal); end >= 0; end = name.IndexOf('.', end + 1, StringComparison.Ordinal))
+            for (var end = name.IndexOf('.'); end >= 0; end = NextDot(name, end))
             {
-                Write(lookup, name.AsSpan(0, end), isShared: true, entries, conflicts);
+                Write(lookup, name[..end], isShared: true, entries, conflicts);
             }
 
             Write(lookup, name, isShared: true, entries, conflicts);
@@ -142,9 +150,17 @@ internal sealed class LocaleNames(string rootNamespace)
     }
 
     // A name stands above another where it is empty, the same, or the other's start up to a dot.
-    private static bool IsPrefix(string anchor, string name)
+    private static bool IsPrefix(string anchor, ReadOnlySpan<char> name)
         => anchor.Length == 0
             || (name.StartsWith(anchor, StringComparison.Ordinal) && (name.Length == anchor.Length || name[anchor.Length] == '.'));
+
+    // The position of the dot after the one at dot, or -1 where none follows.
+    private static int NextDot(ReadOnlySpan<char> name, int dot)
+    {
+        var next = name[(dot + 1)..].IndexOf('.');
+
+        return next < 0 ? -1 : dot + 1 + next;
+    }
 
     private static string Join(string first, string second)
         => first.Length == 0 ? second : $"{first}.{second}";
