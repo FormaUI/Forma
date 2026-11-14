@@ -2,7 +2,7 @@ namespace Forma.Framework.Localization.Files;
 
 /// <summary>An entry two files of one source give different texts, and the file whose text the source keeps.</summary>
 /// <param name="TypeName">The full name of the type, or of the namespace a shared entry is for.</param>
-/// <param name="Key">The English source text the entry is keyed by.</param>
+/// <param name="Key">The source text the entry is keyed by.</param>
 /// <param name="FileName">The file whose text the source keeps.</param>
 /// <param name="OtherFileName">The file whose text the source sets aside.</param>
 /// <param name="IsShared">Whether the entry is shared by the types beneath the namespace <paramref name="TypeName"/> names, rather than a type's own.</param>

@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 /// <summary>Entries held per UI culture, each lookup answered from the entries of the UI culture in force.</summary>
-/// <param name="entriesByCulture">The entries of each UI culture, keyed by the culture's name and then by the English source text.</param>
+/// <param name="entriesByCulture">The entries of each UI culture, keyed by the culture's name and then by the source text.</param>
 public sealed class CultureEntryDictionary(IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> entriesByCulture) : IReadOnlyDictionary<string, string>
 {
     /// <inheritdoc />

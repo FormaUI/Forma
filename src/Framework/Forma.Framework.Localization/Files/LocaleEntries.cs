@@ -23,7 +23,7 @@ public sealed class LocaleEntries
     public IReadOnlyList<LocaleConflict> Conflicts
         => _conflicts.Value;
 
-    /// <summary>Writes the entries the source holds for a type into <paramref name="entries"/>, keyed by their English source text, so each key is left with the text the source gives it.</summary>
+    /// <summary>Writes the entries the source holds for a type into <paramref name="entries"/>, keyed by their source text, so each key is left with the text the source gives it.</summary>
     /// <remarks>
     /// A key's shared entries are written first, those of a shallower namespace before a deeper one's, and the type's own
     /// last, so a type's own entry wins over a shared one and a deeper shared entry over a shallower one. Of two files
@@ -31,7 +31,7 @@ public sealed class LocaleEntries
     /// every type beneath the name it stands for.
     /// </remarks>
     /// <param name="typeName">The type's full name.</param>
-    /// <param name="entries">The entries written to, keyed by their English source text.</param>
+    /// <param name="entries">The entries written to, keyed by their source text.</param>
     /// <param name="conflicts">The conflicts the type's entries meet, added to as they are written.</param>
     /// <exception cref="LocaleFileException">A file standing for a part of the type's name is malformed.</exception>
     public void Collect(string typeName, IDictionary<string, LocaleSourceEntry> entries, ICollection<LocaleConflict>? conflicts = null)
@@ -118,7 +118,7 @@ internal sealed class LocaleNames(string rootNamespace)
 
     /// <summary>Writes a name's entries into <paramref name="entries"/>: its shared entries from the shallowest namespace down, then its own.</summary>
     /// <param name="name">The name, its segments joined with dots.</param>
-    /// <param name="entries">The entries written to, keyed by their English source text.</param>
+    /// <param name="entries">The entries written to, keyed by their source text.</param>
     /// <param name="conflicts">The conflicts the entries meet, added to as they are written.</param>
     public void Collect(ReadOnlySpan<char> name, IDictionary<string, LocaleSourceEntry> entries, ICollection<LocaleConflict>? conflicts)
     {

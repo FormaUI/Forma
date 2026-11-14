@@ -313,8 +313,8 @@ pack for `AddJsonLocalization()` to find.
 
 ### Your own strings
 
-Inject `IStringLocale<T>` from `Forma.Framework.Localization` and look a string up by its English text, passing
-the values for its holes in order:
+Inject `IStringLocale<T>` from `Forma.Framework.Localization` and look a string up by its text in the source
+language, English by default, passing the values for its holes in order:
 
 ```razor
 @inject IStringLocale<Orders> L

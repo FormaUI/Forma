@@ -1,10 +1,10 @@
 # Forma.Framework.Localization
 
 A localization contract for .NET libraries and applications. A type looks a string up by its
-English source text, so a string no locale file localizes renders as written, and localized strings
-are found by the name of the type asking. The package carries the
-hole and plural syntax a string is written in, the CLDR plural rules, and the build that makes a
-project a locale pack.
+text in the source language, English unless `SourceLanguage` says otherwise, so a string no locale
+file localizes renders as written, and localized strings are found by the name of the type asking.
+The package carries the hole and plural syntax a string is written in, the CLDR plural rules, and
+the build that makes a project a locale pack.
 
 ## Install and register
 

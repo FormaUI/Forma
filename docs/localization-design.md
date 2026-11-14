@@ -39,10 +39,10 @@ es · Forma.Blazor · Forma.Blazor.Components.Bars.FormaToolbar · "Bold" → "N
 | Culture | The culture the text is for, as .NET names it: `es`, `es-419`, `zh-Hant`. |
 | Assembly | The assembly the type lives in. |
 | Type | The type's full name. |
-| Key | The English source text the type looks up. |
+| Key | The text the type looks up, written in the source language. |
 | Text | What the type shows for the key in the culture, or the key itself where a file declares the source text right with a JSON `null`. |
 
-The assembly is part of what an entry is for, because a type's full name doesn't say it:
+The assembly is part of what a locale entry is for, because a type's full name doesn't identify its assembly:
 `Forma.Blazor.Components.Bars.FormaToolbar` lives in `Forma.Blazor`, and
 `Forma.Blazor.Components.DataView.FormaDataGrid` in `Forma.Blazor.DataView`, two assemblies whose
 types share the start of a namespace. The runtime looks a type's strings up assembly by assembly.

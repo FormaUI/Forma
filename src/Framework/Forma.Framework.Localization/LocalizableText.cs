@@ -15,7 +15,7 @@ public sealed record LocalizableText
     /// <summary>The type whose locale holds the key.</summary>
     public Type Source { get; }
 
-    /// <summary>The key, which is the English source text.</summary>
+    /// <summary>The key, which is the source text.</summary>
     public string Key { get; }
 
     /// <summary>One value per distinct hole, in the order the holes first appear in the key.</summary>
@@ -24,7 +24,7 @@ public sealed record LocalizableText
 
     /// <summary>The text <paramref name="key"/> names in the locale of <typeparamref name="TSource"/>, its holes filled with <paramref name="arguments"/>.</summary>
     /// <typeparam name="TSource">The type whose locale holds the key.</typeparam>
-    /// <param name="key">The key, which is the English source text.</param>
+    /// <param name="key">The key, which is the source text.</param>
     /// <param name="arguments">One value per distinct hole, in the order the holes first appear in the key.</param>
     public static LocalizableText For<TSource>([LocaleKey] string key, params object?[] arguments)
     {

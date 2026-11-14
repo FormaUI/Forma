@@ -6,7 +6,7 @@ using Forma.Framework.Culture;
 using Forma.Framework.Localization;
 
 /// <summary>A string locale over entries held in memory.</summary>
-/// <param name="entries">The entries to serve, keyed by the English source text.</param>
+/// <param name="entries">The entries to serve, keyed by the source text.</param>
 /// <param name="searchedLocation">The searched location every result reports.</param>
 /// <param name="boundCulture">The culture that formats the values, or <see langword="null"/> to read the current one.</param>
 /// <param name="boundUICulture">The UI culture in force while a value formats itself, or <see langword="null"/> to read the current one.</param>

@@ -6,7 +6,7 @@ using Forma.Framework.Localization;
 
 /// <summary>A string locale for <typeparamref name="T"/> over entries held in memory.</summary>
 /// <typeparam name="T">The type the locale is for.</typeparam>
-/// <param name="entries">The entries to serve, keyed by the English source text.</param>
+/// <param name="entries">The entries to serve, keyed by the source text.</param>
 public sealed class StubStringLocale<T>(IReadOnlyDictionary<string, string> entries) : IStringLocale<T>
 {
     private readonly StubStringLocale _locale = new(entries);
