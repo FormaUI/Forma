@@ -16,7 +16,15 @@ The plan for reading locale files into the translations [the localization design
 
 Each step ends buildable, tested and reviewable, and passes the fast gate.
 
-1. **A baseline of lookup costs.** Open. A benchmark of the first lookup in a culture and of later lookups, over Forma's own Spanish and Hebrew packs and an application's own files, recorded before step 2 changes the runtime. Gate: the numbers recorded beside this plan's state.
+1. **A baseline of lookup costs.** ✅ A benchmark of the first lookup in a culture and of later lookups, over Forma's own Spanish and Hebrew packs and an application's own files, recorded before step 2 changes the runtime. Gate: the numbers recorded beside this plan's state. Measured with BenchmarkDotNet 0.14 on .NET 11, in process, `es` and `he` within a few percent of each other, the mean of the two given:
+
+   | Lookup | Forma.Blazor's types from the packs | An application's 200 types in 50 namespace folders |
+   |---|---|---|
+   | The first, with a new factory | 495 µs, 321 KB | 735 µs, 636 KB |
+   | The first of every type, with one new factory | 857 µs, 800 KB | 2.16 ms, 2.6 MB |
+   | A later one, already read | 114 ns, 56 B | 95 ns, 56 B |
+
+   The first lookup in a culture already reads every file a source places in it, since a source finds the `@.` sections by reading them all, so reading an assembly's files for a culture once adds no reading the runtime does not do today.
 2. **Reading into translations.** Open. A source reads an assembly's files for a culture once into translations, applying the default reading of the design's *Reading a file* or the assembly's stated paths, and expanding `$shared` and `@.` sections as it reads. A lookup chooses by the design's *Precedence*, culture first and source second, and settles a conflict within a source by the file whose name sorts last, logging each conflict once as a warning naming both files. Sources become one kind, read by one rule: an assembly's own files, a pack, the application, and the folder beside it. `SearchedLocation` and every message name files from what a translation remembers. Gate: a unit test for each case the design names, every existing localization test passing or changed for a decision the design records, and the culture and localization browser checks passing in every runtime.
 3. **The cost, measured again.** Open. The benchmark of step 1 over step 2's runtime. Gate: the numbers recorded beside step 1's, and any lookup slower than the baseline explained, or made lazy per assembly and culture where the first lookup in a culture costs more than it did.
 4. **The build.** Open. Every locale file is embedded under the project's root namespace and its path with `/` made `.`, named by the build itself; the reserved prefix `.locales.` goes; `LocaleReferenceAttribute` names each referenced application that embedded locale files; and a pack's culture check reads a culture folder as well as a file's name, deciding a culture as the runtime does. Gate: the build's own cases, and an application whose `.locales/es-419/` files load in every runtime.
