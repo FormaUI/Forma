@@ -221,10 +221,10 @@ those for `es-419`, hold only what differs from its parent's.
 
 **Embedded by the build.** The build embeds every locale file it finds by the `$localization` entry
 each one carries, wherever it sits in the project, outside the build output and outside a folder
-whose name starts with a dot but `.locales`, under the project's root namespace and the file's path
-with every `/` made a `.`, so a project names none of them and a culture folder such as `es-419`
-keeps its name. A file the project embeds through an item of its own keeps the name that item
-gives it, and one an item in the project file copies beside its output stays a file there.
+whose name starts with a dot but the folder of locale files, under the project's root namespace and
+the file's path with every `/` made a `.`, so a project names none of them and a culture folder such
+as `es-419` keeps its name. A file the project embeds through an item of its own keeps the name that
+item gives it, and one an item in the project file copies beside its output stays a file there.
 
 **Another assembly's strings.** An application rewords a string, or adds a language the library
 never shipped, in its own files, under a name that starts with the assembly's name and goes on with

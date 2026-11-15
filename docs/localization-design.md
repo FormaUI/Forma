@@ -169,17 +169,22 @@ in, so in an application it reads other assemblies' strings as well as the appli
 
 ## Embedded files and resource names
 
-The build embeds every locale file itself, through the targets the library ships, so a project
-names none. A locale file is a JSON file carrying the `$localization` entry, so the build finds the
-files by that entry wherever they sit in the project, outside its build output and outside any
-folder whose name starts with a dot but `.locales`, and embeds each once.
+The build embeds every locale file itself, through the targets the library ships and the tasks they
+run, compiled from a C# file beside them, so a project names none. A locale file is a JSON file
+carrying the `$localization` entry, so the build finds the files by that entry wherever they sit in
+the project, outside its build output and outside any folder whose name starts with a dot but the
+folder of locale files the assembly's `localesDir` names, `.locales` by default, and embeds each
+once.
 
 An embedded file is known by its resource name: the project's root namespace, then the file's path
 with every `/` made a `.`, as `Forma.Blazor.Components.Bars..locales.he.json`. The build names
 every file this way itself, since the SDK's own naming would make a culture folder `es-419` into
 `es_419`. A name is read against resource names with `.` standing for a folder, which is why a
 folder and a dot separate a name alike. The doubled dot is the leading dot of `.locales`, which no
-namespace segment can produce, so a folder of locale files is never mistaken for a namespace.
+namespace segment can produce, so a folder of locale files is never mistaken for a namespace. Two
+files whose paths differ only where one has a folder and the other a dot, `Uploads/UploadStatus.he.json`
+and `Uploads.UploadStatus.he.json`, would take one resource name, and an assembly embeds one resource
+under a name, so the build refuses them, naming both.
 
 A file the project embeds through an item of its own is left to that item, under the name the item
 gives it, and so is a file an item in the project file copies beside its output, which stays a file

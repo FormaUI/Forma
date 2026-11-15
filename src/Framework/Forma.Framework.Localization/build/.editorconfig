@@ -1,0 +1,11 @@
+[*.cs]
+# ------------------------------------------------------------
+# Diagnostics that do not apply to the build's inline tasks
+# ------------------------------------------------------------
+
+# MSBuild's inline task factory compiles the tasks against .NET Standard 2.0, which has no System.Index or
+# System.Range, so an index or range operator fails every build that runs them.
+csharp_style_prefer_index_operator = false
+csharp_style_prefer_range_operator = false
+dotnet_diagnostic.IDE0056.severity = none
+dotnet_diagnostic.IDE0057.severity = none

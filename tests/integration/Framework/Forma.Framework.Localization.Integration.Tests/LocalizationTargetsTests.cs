@@ -40,6 +40,66 @@ public sealed class LocalizationTargetsTests
         }
 
         [Fact]
+        public async Task Should_refuse_two_files_a_folder_and_a_dot_name_alike()
+        {
+            // Arrange — one file in a folder for its namespace, one with the namespace in its name
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Library");
+            projects.WriteLocaleFile("Contoso.Library/Uploads/UploadStatus.he.json");
+            projects.WriteLocaleFile("Contoso.Library/Uploads.UploadStatus.he.json");
+
+            // Act
+            var failure = await projects.GetFailureAsync("Contoso.Library", "CollectLocaleFiles");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains(Path.Combine("Uploads", "UploadStatus.he.json"), failure, StringComparison.Ordinal),
+                () => Assert.Contains("Uploads.UploadStatus.he.json and", failure, StringComparison.Ordinal),
+                () => Assert.Contains("both embedded as Contoso.Library.Uploads.UploadStatus.he.json", failure, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_accept_files_whose_names_differ_however_their_layouts_place_them()
+        {
+            // Arrange — the root's file, a namespace's, a type's and a culture folder's, each named apart
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Library");
+            projects.WriteLocaleFile("Contoso.Library/.locales/he.json");
+            projects.WriteLocaleFile("Contoso.Library/Uploads/.locales/he.json");
+            projects.WriteLocaleFile("Contoso.Library/Uploads/.locales/UploadStatus.he.json");
+            projects.WriteLocaleFile("Contoso.Library/.locales/he/Uploads.json");
+
+            // Act
+            var failure = await projects.GetFailureAsync("Contoso.Library", "CollectLocaleFiles");
+
+            // Assert
+            Assert.Null(failure);
+        }
+
+        [Fact]
+        public async Task Should_embed_the_files_in_the_folder_of_locale_files_its_config_names()
+        {
+            // Arrange — a folder of locale files named .strings, whose name starts with a dot as .locales does
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Library");
+            projects.WriteFile("Contoso.Library/.locale.json", """{ /* the folder of locale files */ "localesDir": ".strings" }""");
+            projects.WriteLocaleFile("Contoso.Library/.strings/he.json");
+            projects.WriteLocaleFile("Contoso.Library/Uploads/.strings/he.json");
+
+            // Act
+            var resources = await projects.GetEmbeddedResourcesAsync("Contoso.Library");
+
+            // Assert
+            Assert.Equal(
+                [
+                    (".locale.json", "Contoso.Library..locale.json", "false"),
+                    (".strings/he.json", "Contoso.Library..strings.he.json", "false"),
+                    ("Uploads/.strings/he.json", "Contoso.Library.Uploads..strings.he.json", "false"),
+                ],
+                resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
+        }
+
+        [Fact]
         public async Task Should_leave_a_file_the_project_embeds_itself_to_its_own_item()
         {
             // Arrange
@@ -268,10 +328,33 @@ public sealed class LocalizationTargetsTests
             projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor.Explorer/.locales/he.json");
 
             // Act
-            var failure = await projects.GetFailureAsync("Contoso.Locales.Hebrew", "CheckLocalePackCulture");
+            var failure = await projects.GetFailureAsync("Contoso.Locales.Hebrew", "CollectLocaleFiles");
 
             // Assert
             Assert.Null(failure);
+        }
+
+        [Fact]
+        public async Task Should_embed_a_pack_s_files_under_their_paths_a_locales_folder_s_among_them()
+        {
+            // Arrange — the culture in a name, in a folder before the assembly's name, and in a .locales folder
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Locales.Hebrew", HebrewPack);
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor/Components/Bars/he.json");
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/he/Forma.Blazor.Composer.json");
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor.Explorer/.locales/he.json");
+
+            // Act
+            var resources = await projects.GetEmbeddedResourcesAsync("Contoso.Locales.Hebrew");
+
+            // Assert
+            Assert.Equal(
+                [
+                    ("Forma.Blazor.Explorer/.locales/he.json", "Forma.Blazor.Explorer..locales.he.json", "false"),
+                    ("Forma.Blazor/Components/Bars/he.json", "Forma.Blazor.Components.Bars.he.json", "false"),
+                    ("he/Forma.Blazor.Composer.json", "he.Forma.Blazor.Composer.json", "false"),
+                ],
+                resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
         }
 
         [Fact]
@@ -285,13 +368,29 @@ public sealed class LocalizationTargetsTests
             projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor.Explorer/Strings.json");
 
             // Act
-            var failure = await projects.GetFailureAsync("Contoso.Locales.Hebrew", "CheckLocalePackCulture");
+            var failure = await projects.GetFailureAsync("Contoso.Locales.Hebrew", "CollectLocaleFiles");
 
             // Assert
             Assert.Multiple(
                 () => Assert.Contains("Forma.Blazor.Composer.json", failure, StringComparison.Ordinal),
                 () => Assert.Contains("Strings.json", failure, StringComparison.Ordinal),
                 () => Assert.DoesNotContain(Path.Combine("Forma.Blazor", "he.json"), failure, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_refuse_a_pack_s_two_files_a_folder_and_a_dot_name_alike()
+        {
+            // Arrange — one file in a folder for each part of the namespace, one with the namespace in a folder's name
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Locales.Hebrew", HebrewPack);
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor/Components/he.json");
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor.Components/he.json");
+
+            // Act
+            var failure = await projects.GetFailureAsync("Contoso.Locales.Hebrew", "CollectLocaleFiles");
+
+            // Assert
+            Assert.Contains("both embedded as Forma.Blazor.Components.he.json", failure, StringComparison.Ordinal);
         }
     }
 }

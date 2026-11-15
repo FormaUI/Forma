@@ -434,6 +434,7 @@ formaui-net.Framework.JavaScript.Interop
 
 formaui-net.Framework.Localization
     buildTransitive/formaui-net.Framework.Localization.targets
+    buildTransitive/LocaleBuildTasks.cs
     buildTransitive/LocalePack.targets
     lib/net11.0/Forma.Framework.Localization.dll
     LICENSE

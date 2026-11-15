@@ -14,6 +14,8 @@
         <None Remove="build\*.targets" />
         <None Include="build\Forma.Framework.Localization.targets" Pack="true" PackagePath="buildTransitive\$(PackageId).targets" />
         <None Include="build\LocalePack.targets" Pack="true" PackagePath="buildTransitive\LocalePack.targets" />
+        <Compile Remove="build\LocaleBuildTasks.cs" />
+        <None Include="build\LocaleBuildTasks.cs" Pack="true" PackagePath="buildTransitive\LocaleBuildTasks.cs" />
     </ItemGroup>
 
 </Project>

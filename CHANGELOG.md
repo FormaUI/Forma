@@ -5,6 +5,20 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.7`
+
+*Unreleased*
+
+- A project whose `.locale.json` names a folder of locale files of its own, as `"localesDir": ".strings"` does, has
+  the files in it embedded. The build looked in `.locales` folders alone, so a folder whose name starts with a dot
+  embedded nothing.
+- A locale pack embeds the files in a `.locales` folder too, as `Forma.Blazor.Explorer/.locales/he.json`, and holds
+  them to the cultures it declares; it left them out, unchecked. A pack embeds the JSON files that carry the
+  `$localization` entry, as a project does, where it embedded every JSON file beneath it.
+- Two locale files whose paths differ only where one has a folder and the other a dot, `Uploads/UploadStatus.he.json`
+  and `Uploads.UploadStatus.he.json`, fail the build naming both files and the resource name they would share. The
+  compiler refused them, naming the resource alone.
+
 ## `1.0.0-preview.6`
 
 *November 15, 2026*
