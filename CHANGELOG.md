@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.7`
 
-*Unreleased*
+*November 15, 2026*
 
 - A project whose `.locale.json` names a folder of locale files of its own, as `"localesDir": ".strings"` does, has
   the files in it embedded, and an application reads its files there for other assemblies' strings. The build looked
