@@ -58,6 +58,21 @@ public sealed class ApplicationLocaleSourceTests
         }
 
         [Fact]
+        public void Should_leave_out_the_folder_of_locale_files_the_application_s_config_names()
+        {
+            // Arrange — the file .strings/he/Contoso.Widgets/Bars.fake in a project whose config names .strings
+            var application = new FakeAssembly(Application) { Resources = { ["Contoso.App..locale.json"] = """{ "localesDir": ".strings" }""" } };
+            var format = new FakeLocaleFileFormat();
+            var applicationFile = AddFile(application, format, "Contoso.App..strings.he.Contoso.Widgets.Bars.fake", CreateToolbarSection("own folder"));
+
+            // Act
+            var entries = Read(application, format);
+
+            // Assert
+            Assert.Equal([new(applicationFile, "Toolbar", "Bold", "own folder")], entries);
+        }
+
+        [Fact]
         public void Should_leave_the_application_s_own_strings_to_its_own_assembly()
         {
             // Arrange — a file for the application's own types, which its own assembly's reading answers.

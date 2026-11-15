@@ -9,8 +9,8 @@ using System.Reflection;
 /// <remarks>
 /// The application's names begin where its own files' do, at the folder its own config sits in or, where it has none, at
 /// its name, so <c>.locales/es/Forma.Blazor/Components/Bars.json</c> in its project reads for <c>Forma.Blazor</c> as a
-/// pack's file of that name does. An assembly's folder is laid out by the root namespace the assembly's own config
-/// declares.
+/// pack's file of that name does, and they leave out the folder of locale files its own config names, as its build
+/// embeds them from. An assembly's folder is laid out by the root namespace the assembly's own config declares.
 /// </remarks>
 public sealed class ApplicationLocaleSource(Assembly application, ILocaleFileFormat format, Func<string, string?> rootNamespaces) : LocaleSource(format)
 {
@@ -19,6 +19,7 @@ public sealed class ApplicationLocaleSource(Assembly application, ILocaleFileFor
     private readonly Func<string, string?> _rootNamespaces = rootNamespaces ?? throw new ArgumentNullException(nameof(rootNamespaces));
     private readonly EmbeddedLocaleSource _ownFiles = new(application, format);
     private string? _namesPrefix;
+    private string? _localesDir;
 
     /// <inheritdoc />
     protected override char FolderSeparator
@@ -31,6 +32,9 @@ public sealed class ApplicationLocaleSource(Assembly application, ILocaleFileFor
     // The application's own config is read once, at the first name asked for.
     private string NamesPrefix
         => _namesPrefix ??= _ownFiles.GetRootDir(_applicationName) + FolderSeparator;
+
+    private string LocalesDir
+        => _localesDir ??= _ownFiles.GetLocalesDir(_applicationName);
 
     /// <inheritdoc />
     protected override IEnumerable<string> EnumerateNames()
@@ -46,10 +50,11 @@ public sealed class ApplicationLocaleSource(Assembly application, ILocaleFileFor
     protected override string GetDefaultRootDir(string assemblyName)
         => assemblyName;
 
-    // An assembly's config is embedded in the assembly, and the application's folder for it follows only the root namespace it declares.
+    // An assembly's config is embedded in the assembly, and the application's folder for it follows only the root namespace it
+    // declares, its folder of locale files being the application's own.
     /// <inheritdoc />
     protected override (string Folder, LocaleConfig Config)? GetConfig(string assemblyName)
-        => (assemblyName, new LocaleConfig(_rootNamespaces(assemblyName), null, null, null));
+        => (assemblyName, new LocaleConfig(_rootNamespaces(assemblyName), null, LocalesDir, null));
 
     /// <inheritdoc />
     protected override string GetDisplayName(string name)

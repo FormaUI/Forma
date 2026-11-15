@@ -10,8 +10,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 *Unreleased*
 
 - A project whose `.locale.json` names a folder of locale files of its own, as `"localesDir": ".strings"` does, has
-  the files in it embedded. The build looked in `.locales` folders alone, so a folder whose name starts with a dot
-  embedded nothing.
+  the files in it embedded, and an application reads its files there for other assemblies' strings. The build looked
+  in `.locales` folders alone, so a folder whose name starts with a dot embedded nothing, and an application read its
+  files for other assemblies with `.locales` left out whatever its config named.
 - A locale pack embeds the files in a `.locales` folder too, as `Forma.Blazor.Explorer/.locales/he.json`, and holds
   them to the cultures it declares; it left them out, unchecked. A pack embeds the JSON files that carry the
   `$localization` entry, as a project does, where it embedded every JSON file beneath it.
