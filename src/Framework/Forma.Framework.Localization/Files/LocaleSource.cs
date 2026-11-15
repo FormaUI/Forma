@@ -20,9 +20,6 @@ public abstract class LocaleSource(ILocaleFileFormat format)
     /// <summary>The format the files are written in.</summary>
     protected ILocaleFileFormat Format { get; } = format ?? throw new ArgumentNullException(nameof(format));
 
-    /// <summary>The character written between folders in this source's names: <see cref="Path.AltDirectorySeparatorChar"/> for a file path, <c>.</c> for an embedded resource's name.</summary>
-    protected abstract char FolderSeparator { get; }
-
     /// <summary>Whether every name the source holds starts with the name of the assembly whose strings it holds, as a pack's and a host's do.</summary>
     protected virtual bool NamesStartWithAssemblyName
         => false;
@@ -135,7 +132,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         return _roots.GetOrAdd(assemblyName, CreateRoot).LocalesDir;
     }
 
-    /// <summary>Every name the source's own store holds, config files included, written with <see cref="FolderSeparator"/> between folders.</summary>
+    /// <summary>Every name the source's own store holds, config files included, written with <c>/</c> between folders.</summary>
     protected abstract IEnumerable<string> EnumerateNames();
 
     /// <summary>The names a culture's own store holds apart from the source's, each written as the source's store would write it.</summary>
@@ -235,7 +232,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         }
 
         var folderLength = name.Length - LocaleConfig.FileName.Length - 1;
-        if (folderLength > 0 && name[folderLength] == FolderSeparator && name.EndsWith(LocaleConfig.FileName, NameComparison))
+        if (folderLength > 0 && name[folderLength] == Path.AltDirectorySeparatorChar && name.EndsWith(LocaleConfig.FileName, NameComparison))
         {
             folder = name[..folderLength];
 
@@ -257,13 +254,9 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         return new LocaleRoot(rootDir, config.RootNamespace ?? assemblyName, config.LocalesDir ?? LocaleConfig.DefaultLocalesDir, config.Paths);
     }
 
-    // A rootDir is written with '/' and sits beneath the config file's own folder.
-    private string JoinFolders(string folder, string rootDir)
-    {
-        var writtenRoot = rootDir.Replace(Path.AltDirectorySeparatorChar, FolderSeparator);
-
-        return folder.Length == 0 ? writtenRoot : $"{folder}{FolderSeparator}{writtenRoot}";
-    }
+    // A rootDir sits beneath the config file's own folder.
+    private static string JoinFolders(string folder, string rootDir)
+        => folder.Length == 0 ? rootDir : $"{folder}{Path.AltDirectorySeparatorChar}{rootDir}";
 
     // Each file is placed at the anchor the default reading takes from its name, or at every anchor the assembly's stated
     // paths read it for, in the order of the paths.
@@ -281,7 +274,7 @@ public abstract class LocaleSource(ILocaleFileFormat format)
 
         var nameComparer = StringComparer.FromComparison(NameComparison);
         var values = new LocalePathValues(key.AssemblyName, rootNamespace, rootDir, root.LocalesDir, key.CultureName, Format.Extension);
-        var matcher = new LocalePathMatcher(values, FolderSeparator, NameComparison);
+        var matcher = new LocalePathMatcher(values, NameComparison);
         var placedFiles = new Dictionary<string, List<PlacedFile>>(nameComparer);
         var order = 0;
 

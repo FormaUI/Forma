@@ -190,25 +190,23 @@ message. In the project of `Contoso.App`:
 
 | File | Embedded as | Canonical name |
 | --- | --- | --- |
-| `Uploads/.locales/he.json` | `Contoso.App.Uploads..locales.he.json` | `he` · `Contoso.App.Uploads` |
-| `Uploads.he.json` | `Contoso.App.Uploads.he.json` | `he` · `Contoso.App.Uploads` |
-| `.locales/he/Uploads.json` | `Contoso.App..locales.he.Uploads.json` | `he` · `Contoso.App.Uploads` |
-| `.locales/Uploads/he.json` | `Contoso.App..locales.Uploads.he.json` | `he` · `Contoso.App.Uploads` |
-| `Uploads/.locales/UploadStatus.he.json` | `Contoso.App.Uploads..locales.UploadStatus.he.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
-| `Uploads/UploadStatus.he.json` | `Contoso.App.Uploads.UploadStatus.he.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
-| `.locales/he/Uploads/UploadStatus.json` | `Contoso.App..locales.he.Uploads.UploadStatus.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
-| `.locales/he.json` | `Contoso.App..locales.he.json` | `he` · `Contoso.App` |
-| `.locales/he/he.json` | `Contoso.App..locales.he.he.json` | `he` · `Contoso.App` |
-| `.locales/he/Uploads.he.json` | `Contoso.App..locales.he.Uploads.he.json` | `he` · `Contoso.App.Uploads` |
-| `.locales/es-419/Uploads.json` | `Contoso.App..locales.es-419.Uploads.json` | `es-419` · `Contoso.App.Uploads` |
-| `Strings/he/Uploads.json` | `Contoso.App.Strings.he.Uploads.json` | `he` · `Contoso.App.Strings.Uploads` |
-| `.locales/ES/Uploads.json` | `Contoso.App..locales.ES.Uploads.json` | none: `ES` isn't how .NET writes a culture |
+| `Uploads/.locales/he.json` | `Contoso.App/Uploads/.locales/he.json` | `he` · `Contoso.App.Uploads` |
+| `Uploads.he.json` | `Contoso.App/Uploads.he.json` | `he` · `Contoso.App.Uploads` |
+| `.locales/he/Uploads.json` | `Contoso.App/.locales/he/Uploads.json` | `he` · `Contoso.App.Uploads` |
+| `.locales/Uploads/he.json` | `Contoso.App/.locales/Uploads/he.json` | `he` · `Contoso.App.Uploads` |
+| `Uploads/.locales/UploadStatus.he.json` | `Contoso.App/Uploads/.locales/UploadStatus.he.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
+| `Uploads/UploadStatus.he.json` | `Contoso.App/Uploads/UploadStatus.he.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
+| `.locales/he/Uploads/UploadStatus.json` | `Contoso.App/.locales/he/Uploads/UploadStatus.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
+| `.locales/he.json` | `Contoso.App/.locales/he.json` | `he` · `Contoso.App` |
+| `.locales/he/he.json` | `Contoso.App/.locales/he/he.json` | `he` · `Contoso.App` |
+| `.locales/he/Uploads.he.json` | `Contoso.App/.locales/he/Uploads.he.json` | `he` · `Contoso.App.Uploads` |
+| `.locales/es-419/Uploads.json` | `Contoso.App/.locales/es-419/Uploads.json` | `es-419` · `Contoso.App.Uploads` |
+| `Strings/he/Uploads.json` | `Contoso.App/Strings/he/Uploads.json` | `he` · `Contoso.App.Strings.Uploads` |
+| `.locales/ES/Uploads.json` | `Contoso.App/.locales/ES/Uploads.json` | none: `ES` isn't how .NET writes a culture |
 
 A folder other than the folder of locale files stays part of the name, as `Strings` does. Files with
-one canonical name are read together, as one file would be. Two files whose paths differ only where
-one has a folder and the other a dot, `Uploads/UploadStatus.he.json` and
-`Uploads.UploadStatus.he.json`, would be embedded under one resource name, so the build refuses
-them, naming both.
+one canonical name are read together, as one file would be, `Uploads/UploadStatus.he.json` and
+`Uploads.UploadStatus.he.json` among them.
 
 **One entry for every string.** A file's sections, at its canonical name, are read into entries, and
 the runtime works on entries alone: which text a lookup finds, which text wins and what is a conflict
@@ -250,10 +248,13 @@ from its parent's.
 
 **Embedded by the build.** The build embeds every locale file it finds by the `$localization` entry
 each one carries, wherever it sits in the project, outside the build output and outside a folder
-whose name starts with a dot but the folder of locale files, under the project's root namespace and
-the file's path with every `/` made a `.`, so a project names none of them and a culture folder such
-as `es-419` keeps its name. A file the project embeds through an item of its own keeps the name that
-item gives it, and one an item in the project file copies beside its output stays a file there.
+whose name starts with a dot but the folder of locale files, under the project's root namespace, a
+`/` and the file's path, with `/` between folders on every platform, so a project names none of them
+and a culture folder such as `es-419` keeps its name. A file the project embeds through an item of
+its own keeps the name that item gives it. The SDK's naming makes every folder a dot, which the
+default reading still reads; a stated path and an application's files for another assembly match
+folders, so a file either of them reads is named with its folders, as the build names one. A file an
+item in the project file copies beside its output stays a file there.
 
 **Another assembly's strings.** An application rewords a string, or adds a language the library
 never shipped, in its own files, under a name that starts with the assembly's name and goes on with

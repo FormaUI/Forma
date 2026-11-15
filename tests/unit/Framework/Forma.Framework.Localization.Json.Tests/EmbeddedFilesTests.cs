@@ -63,8 +63,8 @@ public sealed class EmbeddedFilesTests
             Assert.Multiple(
                 () => Assert.Equal("rooted section", saved.Value),
                 () => Assert.Equal("folder file", opened.Value),
-                () => Assert.Contains("Fixtures.Conflicted..locales.he.json", warning.Message, StringComparison.Ordinal),
-                () => Assert.Contains("Fixtures.Wording..locales.he.json", warning.Message, StringComparison.Ordinal),
+                () => Assert.Contains("Fixtures/Conflicted/.locales/he.json", warning.Message, StringComparison.Ordinal),
+                () => Assert.Contains("Fixtures/Wording/.locales/he.json", warning.Message, StringComparison.Ordinal),
                 () => Assert.Contains("'Save'", warning.Message, StringComparison.Ordinal));
         }
     }

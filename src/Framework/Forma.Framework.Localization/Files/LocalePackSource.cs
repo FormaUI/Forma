@@ -14,10 +14,6 @@ public sealed class LocalePackSource(Assembly pack, ILocaleFileFormat format, Fu
     private readonly Func<string, string?> _rootNamespaces = rootNamespaces ?? throw new ArgumentNullException(nameof(rootNamespaces));
 
     /// <inheritdoc />
-    protected override char FolderSeparator
-        => '.';
-
-    /// <inheritdoc />
     protected override bool NamesStartWithAssemblyName
         => true;
 

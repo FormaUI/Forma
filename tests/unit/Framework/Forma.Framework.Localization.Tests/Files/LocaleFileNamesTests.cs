@@ -29,9 +29,22 @@ public sealed class LocaleFileNamesTests
                 () => Assert.Equal(isInLocalesDir, fileName?.IsInLocalesDir));
         }
 
-        // Each resource name is the one the build gives the file whose path stands beside it, in a project whose root namespace is
-        // Contoso.App, so every layout of one namespace's or one type's file reads into one canonical name.
+        // Each resource name is the one the build gives the file whose path it spells, in a project whose root namespace is Contoso.App, or the
+        // one the SDK gives it with every folder made a dot, as a project's own item keeps it, so every layout of one namespace's or one type's
+        // file reads into one canonical name either way.
         [Theory]
+        [InlineData("Contoso.App/Uploads/.locales/he.json", "he", "Contoso.App.Uploads")]
+        [InlineData("Contoso.App/Uploads.he.json", "he", "Contoso.App.Uploads")]
+        [InlineData("Contoso.App/.locales/he/Uploads.json", "he", "Contoso.App.Uploads")]
+        [InlineData("Contoso.App/.locales/Uploads/he.json", "he", "Contoso.App.Uploads")]
+        [InlineData("Contoso.App/Uploads/.locales/UploadStatus.he.json", "he", "Contoso.App.Uploads.UploadStatus")]
+        [InlineData("Contoso.App/Uploads/UploadStatus.he.json", "he", "Contoso.App.Uploads.UploadStatus")]
+        [InlineData("Contoso.App/.locales/he/Uploads/UploadStatus.json", "he", "Contoso.App.Uploads.UploadStatus")]
+        [InlineData("Contoso.App/.locales/he.json", "he", "Contoso.App")]
+        [InlineData("Contoso.App/.locales/he/he.json", "he", "Contoso.App")]
+        [InlineData("Contoso.App/.locales/he/Uploads.he.json", "he", "Contoso.App.Uploads")]
+        [InlineData("Contoso.App/.locales/es-419/Uploads.json", "es-419", "Contoso.App.Uploads")]
+        [InlineData("Contoso.App/Strings/he/Uploads.json", "he", "Contoso.App.Strings.Uploads")]
         [InlineData("Contoso.App.Uploads..locales.he.json", "he", "Contoso.App.Uploads")]                                 // Uploads/.locales/he.json
         [InlineData("Contoso.App.Uploads.he.json", "he", "Contoso.App.Uploads")]                                          // Uploads.he.json
         [InlineData("Contoso.App..locales.he.Uploads.json", "he", "Contoso.App.Uploads")]                                 // .locales/he/Uploads.json

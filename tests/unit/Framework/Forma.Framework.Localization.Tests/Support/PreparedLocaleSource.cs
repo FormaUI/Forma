@@ -12,10 +12,6 @@ public sealed class PreparedLocaleSource() : LocaleSource(new FakeLocaleFileForm
     public List<string> Requests { get; } = [];
 
     /// <inheritdoc />
-    protected override char FolderSeparator
-        => Path.AltDirectorySeparatorChar;
-
-    /// <inheritdoc />
     protected override IEnumerable<string> EnumerateNames()
         => Files.Keys;
 

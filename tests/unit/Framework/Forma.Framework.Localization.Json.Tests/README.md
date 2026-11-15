@@ -46,14 +46,22 @@ folder named for it, so a malformed file troubles no other type.
 a file beside the type it localizes, and a file under `Resources/` read by the type's name. The
 library's build embeds it.
 
-The csproj globs embed `Fixtures/` and `Resources/`, and three files need more:
+The csproj globs embed `Fixtures/` and `Resources/`, so the SDK moves a file named for a culture
+into that culture's satellite, and a target names each file as the library's build names a locale
+file: the root namespace, a `/` and the file's path. Five files need more:
 
 - `MainAssembly.he.json` sets `WithCulture="false"`, so the SDK leaves it in the main assembly
   rather than moving it into a satellite.
-- `ForeignRoot`'s file sets `LogicalName` to `Contoso.Widgets.ForeignRoot..locales.he.json`, the
-  name the type produces, which its folder path would not.
-- `GlobalRoot`'s file sets `LogicalName` for the same reason: a type without a namespace is read
-  under the root namespace, which no folder under `Fixtures/` produces.
+- `ForeignRoot`'s file sets `LogicalName` to `Contoso/Widgets/ForeignRoot/.locales/he.json`, the
+  name the type's full name spells, which its folder path would not.
+- `GlobalRoot`'s file sets `LogicalName` to `Forma.Framework.Localization.Json.Tests/GlobalRoot/.locales/he.json`
+  for the same reason: a type without a namespace is read under the root namespace, which no folder
+  under `Fixtures/` produces.
+- `Discovery/Pack/fr.json` sets `LogicalName` to `Forma.Framework.Localization.fr.json`, a pack's
+  file at its root, named with dots as any file may be.
+- `Discovery/Host/fr.json` sets `LogicalName` to
+  `Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.fr.json`, an
+  application's file for another assembly, which is read only beneath the application's root and a `/`.
 
 ## A root named by the config
 

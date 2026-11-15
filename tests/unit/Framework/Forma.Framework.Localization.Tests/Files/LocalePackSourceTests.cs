@@ -30,6 +30,9 @@ public sealed class LocalePackSourceTests
     public sealed class Layouts
     {
         [Theory]
+        [InlineData("he/Contoso.Widgets/Bars.fake")]
+        [InlineData("Contoso.Widgets/he/Bars.fake")]
+        [InlineData("Contoso.Widgets/Bars/he.fake")]
         [InlineData("he.Contoso.Widgets.Bars.fake")]
         [InlineData("Contoso.Widgets.he.Bars.fake")]
         [InlineData("Contoso.Widgets.Bars.he.fake")]
@@ -53,8 +56,8 @@ public sealed class LocalePackSourceTests
             // Arrange — the folder's file directly in the folder, and the type's own file in the folder's .locales.
             var pack = new FakeAssembly(Pack);
             var format = new FakeLocaleFileFormat();
-            var folderFile = AddFile(pack, format, "Contoso.Widgets.Bars.he.fake", CreateToolbarSection("folder file"));
-            var typeFile = AddFile(pack, format, "Contoso.Widgets.Bars..locales.Toolbar.he.fake", CreateEntries(("Italic", "type's own file")));
+            var folderFile = AddFile(pack, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("folder file"));
+            var typeFile = AddFile(pack, format, "Contoso.Widgets/Bars/.locales/Toolbar.he.fake", CreateEntries(("Italic", "type's own file")));
 
             // Act
             var entries = Read(pack, format);
@@ -68,13 +71,15 @@ public sealed class LocalePackSourceTests
                 [.. entries.OrderBy(entry => entry.Key, StringComparer.Ordinal)]);
         }
 
-        [Fact]
-        public void Should_read_a_file_only_under_the_name_of_the_assembly_it_localizes()
+        [Theory]
+        [InlineData("Contoso.Pack.Bars.he.fake")]
+        [InlineData("Contoso.WidgetsExtra/Bars/he.fake")]
+        public void Should_read_a_file_only_under_the_name_of_the_assembly_it_localizes(string name)
         {
             // Arrange
             var pack = new FakeAssembly(Pack);
             var format = new FakeLocaleFileFormat();
-            AddFile(pack, format, "Contoso.Pack.Bars.he.fake", CreateToolbarSection("under the pack's name"));
+            AddFile(pack, format, name, CreateToolbarSection("under the pack's name"));
 
             // Act
             var entries = Read(pack, format);
@@ -89,13 +94,13 @@ public sealed class LocalePackSourceTests
             // Arrange
             var pack = new FakeAssembly(Pack);
             var format = new FakeLocaleFileFormat();
-            AddFile(pack, format, "Contoso.Widgets.Bars.he.fake", CreateToolbarSection("folder file"));
+            AddFile(pack, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("folder file"));
 
             // Act
             var entries = Read(pack, format);
 
             // Assert
-            Assert.Equal("Contoso.Pack/Contoso.Widgets.Bars.he.fake", Assert.Single(entries).FileName);
+            Assert.Equal("Contoso.Pack/Contoso.Widgets/Bars/he.fake", Assert.Single(entries).FileName);
         }
     }
 
@@ -120,7 +125,7 @@ public sealed class LocalePackSourceTests
         public void Should_not_read_a_config_file_a_pack_carries()
         {
             // Arrange
-            var pack = new FakeAssembly(Pack) { Resources = { ["Contoso.Widgets..locale.json"] = """{ "rootNamespace": "Elsewhere" }""" } };
+            var pack = new FakeAssembly(Pack) { Resources = { ["Contoso.Widgets/.locale.json"] = """{ "rootNamespace": "Elsewhere" }""" } };
             var format = new FakeLocaleFileFormat();
             var file = AddFile(pack, format, "Contoso.Widgets.Bars.he.fake", CreateToolbarSection("folder file"));
 

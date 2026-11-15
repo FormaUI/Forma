@@ -5,6 +5,33 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.8`
+
+*Unreleased*
+
+- The build embeds a locale file under the project's root namespace, a `/` and the file's path, as
+  `Contoso.App/Uploads/.locales/he.json`, and a project's `.locale.json` as `Contoso.App/.locale.json`; a locale pack
+  embeds its files under their paths. It wrote a path with every folder made a dot, as
+  `Contoso.App.Uploads..locales.he.json`, so two files a folder and a dot tell apart, `Uploads/UploadStatus.he.json`
+  and `Uploads.UploadStatus.he.json`, took one name and failed the build; they are embedded side by side and read
+  together.
+- A path a `.locale.json` states matches folders in an assembly as it does in a host's folder: a `/` in it is a folder,
+  and `$AnchorName` and `$ParentName` stand for a folder for each segment. A dot in an embedded name stood for a
+  folder. To migrate, lay out a file a path reads in folders, `strings-es/Accounts/Admin.json` rather than
+  `strings-es/Accounts.Admin.json`, and give a file a project embeds through an item of its own a `LogicalName` with
+  its folders.
+- An application's files for other assemblies are read beneath its root and a `/`, as the build names them, so a file
+  the application embeds through an item of its own for another assembly is read only under a name of that form; the
+  SDK's name for it, with every folder made a dot, was read as well. To migrate, give the item a `LogicalName` of that
+  form, or leave the file to the build.
+- A file a satellite assembly holds under the name its item gave it, culture and all, is read and reported under that
+  name, where the source added its culture a second time, and a satellite's file named for another culture is left
+  out.
+- `LocaleSource.FolderSeparator` is gone, every source's names being paths, and `LocalePathMatcher` and
+  `LocalePathBinder` take no separator. A source written against them drops its override, and a caller the argument.
+  `LocaleSource.GetRootDir` answers a root a `.locale.json` names beneath its folder with `/` between the two, as
+  `Contoso.Widgets/Strings`.
+
 ## `1.0.0-preview.7`
 
 *November 15, 2026*

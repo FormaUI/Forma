@@ -145,7 +145,7 @@ public sealed class LocalePackTests
             {
                 Resources =
                 {
-                    ["Contoso.Client." + Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Unlocalized": { "Open": "host" } }""",
+                    ["Contoso.Client/" + Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Unlocalized": { "Open": "host" } }""",
                     [Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "Unlocalized": { "Save": "not the host's" } }""",
                 },
             };
@@ -170,7 +170,7 @@ public sealed class LocalePackTests
             {
                 Resources =
                 {
-                    ["Contoso.Client." + Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "HostOverridden": { "Open": "embedded", "Save": "embedded" } }""",
+                    ["Contoso.Client/" + Fixtures] = """{ "$localization": "SchemaVersion: 1.0.0; Culture: he;", "HostOverridden": { "Open": "embedded", "Save": "embedded" } }""",
                 },
             };
             var strings = CreateLocale<HostOverridden>(host, new LocalizationOptions().LocalesPath);
@@ -212,7 +212,7 @@ public sealed class LocalePackTests
         {
             // Arrange — an application whose only locales are its files for another assembly, over a pack the options name
             using var culture = new CultureScope("fr");
-            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute() }, Resources = { ["Contoso.App." + RootFile] = CreateFile("Ouvrir (application)") } };
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute() }, Resources = { ["Contoso.App/" + RootFile] = CreateFile("Ouvrir (application)") } };
             var pack = new FakeAssembly("Contoso.Pack") { Resources = { [RootFile] = CreateFile("Ouvrir (paquet nommé)") } };
             var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty, LocalePacks = [pack] }, new FakeAssembly("System.Runtime"), application);
 
@@ -281,7 +281,7 @@ public sealed class LocalePackTests
             var server = new FakeAssembly("Contoso.Server")
             {
                 Attributes = { new LocaleApplicationAttribute(), new LocaleReferenceAttribute(TestAssembly) },
-                Resources = { ["Contoso.Server." + RootFile] = CreateFile("Ouvrir (serveur)") },
+                Resources = { ["Contoso.Server/" + RootFile] = CreateFile("Ouvrir (serveur)") },
             };
             var strings = CreateDiscoveredLocale(new LocalizationOptions { SourceLanguage = "es", LocalesPath = string.Empty }, server);
 

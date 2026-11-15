@@ -6,11 +6,9 @@ using Forma.Framework.Localization.Parser.Syntax;
 
 /// <summary>Builds a file's name from a locale path, for one source and one culture.</summary>
 /// <param name="values">What the path's tokens stand for apart from the anchor.</param>
-/// <param name="separator">The character written between folders: <see cref="Path.AltDirectorySeparatorChar"/> for a path, <c>.</c> for an embedded resource's name.</param>
-public sealed class LocalePathBinder(LocalePathValues values, char separator)
+public sealed class LocalePathBinder(LocalePathValues values)
 {
     private readonly LocalePathValues _values = values;
-    private readonly char _separator = separator;
 
     /// <summary>The name the path gives the file for an anchor.</summary>
     /// <param name="path">The path.</param>
@@ -41,7 +39,7 @@ public sealed class LocalePathBinder(LocalePathValues values, char separator)
                     }
                     else if (name.Length > 0)
                     {
-                        name.Append(_separator);
+                        name.Append(character);
                         endsWithFolderSeparator = true;
                     }
                 }
@@ -103,25 +101,19 @@ public sealed class LocalePathBinder(LocalePathValues values, char separator)
 
                 break;
 
-            case LocalePathToken.RootDir or LocalePathToken.LocalesDir:
-                var start = name.Length;
-                name.Append(GetLiteral(token, _values));
-                name.Replace(Path.AltDirectorySeparatorChar, _separator, start, name.Length - start);
-                break;
-
             default:
                 name.Append(GetLiteral(token, _values));
                 break;
         }
     }
 
-    private void AppendSegments(StringBuilder name, IReadOnlyList<string> anchor, int count)
+    private static void AppendSegments(StringBuilder name, IReadOnlyList<string> anchor, int count)
     {
         for (var index = 0; index < count; index++)
         {
             if (index > 0)
             {
-                name.Append(_separator);
+                name.Append(Path.AltDirectorySeparatorChar);
             }
 
             name.Append(anchor[index]);

@@ -20,14 +20,23 @@
         <EmbeddedResource Include="Resources\**\*.json" />
         <!-- A file beside its type, kept in the main assembly to cover the layout a project gets by opting out of satellites. -->
         <EmbeddedResource Update="Fixtures\Beside\MainAssembly.he.json" WithCulture="false" />
-        <!-- Embedded under the type's own namespace, which an assembly named apart from its root produces. -->
-        <EmbeddedResource Update="Fixtures\Foreign\ForeignRoot\.locales\he.json" LogicalName="Contoso.Widgets.ForeignRoot..locales.he.json" />
+        <!-- Embedded under the type's own namespace, spelled from the start, which an assembly named apart from its root produces. -->
+        <EmbeddedResource Update="Fixtures\Foreign\ForeignRoot\.locales\he.json" LogicalName="Contoso/Widgets/ForeignRoot/.locales/he.json" />
         <!-- A type outside any namespace, whose resource the root namespace alone qualifies. -->
-        <EmbeddedResource Update="Fixtures\GlobalRoot\.locales\he.json" LogicalName="Forma.Framework.Localization.Json.Tests.GlobalRoot..locales.he.json" />
+        <EmbeddedResource Update="Fixtures\GlobalRoot\.locales\he.json" LogicalName="Forma.Framework.Localization.Json.Tests/GlobalRoot/.locales/he.json" />
         <!-- A pack's file, and an application's file beneath its root, for the localization library's root folder, which a test reads with this assembly named as a pack or as a server's client. -->
         <EmbeddedResource Update="Fixtures\Discovery\Pack\fr.json" LogicalName="Forma.Framework.Localization.fr.json" WithCulture="false" />
-        <EmbeddedResource Update="Fixtures\Discovery\Host\fr.json" LogicalName="Forma.Framework.Localization.Json.Tests..locales.Forma.Framework.Localization.fr.json" WithCulture="false" />
+        <EmbeddedResource Update="Fixtures\Discovery\Host\fr.json" LogicalName="Forma.Framework.Localization.Json.Tests/.locales/Forma.Framework.Localization.fr.json" WithCulture="false" />
     </ItemGroup>
+
+    <!-- Every other file the globs embed is named as the localization library's build names a locale file: the root namespace, then the file's path. -->
+    <Target Name="NameFixturesByPath" BeforeTargets="AssignTargetPaths">
+        <ItemGroup>
+            <EmbeddedResource Condition="'%(EmbeddedResource.LogicalName)' == '' and '%(EmbeddedResource.Extension)' == '.json'">
+                <LogicalName>$(RootNamespace)/$([System.String]::Copy('%(EmbeddedResource.Identity)').Replace('\', '/'))</LogicalName>
+            </EmbeddedResource>
+        </ItemGroup>
+    </Target>
 
     <!-- The host's own files, copied beside the test assembly, where the default folder is looked for. -->
     <ItemGroup>

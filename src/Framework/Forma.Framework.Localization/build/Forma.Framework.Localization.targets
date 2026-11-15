@@ -17,9 +17,10 @@
         it is named and which culture it is for, LocaleBuildTasks.cs decides; this file says when.
     -->
 
-    <!-- An assembly's config file sits at its root and is embedded whenever it is there, since the SDK embeds nothing by default and would ship it as content instead. -->
+    <!-- An assembly's config file sits at its root and is embedded whenever it is there, under the name its path forms, since the SDK embeds nothing by default and would ship it as content instead. -->
     <ItemGroup Condition="Exists('$(MSBuildProjectDirectory)/.locale.json')">
-        <EmbeddedResource Include=".locale.json" />
+        <EmbeddedResource Include=".locale.json" LogicalName="$(RootNamespace)/.locale.json" Condition="'$(RootNamespace)' != ''" />
+        <EmbeddedResource Include=".locale.json" LogicalName=".locale.json" Condition="'$(RootNamespace)' == ''" />
         <Content Remove=".locale.json" />
         <None Remove=".locale.json" />
     </ItemGroup>
@@ -53,7 +54,7 @@
     <Target Name="CollectLocaleFiles">
         <PropertyGroup>
             <_IsLocaleApplication Condition="'$(UsingMicrosoftNETSdkBlazorWebAssembly)' == 'true' or '$(UsingMicrosoftNETSdkWeb)' == 'true' or ('@(_BlazorWebViewPlatformPackage)' != '' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe' or '$(AndroidApplication)' == 'true'))">true</_IsLocaleApplication>
-            <_LocaleResourcePrefix Condition="'$(RootNamespace)' != '' and '$(IsLocalePack)' != 'true'">$(RootNamespace).</_LocaleResourcePrefix>
+            <_LocaleResourcePrefix Condition="'$(RootNamespace)' != '' and '$(IsLocalePack)' != 'true'">$(RootNamespace)/</_LocaleResourcePrefix>
             <_LocaleFileCultures Condition="'$(IsLocalePack)' == 'true'">$(LocalePackCulture)</_LocaleFileCultures>
         </PropertyGroup>
         <Error Condition="'$(IsLocalePack)' == 'true' and '$(LocalePackCulture)' == ''" Text="A locale pack declares the culture it carries in LocalePackCulture, one or several separated by semicolons; this project declares none." />

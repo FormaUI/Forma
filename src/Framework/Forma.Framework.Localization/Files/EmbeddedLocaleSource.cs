@@ -14,14 +14,11 @@ public sealed class EmbeddedLocaleSource(Assembly assembly, ILocaleFileFormat fo
     private readonly ConcurrentDictionary<string, string[]> _satelliteNames = new(StringComparer.Ordinal);
 
     /// <inheritdoc />
-    protected override char FolderSeparator
-        => '.';
-
-    /// <inheritdoc />
     protected override IEnumerable<string> EnumerateNames()
         => _assembly.GetManifestResourceNames();
 
-    // A file the build moved into the culture's satellite assembly is named there without its culture, which sat just before the extension.
+    // A file the SDK moved into the culture's satellite assembly is named there without its culture, which sat just before the
+    // extension; one its item named keeps the name it was given, culture and all.
     /// <inheritdoc />
     protected override IEnumerable<string> EnumerateCultureNames(string cultureName)
         => _satelliteNames.GetOrAdd(cultureName, ListSatelliteNames);
@@ -55,13 +52,30 @@ public sealed class EmbeddedLocaleSource(Assembly assembly, ILocaleFileFormat fo
                 continue;
             }
 
-            var name = $"{resourceName[..^Format.Extension.Length]}.{cultureName}{Format.Extension}";
+            // A name holding another culture is that culture's file, which this satellite doesn't carry.
+            var withoutExtension = resourceName[..^Format.Extension.Length];
+            var name = GetCulture(withoutExtension) switch
+            {
+                null => $"{withoutExtension}.{cultureName}{Format.Extension}",
+                var culture when string.Equals(culture, cultureName, StringComparison.Ordinal) => resourceName,
+                _ => null,
+            };
+
+            if (name is null)
+            {
+                continue;
+            }
+
             _satelliteResources[name] = new SatelliteResource(satellite, resourceName);
             names.Add(name);
         }
 
         return [.. names];
     }
+
+    // The culture a name holds: its first part that is one.
+    private static string? GetCulture(string name)
+        => LocaleFileNames.Split(name).FirstOrDefault(part => LocaleFileNames.IsCulture(part));
 
     private Assembly? GetSatellite(string cultureName)
     {

@@ -32,10 +32,6 @@ public sealed class FakeLocaleSource : LocaleSource
     public List<string> Requests { get; } = [];
 
     /// <inheritdoc />
-    protected override char FolderSeparator
-        => Path.AltDirectorySeparatorChar;
-
-    /// <inheritdoc />
     protected override IEnumerable<string> EnumerateNames()
         => Files.Keys.Concat(Malformed).Concat(Configs.Keys);
 

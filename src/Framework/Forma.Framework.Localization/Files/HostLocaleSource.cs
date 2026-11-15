@@ -20,10 +20,6 @@ public sealed class HostLocaleSource(string path, ILocaleFileFormat format, Func
     private readonly Func<string, string?> _rootNamespaces = rootNamespaces ?? throw new ArgumentNullException(nameof(rootNamespaces));
 
     /// <inheritdoc />
-    protected override char FolderSeparator
-        => Path.AltDirectorySeparatorChar;
-
-    /// <inheritdoc />
     protected override bool NamesStartWithAssemblyName
         => true;
 

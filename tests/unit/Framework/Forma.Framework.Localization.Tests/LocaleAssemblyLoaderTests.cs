@@ -30,7 +30,7 @@ public sealed class LocaleAssemblyLoaderTests
             // a pack for its own use, a client embedding files for another assembly and naming none, the framework, and a dynamic assembly.
             var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute(), new LocalePackAttribute("Contoso.Hebrew") } };
             var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute("Contoso.Spanish") } };
-            var client = new FakeAssembly("Contoso.Client") { Resources = { ["Contoso.Client..locales.Contoso.Library.he.json"] = "{}" } };
+            var client = new FakeAssembly("Contoso.Client") { Resources = { ["Contoso.Client/.locales/Contoso.Library/he.json"] = "{}" } };
             var framework = new FakeAssembly("System.Runtime") { Resources = { ["System.Runtime.Strings.resources"] = string.Empty } };
             var dynamic = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName("Contoso.Dynamic"), AssemblyBuilderAccess.Run);
 

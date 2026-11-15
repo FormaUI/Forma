@@ -22,16 +22,12 @@ public sealed class ApplicationLocaleSource(Assembly application, ILocaleFileFor
     private string? _localesDir;
 
     /// <inheritdoc />
-    protected override char FolderSeparator
-        => '.';
-
-    /// <inheritdoc />
     protected override bool NamesStartWithAssemblyName
         => true;
 
     // The application's own config is read once, at the first name asked for.
     private string NamesPrefix
-        => _namesPrefix ??= _ownFiles.GetRootDir(_applicationName) + FolderSeparator;
+        => _namesPrefix ??= _ownFiles.GetRootDir(_applicationName) + Path.AltDirectorySeparatorChar;
 
     private string LocalesDir
         => _localesDir ??= _ownFiles.GetLocalesDir(_applicationName);

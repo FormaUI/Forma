@@ -70,7 +70,7 @@ public sealed class PrepareLocaleResources : Task
     [Required]
     public ITaskItem[] Files { get; set; } = [];
 
-    /// <summary>What every resource name starts with: the project's root namespace and a dot, or nothing for a pack.</summary>
+    /// <summary>What every resource name starts with: the project's root namespace and a <c>/</c>, or nothing for a pack.</summary>
     public string Prefix { get; set; } = string.Empty;
 
     /// <summary>The folder of locale files, written with <c>/</c>.</summary>
@@ -97,14 +97,14 @@ public sealed class PrepareLocaleResources : Task
             }
 
             var localeFile = new TaskItem(file);
-            localeFile.SetMetadata("LogicalName", Prefix + file.ItemSpec.Replace('\\', '.').Replace('/', '.'));
+            localeFile.SetMetadata("LogicalName", Prefix + file.ItemSpec.Replace('\\', '/'));
             localeFiles.Add(localeFile);
         }
 
-        // A folder and a dot name a file alike, so two files can take one name, which one assembly can't embed twice.
+        // One assembly can't embed two files under one name.
         foreach (var sharing in localeFiles.GroupBy(file => file.GetMetadata("LogicalName"), StringComparer.Ordinal).Where(group => group.Count() > 1))
         {
-            Log.LogError($"{string.Join(" and ", sharing.Select(file => file.ItemSpec))} are both embedded as {sharing.Key}: a locale file is named by its path with every / made a ., so a folder and a dot name it alike. Keep their entries in one of them.");
+            Log.LogError($"{string.Join(" and ", sharing.Select(file => file.ItemSpec))} are both embedded as {sharing.Key}, and an assembly embeds one file under a name. Keep their entries in one of them.");
         }
 
         var cultures = Cultures.Split([';'], StringSplitOptions.RemoveEmptyEntries).Select(culture => culture.Trim()).ToArray();

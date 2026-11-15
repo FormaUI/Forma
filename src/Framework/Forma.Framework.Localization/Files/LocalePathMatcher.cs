@@ -10,16 +10,14 @@ using Forma.Framework.Localization.Parser.Syntax;
 public sealed class LocalePathMatcher
 {
     private readonly LocalePathValues _values;
-    private readonly char _separator;
     private readonly StringComparison _comparison;
     private readonly string _localesDir;
     private readonly ConcurrentDictionary<LocalePath, IReadOnlyList<Piece>> _pieces = new();
 
     /// <summary>Creates a matcher for one source and one culture.</summary>
     /// <param name="values">What the path's tokens stand for apart from the anchor.</param>
-    /// <param name="separator">The character written between folders: <see cref="Path.AltDirectorySeparatorChar"/> for a path, <c>.</c> for an embedded resource's name.</param>
     /// <param name="comparison">How a name is compared: <see cref="StringComparison.Ordinal"/> or <see cref="StringComparison.OrdinalIgnoreCase"/>.</param>
-    public LocalePathMatcher(LocalePathValues values, char separator, StringComparison comparison)
+    public LocalePathMatcher(LocalePathValues values, StringComparison comparison)
     {
         if (comparison is not (StringComparison.Ordinal or StringComparison.OrdinalIgnoreCase))
         {
@@ -27,9 +25,8 @@ public sealed class LocalePathMatcher
         }
 
         _values = values;
-        _separator = separator;
         _comparison = comparison;
-        _localesDir = values.LocalesDir.Replace(Path.AltDirectorySeparatorChar, separator);
+        _localesDir = values.LocalesDir;
     }
 
     private enum Kind
@@ -75,9 +72,9 @@ public sealed class LocalePathMatcher
 
         string[] segments = (path.HasAnchorName, path.HasParentName) switch
         {
-            (true, _) when captures.Anchor.IsPresent => captures.Anchor.Read(name).Split(_separator),
+            (true, _) when captures.Anchor.IsPresent => captures.Anchor.Read(name).Split(Path.AltDirectorySeparatorChar),
             (true, _) => [],
-            (false, true) when captures.Parent.IsPresent => [.. captures.Parent.Read(name).Split(_separator), captures.Current.Read(name)],
+            (false, true) when captures.Parent.IsPresent => [.. captures.Parent.Read(name).Split(Path.AltDirectorySeparatorChar), captures.Current.Read(name)],
             (false, true) => [captures.Current.Read(name)],
             (false, false) => [],
         };
@@ -188,7 +185,7 @@ public sealed class LocalePathMatcher
                     break;
 
                 default:
-                    var value = LocalePathBinder.GetLiteral(token, _values)!.Replace(Path.AltDirectorySeparatorChar, _separator);
+                    var value = LocalePathBinder.GetLiteral(token, _values)!;
                     if (value.Length == 0)
                     {
                         if (pieces is [.., { Kind: Kind.Separator }])
@@ -391,8 +388,8 @@ public sealed class LocalePathMatcher
         return false;
     }
 
-    private bool TryReadSeparator(string name, int position)
-        => position < name.Length && name[position] == _separator;
+    private static bool TryReadSeparator(string name, int position)
+        => position < name.Length && name[position] == Path.AltDirectorySeparatorChar;
 
     // A segment is written as a C# identifier is, the name of the folder of locale files excluded.
     private bool TryReadSegment(string name, int position, out int end)

@@ -13,7 +13,7 @@ public sealed class LocalePathTests
     private const string CultureInHostDir = "$RootDir/$AnchorName/$Culture$Extension";
     private const string NamedInHostDir = "$RootDir/$ParentName/$CurrentName.$Culture$Extension";
 
-    // The forms the binder and the matcher must agree on, the defaults among them.
+    // The forms the binder and the matcher must agree on.
     private static readonly string[] Forms = [Beside, Inside, NamedForAssembly, InParentsDir, NamedInOwnDir, CultureInOwnDir, CultureInHostDir, NamedInHostDir];
 
     private static readonly LocalePathValues Embedded = new("Contoso.Widgets", "Contoso.Widgets", "Contoso.Widgets", ".locales", "he", ".json");
@@ -22,22 +22,22 @@ public sealed class LocalePathTests
 
     private static readonly LocalePathValues Unrooted = Embedded with { RootDir = string.Empty };
 
-    public static TheoryData<string, string[], string?> EmbeddedNames => new()
+    public static TheoryData<string, string[], string?> Names => new()
     {
         { Beside, [], "Contoso.Widgets.he.json" },
-        { Beside, ["Components", "Bars"], "Contoso.Widgets.Components.Bars.he.json" },
-        { Beside, ["Components", "Bars", "Toolbar"], "Contoso.Widgets.Components.Bars.Toolbar.he.json" },
+        { Beside, ["Components", "Bars"], "Contoso.Widgets/Components/Bars.he.json" },
+        { Beside, ["Components", "Bars", "Toolbar"], "Contoso.Widgets/Components/Bars/Toolbar.he.json" },
         { Inside, [], "Contoso.Widgets.he.json" },
-        { Inside, ["Components", "Bars"], "Contoso.Widgets.Components.Bars.Bars.he.json" },
-        { NamedForAssembly, [], "Contoso.Widgets.Contoso.Widgets.he.json" },
+        { Inside, ["Components", "Bars"], "Contoso.Widgets/Components/Bars/Bars.he.json" },
+        { NamedForAssembly, [], "Contoso.Widgets/Contoso.Widgets.he.json" },
         { NamedForAssembly, ["Components"], null },
         { InParentsDir, [], null },
-        { InParentsDir, ["Bars"], "Contoso.Widgets..locales.Bars.he.json" },
-        { InParentsDir, ["Components", "Bars"], "Contoso.Widgets.Components..locales.Bars.he.json" },
-        { NamedInOwnDir, [], "Contoso.Widgets..locales.he.json" },
-        { NamedInOwnDir, ["Components", "Bars"], "Contoso.Widgets.Components.Bars..locales.Bars.he.json" },
-        { CultureInOwnDir, [], "Contoso.Widgets..locales.he.json" },
-        { CultureInOwnDir, ["Components", "Bars"], "Contoso.Widgets.Components.Bars..locales.he.json" },
+        { InParentsDir, ["Bars"], "Contoso.Widgets/.locales/Bars.he.json" },
+        { InParentsDir, ["Components", "Bars"], "Contoso.Widgets/Components/.locales/Bars.he.json" },
+        { NamedInOwnDir, [], "Contoso.Widgets/.locales.he.json" },
+        { NamedInOwnDir, ["Components", "Bars"], "Contoso.Widgets/Components/Bars/.locales/Bars.he.json" },
+        { CultureInOwnDir, [], "Contoso.Widgets/.locales/he.json" },
+        { CultureInOwnDir, ["Components", "Bars"], "Contoso.Widgets/Components/Bars/.locales/he.json" },
     };
 
     public static TheoryData<string, string[]> Anchors
@@ -58,51 +58,40 @@ public sealed class LocalePathTests
         }
     }
 
-    private static string? GetName(string path, string[] anchor, LocalePathValues values, char separator)
-        => new LocalePathBinder(values, separator).GetName(LocalePath.Parse(path), anchor);
+    private static string? GetName(string path, string[] anchor, LocalePathValues values)
+        => new LocalePathBinder(values).GetName(LocalePath.Parse(path), anchor);
 
-    private static bool TryGetAnchor(string path, string name, LocalePathValues values, char separator, [NotNullWhen(true)] out IReadOnlyList<string>? anchor)
-        => new LocalePathMatcher(values, separator, StringComparison.Ordinal).TryGetAnchor(LocalePath.Parse(path), name, out anchor);
+    private static bool TryGetAnchor(string path, string name, LocalePathValues values, [NotNullWhen(true)] out IReadOnlyList<string>? anchor)
+        => new LocalePathMatcher(values, StringComparison.Ordinal).TryGetAnchor(LocalePath.Parse(path), name, out anchor);
 
     public sealed class Binding
     {
         [Theory]
-        [MemberData(nameof(EmbeddedNames), MemberType = typeof(LocalePathTests))]
-        public void Should_name_an_embedded_file_for_every_default_form(string path, string[] anchor, string? expected)
-            => Assert.Equal(expected, GetName(path, anchor, Embedded, '.'));
-
-        [Theory]
-        [InlineData(Beside, "Contoso.Widgets.he.json")]
-        [InlineData(NamedForAssembly, "Contoso.Widgets/Contoso.Widgets.he.json")]
-        [InlineData(CultureInOwnDir, "Contoso.Widgets/.locales/he.json")]
-        public void Should_name_a_host_file_at_the_root_as_a_path(string path, string expected)
-            => Assert.Equal(expected, GetName(path, [], Embedded, Path.AltDirectorySeparatorChar));
-
-        [Fact]
-        public void Should_name_a_host_file_below_the_root_as_a_path()
-            => Assert.Equal("Contoso.Widgets/Components/.locales/Bars.he.json", GetName(InParentsDir, ["Components", "Bars"], Embedded, Path.AltDirectorySeparatorChar));
+        [MemberData(nameof(Names), MemberType = typeof(LocalePathTests))]
+        public void Should_name_a_file_for_every_form(string path, string[] anchor, string? expected)
+            => Assert.Equal(expected, GetName(path, anchor, Embedded));
 
         [Fact]
         public void Should_name_a_file_for_an_assembly_whose_root_namespace_is_another()
-            => Assert.Equal("Contoso.Widgets.Plugins.Contoso.Widgets.Extras.he.json", GetName(NamedForAssembly, [], Borrowed, '.'));
+            => Assert.Equal("Contoso.Widgets.Plugins/Contoso.Widgets.Extras.he.json", GetName(NamedForAssembly, [], Borrowed));
 
         [Fact]
         public void Should_leave_the_current_name_empty_at_the_root()
-            => Assert.Equal(GetName(Beside, [], Embedded, '.'), GetName(Inside, [], Embedded, '.'));
+            => Assert.Equal(GetName(Beside, [], Embedded), GetName(Inside, [], Embedded));
 
         [Fact]
-        public void Should_write_a_nested_locales_dir_with_the_separator_in_use()
-            => Assert.Equal("Contoso.Widgets.Bars.i18n.strings.he.json", GetName(CultureInOwnDir, ["Bars"], Embedded with { LocalesDir = "i18n/strings" }, '.'));
+        public void Should_write_a_nested_locales_dir_as_its_folders()
+            => Assert.Equal("Contoso.Widgets/Bars/i18n/strings/he.json", GetName(CultureInOwnDir, ["Bars"], Embedded with { LocalesDir = "i18n/strings" }));
 
         [Fact]
         public void Should_read_every_other_token_from_the_values()
             => Assert.Equal(
                 "Contoso.Widgets.Plugins/Contoso.Widgets.Extras/Bars/he.json",
-                GetName("$RootNamespace/$AssemblyName/$AnchorName/$Culture$Extension", ["Bars"], Borrowed, Path.AltDirectorySeparatorChar));
+                GetName("$RootNamespace/$AssemblyName/$AnchorName/$Culture$Extension", ["Bars"], Borrowed));
 
         [Fact]
         public void Should_start_a_name_below_an_unknown_root_without_a_separator()
-            => Assert.Equal("Contoso.Widgets.Bars.he.json", GetName(Beside, ["Contoso", "Widgets", "Bars"], Unrooted, '.'));
+            => Assert.Equal("Contoso/Widgets/Bars.he.json", GetName(Beside, ["Contoso", "Widgets", "Bars"], Unrooted));
 
         [Theory]
         [InlineData(Beside)]
@@ -110,7 +99,7 @@ public sealed class LocalePathTests
         [InlineData(NamedForAssembly)]
         [InlineData(CultureInOwnDir)]
         public void Should_give_no_root_file_where_the_root_is_unknown(string path)
-            => Assert.Null(GetName(path, [], Unrooted, '.'));
+            => Assert.Null(GetName(path, [], Unrooted));
 
         [Fact]
         public void Should_give_a_path_standing_for_the_root_no_name_below_it()
@@ -121,40 +110,35 @@ public sealed class LocalePathTests
             // Assert
             Assert.Multiple(
                 () => Assert.True(LocalePath.Parse(RootOnlyPath).IsRootOnly),
-                () => Assert.Equal("Contoso.Widgets/.locales/he.json", GetName(RootOnlyPath, [], Embedded, Path.AltDirectorySeparatorChar)),
-                () => Assert.Null(GetName(RootOnlyPath, ["Bars"], Embedded, Path.AltDirectorySeparatorChar)));
+                () => Assert.Equal("Contoso.Widgets/.locales/he.json", GetName(RootOnlyPath, [], Embedded)),
+                () => Assert.Null(GetName(RootOnlyPath, ["Bars"], Embedded)));
         }
 
         [Fact]
         public void Should_drop_the_separator_after_an_empty_leading_token()
-            => Assert.Equal(".locales/he.json", GetName("$AnchorName/$LocalesDir/$Culture$Extension", [], Embedded, Path.AltDirectorySeparatorChar));
+            => Assert.Equal(".locales/he.json", GetName("$AnchorName/$LocalesDir/$Culture$Extension", [], Embedded));
 
         [Fact]
         public void Should_write_an_escaped_marker_as_a_dollar()
-            => Assert.Equal("Contoso.Widgets/$strings/Bars.he.json", GetName("$RootDir/$$strings/$AnchorName.$Culture$Extension", ["Bars"], Embedded, Path.AltDirectorySeparatorChar));
+            => Assert.Equal("Contoso.Widgets/$strings/Bars.he.json", GetName("$RootDir/$$strings/$AnchorName.$Culture$Extension", ["Bars"], Embedded));
     }
 
     public sealed class Matching
     {
         [Theory]
         [MemberData(nameof(Anchors), MemberType = typeof(LocalePathTests))]
-        public void Should_read_back_the_anchor_every_default_path_names_as_a_resource(string text, string[] anchor)
-            => AssertReadsBack(text, anchor, Embedded, '.');
-
-        [Theory]
-        [MemberData(nameof(Anchors), MemberType = typeof(LocalePathTests))]
-        public void Should_read_back_the_anchor_every_default_path_names_as_a_path(string text, string[] anchor)
-            => AssertReadsBack(text, anchor, Embedded, Path.AltDirectorySeparatorChar);
+        public void Should_read_back_the_anchor_every_form_names(string text, string[] anchor)
+            => AssertReadsBack(text, anchor, Embedded);
 
         [Theory]
         [MemberData(nameof(Anchors), MemberType = typeof(LocalePathTests))]
         public void Should_read_back_the_anchor_under_an_assembly_whose_root_namespace_is_another(string text, string[] anchor)
-            => AssertReadsBack(text, anchor, Borrowed, '.');
+            => AssertReadsBack(text, anchor, Borrowed);
 
         [Theory]
         [MemberData(nameof(Anchors), MemberType = typeof(LocalePathTests))]
         public void Should_read_back_the_anchor_below_an_unknown_root(string text, string[] anchor)
-            => AssertReadsBack(text, anchor, Unrooted, '.');
+            => AssertReadsBack(text, anchor, Unrooted);
 
         [Theory]
         [InlineData("$RootDir/$CurrentName/$AnchorName.$Culture$Extension", "")]
@@ -164,13 +148,13 @@ public sealed class LocalePathTests
         [InlineData("$RootDir/$$strings/$AnchorName.$Culture$Extension", "Bars")]
         [InlineData("$RootDir/$LocalesDir/$Culture$Extension", "")]
         public void Should_read_back_the_anchor_of_a_path_written_in_another_order(string text, string anchor)
-            => AssertReadsBack(text, anchor.Length == 0 ? [] : anchor.Split('.'), Embedded, Path.AltDirectorySeparatorChar);
+            => AssertReadsBack(text, anchor.Length == 0 ? [] : anchor.Split('.'), Embedded);
 
         [Fact]
         public void Should_read_a_file_named_for_the_assembly_as_the_root()
         {
             // Act
-            var isRead = TryGetAnchor(NamedForAssembly, "Contoso.Widgets.Plugins.Contoso.Widgets.Extras.he.json", Borrowed, '.', out var anchor);
+            var isRead = TryGetAnchor(NamedForAssembly, "Contoso.Widgets.Plugins/Contoso.Widgets.Extras.he.json", Borrowed, out var anchor);
 
             // Assert
             Assert.Multiple(
@@ -179,44 +163,57 @@ public sealed class LocalePathTests
         }
 
         [Fact]
+        public void Should_read_a_folder_of_a_path_only_where_the_name_has_one()
+        {
+            // Act
+            var isReadAsFolders = TryGetAnchor(Beside, "Contoso.Widgets/Components/Bars.he.json", Embedded, out var anchor);
+            var isReadAsDots = TryGetAnchor(Beside, "Contoso.Widgets.Components.Bars.he.json", Embedded, out _);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isReadAsFolders),
+                () => Assert.Equal(["Components", "Bars"], anchor!),
+                () => Assert.False(isReadAsDots));
+        }
+
+        [Fact]
         public void Should_not_read_a_file_named_for_its_folder_under_another_name()
-            => Assert.False(TryGetAnchor(Inside, "Contoso.Widgets.Components.Bars.Toolbar.he.json", Embedded, '.', out _));
+            => Assert.False(TryGetAnchor(Inside, "Contoso.Widgets/Components/Bars/Toolbar.he.json", Embedded, out _));
 
         [Fact]
         public void Should_not_read_a_stray_separator_where_the_current_name_is_empty()
-            => Assert.False(TryGetAnchor(NamedInOwnDir, "Contoso.Widgets..locales..he.json", Embedded, '.', out _));
+            => Assert.False(TryGetAnchor(NamedInOwnDir, "Contoso.Widgets/.locales/.he.json", Embedded, out _));
 
         [Fact]
         public void Should_not_read_a_file_named_for_another_culture()
-            => Assert.False(TryGetAnchor(Beside, "Contoso.Widgets.Components.Bars.es.json", Embedded, '.', out _));
+            => Assert.False(TryGetAnchor(Beside, "Contoso.Widgets/Components/Bars.es.json", Embedded, out _));
 
         [Fact]
         public void Should_not_read_a_file_outside_the_root()
-            => Assert.False(TryGetAnchor(CultureInOwnDir, "Fabrikam.Bars..locales.he.json", Embedded, '.', out _));
+            => Assert.False(TryGetAnchor(CultureInOwnDir, "Fabrikam/Bars/.locales/he.json", Embedded, out _));
 
         [Fact]
         public void Should_not_read_a_locales_dir_as_a_name_segment()
-            => Assert.False(TryGetAnchor(Beside, "Contoso.Widgets.Bars..locales.he.json", Embedded, '.', out _));
+            => Assert.False(TryGetAnchor(Beside, "Contoso.Widgets/Bars/.locales/he.json", Embedded, out _));
 
         [Theory]
         [InlineData("Contoso.Widgets/Bars/.locales/he.json")]
         [InlineData("Contoso.Widgets/Bars/2024/he.json")]
         [InlineData("Contoso.Widgets/Bars/Old Bars/he.json")]
         public void Should_not_read_a_folder_that_is_not_part_of_a_name_as_a_segment_in_a_path(string name)
-            => Assert.False(TryGetAnchor(CultureInHostDir, name, Embedded, Path.AltDirectorySeparatorChar, out _));
+            => Assert.False(TryGetAnchor(CultureInHostDir, name, Embedded, out _));
 
         [Theory]
-        [InlineData("strings", "Contoso.Widgets/Bars/strings/he.json", '/')]
-        [InlineData("strings", "Contoso.Widgets.Bars.strings.he.json", '.')]
-        [InlineData("i18n/strings", "Contoso.Widgets/Bars/i18n/strings/he.json", '/')]
-        public void Should_not_read_the_locales_dir_as_a_segment_whatever_it_is_named(string localesDir, string name, char separator)
+        [InlineData("strings", "Contoso.Widgets/Bars/strings/he.json")]
+        [InlineData("i18n/strings", "Contoso.Widgets/Bars/i18n/strings/he.json")]
+        public void Should_not_read_the_locales_dir_as_a_segment_whatever_it_is_named(string localesDir, string name)
         {
             // Arrange
             var values = Embedded with { LocalesDir = localesDir };
 
             // Act
-            var isReadThroughTheFolder = TryGetAnchor(CultureInHostDir, name, values, separator, out _);
-            var isReadInTheFolder = TryGetAnchor(CultureInOwnDir, name, values, separator, out var anchor);
+            var isReadThroughTheFolder = TryGetAnchor(CultureInHostDir, name, values, out _);
+            var isReadInTheFolder = TryGetAnchor(CultureInOwnDir, name, values, out var anchor);
 
             // Assert
             Assert.Multiple(
@@ -227,7 +224,7 @@ public sealed class LocalePathTests
 
         [Fact]
         public void Should_not_read_a_root_file_where_the_root_is_unknown()
-            => Assert.False(TryGetAnchor("$RootDir/$LocalesDir/$Culture$Extension", ".locales/he.json", Unrooted, Path.AltDirectorySeparatorChar, out _));
+            => Assert.False(TryGetAnchor("$RootDir/$LocalesDir/$Culture$Extension", ".locales/he.json", Unrooted, out _));
 
         [Fact]
         public void Should_compare_a_name_as_asked()
@@ -238,22 +235,22 @@ public sealed class LocalePathTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.False(new LocalePathMatcher(Embedded, Path.AltDirectorySeparatorChar, StringComparison.Ordinal).TryGetAnchor(path, Name, out _)),
-                () => Assert.True(new LocalePathMatcher(Embedded, Path.AltDirectorySeparatorChar, StringComparison.OrdinalIgnoreCase).TryGetAnchor(path, Name, out _)));
+                () => Assert.False(new LocalePathMatcher(Embedded, StringComparison.Ordinal).TryGetAnchor(path, Name, out _)),
+                () => Assert.True(new LocalePathMatcher(Embedded, StringComparison.OrdinalIgnoreCase).TryGetAnchor(path, Name, out _)));
         }
 
         [Fact]
         public void Should_refuse_a_comparison_that_is_not_ordinal()
-            => Assert.Throws<ArgumentOutOfRangeException>(() => new LocalePathMatcher(Embedded, Path.AltDirectorySeparatorChar, StringComparison.CurrentCulture));
+            => Assert.Throws<ArgumentOutOfRangeException>(() => new LocalePathMatcher(Embedded, StringComparison.CurrentCulture));
 
-        private static void AssertReadsBack(string text, string[] anchor, LocalePathValues values, char separator)
+        private static void AssertReadsBack(string text, string[] anchor, LocalePathValues values)
         {
             // Arrange
-            var name = GetName(text, anchor, values, separator);
+            var name = GetName(text, anchor, values);
 
             // Act
             var isRead = name is not null
-                && TryGetAnchor(text, name, values, separator, out var readAnchor)
+                && TryGetAnchor(text, name, values, out var readAnchor)
                 && readAnchor.SequenceEqual(anchor);
 
             // Assert

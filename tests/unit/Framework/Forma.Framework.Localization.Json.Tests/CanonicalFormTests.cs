@@ -15,7 +15,7 @@ public sealed class CanonicalFormTests
 
     // The resource name the build gives a file at a path in a project.
     private static string GetResourceName(string rootNamespace, string path)
-        => $"{rootNamespace}.{path.Replace('/', '.')}";
+        => $"{rootNamespace}/{path}";
 
     private static (string Key, string? Value) GetSoleEntry(IReadOnlyList<LocaleSourceEntry> entries)
     {
@@ -56,7 +56,7 @@ public sealed class CanonicalFormTests
             {
                 Resources =
                 {
-                    ["Contoso.App..locale.json"] = """{ "paths": ["$RootDir/strings-$Culture/$AnchorName$Extension"] }""",
+                    ["Contoso.App/.locale.json"] = """{ "paths": ["$RootDir/strings-$Culture/$AnchorName$Extension"] }""",
                     [GetResourceName("Contoso.App", "strings-he/Uploads.json")] = Section,
                 },
             };

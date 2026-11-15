@@ -145,7 +145,7 @@ A project may state another layout as paths in its `.locale.json`, which replace
 reading for its files. A path is notation, as the default reading is: it says where a file sits and
 how its name spells a type's, and what a file read by it holds is the same entries. A path
 reads a layout the default reading has no rule for, such as a culture inside a folder's name,
-`strings-es/Accounts.Admin.json`, read by `$RootDir/strings-$Culture/$AnchorName$Extension`.
+`strings-es/Accounts/Admin.json`, read by `$RootDir/strings-$Culture/$AnchorName$Extension`.
 
 A path runs from the source's root to a file, written with `/` between folders and tokens for
 everything that varies:
@@ -168,6 +168,10 @@ token at most once and names `$Culture` and `$Extension` exactly once, and a pat
 that does not exist is rejected where it is read. A token's value is written with `/` between
 folders too, so `$LocalesDir` may name a nested folder.
 
+A path matches a name as it is written, and every source's names are paths, an assembly's as a
+folder's, so a path means the same wherever its files sit: a `/` in it is a folder, and
+`$AnchorName` and `$ParentName` stand for a folder for each segment.
+
 A path spells the whole name its file stands for: it names `$AnchorName`, optionally with
 `$CurrentName`; or `$ParentName` together with `$CurrentName`; or none of the three, and then stands
 for the root alone. The tokens `$RootDir`, `$AnchorName`, `$ParentName` and `$CurrentName` can be
@@ -187,29 +191,40 @@ the project, outside its build output and outside any folder whose name starts w
 folder of locale files the assembly's `localesDir` names, `.locales` by default, and embeds each
 once.
 
-An embedded file is known by its resource name: the project's root namespace, then the file's path
-with every `/` made a `.`, as `Forma.Blazor.Components.Bars..locales.he.json`. The build names
-every file this way itself, since the SDK's own naming would make a culture folder `es-419` into
-`es_419`. A name is read against resource names with `.` standing for a folder, which is why a
-folder and a dot separate a name alike. The doubled dot is the leading dot of `.locales`, which no
-namespace segment can produce, so a folder of locale files is never mistaken for a namespace. Two
-files whose paths differ only where one has a folder and the other a dot, `Uploads/UploadStatus.he.json`
-and `Uploads.UploadStatus.he.json`, would take one resource name, and an assembly embeds one resource
-under a name, so the build refuses them, naming both.
+An embedded file is known by its resource name: the project's root namespace, a `/`, then the
+file's path, as `Forma.Blazor/Components/Bars/.locales/he.json`, with `/` between folders on every
+platform; a pack's names are its paths alone. A resource name is a path, as a file's name in a
+folder is, so every source holds names of one kind. The build names every file this way itself,
+since the SDK's own naming would make every folder a dot and a culture folder `es-419` into
+`es_419`, and it embeds the assembly's `.locale.json` as the root namespace, a `/` and
+`.locale.json`. Two files whose paths differ only where one has a folder and the other a dot,
+`Uploads/UploadStatus.he.json` and `Uploads.UploadStatus.he.json`, are two resources, read together
+as any two files of one canonical name are. An assembly embeds one resource under a name, so two
+files given one name, as an item of the project's own can give a locale file's, fail the build.
 
 A file the project embeds through an item of its own is left to that item, under the name the item
-gives it, and so is a file an item in the project file copies beside its output, which stays a file
-there; an embedded file is no content, so a server never also copies it. A culture's satellite
-assembly names a file without its culture, which the build takes only from just before the
-extension, as in `Bars.he.json`, and a source lists a satellite's files under the names they would
-carry in the assembly itself.
+gives it. The SDK's naming makes every folder a dot, as `Contoso.App.Uploads..locales.he.json`, which
+the default reading reads as it reads a path, since a folder and a dot separate a name alike; a
+stated path and an application's names for other assemblies match folders, so a file either of them
+reads is given its folders, as the build gives them. A file an item in the project file copies
+beside its output stays a file there; an embedded file is no content, so a server never also copies
+it.
+
+A culture's satellite assembly holds a file the SDK moved there without its culture, which the SDK
+takes only from just before the extension, as in `Bars.he.json`, and holds a file an item named
+under that name, culture and all. A source lists a satellite's files under the names they would
+carry in the assembly itself, and leaves out a name holding another culture than the satellite's.
 
 ## The application's files
 
 An application's locale files for other assemblies are a source of their own, after every pack,
 read beneath the application's root by names starting with an assembly's name, its own folder of
 locale files left out; its files for its own types are its assembly's own, read first, as every
-assembly's are. An application is a WebAssembly client, a server built on the Web SDK, or a Blazor
+assembly's are. The application's root is a folder, the one its `.locale.json` sits in or, where it
+has none, its name, so its names for other assemblies begin with that root and a `/`, as the build
+names them. A file the application embeds through an item of its own for another assembly is read
+only under a name of that form: the default reading would read the SDK's name for it, with every
+folder made a dot, but this source never finds it. An application is a WebAssembly client, a server built on the Web SDK, or a Blazor
 Hybrid application, which the build knows as an application referencing its platform's web view
 package, WPF's, Windows Forms' or MAUI's, its output an executable or, on Android, the project the
 Android SDK marks as an application. A WebAssembly client has no file system to read a folder from and an application MAUI
@@ -226,7 +241,7 @@ build marked as the application, which only an application's build does. After t
 own files it reads the folder beside the running application, which
 `LocalizationOptions.LocalesPath` names, `.locales` beside the application by default. No build
 fills that folder; a host places files in it to change a string without building again, and it has
-the last word. The folder is read by the same rule, with folders where an embedded name has dots. A
+the last word. The folder is read by the same rule, its names paths as an assembly's are. A
 folder whose name starts with a dot is hidden from a default listing on Linux and macOS and is read
 like any other.
 
@@ -235,7 +250,7 @@ like any other.
 Reading needs two things: where an assembly's names begin, which `$RootDir` stands for, and the
 root namespace names are counted from, which `$RootNamespace` stands for. The assembly's
 `.locale.json` fixes both, and it sits at the assembly's root: embedded at the project's root, so
-its resource name is the project's root namespace and `.locale.json`, and nowhere else. An assembly
+its resource name is the project's root namespace, a `/` and `.locale.json`, and nowhere else. An assembly
 has one config file, so a second one anywhere among its files is refused, and the linter reports
 one embedded beneath the root.
 
@@ -284,8 +299,8 @@ Forma.Blazor.Composer/he.json
 Forma.Blazor.Explorer/he.json
 ```
 
-Each file is embedded under its own path with `/` made `.`, which is the name the runtime reads it
-by, so a pack's resource names spell the tree a reader sees in the repository. A pack holds no
+Each file is embedded under its own path, which is the name the runtime reads it by, so a pack's
+resource names spell the tree a reader sees in the repository. A pack holds no
 `.locale.json`: where an assembly's names begin is that assembly's own fact, stated once in the
 assembly, and each name goes on from the root namespace the runtime carries over.
 
@@ -396,7 +411,7 @@ For one type, one key and one reader's culture, the text is chosen in this order
 |---|---|---|
 | L1 | Is reading a file a build setting or a library feature? | A library feature. The build embeds every locale file wherever it sits, and files are read at runtime, so every consumer gets it by referencing the package. |
 | L2 | What is canonical? | A file's canonical name, its culture and the parts of the name it spells, a folder and a dot alike, which its name is read into once; and the entry, a culture, an assembly, a type and a key with its text, which its sections are read into at that name. Every layout, the default reading or paths a project states, is notation read into these, and everything after reading works on them alone, so where a file sits never changes what it means, which text wins or what the linter reports. |
-| L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also survives into resource names as a doubled dot, which no namespace produces. |
+| L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also keeps it apart from every namespace, since no namespace segment starts with one, in a path and in a name the SDK makes with every folder a dot alike. |
 | L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds localized strings alone, so neither carries the other's keys. |
 | L5 | What marks an assembly's root? | Its `.locale.json`, which sits at the assembly's root and nowhere else; an assembly with none is rooted at its project's root namespace and read by the defaults. |
 | L6 | Does an application's file for another assembly follow that assembly's layout? | No. It is read by the same rule as every file, its name starting with the assembly's name, whatever layout the assembly chose for its own files; the entry is the one currency every source trades in. |
@@ -420,3 +435,4 @@ For one type, one key and one reader's culture, the text is chosen in this order
 | L24 | What if an assembly is named for a culture? | The culture wins wherever the two meet, and the linter reports a culture in the root namespace the project embeds its files under, the assembly's name unless the project names another, where it is built, the one place the name can change. |
 | L25 | Do stated paths remain? | Yes. A path is notation read into the same entries, and it reads layouts the default reading has no rule for, so a project bringing files from another system keeps them where they are. A project's paths replace the default reading for its files. |
 | L26 | When is a file read? | Once per source and culture, at the first lookup that needs it; every later lookup finds an entry already read. |
+| L27 | Why does a resource name keep its folders? | So every source holds names of one kind, paths, and a stated path means the same in an assembly as in a folder. A name with every folder made a dot would lose which was which, and two files a folder and a dot tell apart would take one name. The SDK's naming, which an item of a project's own keeps, still reads by the default reading, since a folder and a dot separate a name alike. |

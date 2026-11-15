@@ -31,16 +31,16 @@ public sealed class LocalizationTargetsTests
             // Assert
             Assert.Equal(
                 [
-                    (".locales/he.json", "Contoso.Library..locales.he.json", "false"),
-                    ("Components/.locales/Toolbar.he.json", "Contoso.Library.Components..locales.Toolbar.he.json", "false"),
-                    ("Components/.locales/he.json", "Contoso.Library.Components..locales.he.json", "false"),
-                    ("Strings/App.he.json", "Contoso.Library.Strings.App.he.json", "false"),
+                    (".locales/he.json", "Contoso.Library/.locales/he.json", "false"),
+                    ("Components/.locales/Toolbar.he.json", "Contoso.Library/Components/.locales/Toolbar.he.json", "false"),
+                    ("Components/.locales/he.json", "Contoso.Library/Components/.locales/he.json", "false"),
+                    ("Strings/App.he.json", "Contoso.Library/Strings/App.he.json", "false"),
                 ],
                 resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
         }
 
         [Fact]
-        public async Task Should_refuse_two_files_a_folder_and_a_dot_name_alike()
+        public async Task Should_embed_a_folder_and_a_dot_naming_one_namespace_under_names_of_their_own()
         {
             // Arrange — one file in a folder for its namespace, one with the namespace in its name
             using var projects = new FixtureProjects();
@@ -49,13 +49,31 @@ public sealed class LocalizationTargetsTests
             projects.WriteLocaleFile("Contoso.Library/Uploads.UploadStatus.he.json");
 
             // Act
-            var failure = await projects.GetFailureAsync("Contoso.Library", "CollectLocaleFiles");
+            var resources = await projects.GetEmbeddedResourcesAsync("Contoso.Library");
 
             // Assert
-            Assert.Multiple(
-                () => Assert.Contains(Path.Combine("Uploads", "UploadStatus.he.json"), failure, StringComparison.Ordinal),
-                () => Assert.Contains("Uploads.UploadStatus.he.json and", failure, StringComparison.Ordinal),
-                () => Assert.Contains("both embedded as Contoso.Library.Uploads.UploadStatus.he.json", failure, StringComparison.Ordinal));
+            Assert.Equal(
+                [
+                    ("Uploads.UploadStatus.he.json", "Contoso.Library/Uploads.UploadStatus.he.json", "false"),
+                    ("Uploads/UploadStatus.he.json", "Contoso.Library/Uploads/UploadStatus.he.json", "false"),
+                ],
+                resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_fail_where_an_item_of_the_project_s_own_embeds_a_file_under_a_locale_file_s_name()
+        {
+            // Arrange — the project embeds a file of its own under the name the build gives its root's locale file
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Library", items: """<EmbeddedResource Include="Strings\Other.json" LogicalName="Contoso.Library/.locales/he.json" WithCulture="false" />""");
+            projects.WriteFile("Contoso.Library/Strings/Other.json", "{}");
+            projects.WriteLocaleFile("Contoso.Library/.locales/he.json");
+
+            // Act
+            var failure = await projects.GetFailureAsync("Contoso.Library", "Build");
+
+            // Assert
+            Assert.Contains("Contoso.Library/.locales/he.json", failure, StringComparison.Ordinal);
         }
 
         [Fact]
@@ -92,9 +110,9 @@ public sealed class LocalizationTargetsTests
             // Assert
             Assert.Equal(
                 [
-                    (".locale.json", "Contoso.Library..locale.json", "false"),
-                    (".strings/he.json", "Contoso.Library..strings.he.json", "false"),
-                    ("Uploads/.strings/he.json", "Contoso.Library.Uploads..strings.he.json", "false"),
+                    (".locale.json", "Contoso.Library/.locale.json", "false"),
+                    (".strings/he.json", "Contoso.Library/.strings/he.json", "false"),
+                    ("Uploads/.strings/he.json", "Contoso.Library/Uploads/.strings/he.json", "false"),
                 ],
                 resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
         }
@@ -129,8 +147,8 @@ public sealed class LocalizationTargetsTests
             // Assert
             Assert.Equal(
                 [
-                    (".locales/es-419/Accounts.Admin.json", "Contoso.Library..locales.es-419.Accounts.Admin.json", "false"),
-                    (".locales/es/Accounts.Admin.json", "Contoso.Library..locales.es.Accounts.Admin.json", "false"),
+                    (".locales/es-419/Accounts.Admin.json", "Contoso.Library/.locales/es-419/Accounts.Admin.json", "false"),
+                    (".locales/es/Accounts.Admin.json", "Contoso.Library/.locales/es/Accounts.Admin.json", "false"),
                 ],
                 resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
         }
@@ -151,7 +169,7 @@ public sealed class LocalizationTargetsTests
             // Assert
             Assert.Equal(
                 [
-                    (".locales/Forma.Blazor/Components/Bars/es.json", "Contoso.Client..locales.Forma.Blazor.Components.Bars.es.json", "false"),
+                    (".locales/Forma.Blazor/Components/Bars/es.json", "Contoso.Client/.locales/Forma.Blazor/Components/Bars/es.json", "false"),
                     (".locales/es.json", "Contoso.Client..locales.es.json", "false"),
                     ("Layout/.locales/es.json", "Contoso.Client.Layout..locales.es.json", "false"),
                 ],
@@ -193,7 +211,7 @@ public sealed class LocalizationTargetsTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal([("Strings/App.he.json", "Contoso.Server.Strings.App.he.json", "false")], resources),
+                () => Assert.Equal([("Strings/App.he.json", "Contoso.Server/Strings/App.he.json", "false")], resources),
                 () => Assert.DoesNotContain("Strings/App.he.json", content));
         }
     }
@@ -215,8 +233,8 @@ public sealed class LocalizationTargetsTests
             // Assert
             Assert.Equal(
                 [
-                    (".locales/Forma.Blazor/Components/Bars/he.json", "Contoso.Server..locales.Forma.Blazor.Components.Bars.he.json", "false"),
-                    (".locales/Forma.Blazor/he.json", "Contoso.Server..locales.Forma.Blazor.he.json", "false"),
+                    (".locales/Forma.Blazor/Components/Bars/he.json", "Contoso.Server/.locales/Forma.Blazor/Components/Bars/he.json", "false"),
+                    (".locales/Forma.Blazor/he.json", "Contoso.Server/.locales/Forma.Blazor/he.json", "false"),
                 ],
                 resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
         }
@@ -233,7 +251,7 @@ public sealed class LocalizationTargetsTests
             var resources = await projects.GetEmbeddedResourcesAsync("Contoso.Library");
 
             // Assert
-            Assert.Equal([(".locales/Forma.Blazor/Components/Bars/he.json", "Contoso.Library..locales.Forma.Blazor.Components.Bars.he.json", "false")], resources);
+            Assert.Equal([(".locales/Forma.Blazor/Components/Bars/he.json", "Contoso.Library/.locales/Forma.Blazor/Components/Bars/he.json", "false")], resources);
         }
     }
 
@@ -256,7 +274,7 @@ public sealed class LocalizationTargetsTests
             var resources = await projects.GetEmbeddedResourcesAsync("Contoso.Library");
 
             // Assert
-            Assert.Equal([(".locales/he.json", "Contoso.Library..locales.he.json", "false")], resources);
+            Assert.Equal([(".locales/he.json", "Contoso.Library/.locales/he.json", "false")], resources);
         }
     }
 
@@ -350,9 +368,9 @@ public sealed class LocalizationTargetsTests
             // Assert
             Assert.Equal(
                 [
-                    ("Forma.Blazor.Explorer/.locales/he.json", "Forma.Blazor.Explorer..locales.he.json", "false"),
-                    ("Forma.Blazor/Components/Bars/he.json", "Forma.Blazor.Components.Bars.he.json", "false"),
-                    ("he/Forma.Blazor.Composer.json", "he.Forma.Blazor.Composer.json", "false"),
+                    ("Forma.Blazor.Explorer/.locales/he.json", "Forma.Blazor.Explorer/.locales/he.json", "false"),
+                    ("Forma.Blazor/Components/Bars/he.json", "Forma.Blazor/Components/Bars/he.json", "false"),
+                    ("he/Forma.Blazor.Composer.json", "he/Forma.Blazor.Composer.json", "false"),
                 ],
                 resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
         }
@@ -372,7 +390,7 @@ public sealed class LocalizationTargetsTests
 
             // Assert
             Assert.Equal(
-                ["Forma.Blazor..locales.he.json"],
+                ["Forma.Blazor/.locales/he.json"],
                 resources.Where(resource => resource.Path.EndsWith("he.json", StringComparison.Ordinal)).Select(resource => resource.Name));
         }
 
@@ -397,7 +415,7 @@ public sealed class LocalizationTargetsTests
         }
 
         [Fact]
-        public async Task Should_refuse_a_pack_s_two_files_a_folder_and_a_dot_name_alike()
+        public async Task Should_embed_a_pack_s_folder_and_dot_naming_one_namespace_under_names_of_their_own()
         {
             // Arrange — one file in a folder for each part of the namespace, one with the namespace in a folder's name
             using var projects = new FixtureProjects();
@@ -406,10 +424,15 @@ public sealed class LocalizationTargetsTests
             projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor.Components/he.json");
 
             // Act
-            var failure = await projects.GetFailureAsync("Contoso.Locales.Hebrew", "CollectLocaleFiles");
+            var resources = await projects.GetEmbeddedResourcesAsync("Contoso.Locales.Hebrew");
 
             // Assert
-            Assert.Contains("both embedded as Forma.Blazor.Components.he.json", failure, StringComparison.Ordinal);
+            Assert.Equal(
+                [
+                    ("Forma.Blazor.Components/he.json", "Forma.Blazor.Components/he.json", "false"),
+                    ("Forma.Blazor/Components/he.json", "Forma.Blazor/Components/he.json", "false"),
+                ],
+                resources.OrderBy(resource => resource.Path, StringComparer.Ordinal));
         }
     }
 }
