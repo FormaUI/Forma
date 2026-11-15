@@ -201,6 +201,19 @@ Test-Case -Name 'the currency data update describes the snapshot it would write'
 Test-Case -Name 'a CLDR release that is not a version is refused' -Script 'Update-CurrencyData.ps1' `
     -Arguments @('-CldrVersion', 'forty-eight', '-WhatIf') -Fails
 
+# The Android environment is downloaded and installed outside the repository, so what runs here is what it describes,
+# from the declaration as it stands, and what it refuses.
+$androidDeclaration = Get-Content -LiteralPath (Join-Path $repositoryRoot '.config' 'android.json') -Raw | ConvertFrom-Json
+
+Test-Case -Name 'the Android environment install describes the JDK and the emulator it declares' -Script 'Install-Android.ps1' `
+    -Arguments @('-Upgrade', '-WhatIf') -Expect @("the JDK $($androidDeclaration.jdk)", "the emulator $($androidDeclaration.emulator.name)", "emulator-$($androidDeclaration.emulator.port)")
+
+Test-Case -Name 'the Android environment clean describes what it would remove' -Script 'Install-Android.ps1' `
+    -Arguments @('-Clean', '-WhatIf') -Expect @('Android environment')
+
+Test-Case -Name 'an Android environment upgraded and cleaned at once is refused' -Script 'Install-Android.ps1' `
+    -Arguments @('-Upgrade', '-Clean', '-WhatIf') -Fails
+
 Test-Case -Name 'the Showcase describes the start it would make' -Script 'Start-Showcase.ps1' `
     -Arguments @('-Port', "$freePort", '-WhatIf') -Expect @('dotnet run', "$freePort")
 

@@ -1,5 +1,5 @@
 name: Start an Android emulator
-description: Boots an emulator of the API level the maui-android workload targets, accelerated by the runner's KVM, its screen 1280 by 800 points, for adb to reach.
+description: Installs the Android environment .config/android.json declares and boots its emulator, accelerated by the runner's KVM, on its console port, for adb to reach.
 
 runs:
   using: composite
@@ -11,39 +11,29 @@ runs:
         sudo udevadm control --reload-rules
         sudo udevadm trigger --name-match=kvm
         ls -l /dev/kvm
-        tools="$ANDROID_HOME/cmdline-tools/latest/bin"
         adb="$ANDROID_HOME/platform-tools/adb"
-        image='system-images;android-37.0;google_apis;x86_64'
         # The image leaves a few gigabytes free, less than a virtual device's data partition and the build after it need, so
         # the toolchains no Forma job uses make the room.
         sudo rm -rf /usr/share/swift /usr/local/.ghcup /opt/ghc /usr/local/share/boost "$AGENT_TOOLSDIRECTORY/CodeQL" "$ANDROID_HOME/ndk"
         docker image prune --all --force > /dev/null
-        # The SDK's tools write a virtual device where the emulator doesn't look unless both are told one folder.
-        export ANDROID_AVD_HOME="$HOME/.android/avd"
-        mkdir -p "$ANDROID_AVD_HOME"
-        yes | "$tools/sdkmanager" --licenses > /dev/null || true
-        "$tools/sdkmanager" --install emulator platform-tools "$image" | tail -n 5
-        echo no | "$tools/avdmanager" create avd --force --name forma --package "$image" --device pixel_7
-        # The component checks lay their page out 1280 by 720, and Chrome drops wheel input past the screen's edge, so the
-        # screen holds the page whole, at a point a pixel.
-        sed -i -e 's/^hw.lcd.width=.*/hw.lcd.width=1280/' -e 's/^hw.lcd.height=.*/hw.lcd.height=800/' -e 's/^hw.lcd.density=.*/hw.lcd.density=160/' "$ANDROID_AVD_HOME/forma.avd/config.ini"
-        "$ANDROID_HOME/emulator/emulator" -list-avds | grep -x forma
+        # The environment is the one every machine installs: its JDK, its packages and its emulator, whose name, console port
+        # and virtual devices' folder the boot below reads back.
+        pwsh -NoProfile -File ./scripts/Install-Android.ps1
+        read -r name port avds < <(pwsh -NoProfile -Command '$e = (Get-Content -LiteralPath .config/android.json -Raw | ConvertFrom-Json).emulator; "{0} {1} {2}" -f $e.name, $e.port, (Join-Path ([Environment]::GetFolderPath("LocalApplicationData")) "Forma" "Android" "avd")')
+        export ANDROID_AVD_HOME="$avds"
+        serial="emulator-$port"
+        "$ANDROID_HOME/emulator/emulator" -list-avds | grep -x "$name"
         "$ANDROID_HOME/emulator/emulator" -accel-check
         df -h "$ANDROID_AVD_HOME"
-        # The emulator's exit status closes its log, so an emulator that drops mid-run says how, a signal among them.
-        nohup bash -c '"$@"; echo "The emulator exited with status $?."' emulator "$ANDROID_HOME/emulator/emulator" -avd forma -no-window -no-audio -no-boot-anim -no-metrics -gpu swiftshader_indirect -no-snapshot -partition-size 4096 -cores 2 -memory 4096 > "$RUNNER_TEMP/emulator.log" 2>&1 &
-        booted() { [ "$("$adb" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; }
-        timeout 300 "$adb" wait-for-device || true
+        # The emulator's exit status closes its log, so an emulator that drops mid-run says how, a signal among them. The
+        # runner has two cores and no GPU, which the emulator is told rather than left to find.
+        nohup bash -c '"$@"; echo "The emulator exited with status $?."' emulator "$ANDROID_HOME/emulator/emulator" -avd "$name" -port "$port" -no-window -no-audio -no-boot-anim -no-metrics -gpu swiftshader_indirect -no-snapshot -partition-size 4096 -cores 2 -memory 4096 > "$RUNNER_TEMP/emulator.log" 2>&1 &
+        booted() { [ "$("$adb" -s "$serial" shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')" = 1 ]; }
+        timeout 300 "$adb" -s "$serial" wait-for-device || true
         for attempt in $(seq 1 120); do booted && break; sleep 5; done
         if ! booted; then
           echo 'The emulator never finished booting; its log:'
           tail -n 80 "$RUNNER_TEMP/emulator.log"
           exit 1
         fi
-        # A device on two cores without a GPU reports its own services not responding, in dialogs that take the focus, and
-        # spends its time animating; neither is the application's.
-        "$adb" shell settings put global hide_error_dialogs 1
-        "$adb" shell settings put global window_animation_scale 0
-        "$adb" shell settings put global transition_animation_scale 0
-        "$adb" shell settings put global animator_duration_scale 0
-        "$adb" shell getprop ro.build.version.release
+        "$adb" -s "$serial" shell getprop ro.build.version.release

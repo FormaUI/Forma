@@ -86,6 +86,7 @@ function Initialize-BuildContext {
         BrowserComponents = Join-Path $RepositoryRoot 'tests' 'e2e' 'Components' 'Forma.Blazor.Browser.Components' 'Forma.Blazor.Browser.Components.csproj'
         BrowserWebView = Join-Path $RepositoryRoot 'tests' 'e2e' 'Components' 'Forma.Blazor.Browser.WebView' 'Forma.Blazor.Browser.WebView.csproj'
         BrowserAndroid = Join-Path $RepositoryRoot 'tests' 'e2e' 'Components' 'Forma.Blazor.Browser.Android' 'Forma.Blazor.Browser.Android.csproj'
+        AndroidDeclaration = Join-Path $RepositoryRoot '.config' 'android.json'
         BrowserChecks  = Join-Path $RepositoryRoot 'tests' 'e2e' 'Forma.Blazor.Browser.Tests' 'Forma.Blazor.Browser.Tests.csproj'
         AndroidChecks  = Join-Path $RepositoryRoot 'tests' 'smoke' 'Forma.Examples.Maui.Smoke.Tests' 'Forma.Examples.Maui.Smoke.Tests.csproj'
         ExampleChecks  = Join-Path $RepositoryRoot 'tests' 'smoke' 'Forma.Examples.Smoke.Tests' 'Forma.Examples.Smoke.Tests.csproj'
@@ -1621,8 +1622,9 @@ in for the one just packed. The examples' smoke checks run first, each starting
 an example afresh and turning a page of the library's pagination, and the browser check after them, each run
 reporting. The WebView check host and the Blazor Hybrid example hosts are published on Windows alone, the one platform WebView2 runs on, and their checks report themselves skipped
 elsewhere; the MAUI example needs the maui-windows workload, which a Windows machine installs once. -Android also
-builds the Android check host, which needs the maui-android workload, and checks every component in its web view on
-the device or emulator adb reaches, which must be attached, after the rest of the browser check and in a run of
+builds the Android check host with the JDK of the Android environment .config/android.json declares, which
+scripts/Install-Android.ps1 installs, and the maui-android workload, and checks every component in its web view on
+that environment's emulator alone, booted where it isn't running, after the rest of the browser check and in a run of
 their own. The browser is headless unless -Visible asks for a
 browser window to watch, which also brings the WebView check host's native windows into sight.
 
@@ -1641,7 +1643,7 @@ any check failed, if a run wrote no results, or if the checks it selects are non
 The build context.
 
 .PARAMETER Android
-Also checks every component in the Android check host's web view, on the attached Android device or emulator.
+Also checks every component in the Android check host's web view, on the Android environment's emulator.
 
 .PARAMETER Visible
 Opens a visible browser window rather than a headless one.
@@ -1686,7 +1688,8 @@ function Test-BrowserCheck {
     $isWebViewPublished = $IsWindows
     $androidProject = $Context.BrowserAndroid
     $isAndroid = $Android.IsPresent
-    $testAndroidDevice = ${function:Test-AndroidDevice}
+    $androidEnvironment = if ($isAndroid) { Get-AndroidEnvironment -Context $Context } else { $null }
+    $startAndroidEmulator = ${function:Start-AndroidEmulator}
     $examples = $Context.BrowserExamples
     $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
     $examplesOutput = Join-Path $Context.BrowserOutput 'examples'
@@ -1726,7 +1729,7 @@ function Test-BrowserCheck {
     }
 
     if ($isAndroid) {
-        $description += ', and then the components on the attached Android device in a run of their own'
+        $description += ", and then the components on the Android environment's emulator, $($androidEnvironment.Serial), in a run of their own"
     }
 
     if ($runs -gt 1) {
@@ -1747,8 +1750,8 @@ function Test-BrowserCheck {
                 throw 'The Android check host needs the maui-android workload: dotnet workload install maui-android'
             }
 
-            if (-not (& $testAndroidDevice)) {
-                throw 'No Android device or emulator is attached for -Android to check the components on.'
+            if (-not $androidEnvironment.IsReady) {
+                throw "-Android checks the components on the Android environment's emulator, and $($androidEnvironment.Reason)"
             }
         }
 
@@ -1817,7 +1820,7 @@ function Test-BrowserCheck {
         $androidBuild = $null
 
         if ($isAndroid) {
-            dotnet build $androidProject -c Release --nologo -v:q
+            dotnet build $androidProject -c Release --nologo -v:q "-p:JavaSdkDirectory=$($androidEnvironment.JavaHome)" "-p:AndroidSdkDirectory=$($androidEnvironment.Sdk)"
 
             if ($LASTEXITCODE -ne 0) {
                 return
@@ -1864,7 +1867,12 @@ function Test-BrowserCheck {
             }
         }
 
-        $previousEnvironment = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Components = $env:FORMA_BROWSER_COMPONENTS; WebView = $env:FORMA_BROWSER_WEBVIEW; Android = $env:FORMA_BROWSER_ANDROID_CHECKS; Examples = $env:FORMA_BROWSER_EXAMPLES; Visible = $env:FORMA_BROWSER_VISIBLE }
+        $previousEnvironment = @{ Host = $env:FORMA_BROWSER_HOST; Full = $env:FORMA_BROWSER_FULL; Components = $env:FORMA_BROWSER_COMPONENTS; WebView = $env:FORMA_BROWSER_WEBVIEW; Android = $env:FORMA_BROWSER_ANDROID_CHECKS; Examples = $env:FORMA_BROWSER_EXAMPLES; Visible = $env:FORMA_BROWSER_VISIBLE; AndroidHome = $env:ANDROID_HOME; AndroidSerial = $env:ANDROID_SERIAL }
+
+        # The Android checks reach the environment's emulator alone, through the adb of its SDK, whatever else is attached.
+        if ($isAndroid) {
+            & $startAndroidEmulator -Environment $androidEnvironment
+        }
 
         if (Test-Path -LiteralPath $resultsOutput) {
             Remove-Item -LiteralPath $resultsOutput -Recurse -Force
@@ -1911,6 +1919,12 @@ function Test-BrowserCheck {
             $env:FORMA_BROWSER_WEBVIEW = if ($isWebViewPublished) { $webViewOutput } else { $null }
             $env:FORMA_BROWSER_EXAMPLES = $examplesOutput
             $env:FORMA_BROWSER_VISIBLE = if ($isVisible) { '1' } else { $null }
+
+            if ($isAndroid) {
+                $env:ANDROID_HOME = $androidEnvironment.Sdk
+                $env:ANDROID_SERIAL = $androidEnvironment.Serial
+            }
+
             $loaders = @(& $startTestLoad -Project $load -Token $stopLoad.Token)
 
             for ($run = 1; $run -le $runs; $run++) {
@@ -1958,6 +1972,8 @@ function Test-BrowserCheck {
             $env:FORMA_BROWSER_ANDROID_CHECKS = $previousEnvironment.Android
             $env:FORMA_BROWSER_EXAMPLES = $previousEnvironment.Examples
             $env:FORMA_BROWSER_VISIBLE = $previousEnvironment.Visible
+            $env:ANDROID_HOME = $previousEnvironment.AndroidHome
+            $env:ANDROID_SERIAL = $previousEnvironment.AndroidSerial
             $loadFailed = -not (& $stopTestLoad -Loader $loaders -Source $stopLoad)
             $stopLoad.Dispose()
         }
@@ -2001,7 +2017,7 @@ function Test-BrowserCheck {
 
 <#
 .SYNOPSIS
-Builds the MAUI example host from the solution's packages for Android, iOS or Mac Catalyst, and drives it on an attached Android device.
+Builds the MAUI example host from the solution's packages for Android, iOS or Mac Catalyst, and drives it on the Android environment's emulator.
 
 .DESCRIPTION
 A Blazor Hybrid application on a phone, a tablet or a Mac takes Forma's packages as a host outside the repository
@@ -2009,10 +2025,11 @@ takes them, so the solution is packed at the version the root properties file de
 from the packages folder the examples restore into first, and the MAUI example host is built from the packages for
 the platform named, in Release, which trims it as the platform's own build does, so a package that doesn't load or
 a trim warning there fails here. Each platform needs its workload, maui-android, maui-ios or maui-maccatalyst; iOS and Mac Catalyst
-build on a Mac alone, and iOS builds for the simulator, which needs no signing. Where adb reaches an Android device
-or emulator, the Android build is installed on it and the MAUI example's smoke check on Android drives its web
-view, writing its results to the browser output's mobile-results folder, which the step empties first; where none is
-attached, the step says so and builds alone.
+build on a Mac alone, and iOS builds for the simulator, which needs no signing. Where the Android environment
+.config/android.json declares is installed as declared, the Android build is built with its JDK and installed on its
+emulator, booted where it isn't running, and the MAUI example's smoke check on Android drives its web view, writing its
+results to the browser output's mobile-results folder, which the step empties first; elsewhere the step says why, and
+builds alone.
 
 .PARAMETER Context
 The build context.
@@ -2041,13 +2058,19 @@ function Test-MobileExample {
     $platformName = $Platform.ToLowerInvariant()
     $workload = "maui-$platformName"
     $isSimulator = $Platform -eq 'iOS'
-    $testAndroidDevice = ${function:Test-AndroidDevice}
+    $androidEnvironment = if ($Platform -eq 'Android') { Get-AndroidEnvironment -Context $Context } else { $null }
+    $startAndroidEmulator = ${function:Start-AndroidEmulator}
     $clearExamplePackage = ${function:Clear-ExamplePackage}
 
     $description = "dotnet pack the solution and build the MAUI example host from it for $Platform"
 
     if ($Platform -eq 'Android') {
-        $description += ', then drive it on the attached Android device where one is'
+        $description += if ($androidEnvironment.IsReady) {
+            ", with the Android environment's JDK, then drive it on the Android environment's emulator, $($androidEnvironment.Serial)"
+        }
+        else {
+            ", and not drive it, since $($androidEnvironment.Reason)"
+        }
     }
 
     Invoke-BuildStep -Name 'mobile' -Target $example -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
@@ -2074,19 +2097,26 @@ function Test-MobileExample {
             $arguments += '-p:RuntimeIdentifier=iossimulator-arm64'
         }
 
+        if ($androidEnvironment.IsReady) {
+            $arguments += "-p:JavaSdkDirectory=$($androidEnvironment.JavaHome)", "-p:AndroidSdkDirectory=$($androidEnvironment.Sdk)"
+        }
+
         dotnet build @arguments
 
         if ($LASTEXITCODE -ne 0 -or $platformName -ne 'android') {
             return
         }
 
-        if (-not (& $testAndroidDevice)) {
-            Write-Host '   No Android device or emulator is attached, so the Android build is built and not driven.'
+        if (-not $androidEnvironment.IsReady) {
+            Write-Host "   The Android build is built and not driven, since $($androidEnvironment.Reason)"
             return
         }
 
+        & $startAndroidEmulator -Environment $androidEnvironment
         $build = Get-ChildItem -LiteralPath (Join-Path $example 'bin' 'Release') -Recurse -Filter '*-Signed.apk' | Sort-Object LastWriteTime | Select-Object -Last 1
         $previousAndroid = $env:FORMA_BROWSER_ANDROID
+        $previousAndroidHome = $env:ANDROID_HOME
+        $previousAndroidSerial = $env:ANDROID_SERIAL
 
         if (Test-Path -LiteralPath $resultsOutput) {
             Remove-Item -LiteralPath $resultsOutput -Recurse -Force
@@ -2097,10 +2127,14 @@ function Test-MobileExample {
 
         try {
             $env:FORMA_BROWSER_ANDROID = $build.FullName
+            $env:ANDROID_HOME = $androidEnvironment.Sdk
+            $env:ANDROID_SERIAL = $androidEnvironment.Serial
             dotnet run --project $checks -c Release -- -result-ctrf (Join-Path $runResults 'maui.json')
         }
         finally {
             $env:FORMA_BROWSER_ANDROID = $previousAndroid
+            $env:ANDROID_HOME = $previousAndroidHome
+            $env:ANDROID_SERIAL = $previousAndroidSerial
         }
     }.GetNewClosure()
 }
@@ -2111,9 +2145,12 @@ Tells which platform checks this machine can run, and why it can't run the other
 
 .DESCRIPTION
 WebView2 runs on Windows alone, so its checks and the Blazor Hybrid examples run there. Android's checks, the
-components in its web view and the MAUI example's smoke check, need a device or emulator adb reaches and the
-maui-android workload to build for it; the workload is asked about only where a device is attached, since
-listing the workloads takes a while.
+components in its web view and the MAUI example's smoke check, need the Android environment .config/android.json
+declares, installed as declared, and the maui-android workload to build for it; the workload is asked about only
+where the environment is ready, since listing the workloads takes a while.
+
+.PARAMETER Context
+The build context.
 
 .OUTPUTS
 One object per platform, carrying its Name, whether it CanRun here and, where it can't, the Reason.
@@ -2121,7 +2158,7 @@ One object per platform, carrying its Name, whether it CanRun here and, where it
 function Get-PlatformCheck {
     [CmdletBinding()]
     [OutputType([psobject])]
-    param()
+    param([Parameter(Mandatory)] [psobject] $Context)
 
     [pscustomobject]@{
         Name   = 'webview'
@@ -2129,8 +2166,9 @@ function Get-PlatformCheck {
         Reason = if ($IsWindows) { $null } else { "WebView2's checks and the Blazor Hybrid examples: WebView2 runs on Windows alone" }
     }
 
-    $androidReason = if (-not (Test-AndroidDevice)) {
-        "Android's checks and the MAUI example's smoke check on Android: no Android device or emulator is attached to a running adb server"
+    $androidEnvironment = Get-AndroidEnvironment -Context $Context
+    $androidReason = if (-not $androidEnvironment.IsReady) {
+        "Android's checks and the MAUI example's smoke check on Android: $($androidEnvironment.Reason)"
     }
     elseif (-not (dotnet workload list | Select-String -Pattern '^\s*maui-android\s' -Quiet)) {
         "Android's checks and the MAUI example's smoke check on Android: the maui-android workload isn't installed"
@@ -2147,56 +2185,153 @@ function Get-PlatformCheck {
 
 <#
 .SYNOPSIS
-Tells whether adb reaches an Android device or emulator.
+Reads the Android environment the Android checks run in, as scripts/Install-Android.ps1 recorded installing it.
 
 .DESCRIPTION
-adb is the one in the Android SDK ANDROID_HOME names, or the one on the path, and the device the one it reaches by
-default or ANDROID_SERIAL names. adb reaches a device through its server, on the port ANDROID_ADB_SERVER_PORT names
-or 5037, and is asked only where that server is listening: a call finding none starts one, which outlives the call
-and holds the output it inherited open, so whatever reads that output waits on it for good. adb answers that no
-device is attached with a failing code, which isn't the caller's, so the code is cleared.
+The environment is the one .config/android.json declares: the JDK the Android build runs with, the SDK holding the
+packages the checks need, and the emulator they run on, on a console port of its own, which names its serial. It is
+ready where the record Install-Android.ps1 keeps in the user's local application data names the declaration as it
+stands and the JDK and the emulator it installed are in place; otherwise the reason says what isn't so and the command
+that makes it so.
+
+.PARAMETER Context
+The build context.
 
 .OUTPUTS
-Whether one is attached.
+The environment: whether it IsReady, the Reason where it isn't, its JavaHome, Sdk, AvdHome and Root, and its
+emulator's Name, Port and Serial.
 #>
-function Test-AndroidDevice {
+function Get-AndroidEnvironment {
     [CmdletBinding()]
-    [OutputType([bool])]
-    param()
+    [OutputType([psobject])]
+    param([Parameter(Mandatory)] [psobject] $Context)
 
-    $tools = if ($env:ANDROID_HOME) { Join-Path $env:ANDROID_HOME 'platform-tools' } else { $null }
-    $adb = if ($tools -and (Test-Path -LiteralPath $tools)) {
-        Get-ChildItem -LiteralPath $tools -Filter 'adb*' | Where-Object { $_.BaseName -eq 'adb' } | Select-Object -First 1 -ExpandProperty FullName
-    }
-    else {
-        Get-Command adb -ErrorAction SilentlyContinue | Select-Object -First 1 -ExpandProperty Source
-    }
+    $declaration = Get-Content -LiteralPath $Context.AndroidDeclaration -Raw | ConvertFrom-Json -AsHashtable
+    $root = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Forma' 'Android'
+    $recordPath = Join-Path $root 'environment.json'
+    $record = if (Test-Path -LiteralPath $recordPath) { Get-Content -LiteralPath $recordPath -Raw | ConvertFrom-Json -AsHashtable } else { $null }
+    $avdHome = Join-Path $root 'avd'
+    $emulator = $declaration.emulator
+    $javaHome = if ($record -and $record.jdk) { if ($IsMacOS) { Join-Path $record.jdk 'Contents' 'Home' } else { $record.jdk } } else { $null }
 
-    if (-not $adb) {
-        return $false
+    $reason = if (-not $record -or -not $record.declaration) {
+        "the Android environment .config/android.json declares isn't installed: pwsh ./scripts/Install-Android.ps1"
     }
-
-    $port = if ($env:ANDROID_ADB_SERVER_PORT) { [int]$env:ANDROID_ADB_SERVER_PORT } else { 5037 }
-    $client = [System.Net.Sockets.TcpClient]::new()
-
-    try {
-        $isServing = $client.ConnectAsync([System.Net.IPAddress]::Loopback, $port).Wait(2000) -and $client.Connected
+    elseif (($record.declaration | ConvertTo-Json -Depth 5 -Compress) -ne ($declaration | ConvertTo-Json -Depth 5 -Compress)) {
+        "the Android environment was installed from an earlier .config/android.json: pwsh ./scripts/Install-Android.ps1 -Upgrade"
     }
-    catch [System.AggregateException] {
-        $isServing = $false
-    }
-    finally {
-        $client.Dispose()
+    elseif (-not (Test-Path -LiteralPath (Join-Path $javaHome 'bin')) -or -not (Test-Path -LiteralPath (Join-Path $avdHome "$($emulator.name).avd" 'config.ini'))) {
+        "the Android environment is missing its JDK or its emulator: pwsh ./scripts/Install-Android.ps1"
     }
 
-    if (-not $isServing) {
-        return $false
+    [pscustomobject]@{
+        IsReady  = -not $reason
+        Reason   = $reason
+        JavaHome = $javaHome
+        Sdk      = if ($record) { $record.sdk } else { $null }
+        AvdHome  = $avdHome
+        Root     = $root
+        Name     = $emulator.name
+        Port     = $emulator.port
+        Serial   = "emulator-$($emulator.port)"
+    }
+}
+
+<#
+.SYNOPSIS
+Starts a program that outlives its caller, its output in a log, holding none of the caller's handles.
+
+.DESCRIPTION
+Windows hands a program every handle its caller can pass on, the caller's own output among them, unless the shell starts
+it, so a program left running would hold whatever reads the caller's output open for good; the shell redirects nothing,
+so cmd writes the program's output to the log, in a console nobody sees. Elsewhere a program inherits only the output it
+is given.
+
+.PARAMETER FilePath
+The program.
+
+.PARAMETER ArgumentList
+Its arguments.
+
+.PARAMETER Log
+The file its output goes to.
+
+.OUTPUTS
+The process started, cmd's on Windows, for a caller that waits on it alone.
+#>
+function Start-DetachedProcess {
+    [CmdletBinding()]
+    [OutputType([System.Diagnostics.Process])]
+    param(
+        [Parameter(Mandatory)] [string] $FilePath,
+        [Parameter(Mandatory)] [string[]] $ArgumentList,
+        [Parameter(Mandatory)] [string] $Log
+    )
+
+    if ($IsWindows) {
+        $command = (@($FilePath) + $ArgumentList | ForEach-Object { if ($_ -match '[\s"]') { '"' + $_.Replace('"', '\"') + '"' } else { $_ } }) -join ' '
+
+        return Start-Process -FilePath $env:ComSpec -ArgumentList "/d /s /c `"$command > `"$Log`" 2>&1`"" -WindowStyle Hidden -PassThru
     }
 
-    $isAttached = ((& $adb get-state 2>$null) -join '').Trim() -eq 'device'
+    Start-Process -FilePath $FilePath -ArgumentList $ArgumentList -RedirectStandardOutput $Log -RedirectStandardError "$Log.error" -PassThru
+}
+
+<#
+.SYNOPSIS
+Boots the Android environment's emulator where it isn't running, and waits until it has finished booting.
+
+.DESCRIPTION
+The emulator runs without a window on its console port, apart from any device another project attached, and keeps
+running once the checks end, so the next run finds it booted; its output goes to emulator.log beside the environment's
+record. adb's server is started first, apart from the caller as the emulator is, since a server a call starts outlives
+the call. A device without a GPU reports its own services not responding, in dialogs that take the focus, and spends
+its time animating, neither of which is the application's, so both are turned off.
+
+.PARAMETER Environment
+The environment, as Get-AndroidEnvironment reads it.
+#>
+function Start-AndroidEmulator {
+    [CmdletBinding()]
+    param([Parameter(Mandatory)] [psobject] $Environment)
+
+    $adb = Join-Path $Environment.Sdk 'platform-tools' $(if ($IsWindows) { 'adb.exe' } else { 'adb' })
+    $log = Join-Path $Environment.Root 'emulator.log'
+
+    # Waiting on the process alone, since the server it starts runs on.
+    (Start-DetachedProcess -FilePath $adb -ArgumentList 'start-server' -Log (Join-Path $Environment.Root 'adb.log')).WaitForExit()
+
+    $isBooted = { ((& $adb -s $Environment.Serial shell getprop sys.boot_completed 2>$null) -join '').Trim() -eq '1' }
+
+    if (-not (& $isBooted)) {
+        $emulator = Join-Path $Environment.Sdk 'emulator' $(if ($IsWindows) { 'emulator.exe' } else { 'emulator' })
+        $previousAvdHome = $env:ANDROID_AVD_HOME
+        $env:ANDROID_AVD_HOME = $Environment.AvdHome
+
+        try {
+            Write-Host "   booting the emulator $($Environment.Name) on $($Environment.Serial)"
+            $null = Start-DetachedProcess -FilePath $emulator -ArgumentList '-avd', $Environment.Name, '-port', "$($Environment.Port)", '-no-window', '-no-audio', '-no-boot-anim', '-no-metrics', '-no-snapshot-save' -Log $log
+        }
+        finally {
+            $env:ANDROID_AVD_HOME = $previousAvdHome
+        }
+
+        $deadline = (Get-Date).AddMinutes(5)
+
+        while (-not (& $isBooted)) {
+            if ((Get-Date) -gt $deadline) {
+                throw "The emulator $($Environment.Name) didn't finish booting on $($Environment.Serial) within five minutes; its output is in $log."
+            }
+
+            Start-Sleep -Seconds 5
+        }
+    }
+
+    foreach ($setting in 'hide_error_dialogs 1', 'window_animation_scale 0', 'transition_animation_scale 0', 'animator_duration_scale 0') {
+        & $adb -s $Environment.Serial shell settings put global $setting.Split(' ')[0] $setting.Split(' ')[1] 2>$null | Out-Null
+    }
+
     $global:LASTEXITCODE = 0
-
-    return $isAttached
 }
 
 <#
@@ -2316,8 +2451,9 @@ fetches the pinned version rather than skipping the step. The tooling step runs 
 and the build's own cases.
 
 The browser check runs every platform check the machine can: the components in Android's web view and the
-MAUI example's smoke check on Android where a device is attached and the maui-android workload installed, and
-WebView2's on Windows. Each one it can't run is named in the summary with the reason.
+MAUI example's smoke check on Android where the Android environment .config/android.json declares is installed as
+declared and the maui-android workload installed, and WebView2's on Windows. Each one it can't run is named, with the
+reason and the command that makes it run, before the first step and again in the summary.
 
 Fast builds the solution and the task programs, and runs the unit and bUnit suites from that build, the
 browser script tests and the task programs' tests, and nothing else, for feedback within minutes.
@@ -2343,6 +2479,14 @@ function Invoke-Gate {
     )
 
     $results = [System.Collections.Generic.List[psobject]]::new()
+
+    # What the browser step's platforms need is known before anything builds, so a platform check this machine can't run
+    # is named, with the command that makes it run, before the minutes the steps ahead of it take.
+    $platforms = @(if ($Target -in 'Browser', 'All') { Get-PlatformCheck -Context $Context })
+
+    foreach ($platform in @($platforms | Where-Object { -not $_.CanRun })) {
+        Write-Host ("{0,-10} not run  {1}" -f $platform.Name, $platform.Reason)
+    }
 
     if ($Target -eq 'Fast') {
         $build = Build-Solution -Context $Context -WhatIf:$WhatIfPreference
@@ -2400,7 +2544,6 @@ function Invoke-Gate {
     }
 
     if ($Target -in 'Browser', 'All') {
-        $platforms = @(Get-PlatformCheck)
         $isAndroid = [bool]($platforms | Where-Object { $_.Name -eq 'android' -and $_.CanRun })
         $results.Add((Test-BrowserCheck -Context $Context -Android:$isAndroid -WhatIf:$WhatIfPreference))
 

@@ -35,9 +35,11 @@ $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 # What this machine can run decides what a full run does, so the cases ask the build's own probe rather than
 # deciding it for themselves.
 Import-Module (Join-Path $PSScriptRoot 'Forma.Build.psd1') -Force
-$platforms = @(Get-PlatformCheck)
+$platformContext = Initialize-BuildContext -RepositoryRoot $repositoryRoot
+$platforms = @(Get-PlatformCheck -Context $platformContext)
 $webView = $platforms | Where-Object { $_.Name -eq 'webview' }
 $android = $platforms | Where-Object { $_.Name -eq 'android' }
+$androidEnvironment = Get-AndroidEnvironment -Context $platformContext
 
 # Each case names the script it runs, the arguments it runs it with, whether the run should succeed, and
 # what its output must and must not mention. Adding a case is adding a row.
@@ -53,10 +55,10 @@ $cases = @(
     @{ Name = 'the fast gate builds the solution and the task programs, runs the unit and bUnit suites from that build, the script tests and the task programs tests, and does no more'; Script = 'build.ps1'; Arguments = @('Fast'); Expect = @('-- build', '-- test', 'the unit and bUnit suites, on the build already on disk', '-- scripts', '-- tasks', 'dotnet build, each entry point, then dotnet run, each test program'); Reject = @('-- format', '-- tooling', '-- locales', '-- browser', 'not run') }
     @{ Name = 'the gate runs the build cases with the scripts contracts'; Script = 'build.ps1'; Arguments = @(); Expect = @('-- tooling', "then run the build's own cases") }
     if ($android.CanRun) {
-        @{ Name = 'the gate drives Android where a device is attached'; Script = 'build.ps1'; Arguments = @(); Expect = @('then the components on the attached Android device', '-- mobile'); Reject = @('android    not run') }
+        @{ Name = 'the gate drives Android on its environment''s emulator where the environment is installed'; Script = 'build.ps1'; Arguments = @(); Expect = @("then the components on the Android environment's emulator, $($androidEnvironment.Serial)", '-- mobile'); Reject = @('android    not run') }
     }
     else {
-        @{ Name = 'the gate names the Android checks it could not run'; Script = 'build.ps1'; Arguments = @(); Expect = @('android    not run', $android.Reason, 'platform check'); Reject = @('-- mobile') }
+        @{ Name = 'the gate names the Android checks it could not run, with the command that runs them'; Script = 'build.ps1'; Arguments = @(); Expect = @('android    not run', $android.Reason, 'platform check'); Reject = @('-- mobile') }
     }
     if ($webView.CanRun) {
         @{ Name = 'the gate runs the WebView2 checks on Windows'; Script = 'build.ps1'; Arguments = @(); Reject = @('webview    not run') }
@@ -72,7 +74,7 @@ $cases = @(
     @{ Name = 'browser drives the browser check and does no more'; Script = 'browser.ps1'; Arguments = @(); Expect = @('-- browser'); Reject = @('-- build', '-- test', 'in a visible browser window', 'Android') }
     @{ Name = 'a visible browser check says so'; Script = 'browser.ps1'; Arguments = @('-Visible'); Expect = @('-- browser', 'in a visible browser window') }
     @{ Name = 'browser runs the examples smoke checks ahead of the browser check'; Script = 'browser.ps1'; Arguments = @(); Expect = @('-- browser', "then run the examples' smoke checks and drive them in a browser") }
-    @{ Name = 'a browser check on Android builds the Android check host and drives the components on the device'; Script = 'browser.ps1'; Arguments = @('-Android'); Expect = @('-- browser', 'dotnet build the Android check host', 'then the components on the attached Android device in a run of their own') }
+    @{ Name = 'a browser check on Android builds the Android check host and drives the components on the environment''s emulator'; Script = 'browser.ps1'; Arguments = @('-Android'); Expect = @('-- browser', 'dotnet build the Android check host', "then the components on the Android environment's emulator, $($androidEnvironment.Serial), in a run of their own") }
     @{ Name = 'a filtered browser check says what it is filtered by'; Script = 'browser.ps1'; Arguments = @('-Filter', 'FullyQualifiedName~ComposerTests'); Expect = @('-- browser', 'filtered by FullyQualifiedName~ComposerTests') }
     @{ Name = 'a repeated browser check says how many times'; Script = 'browser.ps1'; Arguments = @('-Times', '3'); Expect = @('-- browser', '3 times') }
     @{ Name = 'a browser check under load names the projects loading it'; Script = 'browser.ps1'; Arguments = @('-LoadWith', 'Blazor.Explorer'); Expect = @('under load from Forma.Blazor.Explorer.BUnit.Tests') }
@@ -87,7 +89,12 @@ $cases = @(
         @{ Name = 'the browser check leaves the Blazor Hybrid example hosts out where WebView2 cannot run'; Script = 'browser.ps1'; Arguments = @(); Reject = @('Blazor Hybrid') }
     }
     @{ Name = 'mobile builds the MAUI example host for the platform named and does no more'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'Android'); Expect = @('-- mobile', 'for Android'); Reject = @('-- build', '-- test', '-- browser') }
-    @{ Name = 'mobile drives the Android build on an attached device'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'Android'); Expect = @('drive it on the attached Android device') }
+    if ($androidEnvironment.IsReady) {
+        @{ Name = 'mobile drives the Android build on the environment''s emulator'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'Android'); Expect = @("then drive it on the Android environment's emulator, $($androidEnvironment.Serial)") }
+    }
+    else {
+        @{ Name = 'mobile builds the Android build and says why it does not drive it'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'Android'); Expect = @('and not drive it, since', $androidEnvironment.Reason); Reject = @('then drive it') }
+    }
     @{ Name = 'mobile builds for iOS when asked, which nothing drives'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'iOS'); Expect = @('-- mobile', 'for iOS'); Reject = @('drive it') }
     @{ Name = 'a platform mobile does not build for is refused'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'Tizen'); Fails = $true }
     @{ Name = 'clean deletes build output and does no more'; Script = 'clean.ps1'; Arguments = @(); Expect = @('-- clean'); Reject = @('-- build') }

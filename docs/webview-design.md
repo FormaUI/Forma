@@ -139,8 +139,8 @@ it marks as an application.
 - **Where they run.** WebView2 runs on Windows, so the WebView checks run in the Windows gate and report
   themselves skipped on another platform. The Android checks, the example host's and the component suite's, run
   on an emulator in the full gate, nightly on `dev`, on every push to `candidate` and on demand, and locally
-  where a device is attached, the component suite's after the rest of the browser check and in a run of its own;
-  they report themselves skipped where a device isn't attached.
+  where the Android environment the repository declares is installed, on its emulator, the component suite's after
+  the rest of the browser check and in a run of its own; they report themselves skipped where it isn't.
 
 ## Decisions
 

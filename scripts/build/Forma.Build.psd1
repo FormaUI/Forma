@@ -18,6 +18,7 @@
         'Build-TaskProgram',
         'Clear-BuildOutput',
         'Get-CheckRate',
+        'Get-AndroidEnvironment',
         'Get-PlatformCheck',
         'Invoke-Gate',
         'Test-BrowserCheck',

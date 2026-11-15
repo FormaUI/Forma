@@ -403,7 +403,7 @@ features that own them.
   - `WebViewApplication` starts a Blazor Hybrid application from its publish with WebView2's DevTools port open and
     connects to its web views.
   - `AndroidDevice` reads the build a run checks, installs, starts and reads an application on the Android device or
-    emulator adb reaches, and connects to its web view.
+    emulator adb reaches, the one `ANDROID_SERIAL` names where it names one, and connects to its web view.
   - Each host starts through one process that keeps what the host writes, for a failure to report, and on Windows
     joins a job of the checks' process, which ends the host if that process ends first.
 - **`tests/support/Forma.Tests.Support.Maui`** holds the fakes of MAUI's share sheet, file system and device that the
@@ -519,6 +519,23 @@ component's check page.
 The Android checks and the MAUI example's smoke check on Android reach the device through `AndroidDevice` in
 `tests/support/Forma.Tests.Support.Hosts`.
 
+#### The Android environment
+
+The Android checks run in an environment the repository declares, on every machine alike, so they never depend on
+whatever JDK the Android tooling finds or whichever device another project left attached.
+
+- `.config/android.json` declares it: the Eclipse Temurin JDK the Android builds run with, the Android SDK's packages
+  the checks need beside the `maui-android` workload's, and the emulator they run on, its system image, its device
+  profile, its screen of 1280 by 800 points and its console port, which names its serial.
+- `scripts/Install-Android.ps1` installs it: the JDK, checked against the checksum its publisher gives, into a folder
+  of Forma's own in the user's local application data, beside the emulator's virtual device; and whichever declared
+  package the Android SDK lacks into that SDK, which the workload installs. It records what it installed, so `-Clean`
+  removes that and nothing else, and `-Upgrade` moves an environment installed from an earlier declaration to the
+  current one.
+- The browser and mobile steps build the Android projects with its JDK, boot its emulator where it isn't running, and
+  run the Android checks on that emulator alone. CI installs it through the same script before its Android jobs boot
+  the emulator.
+
 ### Example hosts and smoke checks
 
 `examples/` at the repository's root holds the example hosts:
@@ -594,10 +611,11 @@ a task program fails it, and runs the unit and bUnit suites from that build, thr
 `artifacts/fast/`. It also runs the script tests and the task programs' tests, for feedback within minutes. The
 examples, which build from the packed packages, stay with the browser check.
 
-**The full gate runs every check the machine can.** On Windows that includes WebView2's checks. Where adb reaches a
-device and the `maui-android` workload is installed, it includes the components in Android's web view and the MAUI
-example's smoke check on Android, through the steps `browser.ps1 -Android` and `mobile.ps1 -Platform Android` run.
-Its summary names each platform check the machine couldn't run, with the reason.
+**The full gate runs every check the machine can.** On Windows that includes WebView2's checks. Where the Android
+environment is installed as `.config/android.json` declares it and the `maui-android` workload is installed, it
+includes the components in Android's web view and the MAUI example's smoke check on Android, through the steps
+`browser.ps1 -Android` and `mobile.ps1 -Platform Android` run. It names each platform check the machine can't run,
+with the reason and the command that makes it run, before its first step and again in its summary.
 
 **On Windows, the browser step also drives the Blazor Hybrid example hosts.** It publishes them and drives them
 through WebView2, closing a native window as its close button does. The MAUI one builds against the `maui-windows`
@@ -633,8 +651,8 @@ needs one project's tests doesn't wait for the whole gate:
 | `test.ps1` | Runs the tests: the solution's, the script tests, or both |
 | `format.ps1` | Verifies formatting |
 | `tasks.ps1` | Builds the task programs written in C# |
-| `browser.ps1` | Publishes the browser check's hosts and drives them in a browser; `-Visible` in a window a person can watch, and `-Android` on the Android check host's web view too, on the device or emulator adb reaches |
-| `mobile.ps1` | Builds the MAUI example host from the packed packages for `-Platform` `Android`, `iOS` or `MacCatalyst`, and drives the Android build on the device or emulator adb reaches, where one is attached |
+| `browser.ps1` | Publishes the browser check's hosts and drives them in a browser; `-Visible` in a window a person can watch, and `-Android` on the Android check host's web view too, on the Android environment's emulator |
+| `mobile.ps1` | Builds the MAUI example host from the packed packages for `-Platform` `Android`, `iOS` or `MacCatalyst`, and drives the Android build on the Android environment's emulator, where the environment is installed |
 | `clean.ps1` | Deletes build output |
 
 `mobile.ps1` reaches what no other step does: each platform needs its MAUI workload, and Apple's need a Mac. CI's full

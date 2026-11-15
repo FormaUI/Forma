@@ -226,7 +226,7 @@ jobs:
           sudo xcode-select -s "$xcode"
           xcodebuild -version
 
-      # The mobile step drives the Android build on the device adb reaches, booted before the step starts.
+      # The mobile step drives the Android build on the Android environment's emulator, installed and booted before the step starts.
       - name: Start an Android emulator
         if: matrix.platform == 'Android'
         uses: ./.github/actions/android-emulator
@@ -234,14 +234,14 @@ jobs:
       - name: Build the MAUI example host for the platform
         run: pwsh ./scripts/build/mobile.ps1 -Platform ${{ matrix.platform }}
 
-      # The mobile step builds without driving where adb reaches no device, as on a machine without one; here the
-      # emulator was started for it, so its smoke checks' results are what the job is for.
+      # The mobile step builds without driving where the Android environment isn't installed, as on a machine without it;
+      # here it was installed and its emulator booted, so its smoke checks' results are what the job is for.
       - name: Require the smoke checks' results
         if: matrix.platform == 'Android'
         shell: pwsh
         run: |
           if (-not (Test-Path -LiteralPath 'artifacts/browser/mobile-results/run-1/maui.json')) {
-              throw "The MAUI example's smoke checks wrote no results; adb reached no device to drive them on."
+              throw "The MAUI example's smoke checks wrote no results; the Android environment's emulator didn't drive them."
           }
 
       # A device that went unreachable is described where it happened: its process, the runner's memory and its log.

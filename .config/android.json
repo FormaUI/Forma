@@ -1,0 +1,21 @@
+{
+  // The environment the Android checks run in, which scripts/Install-Android.ps1 installs and the gate uses alone.
+
+  // The JDK the Android build runs with, an Eclipse Temurin release, whose version the Android SDK's tooling reads.
+  "jdk": "21.0.13+9",
+
+  // The Android SDK's packages the checks run on beside what the maui-android workload builds with.
+  "packages": ["platform-tools", "emulator"],
+
+  // The emulator the checks run on, its screen 1280 by 800 points so a check page's 1280 by 720 fits it whole, since Chrome drops
+  // wheel input past the screen's edge, on a console port of its own, which names its serial, emulator-5580.
+  "emulator": {
+    "name": "forma",
+    "image": "system-images;android-37.0;google_apis;x86_64",
+    "device": "pixel_7",
+    "width": 1280,
+    "height": 800,
+    "density": 160,
+    "port": 5580
+  }
+}
