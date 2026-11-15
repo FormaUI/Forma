@@ -19,6 +19,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Two locale files whose paths differ only where one has a folder and the other a dot, `Uploads/UploadStatus.he.json`
   and `Uploads.UploadStatus.he.json`, fail the build naming both files and the resource name they would share. The
   compiler refused them, naming the resource alone.
+- A locale file in a culture folder may name its culture again, so `.locales/es/es.json` is the root's file, as
+  `.locales/es.json` is, and `.locales/es/Pages.Home.es.json` names `Pages.Home`, as `.locales/es/Pages.Home.json` and
+  `.locales/Pages.Home.es.json` do. A part repeating the culture went on the name, so such a file was read for a
+  namespace or type named for the culture.
 - A `LocaleSource` answers where an assembly's names begin through `GetRootDir`, and the folder of locale files they
   leave out through `GetLocalesDir`, as it answers the assembly's root namespace through `GetRootNamespace`. Both were
   internal.

@@ -198,6 +198,8 @@ message. In the project of `Contoso.App`:
 | `Uploads/UploadStatus.he.json` | `Contoso.App.Uploads.UploadStatus.he.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
 | `.locales/he/Uploads/UploadStatus.json` | `Contoso.App..locales.he.Uploads.UploadStatus.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
 | `.locales/he.json` | `Contoso.App..locales.he.json` | `he` · `Contoso.App` |
+| `.locales/he/he.json` | `Contoso.App..locales.he.he.json` | `he` · `Contoso.App` |
+| `.locales/he/Uploads.he.json` | `Contoso.App..locales.he.Uploads.he.json` | `he` · `Contoso.App.Uploads` |
 | `.locales/es-419/Uploads.json` | `Contoso.App..locales.es-419.Uploads.json` | `es-419` · `Contoso.App.Uploads` |
 | `Strings/he/Uploads.json` | `Contoso.App.Strings.he.Uploads.json` | `he` · `Contoso.App.Strings.Uploads` |
 | `.locales/ES/Uploads.json` | `Contoso.App..locales.ES.Uploads.json` | none: `ES` isn't how .NET writes a culture |
@@ -240,10 +242,11 @@ only its source differs, which decides precedence, as *Which text wins* below se
 | `strings-he/Uploads.json` | In `Contoso.App`, read by the path `$RootDir/strings-$Culture/$AnchorName$Extension` its `.locale.json` states |
 
 **The default reading.** The first part of a name that is a culture, written as .NET names it, `he`
-or `es-419` but never `ES`, is the file's culture, whether it is a folder or part of the name. Every
-other part goes on the type's name, past the project's root namespace, and a file's sections spell
-the rest of it. A regional culture's files, such as those for `es-419`, hold only what differs from
-its parent's.
+or `es-419` but never `ES`, is the file's culture, whether it is a folder or part of the name, and a
+part repeating it is the culture again, so a culture folder holds its root's file as `he/he.json`.
+Every other part goes on the type's name, past the project's root namespace, and a file's sections
+spell the rest of it. A regional culture's files, such as those for `es-419`, hold only what differs
+from its parent's.
 
 **Embedded by the build.** The build embeds every locale file it finds by the `$localization` entry
 each one carries, wherever it sits in the project, outside the build output and outside a folder

@@ -69,8 +69,9 @@ public static class LocaleFileNames
     /// <summary>Reads a file's name, from where its source's names begin, into the culture it is for and the parts of the name it stands for.</summary>
     /// <remarks>
     /// A folder and a dot separate the name alike. A folder of locale files is left out wherever it sits, the first part
-    /// that is a culture is the file's culture, and every other part is part of the name, so <c>.locales/es/Accounts.Admin.json</c>,
-    /// <c>Accounts/Admin/.locales/es.json</c> and <c>Accounts.Admin.es.json</c> all stand for <c>Accounts.Admin</c>.
+    /// that is a culture is the file's culture, a part repeating that culture is left out too, and every other part is part
+    /// of the name, so <c>.locales/es/Accounts.Admin.json</c>, <c>Accounts/Admin/.locales/es.json</c>, <c>Accounts.Admin.es.json</c>
+    /// and <c>.locales/es/Accounts.Admin.es.json</c> all stand for <c>Accounts.Admin</c>, and <c>.locales/es/es.json</c> for the root.
     /// </remarks>
     /// <param name="name">The file's name from where its source's names begin.</param>
     /// <param name="localesDir">The name of a folder of locale files, written with <c>/</c>.</param>
@@ -153,7 +154,7 @@ public static class LocaleFileNames
             {
                 culture = text[ranges[index]].ToString();
             }
-            else
+            else if (!text[ranges[index]].SequenceEqual(culture))
             {
                 kept[index] = true;
                 keptCount++;
@@ -231,7 +232,7 @@ public static class LocaleFileNames
             {
                 culture = segments[index];
             }
-            else
+            else if (!string.Equals(segments[index], culture, StringComparison.Ordinal))
             {
                 kept.Add(segments[index]);
             }

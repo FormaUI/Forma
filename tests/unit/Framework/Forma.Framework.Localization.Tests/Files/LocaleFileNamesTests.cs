@@ -12,6 +12,10 @@ public sealed class LocaleFileNamesTests
         [InlineData("Accounts.Admin.es.json", "es", "Accounts.Admin", false)]
         [InlineData("es-419/Accounts.json", "es-419", "Accounts", false)]
         [InlineData(".locales/he.json", "he", "", true)]
+        [InlineData(".locales/es/es.json", "es", "", true)]
+        [InlineData(".locales/es/Accounts.Admin.es.json", "es", "Accounts.Admin", true)]
+        [InlineData(".locales/Accounts.Admin.es.json", "es", "Accounts.Admin", true)]
+        [InlineData(".locales/es/he.json", "es", "he", true)]
         public void Should_read_the_culture_and_the_parts_a_name_stands_for(string name, string culture, string parts, bool isInLocalesDir)
         {
             // Act
@@ -36,6 +40,8 @@ public sealed class LocaleFileNamesTests
         [InlineData("Contoso.App.Uploads.UploadStatus.he.json", "he", "Contoso.App.Uploads.UploadStatus")]                // Uploads/UploadStatus.he.json
         [InlineData("Contoso.App..locales.he.Uploads.UploadStatus.json", "he", "Contoso.App.Uploads.UploadStatus")]       // .locales/he/Uploads/UploadStatus.json
         [InlineData("Contoso.App..locales.he.json", "he", "Contoso.App")]                                                 // .locales/he.json
+        [InlineData("Contoso.App..locales.he.he.json", "he", "Contoso.App")]                                              // .locales/he/he.json
+        [InlineData("Contoso.App..locales.he.Uploads.he.json", "he", "Contoso.App.Uploads")]                              // .locales/he/Uploads.he.json
         [InlineData("Contoso.App..locales.es-419.Uploads.json", "es-419", "Contoso.App.Uploads")]                         // .locales/es-419/Uploads.json
         [InlineData("Contoso.App.Strings.he.Uploads.json", "he", "Contoso.App.Strings.Uploads")]                          // Strings/he/Uploads.json
         public void Should_read_every_layout_s_resource_name_into_one_canonical_name(string name, string culture, string parts)
@@ -72,6 +78,23 @@ public sealed class LocaleFileNamesTests
         [InlineData(".locales", "")]
         public void Should_reject_an_empty_folder_name_or_extension(string localesDir, string extension)
             => Assert.Throws<ArgumentException>(() => LocaleFileNames.TryRead("Accounts.es.json", localesDir, extension, StringComparison.Ordinal, out _));
+
+        [Fact]
+        public void Should_read_a_name_of_very_many_parts_as_one_of_a_few()
+        {
+            // Arrange
+            var parts = Enumerable.Range(0, 70).Select(part => $"Part{part}").ToArray();
+
+            // Act
+            var isRead = LocaleFileNames.TryRead($".locales/es/{string.Join('.', parts)}.es.json", ".locales", ".json", StringComparison.Ordinal, out var fileName);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isRead),
+                () => Assert.Equal("es", fileName?.Culture),
+                () => Assert.Equal(string.Join('.', parts), string.Join('.', fileName?.Parts ?? [])),
+                () => Assert.True(fileName?.IsInLocalesDir));
+        }
 
         [Fact]
         public void Should_read_one_name_twice_into_equal_readings()

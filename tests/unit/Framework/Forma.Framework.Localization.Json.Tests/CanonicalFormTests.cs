@@ -33,6 +33,9 @@ public sealed class CanonicalFormTests
         [InlineData(".locales/he/Uploads.json", Section)]
         [InlineData(".locales/he/Uploads/UploadStatus.json", Own)]
         [InlineData(".locales/he.json", Nested)]
+        [InlineData(".locales/he/he.json", Nested)]
+        [InlineData(".locales/he/Uploads.he.json", Section)]
+        [InlineData(".locales/Uploads.he.json", Section)]
         public void Should_read_a_file_in_any_layout_of_the_assembly_into_the_same_entry(string path, string content)
         {
             // Arrange

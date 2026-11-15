@@ -74,10 +74,13 @@ have the canonical name `he` · `Contoso.App.Uploads`, and files with one canoni
 together, as one file would be. A file keeps the name its source knows it by, its resource name in an
 assembly or its path in a folder, only to name it in a message.
 
-1. **Culture.** A folder named for a culture, or the last part of the file's name:
-   `.locales/es/Accounts.Admin.json`, `.locales/es.json`, `FormaToolbar.es.json`. A file in a
-   culture folder carries no culture in its name, so the last part of its name is part of the
-   type's name. A culture is written as .NET names it and compared exactly, so the type `He` is
+1. **Culture.** The first part of the name that is a culture, a folder or a part of the file's
+   name: `.locales/es/Accounts.Admin.json`, `.locales/es.json`, `FormaToolbar.es.json`. A part
+   repeating that culture is the culture again, so `.locales/es/es.json` is the root's file as
+   `.locales/es.json` is, and `.locales/es/Accounts.Admin.es.json` names `Accounts.Admin` as
+   `.locales/es/Accounts.Admin.json` and `.locales/Accounts.Admin.es.json` do. A part that is
+   another culture is part of the name, so `.locales/es/he.json` names `he`, and the linter
+   reports it. A culture is written as .NET names it and compared exactly, so the type `He` is
    never the culture `he`, and the linter reports a part of a name that is a culture in another
    case and names no type, as `ES` is.
 2. **Name.** The folders from where the assembly's names begin, which [Roots](#roots) sets out,
@@ -412,8 +415,8 @@ For one type, one key and one reader's culture, the text is chosen in this order
 | L19 | How does a Web App's server read its client's files? | Through `LocaleReferenceAttribute`, which the server's build writes for each referenced application that embedded locale files, naming its assembly; the server reads them before its own. The runtime finds the application by its entry assembly or, with none, by the mark its build writes into the application alone. |
 | L20 | What decides which text a reader sees? | The culture first, then the source, and nothing about a file's place or name. A more specific culture wins over a later source, and a later source over an earlier one. |
 | L21 | What happens when one source gives an entry two texts? | It is a conflict: the linter reports it as an error, and the runtime keeps the text from the file whose name sorts last, ordinally, so the outcome is fixed while the error stands, and logs the conflict once as a warning naming both files, since a host that runs no linter would otherwise show one of two texts without knowing. The same text twice isn't a conflict. |
-| L22 | Can a culture be a folder? | Yes. A folder named for a culture holds files for it, a file per namespace or per type named with dots, so a project keeps one folder per language instead of a `.locales` folder per namespace. |
-| L23 | How is a culture told from a part of a name? | A culture is written as .NET names it and compared exactly, so `he` is a culture and the type `He` is not; a file in a culture folder carries no culture in its name. The build, the runtime and the linter decide it the same way, and the linter reports a part of a name that is a culture in another case and names no type, which would otherwise be read as part of a name in silence. |
+| L22 | Can a culture be a folder? | Yes. A folder named for a culture holds files for it, a file per namespace or per type named with dots, and the root's file named for the culture again, `.locales/es/es.json`, so a project keeps each language in one folder instead of a `.locales` folder per namespace. |
+| L23 | How is a culture told from a part of a name? | A culture is written as .NET names it and compared exactly, so `he` is a culture and the type `He` is not. The first part that is a culture is the file's, and a part repeating it is the culture again, so a file in a culture folder may name the culture as a file beside the folder does. A part that is another culture is part of the name, which the runtime reads and the linter reports, since a locale file named for one culture in another's folder is almost always in the wrong folder. The build, the runtime and the linter decide it the same way, and the linter reports a part of a name that is a culture in another case and names no type, which would otherwise be read as part of a name in silence. |
 | L24 | What if an assembly is named for a culture? | The culture wins wherever the two meet, and the linter reports a culture in the root namespace the project embeds its files under, the assembly's name unless the project names another, where it is built, the one place the name can change. |
 | L25 | Do stated paths remain? | Yes. A path is notation read into the same entries, and it reads layouts the default reading has no rule for, so a project bringing files from another system keeps them where they are. A project's paths replace the default reading for its files. |
 | L26 | When is a file read? | Once per source and culture, at the first lookup that needs it; every later lookup finds an entry already read. |
