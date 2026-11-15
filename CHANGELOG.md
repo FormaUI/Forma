@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.6`
 
-*Unreleased*
+*November 15, 2026*
 
 - A [`FormaTextBox`](docs/component-catalog.md#formatextbox), `FormaPasswordBox`, `FormaTimePicker`,
   `FormaDateTimePicker`, `FormaWindow`, `FormaDataTree`, `FormaComposer` or `FormaEmojiPicker` taken away while the work
