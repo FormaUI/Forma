@@ -25,7 +25,6 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests and a faster gate |
-| [Release](#release) | A locale pack proven from a feed |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -111,7 +110,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | The gate and CI on Linux and Windows | [Build and verification](repository-structure.md#build-and-verification) | Implemented, Android's checks in [the environment the repository declares](repository-structure.md#the-android-environment), its JDK and its emulator, on every machine and in CI alike | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | The browser check | [Tests](repository-structure.md#tests) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | The screen reader check | [Screen reader checks design](screen-reader-checks-design.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| Releases | [Build and verification](repository-structure.md#build-and-verification) | Implemented in part; [the rest](#release) planned | [September 2026](../FEATURE-HISTORY.md#2026-09) |
+| Releases | [Build and verification](repository-structure.md#build-and-verification) | Implemented: each release published from its signed tag on `main` to nuget.org and the organization's GitHub feed, and proven against what it published: a consumer outside the repository reading a locale pack it restored from a feed into an empty cache, and a project outside it declaring `IsLocalePack` packing as a pack | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 
 <a id="components-to-build"></a>
 
@@ -155,14 +154,6 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
 
 - **Faster tests.** The suite runs in about 13 seconds on the build on disk, its test projects side by side. The explorer's component tests stand in classes named for their subjects, which run side by side too, taking 5 seconds where one class of 129 took 16. What remains: the Office provider's tests and the data view grid's, each one class run in turn, set the fast gate's slowest suites at about 10 seconds; and the localization build's integration tests set the full suite's time, one of them running a build for 9 seconds.
 - **A faster gate.** The format check reads each tracked C# file's whitespace, line endings, final newline and charset in about 6 seconds, where it took 132, the build holding the code style; the test step runs on the build the gate has just made; the build's own cases and the task scripts' contract run side by side, in about 20 seconds where they took 60; and a filtered browser run builds what the checks it selects read, a one-runtime run of one class's checks taking under a minute where the same run took three to five. What remains: the locale lint's 32 seconds, which are the linter's own, loading the solution, and which a faster Locali takes up.
-
-<a id="release"></a>
-
-## Release
-
-Forma's releases from `1.0.0-preview.1` to `1.0.0-preview.6` are published, as [the changelog](../CHANGELOG.md) lists them. `release.yml` releases a version from its signed tag on `main`, through Versioning's release check, and publishes the packages the candidate's full run packed and checked, each after the packages it depends on, to nuget.org and the organization's GitHub feed. What remains:
-
-- Prove, against published packages, that a consumer outside the repository taking a locale pack from a feed loads it, and that a project outside the repository declaring `IsLocalePack` packs as a pack.
 
 <a id="a-hosts-integration"></a>
 
