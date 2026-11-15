@@ -5,18 +5,23 @@ using System.Text.Json;
 
 using Forma.Tests.Shared;
 
-/// <summary>A folder of projects made for one case, outside the repository, each importing the localization package's targets, which MSBuild is asked what a build of them would embed and record.</summary>
+/// <summary>A folder of projects made for one case, each importing the localization package's targets, which MSBuild is asked what a build of them would embed and record.</summary>
+/// <remarks>The folder sits under the repository's ignored <c>.local/tmp</c> with build files of its own, empty but for central package management turned off, which MSBuild finds before the repository's, so a project builds there as it would outside the repository.</remarks>
 public sealed class FixtureProjects : IDisposable
 {
     private static readonly string Repository = RepositoryFolder.Find();
     private static readonly string Targets = Path.Combine(Repository, "src", "Framework", "Forma.Framework.Localization", "build", "Forma.Framework.Localization.targets");
 
-    private readonly string _folder = Directory.CreateTempSubdirectory("forma-locale-targets-").FullName;
+    private readonly TempDirectory _folder = new("forma-locale-targets-");
 
     /// <summary>Creates the folder, building with the SDK the repository names.</summary>
     public FixtureProjects()
     {
-        File.Copy(Path.Combine(Repository, "global.json"), Path.Combine(_folder, "global.json"));
+        File.Copy(Path.Combine(Repository, "global.json"), Path.Combine(_folder.Root, "global.json"));
+        _folder.Write("Directory.Build.props", "<Project />");
+        _folder.Write("Directory.Build.targets", "<Project />");
+        _folder.Write("Directory.Packages.props", "<Project><PropertyGroup><ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally></PropertyGroup></Project>");
+        _folder.Write(".editorconfig", "root = true");
     }
 
     /// <summary>Writes the project <paramref name="name"/>, a library unless <paramref name="properties"/> makes it an application, with <paramref name="items"/> of its own.</summary>
@@ -49,7 +54,7 @@ public sealed class FixtureProjects : IDisposable
     /// <param name="content">The file's content.</param>
     public void WriteFile(string path, string content)
     {
-        var fullPath = Path.Combine(_folder, path);
+        var fullPath = Path.Combine(_folder.Root, path);
         Directory.CreateDirectory(Path.GetDirectoryName(fullPath)!);
         File.WriteAllText(fullPath, content);
     }
@@ -99,7 +104,7 @@ public sealed class FixtureProjects : IDisposable
 
     /// <inheritdoc />
     public void Dispose()
-        => Directory.Delete(_folder, recursive: true);
+        => _folder.Dispose();
 
     // Runs the target and reads the item type's items after it, which MSBuild prints as JSON alone.
     private async Task<IReadOnlyList<JsonElement>> GetItemsAsync(string name, string target, string itemType)
@@ -123,7 +128,7 @@ public sealed class FixtureProjects : IDisposable
     {
         var start = new ProcessStartInfo("dotnet")
         {
-            WorkingDirectory = _folder,
+            WorkingDirectory = _folder.Root,
             RedirectStandardOutput = true,
             RedirectStandardError = true,
             UseShellExecute = false,

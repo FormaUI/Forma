@@ -88,7 +88,7 @@ function Read-Json {
 }
 
 $version = if ($CldrVersion -eq 'latest') { Get-LatestVersion -Package 'cldr-core' } else { $CldrVersion }
-$workspace = Join-Path ([System.IO.Path]::GetTempPath()) "forma-cldr-$([guid]::NewGuid().ToString('N'))"
+$workspace = Join-Path $repositoryRoot '.local' 'tmp' "forma-cldr-$([guid]::NewGuid().ToString('N'))"
 New-Item -ItemType Directory -Path $workspace | Out-Null
 
 try {

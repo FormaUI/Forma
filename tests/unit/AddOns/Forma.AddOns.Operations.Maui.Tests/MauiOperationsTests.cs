@@ -3,6 +3,7 @@ namespace Forma.AddOns.Operations.Maui.Tests;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Browser.Interop.Operations.Maui;
 using Forma.Tests.Maui;
+using Forma.Tests.Shared;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Maui.ApplicationModel.DataTransfer;
@@ -12,13 +13,13 @@ using Xunit;
 
 public sealed class MauiOperationsTests : IDisposable
 {
-    private readonly string _cache = Directory.CreateTempSubdirectory("forma-maui-").FullName;
+    private readonly TempDirectory _cache = new("forma-maui-");
 
     public void Dispose()
-        => Directory.Delete(_cache, recursive: true);
+        => _cache.Dispose();
 
     private MauiOperations CreateOperations(FakeShare share, DevicePlatform platform)
-        => new(share, new FakeFileSystem(_cache), new FakeDeviceInfo(platform));
+        => new(share, new FakeFileSystem(_cache.Root), new FakeDeviceInfo(platform));
 
     [Fact]
     public async Task Should_hand_the_share_sheet_an_address_under_its_title()
@@ -73,7 +74,7 @@ public sealed class MauiOperationsTests : IDisposable
         var file = Assert.IsType<ShareFileRequest>(Assert.Single(share.Requests)).File!;
         Assert.Multiple(
             () => Assert.Equal("Report.html", Path.GetFileName(file.FullPath)),
-            () => Assert.StartsWith(Path.Combine(_cache, "forma"), file.FullPath, StringComparison.Ordinal));
+            () => Assert.StartsWith(Path.Combine(_cache.Root, "forma"), file.FullPath, StringComparison.Ordinal));
     }
 
     [Fact]
@@ -93,14 +94,14 @@ public sealed class MauiOperationsTests : IDisposable
         Assert.Multiple(
             () => Assert.False(File.Exists(first)),
             () => Assert.True(File.Exists(last)),
-            () => Assert.Equal([Path.GetDirectoryName(last)], Directory.GetDirectories(Path.Combine(_cache, "forma"))));
+            () => Assert.Equal([Path.GetDirectoryName(last)], Directory.GetDirectories(Path.Combine(_cache.Root, "forma"))));
     }
 
     [Fact]
     public void Should_register_the_operations_once_leaving_a_host_s_own_in_place()
     {
         // Arrange
-        var own = new MauiOperations(new FakeShare(), new FakeFileSystem(_cache), new FakeDeviceInfo(DevicePlatform.Android));
+        var own = new MauiOperations(new FakeShare(), new FakeFileSystem(_cache.Root), new FakeDeviceInfo(DevicePlatform.Android));
 
         // Act
         var services = new ServiceCollection().AddSingleton<INativeOperations>(own).AddFormaMauiOperations().AddFormaMauiOperations();

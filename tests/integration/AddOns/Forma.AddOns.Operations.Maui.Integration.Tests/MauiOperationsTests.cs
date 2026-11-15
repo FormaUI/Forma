@@ -2,6 +2,7 @@ namespace Forma.AddOns.Operations.Maui.Integration.Tests;
 
 using Forma.Framework.Browser.Interop.Operations.Maui;
 using Forma.Tests.Maui;
+using Forma.Tests.Shared;
 
 using Microsoft.Maui.ApplicationModel.DataTransfer;
 using Microsoft.Maui.Devices;
@@ -10,17 +11,17 @@ using Xunit;
 
 public sealed class MauiOperationsTests : IDisposable
 {
-    private readonly string _cache = Directory.CreateTempSubdirectory("forma-maui-").FullName;
+    private readonly TempDirectory _cache = new("forma-maui-");
 
     public void Dispose()
-        => Directory.Delete(_cache, recursive: true);
+        => _cache.Dispose();
 
     [Fact]
     public async Task Should_hand_the_share_sheet_a_file_written_to_the_cache()
     {
         // Arrange
         var share = new FakeShare();
-        var operations = new MauiOperations(share, new FakeFileSystem(_cache), new FakeDeviceInfo(DevicePlatform.Android));
+        var operations = new MauiOperations(share, new FakeFileSystem(_cache.Root), new FakeDeviceInfo(DevicePlatform.Android));
 
         // Act
         var isTaken = await operations.TrySaveAsync("Report.html", "<p>Report</p>", "text/html");
@@ -31,7 +32,7 @@ public sealed class MauiOperationsTests : IDisposable
             () => Assert.True(isTaken),
             () => Assert.Equal("Report.html", request.Title),
             () => Assert.Equal("text/html", request.File!.ContentType),
-            () => Assert.StartsWith(_cache, request.File!.FullPath, StringComparison.Ordinal),
+            () => Assert.StartsWith(_cache.Root, request.File!.FullPath, StringComparison.Ordinal),
             () => Assert.Equal("<p>Report</p>", File.ReadAllText(request.File!.FullPath)));
     }
 }

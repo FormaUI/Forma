@@ -91,9 +91,10 @@ $nvdaHome = Join-Path $tools 'nvda'
 
 # NVDA's accessibility bridge stays loaded in the programs it reached, such as a browser or an editor,
 # until they close, and Windows refuses to delete a file a program has loaded while letting it be moved.
-# A file that cannot be deleted is moved here, so the folder it was in can go, and every later run or
-# uninstall deletes what the programs holding it have since let go of.
-$heldFolder = Join-Path ([System.IO.Path]::GetTempPath()) 'FormaNvda' 'locked'
+# A file that cannot be deleted is moved here, beside what the check installs and so on its volume, which a move
+# of a loaded file can't leave, so the folder it was in can go, and every later run or uninstall deletes what the
+# programs holding it have since let go of.
+$heldFolder = Join-Path (Split-Path -Parent $tools) 'locked'
 
 function Remove-Tree {
     param([Parameter(Mandatory)] [string] $Path)
@@ -197,7 +198,7 @@ $recorder = Join-Path $PSScriptRoot 'nvda' 'formaSpeechRecorder.py'
 $program = Join-Path $PSScriptRoot 'nvda' 'CheckScreenReaderSpeech.cs'
 $cache = Join-Path $nvdaHome $NvdaVersion
 $launcher = Join-Path $cache "nvda_$NvdaVersion.exe"
-$run = Join-Path ([System.IO.Path]::GetTempPath()) "forma-speech-$([guid]::NewGuid().ToString('N'))"
+$run = Join-Path $repositoryRoot '.local' 'tmp' "forma-speech-$([guid]::NewGuid().ToString('N'))"
 $profilePath = Join-Path $run 'profile'
 $speechLog = Join-Path $run 'speech.jsonl'
 $transcript = Join-Path $run 'transcript.txt'

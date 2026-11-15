@@ -71,4 +71,5 @@ Every tooling script the build does not run is a task script: PowerShell 7, cros
 - Do reach for PowerShell's own way of doing a thing: a here-string builds a file, not a `StringBuilder` appended to a line at a time.
 - Do write a generated data asset compact by default, and take a `-Format` switch that writes it indented for a person reviewing it.
 - Do make a script that generates an asset validate its inputs and fail loudly, so a stale or malformed asset cannot be produced silently.
+- Do make a run's temporary folder, a script's or a build action's, in the repository's ignored folder for a run's temporary files, the build context's temporary folder where the build module is loaded, and remove it when the run ends, so what a run makes for itself stays inside the repository and the clean step reaches what a stopped run left.
 - Don't introduce another runtime for tooling; a script needs only PowerShell and the .NET SDK.

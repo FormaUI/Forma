@@ -36,6 +36,9 @@ $repositoryRoot = Split-Path -Parent (Split-Path -Parent $PSScriptRoot)
 # deciding it for themselves.
 Import-Module (Join-Path $PSScriptRoot 'Forma.Build.psd1') -Force
 $platformContext = Initialize-BuildContext -RepositoryRoot $repositoryRoot
+
+# The trees the cases below make for the purpose go where a run's temporary folders go.
+$temporaryFolder = $platformContext.TemporaryFolder
 $platforms = @(Get-PlatformCheck -Context $platformContext)
 $webView = $platforms | Where-Object { $_.Name -eq 'webview' }
 $android = $platforms | Where-Object { $_.Name -eq 'android' }
@@ -191,7 +194,7 @@ $results = foreach ($result in $caseResults) {
 # The step that builds the task programs once reported success on an empty folder, which is the failure a
 # gate exists to prevent rather than one it may contain, so it is asserted here against a folder with
 # nothing in it rather than left to be noticed again.
-$empty = Join-Path ([System.IO.Path]::GetTempPath()) ("forma-gate-" + [guid]::NewGuid().ToString('N'))
+$empty = Join-Path $temporaryFolder ("forma-gate-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $empty | Out-Null
 
 try {
@@ -234,33 +237,36 @@ finally {
 # see past: a step whose body is wrong describes itself perfectly and fails only when something actually
 # runs it. Cleaning is therefore done here for real, against a tree made for the purpose, because the one
 # bug this step has had was inside its body and every described run passed while it was there.
-$tree = Join-Path ([System.IO.Path]::GetTempPath()) ("forma-clean-" + [guid]::NewGuid().ToString('N'))
+$tree = Join-Path $temporaryFolder ("forma-clean-" + [guid]::NewGuid().ToString('N'))
 
 foreach ($folder in 'src/Thing/bin', 'src/Thing/obj', 'scripts/cs',
-    'tests/Scripts/node_modules/some-package/bin', '.local/benchmarks/Thing/bin') {
+    'tests/Scripts/node_modules/some-package/bin', '.local/benchmarks/Thing/bin', '.local/tmp/forma-test-run') {
     New-Item -ItemType Directory -Path (Join-Path $tree $folder) -Force | Out-Null
 }
 
 Set-Content -LiteralPath (Join-Path $tree 'src/Thing/bin/output.dll') -Value 'build output'
 Set-Content -LiteralPath (Join-Path $tree 'tests/Scripts/node_modules/some-package/bin/tool') -Value 'an installed package'
 Set-Content -LiteralPath (Join-Path $tree '.local/benchmarks/Thing/bin/result') -Value "someone's own work"
+Set-Content -LiteralPath (Join-Path $tree '.local/tmp/forma-test-run/results.trx') -Value 'a stopped run''s results'
 
 try {
     $cleaned = Initialize-BuildContext -RepositoryRoot $repositoryRoot
     $cleaned.RepositoryRoot = $tree
     $cleaned.TaskPrograms = Join-Path $tree 'scripts'
+    $cleaned.TemporaryFolder = Join-Path $tree '.local' 'tmp'
 
     $step = Clear-BuildOutput -Context $cleaned 6>$null
 
     $wrong = @(
         if (-not $step.Passed) { 'the step failed' }
         if (Test-Path (Join-Path $tree 'src/Thing/bin')) { 'build output was left behind' }
+        if (Test-Path (Join-Path $tree '.local/tmp')) { 'a run''s temporary folder was left behind' }
         if (-not (Test-Path (Join-Path $tree 'tests/Scripts/node_modules/some-package/bin/tool'))) { 'an installed package was deleted' }
         if (-not (Test-Path (Join-Path $tree '.local/benchmarks/Thing/bin/result'))) { 'work belonging to a person was deleted' }
     )
 
     $cleaning = [pscustomobject]@{
-        Name     = 'cleaning deletes build output and nothing else'
+        Name     = 'cleaning deletes build output and the runs'' temporary folders, and nothing else'
         Passed   = $wrong.Count -eq 0
         Problems = $wrong
         Output   = ''
@@ -268,7 +274,7 @@ try {
 }
 catch {
     $cleaning = [pscustomobject]@{
-        Name     = 'cleaning deletes build output and nothing else'
+        Name     = 'cleaning deletes build output and the runs'' temporary folders, and nothing else'
         Passed   = $false
         Problems = @("the check could not be made: $($_.Exception.Message)")
         Output   = ''
@@ -281,7 +287,7 @@ finally {
 # The rates are read off the results files each run writes, so they are read for real here off two runs' files made
 # for the purpose: a check that passed and then failed, one this machine skipped in both, a theory's two rows, one
 # failing with a message over several lines, and a test whose results carry no runtime.
-$rateFolder = Join-Path ([System.IO.Path]::GetTempPath()) "forma-rates-$([guid]::NewGuid().ToString('N'))"
+$rateFolder = Join-Path $temporaryFolder "forma-rates-$([guid]::NewGuid().ToString('N'))"
 
 try {
     $null = New-Item -ItemType Directory -Path $rateFolder
@@ -350,7 +356,7 @@ finally {
 
 # Clearing a wait log deletes files, and the summary is read off what the waits wrote, so both run for real
 # here against a folder made for the purpose: records from two test processes, and a file of someone else's.
-$log = Join-Path ([System.IO.Path]::GetTempPath()) ("forma-wait-log-" + [guid]::NewGuid().ToString('N'))
+$log = Join-Path $temporaryFolder ("forma-wait-log-" + [guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $log | Out-Null
 Set-Content -LiteralPath (Join-Path $log '101.log') -Value 'held A.razor:9', 'waited A.razor:12', 'held B.razor:3'
 Set-Content -LiteralPath (Join-Path $log '202.log') -Value 'held A.razor:9', 'held A.razor:12', 'waited A.razor:9'
@@ -393,7 +399,7 @@ finally {
 # here on two projects of three finishing, one with a failed test whose name holds a space, beside the lines
 # the testing platform prints as the projects run: what it runs, each failure, each project's summary, where
 # it wrote the results and the run's summary.
-$progressFolder = Join-Path ([System.IO.Path]::GetTempPath()) "forma-progress-$([guid]::NewGuid().ToString('N'))"
+$progressFolder = Join-Path $temporaryFolder "forma-progress-$([guid]::NewGuid().ToString('N'))"
 
 try {
     $null = New-Item -ItemType Directory -Path $progressFolder
@@ -482,7 +488,7 @@ finally {
 # made for the purpose: one as the list names it, with a fingerprinted stylesheet bundle, one holding a file the list
 # doesn't name and lacking one it does, one the list doesn't name, and a package the list names that the pack didn't
 # make.
-$packageFolder = Join-Path ([System.IO.Path]::GetTempPath()) "forma-packages-$([guid]::NewGuid().ToString('N'))"
+$packageFolder = Join-Path $temporaryFolder "forma-packages-$([guid]::NewGuid().ToString('N'))"
 
 try {
     $null = New-Item -ItemType Directory -Path $packageFolder
@@ -560,7 +566,7 @@ finally {
 # Clearing a version from the examples' packages folder is run for real, against an examples folder made for the
 # purpose whose NuGet configuration names a packages folder beside it, holding Forma's packages at the version
 # cleared and at another, and another package at the version cleared.
-$exampleFolder = Join-Path ([System.IO.Path]::GetTempPath()) "forma-examples-$([guid]::NewGuid().ToString('N'))"
+$exampleFolder = Join-Path $temporaryFolder "forma-examples-$([guid]::NewGuid().ToString('N'))"
 
 try {
     $examplesRoot = Join-Path $exampleFolder 'examples'
@@ -621,7 +627,7 @@ finally {
 # The browser check's outcome is read for real off results made for the purpose: two runs, the second of which
 # wrote no checks, a check failing in one run and another in both, and one an unreachable device interrupted; and a
 # run in which every check was skipped, which is refused, unless a result is missing.
-$outcomeFolder = Join-Path ([System.IO.Path]::GetTempPath()) "forma-outcome-$([guid]::NewGuid().ToString('N'))"
+$outcomeFolder = Join-Path $temporaryFolder "forma-outcome-$([guid]::NewGuid().ToString('N'))"
 $outcomeName = "the browser check's runs are read together, a missing result named, and a step that ran no check refused"
 
 try {

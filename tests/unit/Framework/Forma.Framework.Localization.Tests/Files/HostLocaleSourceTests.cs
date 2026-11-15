@@ -31,7 +31,7 @@ public sealed class HostLocaleSourceTests
         public void Should_read_a_file_named_for_a_segment_directly_in_its_folder()
         {
             // Arrange
-            using var folder = new TempDirectory();
+            using var folder = new TempDirectory("forma-locale-host-");
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/Toolbar.he.fake", CreateEntries(("Bold", "the type's own file")));
 
@@ -46,7 +46,7 @@ public sealed class HostLocaleSourceTests
         public void Should_read_a_folders_file_from_the_folder_itself()
         {
             // Arrange
-            using var folder = new TempDirectory();
+            using var folder = new TempDirectory("forma-locale-host-");
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the file in the folder itself"));
 
@@ -61,7 +61,7 @@ public sealed class HostLocaleSourceTests
         public void Should_read_a_folders_file_from_the_folders_own_locales_folder()
         {
             // Arrange
-            using var folder = new TempDirectory();
+            using var folder = new TempDirectory("forma-locale-host-");
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the file in the folder's own .locales"));
 
@@ -76,7 +76,7 @@ public sealed class HostLocaleSourceTests
         public void Should_settle_a_key_both_places_localize_by_the_file_whose_name_sorts_last()
         {
             // Arrange
-            using var folder = new TempDirectory();
+            using var folder = new TempDirectory("forma-locale-host-");
             var format = new FakeLocaleFileFormat();
             var folderFile = WriteFile(folder, format, "Contoso.Widgets/Bars/he.fake", CreateToolbarSection("the file in the folder itself"));
             WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the file in the folder's own .locales"));
@@ -95,7 +95,7 @@ public sealed class HostLocaleSourceTests
         public void Should_read_a_locales_folder_the_system_hides()
         {
             // Arrange
-            using var folder = new TempDirectory();
+            using var folder = new TempDirectory("forma-locale-host-");
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("hidden folder"));
             File.SetAttributes(Path.GetDirectoryName(fullPath)!, FileAttributes.Directory | FileAttributes.Hidden);
@@ -115,7 +115,7 @@ public sealed class HostLocaleSourceTests
         public void Should_count_anchors_from_the_root_namespace_the_assembly_declares()
         {
             // Arrange — the declared root is Contoso.Widgets.Bars, so the type's own folder sits directly beneath the assembly's.
-            using var folder = new TempDirectory();
+            using var folder = new TempDirectory("forma-locale-host-");
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Toolbar/.locales/he.fake", CreateEntries(("Bold", "declared root")));
 
@@ -130,7 +130,7 @@ public sealed class HostLocaleSourceTests
         public void Should_leave_another_assemblys_root_namespace_to_it()
         {
             // Arrange
-            using var folder = new TempDirectory();
+            using var folder = new TempDirectory("forma-locale-host-");
             var format = new FakeLocaleFileFormat();
             var fullPath = WriteFile(folder, format, "Contoso.Widgets/Bars/.locales/he.fake", CreateToolbarSection("the assembly's name"));
 
@@ -145,7 +145,7 @@ public sealed class HostLocaleSourceTests
         public void Should_leave_a_config_file_in_the_hosts_folder_unread()
         {
             // Arrange
-            using var folder = new TempDirectory();
+            using var folder = new TempDirectory("forma-locale-host-");
             folder.Write(".locale.json", """{ "paths": ["$RootDir/strings/$AnchorName.$Culture$Extension"] }""");
             folder.Write("Contoso.Widgets/.locale.json", """{ "paths": ["$RootDir/strings/$AnchorName.$Culture$Extension"] }""");
             var format = new FakeLocaleFileFormat();

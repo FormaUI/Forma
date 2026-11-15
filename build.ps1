@@ -32,8 +32,8 @@ Narrows the gate:
            tests and the task programs' tests
 
 .PARAMETER Clean
-Delete build output. Used alone it only cleans; combined with a target, including 'All', it cleans first
-and then runs the gate.
+Delete build output and the runs' temporary folders. Used alone it only cleans; combined with a target,
+including 'All', it cleans first and then runs the gate.
 
 .EXAMPLE
 ./build.ps1                 # the whole gate

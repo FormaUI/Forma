@@ -5,6 +5,8 @@ using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
 
+using Forma.Tests.Shared;
+
 using Microsoft.Playwright;
 
 using Xunit;
@@ -15,10 +17,10 @@ public sealed class WebViewApplication : IAsyncDisposable
 {
     private readonly HostProcess _process;
     private readonly IPlaywright _playwright;
-    private readonly string _dataFolder;
+    private readonly TempDirectory _dataFolder;
     private readonly int _port;
 
-    private WebViewApplication(HostProcess process, IPlaywright playwright, IBrowser browser, string dataFolder, int port, string folder)
+    private WebViewApplication(HostProcess process, IPlaywright playwright, IBrowser browser, TempDirectory dataFolder, int port, string folder)
     {
         _process = process;
         _playwright = playwright;
@@ -70,12 +72,12 @@ public sealed class WebViewApplication : IAsyncDisposable
         // policy only where none is set.
         var policyPort = GetPolicyPort(name);
         var port = policyPort ?? LocalPorts.GetFree();
-        var dataFolder = Directory.CreateTempSubdirectory("forma-webview-").FullName;
+        var dataFolder = new TempDirectory("forma-webview-");
 
         if (policyPort is null)
         {
             start.Environment["WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"] = $"--remote-debugging-port={port}";
-            start.Environment["WEBVIEW2_USER_DATA_FOLDER"] = dataFolder;
+            start.Environment["WEBVIEW2_USER_DATA_FOLDER"] = dataFolder.Root;
         }
 
         foreach (var (variable, value) in environment ?? new Dictionary<string, string>())
@@ -91,7 +93,7 @@ public sealed class WebViewApplication : IAsyncDisposable
             // What the host writes, its WebView2 runtime and each web view's initialization among it, read as it writes.
             process = HostProcess.Start(start, name);
             var endpoint = new Uri($"http://127.0.0.1:{port}/");
-            await WaitForDevToolsAsync(process, endpoint, dataFolder).ConfigureAwait(false);
+            await WaitForDevToolsAsync(process, endpoint, dataFolder.Root).ConfigureAwait(false);
             playwright = await Playwright.CreateAsync().ConfigureAwait(false);
             var browser = await playwright.Chromium.ConnectOverCDPAsync(endpoint.ToString()).ConfigureAwait(false);
 
@@ -185,7 +187,7 @@ public sealed class WebViewApplication : IAsyncDisposable
 
     // Takes back what a start made, each part however the one before it ends: the driver, the application with every process it
     // started, the DevTools port its browser holds until it has ended, and the data folder.
-    private static async Task StopAsync(IPlaywright? playwright, HostProcess? process, int port, string dataFolder)
+    private static async Task StopAsync(IPlaywright? playwright, HostProcess? process, int port, TempDirectory dataFolder)
     {
         try
         {
@@ -203,20 +205,8 @@ public sealed class WebViewApplication : IAsyncDisposable
             }
             finally
             {
-                DeleteDataFolder(dataFolder);
+                dataFolder.Dispose();
             }
-        }
-    }
-
-    private static void DeleteDataFolder(string dataFolder)
-    {
-        try
-        {
-            Directory.Delete(dataFolder, recursive: true);
-        }
-        catch (IOException)
-        {
-            // WebView2 may still hold a file for a moment; the folder is under the system's temp directory.
         }
     }
 

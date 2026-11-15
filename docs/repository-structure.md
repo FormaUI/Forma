@@ -579,7 +579,7 @@ meets it makes it a plain check.
 | `./build.ps1` | The full gate |
 | `./build.ps1 Fast` | The fast gate |
 | `./build.ps1 DotNet`, `Scripts` or `Browser` | That part of the gate |
-| `./build.ps1 -Clean` | Deletes build output, alone or before a run |
+| `./build.ps1 -Clean` | Deletes build output and the runs' temporary folders, alone or before a run |
 
 The gate covers every command below but the last. It also builds the task programs written in C#, which no other
 step reaches, and checks each task script's shape. The build holds the code to the code style, warnings failing
@@ -653,7 +653,7 @@ needs one project's tests doesn't wait for the whole gate:
 | `tasks.ps1` | Builds the task programs written in C# |
 | `browser.ps1` | Publishes the browser check's hosts and drives them in a browser; `-Visible` in a window a person can watch, and `-Android` on the Android check host's web view too, on the Android environment's emulator |
 | `mobile.ps1` | Builds the MAUI example host from the packed packages for `-Platform` `Android`, `iOS` or `MacCatalyst`, and drives the Android build on the Android environment's emulator, where the environment is installed |
-| `clean.ps1` | Deletes build output |
+| `clean.ps1` | Deletes build output and the runs' temporary folders |
 
 `mobile.ps1` reaches what no other step does: each platform needs its MAUI workload, and Apple's need a Mac. CI's full
 workflow runs it on Linux for Android.
@@ -809,6 +809,12 @@ Work that belongs to a person rather than to the repository lives under `.local/
 benchmarks, the spikes, and a document written for a piece of work rather than for the repository itself. One ignored
 root takes the place of a rule per directory, so something new that is nobody else's business needs no rule at all,
 and nothing kept there can be staged by accident.
+
+**A run's temporary folders live in `.local/tmp/`**, never in the system's temp directory, so what the build, the tests
+and the task scripts make for a run stays inside the repository. A run removes the folders it made when it ends, and
+`clean.ps1` removes whatever is left, from a run stopped partway or one that kept its folder to be looked at. A folder
+a test builds projects in writes build files of its own, which MSBuild reads before the repository's, so a project
+built there builds as it would outside the repository.
 
 ## Origins
 

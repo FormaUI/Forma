@@ -123,7 +123,9 @@ function Install-Jdk([string] $release) {
 
     $answer = Invoke-RestMethod -Uri "https://api.adoptium.net/v3/assets/release_name/eclipse/jdk-$([uri]::EscapeDataString($release))?architecture=$architecture&image_type=jdk&os=$os&jvm_impl=hotspot&heap_size=normal&project=jdk"
     $package = @($answer.binaries)[0].package
-    $download = Join-Path ([System.IO.Path]::GetTempPath()) $package.name
+    $downloadFolder = Join-Path $repositoryRoot '.local' 'tmp' "forma-jdk-$([guid]::NewGuid().ToString('N'))"
+    $download = Join-Path $downloadFolder $package.name
+    New-Item -ItemType Directory -Force -Path $downloadFolder | Out-Null
     Write-Host "Downloading $($package.link)"
     Invoke-WebRequest -Uri $package.link -OutFile $download
 
@@ -156,7 +158,7 @@ function Install-Jdk([string] $release) {
         Remove-Item -LiteralPath $unpacked -Recurse -Force
     }
     finally {
-        Remove-Item -LiteralPath $download -Force -ErrorAction SilentlyContinue
+        Remove-Item -LiteralPath $downloadFolder -Recurse -Force -ErrorAction SilentlyContinue
     }
 
     $version = (& (Join-Path (Get-JavaHome $jdk) 'bin' 'java') -version 2>&1) -join ' '

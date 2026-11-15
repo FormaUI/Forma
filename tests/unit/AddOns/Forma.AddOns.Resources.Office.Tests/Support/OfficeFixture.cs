@@ -1,5 +1,7 @@
 namespace Forma.AddOns.Resources.Office.Tests.Support;
 
+using Forma.Tests.Shared;
+
 using OfficeIMO.Excel;
 using OfficeIMO.PowerPoint;
 using OfficeIMO.Word;
@@ -24,22 +26,16 @@ public static class OfficeFixture
     {
         ArgumentNullException.ThrowIfNull(compose);
 
-        var path = Path.Combine(Path.GetTempPath(), $"forma-office-{Guid.NewGuid():N}{extension}");
+        using var folder = new TempDirectory("forma-office-");
+        var path = Path.Combine(folder.Root, $"document{extension}");
 
-        try
+        using (var document = create(path))
         {
-            using (var document = create(path))
-            {
-                compose(document);
+            compose(document);
 
-                save(document);
-            }
+            save(document);
+        }
 
-            return File.ReadAllBytes(path);
-        }
-        finally
-        {
-            File.Delete(path);
-        }
+        return File.ReadAllBytes(path);
     }
 }

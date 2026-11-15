@@ -27,6 +27,7 @@ Every production assembly has one test project for each kind of test it has, nam
 - Do start, wait on and stop a host in a smoke or E2E suite through the hosts' support project, so a fix to a host's start reaches every suite that starts it, and keep each suite's fixtures and assertions its own.
 - Do drive an interop wrapper in a test through `FakeJSRuntime` and `FakeJSObjectReference` from the support project's interop folder, wrapped in a `JSEnvironment` over a `FakeLoggerFactory` logger, so the test reads what the wrapper returned and what it logged.
 - Do let the namespace follow the support folder, and reference the support project from each test project that uses one.
+- Do write a test's temporary files into a `TempDirectory` from the shared support project, named for what made it and disposed with the test, which keeps them in the repository's ignored folder for a run's temporary files rather than the system's temp directory; a folder a test builds projects in also gets build files of its own, so the repository's never reach them.
 - Do test only the public surface and keep shared usings in `_Imports.cs` or `_Imports.razor`.
 - Don't test a type from a project other than the one named after its assembly, or — for an assembly holding only a feature's contracts, as the composer's extensibility package does — the one named after the engine that implements them.
 - Don't couple tests to implementation details or private fields.

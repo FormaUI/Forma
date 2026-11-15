@@ -3,12 +3,13 @@
 
 <#
 .SYNOPSIS
-Delete build output.
+Delete build output and the runs' temporary folders.
 
 .DESCRIPTION
-Removes every bin, obj and artifacts folder by delegating to the Forma.Build module. What is generated and
-checked in, such as the glyph and brand assets, is not build output and is left alone: it is the
-repository's content, produced by a task script rather than by a build.
+Removes every bin, obj and artifacts folder, and the temporary folders a run left in .local/tmp, by
+delegating to the Forma.Build module. What is generated and checked in, such as the glyph and brand assets,
+is not build output and is left alone: it is the repository's content, produced by a task script rather
+than by a build.
 
 .PARAMETER All
 Also deletes every folder the SDK has left under its own root in the system temp directory, not only the

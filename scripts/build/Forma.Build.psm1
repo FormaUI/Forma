@@ -46,7 +46,8 @@ whatever .slnx sits at the root, so renaming it breaks nothing here.
 The repository's root. Defaults to the folder above this module.
 
 .OUTPUTS
-An object carrying the repository's root, its solution, and where its scripts and their tests live.
+An object carrying the repository's root, its solution, where its scripts and their tests live, and where a run's
+temporary folders go.
 #>
 function Initialize-BuildContext {
     [CmdletBinding()]
@@ -94,6 +95,7 @@ function Initialize-BuildContext {
         BrowserOutput  = Join-Path $RepositoryRoot 'artifacts' 'browser'
         FastSelection  = Join-Path $RepositoryRoot 'artifacts' 'fast' 'Forma.Fast.slnf'
         Timings        = Join-Path $RepositoryRoot 'artifacts' 'build' 'timings.json'
+        TemporaryFolder = Join-Path $RepositoryRoot '.local' 'tmp'
         Version        = $version
     }
 }
@@ -638,6 +640,7 @@ function Test-Solution {
     $countExecutedTests = ${function:Get-TestExecutionCount}
     $startTestLoad = ${function:Start-TestLoad}
     $stopTestLoad = ${function:Stop-TestLoad}
+    $temporaryFolder = $Context.TemporaryFolder
     $fastProjects = @(if ($Fast) { Get-FastTestProject -Context $Context })
     $projectCount = if ($Fast) { $fastProjects.Count } else { Get-TestProjectCount -Target $target }
 
@@ -715,7 +718,7 @@ function Test-Solution {
                 $env:FORMA_WAIT_LOG = $waitLogPath
             }
 
-            $loaders = @(& $startTestLoad -Project $load -Token $stopLoad.Token)
+            $loaders = @(& $startTestLoad -Project $load -TemporaryFolder $temporaryFolder -Token $stopLoad.Token)
 
             for ($run = 1; $run -le $runs; $run++) {
                 if ($runs -gt 1) {
@@ -724,7 +727,7 @@ function Test-Solution {
                 }
 
                 # Each run writes each project's results to a folder of its own, which the progress is read from.
-                $resultsDirectory = Join-Path ([System.IO.Path]::GetTempPath()) "forma-test-$([guid]::NewGuid().ToString('N'))"
+                $resultsDirectory = Join-Path $temporaryFolder "forma-test-$([guid]::NewGuid().ToString('N'))"
                 $null = New-Item -ItemType Directory -Path $resultsDirectory
 
                 try {
@@ -973,6 +976,9 @@ log, so its own waits stay out of the records.
 .PARAMETER Project
 The test projects that load the machine.
 
+.PARAMETER TemporaryFolder
+The folder each project's run makes a folder of its own in for the output it discards.
+
 .PARAMETER Token
 Canceled once the load is to end.
 
@@ -984,17 +990,20 @@ function Start-TestLoad {
     [OutputType([psobject])]
     param(
         [AllowEmptyCollection()] [string[]] $Project = @(),
+        [Parameter(Mandatory)] [string] $TemporaryFolder,
         [Parameter(Mandatory)] [System.Threading.CancellationToken] $Token
     )
 
     foreach ($path in $Project) {
         Write-Host ("   loading the machine with {0}" -f [System.IO.Path]::GetFileNameWithoutExtension($path))
 
-        $job = Start-ThreadJob -ArgumentList $path, $Token -ScriptBlock {
-            param($project, $token)
+        $job = Start-ThreadJob -ArgumentList $path, $TemporaryFolder, $Token -ScriptBlock {
+            param($project, $temporaryFolder, $token)
 
-            $output = New-TemporaryFile
-            $errors = New-TemporaryFile
+            $folder = Join-Path $temporaryFolder "forma-load-$([guid]::NewGuid().ToString('N'))"
+            $null = New-Item -ItemType Directory -Path $folder
+            $output = Join-Path $folder 'output.txt'
+            $errors = Join-Path $folder 'errors.txt'
             $executedTestCount = 0
             $failedTestCount = 0
 
@@ -1009,7 +1018,7 @@ function Start-TestLoad {
                 }
             }
             finally {
-                Remove-Item -LiteralPath $output, $errors -ErrorAction SilentlyContinue
+                Remove-Item -LiteralPath $folder -Recurse -Force -ErrorAction SilentlyContinue
             }
 
             [pscustomobject]@{ Ran = $executedTestCount; Failed = $failedTestCount }
@@ -1704,6 +1713,7 @@ function Test-BrowserCheck {
     $load = @(foreach ($name in $LoadWith) { Resolve-TestProject -Context $Context -Name $name })
     $startTestLoad = ${function:Start-TestLoad}
     $stopTestLoad = ${function:Stop-TestLoad}
+    $temporaryFolder = $Context.TemporaryFolder
     $getBrowserCheckOutcome = ${function:Get-BrowserCheckOutcome}
     $runs = $Times
     $description = 'dotnet publish the host, the full client and the components host'
@@ -1925,7 +1935,7 @@ function Test-BrowserCheck {
                 $env:ANDROID_SERIAL = $androidEnvironment.Serial
             }
 
-            $loaders = @(& $startTestLoad -Project $load -Token $stopLoad.Token)
+            $loaders = @(& $startTestLoad -Project $load -TemporaryFolder $temporaryFolder -Token $stopLoad.Token)
 
             for ($run = 1; $run -le $runs; $run++) {
                 if ($runs -gt 1) {
@@ -2339,9 +2349,10 @@ function Start-AndroidEmulator {
 Deletes what the build produced.
 
 .DESCRIPTION
-Removes every bin and obj under the repository, and the artifacts folder where one exists. What is
-generated and checked in, such as the glyph and brand assets, is not build output and is left alone: it
-is the repository's content, produced by a task script rather than by a build.
+Removes every bin and obj under the repository, the artifacts folder where one exists, and the temporary
+folders a run left in .local/tmp, as one stopped partway does. What is generated and checked in, such as
+the glyph and brand assets, is not build output and is left alone: it is the repository's content, produced
+by a task script rather than by a build.
 
 A task program is built outside the repository, into the SDK's own place in the system temp directory, so
 each one is cleaned through the SDK, which knows where it put it. That reaches only the folder matching
@@ -2368,6 +2379,7 @@ function Clear-BuildOutput {
     )
 
     $root = $Context.RepositoryRoot
+    $temporaryFolder = $Context.TemporaryFolder
 
     # Found here for the same reason the build finds them here: a step's command carries values, not this
     # module's functions.
@@ -2375,16 +2387,16 @@ function Clear-BuildOutput {
     $artifacts = if ($All) { Get-RunFileArtifact } else { @() }
 
     $description = if ($All) {
-        'delete every bin, obj and artifacts folder, and everything the SDK left in the temp directory'
+        'delete every bin, obj and artifacts folder and .local/tmp, and everything the SDK left in the temp directory'
     }
     else {
-        'delete every bin, obj and artifacts folder'
+        'delete every bin, obj and artifacts folder and .local/tmp'
     }
 
     Invoke-BuildStep -Name 'clean' -Target $root -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         # A build deletes what the build made. Installed packages under node_modules ship folders of their
         # own called bin, and .local holds work belonging to a person rather than to the repository, so
-        # neither is the build's to remove however much it looks like output.
+        # neither is the build's to remove however much it looks like output; .local/tmp alone is the runs'.
         $excludedFolders = 'node_modules', '.local'
         $separators = [char[]]@([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
 
@@ -2395,6 +2407,7 @@ function Clear-BuildOutput {
                     -not ($parts | Where-Object { $_ -in $excludedFolders })
                 }
             Get-Item -LiteralPath (Join-Path $root 'artifacts') -ErrorAction SilentlyContinue
+            Get-Item -LiteralPath $temporaryFolder -ErrorAction SilentlyContinue
         )
 
         foreach ($folder in $folders) {
