@@ -36,7 +36,7 @@ public sealed class PickersTests
             await trigger.FocusAsync();
 
             // Act — "c" opens the list on Closed, and "ca" moves on to Cancelled
-            await page.Keyboard.TypeAsync("ca");
+            await ComponentChecks.TypeAsync(page, runtime, "ca");
 
             // Assert — the focus on Cancelled, nothing chosen until Enter
             var cancelled = page.GetByRole(AriaRole.Option, new() { Name = "Cancelled", Exact = true });
@@ -59,7 +59,7 @@ public sealed class PickersTests
             await trigger.FocusAsync();
 
             // Act — "on" names Online, and the space typed after it moves on to On Hold rather than choosing Online
-            await page.Keyboard.TypeAsync("on h");
+            await ComponentChecks.TypeAsync(page, runtime, "on h");
 
             // Assert — the focus on On Hold, nothing chosen until Enter
             var onHold = page.GetByRole(AriaRole.Option, new() { Name = "On Hold", Exact = true });

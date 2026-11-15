@@ -124,7 +124,7 @@ public sealed class MenusTests
             await Assertions.Expect(page.Locator("#rename")).ToBeFocusedAsync();
 
             // Act — "d" reaches Duplicate, and "de" moves on to Delete
-            await page.Keyboard.TypeAsync("de");
+            await TypeAsync(page, runtime, "de");
 
             // Assert — the focus on Delete, nothing run
             await Assertions.Expect(page.Locator("#delete")).ToBeFocusedAsync();

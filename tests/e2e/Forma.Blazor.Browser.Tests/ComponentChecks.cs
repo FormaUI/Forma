@@ -193,6 +193,37 @@ public static partial class ComponentChecks
         await Assertions.Expect(roundTrips).ToHaveTextAsync((made + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)).ConfigureAwait(false);
     }
 
+    /// <summary>Types <paramref name="text"/> as a keyboard does, one key after another, on Android through the device's own input.</summary>
+    /// <remarks>
+    /// Each key Playwright sends to Android's web view is a round trip through adb, so on a slow emulator the keys of one word
+    /// stand further apart than a type-ahead's pause; the device's own input queues the keys at once, each stamped as it
+    /// was pressed, as a hardware keyboard's are.
+    /// </remarks>
+    /// <param name="page">The page typed into.</param>
+    /// <param name="runtime">The runtime the page runs in.</param>
+    /// <param name="text">The text typed.</param>
+    /// <returns>A task that completes once every key is pressed.</returns>
+    public static async Task TypeAsync(IPage page, string runtime, string text)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+        ArgumentNullException.ThrowIfNull(text);
+
+        if (runtime == "android")
+        {
+            // The device's shell reads the text before its input types it, so the text carries letters, digits and spaces alone,
+            // a space written as input's own %s.
+            if (!text.All(character => char.IsAsciiLetterOrDigit(character) || character == ' '))
+            {
+                throw new InvalidOperationException($"\"{text}\" holds a character the device's shell would read rather than type; the device types letters, digits and spaces.");
+            }
+
+            await AndroidDevice.RunAdbAsync("shell", "input", "text", text.Replace(" ", "%s", StringComparison.Ordinal)).ConfigureAwait(false);
+            return;
+        }
+
+        await page.Keyboard.TypeAsync(text).ConfigureAwait(false);
+    }
+
     /// <summary>Waits until Blazor's file input listens on the element <paramref name="selector"/> names.</summary>
     /// <param name="page">The page read.</param>
     /// <param name="selector">The file input's selector.</param>
