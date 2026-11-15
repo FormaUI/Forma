@@ -216,6 +216,9 @@ public sealed class ExplorerTests
             }
             """;
 
+        // Whether every freeze pane among the content has been measured, which draws a details view's frozen edge, a tab stop after the items.
+        private const string IsMeasured = "() => [...document.querySelectorAll('#check .forma-explorer-content-backdrop .forma-freeze-pane')].every(pane => pane.classList.contains('is-measured'))";
+
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public Task Should_enter_and_leave_the_thumbnails_at_one_tab_stop_and_run_an_item_s_actions_and_open_it_from_the_keyboard(string runtime)
@@ -245,6 +248,7 @@ public sealed class ExplorerTests
             await viewButton.ClickAsync();
             await Assertions.Expect(viewButton).ToHaveAttributeAsync("aria-pressed", "true");
             await page.WaitForFunctionAsync(IsGathered);
+            await page.WaitForFunctionAsync(IsMeasured);
             await page.Locator("#check .forma-explorer-splitter").FocusAsync();
 
             // Act — into the items past what the view draws before them, through the first item's actions and out
