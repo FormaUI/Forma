@@ -13,7 +13,7 @@ exercised.
 
 Enumerating the folder rather than naming the scripts is the point. A script added and covered by nothing
 fails here, so the choice becomes covering it or deciding it is nobody's to maintain and belongs under
-.local instead.
+.sandbox instead.
 
 What cannot be checked here is a script that fetches from the network or rewrites a checked-in asset.
 Those are exercised by running them and comparing what they produce, which is a thing done by hand.
@@ -241,7 +241,7 @@ finally {
 # The nightly report files issues, so what runs here is the run it describes, on results made for it: a check that
 # failed in one run of a commit and passed in another, one that failed in every run, one its device interrupted, and
 # a job that failed with no failing check among its results.
-$nightly = Join-Path $repositoryRoot '.local' 'tmp' "forma-nightly-$([guid]::NewGuid().ToString('N'))"
+$nightly = Join-Path $repositoryRoot '.sandbox' 'tmp' "forma-nightly-$([guid]::NewGuid().ToString('N'))"
 
 try {
     foreach ($folder in 'checks-gate-linux-1/run-1', 'checks-gate-linux-2/run-1', 'checks-gate-windows-1/run-1', 'checks-mobile-linux-1') {

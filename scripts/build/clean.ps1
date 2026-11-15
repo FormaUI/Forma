@@ -6,7 +6,7 @@
 Delete build output and the runs' temporary folders.
 
 .DESCRIPTION
-Removes every bin, obj and artifacts folder, and the temporary folders a run left in .local/tmp, by
+Removes every bin, obj and artifacts folder, and the temporary folders a run left in .sandbox/tmp, by
 delegating to the Forma.Build module. What is generated and checked in, such as the glyph and brand assets,
 is not build output and is left alone: it is the repository's content, produced by a task script rather
 than by a build.

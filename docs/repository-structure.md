@@ -28,7 +28,7 @@ In this document:
 4. [Tests](#tests)
 5. [Build and verification](#build-and-verification)
 6. [Branches and releases](#branches-and-releases)
-7. [Personal work](#personal-work)
+7. [The sandbox](#the-sandbox)
 8. [Origins](#origins)
 9. [Consumers](#consumers)
 
@@ -527,8 +527,8 @@ whatever JDK the Android tooling finds or whichever device another project left 
 - `.config/android.json` declares it: the Eclipse Temurin JDK the Android builds run with, the Android SDK's packages
   the checks need beside the `maui-android` workload's, and the emulator they run on, its system image, its device
   profile, its screen of 1280 by 800 points and its console port, which names its serial.
-- `scripts/Install-Android.ps1` installs it: the JDK, checked against the checksum its publisher gives, into a folder
-  of Forma's own in the user's local application data, beside the emulator's virtual device; and whichever declared
+- `scripts/Install-Android.ps1` installs it: the JDK, checked against the checksum its publisher gives, into the
+  repository's ignored `.sandbox/android`, beside the emulator's virtual device; and whichever declared
   package the Android SDK lacks into that SDK, which the workload installs. It records what it installed, so `-Clean`
   removes that and nothing else, and `-Upgrade` moves an environment installed from an earlier declaration to the
   current one.
@@ -694,7 +694,7 @@ body is wrong describes itself perfectly. Cleaning and the wait log are among th
 
 **The gate's tooling step** reads every script in `scripts/` for the shape one keeps there, and exercises those it can
 run without a side effect, through `scripts/Test-TaskScript.ps1`. It then runs `scripts/build/build.tests.ps1`. A
-script added and covered by nothing fails there, so it is covered, or it belongs under `.local/` as nobody's to
+script added and covered by nothing fails there, so it is covered, or it belongs under `.sandbox/` as nobody's to
 maintain.
 
 ### Package contents
@@ -803,18 +803,24 @@ A release takes these steps:
 A publication that stops partway runs again for the same tag and publishes what the feeds lack, so a tag marks
 exactly the commit its packages were built from.
 
-## Personal work
+## The sandbox
 
-Work that belongs to a person rather than to the repository lives under `.local/`, ignored in its entirety: the
-benchmarks, the spikes, and a document written for a piece of work rather than for the repository itself. One ignored
-root takes the place of a rule per directory, so something new that is nobody else's business needs no rule at all,
-and nothing kept there can be staged by accident.
+What a checkout keeps that the repository doesn't lives under `.sandbox/`, ignored in its entirety. One ignored root
+takes the place of a rule per directory, so something new that is nobody else's business needs no rule at all, and
+nothing kept there can be staged by accident.
 
-**A run's temporary folders live in `.local/tmp/`**, never in the system's temp directory, so what the build, the tests
-and the task scripts make for a run stays inside the repository. A run removes the folders it made when it ends, and
-`clean.ps1` removes whatever is left, from a run stopped partway or one that kept its folder to be looked at. A folder
-a test builds projects in writes build files of its own, which MSBuild reads before the repository's, so a project
-built there builds as it would outside the repository.
+**A person's own work** lives there: the benchmarks, the spikes, and a document written for a piece of work rather
+than for the repository itself.
+
+**The environments the checks install** live there too: in `.sandbox/android/`, the Android environment
+`Install-Android.ps1` installs, and in `.sandbox/screen-reader/`, what the screen reader check installs. Removing a
+checkout removes them with it.
+
+**A run's temporary folders live in `.sandbox/tmp/`**, never in the system's temp directory, so what the build, the
+tests and the task scripts make for a run stays inside the repository. A run removes the folders it made when it ends,
+and `clean.ps1` removes whatever is left, from a run stopped partway or one that kept its folder to be looked at. A
+folder a test builds projects in writes build files of its own, which MSBuild reads before the repository's, so a
+project built there builds as it would outside the repository.
 
 ## Origins
 

@@ -1,6 +1,6 @@
 namespace Forma.Tests.Shared;
 
-/// <summary>A directory of a test's own under the repository's ignored <c>.local/tmp</c>, removed with everything written into it on disposal.</summary>
+/// <summary>A directory of a test's own under the repository's ignored <c>.sandbox/tmp</c>, removed with everything written into it on disposal.</summary>
 public sealed class TempDirectory : IDisposable
 {
     /// <summary>Creates the directory, its name starting with <paramref name="prefix"/>.</summary>
@@ -9,7 +9,7 @@ public sealed class TempDirectory : IDisposable
     {
         ArgumentException.ThrowIfNullOrEmpty(prefix);
 
-        Root = Path.Combine(RepositoryFolder.Find(), ".local", "tmp", $"{prefix}{Guid.NewGuid():N}");
+        Root = Path.Combine(RepositoryFolder.Find(), ".sandbox", "tmp", $"{prefix}{Guid.NewGuid():N}");
         Directory.CreateDirectory(Root);
     }
 
@@ -19,7 +19,7 @@ public sealed class TempDirectory : IDisposable
     /// <inheritdoc />
     /// <remarks>
     /// A process that has just let go of a file can hold it a moment longer, as a stopped browser does its profile, so a
-    /// removal that fails is tried again for five seconds; what is still held then stays in <c>.local/tmp</c>, which the
+    /// removal that fails is tried again for five seconds; what is still held then stays in <c>.sandbox/tmp</c>, which the
     /// build's clean step removes.
     /// </remarks>
     public void Dispose()

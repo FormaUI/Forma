@@ -51,7 +51,7 @@ is cleared first, and the waits that needed time are listed once the runs are ov
 ./scripts/build/test.ps1 -Filter 'FullyQualifiedName~Glyph' -NoBuild -Times 40
 
 .EXAMPLE
-./scripts/build/test.ps1 -Project DataView -NoBuild -Times 30 -LoadWith Forma.Blazor.Tests, Blazor.Explorer -WaitLog .local/wait-log
+./scripts/build/test.ps1 -Project DataView -NoBuild -Times 30 -LoadWith Forma.Blazor.Tests, Blazor.Explorer -WaitLog .sandbox/wait-log
 
 .EXAMPLE
 ./scripts/build/test.ps1 -Target Scripts

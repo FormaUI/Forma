@@ -240,29 +240,32 @@ finally {
 $tree = Join-Path $temporaryFolder ("forma-clean-" + [guid]::NewGuid().ToString('N'))
 
 foreach ($folder in 'src/Thing/bin', 'src/Thing/obj', 'scripts/cs',
-    'tests/Scripts/node_modules/some-package/bin', '.local/benchmarks/Thing/bin', '.local/tmp/forma-test-run') {
+    'tests/Scripts/node_modules/some-package/bin', '.sandbox/benchmarks/Thing/bin', '.sandbox/android/jdk/bin',
+    '.sandbox/tmp/forma-test-run') {
     New-Item -ItemType Directory -Path (Join-Path $tree $folder) -Force | Out-Null
 }
 
 Set-Content -LiteralPath (Join-Path $tree 'src/Thing/bin/output.dll') -Value 'build output'
 Set-Content -LiteralPath (Join-Path $tree 'tests/Scripts/node_modules/some-package/bin/tool') -Value 'an installed package'
-Set-Content -LiteralPath (Join-Path $tree '.local/benchmarks/Thing/bin/result') -Value "someone's own work"
-Set-Content -LiteralPath (Join-Path $tree '.local/tmp/forma-test-run/results.trx') -Value 'a stopped run''s results'
+Set-Content -LiteralPath (Join-Path $tree '.sandbox/benchmarks/Thing/bin/result') -Value "someone's own work"
+Set-Content -LiteralPath (Join-Path $tree '.sandbox/android/jdk/bin/java') -Value 'an installed environment'
+Set-Content -LiteralPath (Join-Path $tree '.sandbox/tmp/forma-test-run/results.trx') -Value 'a stopped run''s results'
 
 try {
     $cleaned = Initialize-BuildContext -RepositoryRoot $repositoryRoot
     $cleaned.RepositoryRoot = $tree
     $cleaned.TaskPrograms = Join-Path $tree 'scripts'
-    $cleaned.TemporaryFolder = Join-Path $tree '.local' 'tmp'
+    $cleaned.TemporaryFolder = Join-Path $tree '.sandbox' 'tmp'
 
     $step = Clear-BuildOutput -Context $cleaned 6>$null
 
     $wrong = @(
         if (-not $step.Passed) { 'the step failed' }
         if (Test-Path (Join-Path $tree 'src/Thing/bin')) { 'build output was left behind' }
-        if (Test-Path (Join-Path $tree '.local/tmp')) { 'a run''s temporary folder was left behind' }
+        if (Test-Path (Join-Path $tree '.sandbox/tmp')) { 'a run''s temporary folder was left behind' }
         if (-not (Test-Path (Join-Path $tree 'tests/Scripts/node_modules/some-package/bin/tool'))) { 'an installed package was deleted' }
-        if (-not (Test-Path (Join-Path $tree '.local/benchmarks/Thing/bin/result'))) { 'work belonging to a person was deleted' }
+        if (-not (Test-Path (Join-Path $tree '.sandbox/benchmarks/Thing/bin/result'))) { 'work belonging to a person was deleted' }
+        if (-not (Test-Path (Join-Path $tree '.sandbox/android/jdk/bin/java'))) { 'an environment a check installed was deleted' }
     )
 
     $cleaning = [pscustomobject]@{

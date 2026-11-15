@@ -8,7 +8,7 @@ Installs the Android environment the gate's Android checks run in, as .config/an
 .DESCRIPTION
 The environment is the JDK the Android build runs with, the Android SDK's packages the checks need and the emulator
 they run on. The JDK is an Eclipse Temurin release, downloaded from Adoptium, checked against the SHA-256 Adoptium
-publishes for it and unpacked into a folder of Forma's own in the user's local application data, beside the emulator's
+publishes for it and unpacked into the repository's ignored .sandbox/android, beside the emulator's
 virtual device. The packages and the emulator's system image go into the Android SDK ANDROID_HOME or ANDROID_SDK_ROOT
 names, or the one at the platform's default place, which the maui-android workload installs; a machine with none is
 told how to install one.
@@ -48,7 +48,7 @@ $ErrorActionPreference = 'Stop'
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
 $declarationPath = Join-Path $repositoryRoot '.config' 'android.json'
-$root = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Forma' 'Android'
+$root = Join-Path $repositoryRoot '.sandbox' 'android'
 $recordPath = Join-Path $root 'environment.json'
 $avdHome = Join-Path $root 'avd'
 $extension = if ($IsWindows) { '.bat' } else { '' }
@@ -123,7 +123,7 @@ function Install-Jdk([string] $release) {
 
     $answer = Invoke-RestMethod -Uri "https://api.adoptium.net/v3/assets/release_name/eclipse/jdk-$([uri]::EscapeDataString($release))?architecture=$architecture&image_type=jdk&os=$os&jvm_impl=hotspot&heap_size=normal&project=jdk"
     $package = @($answer.binaries)[0].package
-    $downloadFolder = Join-Path $repositoryRoot '.local' 'tmp' "forma-jdk-$([guid]::NewGuid().ToString('N'))"
+    $downloadFolder = Join-Path $repositoryRoot '.sandbox' 'tmp' "forma-jdk-$([guid]::NewGuid().ToString('N'))"
     $download = Join-Path $downloadFolder $package.name
     New-Item -ItemType Directory -Force -Path $downloadFolder | Out-Null
     Write-Host "Downloading $($package.link)"
@@ -294,13 +294,6 @@ if ($Clean) {
         }
 
         Remove-Item -LiteralPath $root -Recurse -Force
-
-        # The folder Forma's environments share goes with the last of them.
-        $parent = Split-Path -Parent $root
-
-        if (-not (Get-ChildItem -LiteralPath $parent -Force | Select-Object -First 1)) {
-            Remove-Item -LiteralPath $parent -Force
-        }
 
         Write-Host 'The Android environment is removed.'
     }

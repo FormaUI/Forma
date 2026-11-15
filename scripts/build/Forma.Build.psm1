@@ -88,6 +88,7 @@ function Initialize-BuildContext {
         BrowserWebView = Join-Path $RepositoryRoot 'tests' 'e2e' 'Components' 'Forma.Blazor.Browser.WebView' 'Forma.Blazor.Browser.WebView.csproj'
         BrowserAndroid = Join-Path $RepositoryRoot 'tests' 'e2e' 'Components' 'Forma.Blazor.Browser.Android' 'Forma.Blazor.Browser.Android.csproj'
         AndroidDeclaration = Join-Path $RepositoryRoot '.config' 'android.json'
+        AndroidEnvironment = Join-Path $RepositoryRoot '.sandbox' 'android'
         BrowserChecks  = Join-Path $RepositoryRoot 'tests' 'e2e' 'Forma.Blazor.Browser.Tests' 'Forma.Blazor.Browser.Tests.csproj'
         AndroidChecks  = Join-Path $RepositoryRoot 'tests' 'smoke' 'Forma.Examples.Maui.Smoke.Tests' 'Forma.Examples.Maui.Smoke.Tests.csproj'
         ExampleChecks  = Join-Path $RepositoryRoot 'tests' 'smoke' 'Forma.Examples.Smoke.Tests' 'Forma.Examples.Smoke.Tests.csproj'
@@ -95,7 +96,7 @@ function Initialize-BuildContext {
         BrowserOutput  = Join-Path $RepositoryRoot 'artifacts' 'browser'
         FastSelection  = Join-Path $RepositoryRoot 'artifacts' 'fast' 'Forma.Fast.slnf'
         Timings        = Join-Path $RepositoryRoot 'artifacts' 'build' 'timings.json'
-        TemporaryFolder = Join-Path $RepositoryRoot '.local' 'tmp'
+        TemporaryFolder = Join-Path $RepositoryRoot '.sandbox' 'tmp'
         Version        = $version
     }
 }
@@ -2200,7 +2201,7 @@ Reads the Android environment the Android checks run in, as scripts/Install-Andr
 .DESCRIPTION
 The environment is the one .config/android.json declares: the JDK the Android build runs with, the SDK holding the
 packages the checks need, and the emulator they run on, on a console port of its own, which names its serial. It is
-ready where the record Install-Android.ps1 keeps in the user's local application data names the declaration as it
+ready where the record Install-Android.ps1 keeps in .sandbox/android names the declaration as it
 stands and the JDK and the emulator it installed are in place; otherwise the reason says what isn't so and the command
 that makes it so.
 
@@ -2217,7 +2218,7 @@ function Get-AndroidEnvironment {
     param([Parameter(Mandatory)] [psobject] $Context)
 
     $declaration = Get-Content -LiteralPath $Context.AndroidDeclaration -Raw | ConvertFrom-Json -AsHashtable
-    $root = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'Forma' 'Android'
+    $root = $Context.AndroidEnvironment
     $recordPath = Join-Path $root 'environment.json'
     $record = if (Test-Path -LiteralPath $recordPath) { Get-Content -LiteralPath $recordPath -Raw | ConvertFrom-Json -AsHashtable } else { $null }
     $avdHome = Join-Path $root 'avd'
@@ -2350,7 +2351,7 @@ Deletes what the build produced.
 
 .DESCRIPTION
 Removes every bin and obj under the repository, the artifacts folder where one exists, and the temporary
-folders a run left in .local/tmp, as one stopped partway does. What is generated and checked in, such as
+folders a run left in .sandbox/tmp, as one stopped partway does. What is generated and checked in, such as
 the glyph and brand assets, is not build output and is left alone: it is the repository's content, produced
 by a task script rather than by a build.
 
@@ -2387,17 +2388,18 @@ function Clear-BuildOutput {
     $artifacts = if ($All) { Get-RunFileArtifact } else { @() }
 
     $description = if ($All) {
-        'delete every bin, obj and artifacts folder and .local/tmp, and everything the SDK left in the temp directory'
+        'delete every bin, obj and artifacts folder and .sandbox/tmp, and everything the SDK left in the temp directory'
     }
     else {
-        'delete every bin, obj and artifacts folder and .local/tmp'
+        'delete every bin, obj and artifacts folder and .sandbox/tmp'
     }
 
     Invoke-BuildStep -Name 'clean' -Target $root -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
         # A build deletes what the build made. Installed packages under node_modules ship folders of their
-        # own called bin, and .local holds work belonging to a person rather than to the repository, so
-        # neither is the build's to remove however much it looks like output; .local/tmp alone is the runs'.
-        $excludedFolders = 'node_modules', '.local'
+        # own called bin, and .sandbox holds a person's work and the environments the checks install, a JDK's
+        # bin among them, so neither is the build's to remove however much it looks like output; .sandbox/tmp
+        # alone is the runs'.
+        $excludedFolders = 'node_modules', '.sandbox'
         $separators = [char[]]@([System.IO.Path]::DirectorySeparatorChar, [System.IO.Path]::AltDirectorySeparatorChar)
 
         $folders = @(

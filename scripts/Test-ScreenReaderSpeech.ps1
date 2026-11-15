@@ -6,8 +6,8 @@
 Checks what NVDA speaks as the Showcase's components announce themselves.
 
 .DESCRIPTION
-Provides what the check needs, in order, and installs whatever is missing into
-%LOCALAPPDATA%\FormaNvda\temp: the .NET SDK global.json pins, when no installed SDK is that one; NVDA, fetched
+Provides what the check needs, in order, and installs whatever is missing into the repository's ignored
+.sandbox/screen-reader/tools: the .NET SDK global.json pins, when no installed SDK is that one; NVDA, fetched
 once, its launcher's signature checked and a portable copy made from it; and Playwright's Chromium, the
 browser NVDA reads. It then starts the Showcase at BaseUrl when nothing answers there, and stops it again
 at the end.
@@ -36,7 +36,7 @@ follow.
 Speaks each utterance aloud through Windows' OneCore voice as the recorder writes it down.
 
 .PARAMETER Uninstall
-Removes everything the check installed into %LOCALAPPDATA%\FormaNvda\temp, and runs nothing.
+Removes everything the check installed into .sandbox/screen-reader/tools, and runs nothing.
 
 .EXAMPLE
 ./scripts/Test-ScreenReaderSpeech.ps1
@@ -82,7 +82,7 @@ if (-not $IsWindows) {
 }
 
 $repositoryRoot = Split-Path -Parent $PSScriptRoot
-$tools = Join-Path ([Environment]::GetFolderPath('LocalApplicationData')) 'FormaNvda' 'temp'
+$tools = Join-Path $repositoryRoot '.sandbox' 'screen-reader' 'tools'
 $dotnetHome = Join-Path $tools 'dotnet'
 $browsers = Join-Path $tools 'playwright'
 $nvdaHome = Join-Path $tools 'nvda'
@@ -198,7 +198,7 @@ $recorder = Join-Path $PSScriptRoot 'nvda' 'formaSpeechRecorder.py'
 $program = Join-Path $PSScriptRoot 'nvda' 'CheckScreenReaderSpeech.cs'
 $cache = Join-Path $nvdaHome $NvdaVersion
 $launcher = Join-Path $cache "nvda_$NvdaVersion.exe"
-$run = Join-Path $repositoryRoot '.local' 'tmp' "forma-speech-$([guid]::NewGuid().ToString('N'))"
+$run = Join-Path $repositoryRoot '.sandbox' 'tmp' "forma-speech-$([guid]::NewGuid().ToString('N'))"
 $profilePath = Join-Path $run 'profile'
 $speechLog = Join-Path $run 'speech.jsonl'
 $transcript = Join-Path $run 'transcript.txt'

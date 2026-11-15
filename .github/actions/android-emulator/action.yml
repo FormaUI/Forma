@@ -19,7 +19,7 @@ runs:
         # The environment is the one every machine installs: its JDK, its packages and its emulator, whose name, console port
         # and virtual devices' folder the boot below reads back.
         pwsh -NoProfile -File ./scripts/Install-Android.ps1
-        read -r name port avds < <(pwsh -NoProfile -Command '$e = (Get-Content -LiteralPath .config/android.json -Raw | ConvertFrom-Json).emulator; "{0} {1} {2}" -f $e.name, $e.port, (Join-Path ([Environment]::GetFolderPath("LocalApplicationData")) "Forma" "Android" "avd")')
+        read -r name port avds < <(pwsh -NoProfile -Command '$e = (Get-Content -LiteralPath .config/android.json -Raw | ConvertFrom-Json).emulator; "{0} {1} {2}" -f $e.name, $e.port, (Join-Path $PWD ".sandbox" "android" "avd")')
         export ANDROID_AVD_HOME="$avds"
         serial="emulator-$port"
         "$ANDROID_HOME/emulator/emulator" -list-avds | grep -x "$name"

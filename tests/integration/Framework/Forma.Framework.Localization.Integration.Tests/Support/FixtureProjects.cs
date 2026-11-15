@@ -6,7 +6,7 @@ using System.Text.Json;
 using Forma.Tests.Shared;
 
 /// <summary>A folder of projects made for one case, each importing the localization package's targets, which MSBuild is asked what a build of them would embed and record.</summary>
-/// <remarks>The folder sits under the repository's ignored <c>.local/tmp</c> with build files of its own, empty but for central package management turned off, which MSBuild finds before the repository's, so a project builds there as it would outside the repository.</remarks>
+/// <remarks>The folder sits under the repository's ignored <c>.sandbox/tmp</c> with build files of its own, empty but for central package management turned off, which MSBuild finds before the repository's, so a project builds there as it would outside the repository.</remarks>
 public sealed class FixtureProjects : IDisposable
 {
     private static readonly string Repository = RepositoryFolder.Find();

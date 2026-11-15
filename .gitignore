@@ -1,7 +1,7 @@
 ###############################################################################
 #  PROJECT-SPECIFIC                                                           #
 ###############################################################################
-.local/
+.sandbox/
 **/Forma.Blazor.Showcase/Sandbox/Assets/
 **/Forma.Blazor.Showcase/Sandbox/Upload/
 appsettings.*.json
