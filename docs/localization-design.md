@@ -66,6 +66,14 @@ type would be keyed by culture instances, which a host can create without end.
 A file is read into entries by its place, its name and its sections. Every source applies the
 default reading below, unless a project states [paths](#paths) for its own files.
 
+A file's name is read once, into its **canonical name**: its culture and the parts of the name it
+spells, a folder and a dot alike, a folder of locale files left out. Everything after that reading
+works on canonical names and the entries read at them, so `Uploads/.locales/he.json`,
+`Uploads.he.json`, `.locales/he/Uploads.json` and `.locales/Uploads/he.json` in `Contoso.App` all
+have the canonical name `he` · `Contoso.App.Uploads`, and files with one canonical name are read
+together, as one file would be. A file keeps the name its source knows it by, its resource name in an
+assembly or its path in a folder, only to name it in a message.
+
 1. **Culture.** A folder named for a culture, or the last part of the file's name:
    `.locales/es/Accounts.Admin.json`, `.locales/es.json`, `FormaToolbar.es.json`. A file in a
    culture folder carries no culture in its name, so the last part of its name is part of the
@@ -384,7 +392,7 @@ For one type, one key and one reader's culture, the text is chosen in this order
 | # | Question | Decision |
 |---|---|---|
 | L1 | Is reading a file a build setting or a library feature? | A library feature. The build embeds every locale file wherever it sits, and files are read at runtime, so every consumer gets it by referencing the package. |
-| L2 | What is canonical? | The entry: a culture, an assembly, a type and a key, with its text. Every layout, the default reading or paths a project states, is notation read into entries, and everything after reading works on entries alone, so where a file sits never changes what it means, which text wins or what the linter reports. |
+| L2 | What is canonical? | A file's canonical name, its culture and the parts of the name it spells, a folder and a dot alike, which its name is read into once; and the entry, a culture, an assembly, a type and a key with its text, which its sections are read into at that name. Every layout, the default reading or paths a project states, is notation read into these, and everything after reading works on them alone, so where a file sits never changes what it means, which text wins or what the linter reports. |
 | L3 | Why `.locales` rather than `locales`? | A project may already have a folder named `Locales` for another reason, and on Windows `locales` and `Locales` are the same name. The dot also survives into resource names as a doubled dot, which no namespace produces. |
 | L4 | Where does the runtime's configuration live? | In `.locale.json`, one optional file per assembly, embedded at the assembly's root. The linter's own configuration is a separate `.locali.json`: a runtime file an assembly ships and a compile-time file a tool reads are two concerns, and a locale file holds localized strings alone, so neither carries the other's keys. |
 | L5 | What marks an assembly's root? | Its `.locale.json`, which sits at the assembly's root and nowhere else; an assembly with none is rooted at its project's root namespace and read by the defaults. |

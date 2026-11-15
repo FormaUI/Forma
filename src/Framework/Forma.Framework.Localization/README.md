@@ -180,11 +180,38 @@ call's type argument.
 
 ## Where locale files live
 
-**One canonical form.** The runtime reads every locale file, whatever its layout, into entries of
-one form, and works on those entries alone: which text a lookup finds, which text wins and what is a
-conflict never depend on where a file sat or what it was named, which an entry keeps only to name
-its file in a message. An entry is a culture, an assembly, a type and a key, with the text the type
-shows for that key in that culture:
+**One canonical name for every file.** The runtime reads a locale file's name once, into its
+canonical name: the culture the file is for and the parts of the name it spells, a folder and a dot
+alike, with the folder of locale files left out, `.locales` unless the assembly's `localesDir` names
+another. Past the root namespace, the parts name the namespace or the type the file's sections
+complete. Nothing after that reading looks at a path again; a file keeps the name its source knows it
+by, its resource name in an assembly or its path beside the application, only to name it in a
+message. In the project of `Contoso.App`:
+
+| File | Embedded as | Canonical name |
+| --- | --- | --- |
+| `Uploads/.locales/he.json` | `Contoso.App.Uploads..locales.he.json` | `he` · `Contoso.App.Uploads` |
+| `Uploads.he.json` | `Contoso.App.Uploads.he.json` | `he` · `Contoso.App.Uploads` |
+| `.locales/he/Uploads.json` | `Contoso.App..locales.he.Uploads.json` | `he` · `Contoso.App.Uploads` |
+| `.locales/Uploads/he.json` | `Contoso.App..locales.Uploads.he.json` | `he` · `Contoso.App.Uploads` |
+| `Uploads/.locales/UploadStatus.he.json` | `Contoso.App.Uploads..locales.UploadStatus.he.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
+| `Uploads/UploadStatus.he.json` | `Contoso.App.Uploads.UploadStatus.he.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
+| `.locales/he/Uploads/UploadStatus.json` | `Contoso.App..locales.he.Uploads.UploadStatus.json` | `he` · `Contoso.App.Uploads.UploadStatus` |
+| `.locales/he.json` | `Contoso.App..locales.he.json` | `he` · `Contoso.App` |
+| `.locales/es-419/Uploads.json` | `Contoso.App..locales.es-419.Uploads.json` | `es-419` · `Contoso.App.Uploads` |
+| `Strings/he/Uploads.json` | `Contoso.App.Strings.he.Uploads.json` | `he` · `Contoso.App.Strings.Uploads` |
+| `.locales/ES/Uploads.json` | `Contoso.App..locales.ES.Uploads.json` | none: `ES` isn't how .NET writes a culture |
+
+A folder other than the folder of locale files stays part of the name, as `Strings` does. Files with
+one canonical name are read together, as one file would be. Two files whose paths differ only where
+one has a folder and the other a dot, `Uploads/UploadStatus.he.json` and
+`Uploads.UploadStatus.he.json`, would be embedded under one resource name, so the build refuses
+them, naming both.
+
+**One entry for every string.** A file's sections, at its canonical name, are read into entries, and
+the runtime works on entries alone: which text a lookup finds, which text wins and what is a conflict
+never depend on where a file sat or what it was named. An entry is a culture, an assembly, a type and
+a key, with the text the type shows for that key in that culture:
 
 ```text
 culture · assembly · type · key → text
@@ -212,12 +239,11 @@ only its source differs, which decides precedence, as *Which text wins* below se
 | `.locales/he/Contoso.App/Uploads.json` | In an application that rewords `Contoso.App`'s strings |
 | `strings-he/Uploads.json` | In `Contoso.App`, read by the path `$RootDir/strings-$Culture/$AnchorName$Extension` its `.locale.json` states |
 
-**The default reading.** A file's folders and name spell the type it is for, past the project's root
-namespace. A folder and a dot separate the name alike, a `.locales` folder is left out wherever it
-sits, and the first part that is a culture, written as .NET names it, `he` or `es-419` but never
-`ES`, is the file's culture, whether it is a folder or part of the name. Every other part goes on
-the type's name, and a file's sections spell the rest of it. A regional culture's files, such as
-those for `es-419`, hold only what differs from its parent's.
+**The default reading.** The first part of a name that is a culture, written as .NET names it, `he`
+or `es-419` but never `ES`, is the file's culture, whether it is a folder or part of the name. Every
+other part goes on the type's name, past the project's root namespace, and a file's sections spell
+the rest of it. A regional culture's files, such as those for `es-419`, hold only what differs from
+its parent's.
 
 **Embedded by the build.** The build embeds every locale file it finds by the `$localization` entry
 each one carries, wherever it sits in the project, outside the build output and outside a folder

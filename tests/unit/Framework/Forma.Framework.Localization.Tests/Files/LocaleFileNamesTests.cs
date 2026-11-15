@@ -25,9 +25,35 @@ public sealed class LocaleFileNamesTests
                 () => Assert.Equal(isInLocalesDir, fileName?.IsInLocalesDir));
         }
 
+        // Each resource name is the one the build gives the file whose path stands beside it, in a project whose root namespace is
+        // Contoso.App, so every layout of one namespace's or one type's file reads into one canonical name.
+        [Theory]
+        [InlineData("Contoso.App.Uploads..locales.he.json", "he", "Contoso.App.Uploads")]                                 // Uploads/.locales/he.json
+        [InlineData("Contoso.App.Uploads.he.json", "he", "Contoso.App.Uploads")]                                          // Uploads.he.json
+        [InlineData("Contoso.App..locales.he.Uploads.json", "he", "Contoso.App.Uploads")]                                 // .locales/he/Uploads.json
+        [InlineData("Contoso.App..locales.Uploads.he.json", "he", "Contoso.App.Uploads")]                                 // .locales/Uploads/he.json
+        [InlineData("Contoso.App.Uploads..locales.UploadStatus.he.json", "he", "Contoso.App.Uploads.UploadStatus")]       // Uploads/.locales/UploadStatus.he.json
+        [InlineData("Contoso.App.Uploads.UploadStatus.he.json", "he", "Contoso.App.Uploads.UploadStatus")]                // Uploads/UploadStatus.he.json
+        [InlineData("Contoso.App..locales.he.Uploads.UploadStatus.json", "he", "Contoso.App.Uploads.UploadStatus")]       // .locales/he/Uploads/UploadStatus.json
+        [InlineData("Contoso.App..locales.he.json", "he", "Contoso.App")]                                                 // .locales/he.json
+        [InlineData("Contoso.App..locales.es-419.Uploads.json", "es-419", "Contoso.App.Uploads")]                         // .locales/es-419/Uploads.json
+        [InlineData("Contoso.App.Strings.he.Uploads.json", "he", "Contoso.App.Strings.Uploads")]                          // Strings/he/Uploads.json
+        public void Should_read_every_layout_s_resource_name_into_one_canonical_name(string name, string culture, string parts)
+        {
+            // Act
+            var isRead = LocaleFileNames.TryRead(name, ".locales", ".json", StringComparison.Ordinal, out var fileName);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isRead),
+                () => Assert.Equal(culture, fileName?.Culture),
+                () => Assert.Equal(parts, string.Join('.', fileName?.Parts ?? [])));
+        }
+
         [Theory]
         [InlineData("Accounts.Admin.json")]
         [InlineData("ES/Accounts.json")]
+        [InlineData("Contoso.App..locales.ES.Uploads.json")]
         [InlineData("Accounts..es.json")]
         [InlineData("Accounts.es.txt")]
         public void Should_read_nothing_from_a_name_with_no_culture_an_empty_part_or_another_extension(string name)
