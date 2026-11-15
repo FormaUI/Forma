@@ -15,11 +15,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `Contoso.App.Uploads..locales.he.json`, so two files a folder and a dot tell apart, `Uploads/UploadStatus.he.json`
   and `Uploads.UploadStatus.he.json`, took one name and failed the build; they are embedded side by side and read
   together.
-- A path a `.locale.json` states matches folders in an assembly as it does in a host's folder: a `/` in it is a folder,
-  and `$AnchorName` and `$ParentName` stand for a folder for each segment. A dot in an embedded name stood for a
-  folder. To migrate, lay out a file a path reads in folders, `strings-es/Accounts/Admin.json` rather than
-  `strings-es/Accounts.Admin.json`, and give a file a project embeds through an item of its own a `LogicalName` with
-  its folders.
+- A path a `.locale.json` states reads an assembly's names as paths: a `/` the path writes is a folder, and the
+  segments `$AnchorName` and `$ParentName` stand for are separated by a folder or a dot, as the default reading
+  separates a name's parts, so `strings-es/Accounts.Admin.json` and `strings-es/Accounts/Admin.json` both stand for
+  `Accounts.Admin`. A dot anywhere in an embedded name stood for a folder. To migrate, give a file a project embeds
+  through an item of its own, and a path reads, a `LogicalName` with the folders the path writes.
 - An application's files for other assemblies are read beneath its root and a `/`, as the build names them, so a file
   the application embeds through an item of its own for another assembly is read only under a name of that form; the
   SDK's name for it, with every folder made a dot, was read as well. To migrate, give the item a `LogicalName` of that

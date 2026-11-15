@@ -162,19 +162,37 @@ public sealed class LocalePathTests
                 () => Assert.Empty(anchor!));
         }
 
-        [Fact]
-        public void Should_read_a_folder_of_a_path_only_where_the_name_has_one()
+        [Theory]
+        [InlineData(Beside, "Contoso.Widgets/Components/Bars.he.json")]
+        [InlineData(Beside, "Contoso.Widgets/Components.Bars.he.json")]
+        [InlineData(CultureInOwnDir, "Contoso.Widgets/Components.Bars/.locales/he.json")]
+        [InlineData(NamedInHostDir, "Contoso.Widgets/Components/Bars.he.json")]
+        public void Should_read_an_anchor_s_segments_through_a_folder_or_a_dot(string path, string name)
         {
             // Act
-            var isReadAsFolders = TryGetAnchor(Beside, "Contoso.Widgets/Components/Bars.he.json", Embedded, out var anchor);
-            var isReadAsDots = TryGetAnchor(Beside, "Contoso.Widgets.Components.Bars.he.json", Embedded, out _);
+            var isRead = TryGetAnchor(path, name, Embedded, out var anchor);
 
             // Assert
             Assert.Multiple(
-                () => Assert.True(isReadAsFolders),
-                () => Assert.Equal(["Components", "Bars"], anchor!),
-                () => Assert.False(isReadAsDots));
+                () => Assert.True(isRead),
+                () => Assert.Equal(["Components", "Bars"], anchor!));
         }
+
+        [Fact]
+        public void Should_read_a_parent_s_segments_through_a_folder_or_a_dot()
+        {
+            // Act
+            var isRead = TryGetAnchor(NamedInHostDir, "Contoso.Widgets/Components.Bars/Toolbar.he.json", Embedded, out var anchor);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isRead),
+                () => Assert.Equal(["Components", "Bars", "Toolbar"], anchor!));
+        }
+
+        [Fact]
+        public void Should_read_a_folder_the_path_writes_only_as_a_folder()
+            => Assert.False(TryGetAnchor(Beside, "Contoso.Widgets.Components.Bars.he.json", Embedded, out _));
 
         [Fact]
         public void Should_not_read_a_file_named_for_its_folder_under_another_name()

@@ -145,7 +145,7 @@ A project may state another layout as paths in its `.locale.json`, which replace
 reading for its files. A path is notation, as the default reading is: it says where a file sits and
 how its name spells a type's, and what a file read by it holds is the same entries. A path
 reads a layout the default reading has no rule for, such as a culture inside a folder's name,
-`strings-es/Accounts/Admin.json`, read by `$RootDir/strings-$Culture/$AnchorName$Extension`.
+`strings-es/Accounts.Admin.json`, read by `$RootDir/strings-$Culture/$AnchorName$Extension`.
 
 A path runs from the source's root to a file, written with `/` between folders and tokens for
 everything that varies:
@@ -155,8 +155,8 @@ everything that varies:
 | `$AssemblyName` | The name of the assembly the type being read lives in. |
 | `$RootNamespace` | The root namespace names are counted from. |
 | `$RootDir` | Where the source's names begin, which [Roots](#roots) sets out, written with `/` between folders. |
-| `$AnchorName` | The name the file stands for, its segments joined with `/`; empty at the root. |
-| `$ParentName` | The name's segments but the last, joined with `/`; empty at the root and one level below it. |
+| `$AnchorName` | The name the file stands for, its segments joined with `/`, or with `.` in a name it reads; empty at the root. |
+| `$ParentName` | The name's segments but the last, joined with `/`, or with `.` in a name it reads; empty at the root and one level below it. |
 | `$CurrentName` | The name's last segment; empty at the root. |
 | `$LocalesDir` | The name of a folder of locale files, `.locales` unless `localesDir` says otherwise. |
 | `$Culture` | The culture the file is for, such as `he` or `es-419`. |
@@ -168,9 +168,10 @@ token at most once and names `$Culture` and `$Extension` exactly once, and a pat
 that does not exist is rejected where it is read. A token's value is written with `/` between
 folders too, so `$LocalesDir` may name a nested folder.
 
-A path matches a name as it is written, and every source's names are paths, an assembly's as a
-folder's, so a path means the same wherever its files sit: a `/` in it is a folder, and
-`$AnchorName` and `$ParentName` stand for a folder for each segment.
+A path matches a name as it is written, and every source's names are paths: a `/` the path writes
+is a folder, and the segments `$AnchorName` and `$ParentName` stand for are separated by a folder or
+a dot, as a name's parts are in the default reading, so `strings-es/Accounts.Admin.json` and
+`strings-es/Accounts/Admin.json` both stand for `Accounts.Admin`.
 
 A path spells the whole name its file stands for: it names `$AnchorName`, optionally with
 `$CurrentName`; or `$ParentName` together with `$CurrentName`; or none of the three, and then stands
@@ -435,4 +436,5 @@ For one type, one key and one reader's culture, the text is chosen in this order
 | L24 | What if an assembly is named for a culture? | The culture wins wherever the two meet, and the linter reports a culture in the root namespace the project embeds its files under, the assembly's name unless the project names another, where it is built, the one place the name can change. |
 | L25 | Do stated paths remain? | Yes. A path is notation read into the same entries, and it reads layouts the default reading has no rule for, so a project bringing files from another system keeps them where they are. A project's paths replace the default reading for its files. |
 | L26 | When is a file read? | Once per source and culture, at the first lookup that needs it; every later lookup finds an entry already read. |
-| L27 | Why does a resource name keep its folders? | So every source holds names of one kind, paths, and a stated path means the same in an assembly as in a folder. A name with every folder made a dot would lose which was which, and two files a folder and a dot tell apart would take one name. The SDK's naming, which an item of a project's own keeps, still reads by the default reading, since a folder and a dot separate a name alike. |
+| L27 | Why does a resource name keep its folders? | So every source holds names of one kind, paths, and a folder a stated path writes is a folder in every one of them. A name with every folder made a dot would lose which was which, and two files a folder and a dot tell apart would take one name. The SDK's naming, which an item of a project's own keeps, still reads by the default reading, since a folder and a dot separate a name alike. |
+| L28 | How does a stated path read an anchor's segments? | Separated by a folder or a dot, as the default reading separates a name's parts, so `$AnchorName` reads `Accounts.Admin.json` and `Accounts/Admin.json` alike; only a folder the path writes itself must be a folder. One rule for a name's parts holds in every reading. |

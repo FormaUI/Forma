@@ -9,6 +9,8 @@ using Forma.Framework.Localization.Parser.Syntax;
 /// <summary>Reads the anchor a file's name stands for under a locale path, for one source and one culture.</summary>
 public sealed class LocalePathMatcher
 {
+    private static readonly char[] SegmentSeparators = [Path.AltDirectorySeparatorChar, '.'];
+
     private readonly LocalePathValues _values;
     private readonly StringComparison _comparison;
     private readonly string _localesDir;
@@ -72,9 +74,9 @@ public sealed class LocalePathMatcher
 
         string[] segments = (path.HasAnchorName, path.HasParentName) switch
         {
-            (true, _) when captures.Anchor.IsPresent => captures.Anchor.Read(name).Split(Path.AltDirectorySeparatorChar),
+            (true, _) when captures.Anchor.IsPresent => captures.Anchor.Read(name).Split(SegmentSeparators),
             (true, _) => [],
-            (false, true) when captures.Parent.IsPresent => [.. captures.Parent.Read(name).Split(Path.AltDirectorySeparatorChar), captures.Current.Read(name)],
+            (false, true) when captures.Parent.IsPresent => [.. captures.Parent.Read(name).Split(SegmentSeparators), captures.Current.Read(name)],
             (false, true) => [captures.Current.Read(name)],
             (false, false) => [],
         };
@@ -325,12 +327,13 @@ public sealed class LocalePathMatcher
             position++;
         }
 
+        // A run's segments are separated by a folder or a dot, as a name's parts are.
         var ends = new List<int>();
         var cursor = position;
         while (TryReadSegment(name, cursor, out var end))
         {
             ends.Add(end);
-            if (!TryReadSeparator(name, end))
+            if (end >= name.Length || !SegmentSeparators.Contains(name[end]))
             {
                 break;
             }

@@ -48,8 +48,11 @@ public sealed class CanonicalFormTests
             Assert.Equal(("Saved", "נשמר"), entry);
         }
 
-        [Fact]
-        public void Should_read_a_file_a_stated_path_places_into_the_same_entry()
+        [Theory]
+        [InlineData("strings-he/Uploads.json", Section)]
+        [InlineData("strings-he/Uploads/UploadStatus.json", Own)]
+        [InlineData("strings-he/Uploads.UploadStatus.json", Own)]
+        public void Should_read_a_file_a_stated_path_places_into_the_same_entry(string path, string content)
         {
             // Arrange
             var application = new FakeAssembly("Contoso.App")
@@ -57,7 +60,7 @@ public sealed class CanonicalFormTests
                 Resources =
                 {
                     ["Contoso.App/.locale.json"] = """{ "paths": ["$RootDir/strings-$Culture/$AnchorName$Extension"] }""",
-                    [GetResourceName("Contoso.App", "strings-he/Uploads.json")] = Section,
+                    [GetResourceName("Contoso.App", path)] = content,
                 },
             };
 
