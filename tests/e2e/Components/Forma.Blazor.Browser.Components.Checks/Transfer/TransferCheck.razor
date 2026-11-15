@@ -6,7 +6,8 @@
 
 @* Values a reader can make larger than a circuit message: a form of Forma's own, saved by its button, with a text area, a box
    accepting eight characters and a rich text composer; and a form of the host's own, on its valid submit alone. What each
-   save saw, as its length and the start of its SHA-256, and how many saves ran, are written where the check reads them. *@
+   save saw, as its length and the start of its SHA-256, how many saves ran, and the length of the document the composer
+   has handed the page, are written where the check reads them. *@
 <EditForm id="forma-form" Model="_forma">
     <FormaTextArea Id="forma-notes" @bind-Value="_forma.Notes" Label="Notes" />
     <FormaTextBox Id="forma-code" @bind-Value="_forma.Code" Label="Code" Options="CodeOptions" />
@@ -16,6 +17,7 @@
 <output id="forma-notes-saved">@_formaNotesSaved</output>
 <output id="forma-body-saved">@_formaBodySaved</output>
 <output id="forma-body-end">@_formaBodyEnd</output>
+<output id="forma-body-length">@_forma.Body?.Content.Length</output>
 
 <EditForm id="host-form" Model="_host" OnValidSubmit="SaveHost">
     <FormaTextBox Id="host-name" @bind-Value="_host.Name" Label="Name" />

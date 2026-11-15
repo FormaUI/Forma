@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -12,6 +13,11 @@ public sealed class TransferTests
     // A save of megabytes answers once the value has reached .NET in pieces, an answer the check waits for as it waits
     // for a script's.
     private static readonly LocatorAssertionsToHaveTextOptions Saved = new() { Timeout = 30_000 };
+
+    // A paste of megabytes is taken, and its preview drawn, on WebAssembly's one thread, which a loaded runner took longer than
+    // half a minute to do, so the check waits for each as long as for WebAssembly to start.
+    private static readonly LocatorAssertionsToHaveTextOptions Taken = new() { Timeout = 60_000 };
+    private static readonly LocatorClickOptions Drawn = new() { Timeout = 60_000 };
 
     // A value as the check page writes it: its length and the start of its SHA-256.
     private static string Describe(string value)
@@ -229,7 +235,9 @@ public sealed class TransferTests
             // Two megabytes as words, as a reader's text runs, since WebKit takes half a minute to lay out as much on one unbroken line.
             const int Words = 200_000;
             await canvas.EvaluateAsync("(canvas, words) => { canvas.focus(); canvas.innerHTML = '<p>' + Array(words).fill('zzzzzzzzz').join(' ') + '</p>'; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", Words);
-            await page.Locator("#forma-body").GetByRole(AriaRole.Tab, new() { Name = "Preview", Exact = true }).ClickAsync();
+            var document = $"<p>{string.Join(' ', Enumerable.Repeat("zzzzzzzzz", Words))}</p>";
+            await Assertions.Expect(page.Locator("#forma-body-length")).ToHaveTextAsync(document.Length.ToString(CultureInfo.InvariantCulture), Taken);
+            await page.Locator("#forma-body").GetByRole(AriaRole.Tab, new() { Name = "Preview", Exact = true }).ClickAsync(Drawn);
             var export = page.Locator("#forma-body .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Export HTML", Exact = true });
 
             // Act
