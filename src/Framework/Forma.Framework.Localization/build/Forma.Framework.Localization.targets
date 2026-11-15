@@ -57,7 +57,11 @@
             <_LocaleFileCultures Condition="'$(IsLocalePack)' == 'true'">$(LocalePackCulture)</_LocaleFileCultures>
         </PropertyGroup>
         <Error Condition="'$(IsLocalePack)' == 'true' and '$(LocalePackCulture)' == ''" Text="A locale pack declares the culture it carries in LocalePackCulture, one or several separated by semicolons; this project declares none." />
-        <ReadLocaleConfiguration ConfigFile="$(MSBuildProjectDirectory)/.locale.json">
+        <!-- A pack has no config of its own, and the runtime reads its names with .locales left out. -->
+        <PropertyGroup>
+            <_LocalesDir>.locales</_LocalesDir>
+        </PropertyGroup>
+        <ReadLocaleConfiguration ConfigFile="$(MSBuildProjectDirectory)/.locale.json" Condition="'$(IsLocalePack)' != 'true'">
             <Output TaskParameter="LocalesDir" PropertyName="_LocalesDir" />
         </ReadLocaleConfiguration>
         <ItemGroup>

@@ -358,6 +358,25 @@ public sealed class LocalizationTargetsTests
         }
 
         [Fact]
+        public async Task Should_read_a_pack_s_folder_of_locale_files_as_locales_whatever_a_config_names()
+        {
+            // Arrange — a config naming another folder, which a pack, read by the runtime with .locales left out, has no use for
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Locales.Hebrew", HebrewPack);
+            projects.WriteFile("Contoso.Locales.Hebrew/.locale.json", """{ "localesDir": ".strings" }""");
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor/.locales/he.json");
+            projects.WriteLocaleFile("Contoso.Locales.Hebrew/Forma.Blazor/.strings/he.json");
+
+            // Act
+            var resources = await projects.GetEmbeddedResourcesAsync("Contoso.Locales.Hebrew");
+
+            // Assert
+            Assert.Equal(
+                ["Forma.Blazor..locales.he.json"],
+                resources.Where(resource => resource.Path.EndsWith("he.json", StringComparison.Ordinal)).Select(resource => resource.Name));
+        }
+
+        [Fact]
         public async Task Should_refuse_a_pack_s_file_for_another_culture_or_for_none()
         {
             // Arrange — a Spanish folder, and a name with no culture at all
