@@ -145,6 +145,28 @@ public sealed class EmbeddedLocaleSourceTests
             // Assert
             Assert.Contains("Contoso.Widgets..locale.json", thrown.Message, StringComparison.Ordinal);
         }
+
+        [Theory]
+        [InlineData(null, "Contoso.Widgets", ".locales")]
+        [InlineData("{}", "Contoso.Widgets", ".locales")]
+        [InlineData("""{ "rootDir": "Strings", "localesDir": ".strings" }""", "Contoso.Widgets.Strings", ".strings")]
+        public void Should_answer_where_the_names_begin_and_the_folder_of_locale_files_they_leave_out(string? config, string rootDir, string localesDir)
+        {
+            // Arrange
+            var assembly = new FakeAssembly(Assembly);
+            if (config is not null)
+            {
+                assembly.Resources["Contoso.Widgets..locale.json"] = config;
+            }
+
+            var source = new EmbeddedLocaleSource(assembly, new FakeLocaleFileFormat());
+
+            // Act
+            var folders = (source.GetRootDir(Assembly), source.GetLocalesDir(Assembly));
+
+            // Assert
+            Assert.Equal((rootDir, localesDir), folders);
+        }
     }
 
     public sealed class RootDirs
