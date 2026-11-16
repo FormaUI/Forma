@@ -67,6 +67,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
             Services.GetJSTransferOptions);
 
     /// <summary>The component's strings, in the culture state's UI culture.</summary>
+    [LocaleSource(nameof(LocalizationSourceType))]
     protected IStringLocale L
         => Context.Locale;
 

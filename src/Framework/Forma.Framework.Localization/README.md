@@ -178,6 +178,23 @@ The text holds no string and no culture, so it reads the language in force when 
 `LocalizableText.For` carries `[LocaleKey]`, which marks an argument as a key looked up in the locale of the
 call's type argument.
 
+A base class that holds an `IStringLocale` read for a type it names at run time marks the member with
+`[LocaleSource]`, naming the member that names the type, so a linter reads each key looked up through it
+in that type's files:
+
+```csharp
+public abstract class ScreenBase : ComponentBase
+{
+    [Inject] private IStringLocaleFactory Locales { get; set; } = default!;
+    [Inject] private ICultureState CultureState { get; set; } = default!;
+
+    protected virtual Type LocalizationSourceType => GetType();
+
+    [LocaleSource(nameof(LocalizationSourceType))]
+    protected IStringLocale L => field ??= Locales.Create(LocalizationSourceType, CultureState);
+}
+```
+
 ## Where locale files live
 
 **One canonical name for every file.** The runtime reads a locale file's name once, into its

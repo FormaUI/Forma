@@ -47,6 +47,17 @@
         }
 
         [Fact]
+        public void Should_mark_its_strings_as_read_for_the_type_its_localization_source_names()
+        {
+            // Act
+            var mark = typeof(FormaComponentBase).GetProperty("L", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!
+                .GetCustomAttributes(typeof(LocaleSourceAttribute), inherit: false);
+
+            // Assert
+            Assert.Equal("LocalizationSourceType", Assert.IsType<LocaleSourceAttribute>(Assert.Single(mark)).TypeMemberName);
+        }
+
+        [Fact]
         public async Task Should_reach_the_browser_through_the_registered_runtime_under_its_own_identity()
         {
             // Arrange

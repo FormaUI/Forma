@@ -31,6 +31,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A file a satellite assembly holds under the name its item gave it, culture and all, is read and reported under that
   name, where the source added its culture a second time, and a satellite's file named for another culture is left
   out.
+- `LocaleSourceAttribute` marks a member holding a locale read for the type another member of its instance names, as
+  `FormaComponentBase.L` and `FormaInputBase<TValue>.L` are for `LocalizationSourceType`, so a linter can read each key
+  looked up through it in that type's files.
 - `LocaleSource.FolderSeparator` is gone, every source's names being paths, and `LocalePathMatcher` and
   `LocalePathBinder` take no separator. A source written against them drops its override, and a caller the argument.
   `LocaleSource.GetRootDir` answers a root a `.locale.json` names beneath its folder with `/` between the two, as
