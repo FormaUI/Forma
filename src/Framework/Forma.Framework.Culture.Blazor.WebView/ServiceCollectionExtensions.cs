@@ -38,7 +38,7 @@ public static class ServiceCollectionExtensions
             services.AddFormaCultureSwitchPolicy();
             services.AddFormaCultureCoordination();
             services.TryAddScoped<ICultureSwitch>(provider => new CoordinatedCultureSwitch(provider.GetRequiredService<CultureCoordinatorRegistration>(), provider.GetService<ICultureAddressing>()));
-            services.TryAddScoped<ICultureScopeStart>(provider => new WebViewCultureStart(
+            services.TryAddScoped<ICultureScopeInitializer>(provider => new WebViewCultureInitializer(
                 provider.GetRequiredService<CultureCoordinatorRegistration>(),
                 provider.GetRequiredService<ICultureState>(),
                 provider.GetRequiredService<CultureSwitchPolicy>(),
@@ -64,7 +64,7 @@ public static class ServiceCollectionExtensions
         services.AddFormaCultureSwitchPolicy();
         services.AddFormaCultureCoordination();
         services.TryAddSingleton<ICultureSwitch>(provider => new ApplicationCultureSwitch(provider.GetRequiredService<ApplicationCultureCoordinator>(), provider.GetService<ICultureAddressing>()));
-        services.TryAddScoped<ICultureScopeStart>(provider => new WebViewCultureRegistration(
+        services.TryAddScoped<ICultureScopeInitializer>(provider => new WebViewCultureRegistration(
             provider.GetRequiredService<ApplicationCultureCoordinator>(),
             provider.GetRequiredService<CultureCoordinatorRegistration>(),
             provider.GetRequiredService<ICultureState>(),

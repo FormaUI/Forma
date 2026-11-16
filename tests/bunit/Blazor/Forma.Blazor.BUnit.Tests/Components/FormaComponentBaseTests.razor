@@ -129,15 +129,15 @@
         {
             // Arrange
             using var ctx = new FormaComponentBaseTests();
-            var start = new FakeCultureScopeStart();
-            ctx.Services.AddSingleton<ICultureScopeStart>(start);
+            var initializer = new FakeCultureScopeInitializer();
+            ctx.Services.AddSingleton<ICultureScopeInitializer>(initializer);
             var cut = ctx.Render<Announcer>();
 
             // Act
             cut.Render();
 
             // Assert
-            Assert.Equal(1, start.StartCount);
+            Assert.Equal(1, initializer.InitializeCount);
         }
 
         [Fact]

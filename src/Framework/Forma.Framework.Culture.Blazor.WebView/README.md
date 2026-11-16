@@ -18,7 +18,7 @@ The package comes with `formaui-net.Blazor.WebView`, and `AddFormaWebViewIntegra
 | `ICultureState` | Forma's own state, a singleton: one for the application. |
 | `ICultureSwitch` | The application's switch, a singleton, which a component and the host's native code both switch through. |
 | `ICultureStateIntegration` | The application's culture coordinator, which takes any pair applied through it as the application's next switch. |
-| `ICultureScopeStart` | Each web view's registration with the application's coordinator, scoped, which the web view's first Forma component starts. |
+| `ICultureScopeInitializer` | Each web view's registration with the application's coordinator, scoped, which the web view's first Forma component initializes. |
 | `CultureCoordinatorRegistration` | Each web view's registration with its document's culture coordinator, scoped. |
 
 Each is added with `TryAdd`, so a host's own registration made first is the one used; a host that
@@ -40,7 +40,7 @@ view a culture of its own:
 | --- | --- |
 | `ICultureState` | Forma's own state, scoped: one for each web view. |
 | `ICultureSwitch` | The web view's switch, scoped, which requests each change through the web view's own document. |
-| `ICultureScopeStart` | Each web view's registration with its own document's culture coordinator, scoped, which the web view's first Forma component starts from the web view's pair. |
+| `ICultureScopeInitializer` | Each web view's registration with its own document's culture coordinator, scoped, which the web view's first Forma component initializes from the web view's pair. |
 | `CultureCoordinatorRegistration` | Each web view's registration with its document's culture coordinator, scoped. |
 
 A switch in one web view, or a landing at another culture's address, changes that web view's state, its

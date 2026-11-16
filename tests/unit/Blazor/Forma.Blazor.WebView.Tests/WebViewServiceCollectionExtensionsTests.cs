@@ -29,7 +29,7 @@ public sealed class WebViewServiceCollectionExtensionsTests
         Assert.Multiple(
             () => Assert.Equal(ServiceLifetime.Singleton, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState)).Lifetime),
             () => Assert.Equal(ServiceLifetime.Singleton, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureSwitch)).Lifetime),
-            () => Assert.Equal(ServiceLifetime.Scoped, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureScopeStart)).Lifetime));
+            () => Assert.Equal(ServiceLifetime.Scoped, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureScopeInitializer)).Lifetime));
     }
 
     [Theory]
@@ -55,8 +55,8 @@ public sealed class WebViewServiceCollectionExtensionsTests
         await using var second = provider.CreateAsyncScope();
 
         // Act
-        first.ServiceProvider.GetRequiredService<ICultureScopeStart>().Start();
-        second.ServiceProvider.GetRequiredService<ICultureScopeStart>().Start();
+        first.ServiceProvider.GetRequiredService<ICultureScopeInitializer>().Initialize();
+        second.ServiceProvider.GetRequiredService<ICultureScopeInitializer>().Initialize();
 
         // Assert
         Assert.Same(first.ServiceProvider.GetRequiredService<ICultureState>(), second.ServiceProvider.GetRequiredService<ICultureState>());
@@ -74,8 +74,8 @@ public sealed class WebViewServiceCollectionExtensionsTests
         await using var second = provider.CreateAsyncScope();
 
         // Act
-        first.ServiceProvider.GetRequiredService<ICultureScopeStart>().Start();
-        second.ServiceProvider.GetRequiredService<ICultureScopeStart>().Start();
+        first.ServiceProvider.GetRequiredService<ICultureScopeInitializer>().Initialize();
+        second.ServiceProvider.GetRequiredService<ICultureScopeInitializer>().Initialize();
 
         // Assert
         Assert.Multiple(

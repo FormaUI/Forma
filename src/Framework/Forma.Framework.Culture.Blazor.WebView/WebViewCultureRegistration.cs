@@ -8,7 +8,7 @@ using Forma.Framework.Culture.Browser.Interop;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.Logging;
 
-/// <summary>A web view's registration with the application's culture coordinator, started as the web view's first component initializes: the web view's UI thread takes every pair the coordinator accepts, and its document follows it.</summary>
+/// <summary>A web view's registration with the application's culture coordinator, initialized as the web view's first component initializes: the web view's UI thread takes every pair the coordinator accepts, and its document follows it.</summary>
 /// <remarks>
 /// The registration holds the synchronization context the first component initialized in, the web view's UI thread, and posts each
 /// pair to it with the caller's flow suppressed, so the cultures stay on the thread for every event it dispatches after, and the
@@ -35,22 +35,22 @@ internal sealed class WebViewCultureRegistration(
     ICultureAddressing? addressing,
     NavigationManager navigation,
     TimeProvider timeProvider,
-    ILogger<WebViewCultureRegistration> logger) : ICultureScopeStart, IDisposable
+    ILogger<WebViewCultureRegistration> logger) : ICultureScopeInitializer, IDisposable
 {
     private static readonly TimeSpan FollowTimeout = TimeSpan.FromMinutes(1);
 
     private readonly Lock _documentLock = new();
     private SynchronizationContext? _context;
-    private bool _isStarted;
+    private bool _isInitialized;
     private bool _isDocumentStarted;
     private (CultureInfo Culture, CultureInfo UICulture)? _waitingPair;
     private volatile bool _isReleased;
 
     /// <inheritdoc />
     /// <exception cref="InvalidOperationException">The web view's scope resolves a culture state of its own, where the application holds one for every web view.</exception>
-    public void Start()
+    public void Initialize()
     {
-        if (_isStarted || _isReleased)
+        if (_isInitialized || _isReleased)
         {
             return;
         }
@@ -60,7 +60,7 @@ internal sealed class WebViewCultureRegistration(
             throw new InvalidOperationException($"Each web view resolves a culture state of its own, while under Blazor Hybrid the application holds one culture across its web views: register {nameof(ICultureState)} as a singleton, and register Forma's WebView half before anything that registers the culture state for each scope.");
         }
 
-        _isStarted = true;
+        _isInitialized = true;
         _context = SynchronizationContext.Current;
         var (culture, uiCulture) = coordinator.Register(this);
 

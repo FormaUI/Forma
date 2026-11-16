@@ -27,15 +27,15 @@
         {
             // Arrange
             using var ctx = new FormaInputBaseTests();
-            var start = new FakeCultureScopeStart();
-            ctx.Services.AddSingleton<ICultureScopeStart>(start);
+            var initializer = new FakeCultureScopeInitializer();
+            ctx.Services.AddSingleton<ICultureScopeInitializer>(initializer);
             var cut = RenderField(ctx, new FakeModel());
 
             // Act
             cut.Render();
 
             // Assert
-            Assert.Equal(1, start.StartCount);
+            Assert.Equal(1, initializer.InitializeCount);
         }
 
         [Fact]

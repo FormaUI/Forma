@@ -46,7 +46,7 @@ public sealed class ServiceCollectionExtensionsTests
     {
         var scope = provider.CreateAsyncScope();
         scope.ServiceProvider.GetRequiredService<WebViewDocument>().Browser = browser;
-        scope.ServiceProvider.GetRequiredService<ICultureScopeStart>().Start();
+        scope.ServiceProvider.GetRequiredService<ICultureScopeInitializer>().Initialize();
 
         return scope;
     }
@@ -163,7 +163,7 @@ public sealed class ServiceCollectionExtensionsTests
             await using var webView = OpenWebView(provider, browser);
 
             // Act
-            webView.ServiceProvider.GetRequiredService<ICultureScopeStart>().Start();
+            webView.ServiceProvider.GetRequiredService<ICultureScopeInitializer>().Initialize();
 
             // Assert
             Assert.Equal(1, browser.CountRegistrations());

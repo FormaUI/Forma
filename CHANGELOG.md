@@ -51,6 +51,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   on `FormaComponentBase` and `FormaInputBase<TValue>`, and the type whose locale files hold a composer plugin's titles
   and labels is `IComposerPlugin.LocaleSourceType`. Each was `LocalizationSourceType`. To migrate, override or
   implement `LocaleSourceType`.
+- `ICultureScopeInitializer` initializes culture support for a user scope where the render mode does not, through
+  `Initialize()`. It was `ICultureScopeStart`, through `Start()`. To migrate, implement or resolve
+  `ICultureScopeInitializer` and call `Initialize()`.
 - `LocaleSource.FolderSeparator` is gone, every source's names being paths, and `LocalePathMatcher` and
   `LocalePathBinder` take no separator. A source written against them drops its override, and a caller the argument.
   `LocaleSource.GetRootDir` answers a root a `.locale.json` names beneath its folder with `/` between the two, as
