@@ -22,6 +22,7 @@ public abstract class ShowcaseComponentBase : ComponentBase, IDisposable
         => GetType();
 
     /// <summary>The component's strings, in the culture state's UI culture.</summary>
+    [LocaleSource(nameof(LocaleSourceType))]
     protected IStringLocale L
         => _locale ??= LocaleFactory.Create(LocaleSourceType, CultureState);
 
