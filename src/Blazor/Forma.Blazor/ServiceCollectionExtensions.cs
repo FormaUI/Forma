@@ -2,6 +2,7 @@ namespace Forma.Blazor;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Blazor.Components;
 using Forma.Blazor.Components.Page;
 using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Browser.Interop;
@@ -47,6 +48,9 @@ public static class ServiceCollectionExtensions
         services.AddFormaWindowServices();
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();
+
+        // Scoped to the user scope, whose culture state and JS runtime every context it makes holds.
+        services.TryAddScoped<IComponentContextFactory, ComponentContextFactory>();
 
         // Scoped to the circuit, whose own document holds the adopted sheets.
         services.TryAddScoped<IEmojiSpriteLoader>(provider => new EmojiSpriteLoader(

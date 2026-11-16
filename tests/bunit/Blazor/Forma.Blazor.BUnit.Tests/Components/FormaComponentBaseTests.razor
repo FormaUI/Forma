@@ -313,12 +313,15 @@
             // Arrange
             using var ctx = new FormaComponentBaseTests();
             var silent = ctx.Render<Silent>().Instance;
+            var context = silent.OwnContext;
 
             // Act
             await silent.DisposeAsync();
 
-            // Assert: a context made during teardown would have been released with it.
-            Assert.False(((ComponentContext)silent.OwnContext).IsDisposed);
+            // Assert: the context its first parameters made is the one released, and teardown makes no other.
+            Assert.Multiple(
+                () => Assert.Same(context, silent.OwnContext),
+                () => Assert.True(((ComponentContext)context).IsDisposed));
         }
 
         [Fact]

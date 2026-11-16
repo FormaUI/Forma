@@ -41,11 +41,16 @@ that fails to load, reaches a host through the log the host already configures.
   interop needs it. There is no separate control member: the root is the control.
 - **Required services, never a stand-in for them.** The runtime, the logger factory and the
   locale factory are what every component needs, and each is supplied by another registrar,
-  the platform's or a localization package's, with `TryAdd`. The bases resolve the runtime and
-  the locale factory where they are registered and fall back to their null objects where they
-  aren't, and the logger factory is the platform's, which `AddFormaUIServices` registers through
-  `AddLogging`, so no registration of Forma's stands in for the real one, and the order a host
-  registers in changes nothing.
+  the platform's or a localization package's, with `TryAdd`. The component context factory
+  resolves the runtime and the locale factory where they are registered and falls back to their
+  null objects where they aren't, and the logger factory is the platform's, which
+  `AddFormaUIServices` registers through `AddLogging`, so no registration of Forma's stands in
+  for the real one, and the order a host registers in changes nothing.
+- **One factory makes every context.** `IComponentContextFactory`, which `AddFormaUIServices`
+  registers for each user scope with `TryAdd`, is the one service a base injects: it makes a
+  component's context from the component's type and its `LocaleSourceType`, from the services
+  the host registered, so the bases resolve nothing themselves and a host replaces how every
+  context is made in one place.
 - **Every render mode.** A component works under static server rendering, Interactive Server,
   WebAssembly and Auto, and Blazor Hybrid; under a static render it shows its state and offers
   no control whose action needs interactivity, as [render modes](#render-modes) sets out.
@@ -73,8 +78,8 @@ that fails to load, reaches a host through the log the host already configures.
   same.
 - **One context per component, handed down whole.** `IComponentContext` is what a
   component is given: its identity, its cultures, its strings, its log, its JS environment,
-  and the DOM watcher and engine its browser work goes through. The base builds it once and
-  forwards nothing but `L`, so a component reads `Context.RuntimeId`, `Context.CultureState`,
+  and the DOM watcher and engine its browser work goes through. The base asks the factory for
+  it once and forwards nothing but `L`, so a component reads `Context.RuntimeId`, `Context.CultureState`,
   `Context.Logger`, `Context.JS`, `Context.DomWatcher` and `Context.DomEngine`, and a new
   thing every component needs is added to the context once rather than to a base twice or to
   every constructor that passes it on. `Context` is reserved for it: anything else context-like a component
@@ -106,14 +111,17 @@ that fails to load, reaches a host through the log the host already configures.
 
 ### `FormaComponentBase`
 
-`FormaComponentBase` injects the logger factory, the service provider and the culture
-state, all required, and resolves the runtime and the locale factory from the provider,
-falling back to their null objects, as [the services](#the-services) set out. It subscribes
-to the state, and builds the component's context once from them and its
-`LocaleSourceType`, finding the user scope's DOM bridge where one is registered. It
+`FormaComponentBase` injects the component context factory alone, required. On its first
+parameters it asks the factory for the component's context, made for its type, which reads
+its `LocaleSourceType` as the component first reads a string, so the type can follow its
+parameters; making it initializes the user scope's culture support where the render mode
+does not, and the base subscribes to the context's culture state. The factory makes
+the context from the user scope's culture state and logger factory, and resolves the runtime,
+the locale factory, the transfer options and the DOM bridge where they are registered,
+falling back to the library's defaults, as [the services](#the-services) set out. The base
 gives the component its strings as `L`, reports whether it is disposed, and runs
-`DisposeAsyncCore` once on disposal, then releases a context it built, so the component's
-own cleanup can still use it. The context carries the component's identity, cultures,
+`DisposeAsyncCore` once on disposal, then releases the context, so the component's own
+cleanup can still use it. The context carries the component's identity, cultures,
 strings, log and JS environment, and the DOM watcher and engine it makes on first use, whose
 observations and interactions its release ends in one call to the browser.
 
@@ -186,7 +194,7 @@ are the extension points, and the composition rule is the base's.
 ### `FormaInputBase<TValue>`
 
 `FormaInputBase<TValue>` derives from the framework's `InputBase<TValue>` and carries what
-the other two do: the injections, the context and `L`, the disposal, and the host surface,
+the other two do: the factory, the context and `L`, the disposal, and the host surface,
 with `AdditionalAttributes` the framework's own and the field's validation class following
 the component's and the host's classes on the root. Its disposal runs `InputBase`'s
 `Dispose(true)` after `DisposeAsyncCore`, then releases the context.
@@ -194,7 +202,7 @@ the component's and the host's classes on the root. Its disposal runs `InputBase
 C# has one base slot, so the input base repeats what the other two carry rather than
 deriving from them. The context carries what both can share, the identity, the strings,
 the log and the environment, and the two builders carry the class and style
-composition; what stays written out twice is the injections,
+composition; what stays written out twice is the factory's injection,
 `LocaleSourceType`, `IsDisposed`, the dispose pair and the host parameters.
 
 A dialog base a composite owns derives from `FormaComponentBase` and overrides
@@ -213,9 +221,9 @@ No registration Forma makes stands in for a service another registrar supplies, 
 registrar adds its own with `TryAdd`, as a web view's registrar adds the runtime and a
 localization package its factory, and a stand-in registered first would keep it out. So:
 
-- **The bases fall back themselves.** A base resolves the runtime and the locale factory where
-  they are registered and falls back to their null objects where they aren't; a service built on
-  the runtime resolves it the same way, through `GetJSRuntime`.
+- **The context factory falls back itself.** The component context factory resolves the runtime
+  and the locale factory where they are registered and falls back to their null objects where
+  they aren't; a service built on the runtime resolves it the same way, through `GetJSRuntime`.
 - **A registrar whose services log registers the platform's logging,** `AddLogging`, whose
   own registrations are `TryAdd`s, so a typed logger resolves in every host, the host's
   providers reach it whichever registrar runs first, and a feature stays usable on its own,

@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Tests;
 
+using Forma.Blazor.Components;
 using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Culture;
 using Forma.Framework.Emojis;
@@ -31,6 +32,21 @@ public sealed class ServiceCollectionExtensionsTests
         Assert.Multiple(
             () => Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime),
             () => Assert.IsType<EmojiSpriteLoader>(scope.ServiceProvider.GetRequiredService<IEmojiSpriteLoader>()));
+    }
+
+    [Fact]
+    public void Should_register_one_component_context_factory_per_user_scope()
+    {
+        // Act
+        var services = new ServiceCollection().AddFormaUIServices();
+
+        // Assert
+        var descriptor = Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IComponentContextFactory));
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+        Assert.Multiple(
+            () => Assert.Equal(ServiceLifetime.Scoped, descriptor.Lifetime),
+            () => Assert.IsType<ComponentContextFactory>(scope.ServiceProvider.GetRequiredService<IComponentContextFactory>()));
     }
 
     [Fact]

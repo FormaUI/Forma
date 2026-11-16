@@ -51,6 +51,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   on `FormaComponentBase` and `FormaInputBase<TValue>`, and the type whose locale files hold a composer plugin's titles
   and labels is `IComposerPlugin.LocaleSourceType`. Each was `LocalizationSourceType`. To migrate, override or
   implement `LocaleSourceType`.
+- `IComponentContextFactory` makes the context each Forma component is given, from the component's type and the type
+  its strings are read for, and `AddFormaUIServices` registers `ComponentContextFactory` for each user scope, so a host
+  that registers its own first makes every component's context its way. A component's context is made with its first
+  parameters.
 - `ICultureScopeInitializer` initializes culture support for a user scope where the render mode does not, through
   `Initialize()`. It was `ICultureScopeStart`, through `Start()`. To migrate, implement or resolve
   `ICultureScopeInitializer` and call `Initialize()`.

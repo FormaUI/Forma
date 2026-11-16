@@ -34,9 +34,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     /// <summary>The instructions shown beneath the input, which describe it.</summary>
     [Parameter] public string? Description { get; set; }
 
-    [Inject] private ILoggerFactory LoggerFactory { get; set; } = default!;
-    [Inject] private IServiceProvider Services { get; set; } = default!;
-    [Inject] private ICultureState CultureState { get; set; } = default!;
+    [Inject] private IComponentContextFactory ContextFactory { get; set; } = default!;
 
     private ComponentContext? _context;
     private bool _isSubscribedToCultureState;
@@ -57,13 +55,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
     /// <summary>The component's context: its identity, its cultures, its strings, its log and its JS environment.</summary>
     protected IComponentContext Context
-        => _context ??= new ComponentContext(
-            CultureState,
-            Services.GetJSRuntime,
-            () => Services.GetStringLocaleFactory().Create(LocaleSourceType, CultureState),
-            () => LoggerFactory.CreateLogger(GetType()),
-            () => Services.GetService<DomBridge>(),
-            Services.GetJSTransferOptions);
+        => _context ??= ContextFactory.Create(GetType(), () => LocaleSourceType);
 
     /// <summary>The component's strings, in the culture state's UI culture.</summary>
     [LocaleSource(nameof(LocaleSourceType))]
@@ -145,14 +137,13 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     }
 
     /// <inheritdoc />
-    /// <remarks>The first call initializes the user scope's culture support where its render mode does not, and subscribes the component to its culture state, so each change of the state renders it again.</remarks>
+    /// <remarks>The first call makes the component's context, which initializes the user scope's culture support where its render mode does not, and subscribes the component to the context's culture state, so each change of the state renders it again.</remarks>
     public override Task SetParametersAsync(ParameterView parameters)
     {
         if (!_isSubscribedToCultureState)
         {
             _isSubscribedToCultureState = true;
-            Services.GetService<ICultureScopeInitializer>()?.Initialize();
-            CultureState.Subscribe(HandleCultureChangedAsync);
+            Context.CultureState.Subscribe(HandleCultureChangedAsync);
         }
 
         return base.SetParametersAsync(parameters);
@@ -190,7 +181,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
         if (_isSubscribedToCultureState)
         {
-            CultureState.Unsubscribe(HandleCultureChangedAsync);
+            Context.CultureState.Unsubscribe(HandleCultureChangedAsync);
         }
 
         if (_settleEditsAsync is { } settleEditsAsync && EditContext is { } form)

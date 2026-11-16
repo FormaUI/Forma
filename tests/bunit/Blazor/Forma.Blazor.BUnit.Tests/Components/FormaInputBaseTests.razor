@@ -128,12 +128,15 @@
             // Arrange
             using var ctx = new FormaInputBaseTests();
             var field = RenderField(ctx, new FakeModel()).Instance;
+            var context = field.OwnContext;
 
             // Act
             await field.DisposeAsync();
 
-            // Assert: a context made during teardown would have been released with it.
-            Assert.False(((ComponentContext)field.OwnContext).IsDisposed);
+            // Assert: the context its first parameters made is the one released, and teardown makes no other.
+            Assert.Multiple(
+                () => Assert.Same(context, field.OwnContext),
+                () => Assert.True(((ComponentContext)context).IsDisposed));
         }
 
         [Fact]
