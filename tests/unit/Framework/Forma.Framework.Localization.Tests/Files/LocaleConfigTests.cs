@@ -47,14 +47,14 @@ public sealed class LocaleConfigTests
             => Assert.Equal(LocaleConfig.Empty, Read("{}"));
 
         [Fact]
-        public void Should_pass_over_the_linters_keys_and_its_comments()
+        public void Should_pass_over_keys_it_does_not_own_and_comments()
         {
             // Act
             var settings = Read("""
                 {
-                  // The linter's own entries.
-                  "ignore": { "src/**/Page.razor": ["LOC0209"] },
-                  "exclude": ["*/Fixtures/*"],
+                  // Keys another tool reads.
+                  "reviewers": { "src/**": ["Contoso.Localization"] },
+                  "owners": ["Contoso.Widgets"],
                   "rootNamespace": "Contoso.Widgets",
                 }
                 """);
