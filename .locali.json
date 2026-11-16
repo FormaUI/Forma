@@ -39,7 +39,6 @@
     // The test proves the metadata entry is never served, which takes looking it up by its reserved name.
     "tests/unit/Framework/Forma.Framework.Localization.Json.Tests/LocalizationMetadataTests.cs": ["LOC0212"],
     // A page's sections word one key differently on purpose, where the same English fits two sentences.
-    "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Collections/.locales/he.json": ["LOC0113"],
     "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Feedback/.locales/he.json": ["LOC0113"],
     "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Inputs/.locales/es.json": ["LOC0113"],
     "src/Blazor/Forma.Blazor.Showcase/Components/Pages/Layout/.locales/*.json": ["LOC0113"],
