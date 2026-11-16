@@ -24,6 +24,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   the application embeds through an item of its own for another assembly is read only under a name of that form; the
   SDK's name for it, with every folder made a dot, was read as well. To migrate, give the item a `LogicalName` of that
   form, or leave the file to the build.
+- An application with no `.locale.json` whose root namespace isn't its name has its files for other assemblies read:
+  its build records the root namespace it names its files under on `LocaleApplicationAttribute`, which takes it as an
+  argument, and the runtime reads the files beneath it. They were looked for beneath the application's name and went
+  unread.
 - A file a satellite assembly holds under the name its item gave it, culture and all, is read and reported under that
   name, where the source added its culture a second time, and a satellite's file named for another culture is left
   out.

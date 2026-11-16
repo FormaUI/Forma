@@ -124,6 +124,57 @@ public sealed class ApplicationLocaleSourceTests
         }
 
         [Fact]
+        public void Should_begin_the_names_where_the_build_of_an_application_whose_root_namespace_differs_named_them()
+        {
+            // Arrange — the application Contoso.App.Client with no config, whose build named its files under its root namespace, Contoso.App.
+            var application = new FakeAssembly("Contoso.App.Client") { Attributes = { new LocaleApplicationAttribute("Contoso.App") } };
+            var format = new FakeLocaleFileFormat();
+            var applicationFile = AddFile(application, format, "Contoso.App/.locales/he/Contoso.Widgets/Bars.fake", CreateToolbarSection("project's root"));
+            AddFile(application, format, "Contoso.App.Client/.locales/he/Contoso.Widgets/Bars.fake", CreateToolbarSection("assembly's name"));
+
+            // Act
+            var entries = Read(application, format);
+
+            // Assert
+            Assert.Equal([new(applicationFile, "Toolbar", "Bold", "project's root")], entries);
+        }
+
+        [Fact]
+        public void Should_read_the_names_from_the_start_where_the_build_named_the_files_under_no_root_namespace()
+        {
+            // Arrange
+            var application = new FakeAssembly(Application) { Attributes = { new LocaleApplicationAttribute(string.Empty) } };
+            var format = new FakeLocaleFileFormat();
+            var applicationFile = AddFile(application, format, ".locales/he/Contoso.Widgets/Bars.fake", CreateToolbarSection("no root namespace"));
+
+            // Act
+            var entries = Read(application, format);
+
+            // Assert
+            Assert.Equal([new(applicationFile, "Toolbar", "Bold", "no root namespace")], entries);
+        }
+
+        [Fact]
+        public void Should_begin_the_names_where_the_application_s_config_places_them_rather_than_its_mark()
+        {
+            // Arrange — a config naming Strings beneath the root namespace the mark records.
+            var application = new FakeAssembly(Application)
+            {
+                Attributes = { new LocaleApplicationAttribute(Application) },
+                Resources = { ["Contoso.App/.locale.json"] = """{ "rootDir": "Strings" }""" },
+            };
+            var format = new FakeLocaleFileFormat();
+            var applicationFile = AddFile(application, format, "Contoso.App/Strings/.locales/he/Contoso.Widgets/Bars.fake", CreateToolbarSection("beneath the root"));
+            AddFile(application, format, "Contoso.App/.locales/he/Contoso.Widgets/Bars.fake", CreateToolbarSection("above the root"));
+
+            // Act
+            var entries = Read(application, format);
+
+            // Assert
+            Assert.Equal([new(applicationFile, "Toolbar", "Bold", "beneath the root")], entries);
+        }
+
+        [Fact]
         public void Should_leave_the_application_s_own_strings_to_its_own_assembly()
         {
             // Arrange — a file for the application's own types, which its own assembly's reading answers.

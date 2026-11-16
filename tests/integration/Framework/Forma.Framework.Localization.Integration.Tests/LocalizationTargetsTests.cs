@@ -7,6 +7,7 @@ using Xunit;
 public sealed class LocalizationTargetsTests
 {
     private const string LocaleReferenceAttribute = "Forma.Framework.Localization.LocaleReferenceAttribute";
+    private const string LocaleApplicationAttribute = "Forma.Framework.Localization.LocaleApplicationAttribute";
 
     // What a server built on the Web SDK and a WebAssembly client declare, which is how the targets know an application.
     private const string Server = "<UsingMicrosoftNETSdkWeb>true</UsingMicrosoftNETSdkWeb>";
@@ -327,6 +328,20 @@ public sealed class LocalizationTargetsTests
 
             // Assert
             Assert.Empty(named);
+        }
+
+        [Fact]
+        public async Task Should_mark_an_application_with_the_root_namespace_its_files_are_named_under()
+        {
+            // Arrange — a server whose root namespace isn't its name
+            using var projects = new FixtureProjects();
+            projects.WriteProject("Contoso.Server", Server + "<RootNamespace>Contoso.Web</RootNamespace>");
+
+            // Act
+            var named = await projects.GetAssemblyAttributeArgumentsAsync("Contoso.Server", LocaleApplicationAttribute);
+
+            // Assert
+            Assert.Equal(["\"Contoso.Web\""], named);
         }
     }
 

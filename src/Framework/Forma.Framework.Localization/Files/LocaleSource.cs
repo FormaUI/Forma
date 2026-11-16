@@ -215,6 +215,11 @@ public abstract class LocaleSource(ILocaleFileFormat format)
         }
     }
 
+    /// <summary>Whether the source holds a config file for an assembly.</summary>
+    /// <param name="assemblyName">The assembly's name.</param>
+    internal bool HasConfig(string assemblyName)
+        => GetConfig(assemblyName) is not null;
+
     // A type outside any namespace belongs to the root, and a type starting elsewhere is read by its full name.
     internal static bool IsUnderRootNamespace(string[] segments, string[] rootSegments)
         => segments.Length == 1

@@ -108,10 +108,13 @@
         </ItemGroup>
     </Target>
 
-    <!-- Marks an application's assembly, whose recorded locales the runtime reads where it names no entry assembly, as a native host on Android or iOS names none. -->
+    <!-- Marks an application's assembly, whose recorded locales the runtime reads where it names no entry assembly, as a native host on Android or iOS names none, with the root namespace its locale files are named under, written as a literal so that an empty one is still a string. -->
     <Target Name="RecordLocaleApplication" BeforeTargets="GetAssemblyAttributes" DependsOnTargets="CollectLocaleFiles" Condition="'$(IsLocalePack)' != 'true'">
         <ItemGroup Condition="'$(_IsLocaleApplication)' == 'true'">
-            <AssemblyAttribute Include="Forma.Framework.Localization.LocaleApplicationAttribute" />
+            <AssemblyAttribute Include="Forma.Framework.Localization.LocaleApplicationAttribute">
+                <_Parameter1>"$(RootNamespace)"</_Parameter1>
+                <_Parameter1_IsLiteral>true</_Parameter1_IsLiteral>
+            </AssemblyAttribute>
         </ItemGroup>
     </Target>
 

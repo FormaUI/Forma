@@ -28,7 +28,7 @@ public sealed class LocaleAssemblyLoaderTests
         {
             // Arrange — on a runtime naming no entry assembly, as .NET for Android's: the application its build marked, a library recording
             // a pack for its own use, a client embedding files for another assembly and naming none, the framework, and a dynamic assembly.
-            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute(), new LocalePackAttribute("Contoso.Hebrew") } };
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute("Contoso.App"), new LocalePackAttribute("Contoso.Hebrew") } };
             var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute("Contoso.Spanish") } };
             var client = new FakeAssembly("Contoso.Client") { Resources = { ["Contoso.Client/.locales/Contoso.Library/he.json"] = "{}" } };
             var framework = new FakeAssembly("System.Runtime") { Resources = { ["System.Runtime.Strings.resources"] = string.Empty } };
@@ -51,7 +51,7 @@ public sealed class LocaleAssemblyLoaderTests
             using var loggerFactory = new FakeLoggerFactory();
             var recorded = typeof(LocalizationOptions).Assembly;
             var named = typeof(LocaleAssemblyLoaderTests).Assembly;
-            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute(), new LocalePackAttribute(recorded.GetName().Name!) } };
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute("Contoso.App"), new LocalePackAttribute(recorded.GetName().Name!) } };
             var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute(named.GetName().Name!) } };
             var options = new LocalizationOptions { LocalePacks = [named] };
             Assembly[] loaded = isLibraryFirst ? [library, application] : [application, library];

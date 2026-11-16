@@ -8,8 +8,9 @@ using System.Reflection;
 /// <param name="rootNamespaces">The root namespace each assembly's own config declares, by the assembly's name.</param>
 /// <remarks>
 /// The application's names begin where its own files' do, at the folder its own config sits in or, where it has none, at
-/// its name, so <c>.locales/es/Forma.Blazor/Components/Bars.json</c> in its project reads for <c>Forma.Blazor</c> as a
-/// pack's file of that name does, and they leave out the folder of locale files its own config names, as its build
+/// the root namespace its build names its files under, which the build records on <see cref="LocaleApplicationAttribute"/>,
+/// or at its name, so <c>.locales/es/Forma.Blazor/Components/Bars.json</c> in its project reads for <c>Forma.Blazor</c> as
+/// a pack's file of that name does, and they leave out the folder of locale files its own config names, as its build
 /// embeds them from. An assembly's folder is laid out by the root namespace the assembly's own config declares.
 /// </remarks>
 public sealed class ApplicationLocaleSource(Assembly application, ILocaleFileFormat format, Func<string, string?> rootNamespaces) : LocaleSource(format)
@@ -27,7 +28,14 @@ public sealed class ApplicationLocaleSource(Assembly application, ILocaleFileFor
 
     // The application's own config is read once, at the first name asked for.
     private string NamesPrefix
-        => _namesPrefix ??= _ownFiles.GetRootDir(_applicationName) + Path.AltDirectorySeparatorChar;
+        => _namesPrefix ??= GetNamesRoot() is { Length: > 0 } namesRoot ? namesRoot + Path.AltDirectorySeparatorChar : string.Empty;
+
+    // Where the application's names begin: where its config puts them or, where it has none, where its build named its files,
+    // or at its name.
+    private string GetNamesRoot()
+        => !_ownFiles.HasConfig(_applicationName) && _application.GetCustomAttribute<LocaleApplicationAttribute>() is { } mark
+            ? mark.RootNamespace
+            : _ownFiles.GetRootDir(_applicationName);
 
     private string LocalesDir
         => _localesDir ??= _ownFiles.GetLocalesDir(_applicationName);

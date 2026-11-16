@@ -222,11 +222,13 @@ An application's locale files for other assemblies are a source of their own, af
 read beneath the application's root by names starting with an assembly's name, its own folder of
 locale files left out; its files for its own types are its assembly's own, read first, as every
 assembly's are. The application's root is a folder, the one its `.locale.json` sits in or, where it
-has none, its name, so its names for other assemblies begin with that root and a `/`, as the build
-names them. A file the application embeds through an item of its own for another assembly is read
-only under a name of that form: the default reading would read the SDK's name for it, with every
-folder made a dot, but this source never finds it. An application is a WebAssembly client, a server built on the Web SDK, or a Blazor
-Hybrid application, which the build knows as an application referencing its platform's web view
+has none, the root namespace its build names its files under, which the build records on the mark it
+writes into the application, so its names for other assemblies begin with that root and a `/`, as
+the build names them, whatever the application's own name. A file the application embeds through an
+item of its own for another assembly is read only under a name of that form: the default reading
+would read the SDK's name for it, with every folder made a dot, but this source never finds it. An
+application is a WebAssembly client, a server built on the Web SDK, or a Blazor Hybrid application,
+which the build knows as an application referencing its platform's web view
 package, WPF's, Windows Forms' or MAUI's, its output an executable or, on Android, the project the
 Android SDK marks as an application. A WebAssembly client has no file system to read a folder from and an application MAUI
 packages has none beside it, so the application's files are embedded as every assembly's are.
