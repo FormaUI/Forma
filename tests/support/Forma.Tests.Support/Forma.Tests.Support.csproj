@@ -9,6 +9,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Browser\Forma.Framework.Browser.csproj" />
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
         <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Composer.Extensibility\Forma.Framework.Composer.Extensibility.csproj" />

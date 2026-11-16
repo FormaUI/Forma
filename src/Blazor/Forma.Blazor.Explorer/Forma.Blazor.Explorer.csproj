@@ -38,6 +38,7 @@
         <ProjectReference Include="..\..\Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Browser\Forma.Framework.Browser.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />

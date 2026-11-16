@@ -1,6 +1,6 @@
 namespace Forma.Tests.Browser;
 
-using Forma.Framework.Browser.Interop.Operations;
+using Forma.Framework.Browser;
 
 /// <summary>A host's native operations that take or decline what they're handed, as a test names, recording each file and address.</summary>
 /// <param name="takes">Whether the host takes each file and address.</param>

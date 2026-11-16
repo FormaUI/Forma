@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Menus;
 
 using Forma.Blazor.Components.Buttons;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Icons;
 using Forma.Framework.Share;

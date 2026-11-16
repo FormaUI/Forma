@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Components;
 /// <summary>An element's focus: observing whether the reader is within it, and the interaction that decides where the focus goes inside it.</summary>
 public sealed class DomFocus : IDomFocusObservation
 {
-    private static readonly DomCapability<FocusWatchOptions> WatchCapability = new(DomRoot.Watcher, "focus", DescribeWatch);
+    private static readonly DomCapability<FocusWatchOptions> WatchCapability = new(DomRoots.Watcher, "focus", DescribeWatch);
 
-    private static readonly DomCapability<FocusInteractionOptions> InteractionCapability = new(DomRoot.Engine, "focus", DescribeInteraction)
+    private static readonly DomCapability<FocusInteractionOptions> InteractionCapability = new(DomRoots.Engine, "focus", DescribeInteraction)
     {
         DeclaresRoutes = options => options.Wraps || options.RegionSelectors.Count > 0 || options.RovingOrientation is not null,
     };
@@ -26,11 +26,11 @@ public sealed class DomFocus : IDomFocusObservation
     }
 
     /// <inheritdoc />
-    public Task<DomObservation<FocusWatchOptions, FocusState>> WatchAsync(Func<FocusState, Task> handler, bool shouldObserve = true)
+    public Task<IDomObservation<FocusWatchOptions, FocusState>> WatchAsync(Func<FocusState, Task> handler, bool shouldObserve = true)
         => WatchAsync(handler, new FocusWatchOptions(), shouldObserve);
 
     /// <inheritdoc />
-    public async Task<DomObservation<FocusWatchOptions, FocusState>> WatchAsync(Func<FocusState, Task> handler, FocusWatchOptions options, bool shouldObserve = true)
+    public async Task<IDomObservation<FocusWatchOptions, FocusState>> WatchAsync(Func<FocusState, Task> handler, FocusWatchOptions options, bool shouldObserve = true)
     {
         ArgumentNullException.ThrowIfNull(handler);
         ArgumentNullException.ThrowIfNull(options);

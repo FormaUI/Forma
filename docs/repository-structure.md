@@ -38,9 +38,12 @@ Every project is named for its family and its concept: `Forma.Framework.Icons`, 
 `Forma.AddOns.Emojis.Twemoji`, `Forma.Blazor`, `Forma.Framework.Composer`. The family is `Framework`, `AddOns`, or
 nothing for the product, and it says what a project is:
 
-- **Framework** is what Forma builds on, whether or not the product itself uses every piece of it.
-- **An AddOn** is a project that is both optional and built on a Framework assembly it extends. Optional alone makes
-  nothing an AddOn.
+- **Framework** is what Forma builds on, whether or not the product itself uses every piece of it, and so is a
+  project that connects a Framework assembly to a platform, a backend or another library's contracts, as
+  `Forma.Framework.Browser.Maui` connects the browser layer to MAUI and `Forma.Framework.Localization.Json` the
+  localization to its JSON files.
+- **An AddOn** adds content or a capability a host chooses, built on a Framework assembly it extends: artwork,
+  share destinations, document converters, a composer plugin. Optional alone makes nothing an AddOn.
 
 Every project sits under `src/` in the folder of its group:
 
@@ -190,8 +193,9 @@ whichever package brings it to a host.
 **`Forma.Blazor` ships one aggregate registrar, `AddFormaUIServices()`**, fanning out to every default a component needs in
 any render mode. Each render-mode half ships one more that calls it and adds its render mode's halves, so a host
 makes one call on each side: `AddFormaServerIntegration()` on the host's builder, `AddFormaWebAssemblyIntegration()` and
-`AddFormaWebViewIntegration()`. A Framework half that serves a render mode names its registrar for it: `AddFormaCultureServerIntegration()`,
-`AddFormaCultureWebAssemblyIntegration()`, `AddFormaCultureWebViewIntegration()` and `AddFormaBrowserServerIntegration()`.
+`AddFormaWebViewIntegration()`. A Framework half that serves a render mode or a platform names its registrar for it: `AddFormaCultureServerIntegration()`,
+`AddFormaCultureWebAssemblyIntegration()`, `AddFormaCultureWebViewIntegration()`, `AddFormaBrowserServerIntegration()` and
+`AddFormaBrowserMauiIntegration()`.
 
 **A component whose optional contract is unregistered falls back to a default the library carries**, as `FormaIcon`
 does with the library's own glyph artwork. A contract carrying data nobody can synthesize, such as an emoji catalog,
@@ -256,7 +260,9 @@ Scripts ship with the project that owns them:
   such as `Scrolling`. Until their areas replace them, behaviors, operations and component scripts sit under
   `wwwroot/scripts/behaviors/`, `operations/` and `components/`, with wrappers in the matching `Behaviors/`,
   `Operations/` and `Components/` folders. `Forma.Framework.Browser.Blazor.Server` connects it to an Interactive
-  Server circuit.
+  Server circuit. Its abstractions, which hold no script, are `Forma.Framework.Browser`'s: the observations of an
+  element and the options and states they take and report, the options of what the browser does to an element, the
+  registrations an owner's session holds, and `INativeOperations`, all in one namespace.
 - **A Framework feature with scripts of its own** ships them in `Forma.Framework.{Feature}.Interop`, scripts directly
   under `wwwroot/scripts/` and wrappers at the assembly root, as `Forma.Framework.Input.Interop` serves
   `scripts/InputRouter.js` beside `InputRouter.cs`.
@@ -374,6 +380,7 @@ Each mirrors the source paths, so component tests live under
 |----------|------------|-------|
 | `Forma.Framework.Share` | `tests/unit/AddOns/Forma.AddOns.Share.Targets.Tests` | A contracts assembly's behavior shows only through what extends it |
 | `Forma.Framework.Composer.Extensibility` | `tests/unit/Framework/Forma.Framework.Composer.Tests`, the engine implementing it | The same reason |
+| `Forma.Framework.Browser` | `tests/unit/Framework/Forma.Framework.Browser.Interop.Tests`, the interop assembly implementing it | The same reason |
 | `Forma.Framework.Media`, `Forma.Framework.Toolbar` | The components that use them, in `tests/bunit/Blazor/Forma.Blazor.BUnit.Tests` | |
 | The locale packs | The component tests, whose bUnit context reads the packs as an application does | A pack compiles no code |
 | The scripts of `Forma.Framework.Browser.Interop` and the products | The script test project | |
@@ -407,7 +414,8 @@ features that own them.
   - Each host starts through one process that keeps what the host writes, for a failure to report, and on Windows
     joins a job of the checks' process, which ends the host if that process ends first.
 - **`tests/support/Forma.Tests.Support.Maui`** holds the fakes of MAUI's share sheet, file system and device that the
-  MAUI AddOn's suites share, so `Forma.Tests.Support` takes no MAUI package into the suites that reference it.
+  suites of `Forma.Framework.Browser.Maui` share, so `Forma.Tests.Support` takes no MAUI package into the suites
+  that reference it.
 
 ### Script tests
 

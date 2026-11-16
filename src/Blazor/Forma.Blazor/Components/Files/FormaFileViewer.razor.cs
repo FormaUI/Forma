@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Files;
 using System.Globalization;
 
 using Forma.Blazor.Models;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Input;

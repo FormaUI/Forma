@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Composer.PlainTextEditor;
 using System.Diagnostics.CodeAnalysis;
 
 using Forma.Blazor.Components.Inputs;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Browser.Interop.Text;
@@ -45,7 +46,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private CancellationTokenSource? _selectionCancellation;
     private IDisposable? _editsRegistration;
     private IDisposable? _focusRegistration;
-    private DomObservation<TextSelectionWatchOptions, TextSelection>? _selection;
+    private IDomObservation<TextSelectionWatchOptions, TextSelection>? _selection;
     private string? _typedContent;
     private string? _committedContent;
 

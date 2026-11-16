@@ -1,7 +1,7 @@
 namespace Forma.Framework.Browser.Blazor.Server.Tests;
 
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Tests.Browser;
 using Forma.Tests.Interop;
@@ -33,7 +33,7 @@ public sealed class BrowserCircuitHandlerTests
             .AddFormaBrowserServerIntegration()
             .BuildServiceProvider();
 
-    private static Task<DomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(DomWatcher watcher, ElementReference element)
+    private static Task<IDomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(DomWatcher watcher, ElementReference element)
         => watcher.GetElement(element).Scroll.WatchAsync(_ => Task.CompletedTask, new ScrollWatchOptions());
 
     // The circuit is not read by the handler, and a test cannot make one.

@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
@@ -13,7 +14,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
 {
     private static readonly AutofillWatchOptions AutofillOptions = new();
 
-    private DomObservation<AutofillWatchOptions, AutofillState>? _autofillState;
+    private IDomObservation<AutofillWatchOptions, AutofillState>? _autofillState;
     private bool _isAutofilled;
     private DomTextEdits _edits = default!;
 

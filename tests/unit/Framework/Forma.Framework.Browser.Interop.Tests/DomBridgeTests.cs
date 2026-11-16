@@ -1,6 +1,6 @@
 namespace Forma.Framework.Browser.Interop.Tests;
 
-using Forma.Framework.Browser.Interop.Scrolling;
+using Forma.Framework.Browser;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Browser;
 using Forma.Tests.Interop;
@@ -25,7 +25,7 @@ public sealed class DomBridgeTests
             _ => null,
         });
 
-    private static Task<DomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(DomWatcher watcher)
+    private static Task<IDomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(DomWatcher watcher)
         => watcher.GetElement(Viewport).Scroll.WatchAsync(_ => Task.CompletedTask, new ScrollWatchOptions());
 
     public sealed class Importing

@@ -3,9 +3,9 @@ namespace Forma.Blazor.Components.Navigation;
 using System.Globalization;
 
 using Forma.Blazor.Components.Inputs;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Behaviors;
-using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
@@ -48,7 +48,7 @@ public sealed partial class FormaPagination : FormaElementBase
     private Wheel _wheel = default!;
     private TextEntry _textEntry = default!;
     private DotNetObjectReference<FormaPagination>? _selfReference;
-    private DomObservation<FocusWatchOptions, FocusState>? _entryFocus;
+    private IDomObservation<FocusWatchOptions, FocusState>? _entryFocus;
     private bool _isEntryFocused;
     private string? _navigationEntry;
     private string? _shownPageSummary;

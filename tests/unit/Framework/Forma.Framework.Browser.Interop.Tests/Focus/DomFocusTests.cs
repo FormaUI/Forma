@@ -1,6 +1,6 @@
 namespace Forma.Framework.Browser.Interop.Tests.Focus;
 
-using Forma.Framework.Browser.Interop.Focus;
+using Forma.Framework.Browser;
 using Forma.Tests.Browser;
 using Forma.Tests.Shared;
 

@@ -2,8 +2,8 @@ namespace Forma.Blazor.Components.Inputs;
 
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Virtualization;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 using Forma.Framework.Input;
@@ -106,7 +106,7 @@ public sealed partial class FormaTimeBox : FormaComponentBase
 
     private InputRegistration _inputRegistration = default!;
     private DomTextEdits _edits = default!;
-    private DomObservation<FocusWatchOptions, FocusState>? _focusState;
+    private IDomObservation<FocusWatchOptions, FocusState>? _focusState;
     private bool _isWithin;
     private bool _isTextFaulted;
     private ElementReference _anchorElement;

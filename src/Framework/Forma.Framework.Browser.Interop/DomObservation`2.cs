@@ -16,7 +16,7 @@ using Microsoft.AspNetCore.Components;
 /// which keeps only the latest, except for a capability whose every state crosses as it is measured, as the focus's does, so it reaches .NET
 /// ahead of what the reader does next; such states wait here, in order.
 /// </remarks>
-public sealed class DomObservation<TOptions, [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TState> : IAsyncDisposable, IDomRegistrationHost<TOptions>
+public sealed class DomObservation<TOptions, [DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TState> : IDomObservation<TOptions, TState>, IDomRegistrationHost<TOptions>
     where TOptions : notnull
     where TState : class
 {
@@ -39,23 +39,23 @@ public sealed class DomObservation<TOptions, [DynamicallyAccessedMembers(LinkerF
         session.AddStateTarget(_registration.Token, DeliverAsync);
     }
 
-    /// <summary>The state the browser last measured.</summary>
+    /// <inheritdoc />
     public TState? Current { get; private set; }
 
-    /// <summary>Whether the observation is established and its first state taken.</summary>
+    /// <inheritdoc />
     public bool IsActive
         => _registration.IsActive;
 
-    /// <summary>Whether the observation has been disposed.</summary>
+    /// <inheritdoc />
     public bool IsDisposed
         => _registration.IsDisposed;
 
-    /// <summary>Brings the observation in step with what its owner wants: <paramref name="element"/> observed with <paramref name="options"/> while <paramref name="shouldObserve"/>.</summary>
+    /// <inheritdoc />
     /// <remarks>Concurrent calls join one settle, which completes once the latest request has been applied; a request equal to the one established makes no call.</remarks>
     public Task SyncAsync(ElementReference element, TOptions options, bool shouldObserve = true)
         => _registration.SyncAsync(element, options, shouldObserve);
 
-    /// <summary>Measures the observation afresh and resumes its delivery.</summary>
+    /// <inheritdoc />
     public async Task RefreshAsync()
     {
         if (IsDisposed)

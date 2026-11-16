@@ -21,7 +21,7 @@ using Microsoft.AspNetCore.Components;
 /// </remarks>
 public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEditOptions>
 {
-    private static readonly DomCapability<TextEditOptions> EditCapability = new(DomRoot.Engine, "edits", DescribeEdits);
+    private static readonly DomCapability<TextEditOptions> EditCapability = new(DomRoots.Engine, "edits", DescribeEdits);
 
     private readonly DomSession _session;
     private readonly DomRegistration<TextEditOptions> _registration;

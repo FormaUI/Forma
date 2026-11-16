@@ -128,24 +128,24 @@ public sealed class DomBridge : IAsyncDisposable, IDisposable
 
         try
         {
-            var module = await ImportAsync(DomRoot.Watcher);
+            var module = await ImportAsync(DomRoots.Watcher);
             await module.InvokeVoidAsync("refreshAll", owners);
         }
         catch (JSDisconnectedException)
         {
-            DomLog.CircuitDropped(_environment.Logger, Operation, DomRoot.Watcher.Name, _environment.RuntimeId);
+            DomLog.CircuitDropped(_environment.Logger, Operation, DomRoots.Watcher.Name, _environment.RuntimeId);
         }
         catch (OperationCanceledException)
         {
-            DomLog.CallCanceled(_environment.Logger, Operation, DomRoot.Watcher.Name, _environment.RuntimeId);
+            DomLog.CallCanceled(_environment.Logger, Operation, DomRoots.Watcher.Name, _environment.RuntimeId);
         }
         catch (JSException ex)
         {
-            DomLog.CallFailed(_environment.Logger, ex, Operation, DomRoot.Watcher.Name, _environment.RuntimeId);
+            DomLog.CallFailed(_environment.Logger, ex, Operation, DomRoots.Watcher.Name, _environment.RuntimeId);
         }
         catch (ObjectDisposedException)
         {
-            DomLog.BridgeReleased(_environment.Logger, Operation, DomRoot.Watcher.Name, _environment.RuntimeId);
+            DomLog.BridgeReleased(_environment.Logger, Operation, DomRoots.Watcher.Name, _environment.RuntimeId);
         }
     }
 }

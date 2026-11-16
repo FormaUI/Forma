@@ -1,9 +1,9 @@
 namespace Forma.Blazor.Components.Windows;
 
 using Forma.Blazor.Components.Layout;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Components;
-using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
@@ -27,7 +27,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     private ElementReference _scrim;
     private Window _window = default!;
     private DotNetObjectReference<FormaWindow>? _selfReference;
-    private DomObservation<FocusWatchOptions, FocusState>? _focusState;
+    private IDomObservation<FocusWatchOptions, FocusState>? _focusState;
     private InputRegistration _inputRegistration = default!;
     private InputProfile _inputProfile = default!;
     private (bool Modal, WindowPressAway PressAway)? _scopeInputs;

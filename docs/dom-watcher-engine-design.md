@@ -74,7 +74,8 @@ DOMQL describes these requests and validates them against the module's declarati
 | --- | --- |
 | `Forma.DOMQL`, the package `formaui-net.DOMQL` | Neither interop assembly |
 | `Forma.Framework.Input.Interop` | `formaui-net.DOMQL` |
-| `Forma.Framework.Browser.Interop` | `formaui-net.DOMQL` and `Forma.Framework.Input.Interop` |
+| `Forma.Framework.Browser` | Neither interop assembly |
+| `Forma.Framework.Browser.Interop` | `formaui-net.DOMQL`, `Forma.Framework.Browser` and `Forma.Framework.Input.Interop` |
 | A product's integration | `formaui-net.DOMQL` and the capabilities it uses |
 
 `InputRouterDomqlModule` lives beside the router in the input assembly and implements DOMQL's contracts without referencing the browser interop assembly. The assembly graph and the import graph are separate: the module is a JavaScript module of its own, so using the router alone never loads DOMQL. The registry holds definitions alone; component instances, circuit references and subscriptions stay in the sessions that own them. A library that should carry no DOMQL dependency at all exposes its capabilities through an integration package instead, and one such package can serve several capabilities.
@@ -455,6 +456,8 @@ Browser.Interop's shared code keeps its foundation at the root and gives each ca
 | Integrations | Third-party SDK adapters, such as embedding |
 
 This organization governs all of Browser.Interop; the rest of the repository keeps the scripting guide's behavior, operation, component and service taxonomy.
+
+The abstractions a caller names hold no script and live apart from it, in `Forma.Framework.Browser`, one namespace whatever their area: the observation interfaces and `IDomObservation<TOptions, TState>`, the options and states the watcher and the engine take and report, the registrations a session holds and the entries they are made through, and the native operations a host stands in with. Browser.Interop implements them.
 
 ### Module structure
 

@@ -3,7 +3,7 @@ namespace Forma.Blazor.Components.Menus;
 using Forma.Blazor.Components.Buttons;
 using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Interaction;
-using Forma.Framework.Browser.Interop.Behaviors;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Css;
 using Forma.Framework.Input;

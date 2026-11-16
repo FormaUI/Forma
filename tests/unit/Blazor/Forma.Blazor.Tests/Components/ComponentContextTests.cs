@@ -3,8 +3,8 @@ namespace Forma.Blazor.Tests.Components;
 using System.Globalization;
 
 using Forma.Blazor.Components;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 using Forma.Tests.Browser;
@@ -127,7 +127,7 @@ public sealed class ComponentContextTests
         private static ComponentContext CreateContext(FakeDomBrowser browser, FakeLoggerFactory loggerFactory, DomBridge? bridge = null)
             => new(CreateCultureState(), () => browser.Runtime, CreateLocale, () => loggerFactory.CreateLogger("Owner"), () => bridge);
 
-        private static Task<DomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(ComponentContext context, Func<ScrollState, Task>? handler = null)
+        private static Task<IDomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(ComponentContext context, Func<ScrollState, Task>? handler = null)
             => context.DomWatcher.GetElement(Viewport).Scroll.WatchAsync(handler ?? (_ => Task.CompletedTask), new ScrollWatchOptions());
 
         [Fact]

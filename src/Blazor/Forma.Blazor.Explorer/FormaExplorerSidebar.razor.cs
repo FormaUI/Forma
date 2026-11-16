@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Blazor.Components.DataView;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Catalog;
 using Forma.Framework.Catalog.Navigation;

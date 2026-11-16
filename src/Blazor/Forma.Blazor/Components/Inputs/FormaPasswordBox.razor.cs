@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
@@ -16,7 +17,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     private const int ScoredLength = 8;
     private const int WellScoredLength = 12;
 
-    private DomObservation<AutofillWatchOptions, AutofillState>? _autofillState;
+    private IDomObservation<AutofillWatchOptions, AutofillState>? _autofillState;
     private bool _isAutofilled;
     private ValidationMessageStore _messages = default!;
     private IReadOnlyList<string> _advice = [];

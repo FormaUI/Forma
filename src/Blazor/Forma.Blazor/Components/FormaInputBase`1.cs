@@ -2,7 +2,6 @@ namespace Forma.Blazor.Components;
 
 using Forma.Blazor.Components.Inputs;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 using Forma.Framework.Culture;
 using Forma.Framework.JavaScript.Interop;

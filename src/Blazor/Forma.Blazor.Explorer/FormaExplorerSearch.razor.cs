@@ -1,8 +1,7 @@
 namespace Forma.Blazor.Components.Explorer;
 
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Behaviors;
-using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Catalog.Queries;
 using Forma.Framework.Explorer.Content.Queries;
 
@@ -14,7 +13,7 @@ public sealed partial class FormaExplorerSearch : FormaComponentBase
     private static readonly FocusWatchOptions FocusOptions = new();
 
     private FormaExplorerSearchBox? SearchBox { get; set; }
-    private DomObservation<FocusWatchOptions, FocusState>? _focusState;
+    private IDomObservation<FocusWatchOptions, FocusState>? _focusState;
     private bool _isSearching;
     private bool _isFocusPending;
     private bool _isWithin;

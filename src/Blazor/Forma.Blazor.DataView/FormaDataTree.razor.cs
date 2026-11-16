@@ -5,8 +5,8 @@ using System.Globalization;
 
 using Forma.Blazor.Components.Inputs;
 using Forma.Blazor.Components.Virtualization;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 using Forma.Framework.Input;
@@ -95,8 +95,8 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     private static readonly FocusWatchOptions FocusOptions = new() { ItemAttribute = "data-tree-node" };
 
     private DomInteraction<FocusInteractionOptions>? _recovery;
-    private Task<DomObservation<FocusWatchOptions, FocusState>>? _focusWatching;
-    private DomObservation<FocusWatchOptions, FocusState>? _focusState;
+    private Task<IDomObservation<FocusWatchOptions, FocusState>>? _focusWatching;
+    private IDomObservation<FocusWatchOptions, FocusState>? _focusState;
     private FormaVirtualize<VisibleNode>? _virtualizer;
     private List<VisibleNode> _visibleRows = [];
 

@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Components;
 /// <remarks>Elements observed against the same root and margin share one native observer.</remarks>
 public sealed class DomIntersection : IDomIntersectionObservation
 {
-    private static readonly DomCapability<IntersectionWatchOptions> WatchCapability = new(DomRoot.Watcher, "intersection", Describe);
+    private static readonly DomCapability<IntersectionWatchOptions> WatchCapability = new(DomRoots.Watcher, "intersection", Describe);
 
     private readonly DomWatcher _watcher;
     private readonly ElementReference _element;
@@ -20,7 +20,7 @@ public sealed class DomIntersection : IDomIntersectionObservation
     }
 
     /// <inheritdoc />
-    public async Task<DomObservation<IntersectionWatchOptions, IntersectionState>> WatchAsync(Func<IntersectionState, Task> handler, IntersectionWatchOptions options, bool shouldObserve = true)
+    public async Task<IDomObservation<IntersectionWatchOptions, IntersectionState>> WatchAsync(Func<IntersectionState, Task> handler, IntersectionWatchOptions options, bool shouldObserve = true)
     {
         ArgumentNullException.ThrowIfNull(handler);
         ArgumentNullException.ThrowIfNull(options);

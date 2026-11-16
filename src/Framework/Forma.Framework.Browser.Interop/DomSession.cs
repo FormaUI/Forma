@@ -109,7 +109,7 @@ internal sealed class DomSession
     public DomObservedOwner? DescribeObservations()
     {
         var observations = _registrations
-            .Where(registration => registration.Root == DomRoot.Watcher && registration.IsActive)
+            .Where(registration => registration.Root == DomRoots.Watcher && registration.IsActive)
             .Select(registration => new DomObservedRegistration { Token = registration.Token, Generation = registration.Generation })
             .ToList();
 
@@ -181,7 +181,7 @@ internal sealed class DomSession
         {
             if (_reachedRoots.Count > 0)
             {
-                var root = _reachedRoots.Contains(DomRoot.Engine) ? DomRoot.Engine : DomRoot.Watcher;
+                var root = _reachedRoots.Contains(DomRoots.Engine) ? DomRoots.Engine : DomRoots.Watcher;
                 await TryReleaseAsync(root, "release", "release", [RuntimeKey]);
             }
         }
@@ -205,11 +205,11 @@ internal sealed class DomSession
             return;
         }
 
-        ReleaseRegistrations(registration => registration.Root == DomRoot.Engine);
+        ReleaseRegistrations(registration => registration.Root == DomRoots.Engine);
 
-        if (_reachedRoots.Remove(DomRoot.Engine))
+        if (_reachedRoots.Remove(DomRoots.Engine))
         {
-            await TryReleaseAsync(DomRoot.Engine, "releaseEngine", "releaseEngine", [RuntimeKey]);
+            await TryReleaseAsync(DomRoots.Engine, "releaseEngine", "releaseEngine", [RuntimeKey]);
         }
     }
 

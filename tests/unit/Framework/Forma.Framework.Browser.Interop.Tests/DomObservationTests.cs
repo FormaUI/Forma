@@ -2,7 +2,7 @@ namespace Forma.Framework.Browser.Interop.Tests;
 
 using System.Text.Json;
 
-using Forma.Framework.Browser.Interop.Scrolling;
+using Forma.Framework.Browser;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Browser;
 using Forma.Tests.Interop;
@@ -87,7 +87,7 @@ public sealed class DomObservationTests
             using var loggerFactory = new FakeLoggerFactory();
             var browser = CreateBrowser();
             await using var watcher = CreateWatcher(browser, loggerFactory);
-            DomObservation<ScrollWatchOptions, ScrollState>? observation = null;
+            IDomObservation<ScrollWatchOptions, ScrollState>? observation = null;
             bool? wasHeld = null;
 
             // Act
@@ -517,7 +517,7 @@ public sealed class DomObservationTests
             using var loggerFactory = new FakeLoggerFactory();
             var browser = CreateBrowser();
             await using var watcher = CreateWatcher(browser, loggerFactory);
-            DomObservation<ScrollWatchOptions, ScrollState>? observation = null;
+            IDomObservation<ScrollWatchOptions, ScrollState>? observation = null;
             var handled = new List<ScrollState>();
             observation = await watcher.GetElement(Viewport).Scroll.WatchAsync(
                 async state =>

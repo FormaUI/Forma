@@ -3,8 +3,8 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Focus;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -60,7 +60,7 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
 
     private static readonly FocusWatchOptions FocusOptions = new();
 
-    private DomObservation<FocusWatchOptions, FocusState>? _focusState;
+    private IDomObservation<FocusWatchOptions, FocusState>? _focusState;
     private bool _isWithin;
 
     // What the reader has entered, each half held apart until both are there; the time as read, and the edit of its text in progress

@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.DataView;
 
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Scrolling;
 
 using Microsoft.AspNetCore.Components;
 
@@ -12,7 +12,7 @@ public sealed partial class FormaDataViewMore : FormaComponentBase
     private static readonly IntersectionWatchOptions WatchOptions = new() { RootMarginPixels = 200 };
 
     private ElementReference _element;
-    private Task<DomObservation<IntersectionWatchOptions, IntersectionState>>? _watchTask;
+    private Task<IDomObservation<IntersectionWatchOptions, IntersectionState>>? _watchTask;
     private bool _isWatching;
     private int _measuredItemCount;
 

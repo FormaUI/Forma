@@ -1,7 +1,7 @@
 namespace Forma.Blazor.Components.Layout;
 
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 
@@ -41,7 +41,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
     private const string ForwardArrowClass = "forma-freeze-pane-arrow-forward";
 
     private ElementReference _viewport;
-    private DomObservation<ScrollWatchOptions, ScrollState>? _scrollState;
+    private IDomObservation<ScrollWatchOptions, ScrollState>? _scrollState;
     private DomInteraction<ScrollInteractionOptions>? _scrollInteraction;
     private ScrollState? _state;
 

@@ -8,6 +8,7 @@ using System.Text.Json.Serialization.Metadata;
 using Forma.Blazor.Components.Composer.Dialogs;
 using Forma.Blazor.Components.Composer.Interop;
 using Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;

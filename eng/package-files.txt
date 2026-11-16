@@ -64,12 +64,6 @@ formaui-net.AddOns.Emojis.Twemoji
     staticwebassets/assets/travel-3.svg
     THIRD-PARTY-NOTICES.md
 
-formaui-net.AddOns.Operations.Maui
-    lib/net11.0/Forma.AddOns.Operations.Maui.dll
-    LICENSE
-    NOTICE
-    README.md
-
 formaui-net.AddOns.Resources.Markdown
     lib/net11.0/Forma.AddOns.Resources.Markdown.dll
     LICENSE
@@ -193,6 +187,12 @@ formaui-net.Blazor.WebView
     NOTICE
     README.md
 
+formaui-net.Framework.Browser
+    lib/net11.0/Forma.Framework.Browser.dll
+    LICENSE
+    NOTICE
+    README.md
+
 formaui-net.Framework.Browser.Blazor.Server
     lib/net11.0/Forma.Framework.Browser.Blazor.Server.dll
     LICENSE
@@ -265,6 +265,12 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/text/TextEdits.mjs
     staticwebassets/scripts/text/TextSelectionObserver.mjs
     staticwebassets/scripts/text/TextSources.mjs
+
+formaui-net.Framework.Browser.Maui
+    lib/net11.0/Forma.Framework.Browser.Maui.dll
+    LICENSE
+    NOTICE
+    README.md
 
 formaui-net.Framework.Catalog
     lib/net11.0/Forma.Framework.Catalog.dll

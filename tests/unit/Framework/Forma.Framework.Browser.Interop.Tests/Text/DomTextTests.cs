@@ -1,6 +1,6 @@
 namespace Forma.Framework.Browser.Interop.Tests.Text;
 
-using Forma.Framework.Browser.Interop.Text;
+using Forma.Framework.Browser;
 using Forma.Tests.Browser;
 using Forma.Tests.Shared;
 

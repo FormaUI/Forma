@@ -1,7 +1,6 @@
 namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Blazor.Components.Explorer.Interop;
-using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Explorer;
 
 using Microsoft.AspNetCore.Components;

@@ -1,6 +1,6 @@
 namespace Forma.Framework.Browser.Interop.Tests;
 
-using Forma.Framework.Browser.Interop.Scrolling;
+using Forma.Framework.Browser;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Tests.Browser;

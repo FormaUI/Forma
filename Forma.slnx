@@ -2,8 +2,10 @@
     <Project Path="src\AddOns\Forma.AddOns.Resources.Office\Forma.AddOns.Resources.Office.csproj" />
     <Project Path="src\Blazor\Forma.Blazor.Showcase\Forma.Blazor.Showcase.csproj" />
     <Project Path="src\Blazor\Forma.Blazor\Forma.Blazor.csproj" />
+    <Project Path="src\Framework\Forma.Framework.Browser\Forma.Framework.Browser.csproj" />
     <Project Path="src\Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
     <Project Path="src\Framework\Forma.Framework.Browser.Blazor.Server\Forma.Framework.Browser.Blazor.Server.csproj" />
+    <Project Path="src\Framework\Forma.Framework.Browser.Maui\Forma.Framework.Browser.Maui.csproj" />
     <Project Path="src\Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
     <Project Path="src\Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
     <Project Path="src\Framework\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
@@ -41,7 +43,6 @@
     <Project Path="src\AddOns\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
     <Project Path="src\AddOns\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
     <Project Path="src\AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
-    <Project Path="src\AddOns\Forma.AddOns.Operations.Maui\Forma.AddOns.Operations.Maui.csproj" />
     <Project Path="src\Blazor\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
     <Project Path="src\Blazor\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
     <Project Path="src\Blazor\Forma.Blazor.Server\Forma.Blazor.Server.csproj" />
@@ -84,6 +85,8 @@
     <Project Path="tests\unit\Framework\Forma.Framework.Input.Tests\Forma.Framework.Input.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Browser.Interop.Tests\Forma.Framework.Browser.Interop.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Browser.Blazor.Server.Tests\Forma.Framework.Browser.Blazor.Server.Tests.csproj" />
+    <Project Path="tests\unit\Framework\Forma.Framework.Browser.Maui.Tests\Forma.Framework.Browser.Maui.Tests.csproj" />
+    <Project Path="tests\integration\Framework\Forma.Framework.Browser.Maui.Integration.Tests\Forma.Framework.Browser.Maui.Integration.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Input.Interop.Tests\Forma.Framework.Input.Interop.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.JavaScript.Interop.Tests\Forma.Framework.JavaScript.Interop.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Icons.Tests\Forma.Framework.Icons.Tests.csproj" />
@@ -111,8 +114,6 @@
     <Project Path="tests\unit\Framework\Forma.Framework.Catalog.Tests\Forma.Framework.Catalog.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Files.Tests\Forma.Framework.Files.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Emojis.Twemoji.Tests\Forma.AddOns.Emojis.Twemoji.Tests.csproj" />
-    <Project Path="tests\unit\AddOns\Forma.AddOns.Operations.Maui.Tests\Forma.AddOns.Operations.Maui.Tests.csproj" />
-    <Project Path="tests\integration\AddOns\Forma.AddOns.Operations.Maui.Integration.Tests\Forma.AddOns.Operations.Maui.Integration.Tests.csproj" />
     <Project Path="tests\integration\Framework\Forma.Framework.Localization.Integration.Tests\Forma.Framework.Localization.Integration.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Resources.Office.Tests\Forma.AddOns.Resources.Office.Tests.csproj" />
     <Project Path="tests\unit\AddOns\Forma.AddOns.Resources.Markdown.Tests\Forma.AddOns.Resources.Markdown.Tests.csproj" />

@@ -7,8 +7,8 @@ using Microsoft.AspNetCore.Components;
 /// <summary>A text field's entry: the range its selection spans, as the reader moves it, and whether the browser filled it.</summary>
 public sealed class DomText : IDomTextObservation
 {
-    private static readonly DomCapability<TextSelectionWatchOptions> SelectionCapability = new(DomRoot.Watcher, "selection", static _ => new SelectionDescription());
-    private static readonly DomCapability<AutofillWatchOptions> AutofillCapability = new(DomRoot.Watcher, "autofill", static _ => new AutofillDescription());
+    private static readonly DomCapability<TextSelectionWatchOptions> SelectionCapability = new(DomRoots.Watcher, "selection", static _ => new SelectionDescription());
+    private static readonly DomCapability<AutofillWatchOptions> AutofillCapability = new(DomRoots.Watcher, "autofill", static _ => new AutofillDescription());
 
     private readonly DomWatcher _watcher;
     private readonly ElementReference _element;
@@ -20,7 +20,7 @@ public sealed class DomText : IDomTextObservation
     }
 
     /// <inheritdoc />
-    public async Task<DomObservation<TextSelectionWatchOptions, TextSelection>> WatchSelectionAsync(Func<TextSelection, Task> handler, bool shouldObserve = true)
+    public async Task<IDomObservation<TextSelectionWatchOptions, TextSelection>> WatchSelectionAsync(Func<TextSelection, Task> handler, bool shouldObserve = true)
     {
         ArgumentNullException.ThrowIfNull(handler);
 
@@ -31,7 +31,7 @@ public sealed class DomText : IDomTextObservation
     }
 
     /// <inheritdoc />
-    public async Task<DomObservation<AutofillWatchOptions, AutofillState>> WatchAutofillAsync(Func<AutofillState, Task> handler, bool shouldObserve = true)
+    public async Task<IDomObservation<AutofillWatchOptions, AutofillState>> WatchAutofillAsync(Func<AutofillState, Task> handler, bool shouldObserve = true)
     {
         ArgumentNullException.ThrowIfNull(handler);
 

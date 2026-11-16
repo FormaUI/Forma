@@ -7,9 +7,9 @@ using Microsoft.AspNetCore.Components;
 /// <summary>An element's scrolling: observing how far it can still move, moving it a step, and the interaction that moves it in the browser.</summary>
 public sealed class DomScroll : IDomScrollObservation
 {
-    private static readonly DomCapability<ScrollWatchOptions> WatchCapability = new(DomRoot.Watcher, "scroll", DescribeWatch);
+    private static readonly DomCapability<ScrollWatchOptions> WatchCapability = new(DomRoots.Watcher, "scroll", DescribeWatch);
 
-    private static readonly DomCapability<ScrollInteractionOptions> InteractionCapability = new(DomRoot.Engine, "scroll", DescribeInteraction)
+    private static readonly DomCapability<ScrollInteractionOptions> InteractionCapability = new(DomRoots.Engine, "scroll", DescribeInteraction)
     {
         DeclaresRoutes = options => options.WheelAction is not null || options.Buttons is not null,
     };
@@ -26,7 +26,7 @@ public sealed class DomScroll : IDomScrollObservation
     }
 
     /// <inheritdoc />
-    public async Task<DomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(Func<ScrollState, Task> handler, ScrollWatchOptions options, bool shouldObserve = true)
+    public async Task<IDomObservation<ScrollWatchOptions, ScrollState>> WatchAsync(Func<ScrollState, Task> handler, ScrollWatchOptions options, bool shouldObserve = true)
     {
         ArgumentNullException.ThrowIfNull(handler);
         ArgumentNullException.ThrowIfNull(options);
@@ -67,7 +67,7 @@ public sealed class DomScroll : IDomScrollObservation
             return false;
         }
 
-        return await _watcher.Session.TryInvokeAsync<bool>(DomRoot.Engine, "run", "run scroll step", () => !engine.IsDisposed, createsState: false, "scroll", "step", _element, direction == ScrollDirection.Back ? -1 : 1, DescribeSteps(options));
+        return await _watcher.Session.TryInvokeAsync<bool>(DomRoots.Engine, "run", "run scroll step", () => !engine.IsDisposed, createsState: false, "scroll", "step", _element, direction == ScrollDirection.Back ? -1 : 1, DescribeSteps(options));
     }
 
     private DomEngine GetEngine()

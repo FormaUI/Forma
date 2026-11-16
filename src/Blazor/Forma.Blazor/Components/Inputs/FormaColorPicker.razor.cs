@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Inputs;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.Css;
 

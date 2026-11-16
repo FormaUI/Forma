@@ -31,6 +31,18 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A file a satellite assembly holds under the name its item gave it, culture and all, is read and reported under that
   name, where the source added its culture a second time, and a satellite's file named for another culture is left
   out.
+- `formaui-net.Framework.Browser` holds the browser layer's abstractions, which `Forma.Framework.Browser.Interop`
+  implements: the observation interfaces, the options and states the watcher and the engine take and report, the
+  registrations a session holds with `DomRoot`, and `INativeOperations`. They were in the interop assembly's
+  namespaces, `IDomRegistration`, `IDomRegistrationHost<TOptions>` and `DomRoot` were internal, a watch returned a
+  `DomObservation<TOptions, TState>`, and `TextRange` was `TextEntry.TextRange`. To migrate, import
+  `Forma.Framework.Browser`, hold an observation as the `IDomObservation<TOptions, TState>` a watch now returns, and
+  name `TextRange` alone.
+- MAUI's native operations ship as `formaui-net.Framework.Browser.Maui`, in the namespace `Forma.Framework.Browser.Maui`,
+  built on `formaui-net.Framework.Browser` alone. They shipped as `formaui-net.AddOns.Operations.Maui`, in
+  `Forma.Framework.Browser.Interop.Operations.Maui`, with the browser interop assembly behind them. To migrate,
+  reference the new package, import its namespace and register it with `AddFormaBrowserMauiIntegration()`, which
+  was `AddFormaMauiOperations()`.
 - `LocaleSourceAttribute` marks a member holding a locale read for the type another member of its instance names, as
   `FormaComponentBase.L` and `FormaInputBase<TValue>.L` are for `LocalizationSourceType`, so a linter can read each key
   looked up through it in that type's files.
@@ -606,7 +618,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - The [culture state](docs/culture-design.md#one-culture-state-per-user-scope) notifies its subscribers once the call
   that switched it has returned. Under Blazor Hybrid the application's culture coordinator was held while they ran, so
   a subscriber waiting on another native window's thread stopped that window's web view from starting or switching.
-- [`Forma.AddOns.Operations.Maui`](src/AddOns/Forma.AddOns.Operations.Maui/README.md#what-the-reader-gets) keeps
+- [`Forma.AddOns.Operations.Maui`](src/Framework/Forma.Framework.Browser.Maui/README.md#what-the-reader-gets) keeps
   the file it saved last alone in the application's cache. Each print and download left its document there.
 - [`INativeOperations`](src/Framework/Forma.Framework.Browser.Interop/README.md#operations) takes `CanSave`, whether
   the host keeps a file through its own surface, and `Print` composes the document it hands the host, as `Download`

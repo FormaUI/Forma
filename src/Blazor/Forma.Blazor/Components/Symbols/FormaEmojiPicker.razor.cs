@@ -4,8 +4,8 @@ using Forma.Blazor.Components.Feedback;
 using Forma.Blazor.Components.Inputs;
 using Forma.Blazor.Components.Interaction;
 using Forma.Blazor.Features.Emojis;
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Framework.Css;
 using Forma.Framework.Emojis;
 using Forma.Framework.Emojis.Unicode;
@@ -66,7 +66,7 @@ public sealed partial class FormaEmojiPicker(IEmojiProvider? emojiProvider = nul
     private string _searchQuery = string.Empty;
     private string? _activeGroupId;
     private string _announcement = string.Empty;
-    private DomObservation<IntersectionWatchOptions, IntersectionState>? _sentinel;
+    private IDomObservation<IntersectionWatchOptions, IntersectionState>? _sentinel;
     private ElementReference _sentinelElement;
     private ElementReference _panelElement;
 

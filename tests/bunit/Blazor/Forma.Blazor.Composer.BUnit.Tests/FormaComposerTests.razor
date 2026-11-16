@@ -4,8 +4,8 @@
 @using Forma.Blazor.Components.Composer.Plugins
 @using Forma.Blazor.Components.Composer.RichTextEditor
 @using Forma.Blazor.Components.Composer.RichTextEditor.Views
+@using Forma.Framework.Browser
 @using Forma.Framework.Browser.Interop.Operations
-@using Forma.Framework.Browser.Interop.Text
 @using Forma.Framework.Composer.Dialogs
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
@@ -1369,8 +1369,8 @@
             _ = new TextFieldProbe(ctx);
             var router = new InputRouterProbe(ctx);
             ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/TextEntry.js")
-                .Setup<TextEntry.TextRange?>("readSelection", _ => true)
-                .SetResult(new TextEntry.TextRange { Start = 2, End = 5 });
+                .Setup<TextRange?>("readSelection", _ => true)
+                .SetResult(new TextRange { Start = 2, End = 5 });
             var model = new TestModel();
             var plugin = new CommandPlugin();
             var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>(editor => editor.AddFeaturePlugin(_ => plugin)));

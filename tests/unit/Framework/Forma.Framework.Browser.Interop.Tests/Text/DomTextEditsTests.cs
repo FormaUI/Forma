@@ -2,6 +2,7 @@ namespace Forma.Framework.Browser.Interop.Tests.Text;
 
 using System.Text;
 
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Browser;

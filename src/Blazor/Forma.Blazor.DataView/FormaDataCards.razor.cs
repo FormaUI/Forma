@@ -4,7 +4,6 @@ using System.Globalization;
 
 using Forma.Blazor.Components.DataView.Interop;
 using Forma.Blazor.Components.Virtualization;
-using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
 

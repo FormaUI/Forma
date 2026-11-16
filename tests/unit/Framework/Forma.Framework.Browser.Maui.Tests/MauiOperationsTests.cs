@@ -1,0 +1,110 @@
+namespace Forma.Framework.Browser.Maui.Tests;
+
+using Forma.Tests.Maui;
+using Forma.Tests.Shared;
+
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Maui.ApplicationModel.DataTransfer;
+using Microsoft.Maui.Devices;
+
+using Xunit;
+
+public sealed class MauiOperationsTests : IDisposable
+{
+    private readonly TempDirectory _cache = new("forma-maui-");
+
+    public void Dispose()
+        => _cache.Dispose();
+
+    private MauiOperations CreateOperations(FakeShare share, DevicePlatform platform)
+        => new(share, new FakeFileSystem(_cache.Root), new FakeDeviceInfo(platform));
+
+    [Fact]
+    public async Task Should_hand_the_share_sheet_an_address_under_its_title()
+    {
+        // Arrange
+        var share = new FakeShare();
+        var operations = CreateOperations(share, DevicePlatform.iOS);
+
+        // Act
+        var isTaken = await operations.TryShareAsync("Report", "https://example.com/report");
+
+        // Assert
+        var request = Assert.IsType<ShareTextRequest>(Assert.Single(share.Requests));
+        Assert.Multiple(
+            () => Assert.True(isTaken),
+            () => Assert.True(operations.CanShare),
+            () => Assert.Equal("Report", request.Title),
+            () => Assert.Equal("https://example.com/report", request.Uri));
+    }
+
+    [Fact]
+    public async Task Should_leave_saving_and_sharing_to_the_web_view_on_Windows()
+    {
+        // Arrange
+        var share = new FakeShare();
+        var operations = CreateOperations(share, DevicePlatform.WinUI);
+
+        // Act
+        var isSaved = await operations.TrySaveAsync("Report.html", "<p>Report</p>", "text/html");
+        var isShared = await operations.TryShareAsync("Report", "https://example.com/report");
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.False(isSaved),
+            () => Assert.False(isShared),
+            () => Assert.False(operations.CanSave),
+            () => Assert.False(operations.CanShare),
+            () => Assert.Empty(share.Requests));
+    }
+
+    [Fact]
+    public async Task Should_keep_a_file_s_name_inside_its_own_folder()
+    {
+        // Arrange
+        var share = new FakeShare();
+        var operations = CreateOperations(share, DevicePlatform.Android);
+
+        // Act
+        await operations.TrySaveAsync("../Report.html", "<p>Report</p>", "text/html");
+
+        // Assert
+        var file = Assert.IsType<ShareFileRequest>(Assert.Single(share.Requests)).File!;
+        Assert.Multiple(
+            () => Assert.Equal("Report.html", Path.GetFileName(file.FullPath)),
+            () => Assert.StartsWith(Path.Combine(_cache.Root, "forma"), file.FullPath, StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task Should_leave_only_the_file_it_saved_last_in_its_cache()
+    {
+        // Arrange
+        var share = new FakeShare();
+        var operations = CreateOperations(share, DevicePlatform.Android);
+        await operations.TrySaveAsync("Draft.html", "<p>Draft</p>", "text/html");
+
+        // Act
+        await operations.TrySaveAsync("Report.html", "<p>Report</p>", "text/html");
+
+        // Assert
+        var first = Assert.IsType<ShareFileRequest>(share.Requests[0]).File!.FullPath;
+        var last = Assert.IsType<ShareFileRequest>(share.Requests[1]).File!.FullPath;
+        Assert.Multiple(
+            () => Assert.False(File.Exists(first)),
+            () => Assert.True(File.Exists(last)),
+            () => Assert.Equal([Path.GetDirectoryName(last)], Directory.GetDirectories(Path.Combine(_cache.Root, "forma"))));
+    }
+
+    [Fact]
+    public void Should_register_the_operations_once_leaving_a_host_s_own_in_place()
+    {
+        // Arrange
+        var own = new MauiOperations(new FakeShare(), new FakeFileSystem(_cache.Root), new FakeDeviceInfo(DevicePlatform.Android));
+
+        // Act
+        var services = new ServiceCollection().AddSingleton<INativeOperations>(own).AddFormaBrowserMauiIntegration().AddFormaBrowserMauiIntegration();
+
+        // Assert
+        Assert.Same(own, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(INativeOperations)).ImplementationInstance);
+    }
+}

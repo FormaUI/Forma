@@ -88,8 +88,8 @@ A component saves a file, prints a document and shares an address through the br
 naming a file to download, the browser's printing and its share surface. Android's WebView and `WKWebView`
 take none of them without native help, so the host does each natively where its web view can't:
 
-- **One contract, `INativeOperations`,** in the browser interop assembly beside the operations it stands in
-  for, saves a file and shares an address, telling whether the host does each and answering whether it took
+- **One contract, `INativeOperations`,** among the browser layer's abstractions in `Forma.Framework.Browser`,
+  saves a file and shares an address, telling whether the host does each and answering whether it took
   each; a component that saves, prints or shares takes it where the host registers one that does, and goes
   to the browser's path where none is registered, the host does neither, or it declines. A document is
   composed to print only for a host that saves it.
@@ -97,11 +97,11 @@ take none of them without native help, so the host does each natively where its 
   where the host takes files, the document to print, or the page as it stands, is written as a document of
   its own carrying the page's styles and handed to the host as an HTML file, from which the reader prints it
   through the platform's own surface.
-- **MAUI's implementation is an add-on,** `Forma.AddOns.Operations.Maui`, an application's opt-in, which hands
-  each file and address to the platform's share sheet through MAUI's own share and file system services on
-  Android, iOS and Mac Catalyst, and declines on Windows, whose web view does all three itself. It builds
-  against MAUI's platform-neutral services, which each platform's build of the application replaces with its
-  own, so the add-on carries no code of a platform's own.
+- **MAUI's implementation is `Forma.Framework.Browser.Maui`,** the browser layer's half for MAUI and an
+  application's opt-in, which hands each file and address to the platform's share sheet through MAUI's own
+  share and file system services on Android, iOS and Mac Catalyst, and declines on Windows, whose web view does
+  all three itself. It builds against MAUI's platform-neutral services, which each platform's build of the
+  application replaces with its own, so it carries no code of a platform's own.
 
 ## Strings in the application
 

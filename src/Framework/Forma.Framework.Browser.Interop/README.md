@@ -7,11 +7,12 @@ behaviors that attach to an element for a lifetime, such as a drop zone or an an
 that make a single call, such as writing to the clipboard; and the browser side of components such as
 `FormaDialog` and `FormaWindow`.
 
-The package comes with `formaui-net.Blazor`. It is built on `Forma.Framework.JavaScript.Interop`.
-The watcher and engine sit at the root of the `Forma.Framework.Browser.Interop` namespace with the
-registrations they make, and each capability area has a namespace beneath it, such as `Scrolling`.
-The wrappers sit in `Behaviors`, `Operations` and `Components`. The scripts are served from
-`_content/forma/browser/scripts/`.
+The package comes with `formaui-net.Blazor`. It is built on `Forma.Framework.JavaScript.Interop` and
+implements the abstractions of `Forma.Framework.Browser`, where the observations, the options and
+states they take and report, and `INativeOperations` live. The watcher and engine sit at the root of
+the `Forma.Framework.Browser.Interop` namespace with the registrations they make, and each capability
+area has a namespace beneath it, such as `Scrolling`. The wrappers sit in `Behaviors`, `Operations` and
+`Components`. The scripts are served from `_content/forma/browser/scripts/`.
 
 ## The DOM watcher and engine
 
@@ -27,10 +28,10 @@ overlapping calls join one settle. A freeze pane that reports how far its conten
 steps it with its arrows:
 
 ```csharp
+using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop;
-using Forma.Framework.Browser.Interop.Scrolling;
 
-private DomObservation<ScrollWatchOptions, ScrollState>? _scrollState;
+private IDomObservation<ScrollWatchOptions, ScrollState>? _scrollState;
 private DomInteraction<ScrollInteractionOptions>? _scrolling;
 
 protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -188,10 +189,10 @@ wrapper.
 | `Share` | Offers a title and URL to the platform's share surface, and reports whether it has one. |
 | `TextEntry` | Reads or writes a text entry's selected range. |
 
-`INativeOperations` is a host's own way to save a file and share an address, for a web view that does
-neither. `CanSave` and `CanShare` tell whether the host does each. `Download`, `Print` and `Share` take it
-where the host registers one that does, and take the browser's path where the host hasn't registered one,
-does neither, or declines.
+`INativeOperations`, in `Forma.Framework.Browser`, is a host's own way to save a file and share an
+address, for a web view that does neither. `CanSave` and `CanShare` tell whether the host does each.
+`Download`, `Print` and `Share` take it where the host registers one that does, and take the browser's
+path where the host hasn't registered one, does neither, or declines.
 
 `Pointer.js`, a pointer captured to one element for the rest of its gesture, is composed by
 `DragGesture.js` alone, without a wrapper.

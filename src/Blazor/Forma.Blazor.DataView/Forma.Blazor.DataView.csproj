@@ -49,6 +49,7 @@
 
     <!-- The Framework assemblies the component compiles against, each a package this one depends on. -->
     <ItemGroup>
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Browser\Forma.Framework.Browser.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Browser.Interop\Forma.Framework.Browser.Interop.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
