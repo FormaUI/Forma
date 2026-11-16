@@ -24,7 +24,7 @@ public sealed partial class FormaDataGridTable<TItem> : FormaElementBase
     internal FormaVirtualize<DataViewRow<TItem>>? Virtualizer { get; private set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaDataGrid<TItem>);
 
     /// <inheritdoc />

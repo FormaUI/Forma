@@ -33,7 +33,7 @@ public sealed partial class FormaDataCard<TItem> : FormaComponentBase
     private bool ItemSelection { get; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaDataCards<TItem>);
 
     /// <inheritdoc />

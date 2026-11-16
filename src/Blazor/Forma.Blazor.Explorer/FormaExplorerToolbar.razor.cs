@@ -18,7 +18,7 @@ public sealed partial class FormaExplorerToolbar : FormaComponentBase
     [CascadingParameter] private IExplorerItemInteraction ItemInteraction { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaExplorer);
 
     private static readonly ButtonOptions SortTriggerOptions =

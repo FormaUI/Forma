@@ -55,7 +55,7 @@ that fails to load, reaches a host through the log the host already configures.
   the component's JS environment, which carries that logger and the component's identity,
   so `FormaFrame`'s interop logs under `FormaFrame` and names the instance.
 - **Strings per component, under its own type unless it says otherwise.** `L` is created
-  lazily through `IStringLocaleFactory` from `LocalizationSourceType`, which is the
+  lazily through `IStringLocaleFactory` from `LocaleSourceType`, which is the
   component's own type by default and a feature's type where components share a file,
   as `FormaExplorer`'s and `FormaComposer`'s do.
 - **Debug for what the library absorbs; anything louder decided per site.** What the
@@ -110,7 +110,7 @@ that fails to load, reaches a host through the log the host already configures.
 state, all required, and resolves the runtime and the locale factory from the provider,
 falling back to their null objects, as [the services](#the-services) set out. It subscribes
 to the state, and builds the component's context once from them and its
-`LocalizationSourceType`, finding the user scope's DOM bridge where one is registered. It
+`LocaleSourceType`, finding the user scope's DOM bridge where one is registered. It
 gives the component its strings as `L`, reports whether it is disposed, and runs
 `DisposeAsyncCore` once on disposal, then releases a context it built, so the component's
 own cleanup can still use it. The context carries the component's identity, cultures,
@@ -195,10 +195,10 @@ C# has one base slot, so the input base repeats what the other two carry rather 
 deriving from them. The context carries what both can share, the identity, the strings,
 the log and the environment, and the two builders carry the class and style
 composition; what stays written out twice is the injections,
-`LocalizationSourceType`, `IsDisposed`, the dispose pair and the host parameters.
+`LocaleSourceType`, `IsDisposed`, the dispose pair and the host parameters.
 
 A dialog base a composite owns derives from `FormaComponentBase` and overrides
-`LocalizationSourceType` once, to the composite's type, for every dialog under it.
+`LocaleSourceType` once, to the composite's type, for every dialog under it.
 
 ## The services
 

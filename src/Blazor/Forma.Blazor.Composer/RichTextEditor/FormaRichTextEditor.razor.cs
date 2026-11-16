@@ -34,7 +34,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     // The canvas commits at its own pace, so each edit it sends is a commit.

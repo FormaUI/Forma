@@ -22,7 +22,7 @@ public sealed partial class FormaExplorerOverflowMenu : FormaComponentBase
     [CascadingParameter] private IExplorerLocationInteraction LocationInteraction { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaExplorer);
 
     /// <inheritdoc />

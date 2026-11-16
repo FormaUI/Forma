@@ -46,7 +46,7 @@ public sealed partial class FormaExplorerSidebar : FormaComponentBase
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaExplorer);
 
     private const double MinTreeHeight = 6;

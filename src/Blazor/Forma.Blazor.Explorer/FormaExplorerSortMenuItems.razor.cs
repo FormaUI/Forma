@@ -20,7 +20,7 @@ public sealed partial class FormaExplorerSortMenuItems : FormaComponentBase
     [CascadingParameter] private IExplorerInteraction Interaction { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaExplorer);
 
     /// <inheritdoc />

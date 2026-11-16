@@ -1,12 +1,12 @@
 ---
 name: forma-localizing
-description: The localization standard — reading library strings through the base's L, sharing a composite's file through LocalizationSourceType, shipping a locale file per language for each category folder, sectioned by component and keyed by English source text, passing interpolation holes positionally in PascalCase, the Title Case versus sentence case rule that separates labels from prose across every Latin-script language, and linting the files against their call sites. Use when adding or changing any user-facing string, editing a locale file, or naming an interpolation hole.
+description: The localization standard — reading library strings through the base's L, sharing a composite's file through LocaleSourceType, shipping a locale file per language for each category folder, sectioned by component and keyed by English source text, passing interpolation holes positionally in PascalCase, the Title Case versus sentence case rule that separates labels from prose across every Latin-script language, and linting the files against their call sites. Use when adding or changing any user-facing string, editing a locale file, or naming an interpolation hole.
 ---
 
 # Localization
 
 - Do read a component's library-owned strings through the base's `L["The English sentence"]`; every component has `L` from the component base, resolved from its own type, so nothing is injected.
-- Do override `LocalizationSourceType` on a part that reads a composite's file rather than its own, `=> typeof(FormaX)` on the parts of `FormaX`, so those parts share one locale pair.
+- Do override `LocaleSourceType` on a part that reads a composite's file rather than its own, `=> typeof(FormaX)` on the parts of `FormaX`, so those parts share one locale pair.
 - Do inject `IStringLocale<T>` only where there is no base and nothing renders, as in a service; it reads the ambient culture, so a component whose output follows a switch made in place reads its strings through a locale bound to the culture state instead, as a base's `L` is, the showcase's shared page base among them.
 - Do ship the library's locale files in the locale pack of their language, where the repository's structure document places the packs, under a folder named for the assembly they localize and one file per category folder named for the culture alone, `Forma.Blazor/Components/Bars/he.json`, holding a section per component keyed by that English source text, `"FormaToolbar": { "Bold": "…" }`; the product and the components that are their own projects ship no locale files of their own, a new language is a new pack declaring `IsLocalePack` and its `LocalePackCulture`, and there is no neutral file, because a key no file localizes falls back to the key itself.
 - Do keep an AddOn's locale files in the AddOn, in its own `.locales` folder, since an AddOn is a host opt-in already and its strings arrive with it.

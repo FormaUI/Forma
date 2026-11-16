@@ -23,7 +23,7 @@ public sealed partial class FormaRichTextPreview(INativeOperations? nativeOperat
     [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaRichTextEditor);
 
     private RichTextPreviewViewPlugin _previewPlugin = default!;

@@ -32,7 +32,7 @@ public sealed partial class FormaDataViewMore : FormaComponentBase
     [Parameter] public int ItemCount { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaDataView<>);
 
     // The end is watched while reaching it loads the next page and no page is on its way.

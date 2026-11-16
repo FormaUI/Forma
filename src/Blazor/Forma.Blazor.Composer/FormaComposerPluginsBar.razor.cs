@@ -31,7 +31,7 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
     [Parameter] public bool Animated { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     private IReadOnlyList<ToolbarItem> _visibleItems = [];

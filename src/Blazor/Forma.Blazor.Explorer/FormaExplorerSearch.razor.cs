@@ -27,7 +27,7 @@ public sealed partial class FormaExplorerSearch : FormaComponentBase
     [CascadingParameter] private IExplorerSearchView Search { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaExplorer);
 
     private bool IsSearching

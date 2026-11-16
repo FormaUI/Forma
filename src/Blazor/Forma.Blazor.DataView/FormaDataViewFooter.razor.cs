@@ -10,7 +10,7 @@ public sealed partial class FormaDataViewFooter : FormaElementBase
     [CascadingParameter] private IDataViewFooter Footer { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaDataView<>);
 
     /// <inheritdoc />

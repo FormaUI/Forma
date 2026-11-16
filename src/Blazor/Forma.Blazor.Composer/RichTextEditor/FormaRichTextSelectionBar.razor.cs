@@ -26,7 +26,7 @@ public sealed partial class FormaRichTextSelectionBar : FormaComponentBase
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaRichTextEditor);
 
     private ElementReference _menuElement;

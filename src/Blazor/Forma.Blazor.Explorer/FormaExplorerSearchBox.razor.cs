@@ -20,7 +20,7 @@ public sealed partial class FormaExplorerSearchBox : FormaComponentBase
     [CascadingParameter] private IExplorerSearchInteraction SearchInteraction { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaExplorer);
 
     /// <summary>The box's text element, once rendered.</summary>

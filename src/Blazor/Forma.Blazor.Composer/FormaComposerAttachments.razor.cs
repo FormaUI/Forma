@@ -15,7 +15,7 @@ public sealed partial class FormaComposerAttachments : FormaComponentBase
     [CascadingParameter] public IComposerInteraction? Interaction { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     private string HeadingId

@@ -19,7 +19,7 @@ public sealed partial class FormaRichTextSource(INativeOperations? nativeOperati
     [CascadingParameter] public IComposerViewPlugin? ViewPlugin { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaRichTextEditor);
 
     private RichTextSourceViewPlugin _sourcePlugin = default!;

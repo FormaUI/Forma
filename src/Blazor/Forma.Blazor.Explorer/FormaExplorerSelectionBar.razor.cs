@@ -28,7 +28,7 @@ public sealed partial class FormaExplorerSelectionBar : FormaComponentBase
     private int? _focusAfterRemoval;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaExplorer);
 
     private string ReviewId

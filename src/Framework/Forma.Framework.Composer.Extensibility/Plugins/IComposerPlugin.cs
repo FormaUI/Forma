@@ -8,7 +8,7 @@ using Forma.Framework.Plugins;
 public interface IComposerPlugin : IPlugin, IComposerKeyBindingSource
 {
     /// <summary>The type whose locale files hold this plugin's titles and labels, or null for the composer's own.</summary>
-    Type? LocalizationSourceType => null;
+    Type? LocaleSourceType => null;
 
     /// <summary>The items this plugin contributes, each naming the row it lands on.</summary>
     IReadOnlyList<ComposerToolbarItem> Items => [];

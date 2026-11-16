@@ -52,7 +52,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
     public virtual ElementReference RootElement { get; protected set; }
 
     /// <summary>The type whose locale files the component reads.</summary>
-    protected virtual Type LocalizationSourceType
+    protected virtual Type LocaleSourceType
         => GetType();
 
     /// <summary>The component's context: its identity, its cultures, its strings, its log and its JS environment.</summary>
@@ -60,13 +60,13 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         => _context ??= new ComponentContext(
             CultureState,
             Services.GetJSRuntime,
-            () => Services.GetStringLocaleFactory().Create(LocalizationSourceType, CultureState),
+            () => Services.GetStringLocaleFactory().Create(LocaleSourceType, CultureState),
             () => LoggerFactory.CreateLogger(GetType()),
             () => Services.GetService<DomBridge>(),
             Services.GetJSTransferOptions);
 
     /// <summary>The component's strings, in the culture state's UI culture.</summary>
-    [LocaleSource(nameof(LocalizationSourceType))]
+    [LocaleSource(nameof(LocaleSourceType))]
     protected IStringLocale L
         => Context.Locale;
 

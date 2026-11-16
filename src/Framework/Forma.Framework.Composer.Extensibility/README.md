@@ -118,7 +118,7 @@ required.
 | `CommandPrefixes` | Prefixes of commands it owns, such as one per entry a picker offers. |
 | `Assets` | Browser assets it needs, as `ComposerAsset`s: a `Module`, `Stylesheet` or `Font`, loaded `OnDemand` or `Eager`. |
 | `ActiveStates` | The identifiers of its toggles and options that are on. |
-| `LocalizationSourceType` | The type whose locale files hold its titles and labels, so a plugin from another package ships its strings with it. |
+| `LocaleSourceType` | The type whose locale files hold its titles and labels, so a plugin from another package ships its strings with it. |
 
 Titles and labels are English, and the composer localizes them. `ComposerRows` names the rows the
 composer provides: `BuiltIn`, `Plugins`, `Formatting`, `Paragraph` and `Selection`.

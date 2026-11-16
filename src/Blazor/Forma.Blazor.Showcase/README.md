@@ -68,9 +68,8 @@ again when the culture changes in place, reads its strings through the base's `L
 something of its own overrides `Dispose(bool)`.
 
 A variant is a sibling file named `FormaXPage.{Variant}.razor` with a route of its own; it joins
-`FormaXPage`'s tabs by its name, and reads `FormaXPage`'s strings by overriding
-`LocalizationSourceType`. The repository's component authoring guide states what a page
-must render.
+`FormaXPage`'s tabs by its name, and reads `FormaXPage`'s strings by overriding `LocaleSourceType`.
+The repository's component authoring guide states what a page must render.
 
 ## License
 

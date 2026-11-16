@@ -35,7 +35,7 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     [Inject] private IServiceProvider Services { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     private ComposerSelectionBar SelectionBar { get; set; } = new([], ComposerKeyBindingCatalog.Empty);

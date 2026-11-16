@@ -45,7 +45,7 @@ public sealed partial class FormaDataTreeNode<TItem> : FormaComponentBase
     private bool NodeSelection { get; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaDataTree<TItem>);
 
     /// <inheritdoc />

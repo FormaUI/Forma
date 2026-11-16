@@ -24,7 +24,7 @@ public abstract class ComposerDialogBase : FormaComponentBase
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     /// <summary>The messages shown beneath the fields.</summary>

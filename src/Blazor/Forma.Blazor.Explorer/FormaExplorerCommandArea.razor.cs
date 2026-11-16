@@ -19,7 +19,7 @@ public sealed partial class FormaExplorerCommandArea : FormaComponentBase
     [CascadingParameter] private IExplorerView View { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaExplorer);
 
     private string SelectionAnnouncement

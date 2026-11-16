@@ -18,7 +18,7 @@ public sealed partial class FormaComposerStatusStrip : FormaComponentBase
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     private string AnnouncedText

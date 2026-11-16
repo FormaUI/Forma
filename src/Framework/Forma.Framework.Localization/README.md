@@ -188,10 +188,10 @@ public abstract class ScreenBase : ComponentBase
     [Inject] private IStringLocaleFactory Locales { get; set; } = default!;
     [Inject] private ICultureState CultureState { get; set; } = default!;
 
-    protected virtual Type LocalizationSourceType => GetType();
+    protected virtual Type LocaleSourceType => GetType();
 
-    [LocaleSource(nameof(LocalizationSourceType))]
-    protected IStringLocale L => field ??= Locales.Create(LocalizationSourceType, CultureState);
+    [LocaleSource(nameof(LocaleSourceType))]
+    protected IStringLocale L => field ??= Locales.Create(LocaleSourceType, CultureState);
 }
 ```
 

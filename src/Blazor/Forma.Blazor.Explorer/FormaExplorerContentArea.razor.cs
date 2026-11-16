@@ -45,7 +45,7 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
         => value?.LocalDateTime.ToString("g", Context.CultureState.Culture) ?? Placeholder;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaExplorer);
 
     /// <inheritdoc />

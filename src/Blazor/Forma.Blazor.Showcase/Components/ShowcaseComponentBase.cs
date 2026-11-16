@@ -18,12 +18,12 @@ public abstract class ShowcaseComponentBase : ComponentBase, IDisposable
     private bool _isDisposed;
 
     /// <summary>The type whose locale files the component reads.</summary>
-    protected virtual Type LocalizationSourceType
+    protected virtual Type LocaleSourceType
         => GetType();
 
     /// <summary>The component's strings, in the culture state's UI culture.</summary>
     protected IStringLocale L
-        => _locale ??= LocaleFactory.Create(LocalizationSourceType, CultureState);
+        => _locale ??= LocaleFactory.Create(LocaleSourceType, CultureState);
 
     /// <inheritdoc />
     /// <remarks>The first call subscribes the component to its culture state.</remarks>

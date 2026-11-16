@@ -45,8 +45,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
   was `AddFormaMauiOperations()`.
 - `FormaShareMenu`'s Print reads in Hebrew and Spanish. It read in English.
 - `LocaleSourceAttribute` marks a member holding a locale read for the type another member of its instance names, as
-  `FormaComponentBase.L` and `FormaInputBase<TValue>.L` are for `LocalizationSourceType`, so a linter can read each key
+  `FormaComponentBase.L` and `FormaInputBase<TValue>.L` are for `LocaleSourceType`, so a linter can read each key
   looked up through it in that type's files.
+- The type whose locale files a component's `L` reads is `LocaleSourceType`, after the attribute that marks `L` for it,
+  on `FormaComponentBase` and `FormaInputBase<TValue>`, and the type whose locale files hold a composer plugin's titles
+  and labels is `IComposerPlugin.LocaleSourceType`. Each was `LocalizationSourceType`. To migrate, override or
+  implement `LocaleSourceType`.
 - `LocaleSource.FolderSeparator` is gone, every source's names being paths, and `LocalePathMatcher` and
   `LocalePathBinder` take no separator. A source written against them drops its override, and a caller the argument.
   `LocaleSource.GetRootDir` answers a root a `.locale.json` names beneath its folder with `/` between the two, as

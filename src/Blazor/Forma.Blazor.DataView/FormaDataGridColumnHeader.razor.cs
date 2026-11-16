@@ -22,7 +22,7 @@ public sealed partial class FormaDataGridColumnHeader<TItem> : FormaComponentBas
     private FormaPopover OptionsPopover { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaDataGrid<TItem>);
 
     /// <summary>Whether the column's options surface is open.</summary>

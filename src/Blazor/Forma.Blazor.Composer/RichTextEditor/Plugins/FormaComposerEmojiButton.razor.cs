@@ -21,7 +21,7 @@ public sealed partial class FormaComposerEmojiButton : FormaComponentBase
     [CascadingParameter] private IComposerInteraction? Interaction { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     private string PopoverId

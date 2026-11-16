@@ -37,7 +37,7 @@ public sealed partial class FormaComposerCommandBar : FormaComponentBase
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     private bool CanUndo

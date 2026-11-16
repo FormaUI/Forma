@@ -43,7 +43,7 @@ public sealed partial class FormaComposerDialog : FormaComponentBase
     [Parameter] public EventCallback OnCancel { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     private readonly EditContext _editContext;

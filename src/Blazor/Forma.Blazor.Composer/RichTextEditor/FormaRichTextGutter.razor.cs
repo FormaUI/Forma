@@ -20,7 +20,7 @@ public sealed partial class FormaRichTextGutter : FormaComponentBase
     [CascadingParameter] public ComposerContext? Composer { get; set; }
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     private ElementReference _gutterElement;

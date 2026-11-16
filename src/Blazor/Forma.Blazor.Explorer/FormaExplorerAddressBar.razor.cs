@@ -24,7 +24,7 @@ public sealed partial class FormaExplorerAddressBar : FormaComponentBase
     [CascadingParameter] private IExplorerSearchView Search { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaExplorer);
 
     /// <inheritdoc />

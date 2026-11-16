@@ -36,7 +36,7 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
         => View.NamesItems ? L["Select {Name}", View.ItemName(Item)] : L["Select Row"];
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaDataGrid<TItem>);
 
     private string? RowClass

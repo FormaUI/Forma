@@ -30,7 +30,7 @@ A component whose sub-components only work inside it still has to hand them stat
 - Do put the pair with the feature the subject belongs to rather than beside the component implementing it, so the component folder holds components and the vocabulary they speak lives in the feature assembly.
 - Do give the pair the visibility its assembly implies: `internal` while it sits beside its only implementer, `public` once it ships from the feature assembly a component reads it from.
 - Do let a consumer talk to its immediate subject alone, and have a subject that is itself a consumer re-expose what its own consumers need.
-- Do let a consumer read its own strings through the base's `L`, overriding `LocalizationSourceType` where it shares the subject's file.
+- Do let a consumer read its own strings through the base's `L`, overriding `LocaleSourceType` where it shares the subject's file.
 - Do cascade the two interfaces as two values where the consumers are Blazor children, and prefer a plain `[Parameter]` wherever the child is reachable directly in the subject's markup.
 - Don't mirror the subject's parameters onto a separate object, which drifts the moment a parameter is added and no test can catch it.
 - Don't pass label factories or other closures over the subject as data; they are indirection for something the consumer can resolve itself.

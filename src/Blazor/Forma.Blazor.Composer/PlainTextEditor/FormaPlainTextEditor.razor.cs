@@ -35,7 +35,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     [Inject] private TimeProvider Clock { get; set; } = default!;
 
     /// <inheritdoc />
-    protected override Type LocalizationSourceType
+    protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
     private ElementReference _textareaElement;
