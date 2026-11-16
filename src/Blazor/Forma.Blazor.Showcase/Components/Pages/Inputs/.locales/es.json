@@ -170,7 +170,6 @@
     "With no lower limit a number can be negative, so a phone offers its full keyboard, minus sign included, rather than its keypad of digits.": "Sin límite inferior un número puede ser negativo, así que un teléfono ofrece su teclado completo, con el signo menos, en lugar de su teclado de dígitos.",
     "Stock Adjustment": "Ajuste de Existencias",
     "Disabled and Read-Only": "Deshabilitado y de Solo Lectura",
-    "Disabled": "Deshabilitado",
     "Read-Only": "Solo Lectura",
     "Without a Label": "Sin Etiqueta",
     "Without a Label the input stands bare and level with a button, as a quantity beside an Add button does, and needs no form around it.": "Sin Label el campo queda desnudo y a la altura de un botón, como una cantidad junto a un botón de añadir, y no necesita un formulario alrededor.",
@@ -383,7 +382,6 @@
     "A suggestion for every second of the day, 86,400 of them. The list draws only the times near what it shows, so it opens and scrolls as quickly as a short one.": "Una sugerencia para cada segundo del día, 86.400 de ellas. La lista dibuja solo las horas cercanas a lo que muestra, así que se abre y se desplaza tan rápido como una corta.",
     "Lap": "Vuelta",
     "Disabled and Read-Only": "Deshabilitado y de Solo Lectura",
-    "Disabled": "Deshabilitado",
     "Read-Only": "Solo Lectura"
   },
   "FormaToggleSwitchPage": {

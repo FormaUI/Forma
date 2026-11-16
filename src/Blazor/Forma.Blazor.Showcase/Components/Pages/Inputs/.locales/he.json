@@ -2,6 +2,7 @@
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "$shared": {
     "Basic": "בסיסי",
+    "Disabled": "מושבת",
     "Off": "כבוי",
     "On": "פעיל",
     "Required in a Form": "נדרש בטופס",
@@ -17,7 +18,6 @@
   },
   "FormaCheckBoxPage": {
     "A checkbox bound to a Boolean, with a third, indeterminate state for a choice that governs others. A caller can also take the checked state over entirely, which is what a select-all needs when only some of its children are checked.": "תיבת סימון הקשורה לערך בוליאני, עם מצב שלישי, בלתי מוגדר, לבחירה השולטת באחרות. הקורא יכול גם ליטול לידיו לגמרי את מצב הסימון, וזה מה שבחר-הכול צריך כשרק חלק מילדיו מסומנים.",
-    "Disabled": "מושבת",
     "Indeterminate": "מצב חלקי",
     "The parent checkbox reflects and controls the state of its children, showing a dash when only some are checked.": "תיבת הסימון הראשית משקפת ושולטת במצב הצאצאים שלה, ומציגה מקף כאשר רק חלקם מסומנים.",
     "Subscribe to updates": "הרשמה לעדכונים",
@@ -63,7 +63,6 @@
     "Bound to an amount rather than a nullable one, the field always holds an amount: clearing it reports the field and keeps the amount it held until another is entered.": "כשהשדה קשור לסכום ולא לסכום שיכול להיות ריק, הוא תמיד מחזיק סכום: ניקוי שלו מסמן את השדה ושומר את הסכום שהיה בו עד שיוזן סכום אחר.",
     "Free Shipping From": "משלוח חינם מ-",
     "Disabled and Read-Only": "מושבת ולקריאה בלבד",
-    "Disabled": "מושבת",
     "Read-Only": "לקריאה בלבד"
   },
   "FormaDatePickerPage": {
@@ -120,8 +119,7 @@
     "A delivery date and time are required.": "יש להזין תאריך ושעת משלוח.",
     "A Value That Cannot Be Empty": "ערך שאינו יכול להיות ריק",
     "Bound to a date with a time rather than a nullable one, the field always holds a value: clearing a half reports it and keeps the value until the half is entered again.": "כשהשדה קשור לתאריך עם שעה ולא לערך שיכול להיות ריק, השדה תמיד מחזיק ערך: ניקוי של חצי מדווח עליו ושומר את הערך עד שהחצי מוזן שוב.",
-    "Reminder": "תזכורת",
-    "Disabled": "מושבת"
+    "Reminder": "תזכורת"
   },
   "FormaMultiSelectPage": {
     "A chip-style multi-select with a searchable checkbox-list popover. Selected values render as removable tags; the popover stays anchored to its trigger wherever the page scrolls.": "בורר רב-ערכי בסגנון תגיות עם חלונית קופצת הניתנת לחיפוש עם תיבות סימון. הערכים שנבחרו מוצגים כתגיות הניתנות להסרה; החלונית נשארת מעוגנת לכפתור המפעיל אותה בכל מקום שהדף גולל אליו.",
@@ -135,8 +133,7 @@
     "Custom Tags": "תגיות מותאמות אישית",
     "Nothing to Choose From": "אין מה לבחור",
     "Opening a list whose options have not loaded yet shows the empty notice rather than a blank popover.": "פתיחת רשימה שהאפשרויות שלה טרם נטענו מציגה את הודעת הריקות במקום חלונית ריקה.",
-    "Playlists": "רשימות נגינה",
-    "Disabled": "מושבת"
+    "Playlists": "רשימות נגינה"
   },
   "FormaNumberInputPage": {
     "A Percentage": "אחוז",
@@ -167,7 +164,6 @@
     "With no lower limit a number can be negative, so a phone offers its full keyboard, minus sign included, rather than its keypad of digits.": "בלי גבול תחתון מספר יכול להיות שלילי, ולכן טלפון מציע את המקלדת המלאה, כולל סימן המינוס, במקום לוח הספרות.",
     "Stock Adjustment": "התאמת מלאי",
     "Disabled and Read-Only": "מושבת ולקריאה בלבד",
-    "Disabled": "מושבת",
     "Read-Only": "לקריאה בלבד",
     "Without a Label": "בלי תווית",
     "Without a Label the input stands bare and level with a button, as a quantity beside an Add button does, and needs no form around it.": "בלי תווית השדה עומד חשוף ובגובה של כפתור, כמו כמות לצד כפתור הוספה, ואינו צריך טופס סביבו.",
@@ -209,7 +205,6 @@
     "(none)": "(אין)",
     "Searches performed": "חיפושים שבוצעו",
     "Search the site": "חפש באתר",
-    "Disabled": "מושבת",
     "A disabled field is skipped by the keyboard and dimmed.": "שדה מבוטל מודלג על ידי המקלדת ומעומעם.",
     "Archived": "בארכיון",
     "Archived Search": "חיפוש בארכיון",
@@ -238,7 +233,6 @@
     "A themed single-select: a trigger button opening an anchored, keyboard-navigable option list. The popover stays anchored to its trigger wherever the page scrolls.": "בחירה יחידה בעיצוב הספרייה: כפתור מפעיל הפותח רשימת אפשרויות מעוגנת הניתנת לניווט במקלדת. הרשימה נשארת מעוגנת לכפתור המפעיל גם כשהדף גולל.",
     "With Placeholder": "עם טקסט מציין מיקום",
     "Pre-Selected Value": "ערך שנבחר מראש",
-    "Disabled": "מושבת",
     "No Options Yet": "עדיין אין אפשרויות",
     "Culture": "שפה",
     "Status": "סטטוס",
@@ -258,14 +252,12 @@
     "Without a Unit": "ללא יחידה",
     "A bare count needs no suffix, and aria-valuetext is left to the native valuenow the input already announces.": "מונה גרידא אינו זקוק לסיומת, ו-‎aria-valuetext‎ נותר ל-‎valuenow‎ המובנה שהקלט כבר מכריז עליו.",
     "Priority": "עדיפות",
-    "Disabled": "מושבת",
     "Site width": "רוחב האתר"
   },
   "FormaTextAreaPage": {
     "A multi-line field wearing the same chrome as FormaTextBox: the floating label, focus ring and validation styling all come from the shared FormaField.": "שדה רב-שורתי בעל אותה מעטפת כמו FormaTextBox: התווית הצפה, טבעת המיקוד ועיצוב האימות מגיעים כולם מ-FormaField המשותף.",
     "Taller Field": "שדה גבוה יותר",
     "Required and Length-Limited": "חובה ומוגבל באורך",
-    "Disabled": "מושבת",
     "Beside a FormaTextBox": "לצד FormaTextBox",
     "Submit with the field empty to see the validation border and message.": "שלח עם השדה ריק כדי לראות את מסגרת האימות ואת ההודעה.",
     "Both components share one stylesheet, so their borders, labels and focus rings cannot drift apart.": "שני הרכיבים חולקים גיליון סגנונות אחד, כך שהמסגרות, התוויות וטבעות המיקוד שלהם אינם יכולים להיפרד.",
@@ -385,7 +377,6 @@
     "A suggestion for every second of the day, 86,400 of them. The list draws only the times near what it shows, so it opens and scrolls as quickly as a short one.": "הצעה לכל שנייה ביום, 86,400 כאלה. הרשימה מציירת רק את השעות הקרובות למה שהיא מציגה, ולכן היא נפתחת וגוללת מהר כמו רשימה קצרה.",
     "Lap": "הקפה",
     "Disabled and Read-Only": "מושבת ולקריאה בלבד",
-    "Disabled": "מושבת",
     "Read-Only": "לקריאה בלבד"
   },
   "FormaToggleSwitchPage": {
