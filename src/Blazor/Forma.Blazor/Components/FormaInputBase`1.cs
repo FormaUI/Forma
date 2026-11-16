@@ -58,7 +58,6 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         => _context ??= ContextFactory.Create(GetType(), () => LocaleSourceType);
 
     /// <summary>The component's strings, in the culture state's UI culture.</summary>
-    [LocaleSource(nameof(LocaleSourceType))]
     protected IStringLocale L
         => Context.Locale;
 

@@ -1,0 +1,6 @@
+{
+  "localeMembers": [
+    { "assembly": "Forma.Blazor", "type": "Forma.Blazor.Components.FormaComponentBase", "member": "L", "typeMember": "LocaleSourceType" },
+    { "assembly": "Forma.Blazor", "type": "Forma.Blazor.Components.FormaInputBase`1", "member": "L", "typeMember": "LocaleSourceType" }
+  ]
+}

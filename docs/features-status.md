@@ -187,7 +187,6 @@ Each waits for the trigger named beside it before its design or its implementati
 
 | Work | Why it waits | Reopened by |
 | --- | --- | --- |
-| Removing `LocaleSourceAttribute` | The Locali linter reads the type a component's `L` reads its strings for through it, until it follows a locale from where its type is decided, through the component context factory, itself | Locali following that path |
 | Observing the document's child list | No consumer needs it, and its cost is unmeasured | A consumer with a measured cost |
 | Growing the DOM watcher and engine's design beyond its plan | Its plan's steps come first | Those steps landed |
 | Profiling select-all and a sort in a virtualized data view | The Showcase has no virtualized scenario offering either over an instant source | Such a scenario |

@@ -44,13 +44,14 @@ set out. What Forma gained before its first release, month by month, is in [the 
   reference the new package, import its namespace and register it with `AddFormaBrowserMauiIntegration()`, which
   was `AddFormaMauiOperations()`.
 - `FormaShareMenu`'s Print reads in Hebrew and Spanish. It read in English.
-- `LocaleSourceAttribute` marks a member holding a locale read for the type another member of its instance names, as
-  `FormaComponentBase.L` and `FormaInputBase<TValue>.L` are for `LocaleSourceType`, so a linter can read each key
-  looked up through it in that type's files.
-- The type whose locale files a component's `L` reads is `LocaleSourceType`, after the attribute that marks `L` for it,
-  on `FormaComponentBase` and `FormaInputBase<TValue>`, and the type whose locale files hold a composer plugin's titles
-  and labels is `IComposerPlugin.LocaleSourceType`. Each was `LocalizationSourceType`. To migrate, override or
-  implement `LocaleSourceType`.
+- `formaui-net.Blazor` ships `.locali-hints.json`, which tells the Locali linter that `FormaComponentBase.L` and
+  `FormaInputBase<TValue>.L` read their strings for the type `LocaleSourceType` names, so an application that adds
+  `"hints": { "packages": ["formaui-net.Blazor"] }` to its `.locali.json` has each key its components look up through
+  `L` checked in that type's files.
+- The type whose locale files a component's `L` reads is `LocaleSourceType`, on `FormaComponentBase` and
+  `FormaInputBase<TValue>`, and the type whose locale files hold a composer plugin's titles and labels is
+  `IComposerPlugin.LocaleSourceType`. Each was `LocalizationSourceType`. To migrate, override or implement
+  `LocaleSourceType`.
 - `IComponentContextFactory` makes the context each Forma component is given, from the component's type and the type
   its strings are read for, and `AddFormaUIServices` registers `ComponentContextFactory` for each user scope, so a host
   that registers its own first makes every component's context its way. A component's context is made with its first

@@ -16,8 +16,8 @@
     "tests/support/Forma.Tests.Support/**": ["embedded", "satellite"]
   },
   "ignoreDiagnostics": {
-    // The page shows a hit and a miss side by side, so its miss is a sentence no file localizes; it demonstrates a plural that omits 'other' on purpose; and its tables read each key from the row that lists it.
-    "src/Blazor/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0204", "LOC0207", "LOC0208"],
+    // The page shows a hit and a miss side by side, so its miss is a sentence no file localizes; it demonstrates a plural that omits 'other' on purpose; its tables read each key from the row that lists it; and its source-language demo reads a plural through factories the page builds itself, whose locales the linter leaves unresolved.
+    "src/Blazor/Forma.Blazor.Showcase/**/LocalizationPage.razor": ["LOC0204", "LOC0207", "LOC0208", "LOC0215"],
     // The emoji picker reads a group's title from the group, whose title is its localization key.
     "src/Blazor/Forma.Blazor/Components/Symbols/FormaEmojiPicker.razor.cs": ["LOC0208"],
     // The galleries read a group's or a section's title from the catalog that lists it.

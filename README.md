@@ -367,6 +367,19 @@ documents the lookup, the plural syntax and every place a file may sit, and
 [`Forma.Framework.Localization.Json`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Localization.Json/README.md)
 the file format.
 
+### Checking the files
+
+The [Locali](https://github.com/FormaUI/Locali) linter checks locale files against the lookups that key them. A
+component deriving from `FormaComponentBase` or `FormaInputBase<TValue>` looks its strings up through `L`, in the files
+of the type `LocaleSourceType` names, and Locali checks those lookups where the application's `.locali.json` reads the
+hints `formaui-net.Blazor` ships:
+
+```json
+{
+  "hints": { "packages": ["formaui-net.Blazor"] }
+}
+```
+
 ## Switching the culture
 
 ### In place

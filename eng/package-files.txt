@@ -83,6 +83,7 @@ formaui-net.AddOns.Share.Targets
     README.md
 
 formaui-net.Blazor
+    .locali-hints.json
     build/formaui-net.Blazor.PackageAssets.json
     build/formaui-net.Blazor.targets
     build/Microsoft.AspNetCore.StaticWebAssets.targets
