@@ -853,6 +853,7 @@ Each package's README covers installing, registering and using it.
 | [`formaui-net.Framework.Currencies`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Currencies/README.md) | Currency codes, their minor units, and the symbol each culture writes them with |
 | [`formaui-net.Framework.Culture.Router`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture.Router/README.md) | The culture in the URL |
 | [`formaui-net.Framework.Culture.Router.AspNetCore`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Culture.Router.AspNetCore/README.md) | The culture in the URL, on an ASP.NET Core server |
+| [`formaui-net.Framework.Localization.StringLocalizerAdapter`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Localization.StringLocalizerAdapter/README.md) | Forma's localization behind Microsoft's `IStringLocalizer`, for code written against it |
 
 ## Contributing
 

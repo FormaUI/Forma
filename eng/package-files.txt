@@ -454,6 +454,12 @@ formaui-net.Framework.Localization.Json
     NOTICE
     README.md
 
+formaui-net.Framework.Localization.StringLocalizerAdapter
+    lib/net11.0/Forma.Framework.Localization.StringLocalizerAdapter.dll
+    LICENSE
+    NOTICE
+    README.md
+
 formaui-net.Framework.Media
     lib/net11.0/Forma.Framework.Media.dll
     LICENSE

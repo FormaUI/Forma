@@ -25,6 +25,7 @@
     <Project Path="src\Framework\Forma.Framework.Input.Interop\Forma.Framework.Input.Interop.csproj" />
     <Project Path="src\Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
     <Project Path="src\Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+    <Project Path="src\Framework\Forma.Framework.Localization.StringLocalizerAdapter\Forma.Framework.Localization.StringLocalizerAdapter.csproj" />
     <Project Path="src\Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
     <Project Path="src\Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" />
     <Project Path="src\Framework\Forma.Framework.Plugins\Forma.Framework.Plugins.csproj" />
@@ -119,4 +120,5 @@
     <Project Path="tests\unit\AddOns\Forma.AddOns.Resources.Markdown.Tests\Forma.AddOns.Resources.Markdown.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Localization.Tests\Forma.Framework.Localization.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Localization.Json.Tests\Forma.Framework.Localization.Json.Tests.csproj" />
+    <Project Path="tests\unit\Framework\Forma.Framework.Localization.StringLocalizerAdapter.Tests\Forma.Framework.Localization.StringLocalizerAdapter.Tests.csproj" />
 </Solution>

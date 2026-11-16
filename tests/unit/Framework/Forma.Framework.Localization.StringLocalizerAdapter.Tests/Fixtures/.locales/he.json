@@ -1,0 +1,20 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: he;",
+  "Greeting": {
+    "Hello": "שלום",
+    "Hello {0}": "שלום {0}",
+    "Paid {0:N2}": "שולם {0:N2}",
+    "Use {{braces}} for {0}": "השתמשו ב-{{סוגריים}} עבור {0}",
+    "Stored {Stored} of {Total}.": "נשמרו {Stored} מתוך {Total}.",
+    "[$ plural; one: # file; other: # files; $]": "[$ plural; one: קובץ אחד; two: שני קבצים; other: # קבצים; $]",
+    "Mismatched {0}": "לא תואם {Name}",
+    "Owner {Name}": "בעלים {0}",
+    "{0} of {1}": "מתוך {1}, {0}",
+    "{Stored} of {Total}": "מתוך {Total}, {Stored}",
+    "{0} and {0}": "{0} ו-{0}",
+    "{Name} and {Name}": "{Name} ו-{Name}",
+    "{Ratio:P1} done": "{Ratio:P1} הושלמו",
+    "Files {0}": "[$ plural; one: קובץ אחד; other: # קבצים; $]",
+    "Count {0}": "[$ [Count] plural; one: אחד; other: הרבה; $]"
+  }
+}

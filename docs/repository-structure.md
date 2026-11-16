@@ -40,8 +40,9 @@ nothing for the product, and it says what a project is:
 
 - **Framework** is what Forma builds on, whether or not the product itself uses every piece of it, and so is a
   project that connects a Framework assembly to a platform, a backend or another library's contracts, as
-  `Forma.Framework.Browser.Maui` connects the browser layer to MAUI and `Forma.Framework.Localization.Json` the
-  localization to its JSON files.
+  `Forma.Framework.Browser.Maui` connects the browser layer to MAUI, `Forma.Framework.Localization.Json` the
+  localization to its JSON files and `Forma.Framework.Localization.StringLocalizerAdapter` to Microsoft's
+  `IStringLocalizer`.
 - **An AddOn** adds content or a capability a host chooses, built on a Framework assembly it extends: artwork,
   share destinations, document converters, a composer plugin. Optional alone makes nothing an AddOn.
 

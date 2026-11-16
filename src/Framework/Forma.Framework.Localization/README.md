@@ -28,7 +28,8 @@ builder.Services.AddJsonLocalization();
 ```
 
 That registers `IStringLocaleFactory` and `IStringLocale<T>`. A backend of your own implements the
-same two contracts. `NullStringLocaleFactory.Instance` is a factory whose locales return every key
+same two contracts. Code written against Microsoft's `IStringLocalizer` reads the same strings through
+[`formaui-net.Framework.Localization.StringLocalizerAdapter`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Localization.StringLocalizerAdapter/README.md). `NullStringLocaleFactory.Instance` is a factory whose locales return every key
 as its own text, with holes filled and plural forms resolved in the source language, and
 `GetStringLocaleFactory` resolves the registered factory or that one, which is how Forma's components
 read their strings where a host registers no localization.

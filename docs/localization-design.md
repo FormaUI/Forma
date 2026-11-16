@@ -5,7 +5,8 @@
 How localized strings are read from locale files and resolved. Authoritative for the entries
 every file is read into, the default reading of a file's place and name, the paths a project may
 state instead, the `.locale.json` config that shapes reading, the locale packs an assembly's
-strings may ship in, and the order entries apply in. The contract a component reads strings
+strings may ship in, the order entries apply in, and how code written against Microsoft's
+`IStringLocalizer` reads them. The contract a component reads strings
 through, holes, plural forms and the file format are the `Forma.Framework.Localization` README's;
 the checks run over the files are the [Locali](https://github.com/FormaUI/Locali) linter's,
 `dotnet locali`.
@@ -408,6 +409,33 @@ For one type, one key and one reader's culture, the text is chosen in this order
 4. **Within one file,** what the file's own rules say: a section's own key wins over the file's
    `$shared` one, and a deeper node's shared entries over a higher node's.
 
+## Microsoft's string localizer
+
+Code written against Microsoft's `IStringLocalizer` reads Forma's strings through
+`Forma.Framework.Localization.StringLocalizerAdapter`, a Framework project connecting the localization to
+Microsoft's contracts. Its factory makes a localizer over the locale the registered `IStringLocaleFactory`
+makes, by a type or by a base name and a location alike, so both overloads find the same entries. A localizer
+reads the thread's UI culture to choose a string and the formatting culture to fill it at each lookup, as an
+unbound locale does, so the factory is a singleton that holds no reader's state. A missing string answers its
+key with `ResourceNotFound`, and `GetAllStrings` lists the UI culture's texts as written.
+
+The key a caller passes decides how its string is filled, never the text a culture gives it, so a string is
+filled one way in every culture:
+
+- **A Forma key** names a hole, `{Name}`, or holds an expression, `[$ … $]`, and Forma alone fills it, its
+  arguments paired with the holes by position.
+- **A composite key** holds a composite placeholder, `{0}`, or neither, and `string.Format` alone fills its
+  text in the formatting culture, as Microsoft's localizer does, so code written for it keeps its keys. Read
+  without arguments, its text is returned as written.
+- **One formatter runs over a string,** so a doubled brace is an escape resolved once, and text one formatter
+  writes is never read as syntax by the other.
+- **A key mixing the two, or a text using the syntax its key doesn't,** throws `FormatException` naming the
+  key, rather than leaving a placeholder unfilled in one culture.
+
+The registrar adds the factory and `IStringLocalizer<T>` with `TryAdd`, as every Forma registrar adds its
+services, so a factory registered first, a host's own or Microsoft's `AddLocalization()`, is the one used, and a
+host wanting Forma's strings registers the adapter in its place or before it.
+
 ## Decisions
 
 | # | Question | Decision |
@@ -440,3 +468,6 @@ For one type, one key and one reader's culture, the text is chosen in this order
 | L26 | When is a file read? | Once per source and culture, at the first lookup that needs it; every later lookup finds an entry already read. |
 | L27 | Why does a resource name keep its folders? | So every source holds names of one kind, paths, and a folder a stated path writes is a folder in every one of them. A name with every folder made a dot would lose which was which, and two files a folder and a dot tell apart would take one name. The SDK's naming, which an item of a project's own keeps, still reads by the default reading, since a folder and a dot separate a name alike. |
 | L28 | How does a stated path read an anchor's segments? | Separated by a folder or a dot, as the default reading separates a name's parts, so `$AnchorName` reads `Accounts.Admin.json` and `Accounts/Admin.json` alike; only a folder the path writes itself must be a folder. One rule for a name's parts holds in every reading. |
+| L29 | How does code written against Microsoft's `IStringLocalizer` read Forma's strings? | Through `Forma.Framework.Localization.StringLocalizerAdapter`, registered with `AddFormaStringLocalizerAdapter()`: a factory over the registered `IStringLocaleFactory` and `IStringLocalizer<T>`, reading the thread's cultures at each lookup, as an unbound locale does. |
+| L30 | How does the adapter fill `{0}` and `{Name}`? | By the key alone: a key naming a Forma hole or holding an expression is Forma's, any other is composite and `string.Format` fills it in the formatting culture. One formatter runs over a string, and a key mixing the two, or a text using the syntax its key doesn't, throws `FormatException`. |
+| L31 | What if a host also calls Microsoft's `AddLocalization()`? | The factory registered first is used, since the adapter registers with `TryAdd` as every Forma registrar does; a host wanting Forma's strings registers the adapter in its place or before it. |

@@ -55,6 +55,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   its strings are read for, and `AddFormaUIServices` registers `ComponentContextFactory` for each user scope, so a host
   that registers its own first makes every component's context its way. A component's context is made with its first
   parameters.
+- `formaui-net.Framework.Localization.StringLocalizerAdapter` puts Forma's localization behind Microsoft's
+  `IStringLocalizer`, registered with `AddFormaStringLocalizerAdapter()`, so code written against `IStringLocalizer<T>`
+  reads Forma's locale files. A key naming a Forma hole or expression is filled by Forma, and any other by
+  `string.Format` in the formatting culture, as Microsoft's localizer fills it.
 - `ICultureScopeInitializer` initializes culture support for a user scope where the render mode does not, through
   `Initialize()`. It was `ICultureScopeStart`, through `Start()`. To migrate, implement or resolve
   `ICultureScopeInitializer` and call `Initialize()`.
