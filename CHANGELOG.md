@@ -43,6 +43,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `Forma.Framework.Browser.Interop.Operations.Maui`, with the browser interop assembly behind them. To migrate,
   reference the new package, import its namespace and register it with `AddFormaBrowserMauiIntegration()`, which
   was `AddFormaMauiOperations()`.
+- `FormaShareMenu`'s Print reads in Hebrew and Spanish. It read in English.
 - `LocaleSourceAttribute` marks a member holding a locale read for the type another member of its instance names, as
   `FormaComponentBase.L` and `FormaInputBase<TValue>.L` are for `LocalizationSourceType`, so a linter can read each key
   looked up through it in that type's files.
