@@ -536,7 +536,7 @@ public sealed class DataViewTests
             await page.Keyboard.PressAsync("Tab");
             await Assertions.Expect(items.Nth(1).GetByRole(AriaRole.Button, new() { Name = "Open Item 2", Exact = true })).ToBeFocusedAsync();
             await page.Keyboard.PressAsync("Enter");
-            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Opened Item 2");
+            await WaitForCommandAsync(page, "Opened Item 2");
 
             // Act — the second item's actions opened with Shift+F10 and its Rename run
             await page.Keyboard.PressAsync("Shift+Tab");
@@ -547,7 +547,7 @@ public sealed class DataViewTests
 
             // Assert
             Assert.Equal("Item 1", first);
-            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("Renamed Item 2");
+            await WaitForCommandAsync(page, "Renamed Item 2");
             await WaitForFocusedItemAsync(page, "Item 2");
         }
 
@@ -582,6 +582,10 @@ public sealed class DataViewTests
 
         private static async Task WaitForFocusedItemAsync(IPage page, string name)
             => await page.WaitForFunctionAsync($"name => ({FocusedItem})() === name", name);
+
+        // Read in the page, since an assertion that finds another text describes the whole page, eight hundred items here, and holds it from drawing the answer it waits for.
+        private static async Task WaitForCommandAsync(IPage page, string command)
+            => await page.WaitForFunctionAsync("command => document.getElementById('result')?.textContent === command", command);
     }
 
     public sealed class DataViewItemFocus(BrowserHost host)
