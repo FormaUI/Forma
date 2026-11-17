@@ -8,6 +8,7 @@ using Forma.Framework.Composer.Dialogs;
 using Forma.Framework.Composer.Documents;
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Composer.Plugins;
+using Forma.Framework.Css;
 using Forma.Framework.Sanitization;
 using Forma.Framework.Toolbar;
 using Forma.Tests.Composer;
@@ -247,6 +248,7 @@ public sealed class RichTextPluginTests
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(label, option.Title),
+                () => Assert.True(option.IsTitleVerbatim),
                 () => Assert.Equal($"font-size:{expected}", option.Id),
                 () => Assert.Equal($"{TypographyPlugin.FontSizeCommand}:{expected}", option.Command));
         }
@@ -262,6 +264,40 @@ public sealed class RichTextPluginTests
 
             // Assert
             Assert.All(options, option => Assert.EndsWith("rem", option.Command, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public void Should_label_a_color_by_its_name_and_apply_its_value()
+        {
+            // Arrange
+            var plugin = new TypographyPlugin(
+                new RichTextEditorPlugin(),
+                new TypographyPluginOptions { TextColors = [new TypographyColor("Red", CssColor.FromHex(0xd32f2f))] });
+
+            // Act
+            var option = FindMenu(plugin.Items, "text-color").Options.Single();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Red", option.Title),
+                () => Assert.False(option.IsTitleVerbatim),
+                () => Assert.Equal("#d32f2f", option.Swatch),
+                () => Assert.Equal($"{TypographyPlugin.TextColorCommand}:#d32f2f", option.Command));
+        }
+
+        [Theory]
+        [InlineData("font-family")]
+        [InlineData("line-height")]
+        public void Should_offer_each_value_with_its_title_verbatim(string menuId)
+        {
+            // Arrange
+            var plugin = new TypographyPlugin(new RichTextEditorPlugin());
+
+            // Act
+            var options = FindMenu(plugin.Items, menuId).Options;
+
+            // Assert
+            Assert.All(options, option => Assert.True(option.IsTitleVerbatim));
         }
     }
 
@@ -398,6 +434,19 @@ public sealed class RichTextPluginTests
             Assert.Equal("insertText", requestedCommand);
             Assert.Equal("©", requestedValue);
             Assert.Equal("special-character", plugin.Id);
+        }
+
+        [Fact]
+        public void Should_offer_each_character_with_its_title_verbatim()
+        {
+            // Arrange
+            var plugin = new SpecialCharacterPlugin(new RichTextEditorPlugin());
+
+            // Act
+            var options = FindMenu(plugin.Items, "special-character").Options;
+
+            // Assert
+            Assert.All(options, option => Assert.True(option.IsTitleVerbatim));
         }
     }
 

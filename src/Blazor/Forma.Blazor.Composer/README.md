@@ -131,7 +131,7 @@ editor.
 | --- | --- | --- |
 | `BasicFormattingPlugin` | Bold, italic, underline, strikethrough, inline code, clear formatting, and subscript and superscript where its options include them | `BasicFormattingPluginOptions`: `IncludeSubscriptAndSuperscript` |
 | `ParagraphFormatPlugin` | Paragraph, headings 1 to 6, blockquote, lead paragraph | |
-| `TypographyPlugin` | Font family, font size, line height, text color, highlight color | `TypographyPluginOptions`: the choices offered, and `FontSizeUnit`, `Rem` or `Points` |
+| `TypographyPlugin` | Font family, font size, line height, text color, highlight color | `TypographyPluginOptions`: the choices offered, each color a `TypographyColor` with the English name readers know it by, and `FontSizeUnit`, `Rem` or `Points` |
 | `ListPlugin` | Bulleted and numbered lists, indent, outdent | |
 | `AlignmentBidiPlugin` | Alignment and paragraph direction | |
 | `LinkPlugin` | Links and anchors | |

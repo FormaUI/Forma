@@ -11,6 +11,9 @@ public sealed record ToolbarOption
     /// <summary>The option's label and accessible name, localized by the host.</summary>
     public required string Title { get; init; }
 
+    /// <summary>Whether <see cref="Title"/> is a value shown as written, such as a font's name or a size, which a host localizing the titles it is handed leaves as it is.</summary>
+    public bool IsTitleVerbatim { get; init; }
+
     /// <summary>The icon shown beside the option.</summary>
     public Icon? Icon { get; init; }
 

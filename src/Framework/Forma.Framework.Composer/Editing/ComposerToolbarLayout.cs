@@ -20,7 +20,8 @@ public sealed record ComposerToolbarRowLayout(
 /// editor's surface, the rows its feature plugins declare. A row holding no items is left out, the built-in row excepted,
 /// and an item naming a row the layout does not hold lands on the plugins row where the layout has one. A standard row
 /// and a standard group take the composer's own title, localized for the composer, whichever plugin declares them; every
-/// other title is localized for the plugin that declared it.
+/// other title is localized for the plugin that declared it, an option's title excepted where
+/// <see cref="ToolbarOption.IsTitleVerbatim"/> leaves it as written.
 /// </remarks>
 public sealed class ComposerToolbarLayout
 {
@@ -142,7 +143,7 @@ public sealed class ComposerToolbarLayout
             ToolbarMenu menu => menu with
             {
                 Title = localize(contributor, menu.Title),
-                Options = [.. menu.Options.Select(option => option with { Title = localize(contributor, option.Title) })],
+                Options = [.. menu.Options.Select(option => option.IsTitleVerbatim ? option : option with { Title = localize(contributor, option.Title) })],
             },
             _ => item with { Title = localize(contributor, item.Title) },
         };

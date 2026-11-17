@@ -114,6 +114,7 @@ public sealed class RichTextPreviewViewPlugin : IComposerViewPlugin
                         {
                             Id = $"zoom:{zoom}",
                             Title = zoom.ToString(CultureInfo.InvariantCulture) + "%",
+                            IsTitleVerbatim = true,
                             Command = ZoomCommandPrefix + zoom.ToString(CultureInfo.InvariantCulture),
                         })],
                     },

@@ -57,6 +57,7 @@ public sealed class TypographyPlugin(
                         {
                             Id = $"font-family:{family}",
                             Title = family,
+                            IsTitleVerbatim = true,
                             Command = $"{FontFamilyCommand}:{family}",
                             PreviewStyle = $"font-family:{family}",
                         })],
@@ -70,6 +71,7 @@ public sealed class TypographyPlugin(
                         {
                             Id = $"font-size:{ToCssSize(size)}",
                             Title = size,
+                            IsTitleVerbatim = true,
                             Command = $"{FontSizeCommand}:{ToCssSize(size)}",
                         })],
                     },
@@ -82,6 +84,7 @@ public sealed class TypographyPlugin(
                         {
                             Id = $"line-height:{height}",
                             Title = height,
+                            IsTitleVerbatim = true,
                             Command = $"{LineHeightCommand}:{height}",
                         })],
                     },
@@ -100,10 +103,10 @@ public sealed class TypographyPlugin(
                         Icon = Glyph.FontColor,
                         Options = [.. Options.TextColors.Select(color => new ToolbarOption
                         {
-                            Id = $"text-color:{color}",
-                            Title = color,
-                            Command = $"{TextColorCommand}:{color}",
-                            Swatch = color,
+                            Id = $"text-color:{color.Color}",
+                            Title = color.Name,
+                            Command = $"{TextColorCommand}:{color.Color}",
+                            Swatch = color.Color.ToString(),
                         })],
                     },
                     new ToolbarMenu
@@ -113,10 +116,10 @@ public sealed class TypographyPlugin(
                         Icon = Glyph.Highlight,
                         Options = [.. Options.HighlightColors.Select(color => new ToolbarOption
                         {
-                            Id = $"highlight-color:{color}",
-                            Title = color,
-                            Command = $"{HighlightColorCommand}:{color}",
-                            Swatch = color,
+                            Id = $"highlight-color:{color.Color}",
+                            Title = color.Name,
+                            Command = $"{HighlightColorCommand}:{color.Color}",
+                            Swatch = color.Color.ToString(),
                         })],
                     },
                 ],
@@ -143,8 +146,8 @@ public sealed class TypographyPlugin(
         {
             FontFamilyCommand => ("fontName", GetFirst(Options.FontFamilies)),
             FontSizeCommand => ("fontSize", GetFirst(Options.FontSizes) is { } size ? ToCssSize(size) : null),
-            TextColorCommand => ("foreColor", GetFirst(Options.TextColors)),
-            HighlightColorCommand => ("hiliteColor", GetFirst(Options.HighlightColors)),
+            TextColorCommand => ("foreColor", GetFirstColor(Options.TextColors)),
+            HighlightColorCommand => ("hiliteColor", GetFirstColor(Options.HighlightColors)),
             LineHeightCommand => ("lineHeight", GetFirst(Options.LineHeights)),
             _ => (null, null),
         };
@@ -159,6 +162,11 @@ public sealed class TypographyPlugin(
         static string? GetFirst(IReadOnlyList<string> values)
         {
             return values.Count > 0 ? values[0] : null;
+        }
+
+        static string? GetFirstColor(IReadOnlyList<TypographyColor> colors)
+        {
+            return colors.Count > 0 ? colors[0].Color.ToString() : null;
         }
     }
 

@@ -278,6 +278,31 @@ public sealed class ComposerToolbarLayoutTests
     }
 
     [Fact]
+    public void Should_leave_a_verbatim_option_title_as_written_and_localize_the_rest()
+    {
+        // Arrange
+        var editor = new Editor();
+        var menu = new ToolbarMenu
+        {
+            Id = "font",
+            Title = "Font Family",
+            Options =
+            [
+                new() { Id = "default", Title = "Default", Command = "font.default" },
+                new() { Id = "arial", Title = "Arial", IsTitleVerbatim = true, Command = "font.arial" },
+            ],
+        };
+        var plugin = new Plugin { Id = "typography", Items = [CreateRow(ComposerRows.Formatting, menu)] };
+
+        // Act
+        var layout = ComposerToolbarLayout.Create(editor, [plugin], (contributor, title) => $"{contributor?.Id ?? "composer"}:{title}");
+
+        // Assert
+        var options = Assert.IsType<ToolbarMenu>(Assert.Single(layout.Rows.Single(row => row.Id == ComposerRows.Formatting).Items)).Options;
+        Assert.Equal(["typography:Default", "Arial"], options.Select(option => option.Title));
+    }
+
+    [Fact]
     public void Should_title_a_standard_group_in_the_composer_s_words_whichever_plugin_declares_it()
     {
         // Arrange — a plugin from another package declaring the media group alone, under a title of its own.

@@ -5,6 +5,19 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.11`
+
+*Unreleased*
+
+- `ToolbarOption.IsTitleVerbatim` marks a title that is a value shown as written, such as a font's name or a size, and
+  the composer leaves such a title as it is. Its font families, font sizes, line heights, special characters and zoom
+  levels are verbatim. It looked each of them up as a key, so the rich text editor's toolbar threw under
+  `RequireMatchingLocalization` in a language other than English, and `Diagnostics` reported every one missing.
+- `TypographyPluginOptions.TextColors` and `HighlightColors` are `TypographyColor`s, each a color's English name and
+  its `CssColor`, and the color menus label each color by its name, which Hebrew and Spanish localize. They labeled
+  each by its hex code, which a screen reader reads out character by character. To migrate, name each color:
+  `new TypographyColor("Red", CssColor.FromHex(0xd32f2f))`.
+
 ## `1.0.0-preview.10`
 
 *November 17, 2026*

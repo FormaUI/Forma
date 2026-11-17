@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 
+using Forma.Framework.Css;
+
 /// <summary>Options configuring font families, sizes, colors, and line heights offered by <see cref="TypographyPlugin"/>.</summary>
 public sealed record TypographyPluginOptions
 {
@@ -26,10 +28,25 @@ public sealed record TypographyPluginOptions
         ["1.0", "1.15", "1.5", "1.6", "2.0"];
 
     /// <summary>The text colors offered in the color picker.</summary>
-    public IReadOnlyList<string> TextColors { get; set; } =
-        ["#000000", "#d32f2f", "#1976d2", "#388e3c", "#f57c00", "#7b1fa2", "#616161"];
+    public IReadOnlyList<TypographyColor> TextColors { get; set; } =
+    [
+        new("Black", CssColor.FromHex(0x000000)),
+        new("Red", CssColor.FromHex(0xd32f2f)),
+        new("Blue", CssColor.FromHex(0x1976d2)),
+        new("Green", CssColor.FromHex(0x388e3c)),
+        new("Orange", CssColor.FromHex(0xf57c00)),
+        new("Purple", CssColor.FromHex(0x7b1fa2)),
+        new("Gray", CssColor.FromHex(0x616161)),
+    ];
 
     /// <summary>The highlight background colors offered in the highlight picker.</summary>
-    public IReadOnlyList<string> HighlightColors { get; set; } =
-        ["#ffff00", "#a5d6a7", "#90caf9", "#ffcc80", "#ce93d8", "#e0e0e0"];
+    public IReadOnlyList<TypographyColor> HighlightColors { get; set; } =
+    [
+        new("Yellow", CssColor.FromHex(0xffff00)),
+        new("Green", CssColor.FromHex(0xa5d6a7)),
+        new("Blue", CssColor.FromHex(0x90caf9)),
+        new("Orange", CssColor.FromHex(0xffcc80)),
+        new("Purple", CssColor.FromHex(0xce93d8)),
+        new("Gray", CssColor.FromHex(0xe0e0e0)),
+    ];
 }

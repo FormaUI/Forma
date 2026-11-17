@@ -45,6 +45,7 @@ public sealed class SpecialCharacterPlugin(
                         {
                             Id = $"char-{c}",
                             Title = c,
+                            IsTitleVerbatim = true,
                             Command = $"{InsertCharacterPrefix}{c}",
                         })],
                     },

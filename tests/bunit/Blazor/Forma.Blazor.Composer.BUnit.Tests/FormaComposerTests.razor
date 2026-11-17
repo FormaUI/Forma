@@ -13,6 +13,7 @@
 @using Microsoft.Extensions.Time.Testing
 @using Forma.Blazor.Components.Composer.Dialogs
 @using Forma.Framework.Localization
+@using Forma.Framework.Localization.Json
 @using Forma.Tests.Interop
 @using Forma.Tests.Localization
 @using Microsoft.AspNetCore.Components.Web
@@ -593,6 +594,33 @@
 
             // Assert
             Assert.Equal(["/check/eager.js", "/check/view.css"], GetLoadedUrls(assets));
+        }
+
+        [Theory]
+        [InlineData("es")]
+        [InlineData("he")]
+        public void Should_find_a_localization_for_every_title_of_its_default_plugins(string language)
+        {
+            // Arrange — a host that requires every lookup to find its localization, with every default plugin and feature.
+            using var culture = new CultureScope(language);
+            using var ctx = new FormaComposerTests();
+            ctx.Services.AddSingleton<IStringLocaleFactory>(new JsonStringLocaleFactory(new LocalizationOptions { LocalePacks = LocalePacks, RequireMatchingLocalization = true }));
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddRichTextEditor(editor => editor.TryAddDefaultFeatures())
+                .TryAddDefaultPlugins());
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.WaitForAssertion(() => Assert.True(cut.FindAll("[role=tab]").Count > 1));
+            var viewCount = cut.FindAll("[role=tab]").Count - 1;
+
+            // Act — each view in turn, the preview's bar offering the zoom levels
+            for (var index = 1; index <= viewCount; index++)
+            {
+                cut.FindAll("[role=tab]")[index].Click();
+            }
+
+            // Assert
+            Assert.Equal("true", cut.FindAll("[role=tab]")[viewCount].GetAttribute("aria-selected"));
         }
 
         [Fact]

@@ -10,6 +10,7 @@
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
         <ProjectReference Include="..\..\..\..\tests\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
