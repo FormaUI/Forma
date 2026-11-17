@@ -22,16 +22,25 @@ public static class LocaleAssemblyLoader
             .Distinct(StringComparer.Ordinal)];
     }
 
-    /// <summary>The assemblies an application's build recorded its locales in: the entry assembly, or, where the runtime names none, as a native host such as .NET for Android's and for iOS's names none, each loaded assembly its build marked with <see cref="LocaleApplicationAttribute"/>.</summary>
+    /// <summary>The assemblies an application's build recorded its locales in: the entry assembly where its build marked it with <see cref="LocaleApplicationAttribute"/>, and otherwise each loaded assembly its build marked, then the entry assembly where the runtime names one.</summary>
+    /// <remarks>
+    /// The entry assembly goes unmarked where something else starts the application, as a test runner starts one it hosts,
+    /// and is absent where a native host does, as .NET for Android's and for iOS's do.
+    /// </remarks>
     /// <param name="entry">The assembly the runtime started the application from.</param>
     /// <param name="loadedAssemblies">The assemblies loaded into the application.</param>
     public static IReadOnlyList<Assembly> GetApplicationAssemblies(Assembly? entry, IEnumerable<Assembly> loadedAssemblies)
     {
         ArgumentNullException.ThrowIfNull(loadedAssemblies);
 
-        return entry is not null
-            ? [entry]
-            : [.. loadedAssemblies.Where(assembly => assembly.IsDefined(typeof(LocaleApplicationAttribute), inherit: false))];
+        if (entry is not null && IsApplication(entry))
+        {
+            return [entry];
+        }
+
+        var applications = loadedAssemblies.Where(assembly => assembly != entry && IsApplication(assembly));
+
+        return entry is null ? [.. applications] : [.. applications, entry];
     }
 
     /// <summary>The applications whose files the application reads: each one its attributes name, loaded by name, in their order, then the application itself.</summary>
@@ -79,6 +88,10 @@ public static class LocaleAssemblyLoader
 
         return packs;
     }
+
+    // Whether the assembly's build marked it as an application.
+    private static bool IsApplication(Assembly assembly)
+        => assembly.IsDefined(typeof(LocaleApplicationAttribute), inherit: false);
 
     // Loads the named assembly, reporting why one can't be loaded.
     private static Assembly? TryLoad(string name, Action<string> reportNotLoaded)

@@ -24,6 +24,35 @@ public sealed class LocaleAssemblyLoaderTests
         }
 
         [Fact]
+        public void Should_read_only_the_entry_assembly_where_its_build_marked_it_as_the_application()
+        {
+            // Arrange — a Web App's server, started as itself, beside its client, which its build marked too.
+            var server = new FakeAssembly("Contoso.Server") { Attributes = { new LocaleApplicationAttribute("Contoso.Server") } };
+            var client = new FakeAssembly("Contoso.Client") { Attributes = { new LocaleApplicationAttribute("Contoso.Client") } };
+
+            // Act
+            var applications = LocaleAssemblyLoader.GetApplicationAssemblies(server, [server, client]);
+
+            // Assert
+            Assert.Equal([server], applications);
+        }
+
+        [Fact]
+        public void Should_read_the_application_its_build_marked_and_then_an_entry_assembly_its_build_did_not()
+        {
+            // Arrange — a test runner's assembly, which records a pack of its own, hosting the application it tests.
+            var tests = new FakeAssembly("Contoso.App.Tests") { Attributes = { new LocalePackAttribute("Contoso.Spanish") } };
+            var application = new FakeAssembly("Contoso.App") { Attributes = { new LocaleApplicationAttribute("Contoso.App"), new LocalePackAttribute("Contoso.Hebrew") } };
+            var library = new FakeAssembly("Contoso.Library") { Attributes = { new LocalePackAttribute("Contoso.Spanish") } };
+
+            // Act
+            var applications = LocaleAssemblyLoader.GetApplicationAssemblies(tests, [tests, library, application]);
+
+            // Assert
+            Assert.Equal([application, tests], applications);
+        }
+
+        [Fact]
         public void Should_read_them_from_the_assembly_its_build_marked_as_the_application_where_the_runtime_names_no_entry()
         {
             // Arrange — on a runtime naming no entry assembly, as .NET for Android's: the application its build marked, a library recording

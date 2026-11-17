@@ -350,8 +350,10 @@ Forma.Blazor.Composer/fr.json             { "FormaComposer": { "Bold": "Gras" } 
 ```
 
 The build refuses a file of any culture the pack does not declare, or of none, reading a file's
-culture as the runtime does. An application references a pack directly; a class library or a test
-that references one names it in `LocalePacks` instead.
+culture as the runtime does. An application references a pack directly, and a test hosting the
+application, as `WebApplicationFactory` does, reads the packs the application references. A class
+library, or a test rendering components without the application, names its packs in `LocalePacks`
+instead.
 
 ## Settings
 

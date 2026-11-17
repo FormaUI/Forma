@@ -5,6 +5,15 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.10`
+
+*Unreleased*
+
+- An application a test runner hosts, as `WebApplicationFactory` does, reads the locale packs and files its build
+  recorded: where the entry assembly's build didn't mark it as the application, every loaded assembly whose build did
+  is read before it. A test hosting the application read only the test assembly's, so the application's components
+  rendered in English unless the test referenced the packs as well.
+
 ## `1.0.0-preview.9`
 
 *November 17, 2026*

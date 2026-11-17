@@ -239,10 +239,13 @@ its own. As the server builds, it asks each project it references whether that p
 application that embedded locale files, and records each one that did with
 `LocaleReferenceAttribute`, naming its assembly; the server reads them before its own.
 
-The runtime finds the application by its entry assembly or, where the runtime names none, as a
-native host such as .NET for Android's or iOS's names none, among the loaded assemblies: the one its
-build marked as the application, which only an application's build does. After the application's
-own files it reads the folder beside the running application, which
+The runtime finds the application by its entry assembly where the entry assembly's build marked it
+as the application, which only an application's build does. Where the entry assembly is unmarked,
+as a test runner's is while it hosts the application under test, or absent, as under a native host
+such as .NET for Android's or iOS's, it finds the application among the loaded assemblies as each
+one its build marked, and reads what an unmarked entry assembly recorded after them.
+
+After the application's own files it reads the folder beside the running application, which
 `LocalizationOptions.LocalesPath` names, `.locales` beside the application by default. No build
 fills that folder; a host places files in it to change a string without building again, and it has
 the last word. The folder is read by the same rule, its names paths as an assembly's are. A
@@ -330,14 +333,15 @@ install: a pack carries as many assemblies' strings as it has files for.
 ### An application names its packs, not a library
 
 The attribute that records a pack is written into the project holding the reference, and the packs
-that are read are the ones the application names, its entry assembly or, where the runtime names
-none, the assembly its build marked. Which languages ship is therefore the application's decision
-and cannot be made for it by a library it installs, so a library never references a pack.
+that are read are the ones the application names, found as
+[the application's files](#the-applications-files) describe. Which languages ship is therefore the
+application's decision and cannot be made for it by a library it installs, so a library never
+references a pack.
 
 A class library that references a pack is stamped itself rather than stamping the application, so
 its pack is not found from the application. A host arranged that way names its packs through
-`LocalizationOptions`, which is also how a test reaches a pack without depending on what its runner
-made the entry assembly.
+`LocalizationOptions`, which is also how a test that renders components without hosting an
+application reaches a pack.
 
 ### Finding a pack
 
@@ -498,7 +502,7 @@ host wanting Forma's strings registers the adapter in its place or before it.
 | L16 | Does the runtime read anything out of a pack's name? | No. A pack is loaded by name and read by its resources, neither of which is parsed, so any assembly can be a pack whatever it is called, for whichever assemblies its files name, published by anyone. `Forma.Blazor.Locales.{Language}` is this repository's convention for its own. |
 | L17 | What does a project write to embed its locale files? | Nothing. The build finds them by the `$localization` entry every locale file carries and embeds each once, under the name its path forms, so configuration stays in `.locale.json` and `LocalizationOptions` and no fact about a locale file lives in a project file; a file a project embeds through an item of its own keeps that item's name. |
 | L18 | Where does an application keep its strings for other assemblies, and how do they reach a runtime with no file system? | Among its locale files, in names starting with the assembly's name. The build embeds them as it embeds every locale file, so a WebAssembly client, a MAUI application and a server read them from the application's assembly. |
-| L19 | How does a Web App's server read its client's files? | Through `LocaleReferenceAttribute`, which the server's build writes for each referenced application that embedded locale files, naming its assembly; the server reads them before its own. The runtime finds the application by its entry assembly or, with none, by the mark its build writes into the application alone. |
+| L19 | How does a Web App's server read its client's files? | Through `LocaleReferenceAttribute`, which the server's build writes for each referenced application that embedded locale files, naming its assembly; the server reads them before its own. The runtime finds the application by the mark its build writes into the application alone (L36). |
 | L20 | What decides which text a reader sees? | The culture first, then the source, and nothing about a file's place or name. A more specific culture wins over a later source, and a later source over an earlier one. |
 | L21 | What happens when one source gives an entry two texts? | It is a conflict: the linter reports it as an error, and the runtime keeps the text from the file whose name sorts last, ordinally, so the outcome is fixed while the error stands, and logs the conflict once as a warning naming both files, since a host that runs no linter would otherwise show one of two texts without knowing. The same text twice isn't a conflict. |
 | L22 | Can a culture be a folder? | Yes. A folder named for a culture holds files for it, a file per namespace or per type named with dots, and the root's file named for the culture again, `.locales/es/es.json`, so a project keeps each language in one folder instead of a `.locales` folder per namespace. |
@@ -515,3 +519,4 @@ host wanting Forma's strings registers the adapter in its place or before it.
 | L33 | Does a check resolve a key its own way? | No. It asks the lookup's own resolution of another culture, without changing the reader's culture or rendering text, so a check and a lookup never disagree about what is found. |
 | L34 | How broad is a reported miss? | As broad as the resolver establishes: the assembly where no source holds an entry for any of its types in the culture or a culture it falls back to, the type where the assembly holds some and the type doesn't, and the key otherwise. The broader report stands for the narrower ones beneath it. |
 | L35 | What does `RequireMatchingLocalization` guarantee? | That a lookup finds its text: an entry in the UI culture or a culture it falls back to, or, in the source language and the invariant culture, the key itself. |
+| L36 | How does the runtime find the application? | By the mark its build writes into the application alone. The entry assembly is read alone where its build marked it; where it is unmarked, as a test runner's is, or absent, as under a native host, every loaded assembly its build marked is read, then what an unmarked entry assembly recorded, so a test hosting the application reads the packs and files the application recorded without referencing them itself. |
