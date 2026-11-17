@@ -1102,19 +1102,19 @@
                                                 OnDelete="@(req => { deleteReq = req; return Task.CompletedTask; })" />);
 
             // Act
-            cut.Find(".forma-explorer-new-folder-tool").Click();
+            await cut.Find(".forma-explorer-new-folder-tool").ClickAsync(new());
             await fields.TypeAsync(cut.Find("#forma-explorer-folder-input"), "New Album");
-            cut.Find(".forma-dialog-footer .forma-button-primary").Click();
+            await cut.Find(".forma-dialog-footer .forma-button-primary").ClickAsync(new());
 
             // Assert
             Assert.NotNull(createReq);
             Assert.Equal("New Album", createReq.Name);
 
             // Act
-            cut.Find("button[aria-label='Actions for Races']").Click();
-            cut.Find("[data-action='folder-rename']").Click();
+            await cut.Find("button[aria-label='Actions for Races']").ClickAsync(new());
+            await cut.Find("[data-action='folder-rename']").ClickAsync(new());
             await fields.TypeAsync(cut.Find("#forma-explorer-rename-input"), "Updated Races");
-            cut.Find(".forma-dialog-footer .forma-button-primary").Click();
+            await cut.Find(".forma-dialog-footer .forma-button-primary").ClickAsync(new());
 
             // Assert
             Assert.NotNull(renameReq);
@@ -1122,8 +1122,8 @@
             Assert.Equal("Updated Races", renameReq.NewName);
 
             // Act
-            cut.Find("button[aria-label='Actions for Races']").Click();
-            cut.Find("[data-action='folder-delete']").Click();
+            await cut.Find("button[aria-label='Actions for Races']").ClickAsync(new());
+            await cut.Find("[data-action='folder-delete']").ClickAsync(new());
             await cut.Find(".forma-dialog-footer .forma-button-danger").ClickAsync(new MouseEventArgs());
 
             // Assert
@@ -1145,10 +1145,10 @@
                                                 OnFolderCreate="@(req => { createReq = req; return Task.CompletedTask; })" />);
 
             // Act
-            cut.Find("button[aria-label='Actions for Races']").Click();
-            cut.Find("[data-action='folder-create']").Click();
+            await cut.Find("button[aria-label='Actions for Races']").ClickAsync(new());
+            await cut.Find("[data-action='folder-create']").ClickAsync(new());
             await fields.TypeAsync(cut.Find("#forma-explorer-folder-input"), "2027");
-            cut.Find(".forma-dialog-footer .forma-button-primary").Click();
+            await cut.Find(".forma-dialog-footer .forma-button-primary").ClickAsync(new());
 
             // Assert
             Assert.NotNull(createReq);
@@ -1666,7 +1666,7 @@
     public sealed class Commands
     {
         [Fact]
-        public void Should_render_every_action_when_options_are_default()
+        public async Task Should_render_every_action_when_options_are_default()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1677,13 +1677,13 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" Folders="@(CatalogItem.ForAll([folder]))" ItemOptions="ExplorerItemOptions.Default" />);
 
             // Assert
-            ItemNamed(cut, "cover.jpg").QuerySelector(".forma-explorer-action-bar .forma-dropdown-menu-trigger")!.Click();
+            await ItemNamed(cut, "cover.jpg").QuerySelector(".forma-explorer-action-bar .forma-dropdown-menu-trigger")!.ClickAsync(new());
             var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
             Assert.Equal(["Preview", "Rename", "Delete"], labels);
             Assert.Single(cut.FindAll(".forma-explorer-new-folder-tool"));
             Assert.Empty(cut.FindAll(".forma-explorer-new-folder-button"));
             Assert.Single(cut.FindAll(".forma-explorer-upload-button"));
-            cut.Find("button[aria-label='Actions for Races']").Click();
+            await cut.Find("button[aria-label='Actions for Races']").ClickAsync(new());
             Assert.Equal("Races", cut.Find(".forma-explorer-folder-actions .forma-dropdown-menu-header").TextContent.Trim());
             Assert.Equal(
                 ["folder-create", "folder-rename", "folder-delete"],
