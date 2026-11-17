@@ -96,6 +96,29 @@
         }
 
         [Fact]
+        public async Task Should_register_its_scope_before_it_opens_so_keys_typed_as_the_focus_moves_in_are_its_own()
+        {
+            // Arrange — whether the scope was registered when the script opened the popover
+            using var ctx = new FormaPopoverTests();
+            var router = ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js");
+            var script = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/AnchoredPopover.js");
+            var popover = script.SetupModule("attach", _ => true);
+            bool? isRegisteredWhenOpened = null;
+            popover.SetupVoid("open", _ =>
+            {
+                isRegisteredWhenOpened ??= router.Invocations.Any(invocation => invocation.Identifier == "register");
+                return true;
+            }).SetVoidResult();
+            var cut = ctx.Render(@<FormaPopover Anchor="default"><p>Content</p></FormaPopover>);
+
+            // Act
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
+
+            // Assert
+            Assert.True(isRegisteredWhenOpened);
+        }
+
+        [Fact]
         public async Task Should_register_its_content_s_routes()
         {
             // Arrange

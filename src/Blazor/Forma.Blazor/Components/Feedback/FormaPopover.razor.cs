@@ -134,8 +134,9 @@ public sealed partial class FormaPopover : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        await _popup.SyncAsync(IsOpen, RootElement, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment);
+        // The scope is in place before the focus moves into the content, so a key typed as it moves is routed to the popover.
         await _inputRegistration.SyncAsync(RootElement, _inputProfile, shouldRegister: IsOpen, isActive: IsOpen, within: [_trigger]);
+        await _popup.SyncAsync(IsOpen, RootElement, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment);
     }
 
     /// <inheritdoc />

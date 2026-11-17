@@ -25,6 +25,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   culture, where the key is the text a reader sees. It threw there for every key that no file listed, so an English
   host requiring localization threw on its first lookup.
 - `LocaleEntries.IsEmpty` says whether a source holds anything for an assembly's types in a culture.
+- `FormaPopover` registers its input scope before the focus moves into its content, so a key typed while it opens is
+  routed to it. A key that landed on the content before the scope was in place was routed nowhere, and a space typed
+  into `FormaSelect`'s label as its list opened chose the option it landed on.
 
 ## `1.0.0-preview.8`
 
