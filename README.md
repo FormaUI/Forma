@@ -371,14 +371,8 @@ the file format.
 
 The [Locali](https://github.com/FormaUI/Locali) linter checks locale files against the lookups that key them. A
 component deriving from `FormaComponentBase` or `FormaInputBase<TValue>` looks its strings up through `L`, in the files
-of the type `LocaleSourceType` names, and Locali checks those lookups where the application's `.locali.json` reads the
-hints `formaui-net.Blazor` ships:
-
-```json
-{
-  "hints": { "packages": ["formaui-net.Blazor"] }
-}
-```
+of the type `LocaleSourceType` names, and Locali checks those lookups through the hints `formaui-net.Blazor` ships,
+which every run restoring the package reads.
 
 Where an application's `LocalizationOptions` turn `Diagnostics` on, it checks every lookup it makes as it runs, a
 key it computes included. Each key without an entry in the lookup's culture, or in a culture `Cultures` names, is
