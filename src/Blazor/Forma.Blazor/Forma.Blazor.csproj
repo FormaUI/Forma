@@ -10,7 +10,7 @@
         <None Include="..\..\..\README.md" Pack="true" PackagePath="\" Visible="false" />
     </ItemGroup>
 
-    <!-- The hints the Locali linter reads Forma's locale members by, where it can't analyze this assembly's code, ship at the package's root for an application's .locali.json to name; the SDK takes the file for content, which would flow into a consumer's project. -->
+    <!-- The hints the Locali linter reads Forma's locale members by, where it can't analyze this assembly's code, ship at the package's root for every run restoring the package to read; the SDK takes the file for content, which would flow into a consumer's project. -->
     <ItemGroup>
         <Content Remove=".locali-hints.json" />
         <None Include=".locali-hints.json" Pack="true" PackagePath="\" />
