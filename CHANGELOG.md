@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.9`
 
-*Unreleased*
+*November 17, 2026*
 
 - `LocalizationOptions.Diagnostics`, a `LocalizationDiagnostics`, checks every lookup the JSON localization makes, in
   the lookup's culture and in each culture its `Cultures` names, and logs each key it doesn't find an entry for as a
