@@ -297,6 +297,24 @@ public sealed class PluralExpressionEvaluatorTests
     }
 
     [Fact]
+    public void Should_report_an_argument_that_is_not_a_count_as_a_warning_under_diagnostics()
+    {
+        // Arrange
+        using var loggerFactory = new FakeLoggerFactory();
+        var evaluator = new PluralExpressionEvaluator(new StubPluralRuleSet(PluralCategory.Other), loggerFactory.CreateLogger("plural"), new LocalizationDiagnostics());
+
+        // Act
+        _ = evaluator.Evaluate(AllFields, CultureInfo.InvariantCulture, [Count("secret")]);
+
+        // Assert
+        var entry = Assert.Single(loggerFactory.Entries);
+        Assert.Multiple(
+            () => Assert.Equal(Microsoft.Extensions.Logging.LogLevel.Warning, entry.Level),
+            () => Assert.Equal(1, entry.EventId.Id),
+            () => Assert.Equal("count", entry.Fields["Argument"]));
+    }
+
+    [Fact]
     public void Should_reject_a_null_rule_set()
         => Assert.Throws<ArgumentNullException>(() => new PluralExpressionEvaluator(null!));
     [Fact]

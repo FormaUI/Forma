@@ -5,6 +5,24 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.9`
+
+*Unreleased*
+
+- `LocalizationOptions.Diagnostics`, a `LocalizationDiagnostics`, checks every lookup the JSON localization makes, in
+  the lookup's culture and in each culture its `Cultures` names, and logs each key it doesn't find an entry for as a
+  warning, once per factory: `AssemblyNotLocalized` where none of the sources holds an entry for any of the
+  assembly's types in the culture or a culture it falls back to, `TypeNotLocalized` where the assembly holds some and
+  the type doesn't, and `KeyNotLocalized` otherwise, each carrying `Assembly`, `Type`, `Key` and `Culture` as fields.
+  A culture of the source language is left unchecked, and a file a checked culture can't read is logged as
+  `LocaleFileNotRead`, leaving the lookup's text as it is. Under the checks, a plural argument that isn't a count is a
+  warning in place of `Debug`, and `PluralExpressionEvaluator` takes them as its third argument.
+- Localization's log messages carry stable event ids: 1 for a plural argument that isn't a count, 2 for a locale pack
+  that could not be loaded, 3 for a host locale assembly that could not be loaded, 4 for an entry two files give
+  different texts, and 5 to 8 for `AssemblyNotLocalized`, `TypeNotLocalized`, `KeyNotLocalized` and
+  `LocaleFileNotRead`.
+- `LocaleEntries.IsEmpty` says whether a source holds anything for an assembly's types in a culture.
+
 ## `1.0.0-preview.8`
 
 *November 17, 2026*

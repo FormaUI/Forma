@@ -68,10 +68,11 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
     {
         var seenKeys = new HashSet<string>(StringComparer.Ordinal);
 
+        var uiCulture = UICulture;
         var index = 0;
-        for (var culture = UICulture; culture.Name.Length != 0; culture = culture.Parent, index++)
+        for (var culture = uiCulture; culture.Name.Length != 0; culture = culture.Parent, index++)
         {
-            foreach (var entry in Read(culture, index))
+            foreach (var entry in Read(uiCulture, culture, index))
             {
                 if (seenKeys.Add(entry.Key))
                 {
@@ -99,8 +100,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
     private LocalizedText Render(string name, LocalizedArgument[] arguments)
     {
         var key = LocalizationSchema.Unescape(name);
-        var isFound = TryFind(key, out var entry);
-        RequireFound(name, isFound);
+        var isFound = Find(name, key, out var entry);
 
         var format = Evaluate(isFound ? entry.Format : key, IsLocalized(isFound, entry), arguments);
 
@@ -110,10 +110,59 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
     private LocalizedPattern Resolve(string name, LocalizedArgument[] arguments)
     {
         var key = LocalizationSchema.Unescape(name);
-        var isFound = TryFind(key, out var entry);
-        RequireFound(name, isFound);
+        var isFound = Find(name, key, out var entry);
 
         return new LocalizedPattern(name, Evaluate(isFound ? entry.Format : key, IsLocalized(isFound, entry), arguments), arguments, !isFound, location.BaseName);
+    }
+
+    // The entry the key resolves to in the UI culture, checked by the diagnostics the options run and required where they require it.
+    private bool Find(string name, string key, out JsonResourceEntry entry)
+    {
+        var uiCulture = UICulture;
+        var isFound = TryFind(key, uiCulture, out entry);
+
+        if (context.Diagnostics is { } diagnostics)
+        {
+            Diagnose(diagnostics, name, key, uiCulture, isFound);
+        }
+
+        if (!isFound && context.Options.RequireMatchingLocalization)
+        {
+            throw new LocalizationNotFoundException(
+                $"'{location.BaseName}' carries no localization of '{name}' for '{uiCulture.Name}'.");
+        }
+
+        return isFound;
+    }
+
+    // The UI culture's own lookup stands for it, and every other culture the diagnostics check resolves the key the same way.
+    private void Diagnose(JsonLocaleDiagnostics diagnostics, string name, string key, CultureInfo uiCulture, bool isFound)
+    {
+        if (!isFound && !context.IsSourceLanguage(uiCulture))
+        {
+            diagnostics.ReportMissing(location, name, uiCulture);
+        }
+
+        foreach (var culture in diagnostics.Cultures)
+        {
+            if (string.Equals(culture.Name, uiCulture.Name, StringComparison.Ordinal) || context.IsSourceLanguage(culture))
+            {
+                continue;
+            }
+
+            // A file another culture can't read is reported, and leaves the text of the reader's culture as it is.
+            try
+            {
+                if (!TryFind(key, culture, out _))
+                {
+                    diagnostics.ReportMissing(location, name, culture);
+                }
+            }
+            catch (LocaleFileException exception)
+            {
+                diagnostics.ReportUnread(location, culture, exception);
+            }
+        }
     }
 
     // A format that is the key itself is source-language text.
@@ -128,21 +177,13 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
             UICulture,
             arguments);
 
-    private void RequireFound(string name, bool isFound)
-    {
-        if (!isFound && context.Options.RequireMatchingLocalization)
-        {
-            throw new LocalizationNotFoundException(
-                $"'{location.BaseName}' carries no localization of '{name}' for '{UICulture.Name}'.");
-        }
-    }
-
-    private bool TryFind(string name, out JsonResourceEntry entry)
+    // The entry a key resolves to in a culture: the culture's own, or the nearest culture it falls back to that holds one.
+    private bool TryFind(string key, CultureInfo uiCulture, out JsonResourceEntry entry)
     {
         var index = 0;
-        for (var culture = UICulture; culture.Name.Length != 0; culture = culture.Parent, index++)
+        for (var culture = uiCulture; culture.Name.Length != 0; culture = culture.Parent, index++)
         {
-            if (Read(culture, index).TryGetValue(name, out entry))
+            if (Read(uiCulture, culture, index).TryGetValue(key, out entry))
             {
                 return true;
             }
@@ -153,9 +194,9 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
         return false;
     }
 
-    // A bound locale keeps what it read for each of its cultures, so a later lookup reads none of them again.
-    private FrozenDictionary<string, JsonResourceEntry> Read(CultureInfo culture, int index)
-        => boundUICulture is null
+    // A bound locale keeps what it read for each culture its UI culture falls back through, so a later lookup doesn't read them again.
+    private FrozenDictionary<string, JsonResourceEntry> Read(CultureInfo uiCulture, CultureInfo culture, int index)
+        => boundUICulture is null || !ReferenceEquals(uiCulture, boundUICulture)
             ? context.Cache.Read(location, culture)
             : _boundEntries[index] ??= context.Cache.Read(location, culture);
 

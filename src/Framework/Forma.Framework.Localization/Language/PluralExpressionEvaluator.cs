@@ -13,7 +13,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 /// <summary>Evaluates the <c>[$ [count] plural; one: text; other: text; $]</c> expression inside localized text.</summary>
 /// <param name="rules">The rules deciding which category a count falls into.</param>
 /// <param name="logger">The logger an argument that is not a count is reported to; null discards.</param>
-public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? logger = null)
+/// <param name="diagnostics">The checks the application runs on its lookups, under which an argument that is not a count is a warning, or null where it leaves them unchecked.</param>
+public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? logger = null, LocalizationDiagnostics? diagnostics = null)
 {
     // How many characters an evaluation writes on the stack before it moves to a pooled buffer.
     private const int StackLength = 256;
@@ -23,6 +24,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
 
     private readonly IPluralRuleSet _rules = rules ?? throw new ArgumentNullException(nameof(rules));
     private readonly ILogger _logger = logger ?? NullLogger.Instance;
+    private readonly LogLevel _notNumericLevel = diagnostics is null ? LogLevel.Debug : LogLevel.Warning;
     private readonly ConcurrentDictionary<string, byte> _reportedFormats = new(StringComparer.Ordinal);
 
     /// <summary>The keyword a plural expression names, whose fields carry the CLDR categories.</summary>
@@ -201,7 +203,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
 
         if (_reportedFormats.TryAdd(format, 0))
         {
-            LocalizationLog.PluralArgumentNotNumeric(_logger, name.ToString(), value?.GetType().Name ?? "null", format);
+            LocalizationLog.PluralArgumentNotNumeric(_logger, _notNumericLevel, name.ToString(), value?.GetType().Name ?? "null", format);
         }
 
         return 0m;

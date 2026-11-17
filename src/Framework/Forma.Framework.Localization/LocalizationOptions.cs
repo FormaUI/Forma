@@ -15,6 +15,9 @@ public sealed record LocalizationOptions
     /// <summary>Whether a key with no localization for the current UI culture throws.</summary>
     public bool RequireMatchingLocalization { get; init; }
 
+    /// <summary>The checks run on every lookup, which report what they find through the application's logging, or null to leave lookups unchecked.</summary>
+    public LocalizationDiagnostics? Diagnostics { get; init; }
+
     /// <summary>The folder holding the host's own locale files, a relative one counted from the application's base directory; empty for none.</summary>
     public string LocalesPath { get; init; } = LocaleConfig.DefaultLocalesDir;
 

@@ -380,6 +380,20 @@ hints `formaui-net.Blazor` ships:
 }
 ```
 
+Where an application's `LocalizationOptions` turn `Diagnostics` on, it checks every lookup it makes as it runs, a
+key it computes included. Each key without an entry in the lookup's culture, or in a culture `Cultures` names, is
+logged once as a warning:
+
+```csharp
+builder.Services.AddJsonLocalization(new LocalizationOptions
+{
+    Diagnostics = builder.Environment.IsDevelopment() ? new() { Cultures = ["he", "es"] } : null,
+});
+```
+
+[`Forma.Framework.Localization.Json`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Localization.Json/README.md#finding-what-is-missing)
+lists the events it logs.
+
 ## Switching the culture
 
 ### In place

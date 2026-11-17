@@ -5,8 +5,8 @@
 How localized strings are read from locale files and resolved. Authoritative for the entries
 every file is read into, the default reading of a file's place and name, the paths a project may
 state instead, the `.locale.json` config that shapes reading, the locale packs an assembly's
-strings may ship in, the order entries apply in, and how code written against Microsoft's
-`IStringLocalizer` reads them. The contract a component reads strings
+strings may ship in, the order entries apply in, how the runtime reports a lookup that doesn't
+find an entry, and how code written against Microsoft's `IStringLocalizer` reads them. The contract a component reads strings
 through, holes, plural forms and the file format are the `Forma.Framework.Localization` README's;
 the checks run over the files are the [Locali](https://github.com/FormaUI/Locali) linter's,
 `dotnet locali`.
@@ -409,6 +409,42 @@ For one type, one key and one reader's culture, the text is chosen in this order
 4. **Within one file,** what the file's own rules say: a section's own key wins over the file's
    `$shared` one, and a deeper node's shared entries over a higher node's.
 
+## Diagnostics
+
+An application can have the runtime check the lookups it makes, in the culture each is made in and in
+cultures it names, through the `Diagnostics` its `LocalizationOptions` set. The setting is an option rather
+than a build symbol, since the packages are built in Release, and an application turns it on where it wants
+it, in development or in a test run.
+
+A check is the lookup's own resolution asked of another culture: the culture, then its parents, every
+source in its order, a type's shared entries and its own. A parent's entry, a pack's or a host's, a shared
+entry and a `null` entry are each found, and a text equal to its key is an entry like any other. The
+culture the lookup is made in is checked by the lookup's own answer, and every other culture is asked the
+same question without the reader's culture changing or any text being rendered, so a check and a lookup
+never disagree about what is found. A culture of the source language is left unchecked, since the key is
+its text, and so is the invariant culture, which locale files aren't written for.
+
+A miss is reported as the broadest part of its location that none of the sources holds an entry for, in
+the culture or a culture it falls back to:
+
+1. **The assembly,** where no source holds an entry for any of its types.
+2. **The type,** where the assembly holds entries and the type doesn't, its shared entries included.
+3. **The key,** where the type holds entries, but not for the key.
+
+The broader report stands for every narrower one beneath it, so an assembly that doesn't ship Hebrew is one
+report rather than one for each of its keys, and an `es-419` without files of its own misses nothing `es`
+answers. Each is logged once per factory, which reads each file once, so what it has reported follows what it
+has read. The three are warnings, each its own event carrying the assembly, the type, the key and the culture
+as fields, since grouping explains a miss without making it matter less; a plural argument that isn't a count
+is a warning under the checks too, and `Debug` without them. A file that a culture checked beside the lookup's
+can't read is a warning of its own, once for each type and culture, and leaves the text the reader sees as it
+is: the checks report what they find without changing what a lookup shows.
+
+The checks see the lookups that run. The [Locali](https://github.com/FormaUI/Locali) linter checks what it
+can establish before the application runs, and where the two read the same files and settings they agree;
+an entry that arrives later, through the folder beside the running application, is one the runtime sees
+and the linter may not.
+
 ## Microsoft's string localizer
 
 Code written against Microsoft's `IStringLocalizer` reads Forma's strings through
@@ -471,3 +507,6 @@ host wanting Forma's strings registers the adapter in its place or before it.
 | L29 | How does code written against Microsoft's `IStringLocalizer` read Forma's strings? | Through `Forma.Framework.Localization.StringLocalizerAdapter`, registered with `AddFormaStringLocalizerAdapter()`: a factory over the registered `IStringLocaleFactory` and `IStringLocalizer<T>`, reading the thread's cultures at each lookup, as an unbound locale does. |
 | L30 | How does the adapter fill `{0}` and `{Name}`? | By the key alone: a key naming a Forma hole or holding an expression is Forma's, any other is composite and `string.Format` fills it in the formatting culture. One formatter runs over a string, and a key mixing the two, or a text using the syntax its key doesn't, throws `FormatException`. |
 | L31 | What if a host also calls Microsoft's `AddLocalization()`? | The factory registered first is used, since the adapter registers with `TryAdd` as every Forma registrar does; a host wanting Forma's strings registers the adapter in its place or before it. |
+| L32 | How does the runtime report a lookup that doesn't find an entry? | Through diagnostics an application turns on in `LocalizationOptions`, which check every lookup in its own culture and in the cultures the application names, and log each miss once per factory as a warning with its own event. An option rather than a build symbol, since the packages are built in Release. |
+| L33 | Does a check resolve a key its own way? | No. It asks the lookup's own resolution of another culture, without changing the reader's culture or rendering text, so a check and a lookup never disagree about what is found. |
+| L34 | How broad is a reported miss? | As broad as the resolver establishes: the assembly where no source holds an entry for any of its types in the culture or a culture it falls back to, the type where the assembly holds some and the type doesn't, and the key otherwise. The broader report stands for the narrower ones beneath it. |

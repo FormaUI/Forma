@@ -361,6 +361,7 @@ that references one names it in `LocalePacks` instead.
 | --- | --- | --- |
 | `SourceLanguage` | `en` | The language the keys are written in. |
 | `RequireMatchingLocalization` | `false` | Throws `LocalizationNotFoundException` for a key no locale file localizes, so a development build finds what is missing. |
+| `Diagnostics` | none | The checks run on every lookup, a `LocalizationDiagnostics`, which log each key without an entry in the lookup's culture and in the `Cultures` it names, as `Forma.Framework.Localization.Json` sets out. |
 | `LocalesPath` | `.locales` | The host's folder of locale files beside the running application, relative to its base directory; empty reads none. |
 | `LocalePacks` | none | Locale packs read beside the ones the application's build recorded. |
 | `HostLocaleAssemblies` | none | Applications whose embedded files are read for other assemblies' strings, beside the ones the application's build recorded. |
@@ -372,6 +373,7 @@ that references one names it in `LocalePacks` instead.
 | `IStringLocale<T>` | The strings of type `T`: `this[name]`, `this[name, values]`, `Resolve`, `GetAllStrings`, `WithCulture`. |
 | `IStringLocaleFactory` | Creates a locale for a type, `Create(Type)`, or for a base name in an assembly, `Create(string, string)`. |
 | `LocalizationOptions` | The settings above. |
+| `LocalizationDiagnostics` | The checks `Diagnostics` turns on: `Cultures`, the cultures every lookup is checked in beside its own. |
 | `LocalizedText` | A localized string: `Value`, `Name`, `ResourceNotFound`, `SearchedLocation`. |
 | `LocalizedPattern` | A localized format with its holes open: `Format`, `Arguments`, `EnumerateSegments()`. |
 | `LocalizedSegment` | One run of a format: literal `Text`, or a hole with a `Name`, `Alignment` and `Format`. |

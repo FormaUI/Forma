@@ -77,6 +77,18 @@ public sealed class FakeLoggerFactory : ILoggerFactory
         }
     }
 
+    // A template naming a field twice lists it twice, and the value written last is the one kept.
+    private static Dictionary<string, object?> GetFields(IEnumerable<KeyValuePair<string, object?>> fields)
+    {
+        var named = new Dictionary<string, object?>(StringComparer.Ordinal);
+        foreach (var (name, value) in fields)
+        {
+            named[name] = value;
+        }
+
+        return named;
+    }
+
     private sealed class FakeLogger(string category, FakeLoggerFactory factory) : ILogger
     {
         public IDisposable? BeginScope<TState>(TState state)
@@ -87,7 +99,11 @@ public sealed class FakeLoggerFactory : ILoggerFactory
             => true;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter)
-            => factory.Add(new FakeLogEntry(category, logLevel, formatter(state, exception)));
+            => factory.Add(new FakeLogEntry(category, logLevel, formatter(state, exception))
+            {
+                EventId = eventId,
+                Fields = state is IEnumerable<KeyValuePair<string, object?>> fields ? GetFields(fields) : [],
+            });
     }
 }
 
@@ -95,4 +111,11 @@ public sealed class FakeLoggerFactory : ILoggerFactory
 /// <param name="Category">The category the entry was written under.</param>
 /// <param name="Level">The level it was written at.</param>
 /// <param name="Message">The message as the logger formatted it.</param>
-public readonly record struct FakeLogEntry(string Category, LogLevel Level, string Message);
+public readonly record struct FakeLogEntry(string Category, LogLevel Level, string Message)
+{
+    /// <summary>The event the entry was written for.</summary>
+    public EventId EventId { get; init; }
+
+    /// <summary>The structured fields the entry was written with, keyed by their names.</summary>
+    public IReadOnlyDictionary<string, object?> Fields { get; init; } = new Dictionary<string, object?>();
+}

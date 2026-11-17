@@ -35,22 +35,21 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentNullException.ThrowIfNull(loggerFactory);
-        ArgumentException.ThrowIfNullOrWhiteSpace(options.SourceLanguage);
 
         // A regional value stays regional, since CLDR keys a few of its rule sets by region.
-        var sourceCulture = CultureInfo.GetCultureInfo(options.SourceLanguage);
-        if (sourceCulture.Name.Length == 0)
-        {
-            throw new ArgumentException($"'{options.SourceLanguage}' names no language.", nameof(options));
-        }
+        var sourceCulture = GetCulture(options.SourceLanguage);
+        CultureInfo[]? diagnosedCultures = options.Diagnostics is { } diagnostics ? [.. diagnostics.Cultures.Select(GetCulture)] : null;
 
         var format = new JsonLocaleFileFormat();
+        var logger = loggerFactory.CreateLogger<JsonStringLocaleFactory>();
+        var cache = new JsonResourceCache(format, GetLocalesPath(options.LocalesPath), options.LocalePacks, options.HostLocaleAssemblies, logger);
 
         _context = new JsonLocaleContext(
-            new JsonResourceCache(format, GetLocalesPath(options.LocalesPath), options.LocalePacks, options.HostLocaleAssemblies, loggerFactory.CreateLogger<JsonStringLocaleFactory>()),
+            cache,
             sourceCulture,
-            new PluralExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<PluralExpressionEvaluator>()),
-            options);
+            new PluralExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<PluralExpressionEvaluator>(), options.Diagnostics),
+            options,
+            diagnosedCultures is null ? null : new JsonLocaleDiagnostics(cache, diagnosedCultures, logger));
     }
 
     /// <inheritdoc />
@@ -82,6 +81,20 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         var typeName = NormalizeTypeName(source.FullName ?? source.Name);
 
         return GetOrAdd(assembly, assemblyName, GetBaseName(assemblyName, typeName), typeName);
+    }
+
+    // The culture an option names, where a name naming the invariant culture throws as an unknown one does.
+    private static CultureInfo GetCulture(string name)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(name);
+
+        var culture = CultureInfo.GetCultureInfo(name);
+        if (culture.Name.Length == 0)
+        {
+            throw new ArgumentException($"'{name}' doesn't name a language.", nameof(name));
+        }
+
+        return culture;
     }
 
     private static string GetLocalesPath(string path)

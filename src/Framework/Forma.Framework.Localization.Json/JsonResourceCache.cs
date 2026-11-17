@@ -41,16 +41,48 @@ internal sealed class JsonResourceCache
     public FrozenDictionary<string, JsonResourceEntry> Read(ResourceLocation location, CultureInfo culture)
         => _files.GetOrAdd(new CacheKey(location, culture.Name), static (key, cache) => cache.Load(key), this);
 
+    /// <summary>Whether a culture or a culture it falls back to holds an entry for the location's type, a shared one among them.</summary>
+    public bool HasTypeEntries(ResourceLocation location, CultureInfo culture)
+    {
+        for (var fallback = culture; fallback.Name.Length != 0; fallback = fallback.Parent)
+        {
+            if (Read(location, fallback).Count > 0)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /// <summary>Whether a culture or a culture it falls back to holds an entry for any type of the location's assembly, in any source.</summary>
+    public bool HasAssemblyEntries(ResourceLocation location, CultureInfo culture)
+    {
+        var embeddedSource = GetEmbeddedSource(location);
+
+        for (var fallback = culture; fallback.Name.Length != 0; fallback = fallback.Parent)
+        {
+            if (!embeddedSource.ReadEntries(location.AssemblyName, fallback.Name).IsEmpty)
+            {
+                return true;
+            }
+
+            foreach (var source in _layered)
+            {
+                if (!source.ReadEntries(location.AssemblyName, fallback.Name).IsEmpty)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private FrozenDictionary<string, JsonResourceEntry> Load(CacheKey key)
     {
-        var (assembly, assemblyName, typeName) = (key.Location.Assembly, key.Location.AssemblyName, key.Location.TypeName);
-        var embeddedSource = _embeddedByAssembly.GetOrAdd(assembly, static (owner, format) => new EmbeddedLocaleSource(owner, format), _format);
-
-        // Of two assemblies of one name, the one read last names the root namespace.
-        if (!_embeddedByAssemblyName.TryGetValue(assemblyName, out var namedSource) || namedSource != embeddedSource)
-        {
-            _embeddedByAssemblyName[assemblyName] = embeddedSource;
-        }
+        var (assemblyName, typeName) = (key.Location.AssemblyName, key.Location.TypeName);
+        var embeddedSource = GetEmbeddedSource(key.Location);
 
         var entries = new Dictionary<string, LocaleSourceEntry>(StringComparer.Ordinal);
         var conflicts = new List<LocaleConflict>();
@@ -72,6 +104,20 @@ internal sealed class JsonResourceCache
             entry => entry.Key,
             entry => new JsonResourceEntry(entry.Key, entry.Value.Value ?? entry.Key, entry.Value.Value is null),
             StringComparer.Ordinal);
+    }
+
+    // The files embedded in the location's assembly, whose config names the root namespace the other sources read the assembly's names by.
+    private EmbeddedLocaleSource GetEmbeddedSource(ResourceLocation location)
+    {
+        var embeddedSource = _embeddedByAssembly.GetOrAdd(location.Assembly, static (owner, format) => new EmbeddedLocaleSource(owner, format), _format);
+
+        // Of two assemblies of one name, the one read last names the root namespace.
+        if (!_embeddedByAssemblyName.TryGetValue(location.AssemblyName, out var namedSource) || namedSource != embeddedSource)
+        {
+            _embeddedByAssemblyName[location.AssemblyName] = embeddedSource;
+        }
+
+        return embeddedSource;
     }
 
     // A conflict is reported once, the first time a type it touches is read, however many types beneath a shared entry meet it.

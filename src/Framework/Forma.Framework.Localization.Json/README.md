@@ -19,7 +19,7 @@ builder.Services.AddJsonLocalization();
 // or, with settings
 builder.Services.AddJsonLocalization(new LocalizationOptions
 {
-    RequireMatchingLocalization = builder.Environment.IsDevelopment(),
+    Diagnostics = builder.Environment.IsDevelopment() ? new() : null,
 });
 ```
 
@@ -104,7 +104,7 @@ a differing minor is read, and a field the reader does not know is ignored. A fi
 read throws `LocaleFileException`, or `LocalizationMetadataException` for bad metadata.
 
 A `null` entry and a missing one both render the source text; the `null` entry counts as
-localized, so `RequireMatchingLocalization` accepts it and `GetAllStrings` lists it.
+localized, so `RequireMatchingLocalization` and `Diagnostics` accept it and `GetAllStrings` lists it.
 
 ## How a lookup resolves
 
@@ -115,6 +115,42 @@ Within a culture, the assembly's own files are read first, then the locale packs
 the application names, then the application's own files, then the folder beside it, each overriding
 the one before. Within one of them, two files giving a key different texts are a conflict, settled by
 the file whose name sorts last and logged once as a warning. Each file is read once per factory.
+
+## Finding what is missing
+
+`Diagnostics` checks every lookup and logs, as a warning, each key it doesn't find an entry for:
+
+```csharp
+builder.Services.AddJsonLocalization(new LocalizationOptions
+{
+    Diagnostics = builder.Environment.IsDevelopment() ? new() { Cultures = ["he", "es"] } : null,
+});
+```
+
+`new()` checks a lookup in the culture it is made in, and `Cultures` in each culture it names as well, so a session in
+English finds what Hebrew and Spanish lack. A culture of the source language is left unchecked, since the key is its
+text, and a name that isn't a culture throws `ArgumentException`.
+
+A key resolves as the lookup resolves it: through the culture's parents, every source, shared entries and `null`
+entries, so an `es-419` lookup that `es` answers, or a text equal to its key, is found. Each miss is logged once per
+factory, as the broadest part of its location that the culture and the cultures it falls back to don't hold an entry
+for:
+
+| Event | Id | Logged where |
+| --- | --- | --- |
+| `AssemblyNotLocalized` | 5 | No source holds an entry for any of the assembly's types. |
+| `TypeNotLocalized` | 6 | The assembly holds entries, and the type doesn't, its shared entries included. |
+| `KeyNotLocalized` | 7 | The type holds entries, but not for the key. |
+
+Each carries `Assembly`, `Type`, `Key` and `Culture` as fields, the type and key those of the lookup that found the
+miss, so a test run can fail on these three events. A file that a culture `Cultures` names can't read is logged once
+for each type as `LocaleFileNotRead`, event 8, with `Assembly`, `Type`, `Culture` and the `Reason`, and leaves the
+lookup's text as it is. All four are logged under `Forma.Framework.Localization.Json.JsonStringLocaleFactory`. A
+plural argument that isn't a count is a warning as well, event 1 under
+`Forma.Framework.Localization.Language.PluralExpressionEvaluator`, logged at `Debug` without `Diagnostics`.
+
+The checks see the lookups that run, so a clean run covers the strings those lookups reached. They check the
+locales `JsonStringLocaleFactory` makes.
 
 ## Outside the container
 

@@ -23,6 +23,10 @@ public sealed class LocaleEntries
     public IReadOnlyList<LocaleConflict> Conflicts
         => _conflicts.Value;
 
+    /// <summary>Whether the source holds nothing for the assembly's types in the culture.</summary>
+    public bool IsEmpty
+        => _underRoot.IsEmpty && _outsideRoot.IsEmpty;
+
     /// <summary>Writes the entries the source holds for a type into <paramref name="entries"/>, keyed by their source text, so each key is left with the text the source gives it.</summary>
     /// <remarks>
     /// A key's shared entries are written first, those of a shallower namespace before a deeper one's, and the type's own
@@ -87,6 +91,10 @@ internal sealed class LocaleNames(string rootNamespace)
     private readonly Dictionary<string, LocaleNodes> _own = [with(StringComparer.Ordinal)];
     private readonly Dictionary<string, LocaleNodes> _shared = [with(StringComparer.Ordinal)];
     private readonly List<(string Name, ExceptionDispatchInfo Exception)> _broken = [];
+
+    /// <summary>Whether the reading holds nothing: neither a section nor a file the source could not read.</summary>
+    public bool IsEmpty
+        => _own.Count == 0 && _shared.Count == 0 && _broken.Count == 0;
 
     /// <summary>Records a file the source could not read, which every type beneath the name it stands for reports.</summary>
     /// <param name="anchor">The name the file stands for, its segments joined with dots.</param>
