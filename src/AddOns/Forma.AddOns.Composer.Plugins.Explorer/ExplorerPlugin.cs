@@ -30,7 +30,7 @@ public sealed class ExplorerPlugin(ExplorerPluginOptions? options = null) : ICom
         [
             new ToolbarGroup
             {
-                Id = "media",
+                Id = ComposerGroups.Media,
                 Title = "Media",
                 Items =
                 [

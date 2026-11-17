@@ -121,7 +121,9 @@ required.
 | `LocaleSourceType` | The type whose locale files hold its titles and labels, so a plugin from another package ships its strings with it. |
 
 Titles and labels are English, and the composer localizes them. `ComposerRows` names the rows the
-composer provides: `BuiltIn`, `Plugins`, `Formatting`, `Paragraph` and `Selection`.
+composer provides: `BuiltIn`, `Plugins`, `Formatting`, `Paragraph` and `Selection`. `ComposerGroups`
+names the groups it provides: `Media`. A plugin putting its commands in one names it as the group's
+`Id`, and the composer titles the group in its own words.
 
 ## What a plugin reads
 

@@ -1,6 +1,7 @@
 namespace Forma.Tests.Blazor;
 
 using System.Globalization;
+using System.Reflection;
 
 using Bunit;
 using Bunit.Rendering;
@@ -23,11 +24,14 @@ public abstract class FormaBunitContext : BunitContext
 
     private bool _isRendererInfoSet;
 
+    // Read from this assembly, where the build records the referenced locale packs; a test's entry assembly is its runner's.
+    /// <summary>The locale packs of the languages the library ships, which the context's localization reads.</summary>
+    public static IReadOnlyList<Assembly> LocalePacks { get; } = LocaleAssemblyLoader.LoadPacks(typeof(FormaBunitContext).Assembly, NullLogger.Instance);
+
     /// <summary>Creates a context carrying Forma's own service registrations.</summary>
     protected FormaBunitContext()
     {
-        // Read from this assembly, where the build records the referenced locale packs; a test's entry assembly is its runner's.
-        Services.AddJsonLocalization(new LocalizationOptions { LocalePacks = LocaleAssemblyLoader.LoadPacks(typeof(FormaBunitContext).Assembly, NullLogger.Instance) });
+        Services.AddJsonLocalization(new LocalizationOptions { LocalePacks = LocalePacks });
         Services.AddFormaTwemojiPack();
         Services.AddScoped<ICultureSwitch, TestCultureSwitch>();
         Services.AddFormaUIServices();

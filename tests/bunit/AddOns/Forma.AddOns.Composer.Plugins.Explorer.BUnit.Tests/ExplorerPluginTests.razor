@@ -1,0 +1,33 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Composer
+@using Forma.Blazor.Components.Composer.RichTextEditor
+@using Forma.Framework.Composer.Documents
+@using Forma.Framework.Composer.Plugins
+@using Forma.Framework.Localization
+@using Forma.Framework.Localization.Json
+
+@code {
+    public sealed class Component
+    {
+        private static readonly ComposerDefinition RichTextWithExplorer = ComposerDefinition.Create(composer => composer
+            .AddRichTextEditor(editor => editor.AddFeaturePlugin<ExplorerPlugin>()));
+
+        [Theory]
+        [InlineData("es", "Medios")]
+        [InlineData("he", "מדיה")]
+        public void Should_title_its_group_in_the_composer_s_words_where_every_lookup_must_find_its_localization(string language, string expected)
+        {
+            // Arrange — a host that requires every lookup to find its localization, and the explorer alone in the media group.
+            using var culture = new CultureFixture(language);
+            using var ctx = new ExplorerPluginTests();
+            ctx.Services.AddSingleton<IStringLocaleFactory>(new JsonStringLocaleFactory(new LocalizationOptions { LocalePacks = LocalePacks, RequireMatchingLocalization = true }));
+            var document = new ComposerDocument(ComposerDocumentFormat.Html, string.Empty);
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="document" Plugins="RichTextWithExplorer" />);
+
+            // Assert
+            Assert.Contains(cut.FindAll(".forma-toolbar-group"), group => group.GetAttribute("aria-label") == expected);
+        }
+    }
+}

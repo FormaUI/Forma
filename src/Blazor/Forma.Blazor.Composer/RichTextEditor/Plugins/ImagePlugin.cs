@@ -24,7 +24,7 @@ public sealed class ImagePlugin(RichTextEditorPlugin editor) : IComposerFeatureP
         [
             new ToolbarGroup
             {
-                Id = "media",
+                Id = ComposerGroups.Media,
                 Title = "Media",
                 Items =
                 [

@@ -18,7 +18,9 @@ public sealed record ComposerToolbarRowLayout(
 /// <remarks>
 /// The built-in row comes first, then the rows the surface declares, then the composer's standard rows, then, on an
 /// editor's surface, the rows its feature plugins declare. A row holding no items is left out, the built-in row excepted,
-/// and an item naming a row the layout does not hold lands on the plugins row where the layout has one.
+/// and an item naming a row the layout does not hold lands on the plugins row where the layout has one. A standard row
+/// and a standard group take the composer's own title, localized for the composer, whichever plugin declares them; every
+/// other title is localized for the plugin that declared it.
 /// </remarks>
 public sealed class ComposerToolbarLayout
 {
@@ -72,6 +74,11 @@ public sealed class ComposerToolbarLayout
         new() { Id = ComposerRows.Selection, Label = "Selection Formatting" },
     ];
 
+    private static readonly Dictionary<string, string> StandardGroupTitles = new(StringComparer.Ordinal)
+    {
+        [ComposerGroups.Media] = "Media",
+    };
+
     private static string KeepTitle(IComposerPlugin? plugin, string title)
         => title;
 
@@ -105,7 +112,7 @@ public sealed class ComposerToolbarLayout
         {
             foreach (var entry in contributor.Items)
             {
-                var localizedItems = entry.Items.Select(item => Localize(item, title => localize(contributor, title)));
+                var localizedItems = entry.Items.Select(item => Localize(item, contributor, localize));
 
                 if (items.TryGetValue(entry.RowId, out var row))
                 {
@@ -119,21 +126,25 @@ public sealed class ComposerToolbarLayout
         }
     }
 
-    private static ToolbarItem Localize(ToolbarItem item, Func<string, string> localize)
+    private static ToolbarItem Localize(ToolbarItem item, IComposerPlugin contributor, Func<IComposerPlugin?, string, string> localize)
         => item switch
         {
-            ToolbarGroup group => group with { Title = localize(group.Title), Items = [.. group.Items.Select(child => Localize(child, localize))] },
+            ToolbarGroup group => group with
+            {
+                Title = StandardGroupTitles.TryGetValue(group.Id, out var standardTitle) ? localize(null, standardTitle) : localize(contributor, group.Title),
+                Items = [.. group.Items.Select(child => Localize(child, contributor, localize))],
+            },
             ToolbarToggle toggle => toggle with
             {
-                Title = localize(toggle.Title),
-                AlternateTitle = toggle.AlternateTitle is { } alternateTitle ? localize(alternateTitle) : null,
+                Title = localize(contributor, toggle.Title),
+                AlternateTitle = toggle.AlternateTitle is { } alternateTitle ? localize(contributor, alternateTitle) : null,
             },
             ToolbarMenu menu => menu with
             {
-                Title = localize(menu.Title),
-                Options = [.. menu.Options.Select(option => option with { Title = localize(option.Title) })],
+                Title = localize(contributor, menu.Title),
+                Options = [.. menu.Options.Select(option => option with { Title = localize(contributor, option.Title) })],
             },
-            _ => item with { Title = localize(item.Title) },
+            _ => item with { Title = localize(contributor, item.Title) },
         };
 
     /// <summary>Folds groups sharing an identifier into the first of them.</summary>

@@ -12,7 +12,10 @@
         <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Composer.Plugins.Explorer\Forma.AddOns.Composer.Plugins.Explorer.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Composer\Forma.Framework.Composer.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Explorer\Forma.Framework.Explorer.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
         <ProjectReference Include="..\..\..\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
         <ProjectReference Include="..\..\..\support\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />
     </ItemGroup>

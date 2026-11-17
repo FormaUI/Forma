@@ -13,6 +13,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
   Spanish localize. The row's label had no entry in either language, and the bar carried a label of its own,
   *Selection formatting*. `ComposerSelectionBar` takes the label as its first argument, `Label`; to migrate, pass the
   row's label ahead of the items.
+- `ComposerGroups` names the toolbar groups the composer provides, `Media` the first, and the composer titles one in
+  its own words whichever plugin declares it, as it labels a row `ComposerRows` names. A plugin's other titles are read
+  from the locale its `LocaleSourceType` names alone. The composer read every title there first and fell back to its
+  own, so a plugin from another package joining the media group, as `ExplorerPlugin` does, threw under
+  `RequireMatchingLocalization` in a language other than English, and `Diagnostics` reported the title missing. The
+  image, video and explorer plugins put their commands in `ComposerGroups.Media`, whose identifier is
+  `composer.media`; to migrate, a plugin that named the group `media` names `ComposerGroups.Media`.
 - An application a test runner hosts, as `WebApplicationFactory` does, reads the locale packs and files its build
   recorded: where the entry assembly's build didn't mark it as the application, every loaded assembly whose build did
   is read before it. A test hosting the application read only the test assembly's, so the application's components

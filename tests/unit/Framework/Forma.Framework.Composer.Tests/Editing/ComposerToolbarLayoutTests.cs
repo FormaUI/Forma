@@ -260,21 +260,38 @@ public sealed class ComposerToolbarLayoutTests
             Rows = [new() { Id = "editor.row", Label = "Editor Row" }],
             Items = [CreateRow("editor.row", CreateCommand("own"))],
         };
-        var first = new Plugin { Id = "first", Items = [CreateRow(ComposerRows.Formatting, Group("media", CreateCommand("image")))] };
-        var second = new Plugin { Id = "second", Items = [CreateRow(ComposerRows.Formatting, Group("media", CreateCommand("browse")))] };
+        var first = new Plugin { Id = "first", Items = [CreateRow(ComposerRows.Formatting, Group("insert", CreateCommand("rule")))] };
+        var second = new Plugin { Id = "second", Items = [CreateRow(ComposerRows.Formatting, Group("insert", CreateCommand("table")))] };
 
         // Act
         var layout = ComposerToolbarLayout.Create(editor, [first, second], (plugin, title) => $"{plugin?.Id ?? "composer"}:{title}");
 
         // Assert
         var formatting = layout.Rows.Single(row => row.Id == ComposerRows.Formatting);
-        var media = Assert.IsType<ToolbarGroup>(Assert.Single(formatting.Items));
+        var insert = Assert.IsType<ToolbarGroup>(Assert.Single(formatting.Items));
         Assert.Multiple(
             () => Assert.Equal("composer:Editor Commands", layout.Rows[0].Label),
             () => Assert.Equal("editor:Editor Row", layout.Rows.Single(row => row.Id == "editor.row").Label),
             () => Assert.Equal("composer:Text Formatting", formatting.Label),
-            () => Assert.Equal("first:media", media.Title),
-            () => Assert.Equal(["first:image", "second:browse"], media.Items.Select(item => item.Title)));
+            () => Assert.Equal("first:insert", insert.Title),
+            () => Assert.Equal(["first:rule", "second:table"], insert.Items.Select(item => item.Title)));
+    }
+
+    [Fact]
+    public void Should_title_a_standard_group_in_the_composer_s_words_whichever_plugin_declares_it()
+    {
+        // Arrange — a plugin from another package declaring the media group alone, under a title of its own.
+        var editor = new Editor();
+        var plugin = new Plugin { Id = "explorer", Items = [CreateRow(ComposerRows.Formatting, Group(ComposerGroups.Media, CreateCommand("browse")))] };
+
+        // Act
+        var layout = ComposerToolbarLayout.Create(editor, [plugin], (contributor, title) => $"{contributor?.Id ?? "composer"}:{title}");
+
+        // Assert
+        var media = Assert.IsType<ToolbarGroup>(Assert.Single(layout.Rows.Single(row => row.Id == ComposerRows.Formatting).Items));
+        Assert.Multiple(
+            () => Assert.Equal("composer:Media", media.Title),
+            () => Assert.Equal(["explorer:browse"], media.Items.Select(item => item.Title)));
     }
 
     [Fact]

@@ -24,7 +24,7 @@ public sealed class VideoPlugin(RichTextEditorPlugin editor) : IComposerFeatureP
         [
             new ToolbarGroup
             {
-                Id = "media",
+                Id = ComposerGroups.Media,
                 Title = "Media",
                 Items =
                 [

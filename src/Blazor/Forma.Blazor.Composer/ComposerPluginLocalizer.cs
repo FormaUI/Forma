@@ -4,7 +4,7 @@ using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Localization;
 
 /// <summary>Localizes the titles plugins declare.</summary>
-/// <remarks>A title is looked up in the locale the plugin names first, and then in the composer's own.</remarks>
+/// <remarks>A title is looked up in the locale the plugin names, or in the composer's own where the plugin names none.</remarks>
 /// <param name="localeFactory">The factory of the locales plugins name.</param>
 /// <param name="composerLocale">The composer's own locale.</param>
 internal sealed class ComposerPluginLocalizer(IStringLocaleFactory localeFactory, IStringLocale composerLocale)
@@ -15,14 +15,7 @@ internal sealed class ComposerPluginLocalizer(IStringLocaleFactory localeFactory
     /// <param name="plugin">The plugin that declared the title, where null is the composer itself.</param>
     /// <param name="title">The English title, which is the localization key.</param>
     public string Localize(IComposerPlugin? plugin, string title)
-    {
-        if (plugin?.LocaleSourceType is { } source && GetPluginLocale(source)[title] is { ResourceNotFound: false } localizedTitle)
-        {
-            return localizedTitle.Value;
-        }
-
-        return composerLocale[title].Value;
-    }
+        => (plugin?.LocaleSourceType is { } source ? GetPluginLocale(source) : composerLocale)[title].Value;
 
     private IStringLocale GetPluginLocale(Type source)
     {
