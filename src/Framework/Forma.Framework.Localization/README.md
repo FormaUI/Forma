@@ -175,9 +175,7 @@ public static class Sections
 ```
 
 The text holds no string and no culture, so it reads the language in force when it is shown. Two
-`LocalizableText`s are equal where their sources, keys and values are. The key parameter of
-`LocalizableText.For` carries `[LocaleKey]`, which marks an argument as a key looked up in the locale of the
-call's type argument.
+`LocalizableText`s are equal where their sources, keys and values are.
 
 ## Where locale files live
 

@@ -48,6 +48,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `FormaInputBase<TValue>.L` read their strings for the type `LocaleSourceType` names, so an application that adds
   `"hints": { "packages": ["formaui-net.Blazor"] }` to its `.locali.json` has each key its components look up through
   `L` checked in that type's files.
+- `LocaleKeyAttribute` is gone, the Locali linter reading the key `LocalizableText.For<TSource>` is given itself. It
+  marked a parameter whose argument is a key looked up in the locale of the call's type argument. To migrate, remove
+  `[LocaleKey]` from a parameter; Locali 1.0.0-preview.21 checks the key a method's parameter carries into a lookup or
+  into `LocalizableText.For` at each call of the method.
 - The type whose locale files a component's `L` reads is `LocaleSourceType`, on `FormaComponentBase` and
   `FormaInputBase<TValue>`, and the type whose locale files hold a composer plugin's titles and labels is
   `IComposerPlugin.LocaleSourceType`. Each was `LocalizationSourceType`. To migrate, override or implement

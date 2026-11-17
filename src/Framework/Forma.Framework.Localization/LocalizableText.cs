@@ -26,7 +26,7 @@ public sealed record LocalizableText
     /// <typeparam name="TSource">The type whose locale holds the key.</typeparam>
     /// <param name="key">The key, which is the source text.</param>
     /// <param name="arguments">One value per distinct hole, in the order the holes first appear in the key.</param>
-    public static LocalizableText For<TSource>([LocaleKey] string key, params object?[] arguments)
+    public static LocalizableText For<TSource>(string key, params object?[] arguments)
     {
         ArgumentNullException.ThrowIfNull(key);
         ArgumentNullException.ThrowIfNull(arguments);
