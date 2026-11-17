@@ -180,9 +180,9 @@ describe('InputRouter structural routing', () => {
         const owner = fakeOwner();
         scope(list(), { routes: [{ action: 'test.next', bindings: [keyBinding('ArrowDown')] }] }, owner);
 
-        key(option(), 'ArrowDown');
+        type(option(), 'ArrowDown', 1234.5);
 
-        expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleInputActionAsync', 'test.next', expect.objectContaining({ family: 'keyboard', key: 'ArrowDown', modifiers: expect.objectContaining({ control: false }) }));
+        expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleInputActionAsync', 'test.next', expect.objectContaining({ family: 'keyboard', key: 'ArrowDown', modifiers: expect.objectContaining({ control: false }), timestamp: 1234.5 }));
     });
 
     it('listens on the scope itself for wheel routes and prevents the default there', () => {

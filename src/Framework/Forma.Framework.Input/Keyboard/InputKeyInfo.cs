@@ -11,4 +11,7 @@ public sealed record InputKeyInfo : InputInfo
 
     /// <summary>The modifiers held.</summary>
     public ModifierKeys Modifiers { get; init; } = new();
+
+    /// <summary>The time the key was pressed or released, in milliseconds since the page's time origin.</summary>
+    public double Timestamp { get; init; }
 }

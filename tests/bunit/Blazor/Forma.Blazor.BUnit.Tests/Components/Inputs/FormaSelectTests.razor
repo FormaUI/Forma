@@ -399,6 +399,36 @@
                 () => Assert.Null(model.Status));
         }
 
+        [Fact]
+        public async Task Should_extend_the_typed_label_by_a_key_pressed_within_the_pause_and_start_again_past_it()
+        {
+            // Arrange — the list open, "c" pressed and the focus on Cycling
+            using var ctx = new FormaSelectTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Label="Status" />
+            </FakeFormHost>);
+            cut.Find(".forma-select-trigger").Click();
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+            var pause = TypeAhead.Pause.TotalMilliseconds;
+            await router.RouteAsync("select.find", new InputKeyInfo { Type = "keydown", Key = "c", Timestamp = 1000 });
+            var cycling = GetFocused(ctx.JSInterop).Last();
+
+            // Act — "s" pressed within the pause of "c" makes "cs", which no option starts, and "s" pressed past its pause starts again
+            await router.RouteAsync("select.find", new InputKeyInfo { Type = "keydown", Key = "s", Timestamp = 1000 + (pause / 2) });
+            var afterWithin = GetFocused(ctx.JSInterop).Last();
+            await router.RouteAsync("select.find", new InputKeyInfo { Type = "keydown", Key = "s", Timestamp = 1000 + (pause * 2) });
+            var afterPast = GetFocused(ctx.JSInterop).Last();
+
+            // Assert — the focus kept on Cycling, then on Swimming, the last option, which End reaches too
+            await router.RouteAsync(popover.RootElement, "select.last", "End");
+            Assert.Multiple(
+                () => Assert.Equal(cycling, afterWithin),
+                () => Assert.NotEqual(cycling, afterPast),
+                () => Assert.Equal(GetFocused(ctx.JSInterop).Last(), afterPast));
+        }
+
         private static List<string> GetFocused(BunitJSInterop js)
             => [.. js.Invocations
                 .Where(invocation => invocation.Identifier == "Blazor._internal.domWrapper.focus")

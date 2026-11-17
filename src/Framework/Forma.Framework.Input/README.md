@@ -170,10 +170,10 @@ Control elsewhere. `ModifierRequirement.Shortcut` requires `Primary`.
 ## What an action carries
 
 The input arrives as the `InputInfo` of its family, each carrying the DOM event's `Type`:
-`InputKeyInfo` with `Key`, `Code` and `Modifiers`; `InputPointerInfo` with `PointerId`,
-`PointerType`, `Button`, `Buttons`, `ClientX`, `ClientY` and `Modifiers`; `InputWheelInfo` with
-`DeltaX`, `DeltaY`, `DeltaMode` and `Modifiers`; and `InputDropInfo` with the `Data` kinds, `ClientX`
-and `ClientY`. `ModifierKeys` says which of `Control`, `Alt`, `Shift`, `Meta` and `Primary` were held.
+`InputKeyInfo` with `Key`, `Code`, `Modifiers` and the `Timestamp` the key was pressed at;
+`InputPointerInfo` with `PointerId`, `PointerType`, `Button`, `Buttons`, `ClientX`, `ClientY` and
+`Modifiers`; `InputWheelInfo` with `DeltaX`, `DeltaY`, `DeltaMode` and `Modifiers`; and
+`InputDropInfo` with the `Data` kinds, `ClientX` and `ClientY`. `ModifierKeys` says which of `Control`, `Alt`, `Shift`, `Meta` and `Primary` were held.
 Where the profile names an `ItemAttribute`, every family carries `Item`, that attribute's value on the
 nearest element under the input that holds it, so a press on a list's row names the row pressed.
 

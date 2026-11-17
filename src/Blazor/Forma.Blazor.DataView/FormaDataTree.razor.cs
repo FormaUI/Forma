@@ -66,14 +66,12 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
-    [Inject] private TimeProvider Clock { get; set; } = default!;
-
     private DataViewRegistration _dataViewRegistration = default!;
     private readonly Dictionary<object, ElementReference> _nodeElements = [];
     private readonly Dictionary<object, FormaCheckBox> _nodeMarkers = [];
     private readonly ParameterRevision _parameterRevision = new(_parametersLeftOut);
     private InputRegistration _inputRegistration = default!;
-    private TypeAhead _typeAhead = default!;
+    private readonly TypeAhead _typeAhead = new();
     private InputProfile? _inputProfile;
     private bool _profileKeepsFocus;
     private bool _profileIsRightToLeft;
@@ -174,7 +172,6 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
 
         _isCompanion = SelectsCurrent;
         _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
-        _typeAhead = new TypeAhead(Clock);
         _dataViewRegistration = new DataViewRegistration(ViewKey, () => L["Tree"], Glyph.FolderTree, this) { IsCompanion = _isCompanion };
         Interaction.RegisterView(_dataViewRegistration);
         View.Subscribe(HandleViewChangedAsync);
@@ -375,8 +372,8 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
             case ChooseAction:
                 await HandleNodeClickAsync(node);
                 break;
-            case FindAction when input is InputKeyInfo { Key: var character }:
-                await JumpToAsync(node, character);
+            case FindAction when input is InputKeyInfo key:
+                await JumpToAsync(node, key);
                 break;
             default:
                 break;
@@ -384,12 +381,12 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
     }
 
     // Type-ahead: the visible node that can take the focus whose name starts with what the reader typed, searching on from the focused one.
-    private async Task JumpToAsync(TItem from, string character)
+    private async Task JumpToAsync(TItem from, InputKeyInfo key)
     {
         var visibleNodes = GetVisibleNodes();
         var current = visibleNodes.FindIndex(candidate => IsSame(candidate, from));
 
-        if (_typeAhead.Find(character, [.. visibleNodes.Select(View.ItemName)], current, Context.CultureState.Culture, index => View.CanFocus(visibleNodes[index])) is { } index)
+        if (_typeAhead.Find(key, [.. visibleNodes.Select(View.ItemName)], current, Context.CultureState.Culture, index => View.CanFocus(visibleNodes[index])) is { } index)
         {
             await MoveToAsync(visibleNodes[index]);
         }

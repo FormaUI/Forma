@@ -1246,7 +1246,7 @@ function describeInput(event) {
 
     switch (family) {
         case 'keyboard':
-            return { family, type: event.type, key: event.key, code: event.code, modifiers: describeModifiers(event) };
+            return { family, type: event.type, key: event.key, code: event.code, modifiers: describeModifiers(event), timestamp: event.timeStamp };
         case 'wheel':
             return { family, type: event.type, deltaX: event.deltaX, deltaY: event.deltaY, deltaMode: event.deltaMode, modifiers: describeModifiers(event) };
         case 'pointer':

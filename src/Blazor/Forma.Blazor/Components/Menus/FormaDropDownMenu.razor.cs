@@ -58,13 +58,11 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
-    [Inject] private TimeProvider Clock { get; set; } = default!;
-
     private readonly List<FormaDropDownMenuItem> _items = [];
     private FormaDropDownMenuItem? _focusedItem;
     private DocumentOrder _documentOrder = default!;
     private ElementLabels _elementLabels = default!;
-    private TypeAhead _typeAhead = default!;
+    private readonly TypeAhead _typeAhead = new();
 
     private bool _openAtLastItem;
     private ElementReference _anchorElement;
@@ -94,7 +92,6 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         _trigger = new InputRegistration(InputRouter, HandleActionAsync);
         _documentOrder = new DocumentOrder(Context.JS);
         _elementLabels = new ElementLabels(Context.JS);
-        _typeAhead = new TypeAhead(Clock);
     }
 
     // The trigger's keys route on the trigger, and the menu's on the popover.
@@ -122,7 +119,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
             PreviousAction => MoveFocusAsync(-1),
             FirstAction => FocusEndAsync(atLastItem: false),
             LastAction => FocusEndAsync(atLastItem: true),
-            FindAction when input is InputKeyInfo { Key: var character } => FindAsync(character),
+            FindAction when input is InputKeyInfo key => FindAsync(key),
             _ => Task.CompletedTask,
         };
     }
@@ -164,7 +161,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     }
 
     // The item whose label the typed characters begin takes the focus, its label read as the page shows it.
-    private async Task FindAsync(string character)
+    private async Task FindAsync(InputKeyInfo key)
     {
         var items = await GetItemsAsync();
 
@@ -175,7 +172,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
 
         var current = _focusedItem is null ? -1 : items.IndexOf(_focusedItem);
 
-        if (_typeAhead.Find(character, labels, current, Context.CultureState.Culture, index => !items[index].Disabled) is { } index)
+        if (_typeAhead.Find(key, labels, current, Context.CultureState.Culture, index => !items[index].Disabled) is { } index)
         {
             await FocusAsync(items[index]);
         }

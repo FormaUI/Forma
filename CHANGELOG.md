@@ -72,6 +72,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `LocalePathBinder` take no separator. A source written against them drops its override, and a caller the argument.
   `LocaleSource.GetRootDir` answers a root a `.locale.json` names beneath its folder with `/` between the two, as
   `Contoso.Widgets/Strings`.
+- The type-ahead of `FormaSelect`, `FormaDropDownMenu` and `FormaDataTree` measures its pause between the times the
+  keys were pressed, which `InputKeyInfo.Timestamp` carries, so a key that reaches .NET late, behind a slow connection
+  or a list still opening, extends the label it was typed into. The pause was measured as each key was handled, and
+  such a key started the label again. `TypeAhead` takes no clock, and its `Find` takes the `InputKeyInfo` typed in
+  place of its character. To migrate, create a `TypeAhead` with no argument and pass `Find` the key.
 
 ## `1.0.0-preview.7`
 
