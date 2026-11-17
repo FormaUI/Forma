@@ -988,7 +988,7 @@
     public sealed class ItemActions
     {
         [Fact]
-        public void Should_open_preview_modal_with_file_viewer()
+        public async Task Should_open_preview_modal_with_file_viewer()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -999,8 +999,8 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
 
             // Act
-            cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
-            cut.Find("[data-action='preview']").Click();
+            await cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").ClickAsync(new());
+            await cut.Find("[data-action='preview']").ClickAsync(new());
 
             // Assert
             Assert.NotNull(cut.FindComponent<FormaFileViewer>());
@@ -1021,10 +1021,10 @@
                                                 OnRename="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
-            cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
-            cut.Find("[data-action='rename']").Click();
+            await cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").ClickAsync(new());
+            await cut.Find("[data-action='rename']").ClickAsync(new());
             await fields.TypeAsync(cut.Find("#forma-explorer-rename-input"), "new-name.jpg");
-            cut.Find(".forma-dialog-footer .forma-button-primary").Click();
+            await cut.Find(".forma-dialog-footer .forma-button-primary").ClickAsync(new());
 
             // Assert
             Assert.NotNull(request);
@@ -1045,8 +1045,8 @@
             CatalogRenameRequest? request = null;
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))"
                                                 OnRename="@(req => { request = req; return Task.CompletedTask; })" />);
-            cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
-            cut.Find("[data-action='rename']").Click();
+            await cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").ClickAsync(new());
+            await cut.Find("[data-action='rename']").ClickAsync(new());
             var typing = fields.CommitHeld(cut.Find("#forma-explorer-rename-input"), "new-name.jpg");
             var saving = cut.Find(".forma-dialog-footer .forma-button-primary").ClickAsync(new());
             var isRenamedAtOnce = request is not null;
@@ -1062,7 +1062,7 @@
         }
 
         [Fact]
-        public void Should_raise_on_delete_when_delete_is_confirmed()
+        public async Task Should_raise_on_delete_when_delete_is_confirmed()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1075,9 +1075,9 @@
                                                 OnDelete="@(req => { request = req; return Task.CompletedTask; })" />);
 
             // Act
-            cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
-            cut.Find("[data-action='delete']").Click();
-            cut.Find(".forma-dialog-footer .forma-button-danger").Click();
+            await cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").ClickAsync(new());
+            await cut.Find("[data-action='delete']").ClickAsync(new());
+            await cut.Find(".forma-dialog-footer .forma-button-danger").ClickAsync(new());
 
             // Assert
             Assert.NotNull(request);
@@ -1186,7 +1186,7 @@
     public sealed class Permissions
     {
         [Fact]
-        public void Should_hide_item_rename_and_delete_when_options_disallow_them()
+        public async Task Should_hide_item_rename_and_delete_when_options_disallow_them()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1197,7 +1197,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" ItemOptions="options" />);
 
             // Assert
-            cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
+            await cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").ClickAsync(new());
             Assert.Equal("cover.jpg", cut.Find(".forma-dropdown-menu-header").TextContent.Trim());
             var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
             Assert.Equal(["Preview"], labels);
@@ -1287,7 +1287,7 @@
         }
 
         [Fact]
-        public void Should_hide_every_mutating_action_when_options_are_read_only()
+        public async Task Should_hide_every_mutating_action_when_options_are_read_only()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1302,13 +1302,13 @@
             Assert.Empty(cut.FindAll(".forma-explorer-upload-button"));
             Assert.Empty(cut.FindAll(".forma-explorer-folder-actions"));
             Assert.Empty(cut.FindAll(".forma-explorer-new-folder-tool"));
-            cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
+            await cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").ClickAsync(new());
             var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
             Assert.Equal(["Preview"], labels);
         }
 
         [Fact]
-        public void Should_offer_only_the_actions_an_item_supports()
+        public async Task Should_offer_only_the_actions_an_item_supports()
         {
             // Arrange
             using var ctx = new FormaExplorerTests();
@@ -1327,7 +1327,7 @@
             var cut = ctx.Render(@<FormaExplorer Items="items" />);
 
             // Assert
-            cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").Click();
+            await cut.Find(".forma-explorer-action-bar .forma-dropdown-menu-trigger").ClickAsync(new());
             var labels = cut.FindAll(".forma-dropdown-menu-item").Select(i => i.TextContent.Trim()).ToList();
             Assert.Equal(["Preview"], labels);
         }
