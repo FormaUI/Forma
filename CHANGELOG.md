@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.10`
 
-*Unreleased*
+*November 17, 2026*
 
 - The composer's selection bar is named by the selection row's label, *Selection Formatting*, which Hebrew and
   Spanish localize. The row's label had no entry in either language, and the bar carried a label of its own,
