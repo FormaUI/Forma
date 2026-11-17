@@ -21,6 +21,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   that could not be loaded, 3 for a host locale assembly that could not be loaded, 4 for an entry two files give
   different texts, and 5 to 8 for `AssemblyNotLocalized`, `TypeNotLocalized`, `KeyNotLocalized` and
   `LocaleFileNotRead`.
+- `RequireMatchingLocalization` accepts the key itself in a culture of the source language and in the invariant
+  culture, where the key is the text a reader sees. It threw there for every key that no file listed, so an English
+  host requiring localization threw on its first lookup.
 - `LocaleEntries.IsEmpty` says whether a source holds anything for an assembly's types in a culture.
 
 ## `1.0.0-preview.8`

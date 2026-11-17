@@ -62,6 +62,27 @@ public sealed class RequireMatchingLocalizationTests
         Assert.Throws<LocalizationNotFoundException>(() => strings.Resolve("Absent from every file"));
     }
 
+    [Theory]
+    [InlineData("en")]
+    [InlineData("en-GB")]
+    [InlineData("")]
+    public void Should_show_the_key_where_the_culture_reads_the_source_language(string cultureName)
+    {
+        // Arrange — the keys are English, and locale files aren't written for the invariant culture
+        using var culture = new CultureScope(cultureName);
+        var strings = CreateLocale<Colocated>(require: true);
+
+        // Act
+        var localized = strings["Absent from every file"];
+
+        // Assert
+        Assert.Multiple(() =>
+        {
+            Assert.Equal("Absent from every file", localized.Value);
+            Assert.True(localized.ResourceNotFound);
+        });
+    }
+
     [Fact]
     public void Should_not_throw_for_a_key_that_is_localized()
     {

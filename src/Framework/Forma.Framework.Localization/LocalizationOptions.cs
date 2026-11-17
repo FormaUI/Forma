@@ -12,7 +12,7 @@ public sealed record LocalizationOptions
     /// <summary>The language the localization keys are written in.</summary>
     public string SourceLanguage { get; init; } = "en";
 
-    /// <summary>Whether a key with no localization for the current UI culture throws.</summary>
+    /// <summary>Whether a key without a localization for the current UI culture throws, outside the source language, whose text is the key itself.</summary>
     public bool RequireMatchingLocalization { get; init; }
 
     /// <summary>The checks run on every lookup, which report what they find through the application's logging, or null to leave lookups unchecked.</summary>

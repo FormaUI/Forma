@@ -126,10 +126,10 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
             Diagnose(diagnostics, name, key, uiCulture, isFound);
         }
 
-        if (!isFound && context.Options.RequireMatchingLocalization)
+        if (!isFound && context.Options.RequireMatchingLocalization && !context.IsSourceLanguage(uiCulture))
         {
             throw new LocalizationNotFoundException(
-                $"'{location.BaseName}' carries no localization of '{name}' for '{uiCulture.Name}'.");
+                $"'{location.BaseName}' doesn't carry a localization of '{name}' for '{uiCulture.Name}'.");
         }
 
         return isFound;

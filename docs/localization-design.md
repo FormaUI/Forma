@@ -445,6 +445,10 @@ can establish before the application runs, and where the two read the same files
 an entry that arrives later, through the folder beside the running application, is one the runtime sees
 and the linter may not.
 
+`RequireMatchingLocalization` asks the lookup's own culture the same question and throws where it doesn't
+find an entry, unless the key is the text a reader should see there: in the source language, and in the
+invariant culture.
+
 ## Microsoft's string localizer
 
 Code written against Microsoft's `IStringLocalizer` reads Forma's strings through
@@ -510,3 +514,4 @@ host wanting Forma's strings registers the adapter in its place or before it.
 | L32 | How does the runtime report a lookup that doesn't find an entry? | Through diagnostics an application turns on in `LocalizationOptions`, which check every lookup in its own culture and in the cultures the application names, and log each miss once per factory as a warning with its own event. An option rather than a build symbol, since the packages are built in Release. |
 | L33 | Does a check resolve a key its own way? | No. It asks the lookup's own resolution of another culture, without changing the reader's culture or rendering text, so a check and a lookup never disagree about what is found. |
 | L34 | How broad is a reported miss? | As broad as the resolver establishes: the assembly where no source holds an entry for any of its types in the culture or a culture it falls back to, the type where the assembly holds some and the type doesn't, and the key otherwise. The broader report stands for the narrower ones beneath it. |
+| L35 | What does `RequireMatchingLocalization` guarantee? | That a lookup finds its text: an entry in the UI culture or a culture it falls back to, or, in the source language and the invariant culture, the key itself. |

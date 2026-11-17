@@ -360,7 +360,7 @@ that references one names it in `LocalePacks` instead.
 | Setting | Default | What it does |
 | --- | --- | --- |
 | `SourceLanguage` | `en` | The language the keys are written in. |
-| `RequireMatchingLocalization` | `false` | Throws `LocalizationNotFoundException` for a key no locale file localizes, so a development build finds what is missing. |
+| `RequireMatchingLocalization` | `false` | Throws `LocalizationNotFoundException` for a key that the UI culture and the cultures it falls back to don't hold an entry for, so a test fails where a string is missing. A culture of the source language, and the invariant culture, show the key itself, which satisfies it. |
 | `Diagnostics` | none | The checks run on every lookup, a `LocalizationDiagnostics`, which log each key without an entry in the lookup's culture and in the `Cultures` it names, as `Forma.Framework.Localization.Json` sets out. |
 | `LocalesPath` | `.locales` | The host's folder of locale files beside the running application, relative to its base directory; empty reads none. |
 | `LocalePacks` | none | Locale packs read beside the ones the application's build recorded. |
