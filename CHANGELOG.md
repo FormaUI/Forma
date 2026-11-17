@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.8`
 
-*Unreleased*
+*November 17, 2026*
 
 - The build embeds a locale file under the project's root namespace, a `/` and the file's path, as
   `Contoso.App/Uploads/.locales/he.json`, and a project's `.locale.json` as `Contoso.App/.locale.json`; a locale pack
