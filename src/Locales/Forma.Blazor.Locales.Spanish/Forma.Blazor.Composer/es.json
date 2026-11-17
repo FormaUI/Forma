@@ -47,6 +47,7 @@
     "Plugin Commands": "Comandos de Complementos",
     "Text Formatting": "Formato de Texto",
     "Paragraph Formatting": "Formato de Párrafo",
+    "Selection Formatting": "Formato de la Selección",
     "More Plugin Commands": "Más Comandos de Complementos",
     "Undo": "Deshacer",
     "Redo": "Rehacer",
@@ -172,7 +173,6 @@
   "RichTextEditor": {
     "FormaRichTextEditor": {
       "Heading & Style": "Encabezado y Estilo",
-      "Selection formatting": "Formato de la Selección",
       "Move Selection Bar": "Mover la Barra de Selección",
       "Document Source": "Código Fuente del Documento",
       "Typography & Colors": "Tipografía y Colores"

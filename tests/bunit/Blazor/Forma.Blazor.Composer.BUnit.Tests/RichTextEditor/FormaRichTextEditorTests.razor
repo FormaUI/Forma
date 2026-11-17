@@ -284,6 +284,24 @@
             });
         }
 
+        [Theory]
+        [InlineData("en", "Selection Formatting")]
+        [InlineData("he", "עיצוב הבחירה")]
+        [InlineData("es", "Formato de la Selección")]
+        public void Should_name_the_selection_bar_by_the_selection_row_s_label(string language, string expected)
+        {
+            // Arrange
+            using var culture = new CultureScope(language);
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithFormatting" />);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-composer-selection-bar [role='toolbar']").GetAttribute("aria-label"));
+        }
+
         [Fact]
         public async Task Should_release_its_shortcuts_when_taken_away_while_they_first_register()
         {

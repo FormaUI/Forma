@@ -47,6 +47,7 @@
     "Plugin Commands": "פקודות תוספים",
     "Text Formatting": "עיצוב טקסט",
     "Paragraph Formatting": "עיצוב פסקה",
+    "Selection Formatting": "עיצוב הבחירה",
     "More Plugin Commands": "פקודות תוספים נוספות",
     "Undo": "בטל",
     "Redo": "בצע שוב",
@@ -172,7 +173,6 @@
   "RichTextEditor": {
     "FormaRichTextEditor": {
       "Heading & Style": "כותרות וסגנון",
-      "Selection formatting": "עיצוב הבחירה",
       "Move Selection Bar": "הזז את סרגל הבחירה",
       "Document Source": "מקור המסמך",
       "Typography & Colors": "טיפוגרפיה וצבעים"

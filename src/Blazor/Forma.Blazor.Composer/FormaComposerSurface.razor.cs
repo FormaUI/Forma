@@ -38,7 +38,7 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     protected override Type LocaleSourceType
         => typeof(FormaComposer);
 
-    private ComposerSelectionBar SelectionBar { get; set; } = new([], ComposerKeyBindingCatalog.Empty);
+    private ComposerSelectionBar SelectionBar { get; set; } = new(string.Empty, [], ComposerKeyBindingCatalog.Empty);
 
     private SelectionBarInputs? _selectionBarInputs;
 
@@ -60,9 +60,9 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
 
         _selectionBarInputs = inputs;
         var layout = ComposerToolbarLayout.Create(Editor, Plugins, Localizer.Localize);
-        var items = layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Selection)?.Items ?? [];
+        var selectionRow = layout.Rows.FirstOrDefault(row => row.Id == ComposerRows.Selection);
 
-        SelectionBar = new ComposerSelectionBar(items, KeyBindings);
+        SelectionBar = new ComposerSelectionBar(selectionRow?.Label ?? string.Empty, selectionRow?.Items ?? [], KeyBindings);
     }
 
     /// <summary>What the selection bar is built from.</summary>

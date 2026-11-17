@@ -9,6 +9,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- The composer's selection bar is named by the selection row's label, *Selection Formatting*, which Hebrew and
+  Spanish localize. The row's label had no entry in either language, and the bar carried a label of its own,
+  *Selection formatting*. `ComposerSelectionBar` takes the label as its first argument, `Label`; to migrate, pass the
+  row's label ahead of the items.
 - An application a test runner hosts, as `WebApplicationFactory` does, reads the locale packs and files its build
   recorded: where the entry assembly's build didn't mark it as the application, every loaded assembly whose build did
   is read before it. A test hosting the application read only the test assembly's, so the application's components
