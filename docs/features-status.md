@@ -7,7 +7,7 @@
 | Measure | Now |
 | --- | --- |
 | Components | 67 implemented and 7 in progress, as [the catalog](component-catalog.md) lists them, and 21 planned, as [the roadmap](component-roadmap.md) orders them |
-| Packages | Every project under `src/` but the Showcase, released from `main` by `release.yml` to nuget.org and the organization's GitHub feed, the latest published release `1.0.0-preview.10` |
+| Packages | Every project under `src/` but the Showcase, released from `main` by `release.yml` to nuget.org and the organization's GitHub feed, the latest published release `1.0.0-preview.11` |
 | Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, and on the Server in WebKit, the engine of Safari and of Apple's web views, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid implemented on WPF, Windows Forms and MAUI on Windows, every component checked in a web view and each host's application set up as the README says; an inventory holds every component to a check page in every render mode |
 
 The gate runs every check [the verification design](verification-design.md#gates) sets out, each platform's where the machine can run it. It passes locally on Windows and in CI on Linux, on Windows and on an Android emulator.

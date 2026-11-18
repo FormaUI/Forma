@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.11`
 
-*Unreleased*
+*November 18, 2026*
 
 - `ToolbarOption.IsTitleVerbatim` marks a title that is a value shown as written, such as a font's name or a size, and
   the composer leaves such a title as it is. Its font families, font sizes, line heights, special characters and zoom
