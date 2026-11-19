@@ -5,6 +5,16 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.12`
+
+*Unreleased*
+
+- The Spanish locale pack is written throughout in Latin American Spanish, addressing the reader as *tú*: the table
+  menu's *Agregar Fila Arriba* and the three like it, the inputs' *Agrega un número.* and *Agrega un símbolo.*, the
+  composer's six prompts starting *Ingresa…*, the explorer's *Video*, and the input router's *Presiona una tecla, haz
+  clic o desplázate…*. They read *Añadir…*, *Añade…*, *Introduce…*, *Vídeo* and *Pulse una tecla, haga clic o
+  desplácese…*, Spain's words, and the last one addressed the reader as *usted*.
+
 ## `1.0.0-preview.11`
 
 *November 18, 2026*

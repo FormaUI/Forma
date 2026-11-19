@@ -68,8 +68,8 @@
     "Avoid repeating the same characters.": "Evita repetir los mismos caracteres.",
     "[$ plural; one: Use at least # character.; other: Use at least # characters.; $]": "[$ plural; one: Usa al menos # carácter.; other: Usa al menos # caracteres.; $]",
     "Mix uppercase and lowercase letters.": "Combina mayúsculas y minúsculas.",
-    "Add a number.": "Añade un número.",
-    "Add a symbol.": "Añade un símbolo."
+    "Add a number.": "Agrega un número.",
+    "Add a symbol.": "Agrega un símbolo."
   },
   "FormaSearchBox": {
     "Search...": "Buscar...",

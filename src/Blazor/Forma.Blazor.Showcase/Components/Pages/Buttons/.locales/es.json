@@ -6,7 +6,7 @@
     "On a Colored Surface": "Sobre una Superficie de Color"
   },
   "FormaButtonPage": {
-    "The button every Forma surface presses. Its variant says how much it should stand out, its size how dense the row around it is, and while work is in flight it shows itself busy so the same click cannot be sent twice.": "El botón que pulsa toda superficie de Forma. Su variante dice cuánto debe destacar, su tamaño cuán densa es la fila que lo rodea, y mientras hay trabajo en curso se muestra ocupado para que el mismo clic no pueda enviarse dos veces.",
+    "The button every Forma surface presses. Its variant says how much it should stand out, its size how dense the row around it is, and while work is in flight it shows itself busy so the same click cannot be sent twice.": "El botón que presiona toda superficie de Forma. Su variante dice cuánto debe destacar, su tamaño cuán densa es la fila que lo rodea, y mientras hay trabajo en curso se muestra ocupado para que el mismo clic no pueda enviarse dos veces.",
     "Variants": "Variantes",
     "Row Actions": "Acciones de Fila",
     "Busy": "Ocupado",

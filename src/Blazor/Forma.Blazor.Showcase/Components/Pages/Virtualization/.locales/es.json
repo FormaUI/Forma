@@ -3,7 +3,7 @@
   "FormaVirtualizePage": {
     "Renders the items of a long collection near the viewport, with spacers standing for the rest, and keeps rendered the items its owner pins wherever they lie.": "Muestra los elementos de una colección larga cercanos a la zona visible, con espaciadores en lugar del resto, y mantiene mostrados los elementos que su propietario fija, estén donde estén.",
     "A Long List": "Una lista larga",
-    "Ten thousand items, each with a checkbox, pinning the last item to take the focus. Focus one, scroll it out of view and back with the wheel, and it still holds the focus: Space toggles it and Tab carries on from it.": "Diez mil elementos, cada uno con una casilla, fijando el último elemento que recibió el foco. Enfoque uno, desplácelo fuera de la vista y de vuelta con la rueda, y seguirá teniendo el foco: Espacio lo alterna y Tab continúa desde él.",
+    "Ten thousand items, each with a checkbox, pinning the last item to take the focus. Focus one, scroll it out of view and back with the wheel, and it still holds the focus: Space toggles it and Tab carries on from it.": "Diez mil elementos, cada uno con una casilla, fijando el último elemento que recibió el foco. Enfoca uno, desplázalo fuera de la vista y de vuelta con la rueda, y seguirá teniendo el foco: Espacio lo alterna y Tab continúa desde él.",
     "{Name} is pinned and stays rendered wherever the list scrolls.": "{Name} está fijado y sigue mostrado adondequiera que se desplace la lista.",
     "Nothing is pinned until an item takes the focus.": "Nada está fijado hasta que un elemento recibe el foco.",
     "Task {Number}": "Tarea {Number}",

@@ -18,6 +18,7 @@ description: The localization standard — reading library strings through the b
 - Do leave caller-supplied text such as `Title`, `Label`, and `ConfirmText` for the host to localize.
 - Do format, parse and compare dates, numbers and text with the context's `Context.CultureState.Culture`, choose direction with `Context.CultureState.IsRightToLeft`, and run an API that reads the ambient culture, such as `DisplayAttribute.GetName()`, in `Context.CultureState.Run`; the ambient culture's members are banned in a component project.
 - Do use American English spelling for `en` localization.
+- Do write Spanish in Latin American Spanish, the dialect of `es-419`, in files whose culture stays `es`, so every Spanish-speaking reader gets them, and address the reader as *tú*: *agregar*, *presionar* or *hacer clic*, *ingresar*, *video* and *monto*, where Spain says *añadir*, *pulsar*, *introducir*, *vídeo* and *importe*.
 - Do run the localization linter, which checks the locale files against the `L[...]` call sites that key them, before offering the work for review.
 - Don't hardcode user-facing component strings.
 - Don't localize text supplied by the caller a second time inside the library.

@@ -3,7 +3,7 @@
 The Spanish localization of Forma, as a locale pack: a package of locale files alone, carrying the
 Spanish strings of `Forma.Blazor`, `Forma.Blazor.Composer`, `Forma.Blazor.DataView` and
 `Forma.Blazor.Explorer`. Installing it is all an application does to show Forma's components in
-Spanish.
+Spanish. The strings are written in Latin American Spanish and address the reader as *tú*.
 
 ## Install
 

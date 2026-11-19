@@ -25,7 +25,7 @@
     "[$ plural; one: This explorer holds at most # item.; other: This explorer holds at most # items.; $]": "[$ plural; one: Este explorador admite como máximo # elemento.; other: Este explorador admite como máximo # elementos.; $]",
     "Folder": "Carpeta",
     "Image": "Imagen",
-    "Video": "Vídeo",
+    "Video": "Video",
     "Audio": "Audio",
     "Archive": "Archivo Comprimido",
     "Document": "Documento",

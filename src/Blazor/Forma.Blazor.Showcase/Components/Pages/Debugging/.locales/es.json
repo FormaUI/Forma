@@ -1,7 +1,7 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: es;",
   "FormaInputInspectorPage": {
-    "Every key, press, wheel turn and drop on the page is resolved by one router to one owner. The panel on the side shows each decision as it is made: who owns the input, by which rule, and what stands active above what.": "Cada tecla, pulsación, giro de rueda y soltado en la página lo resuelve un único enrutador hacia un único propietario. El panel lateral muestra cada decisión al tomarse: quién posee la entrada, por qué regla, y qué está activo sobre qué.",
+    "Every key, press, wheel turn and drop on the page is resolved by one router to one owner. The panel on the side shows each decision as it is made: who owns the input, by which rule, and what stands active above what.": "Cada tecla, clic o toque, giro de rueda y soltado en la página lo resuelve un único enrutador hacia un único propietario. El panel lateral muestra cada decisión al tomarse: quién posee la entrada, por qué regla, y qué está activo sobre qué.",
     "Nested scopes": "Ámbitos anidados",
     "A grid routes the arrows, Home and End. Inside it, native controls keep the keys they consume, and a popup that is open keeps every key inside itself: its list routes the arrows, and nothing reaches the grid.": "Una cuadrícula enruta las flechas, Inicio y Fin. Dentro, los controles nativos conservan las teclas que consumen, y un popup abierto retiene cada tecla dentro de sí: su lista enruta las flechas y nada llega a la cuadrícula.",
     "Grid": "Cuadrícula",
