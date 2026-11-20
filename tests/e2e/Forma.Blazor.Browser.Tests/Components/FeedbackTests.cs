@@ -157,9 +157,10 @@ public sealed class FeedbackTests
             var details = page.Locator("#details");
             var trigger = page.Locator("#details-trigger");
 
-            // Act
+            // Act — the layer is stamped as the popover registers, ahead of the call that shows and places it
             await trigger.ClickAsync();
             await WaitForLayerAsync(details);
+            await Assertions.Expect(details).ToBeVisibleAsync();
 
             // Assert — four pixels below the anchor, its start edge held four pixels within the viewport
             var anchor = (await page.Locator("span", new() { Has = trigger }).BoundingBoxAsync())!;
