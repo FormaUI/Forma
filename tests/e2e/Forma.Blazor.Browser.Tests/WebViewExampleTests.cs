@@ -31,8 +31,8 @@ public sealed class WebViewExampleTests(BrowserHost host)
         await first.Locator(".hebrew").ClickAsync();
 
         // Assert
-        await ExpectHebrewAsync(first);
-        await ExpectHebrewAsync(second);
+        await ExpectHebrewAsync(application, first);
+        await ExpectHebrewAsync(application, second);
         await WaitForTitlesAsync(windows, HebrewTitle);
         Assert.False(Directory.Exists(Path.Combine(application.Folder, ".locales")), "The publish carries no folder of locale files, so the host's strings come from its assembly.");
     }
@@ -57,7 +57,7 @@ public sealed class WebViewExampleTests(BrowserHost host)
         await first.Locator(".hebrew").ClickAsync();
 
         // Assert
-        await ExpectHebrewAsync(first);
+        await ExpectHebrewAsync(application, first);
         await WaitForTitlesAsync(opened, HebrewTitle);
         Assert.False(application.HasExited, $"The application exited as its other native window closed. It wrote:{Environment.NewLine}{application.GetOutput(40)}");
     }
@@ -71,7 +71,7 @@ public sealed class WebViewExampleTests(BrowserHost host)
         {
             var page = await OpenInEnglishAsync(previous);
             await page.Locator(".hebrew").ClickAsync();
-            await ExpectHebrewAsync(page);
+            await ExpectHebrewAsync(previous, page);
             NativeWindows.Close((await WaitForWindowsAsync(previous, 1)).Single());
             await previous.WaitForExitAsync();
         }
@@ -81,7 +81,7 @@ public sealed class WebViewExampleTests(BrowserHost host)
         var restarted = await application.GetOtherWebViewAsync([], Runtime);
 
         // Assert
-        await ExpectHebrewAsync(restarted);
+        await ExpectHebrewAsync(application, restarted);
         await WaitForTitlesAsync(await WaitForWindowsAsync(application, 1), HebrewTitle);
         await restarted.Locator(".english").ClickAsync();
         await Assertions.Expect(restarted.Locator(".welcome")).ToHaveTextAsync("Welcome");
@@ -103,11 +103,42 @@ public sealed class WebViewExampleTests(BrowserHost host)
     }
 
     // The host's own string, from the files its application embeds, the library's from the Hebrew pack, and the document's language and direction.
-    private static async Task ExpectHebrewAsync(IPage page)
+    private static async Task ExpectHebrewAsync(WebViewApplication application, IPage page)
     {
         await Assertions.Expect(page.Locator(".welcome")).ToHaveTextAsync(Welcome);
         await Assertions.Expect(page.Locator("nav")).ToHaveAttributeAsync("aria-label", PaginationLabel);
-        await WaitForDocumentAsync(page, "he/rtl");
+
+        try
+        {
+            await WaitForDocumentAsync(page, "he/rtl");
+        }
+        catch (TimeoutException exception)
+        {
+            throw new TimeoutException($"{exception.Message}; {await DescribeFollowingAsync(application, page)}", exception);
+        }
+    }
+
+    // What tells a web view its application's coordinator let go of from one whose document missed a single switch: the native
+    // windows' titles, which follow the application's culture, and whether the document follows a switch to English after it.
+    private static async Task<string> DescribeFollowingAsync(WebViewApplication application, IPage page)
+    {
+        var titles = string.Join(", ", NativeWindows.Find(application.ProcessId).Select(NativeWindows.GetTitle));
+
+        try
+        {
+            await page.Locator(".english").ClickAsync(new() { Timeout = 5000 });
+            await WaitForDocumentAsync(page, "en-US/ltr", 5000);
+
+            return $"the native windows' titles read {titles}, and a switch to English after it moved the document to en-US/ltr";
+        }
+        catch (TimeoutException exception)
+        {
+            return $"the native windows' titles read {titles}, and a switch to English after it didn't move the document: {exception.Message}";
+        }
+        catch (PlaywrightException exception)
+        {
+            return $"the native windows' titles read {titles}, and a switch to English after it couldn't be made: {exception.Message}";
+        }
     }
 
     // The application's native windows, once it shows as many as it is asked for.
