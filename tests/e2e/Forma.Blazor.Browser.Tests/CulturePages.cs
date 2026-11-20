@@ -22,7 +22,28 @@ public static class CulturePages
     {
         ArgumentNullException.ThrowIfNull(page);
 
-        await page.WaitForFunctionAsync("expected => `${document.documentElement.lang}/${document.documentElement.dir}` === expected", document, new() { Timeout = timeout }).ConfigureAwait(false);
+        try
+        {
+            await page.WaitForFunctionAsync("expected => `${document.documentElement.lang}/${document.documentElement.dir}` === expected", document, new() { Timeout = timeout }).ConfigureAwait(false);
+        }
+        catch (TimeoutException exception)
+        {
+            throw new TimeoutException($"The document didn't read {document} within {timeout} ms: {await DescribeDocumentAsync(page).ConfigureAwait(false)}", exception);
+        }
+    }
+
+    // The document's language and direction, and the UI culture of the marker it started from, which a page whose coordinator never
+    // started lacks.
+    private static async Task<string> DescribeDocumentAsync(IPage page)
+    {
+        try
+        {
+            return await page.EvaluateAsync<string>("() => `it reads ${document.documentElement.lang}/${document.documentElement.dir}, and its culture marker names ${document.head.querySelector('meta[name=\"forma-culture\"]')?.getAttribute('data-ui-culture') ?? 'nothing, since the page carries none'}`").ConfigureAwait(false);
+        }
+        catch (PlaywrightException exception)
+        {
+            return $"it couldn't be read: {exception.Message}";
+        }
     }
 
     /// <summary>Waits until the Server's culture panel on the page is interactive.</summary>
