@@ -171,7 +171,7 @@ internal sealed class JsonStringLocale(JsonLocaleContext context, ResourceLocati
 
     // Plural rules follow the language the text is written in.
     private string Evaluate(string format, bool isLocalized, IReadOnlyList<LocalizedArgument> arguments)
-        => context.PluralEvaluator.Evaluate(
+        => context.ExpressionEvaluator.Evaluate(
             format,
             isLocalized ? UICulture : context.SourceCulture,
             UICulture,

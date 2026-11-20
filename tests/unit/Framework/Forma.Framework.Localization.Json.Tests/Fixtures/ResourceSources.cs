@@ -16,6 +16,9 @@ public sealed class PathScoped;
 /// <summary>A type whose localized string carries a plural expression.</summary>
 public sealed class Pluralized;
 
+/// <summary>A type whose localized strings carry a gender expression.</summary>
+public sealed class Gendered;
+
 /// <summary>A type whose file carries no metadata entry.</summary>
 public sealed class Unmarked;
 

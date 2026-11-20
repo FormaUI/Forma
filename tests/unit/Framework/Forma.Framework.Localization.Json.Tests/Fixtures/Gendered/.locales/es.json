@@ -1,0 +1,5 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "Climber": "[$ gender; female: Escaladora; other: Escalador; $]",
+  "[$ [Rider] gender; other: {Name} is the best climber; $]": "[$ [Rider] gender; female: {Name} es la mejor escaladora; other: {Name} es el mejor escalador; $]"
+}

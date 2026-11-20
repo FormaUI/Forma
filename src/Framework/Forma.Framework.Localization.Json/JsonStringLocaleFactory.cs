@@ -47,7 +47,7 @@ public sealed class JsonStringLocaleFactory : IStringLocaleFactory
         _context = new JsonLocaleContext(
             cache,
             sourceCulture,
-            new PluralExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<PluralExpressionEvaluator>(), options.Diagnostics),
+            new LocaleExpressionEvaluator(CommonPluralRuleSet.Default, loggerFactory.CreateLogger<LocaleExpressionEvaluator>(), options.Diagnostics),
             options,
             diagnosedCultures is null ? null : new JsonLocaleDiagnostics(cache, diagnosedCultures, logger));
     }

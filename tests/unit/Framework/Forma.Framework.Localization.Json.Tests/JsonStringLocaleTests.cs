@@ -5,6 +5,12 @@ using Forma.Framework.Localization.Json.Tests.Fixtures.Beside;
 
 public sealed class JsonStringLocaleTests
 {
+    private enum RiderGender
+    {
+        Female,
+        Male,
+    }
+
     private static IStringLocale CreateLocale<T>()
         => new JsonStringLocaleFactory().Create(typeof(T));
 
@@ -569,6 +575,38 @@ public sealed class JsonStringLocaleTests
             Assert.Equal("שני קבצים", two.Value);
             Assert.Equal("5 קבצים", many.Value);
         });
+    }
+
+    [Fact]
+    public void Should_evaluate_the_gender_expression_in_a_text()
+    {
+        // Arrange
+        using var culture = new CultureScope("es");
+        var strings = CreateLocale<Gendered>();
+
+        // Act
+        var female = strings["Climber", RiderGender.Female];
+        var male = strings["Climber", RiderGender.Male];
+
+        // Assert
+        Assert.Equal(["Escaladora", "Escalador"], [female.Value, male.Value]);
+    }
+
+    [Theory]
+    [InlineData("es", "Ana es la mejor escaladora")]
+    [InlineData("en", "Ana is the best climber")]
+    public void Should_pair_a_gender_the_key_names_with_its_holes(string language, string expected)
+    {
+        // Arrange
+        const string Key = "[$ [Rider] gender; other: {Name} is the best climber; $]";
+        using var culture = new CultureScope(language);
+        var strings = CreateLocale<Gendered>();
+
+        // Act
+        var localized = strings[Key, RiderGender.Female, "Ana"];
+
+        // Assert
+        Assert.Equal(expected, localized.Value);
     }
 
     [Theory]

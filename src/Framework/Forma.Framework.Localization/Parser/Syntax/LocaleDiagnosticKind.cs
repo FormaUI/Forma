@@ -15,7 +15,7 @@ public enum LocaleDiagnosticKind
     /// <summary>The header names a keyword no expression defines.</summary>
     UnknownKeyword,
 
-    /// <summary>The header does not carry the bracketed name the count comes from.</summary>
+    /// <summary>The header does not carry the bracketed name of the argument it reads.</summary>
     MissingArgumentName,
 
     /// <summary>The bracketed name is not a plain identifier.</summary>

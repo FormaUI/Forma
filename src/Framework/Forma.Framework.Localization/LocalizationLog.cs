@@ -13,4 +13,7 @@ internal static partial class LocalizationLog
 
     [LoggerMessage(EventId = 3, Level = LogLevel.Warning, Message = "Host locale assembly {Assembly} could not be loaded, so the host's strings it carries are left out: {Reason}")]
     public static partial void HostLocaleAssemblyNotLoaded(ILogger logger, string assembly, string reason);
+
+    [LoggerMessage(EventId = 9, Message = "Gender argument {Argument} of type {ArgumentType} in {Format} is neither an enum nor a string; using other.")]
+    public static partial void GenderArgumentNotEnumOrString(ILogger logger, LogLevel level, string argument, string argumentType, string format);
 }

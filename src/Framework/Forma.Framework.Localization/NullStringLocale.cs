@@ -4,13 +4,13 @@ using System.Globalization;
 
 using Forma.Framework.Localization.Language;
 
-/// <summary>A locale whose every key is its own text, with its holes and plural forms resolved for the source language.</summary>
+/// <summary>A locale whose every key is its own text, with its holes and its plural and gender forms resolved for the source language.</summary>
 /// <param name="sourceCulture">The language the keys are written in.</param>
 /// <param name="boundCulture">The culture that formats the values, or <see langword="null"/> to read the current one.</param>
 /// <param name="boundUICulture">The culture whose plural rules apply, or <see langword="null"/> to read the current one.</param>
 internal sealed class NullStringLocale(CultureInfo sourceCulture, CultureInfo? boundCulture = null, CultureInfo? boundUICulture = null) : IStringLocale
 {
-    private readonly PluralExpressionEvaluator _pluralEvaluator = new(CommonPluralRuleSet.Default);
+    private readonly LocaleExpressionEvaluator _expressionEvaluator = new(CommonPluralRuleSet.Default);
 
     private CultureInfo Culture
         => boundCulture ?? CultureInfo.CurrentCulture;
@@ -79,5 +79,5 @@ internal sealed class NullStringLocale(CultureInfo sourceCulture, CultureInfo? b
         => new(name, Evaluate(name, arguments), arguments, ResourceNotFound: true);
 
     private string Evaluate(string format, IReadOnlyList<LocalizedArgument> arguments)
-        => _pluralEvaluator.Evaluate(format, sourceCulture, UICulture, arguments);
+        => _expressionEvaluator.Evaluate(format, sourceCulture, UICulture, arguments);
 }

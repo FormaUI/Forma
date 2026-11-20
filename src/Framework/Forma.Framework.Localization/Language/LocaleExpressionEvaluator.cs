@@ -10,29 +10,37 @@ using Forma.Framework.Localization.Parser.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-/// <summary>Evaluates the <c>[$ [count] plural; one: text; other: text; $]</c> expression inside localized text.</summary>
+/// <summary>Evaluates the <c>[$ [count] plural; one: text; other: text; $]</c> and <c>[$ [person] gender; female: text; other: text; $]</c> expressions inside localized text.</summary>
 /// <param name="rules">The rules deciding which category a count falls into.</param>
-/// <param name="logger">The logger an argument that is not a count is reported to; null discards.</param>
-/// <param name="diagnostics">The checks the application runs on its lookups, under which an argument that is not a count is a warning, or null where it leaves them unchecked.</param>
-public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? logger = null, LocalizationDiagnostics? diagnostics = null)
+/// <param name="logger">The logger an argument that is not a count, or not a gender, is reported to; null discards.</param>
+/// <param name="diagnostics">The checks the application runs on its lookups, under which an argument that is not a count or a gender is a warning, or null where it leaves them unchecked.</param>
+public sealed class LocaleExpressionEvaluator(IPluralRuleSet rules, ILogger? logger = null, LocalizationDiagnostics? diagnostics = null)
 {
     // How many characters an evaluation writes on the stack before it moves to a pooled buffer.
     private const int StackLength = 256;
+
+    // The field every expression falls back to.
+    private const string OtherField = "other";
 
     // What reading a format found, kept for as long as the format lives.
     private static readonly ConditionalWeakTable<string, LocaleParseResult> ParseResults = [];
 
     private readonly IPluralRuleSet _rules = rules ?? throw new ArgumentNullException(nameof(rules));
     private readonly ILogger _logger = logger ?? NullLogger.Instance;
-    private readonly LogLevel _notNumericLevel = diagnostics is null ? LogLevel.Debug : LogLevel.Warning;
-    private readonly ConcurrentDictionary<string, byte> _reportedFormats = new(StringComparer.Ordinal);
+    private readonly LogLevel _unusableArgumentLevel = diagnostics is null ? LogLevel.Debug : LogLevel.Warning;
+    private readonly ConcurrentDictionary<string, byte> _reportedPluralFormats = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, byte> _reportedGenderFormats = new(StringComparer.Ordinal);
 
     /// <summary>The keyword a plural expression names, whose fields carry the CLDR categories.</summary>
-    public static LocaleKeyword Keyword { get; } = new("plural", "zero", "one", "two", "few", "many", "other");
+    public static LocaleKeyword PluralKeyword { get; } = new("plural", "zero", "one", "two", "few", "many", OtherField);
 
-    private static LocaleKeywords KnownKeywords { get; } = new(Keyword);
+    /// <summary>The keyword a gender expression names, whose fields carry the genders a person is referred to by.</summary>
+    public static LocaleKeyword GenderKeyword { get; } = new("gender", "female", "male", OtherField);
 
-    /// <summary>The format with every plural expression replaced by the field its count selects.</summary>
+    /// <summary>The keywords an expression may name.</summary>
+    public static LocaleKeywords Keywords { get; } = new(PluralKeyword, GenderKeyword);
+
+    /// <summary>The format with every expression replaced by the field its argument selects.</summary>
     public string Evaluate(string format, CultureInfo culture, IReadOnlyList<LocalizedArgument> arguments)
     {
         ArgumentNullException.ThrowIfNull(format);
@@ -41,7 +49,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         return Evaluate(format, culture, culture, arguments);
     }
 
-    /// <summary>The format with every plural expression replaced, the field chosen by the culture the text is written in and the count formatted for the culture it is shown in.</summary>
+    /// <summary>The format with every expression replaced, a plural's field chosen by the culture the text is written in and its count formatted for the culture it is shown in.</summary>
     public string Evaluate(string format, CultureInfo localeCulture, CultureInfo displayCulture, IReadOnlyList<LocalizedArgument> arguments)
     {
         ArgumentNullException.ThrowIfNull(format);
@@ -55,7 +63,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         }
 
         // An expression the parser rejected stays in the text as written.
-        var parseResult = ParseResults.GetValue(format, static text => LocaleExpressionParser.Parse(text, KnownKeywords));
+        var parseResult = ParseResults.GetValue(format, static text => LocaleExpressionParser.Parse(text, Keywords));
         if (parseResult.Expressions.Count == 0)
         {
             return format;
@@ -71,9 +79,14 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
             var expression = expressions[index];
             builder.AppendFormatted(format.AsSpan(position, expression.Span.Start - position));
 
-            if (expression.KeywordSpan.Slice(format).SequenceEqual(Keyword.Name))
+            var keyword = expression.KeywordSpan.Slice(format);
+            if (keyword.SequenceEqual(PluralKeyword.Name))
             {
-                AppendField(ref builder, format, expression, localeCulture, displayCulture, arguments);
+                AppendPluralField(ref builder, format, expression, localeCulture, displayCulture, arguments);
+            }
+            else if (keyword.SequenceEqual(GenderKeyword.Name))
+            {
+                AppendGenderField(ref builder, format, expression, arguments);
             }
             else
             {
@@ -88,7 +101,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         return builder.ToStringAndClear();
     }
 
-    private void AppendField(ref DefaultInterpolatedStringHandler builder, string text, LocaleExpression expression, CultureInfo localeCulture, CultureInfo displayCulture, IReadOnlyList<LocalizedArgument> arguments)
+    private void AppendPluralField(ref DefaultInterpolatedStringHandler builder, string text, LocaleExpression expression, CultureInfo localeCulture, CultureInfo displayCulture, IReadOnlyList<LocalizedArgument> arguments)
     {
         var name = expression.NameSpan.Slice(text);
         if (name.IsEmpty)
@@ -100,7 +113,7 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         var operands = PluralOperands.From(count);
         var wantedCategory = _rules.Select(localeCulture.Name, operands) ?? PluralCategory.Other;
 
-        var selectedField = Select(text, expression.Fields, wantedCategory) ?? Select(text, expression.Fields, PluralCategory.Other);
+        var selectedField = Select(text, expression.Fields, GetCategoryName(wantedCategory)) ?? Select(text, expression.Fields, OtherField);
         if (selectedField is not { } field)
         {
             return;
@@ -136,10 +149,24 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         }
     }
 
-    private static LocaleTextSpan? Select(string text, IReadOnlyList<LocaleField> fields, PluralCategory category)
+    private void AppendGenderField(ref DefaultInterpolatedStringHandler builder, string text, LocaleExpression expression, IReadOnlyList<LocalizedArgument> arguments)
     {
-        var name = GetCategoryName(category);
+        var name = expression.NameSpan.Slice(text);
+        if (name.IsEmpty)
+        {
+            RequireSoleArgument(arguments);
+        }
 
+        var wantedField = GetGenderField(ToGender(name, text, Find(name, arguments)));
+
+        if ((Select(text, expression.Fields, wantedField) ?? Select(text, expression.Fields, OtherField)) is { } field)
+        {
+            builder.AppendFormatted(field.Slice(text));
+        }
+    }
+
+    private static LocaleTextSpan? Select(string text, IReadOnlyList<LocaleField> fields, ReadOnlySpan<char> name)
+    {
         for (var index = 0; index < fields.Count; index++)
         {
             if (fields[index].NameSpan.Slice(text).SequenceEqual(name))
@@ -201,15 +228,52 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
         {
         }
 
-        if (_reportedFormats.TryAdd(format, 0))
+        if (_reportedPluralFormats.TryAdd(format, 0))
         {
-            LocalizationLog.PluralArgumentNotNumeric(_logger, _notNumericLevel, name.ToString(), value?.GetType().Name ?? "null", format);
+            LocalizationLog.PluralArgumentNotNumeric(_logger, _unusableArgumentLevel, name.ToString(), value?.GetType().Name ?? "null", format);
         }
 
         return 0m;
     }
 
-    private static ReadOnlySpan<char> GetCategoryName(PluralCategory category)
+    // An enum names a gender by its member's name and a string by its text; null names none.
+    private string? ToGender(ReadOnlySpan<char> name, string format, object? value)
+    {
+        switch (value)
+        {
+            case null:
+                return null;
+
+            case string text:
+                return text;
+
+            case Enum member:
+                return member.ToString();
+        }
+
+        if (_reportedGenderFormats.TryAdd(format, 0))
+        {
+            LocalizationLog.GenderArgumentNotEnumOrString(_logger, _unusableArgumentLevel, name.ToString(), value.GetType().Name, format);
+        }
+
+        return null;
+    }
+
+    // A gender matches the field it spells, whatever its case, and every other gender reads as other.
+    private static string GetGenderField(string? gender)
+    {
+        foreach (var fieldName in GenderKeyword.FieldNames)
+        {
+            if (string.Equals(fieldName, gender, StringComparison.OrdinalIgnoreCase))
+            {
+                return fieldName;
+            }
+        }
+
+        return OtherField;
+    }
+
+    private static string GetCategoryName(PluralCategory category)
         => category switch
         {
             PluralCategory.Zero => "zero",
@@ -217,6 +281,6 @@ public sealed class PluralExpressionEvaluator(IPluralRuleSet rules, ILogger? log
             PluralCategory.Two => "two",
             PluralCategory.Few => "few",
             PluralCategory.Many => "many",
-            _ => "other",
+            _ => OtherField,
         };
 }

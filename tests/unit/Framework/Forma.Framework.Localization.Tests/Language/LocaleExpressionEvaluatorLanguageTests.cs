@@ -1,13 +1,13 @@
 namespace Forma.Framework.Localization.Tests.Language;
 
-public sealed class PluralExpressionEvaluatorLanguageTests
+public sealed class LocaleExpressionEvaluatorLanguageTests
 {
     private const string English = "[$ plural; one: # file; other: # files; $]";
     private const string Hebrew = "[$ plural; one: קובץ אחד; two: שני קבצים; other: # קבצים; $]";
     private const string Arabic = "[$ plural; zero: لا ملفات; one: ملف واحد; two: ملفان; few: # ملفات; many: # ملفًا; other: # ملف; $]";
     private const string French = "[$ plural; one: # fichier; many: # millions de fichiers; other: # fichiers; $]";
 
-    private static readonly PluralExpressionEvaluator Evaluator = new(CommonPluralRuleSet.Default);
+    private static readonly LocaleExpressionEvaluator Evaluator = new(CommonPluralRuleSet.Default);
 
     [Theory]
     [InlineData("en", English, 0, "0 files")]

@@ -7,7 +7,7 @@ every file is read into, the default reading of a file's place and name, the pat
 state instead, the `.locale.json` config that shapes reading, the locale packs an assembly's
 strings may ship in, the order entries apply in, how the runtime reports a lookup that doesn't
 find an entry, and how code written against Microsoft's `IStringLocalizer` reads them. The contract a component reads strings
-through, holes, plural forms and the file format are the `Forma.Framework.Localization` README's;
+through, holes, plural and gender forms and the file format are the `Forma.Framework.Localization` README's;
 the checks run over the files are the [Locali](https://github.com/FormaUI/Locali) linter's,
 `dotnet locali`.
 
@@ -439,10 +439,11 @@ The broader report stands for every narrower one beneath it, so an assembly that
 report rather than one for each of its keys, and an `es-419` without files of its own misses nothing `es`
 answers. Each is logged once per factory, which reads each file once, so what it has reported follows what it
 has read. The three are warnings, each its own event carrying the assembly, the type, the key and the culture
-as fields, since grouping explains a miss without making it matter less; a plural argument that isn't a count
-is a warning under the checks too, and `Debug` without them. A file that a culture checked beside the lookup's
-can't read is a warning of its own, once for each type and culture, and leaves the text the reader sees as it
-is: the checks report what they find without changing what a lookup shows.
+as fields, since grouping explains a miss without making it matter less; a plural argument that isn't a count,
+or a gender argument that is neither an enum nor a string, is a warning under the checks too, and `Debug` without
+them. A file that a culture checked beside the lookup's can't read is a warning of its own, once for each type
+and culture, and leaves the text the reader sees as it is: the checks report what they find without changing
+what a lookup shows.
 
 The checks see the lookups that run. The [Locali](https://github.com/FormaUI/Locali) linter checks what it
 can establish before the application runs, and where the two read the same files and settings they agree;
@@ -467,7 +468,7 @@ The key a caller passes decides how its string is filled, never the text a cultu
 filled one way in every culture:
 
 - **A Forma key** names a hole, `{Name}`, or holds an expression, `[$ … $]`, and Forma alone fills it, its
-  arguments paired with the holes by position.
+  arguments paired by position with the names the key uses, its holes and its expressions' arguments.
 - **A composite key** holds a composite placeholder, `{0}`, or neither, and `string.Format` alone fills its
   text in the formatting culture, as Microsoft's localizer does, so code written for it keeps its keys. Read
   without arguments, its text is returned as written.

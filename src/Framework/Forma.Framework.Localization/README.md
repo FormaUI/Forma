@@ -3,7 +3,7 @@
 A localization contract for .NET libraries and applications. A type looks a string up by its
 text in the source language, English unless `SourceLanguage` says otherwise, so a string no locale
 file localizes renders as written, and localized strings are found by the name of the type asking.
-The package carries the hole and plural syntax a string is written in, the CLDR plural rules, and
+The package carries the hole, plural and gender syntax a string is written in, the CLDR plural rules, and
 the build that makes a project a locale pack.
 
 ## Install and register
@@ -30,7 +30,7 @@ builder.Services.AddJsonLocalization();
 That registers `IStringLocaleFactory` and `IStringLocale<T>`. A backend of your own implements the
 same two contracts. Code written against Microsoft's `IStringLocalizer` reads the same strings through
 [`formaui-net.Framework.Localization.StringLocalizerAdapter`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Localization.StringLocalizerAdapter/README.md). `NullStringLocaleFactory.Instance` is a factory whose locales return every key
-as its own text, with holes filled and plural forms resolved in the source language, and
+as its own text, with holes filled and plural and gender forms resolved in the source language, and
 `GetStringLocaleFactory` resolves the registered factory or that one, which is how Forma's components
 read their strings where a host registers no localization.
 
@@ -91,10 +91,11 @@ such as one that began before the switch.
 ### Holes
 
 A hole is `{Name}`, optionally with an alignment and a format specifier, `{Name,8}` or
-`{Ratio:P1}`. Values pair with the key's holes by position, in the order the holes first appear,
-one value per distinct hole; any other count throws `ArgumentException`. A localized string refers to
-the holes by name, so it may reorder them, and it may choose its own specifier. A literal brace is
-doubled, `{{`, in keys and localized strings alike.
+`{Ratio:P1}`. Values pair by position with the names the key uses, its holes and the arguments its
+expressions name, in the order each name first appears, one value per distinct name; any other count
+throws `ArgumentException`. A localized string refers to the holes by name, so it may reorder them,
+and it may choose its own specifier. A literal brace is doubled, `{{`, in keys and localized strings
+alike.
 
 ### Plural forms
 
@@ -118,9 +119,41 @@ count's category directly:
 CommonPluralRuleSet.Default.Select(CultureInfo.GetCultureInfo("he"), 2)   // PluralCategory.Two
 ```
 
+### Gender forms
+
+A gender expression selects one of its fields by whom the string is about:
+
+```text
+[$ [Rider] gender; female: Escaladora; other: Escalador; $]
+```
+
+`[Rider]` names the argument holding the gender, and is left out when the gender is the only value.
+The fields are `female`, `male` and `other`, and each language writes the ones its words change for:
+Spanish writes `female` beside `other` for a climber, and a language whose words don't change writes
+`other` alone. A field a localized string omits falls back to `other`.
+
+The argument is an enum value or a string, and selects the field its name spells, whatever its
+case: `Gender.Female` and `"female"` select `female`. A null, or a name without a field of its own,
+such as `NonBinary`, selects `other`.
+
+A key whose gender is its only value carries no expression where its words are the same for
+everyone, and its localization reads the value unnamed. A key with other values carries the
+expression with `other` alone, which names the argument, so the values pair with `[Rider]` and
+`{Name}` in the order they first appear:
+
+```csharp
+locale["Climber", rider.Gender]
+locale["[$ [Rider] gender; other: {Name} is the best climber; $]", rider.Gender, rider.Name]
+```
+
+```json
+"Climber": "[$ gender; female: Escaladora; other: Escalador; $]",
+"[$ [Rider] gender; other: {Name} is the best climber; $]": "[$ [Rider] gender; female: {Name} es la mejor escaladora; other: {Name} es el mejor escalador; $]"
+```
+
 ### Rendering holes as markup
 
-`Resolve` returns the localized format with its plural forms selected and its holes still open, so
+`Resolve` returns the localized format with its plural and gender forms selected and its holes still open, so
 a caller can render a hole as something other than text, such as a link or a component:
 
 ```csharp
@@ -379,7 +412,7 @@ instead.
 | `LocalizedText` | A localized string: `Value`, `Name`, `ResourceNotFound`, `SearchedLocation`. |
 | `LocalizedPattern` | A localized format with its holes open: `Format`, `Arguments`, `EnumerateSegments()`. |
 | `LocalizedSegment` | One run of a format: literal `Text`, or a hole with a `Name`, `Alignment` and `Format`. |
-| `LocalizedFormat` | Pairs values with a format's holes, `Bind`, and renders it, `Render`, without a locale. |
+| `LocalizedFormat` | Pairs values with the names a format uses, `Bind`, and renders it, `Render`, without a locale. |
 | `CommonPluralRuleSet` | The CLDR plural rules behind `IPluralRuleSet`, in `Forma.Framework.Localization.Language`. |
 
 The `Forma.Framework.Localization.Files` and `Forma.Framework.Localization.Parser` namespaces read

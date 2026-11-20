@@ -9,6 +9,18 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- A gender expression chooses a string's words by whom it is about, as a plural expression chooses them by a count:
+  `[$ [Rider] gender; female: Escaladora; other: Escalador; $]`. Its fields are `female`, `male` and `other`, and an
+  enum value or a string selects the field its name spells, whatever its case, so `Gender.Female` and `"female"`
+  select `female`; a null, or a name without a field of its own, selects `other`.
+- A key's values pair with the arguments its expressions name as well as its holes, in the order each name first
+  appears, so a key can carry a value no hole writes, such as a gender:
+  `L["[$ [Rider] gender; other: {Name} is the best climber; $]", rider.Gender, rider.Name]`. A key whose expression
+  names an argument ahead of that argument's first hole, with another hole between them, pairs the argument earlier
+  than it did; to migrate, pass the values in the order the names first appear.
+- `PluralExpressionEvaluator` is `LocaleExpressionEvaluator`, which evaluates gender expressions too, and its
+  `Keyword` is `PluralKeyword`, beside `GenderKeyword` and the set of both, `Keywords`. To migrate, rename the type
+  and the property.
 - The Spanish locale pack is written throughout in Latin American Spanish, addressing the reader as *tú*: the table
   menu's *Agregar Fila Arriba* and the three like it, the inputs' *Agrega un número.* and *Agrega un símbolo.*, the
   composer's six prompts starting *Ingresa…*, the explorer's *Video*, and the input router's *Presiona una tecla, haz

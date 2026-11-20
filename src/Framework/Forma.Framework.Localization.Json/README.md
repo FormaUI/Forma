@@ -68,7 +68,7 @@ public sealed class UploadStatus(IStringLocale<UploadStatus> locale)
 
 Under `es`, `Progress(3, 9)` renders `Se guardaron 3 de 9.` and `FileCount(1)` renders
 `1 archivo`; under `en` they render `Stored 3 of 9.` and `1 file` from the keys themselves.
-`Forma.Framework.Localization` documents the hole and plural syntax, where else a file may sit,
+`Forma.Framework.Localization` documents the hole, plural and gender syntax, where else a file may sit,
 and how a host overrides one.
 
 A file named for its type, `Uploads/.locales/UploadStatus.es.json`, holds that type's entries at
@@ -146,8 +146,9 @@ Each carries `Assembly`, `Type`, `Key` and `Culture` as fields, the type and key
 miss, so a test run can fail on these three events. A file that a culture `Cultures` names can't read is logged once
 for each type as `LocaleFileNotRead`, event 8, with `Assembly`, `Type`, `Culture` and the `Reason`, and leaves the
 lookup's text as it is. All four are logged under `Forma.Framework.Localization.Json.JsonStringLocaleFactory`. A
-plural argument that isn't a count is a warning as well, event 1 under
-`Forma.Framework.Localization.Language.PluralExpressionEvaluator`, logged at `Debug` without `Diagnostics`.
+plural argument that isn't a count is a warning as well, event 1, and so is a gender argument that is neither an
+enum nor a string, event 9, both under `Forma.Framework.Localization.Language.LocaleExpressionEvaluator` and
+logged at `Debug` without `Diagnostics`.
 
 The checks see the lookups that run, so a clean run covers the strings those lookups reached. They check the
 locales `JsonStringLocaleFactory` makes.

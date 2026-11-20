@@ -18,7 +18,7 @@ public interface IStringLocale
     /// </remarks>
     LocalizedText this[string name, params ReadOnlySpan<object?> values] { get; }
 
-    /// <summary>The localized format for a key, with plural forms resolved and every hole left open.</summary>
+    /// <summary>The localized format for a key, with its plural and gender forms resolved and every hole left open.</summary>
     /// <param name="name">The key to look up, which is the source text.</param>
     LocalizedPattern Resolve(string name);
 

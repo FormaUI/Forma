@@ -40,7 +40,7 @@ The key decides how a string is filled, never the text a culture gives it:
 
 | Key | Filled by |
 | --- | --- |
-| Names a Forma hole, `{Name}`, or holds an expression, `[$ … $]` | Forma, which pairs the arguments with the holes by position |
+| Names a Forma hole, `{Name}`, or holds an expression, `[$ … $]` | Forma, which pairs the arguments by position with the key's holes and the arguments its expressions name |
 | Holds a composite placeholder, `{0}`, or neither | `string.Format` in the formatting culture, as Microsoft's localizer fills it |
 
 One formatter runs over a string, so a doubled brace, `{{`, is an escape resolved once. A key read without

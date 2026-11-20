@@ -1,6 +1,6 @@
 namespace Forma.Framework.Localization;
 
-/// <summary>A localized composite format string whose plural forms are resolved but whose holes are still open.</summary>
+/// <summary>A localized composite format string whose plural and gender forms are resolved but whose holes are still open.</summary>
 /// <param name="Name">The key the pattern was looked up under.</param>
 /// <param name="Format">The localized composite format, such as "Stored {stored} of {total}.".</param>
 /// <param name="Arguments">The values the holes name.</param>

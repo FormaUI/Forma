@@ -33,6 +33,38 @@ public sealed class LocalizedFormatTests
     }
 
     [Fact]
+    public void Should_pair_values_with_the_holes_and_the_expressions_arguments_in_the_order_they_first_appear()
+    {
+        // Act
+        var arguments = LocalizedFormat.Bind("{Team}: [$ [Rider] gender; other: {Name} won; $] in {Stage}", "Azul", "female", "Ana", 3);
+
+        // Assert
+        Assert.Equal(
+            [new LocalizedArgument("Team", "Azul"), new LocalizedArgument("Rider", "female"), new LocalizedArgument("Name", "Ana"), new LocalizedArgument("Stage", 3)],
+            arguments);
+    }
+
+    [Fact]
+    public void Should_count_an_argument_an_expression_names_once_with_its_hole()
+    {
+        // Act
+        var arguments = LocalizedFormat.Bind("{Count} [$ [Count] plural; one: file; other: files; $] in {Folder}", 2, "Photos");
+
+        // Assert
+        Assert.Equal([new LocalizedArgument("Count", 2), new LocalizedArgument("Folder", "Photos")], arguments);
+    }
+
+    [Fact]
+    public void Should_name_the_value_an_expression_names_when_the_format_has_no_hole()
+    {
+        // Act
+        var arguments = LocalizedFormat.Bind("[$ [Rider] gender; other: Climber; $]", "female");
+
+        // Assert
+        Assert.Equal([new LocalizedArgument("Rider", "female")], arguments);
+    }
+
+    [Fact]
     public void Should_pair_nothing_for_a_format_with_neither_holes_nor_values()
         => Assert.Empty(LocalizedFormat.Bind("Save"));
 
@@ -40,6 +72,7 @@ public sealed class LocalizedFormatTests
     [InlineData("Stored {stored} of {total}.", 1)]
     [InlineData("Stored {stored} of {total}.", 3)]
     [InlineData("Save", 2)]
+    [InlineData("[$ [Rider] gender; other: {Name} won; $]", 1)]
     public void Should_reject_a_value_count_the_format_has_no_holes_for(string format, int count)
         => Assert.Throws<ArgumentException>(() => LocalizedFormat.Bind(format, new object?[count]));
 

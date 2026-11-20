@@ -4,6 +4,9 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 
 using Forma.Framework.Culture;
+using Forma.Framework.Localization.Language;
+using Forma.Framework.Localization.Parser;
+using Forma.Framework.Localization.Parser.Syntax;
 
 /// <summary>Renders a composite format whose holes name their arguments.</summary>
 public static class LocalizedFormat
@@ -14,13 +17,13 @@ public static class LocalizedFormat
     // How many characters a value written through its hole's format takes on the stack before it is written to a string instead.
     private const int FormattedLength = 128;
 
-    // The names a format's holes use, read once for as long as the format lives.
-    private static readonly ConditionalWeakTable<string, string[]> HoleNames = [];
+    // The names a format uses, read once for as long as the format lives.
+    private static readonly ConditionalWeakTable<string, string[]> FormatNames = [];
 
-    /// <summary>Pairs values with the names a format's holes use, in the order those holes first appear.</summary>
+    /// <summary>Pairs values with the names a format uses, its holes and the arguments its expressions name, in the order each name first appears.</summary>
     /// <param name="format">The format the names are read from.</param>
-    /// <param name="values">The values to pair, one per distinct hole.</param>
-    /// <remarks>A format naming no hole takes a single value, which an expression without a name reads.</remarks>
+    /// <param name="values">The values to pair, one per distinct name.</param>
+    /// <remarks>A format naming nothing takes a single value, which an expression without a name reads.</remarks>
     public static LocalizedArgument[] Bind(string format, params ReadOnlySpan<object?> values)
     {
         ArgumentNullException.ThrowIfNull(format);
@@ -33,7 +36,7 @@ public static class LocalizedFormat
                 0 => [],
                 1 => [LocalizedArgument.Unnamed(values[0])],
                 _ => throw new ArgumentException(
-                    $"'{format}' names no hole, so it takes at most one value, but {values.Length} were supplied.",
+                    $"'{format}' names no hole or argument, so it takes at most one value, but {values.Length} were supplied.",
                     nameof(values)),
             };
         }
@@ -41,7 +44,7 @@ public static class LocalizedFormat
         if (values.Length != names.Length)
         {
             throw new ArgumentException(
-                $"'{format}' names {names.Length} hole(s) but {values.Length} value(s) were supplied.",
+                $"'{format}' names {names.Length} hole(s) and argument(s) but {values.Length} value(s) were supplied.",
                 nameof(values));
         }
 
@@ -91,11 +94,16 @@ public static class LocalizedFormat
     }
 
     private static string[] GetNames(string format)
-        => format.AsSpan().ContainsAny('{', '}') ? HoleNames.GetValue(format, static text => [.. ReadNames(text)]) : [];
+        => format.AsSpan().ContainsAny('{', '}') || format.Contains(LocaleExpressionParser.OpeningDelimiter, StringComparison.Ordinal)
+            ? FormatNames.GetValue(format, static text => [.. ReadNames(text)])
+            : [];
 
+    // The holes and the expressions' arguments are each read in order, and merged by where their names stand.
     private static List<string> ReadNames(string format)
     {
         var names = new List<string>();
+        var expressions = LocaleExpressionParser.Parse(format, LocaleExpressionEvaluator.Keywords).Expressions;
+        var expressionIndex = 0;
 
         foreach (var segment in LocalizedSegment.Parse(format))
         {
@@ -104,14 +112,36 @@ public static class LocalizedFormat
                 continue;
             }
 
-            var name = segment.Name.ToString();
-            if (!names.Contains(name, StringComparer.Ordinal))
+            _ = format.AsSpan().Overlaps(segment.Name, out var position);
+            expressionIndex = AddArguments(format, expressions, expressionIndex, position, names);
+            Add(names, segment.Name.ToString());
+        }
+
+        AddArguments(format, expressions, expressionIndex, format.Length, names);
+
+        return names;
+    }
+
+    // The arguments named before the position are added, and the index of the first expression after it returned.
+    private static int AddArguments(string format, IReadOnlyList<LocaleExpression> expressions, int index, int position, List<string> names)
+    {
+        for (; index < expressions.Count && expressions[index].Span.Start < position; index++)
+        {
+            if (!expressions[index].NameSpan.IsEmpty)
             {
-                names.Add(name);
+                Add(names, expressions[index].NameSpan.Slice(format).ToString());
             }
         }
 
-        return names;
+        return index;
+    }
+
+    private static void Add(List<string> names, string name)
+    {
+        if (!names.Contains(name, StringComparer.Ordinal))
+        {
+            names.Add(name);
+        }
     }
 
     // A value is written in the culture it is rendered in, padded to the hole's alignment.
