@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.12`
 
-*Unreleased*
+*November 20, 2026*
 
 - A gender expression chooses a string's words by whom it is about, as a plural expression chooses them by a count:
   `[$ [Rider] gender; female: Escaladora; other: Escalador; $]`. Its fields are `female`, `male` and `other`, and an
