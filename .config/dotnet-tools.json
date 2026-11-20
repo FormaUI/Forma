@@ -3,7 +3,7 @@
   "isRoot": true,
   "tools": {
     "formaui-net.locali": {
-      "version": "1.0.0-preview.25",
+      "version": "1.0.0-preview.26",
       "commands": [
         "locali"
       ],
