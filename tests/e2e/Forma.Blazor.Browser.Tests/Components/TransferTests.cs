@@ -14,14 +14,19 @@ public sealed class TransferTests
     // for a script's.
     private static readonly LocatorAssertionsToHaveTextOptions Saved = new() { Timeout = 30_000 };
 
-    // A paste of megabytes is taken, and its preview drawn, on WebAssembly's one thread, which a loaded runner took longer than
-    // half a minute to do, so the check waits for each as long as for WebAssembly to start.
-    private static readonly LocatorAssertionsToHaveTextOptions Taken = new() { Timeout = 60_000 };
-    private static readonly LocatorClickOptions Drawn = new() { Timeout = 60_000 };
+    // A document of two megabytes in words and paragraphs, as a reader's document runs, since WebKit takes half a minute to lay out
+    // as much on one unbroken line, and Chromium lays out a paragraph that takes its direction from its own text, as the composer's
+    // do, in time growing with the square of the paragraph's length.
+    private const int ParagraphWords = 100;
+    private const int Paragraphs = 2_000;
 
     // A value as the check page writes it: its length and the start of its SHA-256.
     private static string Describe(string value)
         => $"{value.Length}:{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(value)))[..16]}";
+
+    // The document of two megabytes, every word of it the one given.
+    private static string CreateDocument(string word)
+        => string.Concat(Enumerable.Repeat($"<p>{string.Join(' ', Enumerable.Repeat(word, ParagraphWords))}</p>", Paragraphs));
 
     public sealed class Forms(BrowserHost host)
     {
@@ -72,15 +77,14 @@ public sealed class TransferTests
             await using var _ = context;
             var canvas = page.Locator("#forma-body .forma-composer-rich-text-canvas");
             await WaitForInputScopeAsync(page, "#forma-body .forma-composer-rich-text-canvas");
-            // Two megabytes as words, as a reader's text runs, since WebKit takes half a minute to lay out as much on one unbroken line.
-            const int Words = 200_000;
-            await canvas.EvaluateAsync("(canvas, words) => { canvas.focus(); canvas.innerHTML = '<p>' + Array(words).fill('xxxxxxxxx').join(' ') + '</p>'; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", Words);
+            var document = CreateDocument("xxxxxxxxx");
+            await canvas.EvaluateAsync("(canvas, html) => { canvas.focus(); canvas.innerHTML = html; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", document);
 
             // Act
             await page.Locator("#forma-save").ClickAsync();
 
             // Assert
-            await Assertions.Expect(page.Locator("#forma-body-saved")).ToHaveTextAsync(Describe($"<p>{string.Join(' ', Enumerable.Repeat("xxxxxxxxx", Words))}</p>"), Saved);
+            await Assertions.Expect(page.Locator("#forma-body-saved")).ToHaveTextAsync(Describe(document), Saved);
         }
 
         [Theory]
@@ -232,12 +236,10 @@ public sealed class TransferTests
             await using var _ = context;
             var canvas = page.Locator("#forma-body .forma-composer-rich-text-canvas");
             await WaitForInputScopeAsync(page, "#forma-body .forma-composer-rich-text-canvas");
-            // Two megabytes as words, as a reader's text runs, since WebKit takes half a minute to lay out as much on one unbroken line.
-            const int Words = 200_000;
-            await canvas.EvaluateAsync("(canvas, words) => { canvas.focus(); canvas.innerHTML = '<p>' + Array(words).fill('zzzzzzzzz').join(' ') + '</p>'; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", Words);
-            var document = $"<p>{string.Join(' ', Enumerable.Repeat("zzzzzzzzz", Words))}</p>";
-            await Assertions.Expect(page.Locator("#forma-body-length")).ToHaveTextAsync(document.Length.ToString(CultureInfo.InvariantCulture), Taken);
-            await page.Locator("#forma-body").GetByRole(AriaRole.Tab, new() { Name = "Preview", Exact = true }).ClickAsync(Drawn);
+            var document = CreateDocument("zzzzzzzzz");
+            await canvas.EvaluateAsync("(canvas, html) => { canvas.focus(); canvas.innerHTML = html; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", document);
+            await Assertions.Expect(page.Locator("#forma-body-length")).ToHaveTextAsync(document.Length.ToString(CultureInfo.InvariantCulture));
+            await page.Locator("#forma-body").GetByRole(AriaRole.Tab, new() { Name = "Preview", Exact = true }).ClickAsync();
             var export = page.Locator("#forma-body .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Export HTML", Exact = true });
 
             // Act
@@ -245,7 +247,7 @@ public sealed class TransferTests
 
             // Assert — the page the browser composed, the document whole within it
             var exported = await page.EvaluateAsync<int>("address => fetch(address).then(response => response.text()).then(text => text.split('zzzzzzzzz').length - 1)", download.Url);
-            Assert.Equal(Words, exported);
+            Assert.Equal(Paragraphs * ParagraphWords, exported);
         }
 
         // The name as an item of the list holds it.
