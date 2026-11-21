@@ -16,6 +16,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`FormaTextArea`](docs/component-catalog.md#formatextarea) scrolls its text beneath its floating label, which holds
   the band across the area's top, so a line past its `Rows` and the caret's line stay clear of the label, and its
   scrollbar starts below the band. The lines scrolled under the label, which was drawn over them.
+- A `FormaTextArea` showing its character count floats the count inside its end corner, over the strip it keeps beneath
+  its text, and scrolls the line being typed above that strip. The count stood below the area, and the strip stayed
+  empty.
 
 ## `1.0.0-preview.12`
 

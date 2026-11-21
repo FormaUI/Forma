@@ -209,6 +209,41 @@ public sealed partial class InputsTests
 
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_float_its_count_inside_its_end_corner_beneath_the_line_being_typed(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-area");
+            await using var _ = context;
+            var textArea = page.Locator("#check");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
+
+            // Act — more lines than the area's rows show, the caret on the last
+            foreach (var line in new[] { "One", "Two", "Three", "Four" })
+            {
+                await textArea.PressSequentiallyAsync(line);
+                await textArea.PressAsync("Enter");
+            }
+
+            await textArea.PressSequentiallyAsync("Five");
+
+            // Assert — how far the count reaches past the area's top, bottom, left and right edges, and how far the line being typed, the
+            // last of its one-word lines, reaches down behind the count
+            var measures = await textArea.EvaluateAsync<double[]>("""
+                area => {
+                    const box = area.getBoundingClientRect();
+                    const count = document.getElementById(`${area.id}-count-value`).getBoundingClientRect();
+                    const style = getComputedStyle(area);
+                    const lines = area.value.split(String.fromCharCode(10)).length;
+                    const lineBottom = box.top + area.clientTop + parseFloat(style.paddingTop) + lines * parseFloat(style.lineHeight) - area.scrollTop;
+                    return [box.top - count.top, count.bottom - box.bottom, box.left - count.left, count.right - box.right, lineBottom - count.top];
+                }
+                """);
+            Assert.True(measures[..4].All(spill => spill <= 0.5), $"The text area's count reaches past its edges by {string.Join(", ", measures[..4])}px.");
+            Assert.True(measures[4] <= 0.5, $"The line being typed reaches {measures[4]}px down behind the text area's count.");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_count_the_text_as_it_is_typed_and_take_it_only_as_its_edit_commits_when_it_updates_on_change(string runtime)
         {
             // Arrange — text typed, counted in the browser and not yet taken
