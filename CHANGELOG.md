@@ -5,6 +5,18 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.14`
+
+*Unreleased*
+
+- A [`FormaExplorer`](docs/component-catalog.md#formaexplorer) draws the still an item's host gives as its
+  `ThumbnailSource`, whatever its kind, and a video's first frame where its item offers `View`, each marked in its end
+  corner with its kind's glyph, which a video also shows while its frame loads and wherever the frame can't be drawn.
+  A video and every kind but an image drew their glyph alone, and an image drew its own source whatever its
+  `ThumbnailSource` named.
+- `FormaExplorerThumbnail` takes the `Item` it depicts in place of its `Resource`. To migrate, pass the catalog item
+  the resource came from.
+
 ## `1.0.0-preview.13`
 
 *November 21, 2026*

@@ -34,10 +34,7 @@
                 <FormaDataCards TItem="ICatalogItem" Dense="true" CardSize="@ThumbnailSize" class="forma-explorer-cards" aria-label="@L["Media"]">
                     <ThumbnailTemplate Context="item">
                         <span class="forma-explorer-card-thumbnail">
-                            @if (item.Resource is { } resource)
-                            {
-                                <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Tile" />
-                            }
+                            <FormaExplorerThumbnail Item="item" Size="ExplorerThumbnailSize.Tile" />
                         </span>
                         @if (!Selection.IsSelectionModeActive)
                         {
@@ -62,10 +59,7 @@
                         </FormaTemplateColumn>
                         <FormaTemplateColumn TItem="ICatalogItem" Title="@L["Name"]" Frozen="true" SortName="@GetSortName(CatalogSortField.Name)" SortBy="GetSort(CatalogSortField.Name)" Class="forma-explorer-column-name">
                             <span class="forma-explorer-details-name">
-                                @if (context.Resource is { } resource)
-                                {
-                                    <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Cell" />
-                                }
+                                <FormaExplorerThumbnail Item="context" Size="ExplorerThumbnailSize.Cell" />
                                 <span class="forma-explorer-details-name-text" title="@context.Name">@context.Name</span>
                             </span>
                         </FormaTemplateColumn>
@@ -96,10 +90,7 @@
                                 <FormaExplorerActionBar Item="item" />
                             </span>
                         }
-                        @if (item.Resource is { } resource)
-                        {
-                            <FormaExplorerThumbnail Resource="resource" Size="ExplorerThumbnailSize.Cell" />
-                        }
+                        <FormaExplorerThumbnail Item="item" Size="ExplorerThumbnailSize.Cell" />
                     </ThumbnailTemplate>
                 </FormaDataList>
             }

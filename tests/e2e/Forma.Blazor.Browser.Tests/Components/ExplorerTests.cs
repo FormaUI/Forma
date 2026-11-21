@@ -418,6 +418,49 @@ public sealed class ExplorerTests
         }
     }
 
+    public sealed class ExplorerThumbnails(BrowserHost host)
+    {
+        // Whether every frame the page draws has decoded and every still has loaded.
+        private const string Drawn = "() => [...document.querySelectorAll('.forma-explorer-thumbnail-marked video')].every(video => video.readyState >= 2 && video.videoWidth > 0) && [...document.querySelectorAll('img.forma-explorer-thumbnail, .forma-explorer-thumbnail-marked img')].every(image => image.complete && image.naturalWidth > 0)";
+
+        // What each of an explorer's thumbnails draws, by the item's name, a frame, a still or a glyph, and how far its mark stands
+        // inside the thumbnail's end and bottom edges.
+        private const string Thumbnails = """
+            explorer => [...document.querySelectorAll(`#${explorer} .forma-data-card, #${explorer} tr.forma-data-grid-row`)].map(item => {
+                const thumbnail = item.querySelector('.forma-explorer-thumbnail');
+                const box = thumbnail.getBoundingClientRect();
+                const mark = thumbnail.querySelector('.forma-explorer-thumbnail-mark')?.getBoundingClientRect();
+                const name = item.querySelector('.forma-data-card-name, .forma-explorer-details-name-text').textContent.trim();
+                const draws = thumbnail.querySelector('video') ? 'frame' : thumbnail.matches('img') || thumbnail.querySelector('img') ? 'still' : 'glyph';
+                return mark ? `${name} ${draws}, marked ${Math.round(box.right - mark.right)} ${Math.round(box.bottom - mark.bottom)}` : `${name} ${draws}`;
+            })
+            """;
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_draw_a_video_s_first_frame_and_the_stills_its_host_gives_each_marked_in_its_end_corner(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer-thumbnails");
+            await using var _ = context;
+
+            // Act
+            await Assertions.Expect(page.Locator(".forma-explorer-thumbnail-marked video")).ToHaveCountAsync(2);
+            await page.WaitForFunctionAsync(Drawn);
+            var tiles = await page.EvaluateAsync<string[]>(Thumbnails, "thumbnails");
+            var cells = await page.EvaluateAsync<string[]>(Thumbnails, "details");
+
+            // Assert — a tile's mark stands just inside its corner, and a cell's fills it
+            Assert.Multiple(
+                () => Assert.Equal(
+                    ["clip.mp4 frame, marked 4 4", "document.pdf still, marked 4 4", "picture.svg still", "still.mp4 still, marked 4 4", "unviewed.mp4 glyph"],
+                    tiles),
+                () => Assert.Equal(
+                    ["clip.mp4 frame, marked 0 0", "document.pdf still, marked 0 0", "picture.svg still", "still.mp4 still, marked 0 0", "unviewed.mp4 glyph"],
+                    cells));
+        }
+    }
+
     public sealed class ExplorerScroll(BrowserHost host)
     {
         [Theory]

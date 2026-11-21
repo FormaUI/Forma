@@ -1,4 +1,4 @@
-/* The thumbnail every explorer view shows: the image itself, or a glyph for any other kind. */
+/* The thumbnail every explorer view shows: an image or a still, a video's frame, or a glyph for any other kind. */
 
 .forma-explorer-thumbnail {
     flex-shrink: 0;
@@ -29,4 +29,61 @@
 
 .forma-explorer-thumbnail-glyph.is-cell {
     font-size: var(--icon-size-sm);
+}
+
+/* --- Marked --- */
+/* A still or a frame of an item that isn't an image, its kind's mark over it and a frame's glyph beneath it. */
+.forma-explorer-thumbnail-marked {
+    position: relative;
+    display: block;
+    overflow: hidden;
+}
+
+.forma-explorer-thumbnail-marked > .forma-explorer-thumbnail-glyph {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+}
+
+.forma-explorer-thumbnail-media {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+    pointer-events: none;
+}
+
+.forma-explorer-thumbnail-mark {
+    position: absolute;
+    inset-block-end: var(--space-1);
+    inset-inline-end: var(--space-1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-1);
+    border-radius: var(--radius-sm);
+    background-color: var(--forma-explorer-thumbnail-mark-bg-color, var(--media-shade-color));
+    color: var(--forma-explorer-thumbnail-mark-fg-color, var(--media-fg-color));
+    font-size: var(--icon-size-sm);
+    line-height: 1;
+}
+
+/* A cell's mark fills its end corner, half the cell. */
+.forma-explorer-thumbnail.is-cell .forma-explorer-thumbnail-mark {
+    inset-block-end: 0;
+    inset-inline-end: 0;
+    padding: 1px;
+    border-start-start-radius: var(--radius-sm);
+    border-start-end-radius: 0;
+    border-end-start-radius: 0;
+    border-end-end-radius: 0;
+    font-size: calc(var(--icon-size-sm) / 2);
+}
+
+@media (forced-colors: active) {
+    .forma-explorer-thumbnail-mark {
+        outline: 1px solid CanvasText;
+    }
 }

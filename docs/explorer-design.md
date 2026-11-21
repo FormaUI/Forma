@@ -25,9 +25,14 @@ callback, and an upload goes into the host's `IFileStore`.
 ## Decision summary
 
 - **Any resource.** An item is anything with a `ResourceInfo` behind it, or nothing at
-  all: an image draws its thumbnail, anything else the glyph of its kind, and
-  the details view lists kind, size and dates for all of them. It browses the server; it
-  never picks from the device, which is `FormaFilePicker`'s job.
+  all, and the details view lists kind, size and dates for all of them. It browses the
+  server; it never picks from the device, which is `FormaFilePicker`'s job.
+- **A thumbnail for every kind.** An item draws the still its host gives as its
+  `ThumbnailSource`, whatever its kind. Without one, an image draws itself, a video whose
+  item offers `View` draws its first frame, the browser drawing it over the video's glyph,
+  which shows while the frame loads and wherever it can't be drawn, and anything else
+  draws the glyph of its kind. A still or a frame of anything but an image carries its
+  kind's glyph in its end corner, so a video stays told from a picture without color.
 - **Items, not resources.** The host supplies `ICatalogItem`s, a folder being an
   `ICatalogFolderItem` whose parentage is a key, and every callback and request hands
   back the item the host supplied, so a folder with no resource behind it is a first-class

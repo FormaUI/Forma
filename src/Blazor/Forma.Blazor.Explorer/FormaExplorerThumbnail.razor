@@ -2,11 +2,30 @@
 @inherits FormaComponentBase
 @using Forma.Framework.Resources
 
-@if (Resource is ImageResourceInfo)
+@if (StillSource is { } still)
 {
-    <img src="@Resource.Source" alt="" class="forma-explorer-thumbnail @SizeClass" loading="lazy" />
+    @if (IsMarked)
+    {
+        <span class="forma-explorer-thumbnail forma-explorer-thumbnail-marked @SizeClass">
+            <img src="@still" alt="" class="forma-explorer-thumbnail-media" loading="lazy" />
+            <span class="forma-explorer-thumbnail-mark" aria-hidden="true"><FormaIcon Icon="KindGlyph" /></span>
+        </span>
+    }
+    else
+    {
+        <img src="@still" alt="" class="forma-explorer-thumbnail @SizeClass" loading="lazy" />
+    }
 }
-else
+else if (FrameSource is { } frame)
+{
+    @* The glyph stands beneath the video, which is transparent until the browser draws its frame. *@
+    <span class="forma-explorer-thumbnail forma-explorer-thumbnail-marked @SizeClass" aria-hidden="true">
+        <span class="forma-explorer-thumbnail-glyph @SizeClass"><FormaIcon Icon="KindGlyph" /></span>
+        <video src="@frame" class="forma-explorer-thumbnail-media" muted preload="metadata" playsinline disablepictureinpicture disableremoteplayback tabindex="-1"></video>
+        <span class="forma-explorer-thumbnail-mark"><FormaIcon Icon="KindGlyph" /></span>
+    </span>
+}
+else if (Item.Resource is not null)
 {
     <span class="forma-explorer-thumbnail forma-explorer-thumbnail-glyph @SizeClass" aria-hidden="true"><FormaIcon Icon="KindGlyph" /></span>
 }

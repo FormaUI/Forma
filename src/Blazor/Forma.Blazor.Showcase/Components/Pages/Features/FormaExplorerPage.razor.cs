@@ -69,6 +69,8 @@ public sealed partial class FormaExplorerPage
 
     private IReadOnlyList<ICatalogItem> _stateFolderItems = [];
 
+    private IReadOnlyList<ICatalogItem> _thumbnailItems = [];
+
     private readonly ExplorerItemOptions _stateOptions = new()
     {
         AllowedFolderCapabilities = CatalogItemCapabilities.Drag
@@ -184,6 +186,41 @@ public sealed partial class FormaExplorerPage
                 Capabilities = everyMediaCapability,
                 Visibility = CatalogItemVisibility.Hidden,
                 Resource = new ImageResourceInfo("/media/sample-poster.svg?state=hidden") { Name = "hidden.svg", Size = 6400, CreatedAt = seedDate.AddDays(-1), ModifiedAt = seedDate.AddDays(-1) }
+            }
+        ];
+
+        _thumbnailItems =
+        [
+            CatalogItem.For(new ImageResourceInfo("/media/sample-poster.svg?thumbnail=picture") { Name = "poster.svg", Size = 12400, CreatedAt = seedDate.AddDays(-6), ModifiedAt = seedDate.AddDays(-6) }),
+            CatalogItem.For(new VideoResourceInfo("/media/sample.mp4?thumbnail=frame") { Name = "finish-line.mp4", Size = 788493, CreatedAt = seedDate.AddDays(-5), ModifiedAt = seedDate.AddDays(-5) }),
+            new CatalogItem
+            {
+                Key = "thumbnail-still",
+                Name = "podium.mp4",
+                Capabilities = everyMediaCapability,
+                ThumbnailSource = "/media/sample-poster.svg?thumbnail=still",
+                CreatedAt = seedDate.AddDays(-4),
+                ModifiedAt = seedDate.AddDays(-4),
+                Resource = new VideoResourceInfo("/media/sample.mp4?thumbnail=still") { Name = "podium.mp4", Size = 788493, CreatedAt = seedDate.AddDays(-4), ModifiedAt = seedDate.AddDays(-4) }
+            },
+            new CatalogItem
+            {
+                Key = "thumbnail-unviewed",
+                Name = "for-sale.mp4",
+                Capabilities = CatalogItemCapabilities.Drag | CatalogItemCapabilities.Open,
+                CreatedAt = seedDate.AddDays(-3),
+                ModifiedAt = seedDate.AddDays(-3),
+                Resource = new VideoResourceInfo("for-sale.mp4") { Name = "for-sale.mp4", Size = 2411724, CreatedAt = seedDate.AddDays(-3), ModifiedAt = seedDate.AddDays(-3) }
+            },
+            new CatalogItem
+            {
+                Key = "thumbnail-document",
+                Name = "results.pdf",
+                Capabilities = everyMediaCapability,
+                ThumbnailSource = "/media/sample-poster.svg?thumbnail=document",
+                CreatedAt = seedDate.AddDays(-2),
+                ModifiedAt = seedDate.AddDays(-2),
+                Resource = new DocumentResourceInfo("/media/sample.pdf?thumbnail=document") { Name = "results.pdf", Size = 639, CreatedAt = seedDate.AddDays(-2), ModifiedAt = seedDate.AddDays(-2) }
             }
         ];
 

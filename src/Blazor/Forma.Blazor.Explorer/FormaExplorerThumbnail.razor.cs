@@ -1,17 +1,23 @@
 namespace Forma.Blazor.Components.Explorer;
 
-using Forma.Framework.Catalog.Queries;
+using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Icons;
 using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 
-/// <summary>Renders a resource as an image thumbnail, or as the glyph standing in for what it is.</summary>
+/// <summary>Renders an item's thumbnail, or the glyph standing in for what it is.</summary>
+/// <remarks>
+/// The item's own <see cref="ICatalogItem.ThumbnailSource"/> draws for any kind, and an image without one draws its own source.
+/// A video without one draws its first frame where the item offers View, the browser drawing it over the glyph, which
+/// shows while the frame loads and where it can't be drawn; every other item draws its glyph. A thumbnail drawn for an item
+/// that isn't an image carries its kind's glyph over it.
+/// </remarks>
 public sealed partial class FormaExplorerThumbnail : FormaComponentBase
 {
-    /// <summary>The resource to depict.</summary>
-    [Parameter, EditorRequired] public ResourceInfo Resource { get; set; } = default!;
+    /// <summary>The item to depict.</summary>
+    [Parameter, EditorRequired] public ICatalogItem Item { get; set; } = default!;
 
     /// <summary>How large the thumbnail renders.</summary>
     [Parameter] public ExplorerThumbnailSize Size { get; set; } = ExplorerThumbnailSize.Tile;
@@ -23,8 +29,21 @@ public sealed partial class FormaExplorerThumbnail : FormaComponentBase
             _ => "is-tile"
         };
 
+    private string? StillSource
+        => !string.IsNullOrWhiteSpace(Item.ThumbnailSource)
+            ? Item.ThumbnailSource
+            : (Item.Resource as ImageResourceInfo)?.Source;
+
+    private string? FrameSource
+        => Item.Resource is VideoResourceInfo video && Item.Capabilities.HasFlag(CatalogItemCapabilities.View)
+            ? video.Source
+            : null;
+
+    private bool IsMarked
+        => Item.Resource is not ImageResourceInfo;
+
     private Glyph KindGlyph
-        => Resource switch
+        => Item.Resource switch
         {
             FolderResourceInfo => Glyph.Folder,
             ImageResourceInfo => Glyph.Image,
@@ -32,6 +51,7 @@ public sealed partial class FormaExplorerThumbnail : FormaComponentBase
             AudioResourceInfo => Glyph.Audio,
             ArchiveResourceInfo => Glyph.FileArchive,
             DocumentResourceInfo => Glyph.FileText,
+            null when Item is ICatalogFolderItem => Glyph.Folder,
 
             // An unrecognized kind takes the generic file glyph.
             _ => Glyph.File
@@ -39,5 +59,5 @@ public sealed partial class FormaExplorerThumbnail : FormaComponentBase
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => ArgumentNullException.ThrowIfNull(Resource);
+        => ArgumentNullException.ThrowIfNull(Item);
 }

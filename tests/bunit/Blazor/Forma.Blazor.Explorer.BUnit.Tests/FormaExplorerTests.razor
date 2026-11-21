@@ -2276,6 +2276,138 @@
         }
     }
 
+    // The thumbnail the explorer draws for the item under the name.
+    private static IRenderedComponent<FormaExplorerThumbnail> GetThumbnail<TComponent>(IRenderedComponent<TComponent> cut, string name)
+        where TComponent : class, IComponent
+        => cut.FindComponents<FormaExplorerThumbnail>().Single(thumbnail => thumbnail.Instance.Item.Name == name);
+
+    // The glyphs a thumbnail draws, the one beneath before the mark over it.
+    private static List<Icon> GetGlyphs(IRenderedComponent<FormaExplorerThumbnail> thumbnail)
+        => [.. thumbnail.FindComponents<FormaIcon>().Select(icon => icon.Instance.Icon)];
+
+    public sealed class Thumbnails
+    {
+        [Fact]
+        public void Should_draw_an_image_as_itself_with_no_mark()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ICatalogItem> items = [CatalogItem.For(new ImageResourceInfo("https://example.com/cover.jpg"))];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" />);
+
+            // Assert
+            var thumbnail = GetThumbnail(cut, "cover.jpg");
+            Assert.Multiple(
+                () => Assert.Equal("https://example.com/cover.jpg", thumbnail.Find("img.forma-explorer-thumbnail").GetAttribute("src")),
+                () => Assert.Empty(thumbnail.FindAll(".forma-explorer-thumbnail-mark")),
+                () => Assert.Empty(GetGlyphs(thumbnail)));
+        }
+
+        [Fact]
+        public void Should_draw_a_video_s_first_frame_over_its_glyph_marked_as_a_video_where_it_can_be_viewed()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ICatalogItem> items = [CatalogItem.For(new VideoResourceInfo("https://example.com/finish.mp4"))];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" />);
+
+            // Assert
+            var thumbnail = GetThumbnail(cut, "finish.mp4");
+            var video = thumbnail.Find(".forma-explorer-thumbnail-marked video");
+            Assert.Multiple(
+                () => Assert.Equal("https://example.com/finish.mp4", video.GetAttribute("src")),
+                () => Assert.Equal("metadata", video.GetAttribute("preload")),
+                () => Assert.True(video.HasAttribute("muted")),
+                () => Assert.True(video.HasAttribute("playsinline")),
+                () => Assert.False(video.HasAttribute("controls")),
+                () => Assert.Equal("-1", video.GetAttribute("tabindex")),
+                () => Assert.Equal("true", thumbnail.Find(".forma-explorer-thumbnail-marked").GetAttribute("aria-hidden")),
+                () => Assert.NotNull(thumbnail.Find(".forma-explorer-thumbnail-marked > .forma-explorer-thumbnail-glyph")),
+                () => Assert.NotNull(thumbnail.Find(".forma-explorer-thumbnail-marked > .forma-explorer-thumbnail-mark")),
+                () => Assert.Equal([Glyph.Video, Glyph.Video], GetGlyphs(thumbnail)));
+        }
+
+        [Fact]
+        public void Should_draw_a_video_it_cannot_view_as_its_glyph_alone()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ICatalogItem> items =
+            [
+                new CatalogItem
+                {
+                    Key = "for-sale",
+                    Name = "for-sale.mp4",
+                    Capabilities = CatalogItemCapabilities.Drag | CatalogItemCapabilities.Open,
+                    Resource = new VideoResourceInfo("for-sale.mp4")
+                }
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" />);
+
+            // Assert
+            var thumbnail = GetThumbnail(cut, "for-sale.mp4");
+            Assert.Multiple(
+                () => Assert.Empty(thumbnail.FindAll("video")),
+                () => Assert.Empty(thumbnail.FindAll(".forma-explorer-thumbnail-mark")),
+                () => Assert.Equal("true", thumbnail.Find(".forma-explorer-thumbnail-glyph").GetAttribute("aria-hidden")),
+                () => Assert.Equal([Glyph.Video], GetGlyphs(thumbnail)));
+        }
+
+        [Fact]
+        public void Should_draw_the_still_its_host_gives_for_any_kind_marked_with_its_kind_s_glyph()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ICatalogItem> items =
+            [
+                new CatalogItem { Key = "podium", Name = "podium.mp4", Capabilities = CatalogItemCapabilities.View, ThumbnailSource = "https://example.com/podium.jpg", Resource = new VideoResourceInfo("https://example.com/podium.mp4") },
+                new CatalogItem { Key = "results", Name = "results.pdf", ThumbnailSource = "https://example.com/results.jpg", Resource = new DocumentResourceInfo("https://example.com/results.pdf") },
+                new CatalogItem { Key = "cover", Name = "cover.jpg", ThumbnailSource = "https://example.com/cover-small.jpg", Resource = new ImageResourceInfo("https://example.com/cover.jpg") }
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" />);
+
+            // Assert
+            var video = GetThumbnail(cut, "podium.mp4");
+            var document = GetThumbnail(cut, "results.pdf");
+            var image = GetThumbnail(cut, "cover.jpg");
+            Assert.Multiple(
+                () => Assert.Equal("https://example.com/podium.jpg", video.Find(".forma-explorer-thumbnail-marked img").GetAttribute("src")),
+                () => Assert.Empty(video.FindAll("video")),
+                () => Assert.Equal([Glyph.Video], GetGlyphs(video)),
+                () => Assert.Equal("https://example.com/results.jpg", document.Find(".forma-explorer-thumbnail-marked img").GetAttribute("src")),
+                () => Assert.Equal([Glyph.FileText], GetGlyphs(document)),
+                () => Assert.Equal("https://example.com/cover-small.jpg", image.Find("img.forma-explorer-thumbnail").GetAttribute("src")),
+                () => Assert.Empty(GetGlyphs(image)));
+        }
+
+        [Theory]
+        [InlineData(ExplorerViewMode.Details)]
+        [InlineData(ExplorerViewMode.List)]
+        public void Should_draw_a_video_s_first_frame_in_a_cell_in_the_details_and_the_list(ExplorerViewMode viewMode)
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ICatalogItem> items = [CatalogItem.For(new VideoResourceInfo("https://example.com/finish.mp4"))];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" ViewMode="viewMode" />);
+
+            // Assert
+            var thumbnail = GetThumbnail(cut, "finish.mp4");
+            Assert.Multiple(
+                () => Assert.Contains("is-cell", thumbnail.Find(".forma-explorer-thumbnail-marked").ClassList),
+                () => Assert.Equal("https://example.com/finish.mp4", thumbnail.Find("video").GetAttribute("src")));
+        }
+    }
+
     public sealed class SelectMode
     {
         [Fact]

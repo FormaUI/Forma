@@ -1,0 +1,45 @@
+@page "/{Runtime}/explorer-thumbnails"
+@using Forma.Blazor.Components.Explorer
+@using Forma.Framework.Catalog
+@using Forma.Framework.Explorer.Content
+@using Forma.Framework.Resources
+
+@* A picture, a clip drawing its first frame, a clip that can't be viewed, a clip and a document drawing the stills their host gives, as
+   thumbnails and as the details' cells. *@
+<FormaExplorer Id="thumbnails" Items="Items" />
+<FormaExplorer Id="details" Items="Items" ViewMode="ExplorerViewMode.Details" />
+
+@code {
+    private const string Picture = "_content/Forma.Blazor.Browser.Components.Checks/images/check.svg";
+
+    private const string Clip = "_content/Forma.Blazor.Browser.Components.Checks/clip.mp4";
+
+    private static readonly IReadOnlyList<ICatalogItem> Items =
+    [
+        CatalogItem.For(new ImageResourceInfo(Picture) { Name = "picture.svg" }),
+        CatalogItem.For(new VideoResourceInfo(Clip) { Name = "clip.mp4" }),
+        new CatalogItem
+        {
+            Key = "unviewed",
+            Name = "unviewed.mp4",
+            Capabilities = CatalogItemCapabilities.Drag | CatalogItemCapabilities.Open,
+            Resource = new VideoResourceInfo("unviewed.mp4") { Name = "unviewed.mp4" }
+        },
+        new CatalogItem
+        {
+            Key = "still",
+            Name = "still.mp4",
+            Capabilities = CatalogItemCapabilities.Open | CatalogItemCapabilities.View,
+            ThumbnailSource = Picture,
+            Resource = new VideoResourceInfo(Clip + "?still") { Name = "still.mp4" }
+        },
+        new CatalogItem
+        {
+            Key = "document",
+            Name = "document.pdf",
+            Capabilities = CatalogItemCapabilities.Open | CatalogItemCapabilities.View,
+            ThumbnailSource = Picture,
+            Resource = new DocumentResourceInfo("document.pdf") { Name = "document.pdf" }
+        }
+    ];
+}
