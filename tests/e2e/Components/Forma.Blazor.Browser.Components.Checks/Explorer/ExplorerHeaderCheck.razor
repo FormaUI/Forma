@@ -1,0 +1,12 @@
+@page "/{Runtime}/explorer-header"
+@using Forma.Blazor.Components.Explorer
+@using Forma.Framework.Catalog
+@using Forma.Framework.Resources
+
+@* Forty files on one level, the explorer held to its shortest at the page's width, so its media overflow it. *@
+<FormaExplorer Id="check" Items="Items" Style="--forma-explorer-block-size: 18rem" />
+
+@code {
+    private static readonly IReadOnlyList<ICatalogItem> Items = CatalogItem.ForAll(
+        Enumerable.Range(1, 40).Select(index => (ResourceInfo)new DocumentResourceInfo($"files/report-{index:00}.txt")));
+}

@@ -141,6 +141,11 @@
 }
 
 /* --- Body Layout --- */
+/* The header keeps its rows' height however short the explorer is held, so only the media beneath it scroll. */
+.forma-explorer ::deep .forma-explorer-header-backdrop {
+    flex-shrink: 0;
+}
+
 /* The data view the body stands in takes the height the header leaves, which it gives the body. */
 .forma-explorer ::deep .forma-explorer-data-view {
     flex: 1 1 auto;

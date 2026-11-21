@@ -386,6 +386,38 @@ public sealed class ExplorerTests
         }
     }
 
+    public sealed class ExplorerHeader(BrowserHost host)
+    {
+        // How far the header's rows reach past the header, which clips what it can't hold.
+        private const string HeaderOverflow = "() => { const header = document.querySelector('#check .forma-explorer-header-backdrop'); return header.scrollHeight - header.clientHeight; }";
+
+        // Whether the explorer's media overflow the list that scrolls them.
+        private const string MediaOverflow = "() => { const scroll = document.querySelector('#check .forma-explorer-scroll'); return scroll !== null && scroll.scrollHeight > scroll.clientHeight; }";
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_keep_its_header_whole_while_its_media_overflow_it_on_a_wide_page_and_a_narrow_one(string runtime)
+        {
+            // Arrange — the explorer held shorter than its media, on a wide page
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer-header");
+            await using var _ = context;
+            var viewport = page.ViewportSize!;
+            await page.WaitForFunctionAsync(MediaOverflow);
+            var wide = await page.EvaluateAsync<double>(HeaderOverflow);
+
+            // Act — the page as narrow as a phone, which folds the header into one row
+            await page.SetViewportSizeAsync(390, viewport.Height);
+            await Assertions.Expect(page.Locator("#check .forma-explorer-header-compact")).ToHaveCountAsync(1);
+            await page.WaitForFunctionAsync(MediaOverflow);
+            var narrow = await page.EvaluateAsync<double>(HeaderOverflow);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(wide <= 1, $"The explorer's header clips {wide}px of its rows on a wide page."),
+                () => Assert.True(narrow <= 1, $"The explorer's header clips {narrow}px of its row on a narrow page."));
+        }
+    }
+
     public sealed class ExplorerScroll(BrowserHost host)
     {
         [Theory]

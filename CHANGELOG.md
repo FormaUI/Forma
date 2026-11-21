@@ -19,6 +19,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A `FormaTextArea` showing its character count floats the count inside its end corner, over the strip it keeps beneath
   its text, and scrolls the line being typed above that strip. The count stood below the area, and the strip stayed
   empty.
+- A [`FormaExplorer`](docs/component-catalog.md#formaexplorer) keeps its header's rows whole however short it is held,
+  so only its media scroll. The header shrank with the media once they overflowed the explorer, clipping its address
+  bar and its toolbar, or on a narrow page its one row.
 
 ## `1.0.0-preview.12`
 
