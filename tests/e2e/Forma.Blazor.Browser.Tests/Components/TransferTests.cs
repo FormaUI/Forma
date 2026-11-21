@@ -10,9 +10,9 @@ using static Forma.Blazor.Browser.Tests.ComponentChecks;
 /// <summary>Values a reader can make larger than a circuit message, through each channel they take to .NET, and the actions that read them, in every runtime under Blazor's default hub limit.</summary>
 public sealed class TransferTests
 {
-    // A save of megabytes answers once the value has reached .NET in pieces, an answer the check waits for as it waits
-    // for a script's.
-    private static readonly LocatorAssertionsToHaveTextOptions Saved = new() { Timeout = 30_000 };
+    // A value of megabytes reaches .NET in pieces before the page shows it or its save answers, which the check waits for as it
+    // waits for a script's answer.
+    private static readonly LocatorAssertionsToHaveTextOptions Reached = new() { Timeout = 30_000 };
 
     // A document of two megabytes in words and paragraphs, as a reader's document runs, since WebKit takes half a minute to lay out
     // as much on one unbroken line, and Chromium lays out a paragraph that takes its direction from its own text, as the composer's
@@ -46,7 +46,7 @@ public sealed class TransferTests
             await page.Locator("#forma-save").ClickAsync();
 
             // Assert
-            await Assertions.Expect(page.Locator("#forma-notes-saved")).ToHaveTextAsync(Describe(notes), Saved);
+            await Assertions.Expect(page.Locator("#forma-notes-saved")).ToHaveTextAsync(Describe(notes), Reached);
             await Assertions.Expect(page.Locator("#saves")).ToHaveTextAsync("1");
         }
 
@@ -84,7 +84,7 @@ public sealed class TransferTests
             await page.Locator("#forma-save").ClickAsync();
 
             // Assert
-            await Assertions.Expect(page.Locator("#forma-body-saved")).ToHaveTextAsync(Describe(document), Saved);
+            await Assertions.Expect(page.Locator("#forma-body-saved")).ToHaveTextAsync(Describe(document), Reached);
         }
 
         [Theory]
@@ -105,7 +105,7 @@ public sealed class TransferTests
             await page.Locator("#host-name").PressAsync("Enter");
 
             // Assert
-            await Assertions.Expect(page.Locator("#host-saved")).ToHaveTextAsync($"Ada {Describe(notes)}", Saved);
+            await Assertions.Expect(page.Locator("#host-saved")).ToHaveTextAsync($"Ada {Describe(notes)}", Reached);
             await Assertions.Expect(page.Locator("#saves")).ToHaveTextAsync("1");
         }
 
@@ -238,7 +238,7 @@ public sealed class TransferTests
             await WaitForInputScopeAsync(page, "#forma-body .forma-composer-rich-text-canvas");
             var document = CreateDocument("zzzzzzzzz");
             await canvas.EvaluateAsync("(canvas, html) => { canvas.focus(); canvas.innerHTML = html; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", document);
-            await Assertions.Expect(page.Locator("#forma-body-length")).ToHaveTextAsync(document.Length.ToString(CultureInfo.InvariantCulture));
+            await Assertions.Expect(page.Locator("#forma-body-length")).ToHaveTextAsync(document.Length.ToString(CultureInfo.InvariantCulture), Reached);
             await page.Locator("#forma-body").GetByRole(AriaRole.Tab, new() { Name = "Preview", Exact = true }).ClickAsync();
             var export = page.Locator("#forma-body .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Export HTML", Exact = true });
 
