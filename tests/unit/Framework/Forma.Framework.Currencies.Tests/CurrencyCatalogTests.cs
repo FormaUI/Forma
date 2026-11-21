@@ -136,4 +136,109 @@ public sealed class CurrencyCatalogTests
             Assert.Throws<ArgumentException>(() => CurrencyCatalog.GetSymbol("DEM", CultureInfo.InvariantCulture));
         }
     }
+
+    public sealed class Amounts
+    {
+        [Theory]
+        [InlineData(549, "USD", "en", "$549.00")]
+        [InlineData(-1234.5, "USD", "en-US", "-$1,234.50")]
+        [InlineData(549, "JPY", "en", "¥549")]
+        [InlineData(549, "BHD", "en", "BHD\u00A0549.000")]
+        public void Should_write_the_amount_as_the_culture_writes_money_with_the_currency_s_symbol_and_minor_units(double amount, string code, string culture, string expected)
+        {
+            // Act
+            var text = CurrencyCatalog.FormatAmount((decimal)amount, code, CultureInfo.GetCultureInfo(culture));
+
+            // Assert
+            Assert.Equal(expected, text);
+        }
+
+        [Theory]
+        [InlineData("EUR", "de-DE")]
+        [InlineData("ILS", "he-IL")]
+        [InlineData("USD", "en-US")]
+        [InlineData("JPY", "ja-JP")]
+        [InlineData("CHF", "de-CH")]
+        public void Should_write_a_culture_s_own_currency_as_the_culture_s_own_format_does(string code, string culture)
+        {
+            // Arrange
+            var formatCulture = CultureInfo.GetCultureInfo(culture);
+
+            // Act
+            var positive = CurrencyCatalog.FormatAmount(1234.5m, code, formatCulture);
+            var negative = CurrencyCatalog.FormatAmount(-1234.5m, code, formatCulture);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1234.5m.ToString("C", formatCulture), positive),
+                () => Assert.Equal((-1234.5m).ToString("C", formatCulture), negative));
+        }
+
+        [Fact]
+        public void Should_write_a_currency_a_culture_has_no_symbol_of_its_own_for_in_that_culture()
+        {
+            // Act — a neutral culture names no currency of its own, which the culture's own currency format writes as ¤
+            var text = CurrencyCatalog.FormatAmount(549, "USD", CultureInfo.GetCultureInfo("en"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("¤549.00", 549m.ToString("C", CultureInfo.GetCultureInfo("en"))),
+                () => Assert.Equal("$549.00", text));
+        }
+
+        [Fact]
+        public void Should_write_a_currency_in_the_reader_s_culture_rather_than_the_culture_s_own_currency()
+        {
+            // Act
+            var text = CurrencyCatalog.FormatAmount(549, "USD", CultureInfo.GetCultureInfo("he-IL"), 0);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Contains("$", text, StringComparison.Ordinal),
+                () => Assert.DoesNotContain("₪", text, StringComparison.Ordinal),
+                () => Assert.Contains("549", text, StringComparison.Ordinal));
+        }
+
+        [Theory]
+        [InlineData(549, "CHF", "en", "CHF\u00A0549.00")]
+        [InlineData(-549, "CHF", "en", "-CHF\u00A0549.00")]
+        [InlineData(549, "USD", "en-AU", "USD\u00A0549.00")]
+        [InlineData(549, "BRL", "en", "R$549.00")]
+        public void Should_stand_a_symbol_ending_in_a_letter_a_no_break_space_from_the_digits(double amount, string code, string culture, string expected)
+        {
+            // Act
+            var text = CurrencyCatalog.FormatAmount((decimal)amount, code, CultureInfo.GetCultureInfo(culture));
+
+            // Assert
+            Assert.Equal(expected, text);
+        }
+
+        [Theory]
+        [InlineData(0, "$549")]
+        [InlineData(3, "$549.250")]
+        public void Should_write_the_decimal_places_asked_for_in_place_of_the_currency_s_minor_units(int decimalPlaces, string expected)
+        {
+            // Act
+            var text = CurrencyCatalog.FormatAmount(549.25m, "USD", CultureInfo.GetCultureInfo("en"), decimalPlaces);
+
+            // Assert
+            Assert.Equal(expected, text);
+        }
+
+        [Fact]
+        public void Should_refuse_a_code_outside_the_currencies_in_use()
+        {
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => CurrencyCatalog.FormatAmount(5, "DEM", CultureInfo.InvariantCulture));
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(100)]
+        public void Should_refuse_decimal_places_a_currency_amount_cannot_carry(int decimalPlaces)
+        {
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => CurrencyCatalog.FormatAmount(5, "USD", CultureInfo.InvariantCulture, decimalPlaces));
+        }
+    }
 }

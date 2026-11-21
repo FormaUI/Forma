@@ -16,6 +16,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `ThumbnailSource` named.
 - `FormaExplorerThumbnail` takes the `Item` it depicts in place of its `Resource`. To migrate, pass the catalog item
   the resource came from.
+- `CurrencyCatalog.FormatAmount` writes an amount in a named currency as the reader's culture writes money, with the
+  currency's symbol in that culture and its minor units, a symbol ending in a letter standing a no-break space from
+  the digits. The `C` format string writes the culture's own currency instead, and `¤` for a culture such as `en`
+  that names no country.
 
 ## `1.0.0-preview.13`
 

@@ -35,6 +35,23 @@ CurrencyCatalog.GetSymbol("USD", CultureInfo.GetCultureInfo("en-AU")); // "USD",
 | `CurrencyCatalog.GetSymbol(code, culture)` | The symbol the culture writes the currency with, or the ISO code where the culture has none. |
 
 A code outside the currencies in use, such as a retired one, is refused with an `ArgumentException`.
+
+## Writing an amount
+
+`CurrencyCatalog.FormatAmount` writes an amount in a named currency the way the reader's culture writes
+money, its pattern, separators and grouping, with the currency's symbol in that culture and its minor
+units unless the call names other decimal places:
+
+```csharp
+CurrencyCatalog.FormatAmount(1234.5m, "USD", CultureInfo.GetCultureInfo("en"));       // "$1,234.50"
+CurrencyCatalog.FormatAmount(1234.5m, "USD", CultureInfo.GetCultureInfo("de-DE"));    // "1.234,50 $"
+CurrencyCatalog.FormatAmount(549m, "CHF", CultureInfo.GetCultureInfo("en"), 0);       // "CHF 549"
+```
+
+A price, a total or any amount a reader sees is written this way rather than with the `C` format
+string, which writes the culture's own currency: the shekel for `he-IL` whatever the amount is in, and
+`¤` for a culture such as `en` that names no country. A symbol ending in a letter, such as `CHF`, stands
+a no-break space from the digits, as CLDR writes it.
 The symbol is looked up from the culture through the locales it derives from, as Unicode CLDR
 defines them, so a culture CLDR names differently, such as `zh-TW`, finds the locale it belongs to.
 

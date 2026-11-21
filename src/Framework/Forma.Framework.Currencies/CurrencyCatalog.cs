@@ -11,6 +11,10 @@ public static class CurrencyCatalog
 {
     private const string ResourceName = "Forma.Framework.Currencies._assets.currencies.json";
     private const string RootLocale = "und";
+    private const string NoBreakSpace = "\u00A0";
+
+    // The most decimal places .NET writes a currency amount with.
+    private const int MaxDecimalPlaces = 99;
 
     private static readonly Lazy<CurrencyData> Data = new(Load);
 
@@ -55,6 +59,61 @@ public static class CurrencyCatalog
 
         return code;
     }
+
+    /// <summary>The amount written in the currency as the culture writes money, with the currency's symbol in that culture.</summary>
+    /// <remarks>
+    /// The culture's currency pattern, separators and grouping place the symbol, which stands a no-break space apart from the
+    /// digits where its edge beside them is a letter, as Unicode CLDR's currency spacing writes <c>CHF 5.00</c>.
+    /// </remarks>
+    /// <param name="amount">The amount.</param>
+    /// <param name="code">The ISO 4217 code of a currency in use, such as <c>USD</c>.</param>
+    /// <param name="culture">The culture the amount is written in.</param>
+    /// <param name="decimalPlaces">The decimal places the amount is written with, where null takes the currency's minor units.</param>
+    public static string FormatAmount(decimal amount, string code, CultureInfo culture, int? decimalPlaces = null)
+    {
+        ArgumentNullException.ThrowIfNull(code);
+        ArgumentNullException.ThrowIfNull(culture);
+
+        if (decimalPlaces is { } places)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(places, nameof(decimalPlaces));
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(places, MaxDecimalPlaces, nameof(decimalPlaces));
+        }
+
+        var symbol = GetSymbol(code, culture);
+        var numberFormat = (NumberFormatInfo)culture.NumberFormat.Clone();
+        numberFormat.CurrencyDecimalDigits = decimalPlaces ?? GetMinorUnits(code);
+        numberFormat.CurrencySymbol = GetSymbolSide(numberFormat, amount < 0) switch
+        {
+            SymbolSide.BeforeDigits when IsSpacedFromDigits(symbol[^1]) => symbol + NoBreakSpace,
+            SymbolSide.AfterDigits when IsSpacedFromDigits(symbol[0]) => NoBreakSpace + symbol,
+            _ => symbol
+        };
+
+        return amount.ToString("C", numberFormat);
+    }
+
+    // The side of the digits the symbol touches in the culture's pattern for the amount's sign, apart where a space or a sign stands between.
+    private static SymbolSide GetSymbolSide(NumberFormatInfo numberFormat, bool isNegative)
+        => isNegative
+            ? numberFormat.CurrencyNegativePattern switch
+            {
+                0 or 1 or 3 => SymbolSide.BeforeDigits,
+                4 or 5 or 7 => SymbolSide.AfterDigits,
+                _ => SymbolSide.Apart
+            }
+            : numberFormat.CurrencyPositivePattern switch
+            {
+                0 => SymbolSide.BeforeDigits,
+                1 => SymbolSide.AfterDigits,
+                _ => SymbolSide.Apart
+            };
+
+    // CLDR spaces a symbol from the digits where its edge beside them is neither a symbol nor a space, as CHF is and $ and R$ aren't.
+    private static bool IsSpacedFromDigits(char edge)
+        => !char.IsWhiteSpace(edge)
+            && char.GetUnicodeCategory(edge) is not (UnicodeCategory.CurrencySymbol or UnicodeCategory.MathSymbol
+                or UnicodeCategory.ModifierSymbol or UnicodeCategory.OtherSymbol);
 
     private static CurrencyData GetData(string code)
     {
@@ -119,6 +178,13 @@ public static class CurrencyCatalog
             rawData.Locales.ToFrozenSet(StringComparer.OrdinalIgnoreCase),
             rawData.Parents.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase),
             rawData.Symbols.ToFrozenDictionary(entry => entry.Key, entry => entry.Value.ToFrozenDictionary(StringComparer.Ordinal), StringComparer.OrdinalIgnoreCase));
+    }
+
+    private enum SymbolSide
+    {
+        Apart,
+        BeforeDigits,
+        AfterDigits
     }
 
     private sealed record CurrencyData(
