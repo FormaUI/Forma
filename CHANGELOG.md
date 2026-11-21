@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.13`
 
-*Unreleased*
+*November 21, 2026*
 
 - A form input takes the validation messages it reports out of its form as it is removed, such as a number past its
   `Max` or a password drawing on a forbidden term, so the form's `GetValidationMessages()` holds only those of the
