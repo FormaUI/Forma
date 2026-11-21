@@ -122,7 +122,8 @@ Every component derives from one of three bases, and never from `ComponentBase` 
 
 - Do compose parent/child pairs such as tabs and a tab through a `CascadingValue` of the parent.
 - Do register the child in `OnInitialized`, unregister it in `DisposeAsyncCore`, and keep parent registration methods `internal`.
-- Do override `DisposeAsyncCore` to release an owned `CancellationTokenSource`, `Timer`, JS wrapper or service subscription, awaiting the asynchronous ones and ending with `await base.DisposeAsyncCore();`; the base runs it once and sets `IsDisposed`, and on an input it also runs the framework's own `Dispose(true)`, which the renderer never calls on an `IAsyncDisposable`.
+- Do override `DisposeAsyncCore` to release an owned `CancellationTokenSource`, `Timer`, JS wrapper or service subscription, awaiting the asynchronous ones and ending with `await base.DisposeAsyncCore();`; the base runs it once and sets `IsDisposed`, and on an input it also runs the framework's own `Dispose()`, which the renderer never calls on an `IAsyncDisposable`.
+- Do take a validation message an input adds to its form through a store of its own out of the form as the input is disposed, notifying the form, so a form's messages are always those of the inputs it shows.
 - Don't declare `IDisposable` or `IAsyncDisposable`, `Dispose()` or `DisposeAsync()` on a component, and don't keep a disposed flag of your own; `IsDisposed` is the base's.
 - Don't dispose dependencies the component does not own.
 - Don't leave registrations, subscriptions, timers, or JS references alive after the component is disposed.

@@ -359,6 +359,13 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
         if (disposing)
         {
             EditContext.OnValidationRequested -= HandleValidationRequested;
+
+            // A box that leaves takes its refusal of a forbidden term out of the form, which would otherwise keep the form from validating.
+            if (_hasForbiddenTerm)
+            {
+                _messages.Clear();
+                EditContext.NotifyValidationStateChanged();
+            }
         }
 
         base.Dispose(disposing);

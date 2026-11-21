@@ -263,6 +263,31 @@
         }
 
         [Fact]
+        public async Task Should_take_its_report_of_a_number_past_a_limit_out_of_the_form_as_it_leaves()
+        {
+            // Arrange — an input that refused a number past its limit, in a form it then leaves
+            using var ctx = new FormaNumberInputTests();
+            var fields = new TextFieldProbe(ctx);
+            using var culture = new CultureFixture("en-US");
+            var model = new Stock { Count = 5 };
+            var form = new EditContext(model);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@form">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Min="0" Max="10" />
+            </FakeFormHost>);
+            await fields.ChangeAsync(cut.Find("input"), "11");
+            var whileRefused = form.GetValidationMessages().ToList();
+            var input = cut.FindComponent<FormaNumberInput<int?>>();
+
+            // Act
+            await cut.InvokeAsync(() => input.Instance.DisposeAsync().AsTask());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["The In stock field must be at most 10."], whileRefused),
+                () => Assert.Empty(form.GetValidationMessages()));
+        }
+
+        [Fact]
         public async Task Should_clear_a_report_once_a_number_is_typed_in_range()
         {
             // Arrange

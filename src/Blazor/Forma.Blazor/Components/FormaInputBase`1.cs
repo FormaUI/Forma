@@ -204,7 +204,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
             try
             {
                 // The renderer calls only DisposeAsync on a component that implements it, so the framework's own cleanup runs from here.
-                Dispose(disposing: true);
+                ((IDisposable)this).Dispose();
             }
             finally
             {

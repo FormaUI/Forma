@@ -204,6 +204,49 @@
         }
 
         [Fact]
+        public async Task Should_take_its_refusal_of_text_it_could_not_read_out_of_the_form_as_it_leaves()
+        {
+            // Arrange — an input that refused the text it was given, in a form it then leaves
+            using var ctx = new FormaInputBaseTests();
+            var model = new FakeModel();
+            var form = new EditContext(model);
+            var cut = ctx.Render<Field>(parameters => parameters
+                .AddCascadingValue(form)
+                .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text)
+                .Add(field => field.Refuses, true));
+            await cut.InvokeAsync(() => cut.Instance.EnterText("Ada"));
+            var whileRefused = form.GetValidationMessages().ToList();
+
+            // Act
+            await cut.InvokeAsync(() => cut.Instance.DisposeAsync().AsTask());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["The text can't be read."], whileRefused),
+                () => Assert.Empty(form.GetValidationMessages()));
+        }
+
+        [Fact]
+        public async Task Should_stop_following_the_forms_validation_once_disposed()
+        {
+            // Arrange — an input that left its form, which then reports a message for the field it bound
+            using var ctx = new FormaInputBaseTests();
+            var model = new FakeModel();
+            var form = new EditContext(model);
+            var cut = ctx.Render<Field>(parameters => parameters
+                .AddCascadingValue(form)
+                .Bind(field => field.Value, model.Text, value => model.Text = value, () => model.Text));
+            await cut.InvokeAsync(() => cut.Instance.DisposeAsync().AsTask());
+            new ValidationMessageStore(form).Add(FieldIdentifier.Create(() => model.Text), "Required");
+
+            // Act
+            await cut.InvokeAsync(form.NotifyValidationStateChanged);
+
+            // Assert
+            Assert.False(cut.Instance.AdditionalAttributes?.ContainsKey("aria-invalid") ?? false);
+        }
+
+        [Fact]
         public void Should_carry_an_identity_of_its_own_for_its_lifetime()
         {
             // Arrange
@@ -537,6 +580,8 @@
 
         [Parameter] public bool FrameworkFailsOnDispose { get; set; }
 
+        [Parameter] public bool Refuses { get; set; }
+
         private IComponentContext? _readContext;
 
         public bool? ContextDisposedDuringCleanup { get; private set; }
@@ -553,6 +598,10 @@
         public int AsyncDisposeCalls { get; private set; }
 
         public int FrameworkDisposeCalls { get; private set; }
+
+        // Takes the text as the reader entered it, which the input reads as its control would.
+        public void EnterText(string? text)
+            => CurrentValueAsString = text;
 
         protected override bool HasFieldContainer
             => !OutsideField;
@@ -590,10 +639,10 @@
 
         protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
         {
-            result = value;
-            validationErrorMessage = null;
+            result = Refuses ? null : value;
+            validationErrorMessage = Refuses ? "The text can't be read." : null;
 
-            return true;
+            return !Refuses;
         }
 
         protected override ValueTask DisposeAsyncCore()

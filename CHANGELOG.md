@@ -5,6 +5,15 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.13`
+
+*Unreleased*
+
+- A form input takes the validation messages it reports out of its form as it is removed, such as a number past its
+  `Max` or a password drawing on a forbidden term, so the form's `GetValidationMessages()` holds only those of the
+  inputs it shows, and a host can hold its save while any stands. A removed input left them in the form for good, and
+  still followed the form's validation.
+
 ## `1.0.0-preview.12`
 
 *November 20, 2026*

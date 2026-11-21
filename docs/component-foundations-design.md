@@ -97,7 +97,7 @@ that fails to load, reaches a host through the log the host already configures.
   `BuildRootStyle` adds declarations the way `BuildRootClass` adds classes, and the
   termination rule lives in one place.
 - **Async disposal runs the framework's cleanup.** `FormaInputBase<TValue>.DisposeAsync`
-  calls `Dispose(true)`, which the renderer never does on an `IAsyncDisposable`.
+  calls `InputBase`'s own `Dispose()`, which the renderer never does on an `IAsyncDisposable`.
 - **One identity per instance, and `Id` means the consumer's DOM id everywhere.**
   `RuntimeId` is a `Guid` every component carries for its lifetime: the generated ids
   of its elements derive from it, a log line can name the instance, a window's workspace
@@ -196,8 +196,14 @@ are the extension points, and the composition rule is the base's.
 `FormaInputBase<TValue>` derives from the framework's `InputBase<TValue>` and carries what
 the other two do: the factory, the context and `L`, the disposal, and the host surface,
 with `AdditionalAttributes` the framework's own and the field's validation class following
-the component's and the host's classes on the root. Its disposal runs `InputBase`'s
-`Dispose(true)` after `DisposeAsyncCore`, then releases the context.
+the component's and the host's classes on the root. Its disposal runs `InputBase`'s own
+`Dispose()` after `DisposeAsyncCore`, then releases the context.
+
+An input takes the validation messages it reports out of its form as it leaves: the
+framework's cleanup removes its refusals of text it couldn't read, and the input removes
+those it adds itself, such as its text's fault or a password box's refusal of a forbidden
+term. A form's messages are then those of the inputs it shows, so a host can hold its save
+while any stands.
 
 C# has one base slot, so the input base repeats what the other two carry rather than
 deriving from them. The context carries what both can share, the identity, the strings,
