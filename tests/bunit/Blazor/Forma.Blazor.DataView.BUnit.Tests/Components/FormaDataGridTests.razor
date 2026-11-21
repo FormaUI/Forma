@@ -1791,6 +1791,50 @@
     public sealed class Virtualization
     {
         [Fact]
+        public async Task Should_stand_the_data_view_s_placeholder_in_each_cell_of_a_row_not_yet_loaded_whose_column_has_none_of_its_own()
+        {
+            // Arrange — the first slice answers at once, and every later one is still on its way
+            using var ctx = new FormaDataGridTests();
+            var later = new TaskCompletionSource<DataViewPage<GridItem>>();
+            DataViewItemsProvider<GridItem> provider = request => request.StartIndex == 0
+                ? ValueTask.FromResult(new DataViewPage<GridItem>([.. CreateItems(1000).Take(request.Count ?? 10)], 1000))
+                : new ValueTask<DataViewPage<GridItem>>(later.Task);
+            var cut = ctx.Render(
+                @<FormaDataView TItem="GridItem" ItemsProvider="provider" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" ItemHeight="40" OverscanCount="2">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" />
+                            <FormaPropertyColumn Property="@(item => item.Title)">
+                                <PlaceholderTemplate><span class="title-placeholder"></span></PlaceholderTemplate>
+                            </FormaPropertyColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tr.forma-data-grid-row[data-item]").Count > 0);
+            await ReportViewportAsync(cut, 0, 200, 40);
+
+            // Act — scrolled far past the rows the first slice answered
+            var scrolled = ReportViewportAsync(cut, 20000, 200, 40);
+
+            // Assert — the box's cell and the Id's stand the data view's placeholder, and the Title's its own
+            var rows = cut.FindAll("tr.forma-data-grid-placeholder-row");
+            Assert.NotEmpty(rows);
+            Assert.All(rows, row =>
+            {
+                var cells = row.QuerySelectorAll("td");
+                Assert.Multiple(
+                    () => Assert.NotNull(cells[0].QuerySelector(".forma-data-view-placeholder.forma-data-view-placeholder-box[aria-hidden=true]")),
+                    () => Assert.NotNull(cells[1].QuerySelector(".forma-data-view-placeholder[aria-hidden=true]")),
+                    () => Assert.Null(cells[2].QuerySelector(".forma-data-view-placeholder")),
+                    () => Assert.NotNull(cells[2].QuerySelector(".title-placeholder")));
+            });
+
+            // The later slices answer, so the scroll's report ends
+            await cut.ReleaseAsync(() => later.SetResult(new DataViewPage<GridItem>([], 1000)));
+            await scrolled;
+        }
+
+        [Fact]
         public void Should_give_a_row_s_box_a_focus_handler_only_while_virtualizing()
         {
             // Arrange

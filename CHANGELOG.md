@@ -16,6 +16,16 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `ThumbnailSource` named.
 - `FormaExplorerThumbnail` takes the `Item` it depicts in place of its `Resource`. To migrate, pass the catalog item
   the resource came from.
+- A virtualizing [`FormaDataView`](docs/data-view-design.md#virtualization-and-the-scroll-region) shows the items it
+  hasn't drawn as loading, a muted shape pulsing where each will stand: a bar for each of a grid row's values and its
+  box, a bar for a list's row, and as many cards as a row of cards holds. The items a scroll uncovers stand that way
+  at once, before a circuit's round trip has drawn them, and the range it reaches while its slice is on its way. A
+  column's `PlaceholderTemplate` still takes the bar's place in its cells. They stood empty, the scrolled-to range
+  showing nothing until the slice answered.
+- [`FormaVirtualize`](docs/virtualization-design.md#sources) draws the range a scroll reaches as placeholders while its
+  slice is on its way, where it kept the range it left drawn until the slice answered, and each spacer carries the
+  room it counts an item at as `--forma-virtualize-item-size`, so an owner can draw placeholders in it.
+- `--loading-bg-color` is the tone of a shape standing for content still loading, a placeholder's.
 - `CurrencyCatalog.FormatAmount` writes an amount in a named currency as the reader's culture writes money, with the
   currency's symbol in that culture and its minor units, a symbol ending in a letter standing a no-break space from
   the digits. The `C` format string writes the culture's own currency instead, and `¤` for a culture such as `en`

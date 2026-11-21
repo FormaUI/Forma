@@ -14,7 +14,8 @@ using Microsoft.JSInterop;
 /// The items and the spacers are drawn side by side under the owner's element, in the items' order: a spacer opening the list, the
 /// rendered range of items around the viewport and each pinned item outside it, a spacer standing for each run of items between them, and a
 /// spacer closing the list. Every item is keyed by its owner's key, so one that stays drawn, in the rendered range or pinned, keeps its element
-/// as the ranges around it change. A spacer is as tall as the items it stands for at the average room a drawn item takes, from its top to the next item's.
+/// as the ranges around it change. A spacer is as tall as the items it stands for at the average room a drawn item takes, from its top to the next item's,
+/// and carries that room as <c>--forma-virtualize-item-size</c>.
 /// Over a provider, the item a fetch opens on is tracked from one answer to the next; where the item there has changed, the set was added to or
 /// taken from before it, and the viewport holds its place unless <see cref="AnchorMode"/> names the edge it stands at and it is already there,
 /// where it follows what arrived instead.
@@ -411,7 +412,7 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
                     builder.SetKey(new SpacerKey(drawn.Role!, drawn.Index));
                     builder.AddAttribute(1, SpacerAttribute, drawn.Role);
                     builder.AddAttribute(2, "aria-hidden", "true");
-                    builder.AddAttribute(3, "style", string.Create(CultureInfo.InvariantCulture, $"block-size: {drawn.Height:0.##}px; flex-shrink: 0; overflow-anchor: none"));
+                    builder.AddAttribute(3, "style", string.Create(CultureInfo.InvariantCulture, $"block-size: {drawn.Height:0.##}px; flex-shrink: 0; overflow-anchor: none; --forma-virtualize-item-size: {CurrentItemSize:0.##}px"));
 
                     if (drawn.Role == StartRole)
                     {
@@ -557,7 +558,15 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
 
         try
         {
-            result = await provider(new ItemsProviderRequest(firstIndex, Math.Max(1, end - firstIndex), token));
+            var answer = provider(new ItemsProviderRequest(firstIndex, Math.Max(1, end - firstIndex), token));
+
+            // A slice still on its way draws the range it stands for as placeholders, so its items show as loading rather than as nothing.
+            if (!answer.IsCompleted)
+            {
+                StateHasChanged();
+            }
+
+            result = await answer;
             loadedItems = [.. result.Items];
 
             var delta = result.TotalItemCount - previousCount;

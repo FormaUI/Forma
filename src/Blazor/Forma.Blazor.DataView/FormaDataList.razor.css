@@ -42,6 +42,14 @@
     padding-block: var(--space-1);
 }
 
+/* A row not yet loaded stands its placeholder where an item's text starts. */
+.forma-data-list-placeholder-row {
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    padding-inline: var(--space-1);
+}
+
 /* The empty and loading states speak in the supporting tone. */
 .forma-data-list-state {
     padding: var(--space-4);

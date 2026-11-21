@@ -176,11 +176,21 @@
                     <tr class="forma-data-grid-row forma-data-grid-placeholder-row" style="@Grid.PlaceholderStyle" aria-rowindex="@(View.IsGrouped ? null : context.Index + 1)">
                         @if (Grid.HasSelectionColumn)
                         {
-                            <td class="@Grid.SelectionCellClass"></td>
+                            <td class="@Grid.SelectionCellClass"><span class="forma-data-view-placeholder forma-data-view-placeholder-box" aria-hidden="true"></span></td>
                         }
                         @foreach (var column in Grid.ShownColumns)
                         {
-                            <td class="@Grid.GetCellClass(column)" style="@Grid.GetCellStyle(column)" @key="column">@column.PlaceholderTemplate?.Invoke(context)</td>
+                            @* A column without a placeholder of its own draws the data view's, a bar where its value will stand. *@
+                            <td class="@Grid.GetCellClass(column)" style="@Grid.GetCellStyle(column)" @key="column">
+                                @if (column.PlaceholderTemplate is { } placeholder)
+                                {
+                                    @placeholder(context)
+                                }
+                                else
+                                {
+                                    <span class="forma-data-view-placeholder" aria-hidden="true"></span>
+                                }
+                            </td>
                         }
                         @if (Grid.HasColumnsMenu)
                         {

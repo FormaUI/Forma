@@ -62,7 +62,13 @@
                             }
                         </ItemContent>
                         <Placeholder>
-                            <div class="forma-data-cards-placeholder-row" role="none" style="@PlaceholderStyle"></div>
+                            @* A row not yet loaded draws as many cards as a row holds, each the data view's placeholder. *@
+                            <div class="forma-data-cards-pack forma-data-cards-placeholder-row" role="none" style="@PlaceholderStyle">
+                                @for (var index = 0; index < _rows.ColumnCount; index++)
+                                {
+                                    <span class="forma-data-view-placeholder forma-data-view-placeholder-card" aria-hidden="true"></span>
+                                }
+                            </div>
                         </Placeholder>
                     </FormaVirtualize>
                 }

@@ -78,3 +78,93 @@
         min-block-size: var(--target-size-touch);
     }
 }
+
+/* --- Loading placeholder --- */
+/* An item whose slice has not loaded stands as a muted shape where it will be drawn, in every view; the views draw it, reached with ::deep. */
+::deep .forma-data-view-placeholder {
+    display: inline-block;
+    inline-size: min(60%, 10rem);
+    block-size: 0.75em;
+    border-radius: var(--radius-sm);
+    background-color: var(--forma-data-view-placeholder-color, var(--loading-bg-color));
+    vertical-align: middle;
+}
+
+::deep .forma-data-view-placeholder-box {
+    inline-size: 1rem;
+    block-size: 1rem;
+}
+
+::deep .forma-data-view-placeholder-card {
+    display: block;
+    inline-size: auto;
+    block-size: 100%;
+    border-radius: var(--radius-md);
+}
+
+/* The items a virtualizing view hasn't drawn stand as placeholder rows in the room its spacers keep, which the browser shows the moment a
+   scroll uncovers them, before a round trip has drawn them; a row is the room the virtualizer counts each item at. Only a view's own
+   spacers do, the children of its rows, so a list a cell holds keeps its own. */
+::deep :where(.forma-data-list-rows, .forma-data-tree-level, .forma-data-cards-rows) > div[data-virtualize-spacer] {
+    position: relative;
+}
+
+::deep :where(.forma-data-list-rows, .forma-data-tree-level, .forma-data-cards-rows, table.forma-data-grid > tbody) > div[data-virtualize-spacer]::before {
+    --forma-data-view-placeholder-row: var(--forma-virtualize-item-size);
+    content: "";
+    position: absolute;
+    inset-block: 0;
+    inset-inline-start: var(--space-2);
+    inline-size: min(60%, 10rem);
+    background-image: repeating-linear-gradient(
+        to bottom,
+        transparent 0 calc(var(--forma-data-view-placeholder-row) / 2 - 0.375em),
+        var(--forma-data-view-placeholder-color, var(--loading-bg-color)) 0 calc(var(--forma-data-view-placeholder-row) / 2 + 0.375em),
+        transparent 0 var(--forma-data-view-placeholder-row));
+}
+
+/* A grid's spacer stands in a cell of the table's first column, so its rows stripe the table's width, the table holding them, at the
+   spacer's place and height. */
+::deep table.forma-data-grid {
+    position: relative;
+}
+
+::deep table.forma-data-grid > tbody > div[data-virtualize-spacer]::before {
+    inset-block: auto;
+    inset-inline: var(--space-2);
+    inline-size: auto;
+    block-size: inherit;
+}
+
+/* A row of cards stands as card shapes spread across it, the space a drawn row keeps beneath it left clear. */
+::deep .forma-data-cards-rows > div[data-virtualize-spacer]::before {
+    inset-inline: 0;
+    inline-size: auto;
+    background-image: linear-gradient(
+        to bottom,
+        var(--forma-data-view-placeholder-color, var(--loading-bg-color)) 0 calc(100% - var(--space-3)),
+        transparent 0);
+    background-size: var(--forma-data-cards-size) var(--forma-data-view-placeholder-row);
+    background-repeat: space repeat;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    ::deep .forma-data-view-placeholder,
+    ::deep :where(.forma-data-list-rows, .forma-data-tree-level, .forma-data-cards-rows, table.forma-data-grid > tbody) > div[data-virtualize-spacer]::before {
+        animation: forma-data-view-placeholder-pulse 1.6s ease-in-out infinite;
+    }
+}
+
+@keyframes forma-data-view-placeholder-pulse {
+    50% {
+        opacity: 0.55;
+    }
+}
+
+/* Forced colors drop the fill, so the shape keeps an outline. */
+@media (forced-colors: active) {
+    ::deep .forma-data-view-placeholder {
+        outline: 1px solid GrayText;
+        outline-offset: -1px;
+    }
+}

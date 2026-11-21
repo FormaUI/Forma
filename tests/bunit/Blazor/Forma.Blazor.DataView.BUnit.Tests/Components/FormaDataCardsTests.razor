@@ -519,6 +519,38 @@
             Assert.Equal(Calls(few), Calls(many));
         }
 
+        [Fact]
+        public async Task Should_stand_as_many_placeholder_cards_as_a_row_holds_in_a_row_not_yet_loaded()
+        {
+            // Arrange — rows of three cards, the first slice answering at once and every later one still on its way
+            using var ctx = new FormaDataCardsTests();
+            var later = new TaskCompletionSource<DataViewPage<Product>>();
+            DataViewItemsProvider<Product> provider = request => request.StartIndex == 0
+                ? ValueTask.FromResult(new DataViewPage<Product>([.. CreateMany(600).Take(request.Count ?? 30)], 600))
+                : new ValueTask<DataViewPage<Product>>(later.Task);
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" ItemsProvider="provider" EnablePagination="false" Virtualize="true" ItemHeight="100" OverscanCount="2">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-ruler").Count == 1);
+            var cards = cut.FindComponent<FormaDataCards<Product>>();
+            await cards.InvokeAsync(() => cards.Instance.HandleGridColumnsAsync(3));
+            cut.WaitForState(() => cut.FindAll(".forma-data-card").Count > 0);
+            await ReportViewportAsync(cut, 0, 300, 100);
+
+            // Act — scrolled far past the rows the first slice answered
+            var scrolled = ReportViewportAsync(cut, 10000, 300, 100);
+
+            // Assert
+            var rows = cut.FindAll(".forma-data-cards-placeholder-row");
+            Assert.NotEmpty(rows);
+            Assert.All(rows, row => Assert.Equal(3, row.QuerySelectorAll(".forma-data-view-placeholder.forma-data-view-placeholder-card[aria-hidden=true]").Length));
+
+            // The later slices answer, so the scroll's report ends
+            await cut.ReleaseAsync(() => later.SetResult(new DataViewPage<Product>([], 1000)));
+            await scrolled;
+        }
+
         private static IQueryable<Product> CreateMany(int count) => Enumerable.Range(1, count)
             .Select(id => new Product(id, $"Product {id}", "Tools"))
             .AsQueryable();

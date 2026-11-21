@@ -179,6 +179,29 @@
         }
 
         [Fact]
+        public async Task Should_carry_the_room_it_counts_each_item_at_on_its_spacers()
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var estimated = cut.FindAll("[data-virtualize-spacer]").Select(spacer => spacer.GetAttribute("style")).ToList();
+            var virtualizer = Virtualizer(cut);
+
+            // Act — the drawn items measured at twenty-five pixels each
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 25));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.All(estimated, style => Assert.Contains("--forma-virtualize-item-size: 20px", style, StringComparison.Ordinal)),
+                () => Assert.All(cut.FindAll("[data-virtualize-spacer]"), spacer => Assert.Contains("--forma-virtualize-item-size: 25px", spacer.GetAttribute("style"), StringComparison.Ordinal)));
+        }
+
+        [Fact]
         public void Should_stand_table_rows_for_the_items_it_does_not_draw_among_rows()
         {
             // Arrange
@@ -221,6 +244,38 @@
                 () => Assert.Equal(5, Drawn(cut).Count),
                 () => Assert.Equal(100, Virtualizer(cut).Instance.Count),
                 () => Assert.Equal(["start 0px", "end 1900px"], Spacers(cut)));
+        }
+
+        [Fact]
+        public async Task Should_draw_placeholders_for_the_range_it_scrolls_to_while_that_slice_is_on_its_way()
+        {
+            // Arrange — the first slice answers at once, and the next is held
+            using var ctx = new FormaVirtualizeTests();
+            var held = new TaskCompletionSource<ItemsProviderResult<Row>>();
+            ItemsProviderDelegate<Row> provider = request => request.StartIndex == 0
+                ? ValueTask.FromResult(new ItemsProviderResult<Row>(CreateRows().Take(request.Count), 100))
+                : new ValueTask<ItemsProviderResult<Row>>(held.Task);
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" ItemsProvider="provider" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                        <Placeholder><div class="placeholder">…</div></Placeholder>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act — scrolled a thousand pixels in, two hundred tall
+            var scrolled = virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+            var whileHeld = (Rows: Drawn(cut), Placeholders: cut.FindAll(".placeholder").Count);
+            await cut.ReleaseAsync(() => held.SetResult(new ItemsProviderResult<Row>(CreateRows().Skip(48).Take(14), 100)));
+            await scrolled;
+
+            // Assert — the fourteen rows from 48 stand as placeholders until their slice is answered
+            Assert.Multiple(
+                () => Assert.Empty(whileHeld.Rows),
+                () => Assert.Equal(14, whileHeld.Placeholders),
+                () => Assert.Equal([.. Enumerable.Range(48, 14).Select(id => $"Row {id}")], Drawn(cut)),
+                () => Assert.Empty(cut.FindAll(".placeholder")));
         }
 
         [Fact]

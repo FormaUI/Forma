@@ -359,7 +359,13 @@ card size and tells the cards, so a narrower width packs fewer across and more r
 Grouped, a heading is a row of its own before its group's rows, a group starts a row of
 its own, and a folded group keeps its heading while its rows are neither drawn nor read.
 The items a view draws say where they stand in the whole set, since the page holds only
-some of them. An item whose slice has not loaded draws the view's placeholder. `AnchorMode` says where the viewport
+some of them. An item whose slice has not loaded draws the view's placeholder, a muted
+shape where it will stand: a bar for each of a row's values, the grid's box where its
+checkbox goes, and as many cards as a row of cards holds, pulsing unless the reader asks
+for less motion, a column's placeholder template taking the bar's place in its cells. The
+range a scroll reaches draws its placeholders while its slice is on its way, and the items
+a scroll uncovers before the view has drawn them stand the same way in the room its
+spacers keep, which the browser shows at once, before a round trip. `AnchorMode` says where the viewport
 holds when items arrive at an edge, the items' keys telling a prepend from an append so the
 items on screen stay put, `InitialItemIndex` opens the data view on an item, and
 `ScrollToItemAsync` scrolls to one later, and moves a paged data view to the item's page. The region announces its real item count, so

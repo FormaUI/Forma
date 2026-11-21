@@ -43,6 +43,13 @@
     padding-block-end: var(--space-3);
 }
 
+/* A row not yet loaded stands its placeholder cards the row's height, less the space a drawn row keeps beneath it. */
+.forma-data-cards-placeholder-row {
+    grid-template-rows: 100%;
+    box-sizing: border-box;
+    padding-block-end: var(--space-3);
+}
+
 .forma-data-cards-heading-row {
     padding-block-end: var(--space-2);
 }

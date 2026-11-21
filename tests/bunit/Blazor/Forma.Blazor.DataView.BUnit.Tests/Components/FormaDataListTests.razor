@@ -619,6 +619,35 @@
             Assert.Equal(Calls(few), Calls(many));
         }
 
+        [Fact]
+        public async Task Should_stand_the_data_view_s_placeholder_in_a_row_not_yet_loaded()
+        {
+            // Arrange — the first slice answers at once, and every later one is still on its way
+            using var ctx = new FormaDataListTests();
+            var later = new TaskCompletionSource<DataViewPage<Product>>();
+            DataViewItemsProvider<Product> provider = request => request.StartIndex == 0
+                ? ValueTask.FromResult(new DataViewPage<Product>([.. CreateMany(1000).Take(request.Count ?? 10)], 1000))
+                : new ValueTask<DataViewPage<Product>>(later.Task);
+            var cut = ctx.Render(
+                @<FormaDataView TItem="Product" ItemsProvider="provider" EnablePagination="false" Virtualize="true" ItemHeight="40" OverscanCount="2">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-list-item").Count > 0);
+            await ReportViewportAsync(cut, 0, 200, 40);
+
+            // Act — scrolled far past the rows the first slice answered
+            var scrolled = ReportViewportAsync(cut, 20000, 200, 40);
+
+            // Assert
+            var rows = cut.FindAll(".forma-data-list-placeholder-row");
+            Assert.NotEmpty(rows);
+            Assert.All(rows, row => Assert.NotNull(row.QuerySelector(".forma-data-view-placeholder[aria-hidden=true]")));
+
+            // The later slices answer, so the scroll's report ends
+            await cut.ReleaseAsync(() => later.SetResult(new DataViewPage<Product>([], 1000)));
+            await scrolled;
+        }
+
         private static IQueryable<Product> CreateMany(int count) => Enumerable.Range(1, count)
             .Select(id => new Product(id, $"Product {id}", "Tools"))
             .AsQueryable();
