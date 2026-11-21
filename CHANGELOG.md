@@ -13,6 +13,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `Max` or a password drawing on a forbidden term, so the form's `GetValidationMessages()` holds only those of the
   inputs it shows, and a host can hold its save while any stands. A removed input left them in the form for good, and
   still followed the form's validation.
+- A [`FormaTextArea`](docs/component-catalog.md#formatextarea) scrolls its text beneath its floating label, which holds
+  the band across the area's top, so a line past its `Rows` and the caret's line stay clear of the label, and its
+  scrollbar starts below the band. The lines scrolled under the label, which was drawn over them.
 
 ## `1.0.0-preview.12`
 

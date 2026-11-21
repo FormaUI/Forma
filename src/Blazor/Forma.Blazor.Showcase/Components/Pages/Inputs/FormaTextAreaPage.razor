@@ -24,6 +24,14 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["Scrolling Text"]</h2>
+        <p class="description">@L["Lines past the field's rows scroll beneath the band its label holds, so the label never covers a line."]</p>
+        <div class="demo-box">
+            <FormaTextArea @bind-Value="_model.Inclusions" Label="@L["What the Tour Includes"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Required and Length-Limited"]</h2>
         <p class="description">@L["Submit with the field empty to see the validation border and message."]</p>
         <div class="demo-box">
@@ -76,6 +84,7 @@
 @code {
     private readonly DemoModel _model = new() { LockedValue = "Signed off by the editor." };
     private string? _savedTerms;
+    private string? _sampleInclusions;
     private EditContext _editContext = default!;
     private ValidationMessageStore _messages = default!;
 
@@ -83,6 +92,30 @@
     {
         _editContext = new EditContext(_model);
         _messages = new ValidationMessageStore(_editContext);
+        WriteSamples();
+    }
+
+    /// <inheritdoc />
+    protected override Task OnCultureChangedAsync()
+    {
+        WriteSamples();
+
+        return Task.CompletedTask;
+    }
+
+    // Writes the sample list in the current language, keeping a list the reader changed as they typed it.
+    private void WriteSamples()
+    {
+        if (_model.Inclusions == _sampleInclusions)
+        {
+            _model.Inclusions = _sampleInclusions = string.Join('\n',
+                L["Airport pickup"].Value,
+                L["Five nights' lodging"].Value,
+                L["Breakfast every day"].Value,
+                L["A local guide"].Value,
+                L["Entry to every museum"].Value,
+                L["Farewell dinner"].Value);
+        }
     }
 
     private void Validate()
@@ -102,6 +135,7 @@
     {
         public string? Notes { get; set; }
         public string? Summary { get; set; }
+        public string? Inclusions { get; set; }
         public string? Excerpt { get; set; }
         public string? Tweet { get; set; }
         public string? Comment { get; set; }

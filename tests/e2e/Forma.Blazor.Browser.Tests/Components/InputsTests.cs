@@ -177,6 +177,38 @@ public sealed partial class InputsTests
 
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_scroll_lines_past_its_rows_beneath_its_label(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-area");
+            await using var _ = context;
+            var textArea = page.Locator("#check");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
+
+            // Act — more lines than the area's rows show, which scrolls them as the caret follows the last
+            foreach (var line in new[] { "One", "Two", "Three", "Four", "Five" })
+            {
+                await textArea.PressSequentiallyAsync(line);
+                await textArea.PressAsync("Enter");
+            }
+
+            await textArea.PressSequentiallyAsync("Six");
+
+            // Assert — the text scrolled, and what scrolls starts at or below the lower edge of the label, once it has floated
+            var measures = await textArea.EvaluateAsync<double[]>("""
+                async area => {
+                    const label = document.querySelector(`label[for="${area.id}"]`);
+                    await Promise.all(label.getAnimations().map(transition => transition.finished));
+                    return [area.scrollTop, area.getBoundingClientRect().top + area.clientTop - label.getBoundingClientRect().bottom];
+                }
+                """);
+            var (scrolled, clearance) = (measures[0], measures[1]);
+            Assert.True(scrolled > 0, $"The text area didn't scroll its lines: its scroll offset is {scrolled}px.");
+            Assert.True(clearance >= -0.5, $"The text area's text scrolls {-clearance}px under its label.");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_count_the_text_as_it_is_typed_and_take_it_only_as_its_edit_commits_when_it_updates_on_change(string runtime)
         {
             // Arrange — text typed, counted in the browser and not yet taken
