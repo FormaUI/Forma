@@ -98,7 +98,10 @@ list.
   address beside the sort and the page, so a reader who switched to cards comes back to
   cards. A data view with one view has nothing to switch; one with several pairs with the
   view switch the page composes.
-- **Everything the framework's grid did, the grid does**, under the library's names.
+- **Everything the framework's grid did, the grid does**, under the library's names: the
+  activation callback `OnItemClick` and `ItemClass`, which the grid draws on its rows, both
+  on the engine, a theme as the design tokens a host redefines, and a column's options opened
+  and closed on request, `ShowColumnOptionsAsync` and `HideColumnOptionsAsync`.
 - **Two ways in, exactly one supplied.** `Items` hands over a queryable set the engine
   sorts, counts and pages itself, through a query executor the host can replace for its
   store. `ItemsProvider` answers one request at a time and returns the items with the
@@ -107,7 +110,8 @@ list.
 - **Sort, page and view live in the address** under a prefix the caller names, so two data
   views on one page keep apart and a link reproduces what a reader saw.
 - **Selection is the engine's and keyed.** Checked selection and pointer selection are
-  the engine's state, remembered by `ItemKey` across pages, sorts and views, bounded by a
+  the engine's state, remembered by `ItemKey`, unique within the set since the views key
+  what they draw by it, across pages, sorts and views, bounded by a
   minimum and a maximum, and reported as a list of items. A view draws the state and hands
   gestures back; it never keeps a selection of its own.
 - **How the master control reaches the whole set is the page's choice**, `SelectAllMode`:
@@ -160,7 +164,8 @@ how many positions it read where its slice leaves some out, whether more follow 
 cannot count, and how many positions the source holds where that differs from how many
 items it shows; the pages are cut in positions, so a short or empty page is a page, and only
 a total of what shows is shown as one. A request superseded by a newer one is canceled rather than ignored, and the
-newest answer is the one shown. `RefreshDataAsync` asks the source again for the items
+newest answer is the one shown. A new source is asked in the render that gives it.
+`RefreshDataAsync` asks the source again for the items
 being shown, a tree's open nodes among them, which is how a host reports that the records
 changed; a page that no longer exists, because the last items on it were deleted, gives way
 to the last page that does. An appending data view's refresh starts its run again from the
@@ -201,7 +206,8 @@ there, and the menu and the footer offer no more than that.
 
 Pointer selection, `EnableItemSelection`, is a file browser's selection over the items
 themselves: a plain click replaces the selection with the item, Ctrl or Cmd toggles it,
-Shift selects the range from the anchor, and Alt does nothing; the arrow keys, Home and End
+Shift selects the range from the anchor, Alt does nothing, and a double press, or Enter on
+the item's marker, activates it; the arrow keys, Home and End
 move focus among the items, Shift extending the range and Ctrl or Cmd moving focus alone.
 The arrows move by where the items stand, to the item above, below or beside the focused
 one, so a table's rows, a list's columns and packed cards follow the same keys.
@@ -224,7 +230,8 @@ toolbar above the data view, which the page composes.
 
 Each item answers four rules the host gives, `IsItemDisabled`, `CanSelectItem`,
 `CanActivateItem` and `CanFocusItem`, so a picker can let a reader open a folder it will not
-let them choose. A disabled item is drawn muted and is neither selected nor activated. An
+let them choose. A disabled item is drawn muted and is neither selected nor activated, and
+an item that takes the focus with no selection on is announced disabled. An
 item that cannot be selected keeps every other state: it activates, takes the focus and is
 drawn as it is, its box unable to act and nothing said of whether it is selected, so it is
 never announced as an unchosen choice. Every path applies the rules: a press, a key, a range,
@@ -243,7 +250,10 @@ sort, `DefaultSort`, which applies before any view draws, so a data view showing
 in the order its grid would and the grid's header marks the sort once it draws; a sort the
 address names wins over it, and the address leaves the default out. A data view that
 `RequiresSort` keeps a sort applied: the grid's header and the sort menu turn its direction
-rather than clearing it, and clearing it returns to the default.
+rather than clearing it, and clearing it returns to the default. The sort menu offers the
+sorts it is given and never the source's own order, and it reaches the data view through
+`IDataViewSorter`, as the view switch reaches it through `IDataViewSwitcher`, a contract each
+of its own beside the pair a view reads.
 
 A sort goes by a **sort name**, apart from any label a reader sees, so a link means the same
 sort in every culture: the address carries it, and a sort menu's option names a column's
@@ -262,8 +272,10 @@ one scroll region and returns to the first page, so a page number left behind me
 nothing later.
 
 `AppendMode` appends the pages instead: each one joins the items after the last, from a
-Load More action the views draw after their items, and, `Automatic`, as the reader reaches
-the end of them. The action and the reader reaching the end share one request for the page
+Load More action each flat view draws after its items, since a part of the engine's region
+would stand beside a companion tree, and, `Automatic`, as the reader reaches the end of
+them. An appended page is no change of page, so `Page` stands still while the run grows,
+and a page that arrives keeps the focus and the scroll where they are. The action and the reader reaching the end share one request for the page
 on its way. A page that fails leaves the items shown and offers itself again, and a new
 source, sort, grouping or current node starts the run again, canceling a page still on its
 way so its late answer adds nothing. A page that read positions it left out whole reads on,
@@ -286,7 +298,8 @@ children the tree shows of a node, so a source that lists more beside a tree tha
 every file at the roots beside a tree of folders, tells them apart even at the roots; a set
 answers both with the items its parent key names. `HasChildren` says whether an item can
 open; absent, a node opens until its children come back empty. The engine then
-holds a current node, `CurrentItem` with `CurrentItemChanged`, null for the roots, and the
+holds a current node, `CurrentItem` with `CurrentItemChanged`, null for the roots, which
+have members of their own on the contracts rather than standing for a null node, and the
 flat views show its children, sorted, paged and grouped as any set is; activating a node
 that has children in a flat view makes it current, which is how a file browser opens a
 folder. Every move into a node, a view's activation, a sidebar's choice or the host's own
@@ -327,7 +340,8 @@ set's count it learns the size of every group: a held queryable counts them thro
 store, grouped and ordered as its items are, and a provider answers the request that asks
 for them, `IncludesGroupSizes`, with `GroupSizes`, which `CountGroups` computes for a
 provider holding a queryable of its own. A heading then counts its whole group rather than
-the part of it on screen.
+the part of it on screen. A group's size counts what the source lists, as its total does,
+so an item left out of the listing is left out of its group's count.
 
 ### Virtualization and the scroll region
 
@@ -343,7 +357,10 @@ takes its natural height, and a height held is let go once a filter or a deletio
 one page. A source that counts nothing and says nothing leaves the view at its natural
 height too, since a full first page does not show that another follows.
 
-`Virtualize` is for the bounded case with paging off or appended, appended over the items
+Every view virtualizes, with grouping under it, since the list, the cards and the tree
+cross the web's 200-millisecond threshold for an interaction between two and five thousand
+items drawn in full, and the grid between five and ten thousand. `Virtualize` is for the
+bounded case with paging off or appended, appended over the items
 loaded so far, reading on by the source's positions: the engine renders only the items
 near the viewport through `FormaVirtualize`, in units the view names,
 a row for the grid and the list, a row of cards for the cards, with `ItemHeight` the
@@ -373,8 +390,10 @@ onto the row beside it stays drawn, and the tree keeps the nodes either side of 
 checkbox. Two guarantees hold beside the virtualizer: the rows found under a scroll that has
 not landed are held back, since a source that cannot count still grows the set the
 virtualizer holds and a scroll in flight must not see it change under it; and the focus is
-taken back onto an item a render drew afresh, since a view that does not virtualize still
-draws an item afresh when the group it stands in changes.
+taken back onto an item a render drew afresh, unless the reader moved it, since a view
+that does not virtualize still draws an item afresh when the group it stands in changes.
+A press or a Tab marks the move from its input on and is settled once the input has
+ended, so a focus that leaves while a host handles the input is never taken back.
 
 ### The footer and the states
 
@@ -413,7 +432,8 @@ near the box still reaches it; the grid keeps its box on the column's leading ed
 
 A view registers under its key and lets go of the registration it made, so a view drawn
 afresh under the same key, which registers before the one it replaces goes, keeps its
-place.
+place. A tree that chooses the current node registers as a **companion**: it is drawn
+beside the active view, is never the active view itself, and stands out of the view switch.
 
 `Layout` says who arranges the views and the footer. The data view's own arrangement,
 `BuiltIn`, lays a companion view, a sidebar tree, beside the active view at a width of its
@@ -424,7 +444,8 @@ content: the region gives the host's arrangement its own height, so each of the 
 places scrolls within itself; a companion fills the place it is given; and the footer
 stands where the host places `FormaDataViewFooter`, the data view drawing none of its own.
 The parts stay connected wherever the host puts them, since they are declared inside the
-data view, and what the reader did, the current node, the open nodes, the selection and
+data view rather than placed outside it, which would leave them out of a static render and
+the first one, and what the reader did, the current node, the open nodes, the selection and
 the active view, is the engine's, so the host resizing or stacking its arrangement, or
 drawing its parts afresh in another one, keeps it all.
 
@@ -434,7 +455,8 @@ drawing its parts afresh in another one, keeps it all.
 its own: the columns, `ShowHeader`, `Dense`, and inline editing.
 
 **Columns.** A column is declared inside the grid's `Columns` fragment and registers with
-the grid on initialization, in the order written, which is the order rendered. Every
+the grid on initialization, in the order written, which is the order rendered; the grid
+draws its table, rows and header after the columns, once they have registered. Every
 column has a **title**, shown in the header and used as the row's accessible column name;
 an **alignment**, start, center or end, logical in both directions, with numbers aligned
 to the end by default in a property column whose type is numeric; a **priority**, an
@@ -477,14 +499,16 @@ choosing a shown one drops it. A choice a reader makes wins over the priority un
 grid is given a different width, and a column of the highest priority is never dropped and
 never listed. Frozen columns are written first and stay at the start of the pane as it
 scrolls, through the freeze pane the grid composes; the pane's arrows and its draggable
-frozen edge come with it. The grid never sizes against the viewport; its fit is measured by
+frozen edge come with it. The rows scroll in that one box both ways, since a header stuck
+inside a box that scrolled sideways alone would stick to nothing. The grid never sizes against the viewport; its fit is measured by
 script, since a stylesheet cannot tell what a column wants, and the only media queries are
 for the reader.
 
 **Header and rows.** The header row sticks to the top of the scroll region and paints over
 the rows in the header tone, its cells on the same gutters as the cells beneath them; the
 columns menu, shown only when a column can be dropped, stands at the header's inline end.
-`ShowHeader="false"` drops the header for a consumer that names its columns elsewhere. A
+`ShowHeader="false"` hides the header for a consumer that names its columns elsewhere,
+its row kept at no height of its own, since the widths are measured from its cells. A
 row stands on the medium target step, so its actions and inputs sit level with the
 buttons beside the grid; `Dense` puts it on the small step for a list whose rows are plain
 text. Rows are told apart by a hairline in the border token, and under a hovering pointer a
@@ -544,8 +568,8 @@ first child, the inline-start arrow closes an open node or moves to its parent, 
 End reach the first and last visible node, and typing a letter jumps to the next node
 starting with it. A selected node takes the selected tint and `aria-selected`; the
 selection is the engine's, so a node selected in the tree is the same item selected in
-the grid. Choosing a node can also make it the current node, `SelectsCurrent`, which is
-what a sidebar does, and `NodeFilter` narrows the tree to the items it admits, the
+the grid. Choosing a node can instead make it the current node, `SelectsCurrent`, which
+is what a sidebar does, leaving the selection of the view beside it as it is, and `NodeFilter` narrows the tree to the items it admits, the
 folders alone for a sidebar over a source that holds files too. A sidebar takes the reader
 back to the roots through an item of the host's standing for them, `RootsItem`, first
 among the top-level nodes: it never opens, it is current while the roots are, and choosing
@@ -556,6 +580,8 @@ open state and whether it has children, and virtualizes over the visible nodes w
 row as its unit: the nodes then stand in one run, each saying its level, how many
 siblings it has and its place among them in place of the group that would hold it, and a
 key that moves to a node scrolled out of the rendered range scrolls it back and focuses it.
+A press acts on the node it landed on, which it names, since it can reach the tree ahead of
+the report of the focus it moved, while the keys act on the node the focus is on.
 
 Tab back into a plain tree returns to the node last focused in it, so a reader who leaves
 the collection comes back to where they were; on first entry, or once that node is gone,
@@ -577,7 +603,7 @@ shipping a mode for it. It names itself with a key the view switch and the addre
 draws the items the engine hands it, and reports its selection gestures through the
 interaction. Everything the
 engine does, the source, the selection, the address, the states and the footer, comes with
-it.
+it, and it takes part in `TabOrder` by marking its items as the built-in views mark theirs.
 
 ## Extending the data view
 
@@ -614,7 +640,8 @@ its design.
   load, a change of what the host gave the data view, and a change of view, together with
   what the view itself was given and, in a grid, what its columns were given; a change of
   selection, of a node's opening or of a group's folding is not counted. What the host gives
-  is judged by value where it has one and by reference where it has not, so a template that
+  is judged by value where it has one and by reference where it has not, and a property
+  column's member by its path, so a lambda written anew each render is no change; a template that
   stays the same delegate while the state it reads changes is not noticed, and an item changed
   in place is drawn again once the data view is refreshed or given its items again.
 - **Measurement is observed, not polled.** Each measurement, the width the grid's fit
@@ -629,7 +656,8 @@ its design.
 - **Nothing allocates per keystroke or per pointer move.** A gesture resolves to an item
   through the item token table and reports once when it settles. The table keeps an item's
   token while any view draws it, so one view's renders never leave the items another drew
-  unnamed.
+  unnamed; a token lasts a pass for the item asking for it, so a view asks for every drawn
+  item's token on every pass, an item that skips its own render among them.
 
 ## Accessibility, keyboard and direction
 

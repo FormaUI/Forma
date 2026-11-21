@@ -20,7 +20,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 
 | Work | State |
 | --- | --- |
-| [Components to build](#components-to-build) | The data view's step 13; then the roadmap |
+| [Components to build](#components-to-build) | The data view's review; then the roadmap |
 | [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | The component suite on iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
@@ -62,7 +62,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 | Feature | Contract | State | Since |
 | --- | --- | --- | --- |
-| The data view: one engine over a grid, a list, cards and a tree, with its sort menu and view switch | [Data view design](data-view-design.md) | In progress: step 13 of [its plan](data-view-implementation-plan.md) | [September 2026](../FEATURE-HISTORY.md#2026-09) |
+| The data view: one engine over a grid, a list, cards and a tree, with its sort menu and view switch | [Data view design](data-view-design.md) | In progress: built, every step of its plan landed, for the maintainer's review | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | The explorer | [Explorer design](explorer-design.md) | Implemented, its content on the data view | [August 2026](../FEATURE-HISTORY.md#2026-08) |
 | The composer, its rich text editor and its plugins | [Composer design](composer-design.md) | Implemented through its phases 1 to 3, 5 and 8; [later phases](#the-composers-later-phases) planned | [August 2026](../FEATURE-HISTORY.md#2026-08) |
 | The gallery | [Gallery design](gallery-design.md) | Planned | — |
@@ -116,7 +116,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## Components to build
 
-The data view, with its views and controls, is finished once one step of [its plan](data-view-implementation-plan.md) closes: the second of two rare browser check failures, named or shown not to recur. [The roadmap](component-roadmap.md) orders what follows: the stepper; the category selector; the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
+The data view, with its views and controls, is built, every step of its plan landed and the plan retired into [its design](data-view-design.md), and moves to the catalog once the maintainer approves it. [The roadmap](component-roadmap.md) orders what follows: the stepper; the category selector; the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
 
 <a id="blazor-hybrid-on-phones-and-macs"></a>
 

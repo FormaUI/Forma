@@ -71,7 +71,18 @@ page, `EnablePagination="false"` shows every item in one scroll region, and `App
 page to the items from a Load More action after them, `Manual`, and as the reader reaches their end,
 `Automatic`. `AddressOptions` writes
 the sort, the page and the active view to the address under its prefix, so a link reproduces them
-and two data views on one page keep theirs apart.
+and two data views on one page keep theirs apart. `Status` is the host's text in the footer, such as
+how many items are checked; a data view that names it names its views inside `ChildContent`, as Razor
+requires once a second fragment is named:
+
+```razor
+<FormaDataView Items="_orders" PageSize="20" EnableCheckedSelection="true" @bind-SelectedItems="_checked">
+    <ChildContent>
+        <FormaDataGrid>...</FormaDataGrid>
+    </ChildContent>
+    <Status>@_checked.Count checked.</Status>
+</FormaDataView>
+```
 
 A `FormaPropertyColumn` shows a member, titled by the member's name unless `Title` is given, and
 sorts by it when its header is pressed, which `Sortable="false"` turns off. A `FormaTemplateColumn`
