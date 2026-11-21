@@ -190,6 +190,7 @@
     "Prepend {Count} Rows": "Anteponer {Count} Filas",
     "Anchor to the start": "Anclar al inicio",
     "{Count:N0} rows in the feed.": "{Count:N0} filas en el feed.",
+    "Amount": "Monto",
     "Fitting a Width": "Ajuste a un Ancho",
     "The grid is given a narrow box. Columns leave by priority, the lowest first, until the rest fit; the columns menu at the header's end lists the ones that can leave, marks the ones shown, and brings a dropped column back until the width changes.": "La tabla recibe una caja angosta. Las columnas salen por prioridad, la más baja primero, hasta que el resto cabe; el menú de columnas al final del encabezado lista las que pueden salir, marca las mostradas y trae de vuelta una columna quitada hasta que el ancho cambia.",
     "Frozen Columns": "Columnas Fijadas",

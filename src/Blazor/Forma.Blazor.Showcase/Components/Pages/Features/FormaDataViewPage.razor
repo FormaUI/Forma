@@ -22,16 +22,16 @@
                     <Columns>
                         <FormaPropertyColumn Property="@(product => product.Name)" Title="@L["Name"]" Sortable="true" />
                         <FormaPropertyColumn Property="@(product => product.Category)" Title="@L["Category"]" Sortable="true" />
-                        <FormaPropertyColumn Property="@(product => product.Price)" Title="@L["Price"]" Format="C0" Sortable="true" />
+                        <FormaTemplateColumn TItem="ShowcaseProduct" Title="@L["Price"]" SortName="Price" SortBy="DataViewShowcaseProducts.PriceSort">@context.FormatPrice(CultureState.Culture)</FormaTemplateColumn>
                     </Columns>
                 </FormaDataGrid>
                 <FormaDataList TItem="ShowcaseProduct">
                     <ThumbnailTemplate Context="product"><span class="demo-thumbnail demo-thumbnail-small"><FormaIcon Icon="@product.Glyph" Size="IconSize.Small" /></span></ThumbnailTemplate>
-                    <ItemTemplate Context="product">@product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
+                    <ItemTemplate Context="product">@product.FormatPrice(CultureState.Culture)</ItemTemplate>
                 </FormaDataList>
                 <FormaDataCards TItem="ShowcaseProduct">
                     <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
-                    <ItemTemplate Context="product">@product.Category · @product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
+                    <ItemTemplate Context="product">@product.Category · @product.FormatPrice(CultureState.Culture)</ItemTemplate>
                 </FormaDataCards>
             </ChildContent>
             <Status>@L["{Selected} of {Total} selected.", _selectedProducts.Count, DataViewShowcaseProducts.All.Count()]</Status>

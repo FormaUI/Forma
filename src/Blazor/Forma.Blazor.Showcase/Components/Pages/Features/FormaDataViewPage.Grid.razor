@@ -1,7 +1,9 @@
 @page "/data-view/grid"
 @rendermode InteractiveServer
 @using System.ComponentModel.DataAnnotations
+@using System.Globalization
 @using Forma.Blazor.Components.Inputs
+@using Forma.Framework.Currencies
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 
 <h1>FormaDataView</h1>
@@ -17,7 +19,7 @@
                     <Columns>
                         <FormaPropertyColumn Property="@(product => product.Name)" Title="@L["Name"]" Sortable="true" />
                         <FormaPropertyColumn Property="@(product => product.Category)" Title="@L["Category"]" Sortable="true" />
-                        <FormaPropertyColumn Property="@(product => product.Price)" Title="@L["Price"]" Format="C0" Sortable="true" />
+                        <FormaTemplateColumn TItem="ShowcaseProduct" Title="@L["Price"]" SortName="Price" SortBy="DataViewShowcaseProducts.PriceSort">@context.FormatPrice(CultureState.Culture)</FormaTemplateColumn>
                     </Columns>
                 </FormaDataGrid>
             </ChildContent>
@@ -194,7 +196,7 @@
                     <FormaPropertyColumn Property="@(s => s.Product)" Priority="3" />
                     <FormaPropertyColumn Property="@(s => s.City)" Priority="1" />
                     <FormaPropertyColumn Property="@(s => s.Country)" Priority="0" />
-                    <FormaPropertyColumn Property="@(s => s.Amount)" Format="C0" Priority="2" />
+                    <FormaTemplateColumn TItem="Shipment" Title="@L["Amount"]" SortName="Amount" SortBy="AmountSort" Priority="2">@context.FormatAmount(CultureState.Culture)</FormaTemplateColumn>
                 </Columns>
             </FormaDataGrid>
         </FormaDataView>
@@ -213,7 +215,7 @@
                     <FormaPropertyColumn Property="@(s => s.Product)" />
                     <FormaPropertyColumn Property="@(s => s.City)" />
                     <FormaPropertyColumn Property="@(s => s.Country)" />
-                    <FormaPropertyColumn Property="@(s => s.Amount)" Format="C0" />
+                    <FormaTemplateColumn TItem="Shipment" Title="@L["Amount"]" SortName="Amount" SortBy="AmountSort">@context.FormatAmount(CultureState.Culture)</FormaTemplateColumn>
                     <FormaPropertyColumn Property="@(s => s.ShipDate)" Format="d" />
                 </Columns>
             </FormaDataGrid>
@@ -822,7 +824,14 @@
 
     private sealed record GridItem(int Id, string Title);
 
-    private sealed record Shipment(int Id, string Customer, string Product, string City, string Country, decimal Amount, DateOnly ShipDate);
+    private static readonly DataViewSort<Shipment> AmountSort = DataViewSort<Shipment>.ByAscending(shipment => shipment.Amount);
+
+    private sealed record Shipment(int Id, string Customer, string Product, string City, string Country, decimal Amount, DateOnly ShipDate)
+    {
+        // The amount written in whole dollars as the culture writes money.
+        public string FormatAmount(CultureInfo culture)
+            => CurrencyCatalog.FormatAmount(Amount, "USD", culture, 0);
+    }
 
     private sealed class Assignment
     {

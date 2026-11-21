@@ -35,6 +35,7 @@
         <ProjectReference Include="..\..\Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Currencies\Forma.Framework.Currencies.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Culture.Router.AspNetCore\Forma.Framework.Culture.Router.AspNetCore.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />

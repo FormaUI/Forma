@@ -17,7 +17,7 @@
             <ChildContent>
                 <FormaDataCards TItem="ShowcaseProduct" CardSize="@CssLength.FromRem(11)">
                     <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
-                    <ItemTemplate Context="product">@product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
+                    <ItemTemplate Context="product">@product.FormatPrice(CultureState.Culture)</ItemTemplate>
                     <ActionsTemplate Context="product">
                         <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" OnClick="() => _lastAction = product.Name">@L["Open"]</FormaButton>
                     </ActionsTemplate>
@@ -36,7 +36,7 @@
             <ChildContent>
                 <FormaDataCards TItem="ShowcaseProduct" CardSize="@CssLength.FromRem(11)">
                     <ThumbnailTemplate Context="product"><span class="demo-thumbnail"><FormaIcon Icon="@product.Glyph" Size="IconSize.Large" /></span></ThumbnailTemplate>
-                    <ItemTemplate Context="product">@product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
+                    <ItemTemplate Context="product">@product.FormatPrice(CultureState.Culture)</ItemTemplate>
                     <ActionsTemplate Context="product">
                         <FormaButton Variant="ButtonVariant.Ghost" Size="ButtonSize.Mini" OnClick="@(() => _lastCommand = L["Opened {Name}", product.Name].Value)">@L["Open"]</FormaButton>
                         <FormaOverflowMenu Label="@L["Actions for {Name}", product.Name]" data-item-actions>

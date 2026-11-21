@@ -36,7 +36,10 @@ first, as shown under "Reading from a database".
 
 ```razor
 @using Forma.Blazor.Components.DataView
+@using Forma.Framework.Culture
+@using Forma.Framework.Currencies
 @inject IOrderService OrderService
+@inject ICultureState CultureState
 
 <FormaDataView Items="_orders" PageSize="20" AddressOptions='@(new DataViewAddressOptions("orders"))'>
     <FormaDataGrid>
@@ -44,13 +47,17 @@ first, as shown under "Reading from a database".
             <FormaPropertyColumn Property="@(order => order.Number)" />
             <FormaPropertyColumn Property="@(order => order.Customer)" />
             <FormaPropertyColumn Property="@(order => order.PlacedOn)" Title="Placed" Format="d" />
-            <FormaPropertyColumn Property="@(order => order.Total)" Format="C" Align="ColumnAlign.End" />
+            <FormaTemplateColumn Title="Total" SortName="Total" SortBy="TotalSort" Align="ColumnAlign.End">
+                @CurrencyCatalog.FormatAmount(context.Total, context.CurrencyCode, CultureState.Culture)
+            </FormaTemplateColumn>
             <FormaTemplateColumn Title="Status">@context.Status</FormaTemplateColumn>
         </Columns>
     </FormaDataGrid>
 </FormaDataView>
 
 @code {
+    private static readonly DataViewSort<Order> TotalSort = DataViewSort<Order>.ByAscending(order => order.Total);
+
     private IQueryable<Order> _orders = Enumerable.Empty<Order>().AsQueryable();
 
     protected override async Task OnInitializedAsync()
@@ -68,7 +75,11 @@ and two data views on one page keep theirs apart.
 
 A `FormaPropertyColumn` shows a member, titled by the member's name unless `Title` is given, and
 sorts by it when its header is pressed, which `Sortable="false"` turns off. A `FormaTemplateColumn`
-renders its content for each item, given as `context`. `Width` sets a column's width, `Frozen` keeps
+renders its content for each item, given as `context`, and sorts by its `SortBy` under its `SortName`.
+An amount of money is written in its currency by `CurrencyCatalog.FormatAmount`, from
+`formaui-net.Framework.Currencies`, in a template column sorting by the amount: the `C` format string
+writes the culture's own currency instead, the shekel for `he-IL` whatever the amount is in and `¤` for
+a culture such as `en` that names no country. `Width` sets a column's width, `Frozen` keeps
 it in place while the others scroll sideways, and `Priority` decides which columns give way when the
 width runs out.
 
@@ -89,7 +100,7 @@ choose the view and the sort, inside the data view or, given its reference, besi
     <FormaDataGrid>
         <Columns>
             <FormaPropertyColumn Property="@(product => product.Name)" />
-            <FormaPropertyColumn Property="@(product => product.Price)" Format="C0" />
+            <FormaTemplateColumn Title="Price" SortName="price" SortBy="PriceSort">@FormatPrice(context)</FormaTemplateColumn>
         </Columns>
     </FormaDataGrid>
     <FormaDataList>
@@ -97,20 +108,25 @@ choose the view and the sort, inside the data view or, given its reference, besi
     </FormaDataList>
     <FormaDataCards>
         <ThumbnailTemplate Context="product"><img src="@product.ImageUrl" alt="" /></ThumbnailTemplate>
-        <ItemTemplate Context="product">@product.Price.ToString("C0")</ItemTemplate>
+        <ItemTemplate Context="product">@FormatPrice(product)</ItemTemplate>
     </FormaDataCards>
 </FormaDataView>
 
 @code {
+    private static readonly DataViewSort<Product> PriceSort = DataViewSort<Product>.ByAscending(product => product.Price);
+
     private FormaDataView<Product>? _products;
     private IQueryable<Product> _catalog = Enumerable.Empty<Product>().AsQueryable();
 
     private readonly IReadOnlyList<DataViewSortOption<Product>> _sorts =
     [
         new("name", "Name", DataViewSort<Product>.ByAscending(product => product.Name)),
-        new("price", "Price", DataViewSort<Product>.ByAscending(product => product.Price)) { InitialDirection = DataViewSortDirection.Descending },
+        new("price", "Price", PriceSort) { InitialDirection = DataViewSortDirection.Descending },
         new("category", "Category", DataViewSort<Product>.ByAscending(product => product.Category).ThenAscending(product => product.Name)),
     ];
+
+    private string FormatPrice(Product product)
+        => CurrencyCatalog.FormatAmount(product.Price, "USD", CultureState.Culture, 0);
 }
 ```
 
@@ -199,7 +215,7 @@ private async ValueTask<DataViewPage<Order>> ProvideOrdersAsync(DataViewRequest<
     <FormaDataGrid>
         <Columns>
             <FormaPropertyColumn Property="@(order => order.Number)" />
-            <FormaPropertyColumn Property="@(order => order.Total)" Format="C" Align="ColumnAlign.End" />
+            <FormaPropertyColumn Property="@(order => order.PlacedOn)" Title="Placed" Format="d" />
         </Columns>
     </FormaDataGrid>
 </FormaDataView>

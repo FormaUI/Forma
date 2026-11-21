@@ -10,7 +10,7 @@
         <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.All" EnablePagination="false" ItemName="@(product => product.Name)" EnableItemSelection="true" GroupBy="DataViewShowcaseProducts.ByCategory" AddressOptions='@(new DataViewAddressOptions("list"))'>
             <FormaDataList TItem="ShowcaseProduct">
                 <ThumbnailTemplate Context="product"><span class="demo-thumbnail demo-thumbnail-small"><FormaIcon Icon="@product.Glyph" Size="IconSize.Small" /></span></ThumbnailTemplate>
-                <ItemTemplate Context="product">@product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
+                <ItemTemplate Context="product">@product.FormatPrice(CultureState.Culture)</ItemTemplate>
             </FormaDataList>
         </FormaDataView>
     </div>
@@ -35,7 +35,7 @@
         <FormaDataView TItem="ShowcaseProduct" Items="DataViewShowcaseProducts.Many" EnablePagination="false" Virtualize="true" ItemHeight="32" ItemName="@(product => product.Name)" EnableCheckedSelection="true" AddressOptions='@(new DataViewAddressOptions("many"))'>
             <FormaDataList TItem="ShowcaseProduct">
                 <ThumbnailTemplate Context="product"><FormaIcon Icon="@product.Glyph" Size="IconSize.Small" /></ThumbnailTemplate>
-                <ItemTemplate Context="product">@product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
+                <ItemTemplate Context="product">@product.FormatPrice(CultureState.Culture)</ItemTemplate>
             </FormaDataList>
         </FormaDataView>
     </div>
@@ -49,7 +49,7 @@
             <ChildContent>
                 <FormaDataList TItem="ShowcaseProduct">
                     <ThumbnailTemplate Context="product"><FormaIcon Icon="@product.Glyph" Size="IconSize.Small" /></ThumbnailTemplate>
-                    <ItemTemplate Context="product">@product.Price.ToString("C0", CultureState.Culture)</ItemTemplate>
+                    <ItemTemplate Context="product">@product.FormatPrice(CultureState.Culture)</ItemTemplate>
                 </FormaDataList>
             </ChildContent>
             <Status>@L["{Selected} selected.", _selectedProducts.Count]</Status>

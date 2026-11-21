@@ -1,14 +1,25 @@
 namespace Forma.Blazor.Showcase.Components.Pages.Features;
 
+using System.Globalization;
+
 using Forma.Blazor.Components.DataView;
+using Forma.Framework.Currencies;
 using Forma.Framework.Icons;
 
 /// <summary>A product the data view's pages show: its name, its category, its price and the glyph standing in for its picture.</summary>
-internal sealed record ShowcaseProduct(int Id, string Name, string Category, decimal Price, Glyph Glyph);
+internal sealed record ShowcaseProduct(int Id, string Name, string Category, decimal Price, Glyph Glyph)
+{
+    /// <summary>The price written in whole dollars as the culture writes money.</summary>
+    public string FormatPrice(CultureInfo culture)
+        => CurrencyCatalog.FormatAmount(Price, "USD", culture, 0);
+}
 
 /// <summary>The products the data view's showcase pages show, and their grouping by category.</summary>
 internal static class DataViewShowcaseProducts
 {
+    /// <summary>The sort a price column sorts by, from the cheapest.</summary>
+    public static DataViewSort<ShowcaseProduct> PriceSort { get; } = DataViewSort<ShowcaseProduct>.ByAscending(product => product.Price);
+
     /// <summary>The products.</summary>
     public static IQueryable<ShowcaseProduct> All { get; } = new[]
     {

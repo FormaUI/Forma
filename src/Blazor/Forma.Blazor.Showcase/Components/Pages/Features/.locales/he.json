@@ -189,6 +189,7 @@
     "Prepend {Count} Rows": "הוסף {Count} שורות בהתחלה",
     "Anchor to the start": "עגן להתחלה",
     "{Count:N0} rows in the feed.": "{Count:N0} שורות בהזנה.",
+    "Amount": "סכום",
     "Fitting a Width": "התאמה לרוחב",
     "The grid is given a narrow box. Columns leave by priority, the lowest first, until the rest fit; the columns menu at the header's end lists the ones that can leave, marks the ones shown, and brings a dropped column back until the width changes.": "הטבלה מקבלת תיבה צרה. עמודות יוצאות לפי עדיפות, הנמוכה תחילה, עד שהשאר נכנסות; תפריט העמודות בקצה הכותרת מונה את אלו שיכולות לצאת, מסמן את המוצגות, ומחזיר עמודה שהושמטה עד שהרוחב משתנה.",
     "Frozen Columns": "עמודות קפואות",
