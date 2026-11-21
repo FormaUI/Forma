@@ -21,8 +21,8 @@ a grid, a list, cards, a tree and a thumbnail.
 
 Every surface that browses records is the same thing underneath. An admin list page is a
 table of records, a page at a time, with a checkbox to act on several rows and a sort by a
-column. The explorer browses catalog items three ways, as tiles, as names and as a table.
-The gallery browses media as date-grouped thumbnails. Each needs a source that is a set or
+column. A file browser shows the same items three ways, as tiles, as names and as a table,
+and a media library browses thumbnails grouped by date. Each needs a source that is a set or
 a provider, a selection remembered across pages and bounded by a limit, a sort, a page, a
 place in the address, virtualization when the set is large, and something to say when it
 is empty or still loading. Built three times, those drift three ways; the data view is
@@ -84,7 +84,7 @@ list.
 - **A hierarchy is the engine's.** A source with parentage, a set with a `ParentKey` or
   a provider asked for a node's children, gives the engine a hierarchy: a **current node**
   whose children the grid, the list and the cards show, and the whole of it for the tree,
-  loaded a node at a time as nodes open. The explorer's folder tree and its content area
+  loaded a node at a time as nodes open. A file browser's folder tree and its content area
   are that one source seen two ways.
 - **A view reads a view contract and acts through an interaction contract.** The engine
   implements `IDataView<TItem>` and `IDataViewInteraction<TItem>`, the pair the library
@@ -130,11 +130,6 @@ list.
 - **The data view is not a page.** A search box, filters, a bulk-action bar, a view switch
   and a "new" button stand above it and belong to the page, composed from the toolbar, the
   selection toolbar, and the data view's sort menu and view switch.
-- **The explorer and the gallery are consumers.** The explorer's content area and its
-  folder-tree sidebar are one data view with its item template, its three flat
-  presentations and the tree, and the gallery browses
-  media through a data view in the cards view at its compact density, grouped by date,
-  keeping for itself what is about media rather than browsing.
 
 ## The engine
 
@@ -204,7 +199,7 @@ selection options:
 A provider data view cannot name its whole set, so every mode reaches the page alone
 there, and the menu and the footer offer no more than that.
 
-Pointer selection, `EnableItemSelection`, is explorer-style selection over the items
+Pointer selection, `EnableItemSelection`, is a file browser's selection over the items
 themselves: a plain click replaces the selection with the item, Ctrl or Cmd toggles it,
 Shift selects the range from the anchor, and Alt does nothing; the arrow keys, Home and End
 move focus among the items, Shift extending the range and Ctrl or Cmd moving focus alone.
@@ -293,7 +288,7 @@ answers both with the items its parent key names. `HasChildren` says whether an 
 open; absent, a node opens until its children come back empty. The engine then
 holds a current node, `CurrentItem` with `CurrentItemChanged`, null for the roots, and the
 flat views show its children, sorted, paged and grouped as any set is; activating a node
-that has children in a flat view makes it current, which is how the explorer opens a
+that has children in a flat view makes it current, which is how a file browser opens a
 folder. Every move into a node, a view's activation, a sidebar's choice or the host's own
 call of `MakeCurrentAsync`, passes one point before anything changes:
 `OnCurrentItemChanging` hands the host the node and the one before it, and a host that
@@ -423,7 +418,7 @@ place.
 `Layout` says who arranges the views and the footer. The data view's own arrangement,
 `BuiltIn`, lays a companion view, a sidebar tree, beside the active view at a width of its
 own, stacks it above the view where the data view is narrow, and draws the footer beneath
-both. Under `Host` the host arranges them inside the data view's content, as an explorer
+both. Under `Host` the host arranges them inside the data view's content, as a file browser
 places its folder tree in a sidebar it sizes with a splitter and its footer beneath its
 content: the region gives the host's arrangement its own height, so each of the host's
 places scrolls within itself; a companion fills the place it is given; and the footer
@@ -554,7 +549,7 @@ what a sidebar does, and `NodeFilter` narrows the tree to the items it admits, t
 folders alone for a sidebar over a source that holds files too. A sidebar takes the reader
 back to the roots through an item of the host's standing for them, `RootsItem`, first
 among the top-level nodes: it never opens, it is current while the roots are, and choosing
-it makes them current, as an explorer's All Media does. The tree draws the nodes
+it makes them current, as a file browser's entry for its top level does. The tree draws the nodes
 the engine holds open, so a node that becomes current shows in it as the engine reveals it. The tree announces itself
 as a tree with each node's level, its
 open state and whether it has children, and virtualizes over the visible nodes with a
@@ -709,4 +704,4 @@ view in every culture the library ships.
 - A toolbar, a search box, filters, a view switch or a sort menu. They are the page's,
   composed from the library's components above the data view.
 - What is about media rather than browsing: a lightbox, a slideshow, playback. Those stay
-  with the file viewer and the gallery.
+  with the components that show media.

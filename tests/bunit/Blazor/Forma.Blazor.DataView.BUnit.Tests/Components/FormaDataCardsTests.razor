@@ -551,6 +551,36 @@
             await scrolled;
         }
 
+        [Fact]
+        public async Task Should_head_date_groups_newest_first_with_the_names_their_grouping_gives_them_in_the_reader_s_culture()
+        {
+            // Arrange — dense cards grouped by the month each shot was taken, named by the month and its year
+            using var ctx = new FormaDataCardsTests();
+            using var fixture = new CultureFixture("en-US");
+            var shots = new[]
+            {
+                new Shot(1, "Start", new DateOnly(2026, 2, 14)),
+                new Shot(2, "Climb", new DateOnly(2026, 3, 2)),
+                new Shot(3, "Finish", new DateOnly(2026, 3, 9)),
+            }.AsQueryable();
+            var byMonth = DataViewGrouping<Shot>.ByDescending(shot => new DateOnly(shot.TakenOn.Year, shot.TakenOn.Month, 1), month => month.ToString("Y", CultureInfo.CurrentCulture));
+            var cut = ctx.Render(
+                @<FormaDataView Items="shots" EnablePagination="false" ItemName="@(shot => shot.Name)" GroupBy="byMonth">
+                    <FormaDataCards TItem="Shot" Dense="true" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-group-name").Count == 2);
+            var english = cut.FindAll(".forma-data-group-name").Select(name => name.TextContent).ToList();
+
+            // Act
+            await ctx.ChangeCultureAsync("es-ES");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["March 2026", "February 2026"], english),
+                () => Assert.Equal(["marzo de 2026", "febrero de 2026"], cut.FindAll(".forma-data-group-name").Select(name => name.TextContent)),
+                () => Assert.Equal(["2", "1"], cut.FindAll(".forma-data-group-count").Select(count => count.TextContent)));
+        }
+
         private static IQueryable<Product> CreateMany(int count) => Enumerable.Range(1, count)
             .Select(id => new Product(id, $"Product {id}", "Tools"))
             .AsQueryable();
@@ -565,5 +595,7 @@
         }
 
         private sealed record Product(int Id, string Name, string Category);
+
+        private sealed record Shot(int Id, string Name, DateOnly TakenOn);
     }
 }
