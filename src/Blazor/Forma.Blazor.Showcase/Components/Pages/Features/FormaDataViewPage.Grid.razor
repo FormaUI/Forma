@@ -411,6 +411,24 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Virtualized With Checked Selection and Sorting"]</h2>
+    <p class="description">@L["The master box selects every one of the rows at a press and clears them at the next, and a header sorts them all, while only the rows near the viewport are drawn."]</p>
+    <div class="demo-box demo-box-bounded">
+        <FormaDataView TItem="GridItem" Items="_hugeItems" ItemKey="@(item => item.Id)" EnablePagination="false" Virtualize="true" EnableCheckedSelection="true" AddressOptions='@(new DataViewAddressOptions("virtualized-checked"))' SelectedItems="_virtualizedChecked" SelectedItemsChanged="HandleVirtualizedCheckedChanged">
+            <ChildContent>
+                <FormaDataGrid>
+                    <Columns>
+                        <FormaPropertyColumn Property="@(item => item.Id)" Sortable="true" />
+                        <FormaPropertyColumn Property="@(item => item.Title)" Sortable="true" />
+                    </Columns>
+                </FormaDataGrid>
+            </ChildContent>
+            <Status>@L["{Selected:N0} of {Total:N0} rows selected.", _virtualizedChecked.Count, HugeRowCount]</Status>
+        </FormaDataView>
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Grouped and Virtualized"]</h2>
     <p class="description">@L["The same rows in blocks of ten thousand: each heading is a row the virtualization scrolls past with the rest, counts its whole block and folds it, and a folded block's rows are never fetched."]</p>
     <div class="demo-box demo-box-bounded">
@@ -568,6 +586,8 @@
 
     private IReadOnlyList<GridItem> _virtualizedSelection = [];
 
+    private IReadOnlyList<GridItem> _virtualizedChecked = [];
+
     private IReadOnlyList<ShowcaseProduct> _checkedProducts = [];
 
     private SelectAllMode _selectAllMode = SelectAllMode.FromMenu;
@@ -658,6 +678,9 @@
 
     private void HandleVirtualizedSelectionChanged(IReadOnlyList<GridItem> selectedItems)
         => _virtualizedSelection = selectedItems;
+
+    private void HandleVirtualizedCheckedChanged(IReadOnlyList<GridItem> selectedItems)
+        => _virtualizedChecked = selectedItems;
 
     private void HandleCheckedChanged(IReadOnlyList<ShowcaseProduct> selectedProducts)
         => _checkedProducts = selectedProducts;
