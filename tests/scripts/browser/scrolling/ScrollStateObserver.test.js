@@ -165,6 +165,32 @@ describe('ScrollStateObserver', () => {
         expect(publish).toHaveBeenLastCalledWith(expect.objectContaining({ canScrollBack: false, canScrollForward: true }));
     });
 
+    it('keeps the element focused inside the track in view as the track resizes', () => {
+        sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
+        watch().read();
+        const [, focused] = track.querySelectorAll('button');
+        focused.scrollIntoView = vi.fn();
+        focused.focus();
+
+        resizes.latest().deliver([{ target: track }]);
+
+        expect(focused.scrollIntoView).toHaveBeenCalledWith({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+    });
+
+    it('leaves the scroll alone as the track resizes while the focus is elsewhere', () => {
+        sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
+        watch().read();
+        const outside = document.createElement('button');
+        document.body.append(outside);
+        const [first] = track.querySelectorAll('button');
+        first.scrollIntoView = vi.fn();
+        outside.focus();
+
+        resizes.latest().deliver([{ target: track }]);
+
+        expect(first.scrollIntoView).not.toHaveBeenCalled();
+    });
+
     it('stays quiet once the track has left the document', () => {
         sizeScroller(track, { scrollLeft: 0, scrollWidth: 900, clientWidth: 300 });
         watch().read();

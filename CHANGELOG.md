@@ -15,6 +15,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A `SelectOption` carries an optional `Icon`, drawn ahead of its label in `FormaSelect`'s list and trigger and in
   `FormaMultiSelect`'s list and tags, and an `IconLabel`, which describes the option, or the trigger showing it, to
   assistive technology and follows the label in the browser's own list a static page draws.
+- A [`FormaFreezePane`](docs/component-catalog.md#formafreezepane), and every strip of tabs or commands built on one,
+  keeps the element holding the focus inside it in view as an arrow appearing beside it narrows it, where the focused
+  element ended under the arrow.
 - A host's own routes, those its `InputRouterOptions` declares and its `IInputActionHandler` performs, answer on every
   interactive page that renders a Forma component, from that component's first render. They answered only once a
   component on the page had registered with the [input router](docs/input-router-design.md).

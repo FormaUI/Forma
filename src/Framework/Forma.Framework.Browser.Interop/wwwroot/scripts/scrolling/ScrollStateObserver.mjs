@@ -35,7 +35,10 @@ export class ScrollStateObserver {
         this.#publish = publish;
 
         track.addEventListener('scroll', () => this.#schedule(), { signal: this.#controller.signal, passive: true });
-        this.#trackSize = ResizeObserverPool.observe(track, () => this.#schedule());
+        this.#trackSize = ResizeObserverPool.observe(track, () => {
+            this.#keepFocusInView();
+            this.#schedule();
+        });
         this.#watchChildren();
 
         this.#mutations = new MutationObserver(() => {
@@ -87,6 +90,15 @@ export class ScrollStateObserver {
         }
 
         this.#childSizes = [...this.#track.children].map(child => ResizeObserverPool.observe(child, () => this.#schedule()));
+    }
+
+    // A track narrowed under the reader, as by an arrow appearing beside it, keeps the element they focused inside it in view.
+    #keepFocusInView() {
+        const focused = this.#track.ownerDocument.activeElement;
+
+        if (!this.#isDisposed && focused !== this.#track && focused instanceof HTMLElement && this.#track.contains(focused)) {
+            focused.scrollIntoView({ block: 'nearest', inline: 'nearest', behavior: 'instant' });
+        }
     }
 
     #schedule() {
