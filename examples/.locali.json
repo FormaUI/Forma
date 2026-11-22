@@ -1,0 +1,6 @@
+{
+  // The examples are hosts, whose builds embed their own strings and their overrides of the library's, the folder at a project's root among them.
+  "localeSources": {
+    "**": ["embedded"]
+  }
+}

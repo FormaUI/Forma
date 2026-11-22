@@ -24,7 +24,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | The component suite on iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
-| [The build](#the-build) | Faster tests, a faster gate, and builds in processes of their own; the affected-checks command next |
+| [The build](#the-build) | Faster tests, a faster gate, builds in processes of their own and the examples' locale lint; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Two components built and in review, eight changes fixed |
@@ -162,14 +162,17 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
   project under that build's spelling, and a build spelling the drive letter in the other case listed
   `Forma.Framework.Culture.Browser.Interop`'s JS initializer twice and stopped in its compression; the incremental build
   takes the time it took before.
+- **The examples' locale lint.** From Locali 1.0.0-preview.27 a run given a solution reads the files of the projects
+  it loads alone, so `Forma.Examples.slnx` is linted in a run of its own. The examples restore only once their
+  packages are packed, so the browser step makes the run, after it has published every example, on Windows, where
+  the Blazor Hybrid examples publish; elsewhere the gate names it among the checks the machine couldn't run. The run
+  reads a linting configuration of the examples' own, in `examples/`, which allows the locale files each example's
+  build embeds.
 - **The affected-checks command, next.** [The verification design](verification-design.md#what-a-change-runs) runs a
   change's checks by its affected set. A command is to compute that set from a change set's commits: the test projects
   and classes and the browser check pages each changed path reaches, transitively, with the render modes, engines and
   platforms its reach adds, each check named with why it was chosen, and the set widened where a path's reach isn't
   mapped. Until then, the set is worked out by hand from the same rules.
-- **The examples' locale lint, with Locali 1.0.0-preview.27.** From that release a run of `Forma.slnx` no longer reads
-  the locale files under `examples/`, which `Forma.Examples.slnx` owns, so the move to it lints that solution too and
-  fixes the warnings it reports.
 
 <a id="the-input-routers-host-routes"></a>
 

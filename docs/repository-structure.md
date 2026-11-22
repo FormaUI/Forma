@@ -560,7 +560,8 @@ Forma's packages and take nothing from the repository's build. They are listed i
 **The examples restore into a packages folder of their own**, `artifacts/browser/restored`, which their build
 properties name over a machine's `NUGET_PACKAGES`, so the machine's package cache never holds what the repository
 packed. The browser step packs the solution at the version the root properties file declares, clears that version
-from the examples' packages folder, publishes the examples and drives them.
+from the examples' packages folder, publishes the examples and drives them. On Windows, where every example
+publishes, it lints their solution's locale files once they have published, as the locale lint below sets out.
 
 **The smoke checks** start each example and use it once:
 
@@ -735,6 +736,12 @@ file missing or unlisted, so a package gains or loses a file only by a change to
   typed as that type for its type.
 - **The locale lint** restores `locali`, pinned in `.config/dotnet-tools.json`, and runs it over the solution, so a
   machine without it fetches the pinned version rather than skipping the step.
+- **The examples' locale lint** runs `locali` over `examples/Forma.Examples.slnx` in a run of its own, since a run
+  given a solution reads the files of the projects it loads alone. The examples restore only once their packages
+  are packed, so the browser step makes the run, after it has published every example. It runs on Windows alone,
+  where the Blazor Hybrid examples publish, and elsewhere the gate names it among the checks the machine couldn't
+  run. It reads `examples/.locali.json`, the linting configuration nearest the examples' solution, which allows the
+  locale files each example's build embeds.
 
 No project sets `GenerateDocumentationFile`. A throwaway build lists the undocumented public members:
 

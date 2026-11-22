@@ -1617,7 +1617,7 @@ function Get-BrowserCheckOutcome {
 
 <#
 .SYNOPSIS
-Publishes the browser check's host, its full client, the components host, the WebView check host and the example hosts, runs the examples' smoke checks and drives them.
+Publishes the browser check's host, its full client, the components host, the WebView check host and the example hosts, lints the examples' locales, runs the examples' smoke checks and drives them.
 
 .DESCRIPTION
 The components are checked in each runtime a Web App renders them in, a published client's download is held to
@@ -1628,7 +1628,10 @@ an earlier publish's files would be counted beside the new ones. The example hos
 packages rather than its projects, as a host outside the repository builds: the solution is packed at the version
 the root properties file declares, the examples restore into a packages folder of their own, which their build
 properties name, and that version is cleared from it first, so a package an earlier run restored never stands
-in for the one just packed. The examples' smoke checks run first, each starting
+in for the one just packed. Once every example has published, and so restored, an unfiltered run on Windows lints
+the examples' solution under the linting configuration the examples' folder keeps, as the locale step lints the
+solution. Elsewhere the Blazor Hybrid examples don't publish, so the lint is left out, and the gate names it among
+the checks the machine couldn't run. The examples' smoke checks run first, each starting
 an example afresh and turning a page of the library's pagination, and the browser check after them, each run
 reporting. The WebView check host and the Blazor Hybrid example hosts are published on Windows alone, the one platform WebView2 runs on, and their checks report themselves skipped
 elsewhere; the MAUI example needs the maui-windows workload, which a Windows machine installs once. -Android also
@@ -1647,7 +1650,8 @@ files. An unfiltered run, which the gate makes, builds and runs all of it, into 
 Each run writes its results to a folder of its own under the browser output's results folder, which the step
 empties first. The step finishes every run it was asked for and then lists each check that failed, with how many
 of the runs that ran it failed it and its first error, so a check that fails sometimes shows as a rate. It fails if
-any check failed, if a run wrote no results, or if the checks it selects are none this machine runs.
+any check failed, if a run wrote no results, if the examples' lint reported a diagnostic, or if the checks it
+selects are none this machine runs.
 
 .PARAMETER Context
 The build context.
@@ -1701,6 +1705,9 @@ function Test-BrowserCheck {
     $androidEnvironment = if ($isAndroid) { Get-AndroidEnvironment -Context $Context } else { $null }
     $startAndroidEmulator = ${function:Start-AndroidEmulator}
     $examples = $Context.BrowserExamples
+    $exampleSolution = Join-Path $examples 'Forma.Examples.slnx'
+    $lintsExamples = $isWebViewPublished -and -not $Filter
+    $root = $Context.RepositoryRoot
     $packagesOutput = Join-Path $Context.BrowserOutput 'packages'
     $examplesOutput = Join-Path $Context.BrowserOutput 'examples'
     $packageFiles = Join-Path $Context.RepositoryRoot 'eng' 'package-files.txt'
@@ -1731,6 +1738,10 @@ function Test-BrowserCheck {
 
     if ($isWebViewPublished) {
         $description += ', the Blazor Hybrid ones among them'
+    }
+
+    if ($lintsExamples) {
+        $description += ', and dotnet locali over the examples'' solution'
     }
 
     $description += ', then run the examples'' smoke checks and drive them in a browser, the components in Playwright''s WebKit as well'
@@ -1840,6 +1851,8 @@ function Test-BrowserCheck {
             $androidBuild = (Get-ChildItem -LiteralPath (Join-Path (Split-Path -Parent $androidProject) 'bin' 'Release') -Recurse -Filter '*-Signed.apk' | Sort-Object LastWriteTime | Select-Object -Last 1).FullName
         }
 
+        $isExampleLintFailed = $false
+
         if ($needsExamples) {
             foreach ($folder in @($packagesOutput, $examplesOutput)) {
                 if (Test-Path -LiteralPath $folder) {
@@ -1874,6 +1887,24 @@ function Test-BrowserCheck {
 
                 if ($LASTEXITCODE -ne 0) {
                     return
+                }
+            }
+
+            # Every example has restored from the packages just packed, so their solution is linted here, by the linter
+            # the tool manifest at the repository's root pins; a failure fails the step once the checks have run.
+            if ($lintsExamples) {
+                Push-Location -LiteralPath $root
+                try {
+                    dotnet tool restore --verbosity quiet
+
+                    if ($LASTEXITCODE -eq 0) {
+                        dotnet locali --path $exampleSolution --severity warning
+                    }
+
+                    $isExampleLintFailed = $LASTEXITCODE -ne 0
+                }
+                finally {
+                    Pop-Location
                 }
             }
         }
@@ -2015,6 +2046,10 @@ function Test-BrowserCheck {
             }
         }
 
+        if ($isExampleLintFailed) {
+            Write-Host "   the examples' locale lint failed, as it reported above"
+        }
+
         if ($outcome.FailingChecks.Count -eq 0 -and $outcome.InterruptedChecks.Count -eq 0 -and $outcome.ExecutionCount -gt 0) {
             Write-Host ("   every check passed in every run that ran it, {0} {1} across {2} {3}" -f $outcome.ExecutionCount,
                 $(if ($outcome.ExecutionCount -eq 1) { 'execution' } else { 'executions' }), $runs, $(if ($runs -eq 1) { 'run' } else { 'runs' }))
@@ -2022,7 +2057,7 @@ function Test-BrowserCheck {
 
         # Each run's code is kept so that every run happens, so the step's own outcome is set here rather than left to
         # whichever run happened to be last.
-        $global:LASTEXITCODE = if ($failedRuns.Count -gt 0 -or $outcome.FailingChecks.Count -gt 0 -or $outcome.MissingResults.Count -gt 0 -or $loadFailed) { 1 } else { 0 }
+        $global:LASTEXITCODE = if ($failedRuns.Count -gt 0 -or $outcome.FailingChecks.Count -gt 0 -or $outcome.MissingResults.Count -gt 0 -or $loadFailed -or $isExampleLintFailed) { 1 } else { 0 }
     }.GetNewClosure()
 }
 
@@ -2155,10 +2190,10 @@ function Test-MobileExample {
 Tells which platform checks this machine can run, and why it can't run the others.
 
 .DESCRIPTION
-WebView2 runs on Windows alone, so its checks and the Blazor Hybrid examples run there. Android's checks, the
-components in its web view and the MAUI example's smoke check, need the Android environment .config/android.json
-declares, installed as declared, and the maui-android workload to build for it; the workload is asked about only
-where the environment is ready, since listing the workloads takes a while.
+WebView2 runs on Windows alone, so its checks, the Blazor Hybrid examples and the examples' locale lint, which reads
+them, run there. Android's checks, the components in its web view and the MAUI example's smoke check, need the
+Android environment .config/android.json declares, installed as declared, and the maui-android workload to build
+for it; the workload is asked about only where the environment is ready, since listing the workloads takes a while.
 
 .PARAMETER Context
 The build context.
@@ -2174,7 +2209,7 @@ function Get-PlatformCheck {
     [pscustomobject]@{
         Name   = 'webview'
         CanRun = [bool]$IsWindows
-        Reason = if ($IsWindows) { $null } else { "WebView2's checks and the Blazor Hybrid examples: WebView2 runs on Windows alone" }
+        Reason = if ($IsWindows) { $null } else { "WebView2's checks, the Blazor Hybrid examples and the examples' locale lint, which reads them: WebView2 runs on Windows alone" }
     }
 
     $androidEnvironment = Get-AndroidEnvironment -Context $Context

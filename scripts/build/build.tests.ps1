@@ -86,11 +86,14 @@ $cases = @(
     if ($IsWindows) {
         @{ Name = 'the browser check publishes the WebView check host on Windows'; Script = 'browser.ps1'; Arguments = @(); Expect = @('and the WebView check host') }
         @{ Name = 'the browser check publishes the Blazor Hybrid example hosts on Windows'; Script = 'browser.ps1'; Arguments = @(); Expect = @('the Blazor Hybrid ones among them') }
+        @{ Name = 'the browser check lints the examples'' locales on Windows once it has published every example'; Script = 'browser.ps1'; Arguments = @(); Expect = @("the Blazor Hybrid ones among them, and dotnet locali over the examples' solution, then run the examples' smoke checks") }
     }
     else {
         @{ Name = 'the browser check leaves the WebView check host out where WebView2 cannot run'; Script = 'browser.ps1'; Arguments = @(); Reject = @('WebView check host') }
         @{ Name = 'the browser check leaves the Blazor Hybrid example hosts out where WebView2 cannot run'; Script = 'browser.ps1'; Arguments = @(); Reject = @('Blazor Hybrid') }
+        @{ Name = 'the browser check leaves the examples'' locale lint out where the Blazor Hybrid examples do not publish'; Script = 'browser.ps1'; Arguments = @(); Reject = @('dotnet locali') }
     }
+    @{ Name = 'a filtered browser check leaves the examples'' locale lint out'; Script = 'browser.ps1'; Arguments = @('-Filter', 'FullyQualifiedName~ComposerTests'); Expect = @('-- browser'); Reject = @('dotnet locali') }
     @{ Name = 'mobile builds the MAUI example host for the platform named and does no more'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'Android'); Expect = @('-- mobile', 'for Android'); Reject = @('-- build', '-- test', '-- browser') }
     if ($androidEnvironment.IsReady) {
         @{ Name = 'mobile drives the Android build on the environment''s emulator'; Script = 'mobile.ps1'; Arguments = @('-Platform', 'Android'); Expect = @("then drive it on the Android environment's emulator, $($androidEnvironment.Serial)") }
