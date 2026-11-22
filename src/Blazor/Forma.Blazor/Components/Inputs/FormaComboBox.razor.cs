@@ -363,11 +363,11 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
             }
         }
 
-        // The field commits its text as it's left, and the commit arrives with the text it commits, where the focus leaving can
-        // arrive before the text does; the text is resolved here as leaving resolves it.
-        if (change.IsCommit)
+        // The field commits its text as it's left, and the focus leaving can arrive before the text it commits, so a commit after the
+        // focus has left resolves the text as leaving resolves it; a commit while the field holds the focus, as one on Enter, leaves it.
+        if (change.IsCommit && !_isWithin)
         {
-            if (IsOpen && !_isWithin)
+            if (IsOpen)
             {
                 await Popover.CloseAsync();
             }
