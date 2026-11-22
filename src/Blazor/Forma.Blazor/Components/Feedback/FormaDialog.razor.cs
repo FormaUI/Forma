@@ -43,6 +43,9 @@ public sealed partial class FormaDialog : FormaElementBase
     /// <summary>The size of the dialog.</summary>
     [Parameter] public DialogSize Size { get; set; } = DialogSize.Medium;
 
+    /// <summary>Whether the dialog fills the viewport, without corners, where the viewport is a phone's.</summary>
+    [Parameter] public bool FullScreenOnPhone { get; set; }
+
     /// <summary>The close and footer-action options of the dialog.</summary>
     [Parameter] public DialogOptions Options { get; set; } = DialogOptions.Default;
 
@@ -192,7 +195,8 @@ public sealed partial class FormaDialog : FormaElementBase
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder
             .Add("forma-dialog")
-            .Add(SizeClass);
+            .Add(SizeClass)
+            .Add("is-full-screen-on-phone", FullScreenOnPhone);
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()

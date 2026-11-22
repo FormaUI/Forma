@@ -238,6 +238,22 @@
             Assert.Contains("forma-dialog-medium", dialog.ClassList);
         }
 
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public void Should_fill_a_phone_s_screen_only_where_asked(bool fullScreenOnPhone)
+        {
+            // Arrange
+            using var ctx = new FormaDialogTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaDialog Opened="false" OnClose="@(() => { })" FullScreenOnPhone="@fullScreenOnPhone" />);
+
+            // Assert
+            Assert.Equal(fullScreenOnPhone, cut.Find("dialog").ClassList.Contains("is-full-screen-on-phone"));
+        }
+
         [Fact]
         public void Should_have_close_button_with_aria_label()
         {

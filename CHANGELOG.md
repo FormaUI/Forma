@@ -9,6 +9,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- A [`FormaDialog`](docs/component-catalog.md#formadialog) given `FullScreenOnPhone` fills the viewport, without
+  corners, where the viewport is a phone's.
 - `FormaStepper` draws the steps of an ordered flow as a numbered strip, marking the one the reader is on with
   `aria-current="step"`, its number filled and its name strong. A `StepperStep` carries a step's label, a `Url` it
   links back to on every step but the current one, and `IsCompleted`, which draws a check in place of its number and

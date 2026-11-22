@@ -56,6 +56,24 @@ dialog.forma-dialog::backdrop {
     max-height: 95vh;
 }
 
+/* A dialog asked to fill a phone fills the viewport, edge to edge, below the width a medium dialog needs with its margins
+   either side: 600px at 95% of the viewport, about 40rem. */
+@media (max-width: 40rem) {
+    dialog.forma-dialog.is-full-screen-on-phone {
+        inline-size: 100vw;
+        max-inline-size: 100vw;
+        block-size: 100dvh;
+        max-block-size: 100dvh;
+        margin: 0;
+        border-radius: 0;
+    }
+
+    dialog.forma-dialog.is-full-screen-on-phone .forma-dialog-dialog {
+        block-size: 100%;
+        max-block-size: 100dvh;
+    }
+}
+
 /* ── Header ── */
 .forma-dialog-header {
     display: flex;
