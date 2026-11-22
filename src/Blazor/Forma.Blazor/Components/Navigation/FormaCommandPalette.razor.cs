@@ -3,6 +3,7 @@ namespace Forma.Blazor.Components.Navigation;
 using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
+using Forma.Blazor.Components.Interaction;
 using Forma.Blazor.Components.Virtualization;
 using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop.Text;
@@ -218,7 +219,7 @@ public sealed partial class FormaCommandPalette : FormaElementBase
     private void Rank()
     {
         _rankedCommands = Commands;
-        var ranked = PaletteRanking.Rank(Commands, _query, Context.CultureState.UICulture);
+        var ranked = QueryRanking.Rank(Commands, command => command.Name, command => command.Place, _query, Context.CultureState.UICulture);
         _results = [.. ranked.Select((command, index) => new PaletteEntry(index, command))];
         _activeIndex = 0;
     }
