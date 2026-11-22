@@ -30,7 +30,7 @@ Forma.Blazor/Components/
 ├── (1) Menus/
 │   └── FormaContextMenu
 ├── (1) Navigation/
-│   └── FormaCategorySelector
+│   └── FormaCommandPalette
 └── (1) Windows/
     └── FormaLaunchBar
 
@@ -45,7 +45,7 @@ The components still to build, in the order dependency and reuse suggest. What i
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
+| 1 | `FormaCommandPalette` | Standalone over the dialog, the search box and the input router, and asked for by a host whose destinations and actions outgrow its menus |
 | 2 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
 | 3 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
 | 4 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
@@ -66,14 +66,14 @@ An icon button for adding. Its design is [icon-buttons-design.md](icon-buttons-d
 | **Old pattern** | The "new" button in each page's toolbar, opening the new-item modal |
 | **Used in** | `FormaToolbar` actions, `FormaMultiSelect`'s add-new affordance, and any editor that appends a row |
 
-### `FormaCategorySelector`
+### `FormaCommandPalette`
 
-Two lists side by side, the reader moving items between them to choose a set.
+A dialog searching the commands a host declares, opened by a shortcut or a button, running the one the reader picks.
 
 | | |
 |---|---|
-| **Old pattern** | `lists-src.js` — two-list transfer UI: "available categories" on left, "selected categories" on right. Click item → animated transfer between lists. Hidden input tracks selected IDs |
-| **Used in** | page editor (category.ascx module), product editor |
+| **Old pattern** | None |
+| **Used in** | Any host with more destinations and actions than its menus show at once, each command going to an address or running an action |
 
 ### `FormaContextMenu`
 
