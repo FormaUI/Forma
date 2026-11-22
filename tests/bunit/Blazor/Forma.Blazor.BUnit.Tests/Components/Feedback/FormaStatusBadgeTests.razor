@@ -98,6 +98,26 @@
         }
 
         [Fact]
+        public void Should_read_a_registered_status_s_colours_from_the_theme_s_custom_properties()
+        {
+            // Arrange
+            using var ctx = new FormaStatusBadgeTests();
+            ctx.Services.GetRequiredService<IStatusBadgeCatalog>()
+                .Add(new("published", CssColorValue.FromProperty("--success-subtle-color"), CssColorValue.FromProperty("--success-emphasis-color")));
+
+            // Act
+            var cut = ctx.Render(@<FormaStatusBadge Text="Published" Status="published" />);
+            var style = cut.Find(".forma-status-badge").GetAttribute("style");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("--forma-status-badge-bg-color: var(--success-subtle-color);", style, StringComparison.Ordinal);
+                Assert.Contains("--forma-status-badge-fg-color: var(--success-emphasis-color);", style, StringComparison.Ordinal);
+            });
+        }
+
+        [Fact]
         public void Should_match_a_registered_status_regardless_of_casing()
         {
             // Arrange

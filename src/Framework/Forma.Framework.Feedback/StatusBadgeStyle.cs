@@ -7,9 +7,11 @@ using Forma.Framework.Icons;
 public sealed record StatusBadgeStyle
 {
     /// <summary>Creates a status badge with the given name and colors.</summary>
-    public StatusBadgeStyle(string name, CssColor background, CssColor foreground)
+    public StatusBadgeStyle(string name, CssColorValue background, CssColorValue foreground)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(name);
+        ArgumentNullException.ThrowIfNull(background);
+        ArgumentNullException.ThrowIfNull(foreground);
 
         Name = name;
         Background = background;
@@ -17,10 +19,10 @@ public sealed record StatusBadgeStyle
     }
 
     /// <summary>Background color of the badge.</summary>
-    public CssColor Background { get; }
+    public CssColorValue Background { get; }
 
     /// <summary>Text color of the badge.</summary>
-    public CssColor Foreground { get; }
+    public CssColorValue Foreground { get; }
 
     /// <summary>The marker icon shown before the badge's text.</summary>
     public Icon? Marker { get; init; }

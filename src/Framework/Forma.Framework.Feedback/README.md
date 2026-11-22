@@ -98,8 +98,10 @@ completes it.
 ## Statuses
 
 `IStatusBadgeCatalog` holds the statuses an application defines, each a `StatusBadgeStyle` with
-its `Name`, a `Background` and `Foreground` `CssColor`, and an optional `Marker` icon shown before
-the text so the status reads without color. `Add` registers a status, replacing one of the same
+its `Name`, a `Background` and `Foreground` `CssColorValue`, and an optional `Marker` icon shown before
+the text so the status reads without color. A color is a literal `CssColor`, or a custom property a theme
+defines, `CssColorValue.FromProperty("--success-subtle-color")`, which follows the theme wherever it
+redefines the property. `Add` registers a status, replacing one of the same
 name, `Find(name)` returns one or `null`, and `Statuses` lists them all. `StatusBadgeCatalog`
 matches names regardless of case.
 

@@ -1,6 +1,6 @@
 # Forma.Framework.Css
 
-Typed CSS values and attribute builders for Blazor markup. `CssLength` and `CssColor` render
+Typed CSS values and attribute builders for Blazor markup. `CssLength`, `CssColor` and `CssColorValue` render
 themselves as valid, culture-invariant CSS, and `CssClassBuilder` and `CssStyleBuilder` collect
 what an element carries and render it as one `class` or `style` attribute value.
 
@@ -19,6 +19,7 @@ Every type is created directly; there is nothing to register.
 | `CssLength` | An immutable measurement with a unit, rendered as `20rem`, `6ch` or `50%`. |
 | `CssLengthUnit` | The unit of a `CssLength`: `Ch`, `Em`, `Percent`, `Px` or `Rem`. |
 | `CssColor` | An immutable RGBA color, rendered as `#rrggbb` or `rgba(r, g, b, a)`. |
+| `CssColorValue` | A color as a style takes it: a `CssColor`, or a custom property rendered as `var(--name)`. |
 
 ## Classes
 
@@ -87,6 +88,18 @@ A color is created from a packed 24-bit value or from its channels, with an opti
 CssColor.FromHex(0x2c384a).ToString();             // "#2c384a"
 CssColor.FromRgba(98, 105, 118, 0.12).ToString();  // "rgba(98, 105, 118, 0.12)"
 CssColor.FromRgb(255, 193, 7).IsOpaque;            // true
+```
+
+## Colors a theme defines
+
+A `CssColorValue` is what a style paints with: a literal `CssColor`, or the custom property a theme defines
+a color in, read where the style applies, so a theme that redefines the property recolors what reads it. A
+`CssColor` converts to one implicitly. A property's name starts with two hyphens and holds letters, digits,
+hyphens and underscores; any other name throws `InvalidOperationException`.
+
+```csharp
+CssColorValue.FromProperty("--success-subtle-color").ToString();  // "var(--success-subtle-color)"
+CssColorValue literal = CssColor.FromHex(0x2c384a);               // renders "#2c384a"
 ```
 
 ## License

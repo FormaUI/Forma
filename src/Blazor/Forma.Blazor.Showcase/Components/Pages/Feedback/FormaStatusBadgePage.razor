@@ -30,6 +30,17 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Colors from the Theme"]</h2>
+    <p class="description">@L["A status can name the custom properties its colors are read from, so a theme that redefines them recolors its badges."]</p>
+    <div class="demo-box demo-row">
+        @foreach (var status in ThemeStatuses)
+        {
+            <FormaStatusBadge Text="@status.Label" Status="@status.Name" />
+        }
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Colors without a Status"]</h2>
     <p class="description">@L["One-off badges can pass colors directly instead of registering a status."]</p>
     <div class="demo-box demo-row">

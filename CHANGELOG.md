@@ -21,6 +21,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`FormaFreezePane`](docs/component-catalog.md#formafreezepane), and every strip of tabs or commands built on one,
   keeps the element holding the focus inside it in view as an arrow appearing beside it narrows it, where the focused
   element ended under the arrow.
+- `CssColorValue` is a color as a style takes it: a `CssColor`, which converts to one implicitly, or the custom
+  property a theme defines one in, `CssColorValue.FromProperty("--success-subtle-color")`, rendered as `var(--name)`.
+  A `StatusBadgeStyle`'s colors and `FormaStatusBadge`'s `Background` and `Foreground` are `CssColorValue`s, so a
+  status follows the theme. Code passing a `CssColor` compiles unchanged; to migrate code reading a style's
+  `Background` or `Foreground` as a `CssColor`, read it as a `CssColorValue`.
 - A host's own routes, those its `InputRouterOptions` declares and its `IInputActionHandler` performs, answer on every
   interactive page that renders a Forma component, from that component's first render. They answered only once a
   component on the page had registered with the [input router](docs/input-router-design.md).

@@ -16,10 +16,10 @@ public sealed partial class FormaStatusBadge : FormaElementBase
     [Parameter] public string? Status { get; set; }
 
     /// <summary>The background color of the badge.</summary>
-    [Parameter] public CssColor? Background { get; set; }
+    [Parameter] public CssColorValue? Background { get; set; }
 
     /// <summary>The text color of the badge.</summary>
-    [Parameter] public CssColor? Foreground { get; set; }
+    [Parameter] public CssColorValue? Foreground { get; set; }
 
     /// <summary>The glyph shown before the text.</summary>
     [Parameter] public Icon? Marker { get; set; }
