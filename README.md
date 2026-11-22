@@ -295,6 +295,22 @@ follows from them, hover, focus, links, backdrops and borders among them:
 }
 ```
 
+The canvas, the backdrop every other backdrop is laid on, stands below the paper, `--gray-0`, in every theme. A
+light scale holds it as `--gray-100`. A dark theme, whose scale runs from dark paper at `--gray-0` to light ink at
+`--gray-800`, has no step below its paper, so it sets the canvas too. Every role's `-emphasis-color` but the
+secondary's, a step of the scale, is its solid mixed toward black, which reads stronger on light paper alone, so a dark
+theme sets the emphasis of each of those roles it uses as well:
+
+```css
+:root {
+    --gray-0: #1e1f22;
+    --gray-100: #2b2d31;
+    --gray-800: #f2f3f5;
+    --backdrop-canvas-bg-color: #141517;
+    --primary-emphasis-color: color-mix(in srgb, var(--primary-color) 70%, white);
+}
+```
+
 A component's own hooks are named `--forma-{component}-{part}-{property}` and fall back to the theme's tokens, so a host
 sets one where it differs. A page with a sticky header moves the toasts below it:
 

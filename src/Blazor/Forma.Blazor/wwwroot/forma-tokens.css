@@ -7,7 +7,10 @@
     The theme contract: a theme is a selector that redefines the gray scale and the solid of each
     role. Every other token derives from those by name. A token that points at a scale step or a
     role changes with the theme; a token that points at --white-color or --black-color is the same
-    in every theme.
+    in every theme. The canvas stands below the paper, --gray-0, in every theme, which a scale
+    running from dark paper to light ink holds no step for, so such a theme sets
+    --backdrop-canvas-bg-color too, and the -emphasis-color of each role it uses whose emphasis
+    mixes toward black.
 */
 
 :root {
@@ -156,7 +159,7 @@
        inside a backdrop, one token per BackdropVariant. Regions are told apart by tone and by a
        backdrop's own edge.
        ============================================================ */
-    --backdrop-canvas-bg-color: var(--gray-100);  /* the canvas: the backdrop other backdrops are laid on */
+    --backdrop-canvas-bg-color: var(--gray-100);  /* the canvas: the backdrop other backdrops are laid on, below the paper */
     --backdrop-flat-bg-color: var(--gray-0);      /* a flat backdrop: a panel, a sheet, a content area */
     --backdrop-inset-bg-color: var(--gray-50);    /* an inset backdrop: a header strip, a toolbar band, a table header */
     --backdrop-raised-bg-color: var(--gray-0);    /* a raised backdrop: a card on the canvas, a popover, a dialog */
