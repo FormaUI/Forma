@@ -24,8 +24,8 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | The component suite on iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
-| [The build](#the-build) | Faster tests, a faster gate, and a publish that collides with itself |
-| [The input router's host routes](#the-input-routers-host-routes) | Installed on every page, after the publish collision |
+| [The build](#the-build) | Faster tests, a faster gate, and builds in processes of their own |
+| [The input router's host routes](#the-input-routers-host-routes) | Installed on every page, next |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -155,10 +155,12 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
 
 - **Faster tests.** The suite runs in about 13 seconds on the build on disk, its test projects side by side. The explorer's component tests stand in classes named for their subjects, which run side by side too, taking 5 seconds where one class of 129 took 16, and so do the data view grid's, the data view's project taking 11 seconds in the fast gate where it took 15 to 19. What remains: the Office provider's tests, one class run in turn, set the fast gate's slowest suite at about 10 seconds; and the localization build's integration tests set the full suite's time, one of them running a build for 9 seconds.
 - **A faster gate.** The format check reads each tracked C# file's whitespace, line endings, final newline and charset in about 6 seconds, where it took 132, the build holding the code style; the test step runs on the build the gate has just made; the build's own cases and the task scripts' contract run side by side, in about 20 seconds where they took 60; and a filtered browser run builds what the checks it selects read, a one-runtime run of one class's checks taking under a minute where the same run took three to five. What remains: the locale lint's 32 seconds, which are the linter's own, loading the solution, and which a faster Locali takes up.
-- **A publish that collides with itself.** The browser step's first `dotnet publish` after another build sometimes stops
-  at once in `Forma.Framework.Culture.Browser.Interop`, its compression naming one compressed asset twice; a second run
-  passes, and so does one after `scripts/Stop-MsBuild.ps1` stops the worker nodes earlier builds left. What remains: why
-  the asset is listed twice, traced and fixed next.
+- **Builds in processes of their own.** Every project or solution built from the command line in the repository, by the
+  gate or by hand, starts build processes of its own and uses no MSBuild server, as `Directory.Build.rsp` asks, so it
+  holds each project under the path as it spells it itself. A server or a worker node an earlier build left held a
+  project under that build's spelling, and a build spelling the drive letter in the other case listed
+  `Forma.Framework.Culture.Browser.Interop`'s JS initializer twice and stopped in its compression; the incremental build
+  takes the time it took before.
 
 <a id="the-input-routers-host-routes"></a>
 
@@ -168,7 +170,7 @@ A host's own routes, such as the shortcut that opens a command palette, answer o
 registered with the input router, since its bridge hands the script the host's policy just before the first registration.
 The router is to install the host's policy as the page first renders interactively, so a host route answers on every page,
 as [its design](input-router-design.md#preemptive-routes-are-absolute) means a palette's shortcut to, and
-`FormaCommandPalette`'s own call to `InputRouter.ConfigureAsync()` then goes. It follows the publish collision.
+`FormaCommandPalette`'s own call to `InputRouter.ConfigureAsync()` then goes. It is the next work.
 
 <a id="a-hosts-integration"></a>
 

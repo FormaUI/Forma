@@ -637,6 +637,13 @@ missing.
 and the time left against the run before, and closes with the totals and the failing tests by name. Every step's
 heading gives the time it took the last time it passed, kept under `artifacts/build/`.
 
+**Every build starts build processes of its own.** `Directory.Build.rsp` at the root turns MSBuild's node reuse off
+for every project or solution built from the command line in the repository, by the gate or by hand, and that keeps
+the build off MSBuild's server too, so its processes end with it. A task program, a single file the `dotnet` command
+builds in its own process, reads no response file and has no static web assets. A server or a worker node kept from an
+earlier build holds each project under the path as that build spelled it, and a build spelling the drive letter in the
+other case lists a JS initializer twice and stops in its compression.
+
 **The Showcase stays a check made by hand**, started through `scripts/Start-Showcase.ps1`, since it never exits.
 
 ### CI

@@ -1,0 +1,5 @@
+# Every project or solution built in this repository from the command line starts build processes of its own, which
+# end with it, and uses no MSBuild server. A server or a worker node kept from an earlier build holds each project
+# under the path as that build spelled it, and a build spelling the drive letter in the other case lists a JS
+# initializer twice, once under each spelling, and stops in its compression.
+-nodeReuse:false
