@@ -13,6 +13,14 @@
     "Choose Color": "בחר צבע",
     "The {Field} field must be a hex color.": "השדה {Field} חייב להיות צבע בכתיב הקסדצימלי."
   },
+  "FormaComboBox": {
+    "Show Options": "הצגת אפשרויות",
+    "No matches": "אין תוצאות",
+    "Add \"{Text}\"": "הוספת \"{Text}\"",
+    "[$ plural; one: # option; other: # options; $]": "[$ plural; one: אפשרות אחת; two: שתי אפשרויות; other: # אפשרויות; $]",
+    "\"{Text}\" wasn't added.": "\"{Text}\" לא נוסף.",
+    "\"{Text}\" was added.": "\"{Text}\" נוסף."
+  },
   "FormaDateBox": {
     "Select Date": "בחר תאריך"
   },

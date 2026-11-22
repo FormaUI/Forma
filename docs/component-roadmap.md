@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**24 components not yet implemented, none in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 24 not yet started, and a component in progress stands in the catalog's structure until then.
+**24 components not yet implemented, one in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 23 not yet started, and a component in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -23,8 +23,6 @@ Forma.Blazor/Components/
 │   └── FormaProductOptionsEditor
 ├── (1) Files/
 │   └── FormaMediaPicker
-├── (1) Inputs/
-│   └── FormaComboBox
 ├── (3) Media/
 │   ├── FormaDesignPicker
 │   ├── FormaFontPicker

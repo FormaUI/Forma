@@ -9,6 +9,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- `FormaComboBox` chooses one value from `Options`, a list of `SelectOption`s that narrows as the reader types: every
+  word must start or appear in an option's label, ignoring case and accents, and a label starting with the text comes
+  first. Typing changes only the text and the arrows only the active option; a value is committed when an option is
+  chosen, or when the field is left on text naming exactly one option that can be chosen, and leaving on no text clears
+  a value that can be empty. An `OptionFactory` adds text no option names: the list offers it, the factory creates the
+  option or refuses it, and the field commits and shows the option it answers. A polite status says how many options
+  match, and a statically rendered page chooses in the browser's own list.
 - A `SelectOption`'s `IsDisabled` shows it without letting it be chosen: `FormaSelect` and `FormaMultiSelect` draw it
   in the disabled tone and mark it `aria-disabled` or disable its box, the arrows and the type-ahead pass over it, a press
   chooses nothing, and the browser's own list a static page draws disables it unless it's the option chosen.

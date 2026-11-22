@@ -1,0 +1,39 @@
+@page "/{Runtime}/combo-box"
+
+@* A combo box of time zones bound in a form to Madrid, and one of teams that adds the name typed where the list lacks it, each value
+   bound shown where the check reads it. *@
+<EditForm Model="_model">
+    <FormaComboBox TValue="int?" Id="check" @bind-Value="_model.Zone" Options="Zones" Label="Time zone" />
+    <FormaComboBox TValue="int?" Id="team" @bind-Value="_model.Team" Options="_teams" Label="Team" OptionFactory="AddTeamAsync" />
+</EditForm>
+<output id="result">@_model.Zone</output>
+<output id="team-result">@_model.Team</output>
+
+@code {
+    private static readonly IReadOnlyList<SelectOption<int?>> Zones =
+    [
+        new(1, "(UTC−03:00) Buenos Aires"),
+        new(2, "(UTC+01:00) Madrid"),
+        new(3, "(UTC−05:00) Bogotá"),
+        new(4, "(UTC+01:00) Berlin"),
+    ];
+
+    private readonly Entry _model = new();
+
+    private List<SelectOption<int?>> _teams = [new(1, "Real Madrid"), new(2, "Valencia CF")];
+
+    private Task<SelectOption<int?>?> AddTeamAsync(string name)
+    {
+        var team = new SelectOption<int?>(_teams.Count + 1, name);
+        _teams = [.. _teams, team];
+
+        return Task.FromResult<SelectOption<int?>?>(team);
+    }
+
+    private sealed class Entry
+    {
+        public int? Zone { get; set; } = 2;
+
+        public int? Team { get; set; }
+    }
+}

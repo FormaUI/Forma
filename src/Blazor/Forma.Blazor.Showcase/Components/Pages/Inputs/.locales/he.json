@@ -40,6 +40,23 @@
     "Primary": "ראשי",
     "Secondary": "משני"
   },
+  "FormaComboBoxPage": {
+    "A field whose list narrows as you type: every word typed must start or appear in an option, ignoring case and accents, and an option starting with the text comes first. Typing and the arrows move nothing but the text and the highlighted option; a value is committed only when one is chosen, or when the field is left on text that names exactly one option.": "שדה שהרשימה שלו מצטמצמת תוך כדי הקלדה: כל מילה שמוקלדת חייבת לפתוח אפשרות או להופיע בה, בלי תלות ברישיות ובסימני הניקוד, ואפשרות שמתחילה בטקסט מופיעה ראשונה. ההקלדה והחצים מזיזים רק את הטקסט ואת האפשרות המודגשת; ערך נשמר רק כשבוחרים אחד, או כשיוצאים מהשדה עם טקסט שנוקב בדיוק באפשרות אחת.",
+    "Hundreds of Options": "מאות אפשרויות",
+    "Every time zone the system knows, drawn as the list scrolls. Type part of a city's name, in any case and with or without its accents.": "כל אזור זמן שהמערכת מכירה, מצויר תוך כדי גלילת הרשימה. הקלידו חלק משם של עיר, בכל רישיות ועם סימנים מבחינים או בלעדיהם.",
+    "Time zone": "אזור זמן",
+    "Type a city": "הקלידו עיר",
+    "Value": "ערך",
+    "Adding a Value the List Lacks": "הוספת ערך שחסר ברשימה",
+    "Where the text names no option exactly, the list offers to add it. The page creates the option, refusing a name shorter than three letters, and the field commits the one it answers.": "כשהטקסט אינו נוקב בדיוק באף אפשרות, הרשימה מציעה להוסיף אותו. הדף יוצר את האפשרות, ודוחה שם קצר משלוש אותיות, והשדה שומר את האפשרות שהוחזרה.",
+    "Team": "קבוצה",
+    "An Option That Can't Be Chosen": "אפשרות שאי אפשר לבחור",
+    "An option can be shown but not chosen: it reads in the disabled tone, the arrows pass over it, and neither a press nor its name typed in full commits it.": "אפשרות יכולה להופיע בלי שאפשר יהיה לבחור בה: היא מוצגת בגוון המושבת, החצים מדלגים עליה, ולא לחיצה עליה ולא הקלדת שמה המלא שומרות אותה.",
+    "Plan": "תוכנית",
+    "Read-Only and Disabled": "לקריאה בלבד ומושבת",
+    "Read-only plan": "תוכנית לקריאה בלבד",
+    "Disabled plan": "תוכנית מושבתת"
+  },
   "FormaCurrencyInputPage": {
     "A field for an amount in a currency the application names. The amount is typed as the reader's culture writes a number, the currency's symbol stands where that culture writes it, and the currency decides how many decimal places an amount carries.": "שדה לסכום במטבע שהיישום קובע. הסכום מוקלד כפי שתרבות הקורא כותבת מספר, סמל המטבע עומד במקום שבו התרבות כותבת אותו, והמטבע קובע כמה ספרות אחרי הנקודה יש לסכום.",
     "A price in US dollars, shown with two decimal places. A third place is reported rather than rounded.": "מחיר בדולרים אמריקאיים, מוצג עם שתי ספרות אחרי הנקודה. ספרה שלישית מדווחת ולא מעוגלת.",

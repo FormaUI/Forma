@@ -1,0 +1,544 @@
+@inherits FormaBunitContext
+@using Forma.Framework.Browser
+@code {
+    public sealed class Component
+    {
+        private static readonly List<SelectOption<int?>> Zones =
+        [
+            new(1, "(UTC−03:00) Buenos Aires"),
+            new(2, "(UTC+01:00) Madrid"),
+            new(3, "(UTC−05:00) Bogotá"),
+            new(4, "(UTC+01:00) Berlin"),
+        ];
+
+        private static List<string> GetEntries<TComponent>(IRenderedComponent<TComponent> cut)
+            where TComponent : IComponent
+            => [.. cut.FindAll("[role=option]").Select(option => option.TextContent.Trim())];
+
+        private static string? GetActiveEntry<TComponent>(IRenderedComponent<TComponent> cut)
+            where TComponent : IComponent
+            => cut.Find("input").GetAttribute("aria-activedescendant") is { } id ? cut.Find($"#{id}").TextContent.Trim() : null;
+
+        private static Task PressAsync<TComponent>(InputRouterProbe router, IRenderedComponent<TComponent> cut, string action, string key)
+            where TComponent : class, IComponent
+            => router.RouteAsync(((IRenderedComponent<IComponent>)cut).FindComponent<FormaComboBox<int?>>().Instance.RootElement, action, key);
+
+        [Fact]
+        public void Should_show_the_committed_option_s_label_in_a_combobox_field()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var model = new FakeModel { Status = 2 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Assert
+            var input = cut.Find("input");
+            Assert.Multiple(
+                () => Assert.Equal("combobox", input.GetAttribute("role")),
+                () => Assert.Equal("list", input.GetAttribute("aria-autocomplete")),
+                () => Assert.Equal("false", input.GetAttribute("aria-expanded")),
+                () => Assert.Equal("(UTC+01:00) Madrid", input.GetAttribute("value")),
+                () => Assert.Contains("Time zone", cut.Find(".forma-field-label").TextContent, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_narrow_the_list_by_every_word_typed_ignoring_case_and_accents_without_changing_the_value()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Status = 2 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.TypeAsync(cut.Find("input"), "BOGOTA");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["(UTC−05:00) Bogotá"], GetEntries(cut)),
+                () => Assert.Equal("true", cut.Find("input").GetAttribute("aria-expanded")),
+                () => Assert.Equal("(UTC−05:00) Bogotá", GetActiveEntry(cut)),
+                () => Assert.Equal(2, model.Status));
+        }
+
+        [Fact]
+        public async Task Should_rank_a_label_starting_with_the_text_before_one_that_holds_it_later()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel();
+            List<SelectOption<int?>> options = [new(1, "Real Madrid Castilla"), new(2, "Madrid"), new(3, "Atlético de Madrid")];
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="team" @bind-Value="model.Status" Options="options" Label="Team" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.TypeAsync(cut.Find("input"), "madrid");
+
+            // Assert
+            Assert.Equal(["Madrid", "Real Madrid Castilla", "Atlético de Madrid"], GetEntries(cut));
+        }
+
+        [Fact]
+        public async Task Should_move_the_active_option_with_the_arrows_and_commit_it_with_enter_alone()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel { Status = 1 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Act
+            await PressAsync(router, cut, "combobox.next", "ArrowDown");
+            var openedOn = GetActiveEntry(cut);
+            await PressAsync(router, cut, "combobox.next", "ArrowDown");
+            var movedTo = GetActiveEntry(cut);
+            var valueWhileMoving = model.Status;
+            await PressAsync(router, cut, "combobox.choose", "Enter");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("(UTC−03:00) Buenos Aires", openedOn),
+                () => Assert.Equal("(UTC+01:00) Madrid", movedTo),
+                () => Assert.Equal(1, valueWhileMoving),
+                () => Assert.Equal(2, model.Status),
+                () => Assert.Equal("false", cut.Find("input").GetAttribute("aria-expanded")));
+        }
+
+        [Fact]
+        public async Task Should_name_an_active_option_that_is_drawn()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Act
+            await PressAsync(router, cut, "combobox.previous", "ArrowUp");
+
+            // Assert
+            var id = cut.Find("input").GetAttribute("aria-activedescendant");
+            Assert.Multiple(
+                () => Assert.NotNull(id),
+                () => Assert.Equal("true", cut.Find($"#{id}").GetAttribute("aria-selected")),
+                () => Assert.Equal("(UTC+01:00) Berlin", cut.Find($"#{id}").TextContent.Trim()));
+        }
+
+        [Theory]
+        [InlineData("(utc−05:00) bogota", 3)]
+        [InlineData("  (UTC−05:00) BOGOTÁ  ", 3)]
+        [InlineData("bogo", 2)]
+        public async Task Should_commit_on_leaving_only_text_that_names_an_option_exactly(string typed, int expected)
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Status = 2 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+            await fields.TypeAsync(cut.Find("input"), typed);
+
+            // Act
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(expected, model.Status),
+                () => Assert.Equal(Zones.Single(option => option.Value == expected).Label, cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("false", cut.Find("input").GetAttribute("aria-expanded")));
+        }
+
+        [Fact]
+        public async Task Should_commit_nothing_on_leaving_text_two_options_share()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Status = 1 };
+            List<SelectOption<int?>> options = [new(1, "Real Madrid"), new(2, "Valencia"), new(3, "Valencia")];
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="team" @bind-Value="model.Status" Options="options" Label="Team" />
+            </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+            await fields.TypeAsync(cut.Find("input"), "valencia");
+            var entries = GetEntries(cut);
+
+            // Act
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Valencia", "Valencia"], entries),
+                () => Assert.Equal(1, model.Status),
+                () => Assert.Equal("Real Madrid", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_pass_over_an_option_that_can_t_be_chosen_and_never_commit_it()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel { Status = 1 };
+            List<SelectOption<int?>> options = [new(1, "Free"), new(2, "Team") { IsDisabled = true }, new(3, "Enterprise")];
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="plan" @bind-Value="model.Status" Options="options" Label="Plan" />
+            </FakeFormHost>);
+
+            // Act
+            await PressAsync(router, cut, "combobox.next", "ArrowDown");
+            await PressAsync(router, cut, "combobox.next", "ArrowDown");
+            var movedTo = GetActiveEntry(cut);
+            var disabledMark = cut.FindAll("[role=option]")[1].GetAttribute("aria-disabled");
+            cut.FindAll("[role=option]")[1].Click();
+            var afterPress = model.Status;
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+            await fields.TypeAsync(cut.Find("input"), "team");
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Enterprise", movedTo),
+                () => Assert.Equal("true", disabledMark),
+
+                () => Assert.Equal(1, afterPress),
+                () => Assert.Equal(1, model.Status),
+                () => Assert.Equal("Free", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_clear_a_value_that_can_be_empty_on_leaving_no_text()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Status = 2 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+            await fields.TypeAsync(cut.Find("input"), string.Empty);
+
+            // Act
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Null(model.Status);
+        }
+
+        [Fact]
+        public async Task Should_keep_a_value_that_can_t_be_empty_on_leaving_no_text()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Number = 2 };
+            List<SelectOption<int>> options = [new(1, "One"), new(2, "Two")];
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int" Id="count" @bind-Value="model.Number" Options="options" Label="Count" />
+            </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+            await fields.TypeAsync(cut.Find("input"), string.Empty);
+
+            // Act
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(2, model.Number),
+                () => Assert.Equal("Two", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public void Should_show_no_text_for_a_value_no_option_carries_where_it_s_empty()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" Placeholder="Choose a zone" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(string.Empty, cut.Find("input").GetAttribute("value") ?? string.Empty),
+                () => Assert.Equal("Choose a zone", cut.Find("input").GetAttribute("placeholder")));
+        }
+
+        [Fact]
+        public async Task Should_restore_the_committed_text_on_escape_once_the_list_is_closed()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel { Status = 2 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find("input"), "ber");
+            await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.CloseAsync());
+
+            // Act
+            await PressAsync(router, cut, "combobox.restore", "Escape");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("(UTC+01:00) Madrid", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal(2, model.Status));
+        }
+
+        [Fact]
+        public async Task Should_say_no_option_matches_where_none_does()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.TypeAsync(cut.Find("input"), "tokyo");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(GetEntries(cut)),
+                () => Assert.Equal("No matches", cut.Find(".forma-combo-box-empty").TextContent.Trim()),
+                () => Assert.Equal("No matches", cut.Find("[role=status]").TextContent.Trim()),
+                () => Assert.Null(cut.Find("input").GetAttribute("aria-activedescendant")));
+        }
+
+        [Fact]
+        public async Task Should_say_how_many_options_match_as_the_text_changes()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.TypeAsync(cut.Find("input"), "01:00");
+
+            // Assert
+            Assert.Equal("2 options", cut.Find("[role=status]").TextContent.Trim());
+        }
+
+        [Fact]
+        public async Task Should_offer_to_add_text_no_option_names_exactly_only_where_a_factory_is_set()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel();
+            List<SelectOption<int?>> options = [new(1, "Real Madrid"), new(2, "Valencia")];
+            Func<string, Task<SelectOption<int?>?>> factory = text => Task.FromResult<SelectOption<int?>?>(new(9, text));
+            var adding = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="adding" @bind-Value="model.Status" Options="options" Label="Team" OptionFactory="factory" />
+            </FakeFormHost>);
+            var listing = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="listing" @bind-Value="model.Status" Options="options" Label="Team" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.TypeAsync(adding.Find("input"), "Getafe");
+            var offered = GetEntries(adding);
+            await fields.TypeAsync(adding.Find("input"), "valencia");
+            var exact = GetEntries(adding);
+            await fields.TypeAsync(listing.Find("input"), "Getafe");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Add \"Getafe\""], offered),
+                () => Assert.Equal(["Valencia"], exact),
+                () => Assert.Empty(GetEntries(listing)));
+        }
+
+        [Fact]
+        public async Task Should_commit_the_option_the_factory_creates_and_show_it_before_the_host_s_options_hold_it()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel();
+            List<SelectOption<int?>> options = [new(1, "Real Madrid")];
+            var created = new TaskCompletionSource<SelectOption<int?>?>();
+            string? asked = null;
+            Func<string, Task<SelectOption<int?>?>> factory = text => { asked = text; return created.Task; };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="team" @bind-Value="model.Status" Options="options" Label="Team" OptionFactory="factory" />
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find("input"), " Getafe ");
+
+            // Act
+            var adding = PressAsync(router, cut, "combobox.choose", "Enter");
+            var busy = cut.Find("input").GetAttribute("aria-busy");
+            var offerWhileAdding = cut.Find("[role=option]").GetAttribute("aria-disabled");
+            created.SetResult(new SelectOption<int?>(9, "Getafe CF"));
+            await adding;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Getafe", asked),
+                () => Assert.Equal("true", busy),
+                () => Assert.Equal("true", offerWhileAdding),
+                () => Assert.Equal(9, model.Status),
+                () => Assert.Equal("Getafe CF", cut.Find("input").GetAttribute("value")),
+                () => Assert.Null(cut.Find("input").GetAttribute("aria-busy")),
+                () => Assert.Equal("\"Getafe CF\" was added.", cut.Find("[role=status]").TextContent.Trim()));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_text_and_the_value_where_the_factory_refuses_it()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel { Status = 1 };
+            List<SelectOption<int?>> options = [new(1, "Real Madrid")];
+            Func<string, Task<SelectOption<int?>?>> factory = _ => Task.FromResult<SelectOption<int?>?>(null);
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="team" @bind-Value="model.Status" Options="options" Label="Team" OptionFactory="factory" />
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find("input"), "Getafe");
+
+            // Act
+            await PressAsync(router, cut, "combobox.choose", "Enter");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1, model.Status),
+                () => Assert.Equal("Getafe", fields.GetText(cut.Find("input"))),
+                () => Assert.Equal("true", cut.Find("input").GetAttribute("aria-expanded")),
+                () => Assert.Equal("\"Getafe\" wasn't added.", cut.Find("[role=status]").TextContent.Trim()));
+        }
+
+        [Fact]
+        public async Task Should_give_up_an_edit_for_a_value_bound_from_outside()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Status = 1 };
+            var cut = ctx.Render<FormaComboBox<int?>>(parameters => parameters
+                .Add(p => p.Id, "zone")
+                .Add(p => p.Label, "Time zone")
+                .Add(p => p.Options, Zones)
+                .Add(p => p.Value, model.Status)
+                .Add(p => p.ValueExpression, () => model.Status));
+            await fields.TypeAsync(cut.Find("input"), "ber");
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Value, 3));
+
+            // Assert
+            Assert.Equal("(UTC−05:00) Bogotá", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public async Task Should_write_its_messages_and_the_host_s_labels_again_as_the_culture_changes()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+            await fields.TypeAsync(cut.Find("input"), "tokyo");
+
+            // Act
+            await ctx.ChangeCultureAsync("es", "es");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Sin resultados", cut.Find(".forma-combo-box-empty").TextContent.Trim()),
+                () => Assert.Equal("Mostrar Opciones", cut.Find(".forma-combo-box-toggle button").GetAttribute("aria-label")));
+        }
+
+        [Fact]
+        public void Should_choose_in_the_browser_s_own_list_before_the_renderer_is_interactive_each_option_posting_its_value()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel { Status = 2 };
+            List<SelectOption<int?>> options = [new(1, "Free") { IsDisabled = true }, new(2, "Team") { IsDisabled = true }, new(3, "Enterprise")];
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="plan" @bind-Value="model.Status" Options="options" Label="Plan" Required="true" name="Plan" />
+            </FakeFormHost>);
+
+            // Assert
+            var select = cut.Find("select");
+            Assert.Multiple(
+                () => Assert.Equal("Plan", select.GetAttribute("name")),
+                () => Assert.True(select.HasAttribute("required")),
+                () => Assert.Equal(["1", "2", "3"], cut.FindAll("option").Select(option => option.GetAttribute("value"))),
+                () => Assert.Equal(["Team"], cut.FindAll("option[selected]").Select(option => option.TextContent)),
+                () => Assert.Equal([true, false, false], cut.FindAll("option").Select(option => option.HasAttribute("disabled"))));
+        }
+
+        [Fact]
+        public void Should_post_its_value_read_only_before_the_renderer_is_interactive_offering_no_other()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel { Status = 2 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" ReadOnly="true" name="Zone" />
+            </FakeFormHost>);
+
+            // Assert
+            var select = cut.Find("select");
+            Assert.Multiple(
+                () => Assert.False(select.HasAttribute("disabled")),
+                () => Assert.Equal("true", select.GetAttribute("aria-readonly")),
+                () => Assert.Equal(["2"], cut.FindAll("option").Select(option => option.GetAttribute("value"))));
+        }
+    }
+}

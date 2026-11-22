@@ -14,6 +14,14 @@
     "Choose Color": "Elegir Color",
     "The {Field} field must be a hex color.": "El campo {Field} debe ser un color hexadecimal."
   },
+  "FormaComboBox": {
+    "Show Options": "Mostrar Opciones",
+    "No matches": "Sin resultados",
+    "Add \"{Text}\"": "Agregar \"{Text}\"",
+    "[$ plural; one: # option; other: # options; $]": "[$ plural; one: # opción; other: # opciones; $]",
+    "\"{Text}\" wasn't added.": "\"{Text}\" no se agregó.",
+    "\"{Text}\" was added.": "Se agregó \"{Text}\"."
+  },
   "FormaDateBox": {
     "Select Date": "Seleccionar Fecha"
   },

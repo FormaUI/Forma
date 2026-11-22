@@ -1,0 +1,116 @@
+/* ============================================================
+   FormaComboBox — a text field whose list narrows as it's typed in
+   The field's box comes from forma-input.css; the list is a panel
+   opening beneath it, each option a target.
+   ============================================================ */
+
+.forma-combo-box {
+    position: relative;
+    display: block;
+}
+
+/* Room for the button at the field's end: its inset from the edge and its own width. */
+.forma-combo-box > input {
+    padding-inline-end: calc(var(--space-2) + var(--target-size-sm));
+}
+
+.forma-combo-box-toggle {
+    position: absolute;
+    inset-block-start: 50%;
+    inset-inline-end: var(--space-1);
+    transform: translateY(-50%);
+    display: inline-flex;
+}
+
+.forma-combo-box-list {
+    /* Six options show at once, and the list scrolls through the rest. */
+    max-block-size: calc(var(--target-size-md) * 6);
+    min-inline-size: min(16rem, calc(100vw - var(--space-4)));
+    max-inline-size: calc(100vw - var(--space-4));
+    overflow-y: auto;
+    padding-block: var(--space-1);
+    background: var(--input-bg-color);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-medium);
+}
+
+.forma-combo-box-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-block-size: var(--target-size-md);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary-color);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.forma-combo-box-option-label {
+    flex: 1;
+    min-inline-size: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+@media (hover: hover) {
+    .forma-combo-box-option:not(.forma-combo-box-option-disabled):hover {
+        background-color: var(--hover-bg-color);
+    }
+}
+
+/* The active option is outlined as well as tinted, so it reads without color and in forced colors. */
+.forma-combo-box-option-active {
+    background-color: var(--hover-bg-color);
+    outline: 2px solid var(--focus-color);
+    outline-offset: -2px;
+}
+
+/* The committed option is strong and checked, apart from the active one. */
+.forma-combo-box-option-current {
+    font-weight: 600;
+}
+
+.forma-combo-box-option-check {
+    flex-shrink: 0;
+    color: var(--primary-color);
+}
+
+/* An option that can't be chosen, or the offer to add while an addition is under way, reads in the disabled tone. */
+.forma-combo-box-option-disabled {
+    color: var(--disabled-text-color);
+    cursor: default;
+}
+
+/* The offer to add is set apart from the options by its glyph and its quoted text. */
+.forma-combo-box-option-add {
+    color: var(--primary-emphasis-color);
+}
+
+.forma-combo-box-empty {
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary-color);
+}
+
+/* Visually hidden; the count of matches, and an addition's outcome, read to a screen reader. */
+.forma-combo-box-status {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+    .forma-combo-box-list {
+        max-block-size: calc(var(--target-size-touch) * 6);
+    }
+
+    .forma-combo-box-option {
+        min-block-size: var(--target-size-touch);
+    }
+}

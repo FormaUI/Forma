@@ -1,0 +1,100 @@
+@page "/combo-box"
+@attribute [ShowcasePage("FormaComboBox")]
+@rendermode InteractiveServer
+@using Microsoft.AspNetCore.Components.Forms
+@using Forma.Blazor.Components.Inputs
+
+<h1>FormaComboBox</h1>
+<p class="description">@L["A field whose list narrows as you type: every word typed must start or appear in an option, ignoring case and accents, and an option starting with the text comes first. Typing and the arrows move nothing but the text and the highlighted option; a value is committed only when one is chosen, or when the field is left on text that names exactly one option."]</p>
+
+<EditForm Model="Model" FormName="combo-box-demo" OnValidSubmit="HandleSubmit">
+    <div class="demo-section">
+        <h2>@L["Hundreds of Options"]</h2>
+        <p class="description">@L["Every time zone the system knows, drawn as the list scrolls. Type part of a city's name, in any case and with or without its accents."]</p>
+        <div class="demo-box">
+            <FormaComboBox TValue="string" @bind-Value="Model.TimeZone" Options="TimeZoneOptions" Label="@L["Time zone"]" Placeholder="@L["Type a city"]" />
+            <p class="demo-note">@L["Value"]: <code>@(Model.TimeZone ?? "—")</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Adding a Value the List Lacks"]</h2>
+        <p class="description">@L["Where the text names no option exactly, the list offers to add it. The page creates the option, refusing a name shorter than three letters, and the field commits the one it answers."]</p>
+        <div class="demo-box">
+            <FormaComboBox TValue="int?" @bind-Value="Model.Team" Options="_teams" Label="@L["Team"]" OptionFactory="CreateTeamAsync" />
+            <p class="demo-note">@L["Value"]: <code>@(Model.Team?.ToString(System.Globalization.CultureInfo.InvariantCulture) ?? "—")</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["An Option That Can't Be Chosen"]</h2>
+        <p class="description">@L["An option can be shown but not chosen: it reads in the disabled tone, the arrows pass over it, and neither a press nor its name typed in full commits it."]</p>
+        <div class="demo-box">
+            <FormaComboBox TValue="int?" @bind-Value="Model.Plan" Options="PlanOptions" Label="@L["Plan"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>@L["Read-Only and Disabled"]</h2>
+        <div class="demo-box">
+            <div class="demo-stack">
+                <FormaComboBox TValue="int?" @bind-Value="Model.ReadOnlyPlan" Options="PlanOptions" Label="@L["Read-only plan"]" ReadOnly="true" />
+                <FormaComboBox TValue="int?" @bind-Value="Model.DisabledPlan" Options="PlanOptions" Label="@L["Disabled plan"]" Disabled="true" />
+            </div>
+        </div>
+    </div>
+</EditForm>
+
+@code {
+    private static readonly IReadOnlyList<SelectOption<string?>> TimeZoneOptions =
+        [.. TimeZoneInfo.GetSystemTimeZones().Select(zone => new SelectOption<string?>(zone.Id, zone.DisplayName))];
+
+    private static readonly IReadOnlyList<SelectOption<int?>> PlanOptions =
+    [
+        new(1, "Free"),
+        new(2, "Team"),
+        new(3, "Enterprise") { IsDisabled = true },
+    ];
+
+    private List<SelectOption<int?>> _teams =
+    [
+        new(1, "Real Madrid"),
+        new(2, "FC Barcelona"),
+        new(3, "Atlético de Madrid"),
+        new(4, "Valencia CF"),
+        new(5, "Sevilla FC"),
+    ];
+
+    private ComboBoxDemoModel Model { get; set; } = new()
+    {
+        ReadOnlyPlan = 2,
+        DisabledPlan = 1,
+    };
+
+    // A short pause stands for the server creating the team; a name shorter than three letters is refused.
+    private async Task<SelectOption<int?>?> CreateTeamAsync(string name)
+    {
+        await Task.Delay(TimeSpan.FromMilliseconds(400));
+
+        if (name.Length < 3)
+        {
+            return null;
+        }
+
+        var team = new SelectOption<int?>(_teams.Count + 1, name);
+        _teams = [.. _teams, team];
+
+        return team;
+    }
+
+    private void HandleSubmit() { }
+
+    private sealed class ComboBoxDemoModel
+    {
+        public string? TimeZone { get; set; }
+        public int? Team { get; set; }
+        public int? Plan { get; set; }
+        public int? ReadOnlyPlan { get; set; }
+        public int? DisabledPlan { get; set; }
+    }
+}

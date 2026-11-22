@@ -193,6 +193,94 @@ public sealed class PickersTests
         }
     }
 
+    public sealed class ComboBox(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_narrow_its_list_to_the_text_typed_and_commit_the_active_option_only_on_enter(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "combo-box");
+            await using var _ = context;
+            var field = page.Locator("#check");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
+
+            // Act — "bogota", without its accent, leaves Bogotá alone in the list, and active
+            await field.FillAsync("bogota");
+            await ComponentChecks.WaitForInputRouteAsync(page, "#check", "combobox.choose");
+
+            // Assert — the field names an option that is drawn, and nothing is committed until Enter
+            await Assertions.Expect(page.Locator("#check-list [role=option]")).ToHaveCountAsync(1);
+            var activeId = await field.GetAttributeAsync("aria-activedescendant");
+            await Assertions.Expect(page.Locator($"#{activeId}")).ToHaveTextAsync("(UTC−05:00) Bogotá");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("2");
+            await field.PressAsync("Enter");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("3");
+            await Assertions.Expect(page.Locator("#check-list")).ToBeHiddenAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_commit_on_leaving_text_that_names_one_option_exactly(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "combo-box");
+            await using var _ = context;
+            var field = page.Locator("#check");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
+
+            // Act
+            await field.FillAsync("(utc+01:00) BERLIN");
+            await field.PressAsync("Tab");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("4");
+            await Assertions.Expect(field).ToHaveValueAsync("(UTC+01:00) Berlin");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_add_a_name_its_list_lacks_and_commit_it(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "combo-box");
+            await using var _ = context;
+            var field = page.Locator("#team");
+            await ComponentChecks.WaitForInteractionAsync(page, "#team", "edits");
+
+            // Act — the list offers only to add Getafe, which Enter takes
+            await field.FillAsync("Getafe");
+            await ComponentChecks.WaitForInputRouteAsync(page, "#team", "combobox.choose");
+            await Assertions.Expect(page.Locator("#team-list [role=option]")).ToHaveTextAsync("Add \"Getafe\"");
+            await field.PressAsync("Enter");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#team-result")).ToHaveTextAsync("3");
+            await Assertions.Expect(field).ToHaveValueAsync("Getafe");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_leave_an_enter_that_ends_a_composition_to_the_input_method(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "combo-box");
+            await using var _ = context;
+            var field = page.Locator("#check");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
+            await field.FillAsync("bogota");
+            await ComponentChecks.WaitForInputRouteAsync(page, "#check", "combobox.choose");
+
+            // Act — the Enter an input method sends to end its composition
+            await field.EvaluateAsync("field => field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', isComposing: true, bubbles: true, cancelable: true }))");
+
+            // Assert — nothing committed, and the list still open
+            await ComponentChecks.MakeRoundTripAsync(page);
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("2");
+            await Assertions.Expect(page.Locator("#check-list")).ToBeVisibleAsync();
+        }
+    }
+
     public sealed class TimeBox(BrowserHost host)
     {
         [Theory]

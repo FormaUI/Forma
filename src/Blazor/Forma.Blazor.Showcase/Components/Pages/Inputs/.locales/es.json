@@ -41,6 +41,23 @@
     "Primary": "Primario",
     "Secondary": "Secundario"
   },
+  "FormaComboBoxPage": {
+    "A field whose list narrows as you type: every word typed must start or appear in an option, ignoring case and accents, and an option starting with the text comes first. Typing and the arrows move nothing but the text and the highlighted option; a value is committed only when one is chosen, or when the field is left on text that names exactly one option.": "Un campo cuya lista se reduce mientras escribes: cada palabra escrita debe empezar o aparecer en una opción, sin importar mayúsculas ni acentos, y una opción que empieza por el texto va primero. Escribir y las flechas solo mueven el texto y la opción resaltada; un valor se confirma solo al elegir uno, o al salir del campo con un texto que nombra exactamente una opción.",
+    "Hundreds of Options": "Cientos de Opciones",
+    "Every time zone the system knows, drawn as the list scrolls. Type part of a city's name, in any case and with or without its accents.": "Cada zona horaria que conoce el sistema, dibujada a medida que la lista se desplaza. Escribe parte del nombre de una ciudad, en mayúsculas o minúsculas y con o sin acentos.",
+    "Time zone": "Zona horaria",
+    "Type a city": "Escribe una ciudad",
+    "Value": "Valor",
+    "Adding a Value the List Lacks": "Agregar un Valor que Falta en la Lista",
+    "Where the text names no option exactly, the list offers to add it. The page creates the option, refusing a name shorter than three letters, and the field commits the one it answers.": "Cuando el texto no nombra exactamente ninguna opción, la lista ofrece agregarlo. La página crea la opción, rechazando un nombre de menos de tres letras, y el campo confirma la que devuelve.",
+    "Team": "Equipo",
+    "An Option That Can't Be Chosen": "Una Opción que No Se Puede Elegir",
+    "An option can be shown but not chosen: it reads in the disabled tone, the arrows pass over it, and neither a press nor its name typed in full commits it.": "Una opción puede mostrarse sin poder elegirse: se lee en el tono deshabilitado, las flechas la pasan por alto, y ni pulsarla ni escribir su nombre completo la confirma.",
+    "Plan": "Plan",
+    "Read-Only and Disabled": "Solo Lectura y Deshabilitado",
+    "Read-only plan": "Plan de solo lectura",
+    "Disabled plan": "Plan deshabilitado"
+  },
   "FormaCurrencyInputPage": {
     "A field for an amount in a currency the application names. The amount is typed as the reader's culture writes a number, the currency's symbol stands where that culture writes it, and the currency decides how many decimal places an amount carries.": "Un campo para un monto en una moneda que nombra la aplicación. El monto se escribe como la cultura del lector escribe un número, el símbolo de la moneda va donde esa cultura lo escribe, y la moneda decide cuántos decimales lleva un monto.",
     "A price in US dollars, shown with two decimal places. A third place is reported rather than rounded.": "Un precio en dólares estadounidenses, mostrado con dos decimales. Un tercer decimal se informa en lugar de redondearse.",
