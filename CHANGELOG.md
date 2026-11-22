@@ -26,6 +26,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   A `StatusBadgeStyle`'s colors and `FormaStatusBadge`'s `Background` and `Foreground` are `CssColorValue`s, so a
   status follows the theme. Code passing a `CssColor` compiles unchanged; to migrate code reading a style's
   `Background` or `Foreground` as a `CssColor`, read it as a `CssColorValue`.
+- A [`FormaExplorer`](docs/component-catalog.md#formaexplorer) held short keeps its header whole while its upload
+  panel is open, the media beneath it giving way first and the panel then scrolling what it holds. The
+  panel kept its full height, pushing the media out of the explorer.
 - A host's own routes, those its `InputRouterOptions` declares and its `IInputActionHandler` performs, answer on every
   interactive page that renders a Forma component, from that component's first render. They answered only once a
   component on the page had registered with the [input router](docs/input-router-design.md).

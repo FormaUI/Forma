@@ -73,14 +73,23 @@
 }
 
 /* --- Upload Panel --- */
+/* In an explorer held short the panel gives way once the media beneath it have none left to give, scrolling what it holds,
+   while the header keeps its rows. */
 .forma-explorer-upload-panel {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    min-block-size: 0;
+    overflow-y: auto;
     padding: var(--space-4);
     background: var(--muted-bg-color);
     border: 1px dashed var(--border-emphasis-color);
     border-radius: var(--radius-md);
+}
+
+/* What the panel holds keeps its height, so the panel scrolls rather than squeezing the picker or the list of files. */
+.forma-explorer-upload-panel > ::deep * {
+    flex-shrink: 0;
 }
 
 .forma-explorer-upload-header {
@@ -146,9 +155,10 @@
     flex-shrink: 0;
 }
 
-/* The data view the body stands in takes the height the header leaves, which it gives the body. */
+/* The data view the body stands in takes the height the header leaves, which it gives the body, and gives way first where
+   the explorer is held short, an open upload panel shrinking only once the media have none left. */
 .forma-explorer ::deep .forma-explorer-data-view {
-    flex: 1 1 auto;
+    flex: 1 1000 auto;
     min-block-size: 0;
 }
 
