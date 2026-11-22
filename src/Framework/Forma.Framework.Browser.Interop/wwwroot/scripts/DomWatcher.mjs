@@ -26,6 +26,7 @@ export function describeObserved(target) {
 const Observers = {
     scroll: () => import('./scrolling/ScrollStateObserver.mjs').then(module => module.ScrollStateObserver),
     intersection: () => import('./scrolling/IntersectionStateObserver.mjs').then(module => module.IntersectionStateObserver),
+    size: () => import('./geometry/SizeObserver.mjs').then(module => module.SizeObserver),
     focus: () => import('./focus/FocusStateObserver.mjs').then(module => module.FocusStateObserver),
     selection: () => import('./text/TextSelectionObserver.mjs').then(module => module.TextSelectionObserver),
     autofill: () => import('./text/AutofillObserver.mjs').then(module => module.AutofillObserver),

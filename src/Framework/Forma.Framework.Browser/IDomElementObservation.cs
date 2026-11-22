@@ -19,4 +19,7 @@ public interface IDomElementObservation
 
     /// <summary>The element's text entry, as an owner observes it.</summary>
     IDomTextObservation Text { get; }
+
+    /// <summary>The element's geometry, as an owner observes it.</summary>
+    IDomGeometryObservation Geometry { get; }
 }

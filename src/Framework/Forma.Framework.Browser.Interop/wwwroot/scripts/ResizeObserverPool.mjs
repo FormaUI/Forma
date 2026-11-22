@@ -30,6 +30,13 @@ export class ResizeObserverPool {
         let isDisposed = false;
 
         return {
+            /** Has the resize observer measure the target afresh, reporting it to every listener of the target. */
+            remeasure() {
+                if (!isDisposed) {
+                    observer.unobserve(target);
+                    observer.observe(target);
+                }
+            },
             dispose() {
                 if (isDisposed) {
                     return;

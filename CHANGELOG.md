@@ -9,6 +9,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- An element's size is a [DOM watcher](src/Framework/Forma.Framework.Browser.Interop/README.md#the-dom-watcher-and-engine)
+  observation, `Geometry.WatchSizeAsync`, which reports the element's border box along its writing mode's axes as a
+  `SizeState`, its `InlineSize` and `BlockSize` in CSS pixels, as the layout changes it. An implementation of
+  `IDomElementObservation`, which now declares `Geometry`, implements it.
 - A [`FormaExplorer`](docs/component-catalog.md#formaexplorer) draws the still an item's host gives as its
   `ThumbnailSource`, whatever its kind, and a video's first frame where its item offers `View`, each marked in its end
   corner with its kind's glyph, which a video also shows while its frame loads and wherever the frame can't be drawn.

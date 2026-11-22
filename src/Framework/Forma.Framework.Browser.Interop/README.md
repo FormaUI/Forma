@@ -69,6 +69,7 @@ it started moving.
 | Capability | Watcher | Engine |
 | --- | --- | --- |
 | `Focus` | `WatchAsync`: whether the reader is within the element, and which of its items holds the focus, named by the attribute its items carry | `AttachAsync`: where the focus goes inside the element, from Tab wrapping, regions Tab visits first, one roving Tab stop and the element taking the focus when the one holding it goes away, each selectable alone |
+| `Geometry` | `WatchSizeAsync`: the element's size along its writing mode's inline and block axes, its border box as laid out | |
 | `Intersection` | `WatchAsync`: whether the element is in view of its root, or of the viewport, grown by a margin | |
 | `Scroll` | `WatchAsync`: whether the content can still move each way, how far its frozen parts reach, and its visible extent where asked for | `AttachAsync`: a wheel route moving the content along its inline axis, and buttons stepping it, both run in the browser; `StepAsync`: one step to the next stop |
 | `Text` | `WatchSelectionAsync`: the range a text field's selection spans, as the reader moves it; `WatchAutofillAsync`: whether the browser filled the field without the reader typing | |

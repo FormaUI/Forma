@@ -1,6 +1,7 @@
 namespace Forma.Framework.Browser.Interop;
 
 using Forma.Framework.Browser.Interop.Focus;
+using Forma.Framework.Browser.Interop.Geometry;
 using Forma.Framework.Browser.Interop.Scrolling;
 using Forma.Framework.Browser.Interop.Text;
 
@@ -38,6 +39,10 @@ public sealed class DomElement : IDomElementObservation
     public DomText Text
         => field ??= new DomText(_watcher, Element);
 
+    /// <summary>The element's geometry.</summary>
+    public DomGeometry Geometry
+        => field ??= new DomGeometry(_watcher, Element);
+
     /// <inheritdoc />
     IDomScrollObservation IDomElementObservation.Scroll
         => Scroll;
@@ -53,4 +58,8 @@ public sealed class DomElement : IDomElementObservation
     /// <inheritdoc />
     IDomTextObservation IDomElementObservation.Text
         => Text;
+
+    /// <inheritdoc />
+    IDomGeometryObservation IDomElementObservation.Geometry
+        => Geometry;
 }

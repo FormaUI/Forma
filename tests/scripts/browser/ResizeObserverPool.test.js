@@ -70,6 +70,15 @@ describe('ResizeObserverPool', () => {
         expect(kept).toHaveBeenCalledOnce();
     });
 
+    it('observes the target afresh when asked to remeasure it', () => {
+        observe(first);
+        observe(second);
+
+        subscriptions[0].remeasure();
+
+        expect(resizes.latest().targets).toEqual([second, first]);
+    });
+
     it('stops observing a target once its last listener leaves', () => {
         observe(first);
         observe(second);

@@ -9,5 +9,6 @@ using System.Text.Json.Serialization;
 [JsonSerializable(typeof(FocusState))]
 [JsonSerializable(typeof(IntersectionState))]
 [JsonSerializable(typeof(ScrollState))]
+[JsonSerializable(typeof(SizeState))]
 [JsonSerializable(typeof(TextSelection))]
 internal sealed partial class DomJsonContext : JsonSerializerContext;

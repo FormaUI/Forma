@@ -239,6 +239,7 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/focus/FocusSurface.mjs
     staticwebassets/scripts/focus/RovingFocus.mjs
     staticwebassets/scripts/focus/TabOrder.mjs
+    staticwebassets/scripts/geometry/SizeObserver.mjs
     staticwebassets/scripts/IntersectionObserverPool.mjs
     staticwebassets/scripts/operations/Asset.js
     staticwebassets/scripts/operations/CheckBox.js

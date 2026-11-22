@@ -443,6 +443,7 @@ Browser.Interop's shared code keeps its foundation at the root and gives each ca
 | Scrolling | Scroll state, intersection with a root and margin, frozen geometry, stepping, wheel movement and panning |
 | Virtualization | The virtualizer's measurement, rendered range and scrolling contract |
 | Focus | Focus facts, actions and behaviors |
+| Geometry | An element's size, and its rectangle in a declared coordinate space |
 | Placement | Anchors, bounds, movement and resizing |
 | Presentation | Native dialogs and manual popovers |
 | DragDrop | Drag gestures, drops and reordering |
