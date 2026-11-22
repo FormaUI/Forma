@@ -23,20 +23,30 @@ public sealed class BrowserHost : IAsyncLifetime
     private IPlaywright? _playwright;
     private WebApplication? _standalone;
 
+    // Each publish is found as the first check that runs on it asks for it, so a run of some checks needs only the publishes they run on.
+    private readonly Lazy<string> _hostFolder = new(() => GetFolder("FORMA_BROWSER_HOST", Path.Combine("artifacts", "browser", "host")));
+    private readonly Lazy<string> _fullClientFolder = new(() => GetFolder("FORMA_BROWSER_FULL", Path.Combine("artifacts", "browser", "full")));
+    private readonly Lazy<string> _componentsFolder = new(() => GetFolder("FORMA_BROWSER_COMPONENTS", Path.Combine("artifacts", "browser", "components")));
+    private readonly Lazy<string> _examplesFolder = new(() => GetFolder("FORMA_BROWSER_EXAMPLES", Path.Combine("artifacts", "browser", "examples")));
+
     /// <summary>The repository the checks run in.</summary>
     public string RepositoryRoot { get; } = RepositoryFolder.Find();
 
     /// <summary>The folder the host was published to.</summary>
-    public string HostFolder { get; } = GetFolder("FORMA_BROWSER_HOST", Path.Combine("artifacts", "browser", "host"));
+    public string HostFolder
+        => _hostFolder.Value;
 
     /// <summary>The folder the full client was published to.</summary>
-    public string FullClientFolder { get; } = GetFolder("FORMA_BROWSER_FULL", Path.Combine("artifacts", "browser", "full"));
+    public string FullClientFolder
+        => _fullClientFolder.Value;
 
     /// <summary>The folder the components host was published to.</summary>
-    public string ComponentsFolder { get; } = GetFolder("FORMA_BROWSER_COMPONENTS", Path.Combine("artifacts", "browser", "components"));
+    public string ComponentsFolder
+        => _componentsFolder.Value;
 
     /// <summary>The folder each example host was published to a folder of its own in.</summary>
-    public string ExamplesFolder { get; } = GetFolder("FORMA_BROWSER_EXAMPLES", Path.Combine("artifacts", "browser", "examples"));
+    public string ExamplesFolder
+        => _examplesFolder.Value;
 
     /// <summary>One component check's turn in a web view of <see cref="GetWebViewApplicationAsync"/>, which runs one check at a time, since every web view of a WPF application dispatches on its UI thread.</summary>
     public SemaphoreSlim WebViewTurn { get; } = new(1, 1);
