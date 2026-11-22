@@ -9,9 +9,11 @@ using Microsoft.AspNetCore.Components;
 /// <summary>The live region that renders and auto-dismisses toasts raised through <see cref="IToastService"/>.</summary>
 public sealed partial class FormaToastContainer : FormaElementBase
 {
-    private readonly Dictionary<string, Timer> _timers = [];
+    private readonly Dictionary<string, ITimer> _timers = [];
 
     [Inject] private IToastService ToastService { get; set; } = default!;
+
+    [Inject] private TimeProvider Clock { get; set; } = default!;
 
     /// <inheritdoc />
     protected override void OnInitialized() => ToastService.Subscribe(HandleChangeAsync);
@@ -45,7 +47,7 @@ public sealed partial class FormaToastContainer : FormaElementBase
             }
 
             var id = toast.Id;
-            var timer = new Timer(_ =>
+            var timer = Clock.CreateTimer(_ =>
             {
                 _ = InvokeAsync(async () =>
                 {

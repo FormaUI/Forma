@@ -190,6 +190,27 @@
             // Assert
             Assert.Equal("Keep me", cut.Find(".forma-toast-message").TextContent);
         }
+
+        [Fact]
+        public async Task Should_remove_a_toast_once_its_duration_has_passed_and_not_before()
+        {
+            // Arrange
+            using var ctx = new FormaToastContainerTests();
+            var cut = ctx.Render(@<FormaToastContainer />);
+            var service = ctx.Services.GetRequiredService<IToastService>();
+            await service.ShowAsync("Saved!", duration: TimeSpan.FromSeconds(3), cancellationToken: TestContext.Current.CancellationToken);
+
+            // Act
+            await cut.ReleaseAsync(() => ctx.Clock.Advance(TimeSpan.FromSeconds(2)));
+            var shownBeforeItsDuration = cut.FindAll(".forma-toast").Count;
+            await cut.ReleaseAsync(() => ctx.Clock.Advance(TimeSpan.FromSeconds(1)));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1, shownBeforeItsDuration),
+                () => Assert.Empty(service.Toasts),
+                () => Assert.Empty(cut.FindAll(".forma-toast")));
+        }
     }
 
     public sealed class Service

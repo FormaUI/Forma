@@ -39,6 +39,8 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     /// <summary>The store the files are written to, where null uses the store the host registered.</summary>
     [Parameter] public IFileStore? Store { get; set; }
 
+    [Inject] private TimeProvider Clock { get; set; } = default!;
+
     private readonly IFileStore? _registeredStore = registeredStore;
 
     private IFileStore _activeStore = default!;
@@ -246,7 +248,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     // Measurements move with the clock rather than with progress, so a stalled transfer keeps counting.
     private async Task TickAsync()
     {
-        using var timer = new PeriodicTimer(TickInterval);
+        using var timer = new PeriodicTimer(TickInterval, Clock);
 
         try
         {

@@ -14,6 +14,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   links back to on every step but the current one, and `IsCompleted`, which draws a check in place of its number and
   says it is completed. Where its names wouldn't fit the width it is given, the steps not current show their numbers
   alone, their names still read by assistive technology, so the row never wraps.
+- A [`FormaToastContainer`](docs/component-catalog.md#formatoastcontainer) dismisses a toast, and a
+  [`FormaFileUploader`](docs/component-catalog.md#formafileuploader) redraws its time measurements, by the
+  `TimeProvider` the host registers, as a data view times its announcement of a slow load. They used the system clock
+  whatever the host registered.
 - An element's size is a [DOM watcher](src/Framework/Forma.Framework.Browser.Interop/README.md#the-dom-watcher-and-engine)
   observation, `Geometry.WatchSizeAsync`, which reports the element's border box along its writing mode's axes as a
   `SizeState`, its `InlineSize` and `BlockSize` in CSS pixels, as the layout changes it. An implementation of
