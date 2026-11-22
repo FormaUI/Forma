@@ -130,8 +130,8 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
             OpenAction when !IsOpen => OpenAsync(),
             NextAction => MoveFocusAsync(1),
             PreviousAction => MoveFocusAsync(-1),
-            FirstAction => FocusIndexAsync(0),
-            LastAction => FocusIndexAsync(Options.Count - 1),
+            FirstAction => FocusIndexAsync(FindEnabledIndex(0, 1)),
+            LastAction => FocusIndexAsync(FindEnabledIndex(Options.Count - 1, -1)),
             CloseAction => Popover.CloseAsync(),
             FindAction when input is InputKeyInfo key => FindAsync(key),
             _ => Task.CompletedTask,
@@ -144,7 +144,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     {
         var current = IsOpen ? _focusedIndex : Options.ToList().FindIndex(IsSelected);
 
-        if (_typeAhead.Find(key, [.. Options.Select(option => option.Label)], current, Context.CultureState.Culture) is not { } index)
+        if (_typeAhead.Find(key, [.. Options.Select(option => option.Label)], current, Context.CultureState.Culture, candidate => !Options[candidate].IsDisabled) is not { } index)
         {
             return;
         }
@@ -169,12 +169,24 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private string GetOptionIconLabelId(int index)
         => $"{ElementId}-option-{index}-icon-label";
 
+    private static string GetOptionClass(SelectOption<TValue> option, bool isSelected)
+        => new CssClassBuilder()
+            .Add("forma-select-option")
+            .Add("selected", isSelected)
+            .Add("disabled", option.IsDisabled)
+            .ToStringOrNull()!;
+
     // The browser's own list draws text alone, so an option's text carries what its icon says.
     private static string FormatNativeOptionText(SelectOption<TValue> option)
         => option.IconLabel is { } iconLabel ? $"{option.Label}, {iconLabel}" : option.Label;
 
     private async Task SelectAsync(SelectOption<TValue> option)
     {
+        if (option.IsDisabled)
+        {
+            return;
+        }
+
         CurrentValue = option.Value;
         await Popover.CloseAsync();
     }
@@ -209,7 +221,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
             }
         }
 
-        _focusedIndex = selectedIndex >= 0 ? selectedIndex : 0;
+        _focusedIndex = selectedIndex >= 0 ? selectedIndex : FindEnabledIndex(0, 1);
         await Popover.OpenAsync(RootElement);
     }
 
@@ -219,6 +231,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private Task HandleOpenedAsync()
         => FocusIndexAsync(_focusedIndex);
 
+    // Moves round the list past the options that can't be chosen.
     private Task MoveFocusAsync(int delta)
     {
         if (Options.Count == 0)
@@ -226,7 +239,28 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
             return Task.CompletedTask;
         }
 
-        return FocusIndexAsync(((_focusedIndex + delta) % Options.Count + Options.Count) % Options.Count);
+        return FocusIndexAsync(FindEnabledIndex(((_focusedIndex + delta) % Options.Count + Options.Count) % Options.Count, delta, wraps: true));
+    }
+
+    // The first option from start, stepping by step, that can be chosen; -1 where none can.
+    private int FindEnabledIndex(int start, int step, bool wraps = false)
+    {
+        for (var count = 0; count < Options.Count; count++)
+        {
+            var index = wraps ? ((start + step * count) % Options.Count + Options.Count) % Options.Count : start + step * count;
+
+            if (index < 0 || index >= Options.Count)
+            {
+                return -1;
+            }
+
+            if (!Options[index].IsDisabled)
+            {
+                return index;
+            }
+        }
+
+        return -1;
     }
 
     private async Task FocusIndexAsync(int index)

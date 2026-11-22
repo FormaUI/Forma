@@ -85,9 +85,15 @@
 }
 
 @media (hover: hover) {
-    .forma-select-option:hover {
+    .forma-select-option:not(.disabled):hover {
         background: var(--hover-bg-color);
     }
+}
+
+/* An option that can't be chosen reads in the disabled tone, and a press on it chooses nothing. */
+.forma-select-option.disabled {
+    color: var(--disabled-text-color);
+    cursor: default;
 }
 
 .forma-select-option:focus-visible {

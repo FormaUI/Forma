@@ -9,6 +9,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- A `SelectOption`'s `IsDisabled` shows it without letting it be chosen: `FormaSelect` and `FormaMultiSelect` draw it
+  in the disabled tone and mark it `aria-disabled` or disable its box, the arrows and the type-ahead pass over it, a press
+  chooses nothing, and the browser's own list a static page draws disables it unless it's the option chosen.
 - `FormaTextArea` takes `ReadOnly`, as the text box and the number, currency, date and time fields do, and every
   labeled field draws a read-only element with the read-only fill. The fill's hook is `--forma-input-readonly-bg-color`,
   beside `--forma-input-disabled-bg-color`. To migrate, rename `--forma-text-box-readonly-bg-color` where a theme sets it.

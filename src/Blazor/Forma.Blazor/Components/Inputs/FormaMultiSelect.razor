@@ -21,7 +21,7 @@
                     required="@Required">
                 @foreach (var option in Options)
                 {
-                    <option value="@FormValue.Format(option.Value)" selected="@IsSelected(option)">@FormatNativeOptionText(option)</option>
+                    <option value="@FormValue.Format(option.Value)" selected="@IsSelected(option)" disabled="@(option.IsDisabled && !IsSelected(option))">@FormatNativeOptionText(option)</option>
                 }
                 @foreach (var value in SelectedValues.Where(selected => FindOption(selected) is null))
                 {
@@ -74,6 +74,7 @@
                                 <FormaCheckBox Value="@IsSelected(option)"
                                                ValueChanged="_ => ToggleOption(option)"
                                                ValueExpression="() => OptionSelection"
+                                               Disabled="@(option.IsDisabled && !IsSelected(option))"
                                                aria-describedby="@(option.IconLabel is null ? null : iconLabelId)">
                                     @if (option.Icon is { } icon)
                                     {

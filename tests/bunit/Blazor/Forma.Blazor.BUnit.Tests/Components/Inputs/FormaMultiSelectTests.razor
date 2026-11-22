@@ -138,6 +138,25 @@
         }
 
         [Fact]
+        public void Should_disable_the_box_of_an_option_that_can_t_be_chosen_unless_it_s_already_chosen()
+        {
+            // Arrange
+            using var ctx = new FormaMultiSelectTests();
+            var model = new FakeModel { Categories = [2] };
+            List<SelectOption<int>> options = [new(1, "Cycling") { IsDisabled = true }, new(2, "Running") { IsDisabled = true }, new(3, "Swimming")];
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="options" Label="Categories" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-multi-select-trigger").Click();
+
+            // Assert: the unchosen one can't be checked; the chosen one can still be taken off
+            var boxes = cut.FindAll(".forma-multi-select-options input[type=checkbox]");
+            Assert.Equal([true, false, false], boxes.Select(box => box.HasAttribute("disabled")));
+        }
+
+        [Fact]
         public void Should_draw_a_chosen_option_s_icon_in_its_tag()
         {
             // Arrange

@@ -10,4 +10,7 @@ public sealed record SelectOption<TValue>(TValue Value, string Label)
 
     /// <summary>What the icon says of the option, read with its label.</summary>
     public string? IconLabel { get; init; }
+
+    /// <summary>Whether the option is shown but can't be chosen.</summary>
+    public bool IsDisabled { get; init; }
 }

@@ -244,7 +244,10 @@
     "Language": "שפה",
     "Fully written": "כתוב במלואו",
     "Partly written": "כתוב בחלקו",
-    "Not written yet": "טרם נכתב"
+    "Not written yet": "טרם נכתב",
+    "An Option That Can't Be Chosen": "אפשרות שאי אפשר לבחור",
+    "An option can be shown but not chosen: it reads in the disabled tone, the arrows and typing pass over it, and a press on it chooses nothing.": "אפשרות יכולה להופיע בלי שאפשר יהיה לבחור בה: היא מוצגת בגוון המושבת, החצים וההקלדה מדלגים עליה, ולחיצה עליה אינה בוחרת דבר.",
+    "Plan": "תוכנית"
   },
   "FormaSliderPage": {
     "A bounded numeric input rendered as a native range slider, its current value shown beside the label rather than requiring a second field to read it.": "קלט מספרי חסום המוצג כמחוון טווח מובנה, כאשר הערך הנוכחי מוצג ליד התווית במקום לדרוש שדה נוסף כדי לקרוא אותו.",

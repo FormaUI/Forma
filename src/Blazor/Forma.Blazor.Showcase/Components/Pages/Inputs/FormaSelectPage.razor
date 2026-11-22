@@ -41,6 +41,14 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["An Option That Can't Be Chosen"]</h2>
+        <p class="description">@L["An option can be shown but not chosen: it reads in the disabled tone, the arrows and typing pass over it, and a press on it chooses nothing."]</p>
+        <div class="demo-box">
+            <FormaSelect TValue="int?" @bind-Value="Model.Plan" Options="PlanOptions" Label="@L["Plan"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Disabled"]</h2>
         <div class="demo-box">
             <FormaSelect TValue="int?" @bind-Value="Model.DisabledStatus"
@@ -79,6 +87,13 @@
         new(3, "Member"),
     ];
 
+    private static readonly IReadOnlyList<SelectOption<int?>> PlanOptions =
+    [
+        new(1, "Free"),
+        new(2, "Team"),
+        new(3, "Enterprise") { IsDisabled = true },
+    ];
+
     private readonly List<SelectOption<int?>> _emptyOptions = [];
 
     private SelectDemoModel Model { get; set; } = new()
@@ -103,6 +118,7 @@
         public int? Status { get; set; }
         public int? PreSelectedRole { get; set; }
         public int? EditedLanguage { get; set; }
+        public int? Plan { get; set; }
         public int? DisabledStatus { get; set; }
         public int? EmptyChoice { get; set; }
     }

@@ -141,6 +141,78 @@
         }
 
         [Fact]
+        public void Should_mark_an_option_that_can_t_be_chosen_and_choose_nothing_when_it_s_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel { Status = 1 };
+            List<SelectOption<int?>> options = [new(1, "Cycling"), new(2, "Running") { IsDisabled = true }, new(3, "Swimming")];
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="options" Label="Status" />
+            </FakeFormHost>);
+            cut.Find(".forma-select-trigger").Click();
+
+            // Act
+            cut.FindAll(".forma-select-option")[1].Click();
+
+            // Assert
+            var disabled = cut.FindAll(".forma-select-option")[1];
+            Assert.Multiple(
+                () => Assert.Equal("true", disabled.GetAttribute("aria-disabled")),
+                () => Assert.Null(cut.FindAll(".forma-select-option")[0].GetAttribute("aria-disabled")),
+                () => Assert.Equal(1, model.Status));
+        }
+
+        [Fact]
+        public async Task Should_pass_over_an_option_that_can_t_be_chosen_as_the_arrows_move()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel { Status = 1 };
+            List<SelectOption<int?>> options = [new(1, "Cycling"), new(2, "Running") { IsDisabled = true }, new(3, "Swimming")];
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="options" Label="Status" />
+            </FakeFormHost>);
+            cut.Find(".forma-select-trigger").Click();
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+            var openedOn = GetFocused(ctx.JSInterop).Last();
+            var opened = GetFocused(ctx.JSInterop).Count;
+
+            // Act — from the first, down to the third, round to the first, and up to the third again
+            foreach (var (action, key) in new[] { ("select.next", "ArrowDown"), ("select.next", "ArrowDown"), ("select.previous", "ArrowUp") })
+            {
+                await router.RouteAsync(popover.RootElement, action, key);
+            }
+
+            // Assert: the second, which can't be chosen, never takes the focus
+            var focused = GetFocused(ctx.JSInterop).Skip(opened).ToList();
+            Assert.Multiple(
+                () => Assert.Equal(3, focused.Count),
+                () => Assert.NotEqual(openedOn, focused[0]),
+                () => Assert.Equal(openedOn, focused[1]),
+                () => Assert.Equal(focused[0], focused[2]));
+        }
+
+        [Fact]
+        public void Should_disable_an_option_that_can_t_be_chosen_in_the_browser_s_own_list_unless_it_s_the_one_chosen()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel { Status = 2 };
+            List<SelectOption<int?>> options = [new(1, "Cycling") { IsDisabled = true }, new(2, "Running") { IsDisabled = true }, new(3, "Swimming")];
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="options" Label="Status" name="Status" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal([true, false, false], cut.FindAll("option").Select(option => option.HasAttribute("disabled")));
+        }
+
+        [Fact]
         public void Should_carry_what_an_option_s_icon_says_in_its_text_in_the_browser_s_own_list()
         {
             // Arrange

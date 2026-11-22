@@ -249,7 +249,10 @@
     "Language": "Idioma",
     "Fully written": "Escrito por completo",
     "Partly written": "Escrito en parte",
-    "Not written yet": "Aún sin escribir"
+    "Not written yet": "Aún sin escribir",
+    "An Option That Can't Be Chosen": "Una Opción que No Se Puede Elegir",
+    "An option can be shown but not chosen: it reads in the disabled tone, the arrows and typing pass over it, and a press on it chooses nothing.": "Una opción puede mostrarse sin poder elegirse: se lee en el tono deshabilitado, las flechas y la escritura la pasan por alto, y pulsarla no elige nada.",
+    "Plan": "Plan"
   },
   "FormaSliderPage": {
     "A bounded numeric input rendered as a native range slider, its current value shown beside the label rather than requiring a second field to read it.": "Una entrada numérica acotada representada como un control deslizante nativo, con su valor actual mostrado junto a la etiqueta en lugar de exigir un segundo campo para leerlo.",

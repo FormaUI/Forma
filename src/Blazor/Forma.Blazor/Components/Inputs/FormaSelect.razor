@@ -25,7 +25,7 @@
                 }
                 @foreach (var option in Options)
                 {
-                    <option value="@FormValue.Format(option.Value)" selected="@(ReferenceEquals(option, chosenOption))">@FormatNativeOptionText(option)</option>
+                    <option value="@FormValue.Format(option.Value)" selected="@(ReferenceEquals(option, chosenOption))" disabled="@(option.IsDisabled && !ReferenceEquals(option, chosenOption))">@FormatNativeOptionText(option)</option>
                 }
             </select>
         }
@@ -75,10 +75,11 @@
                         var option = Options[optionIndex];
                         var isSelected = IsSelected(option);
                         <button type="button"
-                                class="forma-select-option@(isSelected ? " selected" : "")"
+                                class="@GetOptionClass(option, isSelected)"
                                 role="option"
                                 tabindex="-1"
                                 aria-selected="@(isSelected ? "true" : "false")"
+                                aria-disabled="@(option.IsDisabled ? "true" : null)"
                                 aria-describedby="@(option.IconLabel is null ? null : GetOptionIconLabelId(optionIndex))"
                                 @ref="_optionElements[optionIndex]"
                                 @onclick="() => SelectAsync(option)">

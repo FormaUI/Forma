@@ -106,8 +106,14 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     private static string FormatNativeOptionText(SelectOption<TValue> option)
         => option.IconLabel is { } iconLabel ? $"{option.Label}, {iconLabel}" : option.Label;
 
+    // An option that can't be chosen is never added, though one already chosen can still be taken off.
     private void ToggleOption(SelectOption<TValue> option)
     {
+        if (option.IsDisabled && !IsSelected(option))
+        {
+            return;
+        }
+
         var currentValues = SelectedValues;
         CurrentValue = IsSelected(option)
             ? [.. currentValues.Where(v => !EqualityComparer<TValue>.Default.Equals(v, option.Value))]
