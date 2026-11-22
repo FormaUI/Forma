@@ -4,6 +4,59 @@
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.Symbols
 
+@if (!RendererInfo.IsInteractive)
+{
+    @* A statically rendered page opens the browser's own popover from the trigger: the networks, the email and the download are
+       links, and a command a script runs is drawn disabled. *@
+    <span class="forma-share-menu">
+        <FormaButton Id="@Id"
+                     Class="@RootClass"
+                     Style="@RootStyle"
+                     @attributes="AdditionalAttributes"
+                     Variant="TriggerOptions.Variant"
+                     Size="TriggerOptions.Size"
+                     IconOnly="TriggerOptions.IconOnly"
+                     popovertarget="@SheetId">
+            @TriggerContent
+        </FormaButton>
+        <div id="@SheetId" class="forma-share-menu-sheet" popover>
+            @if (ItemHeader is { } itemHeader)
+            {
+                <div class="forma-share-menu-sheet-header">@itemHeader</div>
+            }
+            <ul class="forma-share-menu-sheet-list">
+                @foreach (var target in _supportedTargets)
+                {
+                    <li @key="target.Id">
+                        @if (!NeedsConnection(target) && target.GetAddress(Item!) is { } address)
+                        {
+                            <a class="forma-share-menu-sheet-item" href="@address" target="_blank" rel="noopener noreferrer"><FormaIcon Icon="target.Icon" Size="IconSize.Small" /><span>@target.Title</span></a>
+                        }
+                        else
+                        {
+                            <button type="button" class="forma-share-menu-sheet-item" disabled><FormaIcon Icon="target.Icon" Size="IconSize.Small" /><span>@target.Title</span></button>
+                        }
+                    </li>
+                }
+                @if (Item is { Resource: { } sheetResource })
+                {
+                    <li><a class="forma-share-menu-sheet-item" href="@sheetResource.Source" download="@sheetResource.Name"><FormaIcon Icon="Glyph.Download" Size="IconSize.Small" /><span>@L["Download"]</span></a></li>
+                }
+                @if (OffersEmail)
+                {
+                    <li><a class="forma-share-menu-sheet-item" href="@EmailAddress"><FormaIcon Icon="Glyph.Unread" Size="IconSize.Small" /><span>@L["Email"]</span></a></li>
+                }
+                @if (OffersCopyLink)
+                {
+                    <li><button type="button" class="forma-share-menu-sheet-item" disabled><FormaIcon Icon="Glyph.Link" Size="IconSize.Small" /><span>@L["Copy Link"]</span></button></li>
+                }
+                <li><button type="button" class="forma-share-menu-sheet-item" disabled><FormaIcon Icon="Glyph.Print" Size="IconSize.Small" /><span>@L["Print"]</span></button></li>
+            </ul>
+        </div>
+    </span>
+}
+else
+{
 <span class="forma-share-menu">
 <FormaDropDownMenu @ref="Menu"
                    Id="@Id"
@@ -13,15 +66,7 @@
                    TriggerOptions="TriggerOptions"
                    HeaderContent="@ItemHeader">
     <Trigger>
-        @if (Trigger is not null)
-        {
-            @Trigger
-        }
-        else
-        {
-            <FormaIcon Icon="Glyph.Share" Size="IconSize.Small" />
-            @L["Share"]
-        }
+        @TriggerContent
     </Trigger>
     <ChildContent>
         @if (HasSocialNetworks)
@@ -97,8 +142,22 @@
     </ChildContent>
 </FormaDropDownMenu>
 </span>
+}
 
 @code {
+    /// <summary>The trigger's content: the host's own, or the share icon and label.</summary>
+    private RenderFragment TriggerContent => @<text>
+        @if (Trigger is not null)
+        {
+            @Trigger
+        }
+        else
+        {
+            <FormaIcon Icon="Glyph.Share" Size="IconSize.Small" />
+            @L["Share"]
+        }
+    </text>;
+
     /// <summary>The menu's header for an item with a name.</summary>
     private RenderFragment? ItemHeader => Item is { Name: not null }
         ? @<div class="forma-share-menu-item">

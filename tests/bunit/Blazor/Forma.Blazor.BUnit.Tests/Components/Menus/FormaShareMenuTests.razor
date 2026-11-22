@@ -39,6 +39,48 @@
         }
 
         [Fact]
+        public void Should_open_the_browser_s_own_sheet_of_links_from_its_trigger_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+
+            // Assert
+            var trigger = cut.Find(".forma-share-menu > button");
+            var sheet = cut.Find($"#{trigger.GetAttribute("popovertarget")}");
+            var facebook = sheet.QuerySelectorAll("a").First(link => link.TextContent.Contains("Facebook", StringComparison.Ordinal));
+            Assert.Multiple(
+                () => Assert.False(trigger.HasAttribute("disabled")),
+                () => Assert.True(sheet.HasAttribute("popover")),
+                () => Assert.Contains("Stage 12", sheet.QuerySelector(".forma-share-menu-sheet-header")!.TextContent, StringComparison.Ordinal),
+                () => Assert.StartsWith("https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fexample.com", facebook.GetAttribute("href"), StringComparison.Ordinal),
+                () => Assert.Equal("_blank", facebook.GetAttribute("target")),
+                () => Assert.Contains(sheet.QuerySelectorAll("a"), link => link.GetAttribute("href")?.StartsWith("mailto:", StringComparison.Ordinal) == true),
+                () => Assert.Empty(cut.FindAll("[role=menu]")));
+        }
+
+        [Fact]
+        public void Should_draw_the_commands_a_script_runs_disabled_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
+
+            // Assert
+            var commands = cut.FindAll(".forma-share-menu-sheet button");
+            Assert.Multiple(
+                () => Assert.Contains(commands, command => command.TextContent.Contains("Copy Link", StringComparison.Ordinal)),
+                () => Assert.Contains(commands, command => command.TextContent.Contains("Print", StringComparison.Ordinal)),
+                () => Assert.All(commands, command => Assert.True(command.HasAttribute("disabled"))));
+        }
+
+        [Fact]
         public void Should_name_each_network_by_its_title_alone()
         {
             // Arrange

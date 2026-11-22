@@ -72,6 +72,9 @@ public sealed partial class FormaShareMenu(IShareConnections? connections = null
     private string EmailAddress
         => $"mailto:?subject={Uri.EscapeDataString(Item?.Name ?? string.Empty)}&body={Uri.EscapeDataString(Item?.Address ?? string.Empty)}";
 
+    private string SheetId
+        => $"{ElementId}-sheet";
+
     /// <inheritdoc />
     protected override void OnInitialized()
     {

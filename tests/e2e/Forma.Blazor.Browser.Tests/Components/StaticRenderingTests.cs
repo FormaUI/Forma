@@ -4,9 +4,9 @@ namespace Forma.Blazor.Browser.Tests.Components;
 public sealed class StaticRenderingTests(BrowserHost host)
 {
     // The controls a component offers in a static render that need interactivity to act: an enabled button other than a form's
-    // submit, an element of a widget's role a reader can reach that isn't marked disabled, and an editable element, whose typing
-    // reaches no script. A link and a native form control keep what the browser gives them, what the page doesn't show is offered
-    // to no one, and what the check page marks as its own scaffolding is no component's.
+    // submit or a popover's opener, an element of a widget's role a reader can reach that isn't marked disabled, and an editable
+    // element, whose typing reaches no script. A link, a native form control and a popover's opener keep what the browser gives
+    // them, what the page doesn't show is offered to no one, and what the check page marks as its own scaffolding is no component's.
     private const string FindControlsNeedingInteractivity = """
         () => {
             const roles = ['button', 'tab', 'menuitem', 'menuitemcheckbox', 'menuitemradio', 'option', 'switch', 'checkbox', 'radio', 'slider', 'spinbutton', 'combobox', 'textbox', 'treeitem', 'gridcell'];
@@ -19,7 +19,7 @@ public sealed class StaticRenderingTests(BrowserHost host)
                 }
 
                 if (element.localName === 'button') {
-                    if (!element.disabled && !(element.type === 'submit' && element.form !== null)) {
+                    if (!element.disabled && !(element.type === 'submit' && element.form !== null) && element.popoverTargetElement === null) {
                         found.push(describe(element));
                     }
 

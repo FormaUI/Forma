@@ -27,7 +27,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests, a faster gate, and builds in processes of their own |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Two components on the roadmap, eight changes open |
+| [A host's requests](#a-hosts-requests) | Two components on the roadmap, eight changes fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -213,7 +213,7 @@ they are taken, each with what the code does and its state.
 | The canvas under a dark scale | `--backdrop-canvas-bg-color` is a step toward ink on the gray scale, so a theme reversing the scale drew the canvas lighter than the backdrops laid on it. The theme contract, in the README and the token stylesheet, names the canvas among what a dark theme sets, since its scale holds no step below the paper, and the emphasis of each role it uses whose emphasis mixes toward black | Fixed |
 | The explorer's toolbar in a bounded height | The header keeps its height in an explorer held short, but an open upload panel kept its full height and pushed the media out of the explorer. The media now give way first, and the panel then scrolls what it holds | Fixed |
 | A row removed under the focus | A command removing the row it was run from, as a row's menu deleting the row does, left the focus on the page's body. The data view hands it to the item after it, else the one before, else the first control of its empty state | Fixed |
-| Sharing from a static page | `FormaShareMenu` is a drop-down menu, which works only interactively, so a page rendered statically can't share through it | Open |
+| Sharing from a static page | `FormaShareMenu`'s trigger was disabled on a page rendered statically. It opens the browser's own popover there, its networks, email and download links and the commands a script runs disabled | Fixed |
 
 <a id="deferred"></a>
 
