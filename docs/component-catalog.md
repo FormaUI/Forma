@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**67 components implemented, 8 in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**75 components implemented, none in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -93,15 +93,15 @@ src/Blazor/
 ├── (2 / 2) Forma.Blazor.Composer/RichTextEditor/
 │   ├── ✅ FormaCompactRichTextEditor
 │   └── ✅ FormaStandardRichTextEditor
-├── (0 / 8) Forma.Blazor.DataView/
-│   ├── ◐ FormaDataCards
-│   ├── ◐ FormaDataGrid
-│   ├── ◐ FormaDataList
-│   ├── ◐ FormaDataSortMenu
-│   ├── ◐ FormaDataTree
-│   ├── ◐ FormaDataView
-│   ├── ◐ FormaDataViewFooter
-│   └── ◐ FormaDataViewSwitch
+├── (8 / 8) Forma.Blazor.DataView/
+│   ├── ✅ FormaDataCards
+│   ├── ✅ FormaDataGrid
+│   ├── ✅ FormaDataList
+│   ├── ✅ FormaDataSortMenu
+│   ├── ✅ FormaDataTree
+│   ├── ✅ FormaDataView
+│   ├── ✅ FormaDataViewFooter
+│   └── ✅ FormaDataViewSwitch
 ├── (1 / 1) Forma.Blazor.Explorer/
 │   └── ✅ FormaExplorer
 └── (1 / 1) Forma.Blazor.Server/Components/Page/
@@ -226,6 +226,78 @@ A form input for an amount of money in a currency the application names, typed a
 |---|---|
 | **Old pattern** | `.form-addon` wrapping input with currency symbol overlay |
 | **Used in** | product (price, sale price, cost), store-settings (min order, shipping), coupons (discount amount) |
+
+### `FormaDataCards`
+
+A view over the data view drawing each item as a card: its image, its name and what the caller places beneath. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The legacy image library's tile grid, and the explorer's thumbnails view, each drawing tiles of its own |
+| **Used in** | The explorer's cards view, and any page that shows records as tiles |
+
+### `FormaDataGrid`
+
+A view over the data view drawing its items as rows with aligned columns and headers. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | `asp:GridView` with server-side paging, sortable columns, row click-through, checkbox column for mass select, action icon columns (view/edit/delete), status badges, responsive hide classes |
+| **Used in** | pages, products, orders, leads, comments, users, coupons (all 7 main list pages) |
+
+### `FormaDataList`
+
+A view over the data view drawing items down the height, a depiction, a name and the caller's secondary text per row. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The explorer's list view, which flows names on its own |
+| **Used in** | The explorer's list view, and any page that shows records as a compact list |
+
+### `FormaDataSortMenu`
+
+A drop-down that sorts a data view by the sorts it offers, whichever view shows. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The explorer's sort menu, which sorts and groups its own content area |
+| **Used in** | The explorer's toolbar, and any page that shows records as a list or cards |
+
+### `FormaDataTree`
+
+A view over the data view drawing the hierarchy as nodes under their parents. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The page tree in the legacy page editor, and the explorer's folder-tree sidebar, which draws a tree of its own |
+| **Used in** | The explorer's sidebar, and any page that navigates a hierarchy |
+
+### `FormaDataView`
+
+The collection component: an engine that manages a set of items and the state around them, handing what is on screen to the view that presents it. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The same browsing built three times: `asp:GridView` over a repository data source on every list page, the explorer's content area, and the gallery's planned engine |
+| **Used in** | Every list page under `FormaDataGrid`, and the explorer's content area |
+
+### `FormaDataViewFooter`
+
+A data view's footer, its page navigation and its status, which a host arranging the data view itself places. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The explorer's footer beneath its content area, which pages and counts its own items |
+| **Used in** | The explorer, beneath its content beside its sidebar, and any page that arranges a data view itself |
+
+### `FormaDataViewSwitch`
+
+A row of toggle buttons switching a data view between the views it registered. Its design is [data-view-design.md](data-view-design.md).
+
+| | |
+|---|---|
+| **Old pattern** | The explorer's view-mode buttons, which switch its own three views |
+| **Used in** | The explorer's toolbar, and any page that offers one set in several views |
 
 ### `FormaDatePicker`
 

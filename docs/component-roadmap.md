@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**30 components not yet implemented, 8 of them in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 22 not yet started, and the 8 in progress stand in the catalog's structure until then.
+**22 components not yet implemented, none in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 22 not yet started, and a component in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -46,17 +46,16 @@ The components still to build, in the order dependency and reuse suggest. What i
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaDataView`, `FormaDataGrid`, `FormaDataList`, `FormaDataCards`, `FormaDataTree`, `FormaDataSortMenu`, `FormaDataViewSwitch`, `FormaDataViewFooter` | The engine every collection surface shares, with its views and controls; in progress — see [the data view design](data-view-design.md) |
-| 2 | `FormaStepper` | Standalone, with nothing to build first, and asked for by a host's ordered flow, such as a purchase |
-| 3 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
-| 4 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
-| 5 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
-| 6 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
-| 7 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
-| 8 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
-| 9 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
-| 10 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
-| 11 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
+| 1 | `FormaStepper` | Standalone, with nothing to build first, and asked for by a host's ordered flow, such as a purchase |
+| 2 | `FormaCategorySelector` | Interactive widgets, needed for editor pages |
+| 3 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
+| 4 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
+| 5 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
+| 6 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
+| 7 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
+| 8 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
+| 9 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
+| 10 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
 
 ## Components
 
@@ -86,78 +85,6 @@ The drop-down menu's panel opened as a context menu, a shortcut to actions reach
 |---|---|
 | **Old pattern** | None |
 | **Used in** | Grid rows and media tiles, as a shortcut to the actions the overflow menu already lists |
-
-### `FormaDataCards`
-
-A view over the data view drawing each item as a card: its image, its name and what the caller places beneath. Its design is [data-view-design.md](data-view-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | The legacy image library's tile grid, and the explorer's thumbnails view, each drawing tiles of its own |
-| **Used in** | The explorer's cards view, the gallery's browsing, and any page that shows records as tiles |
-
-### `FormaDataGrid`
-
-A view over the data view drawing its items as rows with aligned columns and headers. Its design is [data-view-design.md](data-view-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | `asp:GridView` with server-side paging, sortable columns, row click-through, checkbox column for mass select, action icon columns (view/edit/delete), status badges, responsive hide classes |
-| **Used in** | pages, products, orders, leads, comments, users, coupons (all 7 main list pages) |
-
-### `FormaDataList`
-
-A view over the data view drawing items down the height, a depiction, a name and the caller's secondary text per row. Its design is [data-view-design.md](data-view-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | The explorer's list view, which flows names on its own |
-| **Used in** | The explorer's list view, and any page that shows records as a compact list |
-
-### `FormaDataSortMenu`
-
-A drop-down that sorts a data view by the sorts it offers, whichever view shows. Its design is [data-view-design.md](data-view-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | The explorer's sort menu, which sorts and groups its own content area |
-| **Used in** | The explorer's toolbar, and any page that shows records as a list or cards |
-
-### `FormaDataTree`
-
-A view over the data view drawing the hierarchy as nodes under their parents. Its design is [data-view-design.md](data-view-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | The page tree in the legacy page editor, and the explorer's folder-tree sidebar, which draws a tree of its own |
-| **Used in** | The explorer's sidebar, and any page that navigates a hierarchy |
-
-### `FormaDataView`
-
-The collection component: an engine that manages a set of items and the state around them, handing what is on screen to the view that presents it. Its design is [data-view-design.md](data-view-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | The same browsing built three times: `asp:GridView` over a repository data source on every list page, the explorer's content area, and the gallery's planned engine |
-| **Used in** | Every list page under `FormaDataGrid`, the explorer's content area, and the gallery |
-
-### `FormaDataViewFooter`
-
-A data view's footer, its page navigation and its status, which a host arranging the data view itself places. Its design is [data-view-design.md](data-view-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | The explorer's footer beneath its content area, which pages and counts its own items |
-| **Used in** | The explorer, beneath its content beside its sidebar, and any page that arranges a data view itself |
-
-### `FormaDataViewSwitch`
-
-A row of toggle buttons switching a data view between the views it registered. Its design is [data-view-design.md](data-view-design.md).
-
-| | |
-|---|---|
-| **Old pattern** | The explorer's view-mode buttons, which switch its own three views |
-| **Used in** | The explorer's toolbar, and any page that offers one set in several views |
 
 ### `FormaDeleteButton`
 
