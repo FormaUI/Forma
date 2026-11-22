@@ -8,9 +8,15 @@ public static partial class ComponentChecks
     /// <summary>A script recording, in <c>window.formaCopied</c>, each text the page writes to the clipboard once the write lands, so a check reads its own copy rather than a clipboard every browser on the machine shares.</summary>
     public const string RecordingClipboard = "const writeText = Clipboard.prototype.writeText; Clipboard.prototype.writeText = function (text) { return writeText.call(this, text).then(() => { (window.formaCopied ??= []).push(text); }); };";
 
+    // The time from one key's press to the next one's, a quick typist's.
+    private static readonly TimeSpan KeyInterval = TimeSpan.FromMilliseconds(40);
+
     /// <summary>The runtimes every component is checked in: the Server, WebAssembly, Auto on a first visit, which runs on the Server, and once WebAssembly has downloaded, which runs there, the Server in WebKit, the engine of Safari and of Apple's web views, and Blazor Hybrid's web view, WebView2's and Android's.</summary>
     /// <remarks>Each row carries its runtime as the <c>Runtime</c> trait, which a run that enumerates theories selects or leaves out by the runner's trait filters.</remarks>
     public static TheoryData<string> Runtimes { get; } = [.. ((string[])["server", "webassembly", "auto-server", "auto-webassembly", "webkit", "webview", "android"]).Select(runtime => new TheoryDataRow<string>(runtime).WithTrait("Runtime", runtime))];
+
+    /// <summary>The runtimes <see cref="TypeAsync"/> types into with each key stamped as it was pressed, however late the page takes it: every runtime but WebKit.</summary>
+    public static TheoryData<string> StampedTypingRuntimes { get; } = [.. ((string[])["server", "webassembly", "auto-server", "auto-webassembly", "webview", "android"]).Select(runtime => new TheoryDataRow<string>(runtime).WithTrait("Runtime", runtime))];
 
     /// <summary>Every check page's address after its runtime segment, read from the pages' own routes.</summary>
     /// <returns>The addresses, in order.</returns>
@@ -193,11 +199,14 @@ public static partial class ComponentChecks
         await Assertions.Expect(roundTrips).ToHaveTextAsync((made + 1).ToString(System.Globalization.CultureInfo.InvariantCulture)).ConfigureAwait(false);
     }
 
-    /// <summary>Types <paramref name="text"/> as a keyboard does, one key after another, on Android through the device's own input.</summary>
+    /// <summary>Types <paramref name="text"/> as a keyboard does, one key after another, each stamped as it was pressed.</summary>
     /// <remarks>
-    /// Each key Playwright sends to Android's web view is a round trip through adb, so on a slow emulator the keys of one word
-    /// stand further apart than a type-ahead's pause; the device's own input queues the keys at once, each stamped as it
-    /// was pressed, as a hardware keyboard's are.
+    /// A type-ahead measures its pause between the times its keys were pressed. Playwright sends a key once the page has taken the
+    /// one before, and the browser stamps it as it arrives, so on a page busy with what a key did, as WebAssembly is while a list
+    /// opens, the keys of one word stand further apart than the pause. In Chromium and WebView2 the keys go through the browser's
+    /// own protocol instead, stamped a typist's interval apart from when typing starts, whenever the page takes them. Each key
+    /// Playwright sends to Android's web view is a round trip through adb, so there the device's own input queues the keys at once,
+    /// each stamped as it was pressed, as a hardware keyboard's are. WebKit's protocol takes no stamp, so there Playwright types.
     /// </remarks>
     /// <param name="page">The page typed into.</param>
     /// <param name="runtime">The runtime the page runs in.</param>
@@ -208,20 +217,26 @@ public static partial class ComponentChecks
         ArgumentNullException.ThrowIfNull(page);
         ArgumentNullException.ThrowIfNull(text);
 
-        if (runtime == "android")
+        // Each character is typed as the one key that types it, and the device's shell reads the text before its input types it,
+        // so the text carries letters, digits and spaces alone.
+        if (!text.All(character => char.IsAsciiLetterOrDigit(character) || character == ' '))
         {
-            // The device's shell reads the text before its input types it, so the text carries letters, digits and spaces alone,
-            // a space written as input's own %s.
-            if (!text.All(character => char.IsAsciiLetterOrDigit(character) || character == ' '))
-            {
-                throw new InvalidOperationException($"\"{text}\" holds a character the device's shell would read rather than type; the device types letters, digits and spaces.");
-            }
-
-            await AndroidDevice.RunAdbAsync("shell", "input", "text", text.Replace(" ", "%s", StringComparison.Ordinal)).ConfigureAwait(false);
-            return;
+            throw new InvalidOperationException($"\"{text}\" holds a character a check doesn't type; a check types letters, digits and spaces.");
         }
 
-        await page.Keyboard.TypeAsync(text).ConfigureAwait(false);
+        switch (runtime)
+        {
+            case "android":
+                // The device's input writes a space as its own %s.
+                await AndroidDevice.RunAdbAsync("shell", "input", "text", text.Replace(" ", "%s", StringComparison.Ordinal)).ConfigureAwait(false);
+                break;
+            case "webkit":
+                await page.Keyboard.TypeAsync(text).ConfigureAwait(false);
+                break;
+            default:
+                await TypeStampedKeysAsync(page, text).ConfigureAwait(false);
+                break;
+        }
     }
 
     /// <summary>Waits until Blazor's file input listens on the element <paramref name="selector"/> names.</summary>
@@ -418,6 +433,56 @@ public static partial class ComponentChecks
 
         return problems;
     }
+
+    // Types each key through Chromium's own protocol, which takes the time a key was pressed in seconds since the Unix epoch, each key
+    // pressed a typist's interval after the one before.
+    private static async Task TypeStampedKeysAsync(IPage page, string text)
+    {
+        var session = await page.Context.NewCDPSessionAsync(page).ConfigureAwait(false);
+        var typedAt = DateTimeOffset.UtcNow;
+
+        try
+        {
+            for (var index = 0; index < text.Length; index++)
+            {
+                var key = text[index].ToString();
+                var (code, virtualKeyCode) = GetKeyCodes(text[index]);
+                var pressedAt = typedAt + (KeyInterval * index);
+
+                await session.SendAsync("Input.dispatchKeyEvent", new()
+                {
+                    ["type"] = "keyDown",
+                    ["key"] = key,
+                    ["code"] = code,
+                    ["windowsVirtualKeyCode"] = virtualKeyCode,
+                    ["text"] = key,
+                    ["unmodifiedText"] = key,
+                    ["timestamp"] = (pressedAt - DateTimeOffset.UnixEpoch).TotalSeconds,
+                }).ConfigureAwait(false);
+                await session.SendAsync("Input.dispatchKeyEvent", new()
+                {
+                    ["type"] = "keyUp",
+                    ["key"] = key,
+                    ["code"] = code,
+                    ["windowsVirtualKeyCode"] = virtualKeyCode,
+                    ["timestamp"] = (pressedAt + (KeyInterval / 2) - DateTimeOffset.UnixEpoch).TotalSeconds,
+                }).ConfigureAwait(false);
+            }
+        }
+        finally
+        {
+            await session.DetachAsync().ConfigureAwait(false);
+        }
+    }
+
+    // The code and the Windows virtual key code of the key that types a letter, a digit or a space.
+    private static (string Code, int VirtualKeyCode) GetKeyCodes(char character)
+        => character switch
+        {
+            ' ' => ("Space", ' '),
+            >= '0' and <= '9' => ($"Digit{character}", character),
+            _ => ($"Key{char.ToUpperInvariant(character)}", char.ToUpperInvariant(character)),
+        };
 
     [System.Text.RegularExpressions.GeneratedRegex(@"^\d+$")]
     private static partial System.Text.RegularExpressions.Regex LayerPattern();

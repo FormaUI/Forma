@@ -7,6 +7,9 @@ public sealed class PickersTests
 {
     public sealed class Select(BrowserHost host)
     {
+        // A page the first key typed into holds busy for a second, twice the type-ahead's pause, so each key after it reaches the page late.
+        private const string HoldingFirstKey = "let isHeld = false; addEventListener('keydown', () => { if (!isHeld) { isHeld = true; const end = performance.now() + 1000; while (performance.now() < end) { } } }, { capture: true });";
+
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_choose_an_option_from_the_list_it_opens(string runtime)
@@ -64,6 +67,28 @@ public sealed class PickersTests
             // Assert — the focus on On Hold, nothing chosen until Enter
             var onHold = page.GetByRole(AriaRole.Option, new() { Name = "On Hold", Exact = true });
             await Assertions.Expect(onHold).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("1");
+            await page.Keyboard.PressAsync("Enter");
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("6");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.StampedTypingRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_go_on_through_a_typed_label_whose_keys_reach_a_busy_page_late(string runtime)
+        {
+            // Arrange — the select focused on Open, on a page the first key typed holds busy past the type-ahead's pause
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "select", page => page.AddInitScriptAsync(HoldingFirstKey));
+            await using var _ = context;
+            var trigger = page.Locator("#check");
+            await ComponentChecks.WaitForInputScopeAsync(page, "#check");
+            await trigger.FocusAsync();
+
+            // Act — "on h" typed at a typist's pace, the keys after the "o" reaching the page only once the hold ends
+            await ComponentChecks.TypeAsync(page, runtime, "on h");
+
+            // Assert — the label read from when its keys were pressed, the focus on On Hold, nothing chosen until Enter
+            var onHold = page.GetByRole(AriaRole.Option, new() { Name = "On Hold", Exact = true });
+            await ComponentChecks.ExpectFocusedAsync(page, onHold);
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("1");
             await page.Keyboard.PressAsync("Enter");
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("6");
