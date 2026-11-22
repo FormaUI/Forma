@@ -99,3 +99,7 @@
     background: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
     color: var(--forma-input-disabled-color, var(--disabled-text-color));
 }
+
+.forma-textarea[readonly]:not(:disabled) ~ .forma-textarea-count bdi {
+    background: var(--forma-input-readonly-bg-color, var(--hover-bg-color));
+}

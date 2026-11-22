@@ -72,6 +72,14 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["Read-Only"]</h2>
+        <p class="description">@L["A read-only field keeps its value at full contrast and still takes the focus, so a reader can select and copy what it holds."]</p>
+        <div class="demo-box">
+            <FormaTextArea @bind-Value="_model.LockedValue" Label="@L["Approved note"]" ReadOnly="true" />
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Beside a FormaTextBox"]</h2>
         <p class="description">@L["Both components share one stylesheet, so their borders, labels and focus rings cannot drift apart."]</p>
         <div class="demo-box">

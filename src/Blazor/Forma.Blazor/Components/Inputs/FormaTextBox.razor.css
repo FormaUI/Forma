@@ -10,10 +10,9 @@
     cursor: not-allowed;
 }
 
-/* :read-only also matches a disabled input, which has its own treatment above. */
-.forma-text-box:read-only:not(:disabled),
-.forma-field-input:read-only:not(:disabled) {
-    background-color: var(--forma-text-box-readonly-bg-color, var(--hover-bg-color));
+/* A box with no label stands outside a field, which draws a labeled one's read-only state. */
+.forma-text-box[readonly]:not(:disabled) {
+    background-color: var(--forma-input-readonly-bg-color, var(--hover-bg-color));
 }
 
 /* Valid shows once the value is modified; invalid shows at once, since a submitted untouched

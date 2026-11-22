@@ -19,6 +19,9 @@ public sealed partial class FormaTextArea : FormaInputBase<string?>
     /// <summary>Whether the field is marked as required.</summary>
     [Parameter] public bool Required { get; set; }
 
+    /// <summary>Whether the text area is read-only.</summary>
+    [Parameter] public bool ReadOnly { get; set; }
+
     /// <summary>The number of visible lines.</summary>
     [Parameter] public int Rows { get; set; } = 3;
 

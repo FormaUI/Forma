@@ -44,6 +44,11 @@
     color: var(--forma-label-disabled-color, var(--disabled-text-color));
 }
 
+/* ---------- read-only ---------- */
+::deep .forma-field-input[readonly]:not(:disabled) {
+    background-color: var(--forma-input-readonly-bg-color, var(--hover-bg-color));
+}
+
 /* Validation states */
 ::deep .forma-field-input.modified.valid {
     border-color: var(--forma-valid-color, var(--success-color));

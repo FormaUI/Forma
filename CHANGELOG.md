@@ -9,6 +9,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- `FormaTextArea` takes `ReadOnly`, as the text box and the number, currency, date and time fields do, and every
+  labeled field draws a read-only element with the read-only fill. The fill's hook is `--forma-input-readonly-bg-color`,
+  beside `--forma-input-disabled-bg-color`. To migrate, rename `--forma-text-box-readonly-bg-color` where a theme sets it.
 - A host's own routes, those its `InputRouterOptions` declares and its `IInputActionHandler` performs, answer on every
   interactive page that renders a Forma component, from that component's first render. They answered only once a
   component on the page had registered with the [input router](docs/input-router-design.md).

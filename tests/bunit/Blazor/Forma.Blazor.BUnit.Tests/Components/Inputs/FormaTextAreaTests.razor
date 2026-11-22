@@ -21,6 +21,38 @@
         }
 
         [Fact]
+        public void Should_be_read_only_where_it_is_asked_to_be()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" ReadOnly="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find("textarea").HasAttribute("readonly"));
+        }
+
+        [Fact]
+        public void Should_be_editable_unless_asked_to_be_read_only()
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.False(cut.Find("textarea").HasAttribute("readonly"));
+        }
+
+        [Fact]
         public void Should_render_the_label_text()
         {
             // Arrange
