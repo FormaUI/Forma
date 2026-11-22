@@ -340,24 +340,39 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
             ReportTextFault(change.IsFaulted, L["Your text didn't arrive in full. Edit it to try again."]);
         }
 
-        if (change.Text == FieldText || ReadOnly || IsFieldDisabled)
+        if (ReadOnly || IsFieldDisabled)
         {
             return;
         }
 
-        if (!_isEdited)
+        if (change.Text != FieldText)
         {
-            _isEdited = true;
-            _valueWhenEdited = Value;
+            if (!_isEdited)
+            {
+                _isEdited = true;
+                _valueWhenEdited = Value;
+            }
+
+            _text = change.Text;
+            _activeIndex = FindTakeableIndex(0, 1);
+            Announce();
+
+            if (!IsOpen && !change.IsCommit)
+            {
+                await Popover.OpenAsync(RootElement);
+            }
         }
 
-        _text = change.Text;
-        _activeIndex = FindTakeableIndex(0, 1);
-        Announce();
-
-        if (!IsOpen)
+        // The field commits its text as it's left, and the commit arrives with the text it commits, where the focus leaving can
+        // arrive before the text does; the text is resolved here as leaving resolves it.
+        if (change.IsCommit)
         {
-            await Popover.OpenAsync(RootElement);
+            if (IsOpen && !_isWithin)
+            {
+                await Popover.CloseAsync();
+            }
+
+            ResolveEdit();
         }
 
         await InvokeAsync(StateHasChanged);

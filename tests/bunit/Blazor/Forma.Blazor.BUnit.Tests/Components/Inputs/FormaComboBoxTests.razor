@@ -168,6 +168,27 @@
         }
 
         [Fact]
+        public async Task Should_commit_text_naming_an_option_exactly_as_the_field_commits_it_before_its_focus_is_reported_leaving()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Status = 2 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Act — the text and its commit arrive together, as the field is left, with no word yet of the focus leaving
+            await fields.ChangeAsync(cut.Find("input"), "(utc+01:00) berlin");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(4, model.Status),
+                () => Assert.Equal("(UTC+01:00) Berlin", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
         public async Task Should_commit_nothing_on_leaving_text_two_options_share()
         {
             // Arrange
