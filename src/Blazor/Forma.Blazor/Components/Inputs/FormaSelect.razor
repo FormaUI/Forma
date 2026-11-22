@@ -5,7 +5,7 @@
 
 <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Description="@Description" Required="@Required" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
-        @if (!RendererInfo.IsInteractive && IsPostable)
+        @if (IsNative)
         {
             @* A statically rendered page chooses in the browser's own list, each option posting its value in the invariant form the server binds. *@
             var chosenOption = FindSelectedOption();
@@ -25,7 +25,7 @@
                 }
                 @foreach (var option in Options)
                 {
-                    <option value="@FormValue.Format(option.Value)" selected="@(ReferenceEquals(option, chosenOption))">@option.Label</option>
+                    <option value="@FormValue.Format(option.Value)" selected="@(ReferenceEquals(option, chosenOption))">@FormatNativeOptionText(option)</option>
                 }
             </select>
         }
@@ -46,7 +46,16 @@
                         aria-controls="@(IsOpen ? PopoverId : null)"
                         aria-required="@(Required ? "true" : null)"
                         @onclick="ToggleAsync">
-                    <span class="forma-select-trigger-text@(FindSelectedOption() is null ? " placeholder" : "")">@TriggerText</span>
+                    @{ var selectedOption = FindSelectedOption(); }
+                    @if (selectedOption?.Icon is { } selectedIcon)
+                    {
+                        <FormaIcon Icon="selectedIcon" Size="IconSize.Small" />
+                    }
+                    <span class="forma-select-trigger-text@(selectedOption is null ? " placeholder" : "")">@TriggerText</span>
+                    @if (selectedOption?.IconLabel is { } selectedIconLabel)
+                    {
+                        <span id="@SelectedIconLabelId" hidden>@selectedIconLabel</span>
+                    }
                     <span class="forma-select-arrow" aria-hidden="true">&#9662;</span>
                 </button>
             </div>
@@ -70,9 +79,18 @@
                                 role="option"
                                 tabindex="-1"
                                 aria-selected="@(isSelected ? "true" : "false")"
+                                aria-describedby="@(option.IconLabel is null ? null : GetOptionIconLabelId(optionIndex))"
                                 @ref="_optionElements[optionIndex]"
                                 @onclick="() => SelectAsync(option)">
+                            @if (option.Icon is { } icon)
+                            {
+                                <FormaIcon Icon="icon" Size="IconSize.Small" />
+                            }
                             <span class="forma-select-option-label">@option.Label</span>
+                            @if (option.IconLabel is { } iconLabel)
+                            {
+                                <span id="@GetOptionIconLabelId(optionIndex)" hidden>@iconLabel</span>
+                            }
                             @if (isSelected)
                             {
                                 <span class="forma-select-option-check" aria-hidden="true">&#10003;</span>

@@ -243,7 +243,13 @@
     "Status": "Estado",
     "Choose a status": "Elegir un estado",
     "Role": "Rol",
-    "Category": "Categoría"
+    "Category": "Categoría",
+    "Options with an Icon": "Opciones con un Icono",
+    "An option can carry an icon ahead of its label, and a screen reader reads what the icon says with the option, so its state never rests on the glyph alone.": "Una opción puede llevar un icono delante de su etiqueta, y un lector de pantalla lee lo que dice el icono junto con la opción, de modo que su estado nunca depende solo del glifo.",
+    "Language": "Idioma",
+    "Fully written": "Escrito por completo",
+    "Partly written": "Escrito en parte",
+    "Not written yet": "Aún sin escribir"
   },
   "FormaSliderPage": {
     "A bounded numeric input rendered as a native range slider, its current value shown beside the label rather than requiring a second field to read it.": "Una entrada numérica acotada representada como un control deslizante nativo, con su valor actual mostrado junto a la etiqueta en lugar de exigir un segundo campo para leerlo.",

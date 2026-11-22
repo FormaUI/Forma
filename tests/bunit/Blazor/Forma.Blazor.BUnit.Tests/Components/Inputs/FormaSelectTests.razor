@@ -95,6 +95,72 @@
         }
 
         [Fact]
+        public void Should_draw_an_option_s_icon_ahead_of_its_label_describing_the_option_by_what_the_icon_says()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+            List<SelectOption<int?>> options = [new(1, "Spanish") { Icon = Glyph.Check, IconLabel = "Fully written" }, new(2, "Hebrew")];
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="options" Label="Language" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-select-trigger").Click();
+
+            // Assert
+            var marked = cut.FindAll(".forma-select-option")[0];
+            var plain = cut.FindAll(".forma-select-option")[1];
+            Assert.Multiple(
+                () => Assert.Equal("svg", marked.FirstElementChild!.LocalName),
+                () => Assert.Equal("Fully written", cut.Find($"#{marked.GetAttribute("aria-describedby")}").TextContent),
+                () => Assert.True(cut.Find($"#{marked.GetAttribute("aria-describedby")}").HasAttribute("hidden")),
+                () => Assert.Null(plain.QuerySelector("svg")),
+                () => Assert.False(plain.HasAttribute("aria-describedby")));
+        }
+
+        [Fact]
+        public void Should_draw_the_chosen_option_s_icon_in_the_trigger_describing_the_trigger_by_what_the_icon_says()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel { Status = 1 };
+            List<SelectOption<int?>> options = [new(1, "Spanish") { Icon = Glyph.Check, IconLabel = "Fully written" }, new(2, "Hebrew")];
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="options" Label="Language" />
+            </FakeFormHost>);
+
+            // Assert
+            var trigger = cut.Find(".forma-select-trigger");
+            var descriptions = trigger.GetAttribute("aria-describedby")!.Split(' ').Select(id => cut.Find($"#{id}").TextContent);
+            Assert.Multiple(
+                () => Assert.Equal("svg", trigger.FirstElementChild!.LocalName),
+                () => Assert.Contains("Fully written", descriptions));
+        }
+
+        [Fact]
+        public void Should_carry_what_an_option_s_icon_says_in_its_text_in_the_browser_s_own_list()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel { Status = 1 };
+            List<SelectOption<int?>> options = [new(1, "Spanish") { Icon = Glyph.Check, IconLabel = "Fully written" }, new(2, "Hebrew")];
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="options" Label="Language" name="Language" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Spanish, Fully written", "Hebrew"], cut.FindAll("option").Select(option => option.TextContent)),
+                () => Assert.Null(cut.Find("select").GetAttribute("aria-describedby")));
+        }
+
+        [Fact]
         public void Should_select_a_value_when_its_option_is_clicked()
         {
             // Arrange

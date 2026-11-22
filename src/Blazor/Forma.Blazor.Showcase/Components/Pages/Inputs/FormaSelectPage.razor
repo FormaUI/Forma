@@ -33,6 +33,14 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["Options with an Icon"]</h2>
+        <p class="description">@L["An option can carry an icon ahead of its label, and a screen reader reads what the icon says with the option, so its state never rests on the glyph alone."]</p>
+        <div class="demo-box">
+            <FormaSelect TValue="int?" @bind-Value="Model.EditedLanguage" Options="LanguageOptions" Label="@L["Language"]" />
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Disabled"]</h2>
         <div class="demo-box">
             <FormaSelect TValue="int?" @bind-Value="Model.DisabledStatus"
@@ -76,7 +84,16 @@
     private SelectDemoModel Model { get; set; } = new()
     {
         PreSelectedRole = 2,
+        EditedLanguage = 2,
     };
+
+    // The languages an article is written in, each marked by how much of its text is written.
+    private IReadOnlyList<SelectOption<int?>> LanguageOptions =>
+    [
+        new(1, "Español") { Icon = Glyph.CircleCheck, IconLabel = L["Fully written"] },
+        new(2, "English") { Icon = Glyph.HourglassProgress, IconLabel = L["Partly written"] },
+        new(3, "Français") { Icon = Glyph.Empty, IconLabel = L["Not written yet"] },
+    ];
 
     private void HandleSubmit() { }
 
@@ -85,6 +102,7 @@
         public int? Culture { get; set; }
         public int? Status { get; set; }
         public int? PreSelectedRole { get; set; }
+        public int? EditedLanguage { get; set; }
         public int? DisabledStatus { get; set; }
         public int? EmptyChoice { get; set; }
     }

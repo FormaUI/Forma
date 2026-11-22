@@ -238,7 +238,13 @@
     "Status": "סטטוס",
     "Choose a status": "בחר סטטוס",
     "Role": "תפקיד",
-    "Category": "קטגוריה"
+    "Category": "קטגוריה",
+    "Options with an Icon": "אפשרויות עם סמל",
+    "An option can carry an icon ahead of its label, and a screen reader reads what the icon says with the option, so its state never rests on the glyph alone.": "אפשרות יכולה לשאת סמל לפני התווית שלה, וקורא מסך מקריא את מה שהסמל אומר יחד עם האפשרות, כך שמצבה לעולם אינו נשען על הצורה בלבד.",
+    "Language": "שפה",
+    "Fully written": "כתוב במלואו",
+    "Partly written": "כתוב בחלקו",
+    "Not written yet": "טרם נכתב"
   },
   "FormaSliderPage": {
     "A bounded numeric input rendered as a native range slider, its current value shown beside the label rather than requiring a second field to read it.": "קלט מספרי חסום המוצג כמחוון טווח מובנה, כאשר הערך הנוכחי מוצג ליד התווית במקום לדרוש שדה נוסף כדי לקרוא אותו.",

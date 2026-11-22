@@ -21,7 +21,7 @@
                     required="@Required">
                 @foreach (var option in Options)
                 {
-                    <option value="@FormValue.Format(option.Value)" selected="@IsSelected(option)">@option.Label</option>
+                    <option value="@FormValue.Format(option.Value)" selected="@IsSelected(option)">@FormatNativeOptionText(option)</option>
                 }
                 @foreach (var value in SelectedValues.Where(selected => FindOption(selected) is null))
                 {
@@ -67,12 +67,23 @@
                                         aria-label="@L["Search"]" />
                         @{ var filteredOptions = FilteredOptions; }
                         <div class="forma-multi-select-options">
-                            @foreach (var option in filteredOptions)
+                            @for (var i = 0; i < filteredOptions.Count; i++)
                             {
+                                var option = filteredOptions[i];
+                                var iconLabelId = GetOptionIconLabelId(i);
                                 <FormaCheckBox Value="@IsSelected(option)"
                                                ValueChanged="_ => ToggleOption(option)"
-                                               ValueExpression="() => OptionSelection">
+                                               ValueExpression="() => OptionSelection"
+                                               aria-describedby="@(option.IconLabel is null ? null : iconLabelId)">
+                                    @if (option.Icon is { } icon)
+                                    {
+                                        <FormaIcon Icon="icon" Size="IconSize.Small" />
+                                    }
                                     <span>@option.Label</span>
+                                    @if (option.IconLabel is { } iconLabel)
+                                    {
+                                        <span id="@iconLabelId" hidden>@iconLabel</span>
+                                    }
                                 </FormaCheckBox>
                             }
                             @if (filteredOptions.Count == 0)
@@ -95,8 +106,13 @@
                     <div class="forma-multi-select-tags">
                         @foreach (var value in SelectedValues)
                         {
-                            var text = FindOption(value)?.Label ?? value.ToString() ?? string.Empty;
+                            var chosenOption = FindOption(value);
+                            var text = chosenOption?.Label ?? value.ToString() ?? string.Empty;
                             <span class="forma-multi-select-tag">
+                                @if (chosenOption?.Icon is { } chosenIcon)
+                                {
+                                    <FormaIcon Icon="chosenIcon" Size="IconSize.Small" />
+                                }
                                 @text
                                 <FormaButton Variant="ButtonVariant.Ghost"
                                              Size="ButtonSize.Mini"

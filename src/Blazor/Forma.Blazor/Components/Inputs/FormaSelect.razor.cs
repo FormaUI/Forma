@@ -77,6 +77,13 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private string PopoverId
         => $"{ElementId}-popover";
 
+    private string SelectedIconLabelId
+        => $"{ElementId}-icon-label";
+
+    // A select a statically rendered form posts chooses in the browser's own list.
+    private bool IsNative
+        => !RendererInfo.IsInteractive && IsPostable;
+
     private bool IsOpen
         => Popover is { IsOpen: true };
 
@@ -159,6 +166,13 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private bool IsSelected(SelectOption<TValue> option)
         => EqualityComparer<TValue>.Default.Equals(option.Value, Value);
 
+    private string GetOptionIconLabelId(int index)
+        => $"{ElementId}-option-{index}-icon-label";
+
+    // The browser's own list draws text alone, so an option's text carries what its icon says.
+    private string FormatNativeOptionText(SelectOption<TValue> option)
+        => option.IconLabel is { } iconLabel ? L["{Label}, {IconLabel}", option.Label, iconLabel] : option.Label;
+
     private async Task SelectAsync(SelectOption<TValue> option)
     {
         CurrentValue = option.Value;
@@ -231,6 +245,15 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
         => builder
             .Add("forma-field-input")
             .Add("forma-select-trigger");
+
+    /// <inheritdoc />
+    protected override void BuildDescribedBy(ICollection<string> ids)
+    {
+        if (!IsNative && FindSelectedOption() is { IconLabel: not null })
+        {
+            ids.Add(SelectedIconLabelId);
+        }
+    }
 
     /// <inheritdoc />
     protected override async ValueTask DisposeAsyncCore()

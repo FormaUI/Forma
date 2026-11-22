@@ -114,6 +114,50 @@
         }
 
         [Fact]
+        public void Should_draw_an_option_s_icon_beside_its_label_describing_its_box_by_what_the_icon_says()
+        {
+            // Arrange
+            using var ctx = new FormaMultiSelectTests();
+            var model = new FakeModel();
+            List<SelectOption<int>> options = [new(1, "Spanish") { Icon = Glyph.Check, IconLabel = "Fully written" }, new(2, "Hebrew")];
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="options" Label="Languages" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-multi-select-trigger").Click();
+
+            // Assert
+            var labels = cut.FindAll(".forma-multi-select-options .forma-checkbox-label");
+            var markedBox = labels[0].QuerySelector("input")!;
+            Assert.Multiple(
+                () => Assert.NotNull(labels[0].QuerySelector("svg")),
+                () => Assert.Contains("Fully written", markedBox.GetAttribute("aria-describedby")!.Split(' ').Select(id => cut.Find($"#{id}").TextContent)),
+                () => Assert.Null(labels[1].QuerySelector("svg")),
+                () => Assert.False(labels[1].QuerySelector("input")!.HasAttribute("aria-describedby")));
+        }
+
+        [Fact]
+        public void Should_draw_a_chosen_option_s_icon_in_its_tag()
+        {
+            // Arrange
+            using var ctx = new FormaMultiSelectTests();
+            var model = new FakeModel { Categories = [1, 2] };
+            List<SelectOption<int>> options = [new(1, "Spanish") { Icon = Glyph.Check, IconLabel = "Fully written" }, new(2, "Hebrew")];
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="options" Label="Languages" />
+            </FakeFormHost>);
+
+            // Assert
+            var tags = cut.FindAll(".forma-multi-select-tag");
+            Assert.Multiple(
+                () => Assert.Equal("svg", tags[0].FirstElementChild!.LocalName),
+                () => Assert.NotEqual("svg", tags[1].FirstElementChild!.LocalName));
+        }
+
+        [Fact]
         public void Should_add_a_value_when_its_checkbox_is_checked()
         {
             // Arrange

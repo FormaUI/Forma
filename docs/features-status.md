@@ -207,7 +207,7 @@ they are taken, each with what the code does and its state.
 | Request | What the code does | State |
 | --- | --- | --- |
 | A read-only text area | `FormaTextArea` had no `ReadOnly`, which the text box and the number, currency, date and time fields have. It takes one now, and every labeled field draws a read-only element with the read-only fill, its hook `--forma-input-readonly-bg-color` | Fixed |
-| A select option's mark | A `SelectOption` is a value and a label, with nothing drawn beside the label | Open |
+| A select option's mark | A `SelectOption` was a value and a label. It carries an optional `Icon`, drawn ahead of the label in the select's and the multi-select's lists, trigger and tags, and an `IconLabel` describing the option to assistive technology | Fixed |
 | Tabs past their width | `FormaTabs` wraps its tabs onto a second line once they run out of width | Open |
 | A badge's colors from a theme | `StatusBadgeStyle` takes its colors as `CssColor` values, so a status can't take a theme's tokens | Open |
 | The canvas under a dark scale | `--backdrop-canvas-bg-color` is a step toward ink on the gray scale, so a theme reversing the scale, as the README says a theme redefines it, draws the canvas lighter than the backdrops laid on it | Open |

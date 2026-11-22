@@ -101,6 +101,11 @@
     font-weight: 600;
 }
 
+.forma-select-option-label {
+    flex: 1;
+    min-inline-size: 0;
+}
+
 .forma-select-option-check {
     flex-shrink: 0;
     color: var(--primary-color);
