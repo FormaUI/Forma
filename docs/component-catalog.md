@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**75 components implemented, none in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**76 components implemented, none in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -72,9 +72,10 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaDropDownMenu
 │   ├── ✅ FormaOverflowMenu
 │   └── ✅ FormaShareMenu
-├── (2 / 2) Navigation/
+├── (3 / 3) Navigation/
 │   ├── ✅ FormaBreadcrumb
-│   └── ✅ FormaPagination
+│   ├── ✅ FormaPagination
+│   └── ✅ FormaStepper
 ├── (1 / 1) Page/
 │   └── ✅ FormaPageTitle
 ├── (3 / 3) Symbols/
@@ -667,6 +668,15 @@ A toolbar of readouts and commands along the bottom of a surface. Its design is 
 |---|---|
 | **Old pattern** | None |
 | **Used in** | `FormaComposerStatusStrip`, which composes it |
+
+### `FormaStepper`
+
+A numbered strip of the steps in an ordered flow, marking the one the reader is on.
+
+| | |
+|---|---|
+| **Old pattern** | The store settings' payment setup guide, `Guide()` in `store-settings.js` swapping one panel for the next behind next and back links |
+| **Used in** | Any flow a reader takes step by step, such as a purchase or a setup guide |
 
 ### `FormaTabs`
 

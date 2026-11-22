@@ -12,5 +12,9 @@
     "Go to Page": "מעבר לעמוד",
     "{PageNumber} of {PageCount}": "{PageNumber} מתוך {PageCount}",
     "Go": "עבור"
+  },
+  "FormaStepper": {
+    "Steps": "שלבים",
+    "Completed": "הושלם"
   }
 }

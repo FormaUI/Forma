@@ -12,5 +12,9 @@
     "Go to Page": "Ir a la Página",
     "{PageNumber} of {PageCount}": "{PageNumber} de {PageCount}",
     "Go": "Ir"
+  },
+  "FormaStepper": {
+    "Steps": "Pasos",
+    "Completed": "Completado"
   }
 }

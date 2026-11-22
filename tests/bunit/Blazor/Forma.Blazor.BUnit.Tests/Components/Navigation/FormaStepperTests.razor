@@ -1,0 +1,247 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Navigation
+@using Forma.Framework.Browser
+@using Forma.Framework.Icons
+
+@code {
+    // The four steps of buying a race's photos.
+    private static IReadOnlyList<StepperStep> CreateSteps()
+        => [new("Find your event"), new("Choose your photos"), new("Pay"), new("Download")];
+
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_list_its_steps_in_order_under_the_library_s_name_for_them()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStepper Steps="CreateSteps()" />);
+
+            // Assert
+            var list = cut.Find("ol.forma-stepper-list");
+            Assert.Multiple(
+                () => Assert.Equal("Steps", list.GetAttribute("aria-label")),
+                () => Assert.Equal(["1", "2", "3", "4"], cut.FindAll(".forma-stepper-list .forma-stepper-marker").Select(marker => marker.TextContent.Trim())),
+                () => Assert.Equal(["Find your event", "Choose your photos", "Pay", "Download"], cut.FindAll(".forma-stepper-list .forma-stepper-label").Select(label => label.TextContent)),
+                () => Assert.All(cut.FindAll(".forma-stepper-list .forma-stepper-marker"), marker => Assert.Equal("true", marker.GetAttribute("aria-hidden"))));
+        }
+
+        [Fact]
+        public void Should_take_the_host_s_name_for_its_steps()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStepper Steps="CreateSteps()" AriaLabel="Buying photos" />);
+
+            // Assert
+            Assert.Equal("Buying photos", cut.Find("ol.forma-stepper-list").GetAttribute("aria-label"));
+        }
+
+        [Fact]
+        public void Should_mark_the_step_the_reader_is_on_as_the_current_step_and_no_other()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStepper Steps="CreateSteps()" CurrentIndex="1" />);
+
+            // Assert
+            var steps = cut.FindAll("li.forma-stepper-step");
+            Assert.Multiple(
+                () => Assert.Equal([null, "step", null, null], steps.Select(step => step.GetAttribute("aria-current"))),
+                () => Assert.Equal([false, true, false, false], steps.Select(step => step.ClassList.Contains("is-current"))));
+        }
+
+        [Fact]
+        public void Should_draw_a_completed_step_with_a_check_in_place_of_its_number_and_say_it_is_completed()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+            IReadOnlyList<StepperStep> steps = [new("Find your event") { IsCompleted = true }, new("Choose your photos"), new("Pay")];
+
+            // Act
+            var cut = ctx.Render(@<FormaStepper Steps="steps" CurrentIndex="1" />);
+
+            // Assert
+            var completed = cut.FindAll("li.forma-stepper-step")[0];
+            var next = cut.FindAll("li.forma-stepper-step")[1];
+            Assert.Multiple(
+                () => Assert.Contains("is-completed", completed.ClassList),
+                () => Assert.Equal(Glyph.Check, cut.FindComponents<FormaIcon>().Single().Instance.Icon),
+                () => Assert.Empty(completed.QuerySelector(".forma-stepper-marker")!.TextContent.Trim()),
+                () => Assert.Equal("Completed", completed.QuerySelector(".forma-stepper-status")?.TextContent),
+                () => Assert.Null(next.QuerySelector(".forma-stepper-status")));
+        }
+
+        [Fact]
+        public void Should_link_a_step_to_its_address_on_every_step_but_the_current_one()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+            IReadOnlyList<StepperStep> steps =
+            [
+                new("Find your event") { Url = new Uri("/events", UriKind.Relative), IsCompleted = true },
+                new("Choose your photos") { Url = new Uri("/events/sierra/photos", UriKind.Relative) },
+                new("Pay"),
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaStepper Steps="steps" CurrentIndex="1" />);
+
+            // Assert
+            var targets = cut.FindAll("li.forma-stepper-step > .forma-stepper-target");
+            Assert.Multiple(
+                () => Assert.Equal(["A", "SPAN", "SPAN"], targets.Select(target => target.TagName)),
+                () => Assert.Equal("/events", targets[0].GetAttribute("href")),
+                () => Assert.Null(targets[1].GetAttribute("href")));
+        }
+
+        [Fact]
+        public async Task Should_number_its_steps_in_the_culture_state_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+            var cut = ctx.Render(@<FormaStepper Steps="CreateSteps()" />);
+
+            // Act
+            await ctx.ChangeCultureAsync("ar-SA");
+
+            // Assert
+            Assert.Equal((1).ToString(System.Globalization.CultureInfo.GetCultureInfo("ar-SA")), cut.FindAll(".forma-stepper-list .forma-stepper-marker")[0].TextContent.Trim());
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(4)]
+        public void Should_refuse_a_current_step_it_does_not_have(int currentIndex)
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaStepper Steps="CreateSteps()" CurrentIndex="currentIndex" />));
+        }
+
+        [Fact]
+        public void Should_draw_no_step_and_take_any_current_step_when_it_has_none()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStepper Steps="[]" CurrentIndex="3" />);
+
+            // Assert
+            Assert.Empty(cut.FindAll("li"));
+        }
+    }
+
+    public sealed class Fitting
+    {
+        [Fact]
+        public void Should_lay_every_name_out_again_in_a_ruler_hidden_from_assistive_technology()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaStepper Steps="CreateSteps()" CurrentIndex="1" />);
+
+            // Assert
+            var ruler = cut.Find(".forma-stepper-ruler");
+            Assert.Multiple(
+                () => Assert.Equal("true", ruler.GetAttribute("aria-hidden")),
+                () => Assert.Equal(["Find your event", "Choose your photos", "Pay", "Download"], ruler.QuerySelectorAll(".forma-stepper-label").Select(label => label.TextContent)),
+                () => Assert.Equal([false, true, false, false], ruler.QuerySelectorAll(".forma-stepper-ruler-step").Select(step => step.ClassList.Contains("is-current"))));
+        }
+
+        [Fact]
+        public async Task Should_show_the_steps_not_current_by_their_numbers_alone_where_the_ruler_is_wider_than_the_list()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+            var probe = new DomProbe<SizeState>(ctx);
+            var cut = ctx.Render(@<FormaStepper Steps="CreateSteps()" />);
+
+            // Act
+            await probe.ReportAsync(cut.Find(".forma-stepper-list"), new SizeState(320, 32));
+            await probe.ReportAsync(cut.Find(".forma-stepper-ruler-steps"), new SizeState(480, 32));
+
+            // Assert
+            Assert.Contains("is-compact", cut.Find(".forma-stepper").ClassList);
+        }
+
+        [Fact]
+        public async Task Should_show_every_name_again_once_the_ruler_is_no_wider_than_the_list()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+            var probe = new DomProbe<SizeState>(ctx);
+            var cut = ctx.Render(@<FormaStepper Steps="CreateSteps()" />);
+            await probe.ReportAsync(cut.Find(".forma-stepper-list"), new SizeState(320, 32));
+            await probe.ReportAsync(cut.Find(".forma-stepper-ruler-steps"), new SizeState(480, 32));
+
+            // Act — the ruler's watch, attached last
+            await probe.ReportAsync(new SizeState(320, 32));
+
+            // Assert
+            Assert.DoesNotContain("is-compact", cut.Find(".forma-stepper").ClassList);
+        }
+
+        [Fact]
+        public async Task Should_take_the_names_to_fit_until_both_widths_are_known()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+            var probe = new DomProbe<SizeState>(ctx);
+            var cut = ctx.Render(@<FormaStepper Steps="CreateSteps()" />);
+
+            // Act
+            await probe.ReportAsync(cut.Find(".forma-stepper-list"), new SizeState(120, 32));
+
+            // Assert
+            Assert.DoesNotContain("is-compact", cut.Find(".forma-stepper").ClassList);
+        }
+
+        [Fact]
+        public void Should_watch_the_width_of_its_list_and_of_its_ruler()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+            var probe = new DomProbe<SizeState>(ctx);
+
+            // Act
+            var cut = ctx.Render(@<FormaStepper Steps="CreateSteps()" />);
+
+            // Assert
+            string?[] watched = [.. new[] { ".forma-stepper-list", ".forma-stepper-ruler-steps" }.Select(selector => cut.Find(selector).GetAttribute("blazor:elementReference"))];
+            Assert.Multiple(
+                () => Assert.Equal(["size", "size"], probe.Observations.Select(attach => (string?)DomProbe<SizeState>.GetRequestField(attach, "capability"))),
+                () => Assert.Equal(watched, probe.Observations.Select(attach => DomProbe<SizeState>.GetRequestField(attach, "target") is ElementReference target ? target.Id : null)));
+        }
+
+        [Fact]
+        public void Should_give_the_ruler_s_steps_the_links_the_list_draws()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+            IReadOnlyList<StepperStep> steps =
+            [
+                new("Find your event") { Url = new Uri("/events", UriKind.Relative), IsCompleted = true },
+                new("Choose your photos") { Url = new Uri("/events/sierra/photos", UriKind.Relative) },
+                new("Pay"),
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaStepper Steps="steps" CurrentIndex="1" />);
+
+            // Assert — the current step and a step with no address are no links, in the list or the ruler
+            Assert.Equal([true, false, false], cut.FindAll(".forma-stepper-ruler .forma-stepper-target").Select(target => target.ClassList.Contains("is-link")));
+        }
+    }
+}

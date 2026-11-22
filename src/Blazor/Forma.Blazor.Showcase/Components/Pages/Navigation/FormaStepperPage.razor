@@ -1,0 +1,36 @@
+@page "/stepper"
+@attribute [ShowcasePage("FormaStepper")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Navigation
+
+<h1>FormaStepper</h1>
+<p class="description">@L["A numbered strip of the steps in an ordered flow, marking the one the reader is on: its number filled and its name in the strong tone, a completed step checked, and where the names would not fit the width it is given, the steps not current shown by their numbers alone."]</p>
+
+<div class="demo-section">
+    <h2>@L["A Purchase Flow"]</h2>
+    <p class="description">@L["The steps of buying a race's photos. Each step left behind is completed and links back to itself, and the one reached is current; move through them with the buttons or by a completed step."]</p>
+    <div class="demo-box">
+        <FormaStepper Steps="_purchaseSteps" CurrentIndex="_purchaseIndex" AriaLabel="@L["Buying Photos"]" />
+        <div class="demo-row demo-controls">
+            <FormaButton Variant="ButtonVariant.Secondary" Disabled="_purchaseIndex == 0" OnClick="GoBack">@L["Previous Step"]</FormaButton>
+            <FormaButton Variant="ButtonVariant.Primary" Disabled="_purchaseIndex == _purchaseSteps.Count - 1" OnClick="GoForward">@L["Next Step"]</FormaButton>
+        </div>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["An Indicator Alone"]</h2>
+    <p class="description">@L["Only the current step is marked: no step is completed and none links anywhere, as a page shows where a reader stands without offering a way out of it."]</p>
+    <div class="demo-box">
+        <FormaStepper Steps="_indicatorSteps" CurrentIndex="2" AriaLabel="@L["Buying Photos"]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Narrow Width"]</h2>
+    <p class="description">@L["Given a phone's width, the stepper shows the steps not current by their numbers alone, their names still read by assistive technology, so the row never wraps."]</p>
+    <div class="demo-box demo-box-narrow">
+        <FormaStepper Steps="_purchaseSteps" CurrentIndex="_purchaseIndex" AriaLabel="@L["Buying Photos"]" />
+    </div>
+</div>

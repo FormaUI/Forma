@@ -1,0 +1,21 @@
+@page "/{Runtime}/stepper"
+@using Forma.Blazor.Components.Navigation
+
+@* Four steps of buying photos, the second current and the first completed and linking back, at a page's width and at a phone's
+   narrowest. *@
+<div id="wide">
+    <FormaStepper Id="stepper" Steps="Steps" CurrentIndex="1" AriaLabel="Buying photos" />
+</div>
+<div id="narrow" style="inline-size: 20rem">
+    <FormaStepper Steps="Steps" CurrentIndex="1" />
+</div>
+
+@code {
+    private static readonly IReadOnlyList<StepperStep> Steps =
+    [
+        new("Find your event") { Url = new Uri("events", UriKind.Relative), IsCompleted = true },
+        new("Choose your photos"),
+        new("Pay"),
+        new("Download"),
+    ];
+}

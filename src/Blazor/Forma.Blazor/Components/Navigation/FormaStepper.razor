@@ -1,0 +1,74 @@
+@namespace Forma.Blazor.Components.Navigation
+@inherits FormaElementBase
+<div id="@Id"
+     data-rid="@Context.RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement">
+    <ol class="forma-stepper-list" aria-label="@EffectiveAriaLabel" @ref="_list">
+        @for (var index = 0; index < Steps.Count; index++)
+        {
+            var step = Steps[index];
+            var isCurrent = index == CurrentIndex;
+
+            <li class="@GetStepClass(step, isCurrent)" aria-current="@(isCurrent ? "step" : null)">
+                @if (step.Url is { } url && !isCurrent)
+                {
+                    <a class="forma-stepper-target" href="@url.OriginalString">
+                        <span class="forma-stepper-marker" aria-hidden="true">
+                            @if (step.IsCompleted)
+                            {
+                                <FormaIcon Icon="Glyph.Check" />
+                            }
+                            else
+                            {
+                                @FormatNumber(index)
+                            }
+                        </span>
+                        <span class="forma-stepper-label">@step.Label</span>
+                        @if (step.IsCompleted)
+                        {
+                            <span class="forma-stepper-status">@L["Completed"]</span>
+                        }
+                    </a>
+                }
+                else
+                {
+                    <span class="forma-stepper-target">
+                        <span class="forma-stepper-marker" aria-hidden="true">
+                            @if (step.IsCompleted)
+                            {
+                                <FormaIcon Icon="Glyph.Check" />
+                            }
+                            else
+                            {
+                                @FormatNumber(index)
+                            }
+                        </span>
+                        <span class="forma-stepper-label">@step.Label</span>
+                        @if (step.IsCompleted)
+                        {
+                            <span class="forma-stepper-status">@L["Completed"]</span>
+                        }
+                    </span>
+                }
+            </li>
+        }
+    </ol>
+    <div class="forma-stepper-ruler" aria-hidden="true">
+        <div class="forma-stepper-ruler-steps" @ref="_ruler">
+            @for (var index = 0; index < Steps.Count; index++)
+            {
+                var isCurrent = index == CurrentIndex;
+
+                <span class="@GetRulerStepClass(isCurrent)">
+                    <span class="@GetRulerTargetClass(Steps[index], isCurrent)">
+                        <span class="forma-stepper-marker"></span>
+                        <span class="forma-stepper-label">@Steps[index].Label</span>
+                    </span>
+                </span>
+            }
+        </div>
+    </div>
+</div>

@@ -1,0 +1,190 @@
+/* ============================================================
+   FormaStepper — CSS isolation
+   A row of numbered steps joined by connectors, the current one filled and
+   named in the strong tone, a completed one checked; where its names don't
+   fit the width it is given, the steps not current show their numbers alone.
+   ============================================================ */
+
+.forma-stepper {
+    min-inline-size: 0;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-target);
+}
+
+.forma-stepper-list {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+/* Until the stepper has measured its names, and wherever it is rendered statically, every step gives way, each name ending in an
+   ellipsis; once the names don't fit, a step not current keeps its marker and its connector, and the current one alone gives way. */
+.forma-stepper-step {
+    display: flex;
+    align-items: center;
+    flex: 0 1 auto;
+    min-inline-size: 0;
+}
+
+.forma-stepper.is-compact .forma-stepper-step:not(.is-current) {
+    min-inline-size: auto;
+}
+
+/* Every step after the first is led by a connector, which takes the room the steps leave and keeps its least length. */
+.forma-stepper-step + .forma-stepper-step {
+    flex: 1 1 auto;
+}
+
+.forma-stepper-step + .forma-stepper-step::before {
+    content: "";
+    flex: 1 1 0;
+    min-inline-size: var(--space-4);
+    block-size: 1px;
+    margin-inline: var(--space-2);
+    background-color: var(--forma-stepper-connector-color, var(--border-emphasis-color));
+}
+
+.forma-stepper-target {
+    display: flex;
+    align-items: center;
+    min-inline-size: 0;
+    min-block-size: var(--target-size-sm);
+    color: var(--forma-stepper-label-color, var(--text-secondary-color));
+    text-decoration: none;
+    border-radius: var(--radius-sm);
+    touch-action: manipulation;
+}
+
+a.forma-stepper-target {
+    cursor: pointer;
+}
+
+/* Under a finger a link is a touch target both ways, a step shown by its number alone centered in it; the ruler's links take the
+   same room, so the names are measured as the list draws them. */
+@media (pointer: coarse) {
+    a.forma-stepper-target,
+    .forma-stepper-ruler .forma-stepper-target.is-link {
+        justify-content: center;
+        min-inline-size: var(--target-size-touch);
+        min-block-size: var(--target-size-touch);
+    }
+}
+
+@media (hover: hover) {
+    a.forma-stepper-target:hover .forma-stepper-label {
+        text-decoration: underline;
+    }
+}
+
+.forma-stepper-marker {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-sizing: border-box;
+    inline-size: var(--forma-stepper-marker-size, var(--icon-size-sm));
+    block-size: var(--forma-stepper-marker-size, var(--icon-size-sm));
+    border: 1px solid var(--forma-stepper-marker-border-color, var(--border-emphasis-color));
+    border-radius: 50%;
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+
+.forma-stepper-label {
+    min-inline-size: 0;
+    margin-inline-start: var(--space-2);
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    unicode-bidi: isolate;
+}
+
+.forma-stepper.is-compact .forma-stepper-step:not(.is-current) .forma-stepper-label {
+    max-inline-size: 0;
+    margin-inline-start: 0;
+}
+
+.forma-stepper-status {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* --- Completed --- */
+.forma-stepper-step.is-completed .forma-stepper-marker {
+    border-color: var(--forma-stepper-active-color, var(--primary-color));
+    color: var(--forma-stepper-active-color, var(--primary-color));
+}
+
+.forma-stepper-step.is-completed .forma-stepper-target {
+    color: var(--forma-stepper-completed-label-color, var(--text-primary-color));
+}
+
+/* --- Current --- */
+.forma-stepper-step.is-current .forma-stepper-target {
+    color: var(--forma-stepper-current-label-color, var(--text-primary-color));
+}
+
+.forma-stepper-step.is-current .forma-stepper-target,
+.forma-stepper-ruler-step.is-current {
+    font-weight: 600;
+}
+
+.forma-stepper-step.is-current .forma-stepper-marker {
+    border-color: var(--forma-stepper-active-color, var(--primary-color));
+    background-color: var(--forma-stepper-active-color, var(--primary-color));
+    color: var(--forma-stepper-current-marker-color, var(--primary-fg-color));
+}
+
+/* --- Ruler ---
+   The steps again, every name shown and every connector at its least length, in a box that takes no room and draws nothing; the
+   stepper compares the ruler's width with its own to decide whether the names fit. */
+.forma-stepper-ruler {
+    block-size: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+
+.forma-stepper-ruler-steps {
+    display: flex;
+    inline-size: max-content;
+}
+
+.forma-stepper-ruler-step {
+    display: flex;
+    align-items: center;
+}
+
+.forma-stepper-ruler-step + .forma-stepper-ruler-step::before {
+    content: "";
+    inline-size: var(--space-4);
+    margin-inline: var(--space-2);
+}
+
+@media (forced-colors: active) {
+    .forma-stepper-marker,
+    .forma-stepper-step.is-completed .forma-stepper-marker {
+        border-color: CanvasText;
+        color: CanvasText;
+    }
+
+    .forma-stepper-step.is-current .forma-stepper-marker {
+        forced-color-adjust: none;
+        border-color: Highlight;
+        background-color: Highlight;
+        color: HighlightText;
+    }
+
+    .forma-stepper-step + .forma-stepper-step::before {
+        background-color: CanvasText;
+    }
+}

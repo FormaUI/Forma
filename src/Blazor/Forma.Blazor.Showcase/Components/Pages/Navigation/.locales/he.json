@@ -58,5 +58,21 @@
     "When everything fits on one page, the component renders nothing.": "כשהכול נכנס בעמוד אחד, הרכיב לא מציג דבר.",
     "Page beyond the range": "עמוד מחוץ לטווח",
     "A page past the end — after a filter narrows the list, or from a hand-edited URL — settles on the nearest page.": "עמוד שמעבר לסוף — אחרי שסינון מצמצם את הרשימה, או מכתובת שנערכה ידנית — נוחת על העמוד הקרוב ביותר."
+  },
+  "FormaStepperPage": {
+    "A numbered strip of the steps in an ordered flow, marking the one the reader is on: its number filled and its name in the strong tone, a completed step checked, and where the names would not fit the width it is given, the steps not current shown by their numbers alone.": "רצועה ממוספרת של שלבי תהליך מסודר, המסמנת את השלב שבו נמצא הקורא: המספר שלו מלא והשם שלו בגוון החזק, שלב שהושלם מסומן בסימן וי, וכאשר השמות אינם נכנסים ברוחב שניתן לה, השלבים שאינם הנוכחי מוצגים במספר שלהם בלבד.",
+    "A Purchase Flow": "תהליך רכישה",
+    "The steps of buying a race's photos. Each step left behind is completed and links back to itself, and the one reached is current; move through them with the buttons or by a completed step.": "שלבי הרכישה של תמונות ממרוץ. כל שלב שנותר מאחור הושלם ומקשר חזרה אליו, והשלב שהושג הוא הנוכחי; עברו ביניהם בעזרת הכפתורים או דרך שלב שהושלם.",
+    "Buying Photos": "רכישת תמונות",
+    "Previous Step": "השלב הקודם",
+    "Next Step": "השלב הבא",
+    "An Indicator Alone": "מחוון בלבד",
+    "Only the current step is marked: no step is completed and none links anywhere, as a page shows where a reader stands without offering a way out of it.": "רק השלב הנוכחי מסומן: אף שלב לא הושלם ואף אחד אינו מקשר לשום מקום, כמו עמוד שמראה היכן הקורא עומד בלי להציע לו דרך לצאת ממנו.",
+    "A Narrow Width": "רוחב צר",
+    "Given a phone's width, the stepper shows the steps not current by their numbers alone, their names still read by assistive technology, so the row never wraps.": "ברוחב של טלפון, מחוון השלבים מציג את השלבים שאינם הנוכחי במספר שלהם בלבד, וטכנולוגיה מסייעת עדיין קוראת את שמותיהם, כך שהשורה לעולם אינה נשברת.",
+    "Find Your Event": "מציאת האירוע",
+    "Choose Your Photos": "בחירת התמונות",
+    "Pay": "תשלום",
+    "Download without the Watermark": "הורדה ללא סימן המים"
   }
 }

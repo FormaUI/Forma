@@ -56,5 +56,21 @@
     "Page Beyond the Range": "Página Fuera del Rango",
     "Page beyond the range": "Página fuera del rango",
     "A page past the end — after a filter narrows the list, or from a hand-edited URL — settles on the nearest page.": "Una página más allá del final — tras un filtro que reduce la lista, o desde una URL editada a mano — se ajusta a la página más cercana."
+  },
+  "FormaStepperPage": {
+    "A numbered strip of the steps in an ordered flow, marking the one the reader is on: its number filled and its name in the strong tone, a completed step checked, and where the names would not fit the width it is given, the steps not current shown by their numbers alone.": "Una franja numerada de los pasos de un flujo ordenado que marca aquel en el que está el lector: su número relleno y su nombre en el tono fuerte, un paso completado con una marca y, donde los nombres no caben en el ancho que se le da, los pasos que no son el actual mostrados solo por su número.",
+    "A Purchase Flow": "Un Flujo de Compra",
+    "The steps of buying a race's photos. Each step left behind is completed and links back to itself, and the one reached is current; move through them with the buttons or by a completed step.": "Los pasos para comprar las fotos de una carrera. Cada paso que queda atrás está completado y enlaza de vuelta a sí mismo, y el alcanzado es el actual; recórrelos con los botones o desde un paso completado.",
+    "Buying Photos": "Compra de Fotos",
+    "Previous Step": "Paso Anterior",
+    "Next Step": "Paso Siguiente",
+    "An Indicator Alone": "Solo un Indicador",
+    "Only the current step is marked: no step is completed and none links anywhere, as a page shows where a reader stands without offering a way out of it.": "Solo se marca el paso actual: ningún paso está completado y ninguno enlaza a ninguna parte, como una página que muestra dónde está el lector sin ofrecerle una salida.",
+    "A Narrow Width": "Un Ancho Estrecho",
+    "Given a phone's width, the stepper shows the steps not current by their numbers alone, their names still read by assistive technology, so the row never wraps.": "Con el ancho de un teléfono, el indicador de pasos muestra los pasos que no son el actual solo por su número, y la tecnología de asistencia sigue leyendo sus nombres, de modo que la fila nunca se divide.",
+    "Find Your Event": "Encuentra Tu Evento",
+    "Choose Your Photos": "Elige Tus Fotos",
+    "Pay": "Paga",
+    "Download without the Watermark": "Descarga sin la Marca de Agua"
   }
 }

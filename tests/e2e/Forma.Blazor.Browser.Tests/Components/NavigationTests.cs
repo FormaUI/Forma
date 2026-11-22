@@ -1,7 +1,9 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
+using System.Text.RegularExpressions;
+
 /// <summary>The navigation components' interactions, in every runtime.</summary>
-public sealed class NavigationTests
+public sealed partial class NavigationTests
 {
     public sealed class Breadcrumb(BrowserHost host)
     {
@@ -20,6 +22,113 @@ public sealed class NavigationTests
             // Assert
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("store");
             await Assertions.Expect(breadcrumb.Locator("[aria-current=page]")).ToHaveTextAsync("Orders");
+        }
+    }
+
+    public sealed partial class Stepper(BrowserHost host)
+    {
+        // How far a stepper's steps reach past it, and each step: its name, whether its name is drawn, how far its top stands from
+        // the first step's, and whether it is the current step.
+        private const string ReadSteps = """
+            box => {
+                const stepper = document.querySelector(`#${box} .forma-stepper-list`);
+                const first = stepper.querySelector('.forma-stepper-marker').getBoundingClientRect();
+                return [
+                    `spill ${Math.round(stepper.scrollWidth - stepper.clientWidth)}`,
+                    ...[...stepper.querySelectorAll('li')].map(step => {
+                        const name = step.querySelector('.forma-stepper-label');
+                        const marker = step.querySelector('.forma-stepper-marker').getBoundingClientRect();
+                        const shown = name.getBoundingClientRect().width > 1 ? 'named' : 'numbered';
+                        return `${name.textContent} ${shown} ${Math.round(marker.top - first.top)}${step.getAttribute('aria-current') === 'step' ? ' current' : ''}`;
+                    })
+                ];
+            }
+            """;
+
+        [GeneratedRegex(@"\bis-compact\b")]
+        private static partial Regex IsCompact();
+
+        // Whether the narrow stepper's link to its completed step, shown by its number alone, takes the least size a target takes under the
+        // page's pointer, a finger's where the pointer is coarse.
+        private const string ReadNumberedLink = """
+            () => {
+                const box = document.querySelector('#narrow .forma-stepper-list a.forma-stepper-target').getBoundingClientRect();
+                const least = matchMedia('(pointer: coarse)').matches ? 44 : 24;
+                return `${box.width >= least && box.height >= least ? 'takes' : 'misses'} ${least}: ${Math.round(box.width)} by ${Math.round(box.height)}`;
+            }
+            """;
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_name_every_step_where_its_names_fit_and_number_all_but_the_current_one_where_they_do_not(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "stepper");
+            await using var _ = context;
+
+            // Act — once the narrow stepper has measured that its names don't fit
+            await Assertions.Expect(page.Locator("#narrow .forma-stepper")).ToHaveClassAsync(IsCompact());
+            var wide = await page.EvaluateAsync<string[]>(ReadSteps, "wide");
+            var narrow = await page.EvaluateAsync<string[]>(ReadSteps, "narrow");
+
+            // Assert — one row in both, every name on a page's width and the current step's alone at a phone's narrowest
+            Assert.Multiple(
+                () => Assert.Equal(["spill 0", "Find your event named 0", "Choose your photos named 0 current", "Pay named 0", "Download named 0"], wide),
+                () => Assert.Equal(["spill 0", "Find your event numbered 0", "Choose your photos named 0 current", "Pay numbered 0", "Download numbered 0"], narrow));
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_name_every_step_again_once_given_the_room_and_number_them_again_once_it_is_taken_away(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "stepper");
+            await using var _ = context;
+            var narrow = page.Locator("#narrow");
+            var stepper = narrow.Locator(".forma-stepper");
+            await Assertions.Expect(stepper).ToHaveClassAsync(IsCompact());
+
+            // Act
+            await narrow.EvaluateAsync("box => box.style.inlineSize = '60rem'");
+            await Assertions.Expect(stepper).Not.ToHaveClassAsync(IsCompact());
+            var widened = await page.EvaluateAsync<string[]>(ReadSteps, "narrow");
+            await narrow.EvaluateAsync("box => box.style.inlineSize = '20rem'");
+
+            // Assert
+            Assert.Equal(["spill 0", "Find your event named 0", "Choose your photos named 0 current", "Pay named 0", "Download named 0"], widened);
+            await Assertions.Expect(stepper).ToHaveClassAsync(IsCompact());
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_give_a_link_shown_by_its_number_alone_a_whole_target(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "stepper");
+            await using var _ = context;
+            await Assertions.Expect(page.Locator("#narrow .forma-stepper")).ToHaveClassAsync(IsCompact());
+
+            // Act
+            var target = await page.EvaluateAsync<string>(ReadNumberedLink);
+
+            // Assert
+            Assert.StartsWith("takes ", target, StringComparison.Ordinal);
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_name_its_steps_and_link_a_completed_one_back(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "stepper");
+            await using var _ = context;
+            var stepper = page.GetByRole(AriaRole.List, new() { Name = "Buying photos", Exact = true });
+
+            // Assert
+            await Assertions.Expect(stepper.GetByRole(AriaRole.Listitem)).ToHaveCountAsync(4);
+            await Assertions.Expect(stepper.Locator("[aria-current=step]")).ToContainTextAsync("Choose your photos");
+            await Assertions.Expect(stepper.GetByRole(AriaRole.Link)).ToHaveAccessibleNameAsync("Find your event Completed");
+            await Assertions.Expect(stepper.GetByRole(AriaRole.Link)).ToHaveCountAsync(1);
         }
     }
 
