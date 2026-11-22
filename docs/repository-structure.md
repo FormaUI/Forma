@@ -392,9 +392,10 @@ features that own them.
 ### Test support
 
 - **`FormaBunitContext`**, in `Forma.Tests.Support.Blazor`, is the shared test context of every bUnit suite. It
-  registers localization, the Twemoji pack and `AddFormaUIServices`. That project holds what a component test needs and a
-  Framework test must not pull in, bUnit and the product itself, so `Forma.Tests.Support` stays free of both and every
-  test project can reference it.
+  registers localization, the Twemoji pack, `AddFormaUIServices` and, as its `Clock`, a `FakeTimeProvider` that moves
+  only as a test advances it, so no wait a component starts ends in the middle of a test. That project holds what a
+  component test needs and a Framework test must not pull in, bUnit and the product itself, so `Forma.Tests.Support`
+  stays free of both and every test project can reference it.
 - **A fake, fixture or utility one suite uses** lives in that suite's `Support/` folder, under its `Support`
   namespace, as `Forma.Blazor.BUnit.Tests.Support`. It moves to `tests/support/Forma.Tests.Support` once a second
   suite uses it.

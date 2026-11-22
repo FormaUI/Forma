@@ -16,6 +16,7 @@ using Forma.Tests.Culture;
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Time.Testing;
 
 /// <summary>A bUnit context with the services every Forma component expects registered, rendering as an interactive server circuit until a test sets another renderer.</summary>
 public abstract class FormaBunitContext : BunitContext
@@ -28,13 +29,22 @@ public abstract class FormaBunitContext : BunitContext
     /// <summary>The locale packs of the languages the library ships, which the context's localization reads.</summary>
     public static IReadOnlyList<Assembly> LocalePacks { get; } = LocaleAssemblyLoader.LoadPacks(typeof(FormaBunitContext).Assembly, NullLogger.Instance);
 
+    /// <summary>The clock the rendered components read and wait on, standing at the moment the context was made, in the machine's time zone, until a test advances it.</summary>
+    public FakeTimeProvider Clock { get; } = CreateClock();
+
     /// <summary>Creates a context carrying Forma's own service registrations.</summary>
+    /// <remarks>
+    /// The components read and wait on <see cref="Clock"/>, which moves only as a test advances it, so a wait a component starts, such as a
+    /// data view's announcement of a slow load, never ends in the middle of a test and takes the renderer from it; a test registering a
+    /// clock of its own after this one replaces it.
+    /// </remarks>
     protected FormaBunitContext()
     {
         Services.AddJsonLocalization(new LocalizationOptions { LocalePacks = LocalePacks });
         Services.AddFormaTwemojiPack();
         Services.AddScoped<ICultureSwitch, TestCultureSwitch>();
         Services.AddFormaUIServices();
+        Services.AddSingleton<TimeProvider>(Clock);
     }
 
     /// <summary>Switches the cultures the rendered components follow through the test switch, leaving the caller's own cultures as they were.</summary>
@@ -75,6 +85,14 @@ public abstract class FormaBunitContext : BunitContext
         EnsureRendererInfo();
 
         return base.Render(renderFragment);
+    }
+
+    private static FakeTimeProvider CreateClock()
+    {
+        var clock = new FakeTimeProvider(TimeProvider.System.GetUtcNow());
+        clock.SetLocalTimeZone(TimeZoneInfo.Local);
+
+        return clock;
     }
 
     // Applied on the first render, which creates the renderer after every service a test registers.

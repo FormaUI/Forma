@@ -11,6 +11,7 @@
     <ItemGroup>
         <PackageReference Include="AngleSharp" />
         <PackageReference Include="bunit" />
+        <PackageReference Include="Microsoft.Extensions.TimeProvider.Testing" />
     </ItemGroup>
 
     <ItemGroup>
