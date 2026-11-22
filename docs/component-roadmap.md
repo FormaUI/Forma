@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**20 components not yet implemented, none in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 20 not yet started, and a component in progress stands in the catalog's structure until then.
+**22 components not yet implemented, none in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 22 not yet started, and a component in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -33,6 +33,9 @@ Forma.Blazor/Components/
     └── FormaLaunchBar
 
 src/Blazor/
+├── (2) Forma.Blazor.Charts/
+│   ├── FormaBarChart
+│   └── FormaLineChart
 └── (1) Forma.Blazor.Gallery/
     └── FormaGallery
 ```
@@ -44,13 +47,14 @@ The components still to build, in the order dependency and reuse suggest. What i
 | Order | Components | Rationale |
 |---|---|---|
 | 1 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
-| 2 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
-| 3 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
-| 4 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
-| 5 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
-| 6 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
-| 7 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
-| 8 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
+| 2 | `FormaLineChart`, `FormaBarChart` | Figures over time, in an assembly of their own; they depend only on components that exist, and a host shows tables in their place until they land |
+| 3 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
+| 4 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
+| 5 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
+| 6 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
+| 7 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
+| 8 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
+| 9 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
 
 ## Components
 
@@ -62,6 +66,15 @@ An icon button for adding. Its design is [icon-buttons-design.md](icon-buttons-d
 |---|---|
 | **Old pattern** | The "new" button in each page's toolbar, opening the new-item modal |
 | **Used in** | `FormaToolbar` actions, `FormaMultiSelect`'s add-new affordance, and any editor that appends a row |
+
+### `FormaBarChart`
+
+Bars of one to four named series over a shared time axis, with a gap where a period has no data.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | An administrators' view of a site's health over time, such as failures per day and storage growth |
 
 ### `FormaContextMenu`
 
@@ -161,6 +174,15 @@ The bar a workspace's applications are launched from, hosting the rest area besi
 |---|---|
 | **Old pattern** | None |
 | **Used in** | A host's shell, as the bar its applications are launched from |
+
+### `FormaLineChart`
+
+Lines of one to four named series over a shared time axis, broken where a period has no data, with a threshold line and a band between two series.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | An administrators' view of a site's health over time, such as page load per hour, readers online, and CPU and memory |
 
 ### `FormaMediaPicker`
 
