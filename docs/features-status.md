@@ -6,7 +6,7 @@
 
 | Measure | Now |
 | --- | --- |
-| Components | 77 implemented, as [the catalog](component-catalog.md) lists them, and 20 planned, as [the roadmap](component-roadmap.md) orders them |
+| Components | 77 implemented, as [the catalog](component-catalog.md) lists them, and 24 planned, as [the roadmap](component-roadmap.md) orders them |
 | Packages | Every project under `src/` but the Showcase, released from `main` by `release.yml` to nuget.org and the organization's GitHub feed, the latest published release `1.0.0-preview.13` |
 | Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, and on the Server in WebKit, the engine of Safari and of Apple's web views, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid implemented on WPF, Windows Forms and MAUI on Windows, every component checked in a web view and each host's application set up as the README says; an inventory holds every component to a check page in every render mode |
 
@@ -20,13 +20,14 @@ The gate runs every check [the verification design](verification-design.md#gates
 
 | Work | State |
 | --- | --- |
-| [Components to build](#components-to-build) | The roadmap, the notes editor, export button, design picker and font picker first |
+| [Components to build](#components-to-build) | The roadmap, the combo box and the link tabs first |
 | [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | The component suite on iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests, a faster gate, and builds in processes of their own |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
+| [A host's requests](#a-hosts-requests) | Two components on the roadmap, eight changes open |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing the gate.
@@ -117,7 +118,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## Components to build
 
-[The roadmap](component-roadmap.md) orders what is built next: the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
+[The roadmap](component-roadmap.md) orders what is built next: the combo box and the link tabs; the notes editor, export button, design picker and font picker; the line and bar charts; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
 
 <a id="blazor-hybrid-on-phones-and-macs"></a>
 
@@ -194,6 +195,25 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 | Localized routing | The culture router replaced the culture segment and kept the rest of the path. A host's `ICultureDestinationResolver` now names where a page leads in another culture, its own address there or a fallback, and every switch, link and web view following its application's culture goes there; publication stays the host's | Fixed |
 | Localized references carried as data | No type carried a localization source, a key and arguments to resolve when displayed. `LocalizableText` now does, localized by `IStringLocaleFactory.Localize` in the cultures in force when it is shown, and the locale lint checks its keys as it checks a lookup's | Fixed |
 | The composer's integration guidance | The composer's README said to sanitize on the server, but not how authoring and saving share one policy, that the selected plugins don't set the policy, or how a stored video placeholder is rendered. It now says each, with every attribute a placeholder carries, a sanitizer pass over what the composer kept changes nothing, and the icon set has a solid `Pause` beside `TriangleRight` | Fixed |
+
+<a id="a-hosts-requests"></a>
+
+## A host's requests
+
+A host's list of what it needs from Forma named two components Forma lacks, `FormaComboBox` and `FormaLinkTabs`, which
+[the roadmap](component-roadmap.md) builds first, and eight changes to components that exist, listed here in the order
+they are taken, each with what the code does and its state.
+
+| Request | What the code does | State |
+| --- | --- | --- |
+| A read-only text area | `FormaTextArea` has no `ReadOnly`, which the text box and the number, currency, date and time fields have | Open |
+| A select option's mark | A `SelectOption` is a value and a label, with nothing drawn beside the label | Open |
+| Tabs past their width | `FormaTabs` wraps its tabs onto a second line once they run out of width | Open |
+| A badge's colors from a theme | `StatusBadgeStyle` takes its colors as `CssColor` values, so a status can't take a theme's tokens | Open |
+| The canvas under a dark scale | `--backdrop-canvas-bg-color` is a step toward ink on the gray scale, so a theme reversing the scale, as the README says a theme redefines it, draws the canvas lighter than the backdrops laid on it | Open |
+| The explorer's toolbar in a bounded height | In an explorer of bounded height, such as a dialog's body, an open upload panel takes its room from the toolbar rather than the items, shrinking the toolbar to a sliver | Open |
+| A row removed under the focus | A command removing the row it was run from, as a row's menu deleting the row does, leaves the focus on the page's body | Open |
+| Sharing from a static page | `FormaShareMenu` is a drop-down menu, which works only interactively, so a page rendered statically can't share through it | Open |
 
 <a id="deferred"></a>
 

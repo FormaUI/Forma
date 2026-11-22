@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**22 components not yet implemented, none in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 22 not yet started, and a component in progress stands in the catalog's structure until then.
+**24 components not yet implemented, none in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 24 not yet started, and a component in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -23,12 +23,16 @@ Forma.Blazor/Components/
 │   └── FormaProductOptionsEditor
 ├── (1) Files/
 │   └── FormaMediaPicker
+├── (1) Inputs/
+│   └── FormaComboBox
 ├── (3) Media/
 │   ├── FormaDesignPicker
 │   ├── FormaFontPicker
 │   └── FormaImageEditor
 ├── (1) Menus/
 │   └── FormaContextMenu
+├── (1) Navigation/
+│   └── FormaLinkTabs
 └── (1) Windows/
     └── FormaLaunchBar
 
@@ -46,15 +50,16 @@ The components still to build, in the order dependency and reuse suggest. What i
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
-| 2 | `FormaLineChart`, `FormaBarChart` | Figures over time, in an assembly of their own; they depend only on components that exist, and a host shows tables in their place until they land |
-| 3 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
-| 4 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
-| 5 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
-| 6 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
-| 7 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
-| 8 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
-| 9 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
+| 1 | `FormaComboBox`, `FormaLinkTabs` | A choice found by typing and tabs that go between pages, which a host works around today with a select beside a text box and with tabs of its own |
+| 2 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
+| 3 | `FormaLineChart`, `FormaBarChart` | Figures over time, in an assembly of their own; they depend only on components that exist, and a host shows tables in their place until they land |
+| 4 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
+| 5 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
+| 6 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
+| 7 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
+| 8 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
+| 9 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
+| 10 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
 
 ## Components
 
@@ -75,6 +80,15 @@ Bars of one to four named series over a shared time axis, with a gap where a per
 |---|---|
 | **Old pattern** | None |
 | **Used in** | An administrators' view of a site's health over time, such as failures per day and storage growth |
+
+### `FormaComboBox`
+
+A form input choosing one value from a list that narrows as the reader types, which can also take the typed text as a value the list doesn't hold.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | A choice among hundreds of options found by typing part of one, such as a time zone, and a value named where the list lacks it, such as a team not yet kept |
 
 ### `FormaContextMenu`
 
@@ -183,6 +197,15 @@ Lines of one to four named series over a shared time axis, broken where a period
 |---|---|
 | **Old pattern** | None |
 | **Used in** | An administrators' view of a site's health over time, such as page load per hour, readers online, and CPU and memory |
+
+### `FormaLinkTabs`
+
+A strip of tabs that are links to pages, in a navigation landmark, the current page's tab marked, drawn as `FormaTabs` is.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | A section whose pages each have an address of their own, such as a workspace's areas |
 
 ### `FormaMediaPicker`
 
