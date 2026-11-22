@@ -259,6 +259,23 @@
         }
 
         [Fact]
+        public void Should_have_the_router_carry_the_host_s_routes_once_as_the_scope_s_components_first_render()
+        {
+            // Arrange
+            using var ctx = new FormaComponentBaseTests();
+            var router = new InputRouterProbe(ctx);
+            router.Module.SetupVoid("configure", _ => true).SetVoidResult();
+
+            // Act — two components that never register with the router render, and one renders again
+            var first = ctx.Render<Silent>();
+            ctx.Render<Silent>();
+            first.Render();
+
+            // Assert
+            Assert.Single(router.Module.Invocations, invocation => invocation.Identifier == "configure");
+        }
+
+        [Fact]
         public async Task Should_dispose_once_through_its_hook()
         {
             // Arrange

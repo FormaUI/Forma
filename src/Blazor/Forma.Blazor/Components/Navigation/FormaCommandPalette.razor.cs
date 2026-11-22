@@ -145,13 +145,6 @@ public sealed partial class FormaCommandPalette : FormaElementBase
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // The shortcut that opens the palette is one of the host's own routes, which the router installs with the host's policy; the
-        // palette has it installed as it first renders, so the shortcut works on a page where nothing else has used the router yet.
-        if (firstRender)
-        {
-            await InputRouter.ConfigureAsync();
-        }
-
         await _edits.SyncAsync(_search, _query, EditOptions);
         await _inputRegistration.SyncAsync(_search, SearchProfile, Open);
     }

@@ -89,7 +89,7 @@ arbitrates ownership.
 | Part | Responsibility |
 | --- | --- |
 | `InputRouter.js` | Registers scopes and routes, resolves ownership synchronously from composed event paths, keeps the active ordering, installs whichever listeners each input class needs, applies `preventDefault` and propagation per resolution, and answers queries. |
-| The .NET bridge | `InputRoute`, `InputProfile`, and `InputRouterOptions` records, with a binding record and an input record per family — keyboard, pointer, click, wheel, drop, a click's input described as a pointer's; a scoped service that transfers host policy, bindings, and host routes to the script once per user scope, before the first scope or routed interaction is registered. No component is mounted. |
+| The .NET bridge | `InputRoute`, `InputProfile`, and `InputRouterOptions` records, with a binding record and an input record per family — keyboard, pointer, click, wheel, drop, a click's input described as a pointer's; a scoped service that transfers host policy, bindings, and host routes to the script once per user scope, as the scope's first Forma component first renders interactively and before the first scope or routed interaction is registered, so a host route answers on every interactive page that renders a Forma component. No component is mounted. |
 | A participating component | Declares its scope and routes and implements the semantic actions. |
 
 ## Input scopes

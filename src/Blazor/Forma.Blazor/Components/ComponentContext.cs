@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components;
 
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Culture;
+using Forma.Framework.Input.Interop;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 
@@ -16,11 +17,12 @@ public sealed class ComponentContext : IComponentContext, IAsyncDisposable
     private readonly Lazy<ILogger> _logger;
     private readonly Lazy<IJSEnvironment> _js;
     private readonly Func<DomBridge?> _domBridge;
+    private readonly Func<InputRouter?> _inputRouter;
     private DomWatcher? _domWatcher;
     private DomEngine? _domEngine;
 
-    /// <summary>Creates a context over the user scope's culture state, from the functions that create its JS runtime, strings and log, that find the bridge its watcher shares imports through, and that read the transfer's options.</summary>
-    public ComponentContext(ICultureState cultureState, Func<IJSRuntime> jsRuntime, Func<IStringLocale> locale, Func<ILogger> logger, Func<DomBridge?>? domBridge = null, Func<JSTransferOptions>? transferOptions = null)
+    /// <summary>Creates a context over the user scope's culture state, from the functions that create its JS runtime, strings and log, that find the bridge its watcher shares imports through, that read the transfer's options, and that find the user scope's input router.</summary>
+    public ComponentContext(ICultureState cultureState, Func<IJSRuntime> jsRuntime, Func<IStringLocale> locale, Func<ILogger> logger, Func<DomBridge?>? domBridge = null, Func<JSTransferOptions>? transferOptions = null, Func<InputRouter?>? inputRouter = null)
     {
         ArgumentNullException.ThrowIfNull(cultureState);
         ArgumentNullException.ThrowIfNull(jsRuntime);
@@ -32,6 +34,7 @@ public sealed class ComponentContext : IComponentContext, IAsyncDisposable
         _logger = new(logger);
         _js = new(() => new JSEnvironment(jsRuntime(), Logger, RuntimeId, transferOptions?.Invoke()));
         _domBridge = domBridge ?? (static () => null);
+        _inputRouter = inputRouter ?? (static () => null);
     }
 
     /// <inheritdoc />
@@ -78,6 +81,11 @@ public sealed class ComponentContext : IComponentContext, IAsyncDisposable
 
     /// <summary>Whether the context has been disposed.</summary>
     public bool IsDisposed { get; private set; }
+
+    /// <summary>Has the user scope's input router carry the host's policy and routes to the page, as the component first renders interactively.</summary>
+    /// <remarks>The router carries them once for the user scope and shares that one push, so a host's route answers on every interactive page that renders a Forma component, one where none registers with the router among them.</remarks>
+    internal Task ConfigureInputRouterAsync()
+        => _inputRouter() is { } inputRouter ? inputRouter.ConfigureAsync() : Task.CompletedTask;
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()

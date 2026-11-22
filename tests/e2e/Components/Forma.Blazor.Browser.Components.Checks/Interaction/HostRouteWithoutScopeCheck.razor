@@ -1,0 +1,21 @@
+@page "/{Runtime}/host-route-without-scope"
+@using Forma.Blazor.Browser.Components.Checks.Services
+@using Forma.Blazor.Components.Feedback
+@implements IDisposable
+@inject CheckInputActions Actions
+
+@* The action the host's own shortcut performed, on a page whose one Forma component never registers with the router. *@
+<FormaStatusBadge Id="badge" Text="Ready" />
+<div id="anywhere" tabindex="0">Anywhere</div>
+<output id="result">@Actions.LastAction</output>
+
+@code {
+    protected override void OnInitialized()
+        => Actions.Performed += Refresh;
+
+    public void Dispose()
+        => Actions.Performed -= Refresh;
+
+    private void Refresh()
+        => InvokeAsync(StateHasChanged);
+}

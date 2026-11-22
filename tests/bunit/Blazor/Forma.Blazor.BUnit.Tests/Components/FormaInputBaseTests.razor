@@ -39,6 +39,23 @@
         }
 
         [Fact]
+        public void Should_have_the_router_carry_the_host_s_routes_once_as_the_scope_s_inputs_first_render()
+        {
+            // Arrange
+            using var ctx = new FormaInputBaseTests();
+            var router = new InputRouterProbe(ctx);
+            router.Module.SetupVoid("configure", _ => true).SetVoidResult();
+
+            // Act — two inputs that never register with the router render, and one renders again
+            var first = RenderField(ctx, new FakeModel());
+            RenderField(ctx, new FakeModel());
+            first.Render();
+
+            // Assert
+            Assert.Single(router.Module.Invocations, invocation => invocation.Identifier == "configure");
+        }
+
+        [Fact]
         public async Task Should_render_again_when_the_culture_state_changes()
         {
             // Arrange

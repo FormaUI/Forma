@@ -15,7 +15,7 @@ using Microsoft.JSInterop;
 
 /// <summary>The base of every Forma form input: the framework's input with the context, strings, log, host surface and disposal of any Forma component.</summary>
 /// <typeparam name="TValue">The value the input binds.</typeparam>
-public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposable
+public abstract class FormaInputBase<TValue> : InputBase<TValue>, IHandleAfterRender, IAsyncDisposable
 {
     /// <summary>The root element's id.</summary>
     [Parameter] public string? Id { get; set; }
@@ -38,6 +38,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
     private ComponentContext? _context;
     private bool _isSubscribedToCultureState;
+    private bool _hasRendered;
     private Func<Task<bool>>? _settleEditsAsync;
     private ValidationMessageStore? _textFaults;
     private bool _isTextFaulted;
@@ -55,7 +56,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
 
     /// <summary>The component's context: its identity, its cultures, its strings, its log and its JS environment.</summary>
     protected IComponentContext Context
-        => _context ??= ContextFactory.Create(GetType(), () => LocaleSourceType);
+        => OwnContext;
 
     /// <summary>The component's strings, in the culture state's UI culture.</summary>
     protected IStringLocale L
@@ -135,6 +136,9 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         }
     }
 
+    private ComponentContext OwnContext
+        => _context ??= ContextFactory.Create(GetType(), () => LocaleSourceType);
+
     /// <inheritdoc />
     /// <remarks>The first call makes the component's context, which initializes the user scope's culture support where its render mode does not, and subscribes the component to the context's culture state, so each change of the state renders it again.</remarks>
     public override Task SetParametersAsync(ParameterView parameters)
@@ -146,6 +150,18 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IAsyncDisposab
         }
 
         return base.SetParametersAsync(parameters);
+    }
+
+    /// <summary>Runs the component's after-render methods, as the renderer asks after each render in an interactive render mode.</summary>
+    /// <remarks>The first also has the user scope's input router carry the host's routes to the page, so a host's route answers on every interactive page that renders a Forma component.</remarks>
+    Task IHandleAfterRender.OnAfterRenderAsync()
+    {
+        var firstRender = !_hasRendered;
+        _hasRendered = true;
+        OnAfterRender(firstRender);
+        var rendered = OnAfterRenderAsync(firstRender);
+
+        return firstRender ? Task.WhenAll(rendered, OwnContext.ConfigureInputRouterAsync()) : rendered;
     }
 
     /// <summary>Focuses the input's control, answering whether the focus was asked of an element.</summary>

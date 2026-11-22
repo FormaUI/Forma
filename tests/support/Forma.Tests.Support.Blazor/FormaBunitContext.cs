@@ -18,9 +18,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Time.Testing;
 
-/// <summary>A bUnit context with the services every Forma component expects registered, rendering as an interactive server circuit until a test sets another renderer.</summary>
+/// <summary>A bUnit context with the services every Forma component expects registered, and the input router's script answering the configuration every component's first render asks for, rendering as an interactive server circuit until a test sets another renderer.</summary>
 public abstract class FormaBunitContext : BunitContext
 {
+    private const string InputRouterModule = "./_content/forma/input/scripts/InputRouter.js";
+
     private static readonly RendererInfo InteractiveServer = new("Server", isInteractive: true);
 
     private bool _isRendererInfoSet;
@@ -45,6 +47,9 @@ public abstract class FormaBunitContext : BunitContext
         Services.AddScoped<ICultureSwitch, TestCultureSwitch>();
         Services.AddFormaUIServices();
         Services.AddSingleton<TimeProvider>(Clock);
+
+        // Every component's first render has the input router carry the host's routes to the page.
+        JSInterop.SetupModule(InputRouterModule).SetupVoid("configure", _ => true).SetVoidResult();
     }
 
     /// <summary>Switches the cultures the rendered components follow through the test switch, leaving the caller's own cultures as they were.</summary>

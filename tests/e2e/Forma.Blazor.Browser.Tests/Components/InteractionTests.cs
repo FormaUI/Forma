@@ -47,6 +47,23 @@ public sealed class InteractionTests
             // Assert
             await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("check.host");
         }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_perform_the_host_s_own_shortcut_on_a_page_where_no_component_registers_with_the_router(string runtime)
+        {
+            // Arrange — the host's routes configured as the page's one Forma component first renders
+            var (context, page) = await OpenAsync(host, runtime, "host-route-without-scope");
+            await using var _ = context;
+            await WaitForInputRouteAsync(page, "html", "check.host");
+            await page.Locator("#anywhere").FocusAsync();
+
+            // Act
+            await page.Keyboard.PressAsync("F2");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("check.host");
+        }
     }
 
     public sealed class PageTitle(BrowserHost host)

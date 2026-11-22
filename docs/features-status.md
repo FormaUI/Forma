@@ -25,7 +25,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests, a faster gate, and builds in processes of their own |
-| [The input router's host routes](#the-input-routers-host-routes) | Installed on every page, next |
+| [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -166,11 +166,10 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
 
 ## The input router's host routes
 
-A host's own routes, such as the shortcut that opens a command palette, answer only on a page where some component has
-registered with the input router, since its bridge hands the script the host's policy just before the first registration.
-The router is to install the host's policy as the page first renders interactively, so a host route answers on every page,
-as [its design](input-router-design.md#preemptive-routes-are-absolute) means a palette's shortcut to, and
-`FormaCommandPalette`'s own call to `InputRouter.ConfigureAsync()` then goes. It is the next work.
+A host's own routes, such as the shortcut that opens a command palette, answer on every interactive page that renders a
+Forma component: the first one to render interactively has the input router carry the host's policy to the page, as
+[its design](input-router-design.md#preemptive-routes-are-absolute) means a palette's shortcut to, whether or not any
+component on the page registers with the router.
 
 <a id="a-hosts-integration"></a>
 

@@ -185,20 +185,6 @@
     public sealed class Keys
     {
         [Fact]
-        public void Should_have_the_router_take_the_host_s_policy_as_it_first_renders_though_closed()
-        {
-            // Arrange
-            using var ctx = new FormaCommandPaletteTests();
-            var router = new InputRouterProbe(ctx);
-
-            // Act
-            ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" />);
-
-            // Assert — the host's shortcut that opens the palette is among the routes the policy carries
-            Assert.Contains(router.Module.Invocations, invocation => invocation.Identifier == "configure");
-        }
-
-        [Fact]
         public void Should_claim_the_arrows_and_enter_on_its_field()
         {
             // Arrange

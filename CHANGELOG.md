@@ -9,6 +9,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- A host's own routes, those its `InputRouterOptions` declares and its `IInputActionHandler` performs, answer on every
+  interactive page that renders a Forma component, from that component's first render. They answered only once a
+  component on the page had registered with the [input router](docs/input-router-design.md).
 - `FormaCommandPalette` searches the commands a host hands it as `PaletteCommand`s, each a name, the `Place` it lives,
   an optional `Icon` and the `Url` it goes to or the action it `Run`s, in a dialog the host opens through `Open`, from a
   button or from a shortcut it routes. Every word typed narrows the commands to those whose name or place holds it,

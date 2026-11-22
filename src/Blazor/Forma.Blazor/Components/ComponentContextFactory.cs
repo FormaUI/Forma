@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components;
 
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Culture;
+using Forma.Framework.Input.Interop;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization;
 
@@ -29,6 +30,7 @@ public sealed class ComponentContextFactory(IServiceProvider serviceProvider) : 
             () => serviceProvider.GetStringLocaleFactory().Create(localeSourceType(), _cultureState),
             () => _loggerFactory.CreateLogger(componentType),
             () => serviceProvider.GetService<DomBridge>(),
-            serviceProvider.GetJSTransferOptions);
+            serviceProvider.GetJSTransferOptions,
+            () => serviceProvider.GetService<InputRouter>());
     }
 }
