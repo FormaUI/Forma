@@ -203,7 +203,7 @@
         else if (View.Items.Count == 0)
         {
             <tr class="forma-data-grid-state-row">
-                <td colspan="@Grid.ColumnCount" class="forma-data-grid-state-cell">@View.EmptyContent</td>
+                <td colspan="@Grid.ColumnCount" class="forma-data-grid-state-cell" data-empty-state>@View.EmptyContent</td>
             </tr>
         }
         else

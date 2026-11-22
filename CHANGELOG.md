@@ -29,6 +29,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A [`FormaExplorer`](docs/component-catalog.md#formaexplorer) held short keeps its header whole while its upload
   panel is open, the media beneath it giving way first and the panel then scrolling what it holds. The
   panel kept its full height, pushing the media out of the explorer.
+- A [`FormaDataView`](docs/data-view-design.md#accessibility-keyboard-and-direction) hands the focus of an item taken away, held by the
+  item or by a control inside it, to the item after it, else the one before it, else the first control its empty
+  state draws, as a command run from a row's menu deleting the row takes the row. The focus fell to the page.
 - A host's own routes, those its `InputRouterOptions` declares and its `IInputActionHandler` performs, answer on every
   interactive page that renders a Forma component, from that component's first render. They answered only once a
   component on the page had registered with the [input router](docs/input-router-design.md).

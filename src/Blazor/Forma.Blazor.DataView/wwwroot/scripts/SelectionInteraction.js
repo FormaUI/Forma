@@ -211,8 +211,9 @@ class SelectionInteraction {
     #indexed = new Map();
     #actionsReturn = null;
     #suppressesContextMenu = false;
+    #emptyStateSelector;
 
-    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, moves = selects, checksOnPress = false, positionAttribute = null, seeks = false, itemRootSelector = null, actionsSelector = null, gathersControls = false }) {
+    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, moves = selects, checksOnPress = false, positionAttribute = null, seeks = false, itemRootSelector = null, actionsSelector = null, gathersControls = false, emptyStateSelector = null }) {
         this.#target = target;
         this.#owner = owner;
         this.#keyAttribute = keyAttribute;
@@ -227,6 +228,7 @@ class SelectionInteraction {
         this.#itemRootSelector = itemRootSelector;
         this.#actionsSelector = itemRootSelector === null ? null : actionsSelector;
         this.#gathersControls = gathersControls && itemRootSelector !== null;
+        this.#emptyStateSelector = emptyStateSelector;
 
         // Each key moves plain, with Shift extending the range, or with the primary modifier moving alone; one that
         // would move nothing matches nothing, so a press at the end of the list keeps its default.
@@ -290,9 +292,10 @@ class SelectionInteraction {
         // has moved the focus, or at its release where it raises no click, and a press also at its cancellation.
         const signal = this.#listenerAbort.signal;
         const ownerDocument = target.ownerDocument;
+        // A control inside an item holds its item too, so a command taking the item away hands the focus on from where it stood.
         target.addEventListener('focusin', event => {
             this.#focusedElement = event.target;
-            this.#hold(this.#focusedMarker(event));
+            this.#hold(this.#focusedMarker(event) ?? this.#markerAround(event.target));
         }, { signal });
 
         // Wherever the keys move, a marker taking the focus becomes the tab stop, and every marker a render draws joins the rest.
@@ -801,10 +804,55 @@ class SelectionInteraction {
         tell(this.#owner, 'HandleSeekAsync', request, edge > 0, effectiveMode, effectiveMode === 'extend' ? this.#anchorPosition : null);
     }
 
+    // The held item keeps the markers drawn either side of it, which stand in for it once it is gone.
     #hold(marker) {
-        this.#heldMarker = marker ? { token: this.#tokenOf(marker), position: this.#positionOf(marker), item: this.#itemOf(marker) } : null;
+        if (marker) {
+            const markers = this.#markers();
+            const index = markers.indexOf(marker);
+            const next = index < 0 ? null : markers[index + 1] ?? null;
+            const previous = index < 1 ? null : markers[index - 1];
+
+            this.#heldMarker = {
+                token: this.#tokenOf(marker),
+                position: this.#positionOf(marker),
+                item: this.#itemOf(marker),
+                nextToken: next ? this.#tokenOf(next) : null,
+                previousToken: previous ? this.#tokenOf(previous) : null,
+            };
+        } else {
+            this.#heldMarker = null;
+        }
+
         this.#readerMoved = false;
         this.#moveStart = null;
+    }
+
+    /** The marker of the item a node inside the list stands in, by the element the item is drawn as where the list names one. */
+    #markerAround(node) {
+        if (!(node instanceof Element)) {
+            return null;
+        }
+
+        const root = node.closest(this.#itemRootSelector ?? this.#itemSelector);
+
+        if (!root || !this.#target.contains(root)) {
+            return null;
+        }
+
+        const item = root.matches(this.#itemSelector) ? root : root.querySelector(this.#itemSelector);
+
+        return item ? this.#ownMarker(item) : null;
+    }
+
+    #markerWithToken(token) {
+        return token === null ? null : this.#target.querySelector(`[${this.#keyAttribute}="${token}"]`);
+    }
+
+    /** The first control the list's empty state draws. */
+    #emptyStateControl() {
+        const emptyState = this.#emptyStateSelector ? this.#target.querySelector(this.#emptyStateSelector) : null;
+
+        return emptyState ? [...emptyState.querySelectorAll(Controls.Focusable)].find(control => !control.disabled && control.tabIndex >= 0) ?? null : null;
     }
 
     // A press or a Tab may move the focus anywhere while it is handled, so a loss of focus meanwhile is the reader's.
@@ -838,19 +886,27 @@ class SelectionInteraction {
         }
     }
 
-    // Only a focus that fell to nothing is taken back, onto the held item's marker once the render has drawn it again, by token or by position.
+    // Only a focus that fell to nothing is taken back, onto the held item's marker once the render has drawn it again, by token or by
+    // position; an item taken away hands it to the item after it, else the one before, else the first control of the empty state.
     #restore(heldMarker) {
         if (this.#heldMarker !== heldMarker || this.#readerMoved || !this.#isFocusLost() || this.#stopWaiting) {
             return;
         }
 
-        const find = () => this.#target.querySelector(`[${this.#keyAttribute}="${heldMarker.token}"]`)
+        const find = () => this.#markerWithToken(heldMarker.token)
             ?? (heldMarker.position === null ? null : this.#markerAt(heldMarker.position))
-            ?? this.#nearestMarker(heldMarker.item);
+            ?? this.#nearestMarker(heldMarker.item)
+            ?? this.#markerWithToken(heldMarker.nextToken)
+            ?? this.#markerWithToken(heldMarker.previousToken)
+            ?? this.#emptyStateControl();
 
-        this.#whenDrawn(find, marker => {
+        this.#whenDrawn(find, element => {
             if (this.#heldMarker === heldMarker && !this.#readerMoved && this.#isFocusLost()) {
-                this.#focusMarker(marker, this.#markers());
+                if (element.matches(this.#markerSelector)) {
+                    this.#focusMarker(element, this.#markers());
+                } else {
+                    element.focus();
+                }
             }
         });
     }

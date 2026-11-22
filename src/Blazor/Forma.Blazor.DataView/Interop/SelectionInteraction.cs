@@ -25,7 +25,8 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
     /// <param name="actionsSelector">The selector naming the control within an item that opens its actions, which Shift+F10 and the Menu key on the item press.</param>
     /// <param name="gathersControls">Whether Tab reaches the active item's controls alone, every other item's standing out of the Tab sequence.</param>
     /// <param name="checksOnPress">Whether a press checks the box of the item it lands on, where the list does not select, rather than activate the item.</param>
-    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, bool moves = true, string? positionAttribute = null, bool seeks = false, string? itemRootSelector = null, string? actionsSelector = null, bool gathersControls = false, bool checksOnPress = false)
+    /// <param name="emptyStateSelector">The selector naming what the list shows once it holds no items, whose first control takes a focus the last item lost.</param>
+    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, bool moves = true, string? positionAttribute = null, bool seeks = false, string? itemRootSelector = null, string? actionsSelector = null, bool gathersControls = false, bool checksOnPress = false, string? emptyStateSelector = null)
         where TOwner : class
     {
         ArgumentNullException.ThrowIfNull(owner);
@@ -45,6 +46,7 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
             ActionsSelector = actionsSelector,
             GathersControls = gathersControls,
             ChecksOnPress = checksOnPress,
+            EmptyStateSelector = emptyStateSelector,
         });
     }
 
@@ -92,5 +94,7 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
 
         /// <summary>Whether a press on an item checks its box rather than activating it.</summary>
         public required bool ChecksOnPress { get; init; }
+
+        public required string? EmptyStateSelector { get; init; }
     }
 }

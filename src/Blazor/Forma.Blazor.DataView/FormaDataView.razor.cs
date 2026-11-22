@@ -776,7 +776,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
             // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
             await InputRouter.ConfigureAsync();
-            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, _isAttachedToMove, PositionAttribute, _isAttachedToSeek, ItemRootSelector, ItemActionsSelector, _isAttachedToGather, _isAttachedToCheckOnPress);
+            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, _isAttachedToMove, PositionAttribute, _isAttachedToSeek, ItemRootSelector, ItemActionsSelector, _isAttachedToGather, _isAttachedToCheckOnPress, EmptyStateSelector);
         }
 
         if (HoldsPageHeight)
@@ -1872,6 +1872,11 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     // The attribute a host gives the control inside an item that opens the item's actions.
     private const string ItemActionsSelector = "[data-item-actions]";
+
+    // The attribute the element a view draws its empty state in carries, whose first control takes a focus the last item lost.
+    private const string EmptyStateAttribute = "data-empty-state";
+
+    private const string EmptyStateSelector = "[" + EmptyStateAttribute + "]";
 
     private bool GathersControls
         => TabOrder == DataViewTabOrder.ActiveItem;

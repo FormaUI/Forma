@@ -696,7 +696,11 @@ item the source has answered, and the view reads one slice further as it scrolls
 item that cannot take the focus draws no marker, so the keys pass over it and the tab stop
 never rests on it; a focused item that loses its marker hands the focus to the nearest item
 that carries one, the next before the previous, and the tree's keys, type-ahead and tab stop
-pass over such a node as they do over one the tree no longer shows.
+pass over such a node as they do over one the tree no longer shows. An item taken away while
+it, or a control inside it, holds the focus, as a command run from a row's menu deleting the
+row takes it, hands the focus to the item that stood after it, else the one before it, else
+the first control the empty state draws, wherever the focus has fallen to nothing rather than
+gone where the reader sent it.
 
 `TabOrder` says which items' own controls Tab reaches. Every item's do by default,
 `EveryItem`, which a grid whose rows hold editors, links or controls its callers reach

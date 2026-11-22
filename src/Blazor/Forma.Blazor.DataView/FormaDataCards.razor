@@ -30,7 +30,7 @@
                 <div class="forma-data-cards-pack forma-data-cards-ruler" aria-hidden="true" @ref="_rulerElement"></div>
                 @if (View.ItemCount == 0)
                 {
-                    <div class="forma-data-cards-state" role="none">@View.EmptyContent</div>
+                    <div class="forma-data-cards-state" role="none" data-empty-state>@View.EmptyContent</div>
                 }
                 else if (_areColumnsKnown)
                 {
@@ -76,7 +76,7 @@
         }
         else if (View.Items.Count == 0)
         {
-            <div class="forma-data-cards-state">@View.EmptyContent</div>
+            <div class="forma-data-cards-state" data-empty-state>@View.EmptyContent</div>
         }
         else if (View.IsGrouped)
         {

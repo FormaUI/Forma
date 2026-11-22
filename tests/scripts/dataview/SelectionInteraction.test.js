@@ -431,14 +431,16 @@ describe('SelectionInteraction', () => {
             expect(tabIndexes()).toEqual([-1, 0, -1, -1, -1]);
         });
 
-        it('hands the tab stop to the first marker once the focused one is gone', async () => {
+        it('hands the focus and the tab stop to the marker after the focused one once it is gone', async () => {
             attachSelection(grid, { owner });
             cellOf(3).focus();
 
             cellOf(3).closest('tr').remove();
             await settle();
+            await new Promise(resolve => requestAnimationFrame(() => resolve()));
 
-            expect(tabIndexes()).toEqual([0, -1, -1]);
+            expect(tabIndexes()).toEqual([-1, -1, 0]);
+            expect(document.activeElement).toBe(cellOf(4));
         });
 
         it('leaves the tab order alone where the keys move nothing', () => {
@@ -642,6 +644,65 @@ describe('SelectionInteraction', () => {
             cellOf(3).focus();
 
             expect([1, 2, 3, 4].map(key => reachable(key).every(Boolean))).toEqual([false, false, true, false]);
+        });
+
+        // A command run from a control inside an item takes the item away, its focus falling to nothing.
+        const takeAway = key => {
+            cellOf(key).closest('tr').remove();
+            document.body.focus();
+        };
+
+        // The removal is seen once the render has finished, and the focus handed on the frame after.
+        const nextFrame = async () => {
+            await settle();
+            await new Promise(resolve => requestAnimationFrame(() => resolve()));
+        };
+
+        it('hands the focus of a control inside an item taken away to the item after it', async () => {
+            gather();
+            controlsOf(2)[1].focus();
+
+            takeAway(2);
+            await nextFrame();
+
+            expect(document.activeElement).toBe(cellOf(3));
+        });
+
+        it('hands the focus of a control inside the last item taken away to the item before it', async () => {
+            gather();
+            controlsOf(4)[1].focus();
+
+            takeAway(4);
+            await nextFrame();
+
+            expect(document.activeElement).toBe(cellOf(3));
+        });
+
+        it('hands the focus of a control inside the only item taken away to the first control of the empty state', async () => {
+            grid.querySelector('tbody').innerHTML = item(1);
+            gather({ emptyStateSelector: '[data-empty-state]' });
+            controlsOf(1)[1].focus();
+
+            const tbody = grid.querySelector('tbody');
+            takeAway(1);
+            tbody.innerHTML = '<tr><td data-empty-state><p>No files</p><button class="add">Add Files</button></td></tr>';
+            await nextFrame();
+
+            expect(document.activeElement).toBe(grid.querySelector('.add'));
+        });
+
+        it('leaves a focus the reader moved elsewhere where it went', async () => {
+            const outside = document.createElement('button');
+            document.body.append(outside);
+            gather();
+            controlsOf(2)[1].focus();
+
+            outside.focus();
+            takeAway(2);
+            outside.focus();
+            await nextFrame();
+
+            expect(document.activeElement).toBe(outside);
         });
 
         it('makes the item whose control takes the focus the one, its marker the tab stop', () => {
