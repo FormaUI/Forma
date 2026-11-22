@@ -46,8 +46,7 @@
     "Add New": "Agregar Nuevo",
     "Select Options": "Seleccionar Opciones",
     "{Selected} selected": "[$ [Selected] plural; one: # seleccionado; other: # seleccionados; $]",
-    "Remove {Text}": "Quitar {Text}",
-    "{Label}, {IconLabel}": "{Label}, {IconLabel}"
+    "Remove {Text}": "Quitar {Text}"
   },
   "FormaNumberInput": {
     "The {Field} field is required.": "El campo {Field} es obligatorio.",
@@ -77,8 +76,7 @@
     "Clear Search": "Borrar Búsqueda"
   },
   "FormaSelect": {
-    "Select an Option": "Seleccionar una Opción",
-    "{Label}, {IconLabel}": "{Label}, {IconLabel}"
+    "Select an Option": "Seleccionar una Opción"
   },
   "FormaTextArea": {
     "{Characters} of {Allowed} characters": "{Characters} de {Allowed} caracteres",

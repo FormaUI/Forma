@@ -103,8 +103,8 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
         => $"{ElementId}-option-{index}-icon-label";
 
     // The browser's own list draws text alone, so an option's text carries what its icon says.
-    private string FormatNativeOptionText(SelectOption<TValue> option)
-        => option.IconLabel is { } iconLabel ? L["{Label}, {IconLabel}", option.Label, iconLabel] : option.Label;
+    private static string FormatNativeOptionText(SelectOption<TValue> option)
+        => option.IconLabel is { } iconLabel ? $"{option.Label}, {iconLabel}" : option.Label;
 
     private void ToggleOption(SelectOption<TValue> option)
     {

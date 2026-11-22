@@ -46,8 +46,7 @@
     "Add New": "הוסף חדש",
     "Select Options": "בחר אפשרויות",
     "{Selected} selected": "[$ [Selected] plural; one: נבחר אחד; two: שניים נבחרו; other: # נבחרו; $]",
-    "Remove {Text}": "הסר {Text}",
-    "{Label}, {IconLabel}": "{Label}, {IconLabel}"
+    "Remove {Text}": "הסר {Text}"
   },
   "FormaNumberInput": {
     "The {Field} field is required.": "השדה {Field} הוא שדה חובה.",
@@ -78,8 +77,7 @@
   },
   "FormaSelect": {
     "Select an Option": "בחר אפשרות",
-    "No options available yet": "אין עדיין אפשרויות זמינות",
-    "{Label}, {IconLabel}": "{Label}, {IconLabel}"
+    "No options available yet": "אין עדיין אפשרויות זמינות"
   },
   "FormaTextArea": {
     "{Characters} of {Allowed} characters": "{Characters} מתוך {Allowed} תווים",
