@@ -1,0 +1,127 @@
+/* ============================================================
+   FormaCommandPalette — CSS isolation
+   A search field over the commands that match it, in a dialog:
+   each command its glyph, its name and, in the supporting tone,
+   the place it lives; the field's box comes from forma-input.css.
+   ============================================================ */
+
+.forma-command-palette-search {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding-block-end: var(--space-3);
+}
+
+.forma-command-palette-search-glyph {
+    display: inline-flex;
+    flex-shrink: 0;
+    color: var(--text-secondary-color);
+}
+
+.forma-command-palette-field {
+    flex: 1 1 auto;
+    min-inline-size: 0;
+}
+
+/* Nine commands show at once, and the list scrolls through the rest. */
+.forma-command-palette-list {
+    max-block-size: calc(var(--target-size-md) * 9);
+    overflow-y: auto;
+}
+
+.forma-command-palette-option {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-block-size: var(--target-size-md);
+    padding-inline: var(--space-3);
+    border-radius: var(--radius-sm);
+    font-size: var(--font-size-sm);
+    color: var(--text-primary-color);
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+@media (hover: hover) {
+    .forma-command-palette-option:hover {
+        background-color: var(--hover-bg-color);
+    }
+}
+
+/* The result the arrows rest on is outlined as well as tinted, so it reads without color and in forced colors. */
+.forma-command-palette-option.is-active {
+    background-color: var(--hover-bg-color);
+    outline: 2px solid var(--focus-color);
+    outline-offset: -2px;
+}
+
+.forma-command-palette-glyph {
+    display: inline-flex;
+    flex-shrink: 0;
+    inline-size: var(--icon-size-sm);
+    color: var(--text-secondary-color);
+}
+
+.forma-command-palette-name {
+    flex: 0 1 auto;
+    min-inline-size: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+/* The place stands at the row's end, giving way before the name does. */
+.forma-command-palette-place {
+    flex: 0 100 auto;
+    min-inline-size: 0;
+    margin-inline-start: auto;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    color: var(--text-secondary-color);
+}
+
+.forma-command-palette-empty {
+    margin: 0;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary-color);
+}
+
+/* Read by assistive technology alone: the count of results and the pause between a name and its place. */
+.forma-command-palette-hidden {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: -1px;
+    padding: 0;
+    border: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+@media (pointer: coarse) {
+    .forma-command-palette-list {
+        max-block-size: calc(var(--target-size-touch) * 9);
+    }
+
+    .forma-command-palette-option {
+        min-block-size: var(--target-size-touch);
+    }
+}
+
+/* On a phone the dialog fills the screen and the list runs to its bottom edge beneath the field, whatever the results number:
+   the dialog's own phone width, about 40rem. */
+@media (max-width: 40rem) {
+    .forma-command-palette-list {
+        max-block-size: calc(100dvh - var(--target-size-touch) - 2 * var(--space-5) - var(--space-3));
+    }
+}
+
+@media (forced-colors: active) {
+    .forma-command-palette-option.is-active {
+        outline-color: Highlight;
+    }
+}

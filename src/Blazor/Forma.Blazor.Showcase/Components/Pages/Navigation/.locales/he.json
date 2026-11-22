@@ -74,5 +74,16 @@
     "Choose Your Photos": "בחירת התמונות",
     "Pay": "תשלום",
     "Download without the Watermark": "הורדה ללא סימן המים"
+  },
+  "FormaCommandPalettePage": {
+    "A dialog searching the commands a host declares, each its name and where it lives, running the one the reader picks: the arrows move through the results, Enter or a press runs one, and Escape closes it.": "תיבת דו-שיח המחפשת בפקודות שהמארח מצהיר עליהן, לכל אחת שמה והמקום שבו היא נמצאת, ומפעילה את זו שהקורא בוחר: החצים עוברים בין התוצאות, Enter או לחיצה מפעילים אחת, ו-Escape סוגר אותה.",
+    "The Showcase's Pages and Actions": "הדפים והפעולות של התצוגה",
+    "Every page of the Showcase, placed by its category, and two actions. Open it with the button or with Ctrl+K, which the Showcase routes as a shortcut of its own, and type a component's name or a category.": "כל דף בתצוגה, לפי הקטגוריה שלו, ושתי פעולות. פתחו אותה בכפתור או ב-Ctrl+K, שהתצוגה מנתבת כקיצור משלה, והקלידו שם של רכיב או קטגוריה.",
+    "Open the Command Palette": "פתיחת לוח הפקודות",
+    "Last action run:": "הפעולה האחרונה שהופעלה:",
+    "none yet": "עדיין אין",
+    "Say Hello": "אמירת שלום",
+    "Count to Three": "ספירה עד שלוש",
+    "Actions": "פעולות"
   }
 }

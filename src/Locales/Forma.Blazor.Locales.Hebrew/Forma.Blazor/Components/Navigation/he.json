@@ -16,5 +16,13 @@
   "FormaStepper": {
     "Steps": "שלבים",
     "Completed": "הושלם"
+  },
+  "FormaCommandPalette": {
+    "Command Palette": "לוח פקודות",
+    "Type a command or where it lives": "חיפוש פקודה או המקום שבו היא נמצאת",
+    "Search Commands": "חיפוש פקודות",
+    "Commands": "פקודות",
+    "No commands match.": "אין פקודות מתאימות.",
+    "[$ plural; one: # command; other: # commands; $]": "[$ plural; one: פקודה אחת; two: שתי פקודות; other: # פקודות; $]"
   }
 }

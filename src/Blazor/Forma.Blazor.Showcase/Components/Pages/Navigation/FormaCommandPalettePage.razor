@@ -1,0 +1,20 @@
+@page "/command-palette"
+@attribute [ShowcasePage("FormaCommandPalette")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Navigation
+
+<h1>FormaCommandPalette</h1>
+<p class="description">@L["A dialog searching the commands a host declares, each its name and where it lives, running the one the reader picks: the arrows move through the results, Enter or a press runs one, and Escape closes it."]</p>
+
+<div class="demo-section">
+    <h2>@L["The Showcase's Pages and Actions"]</h2>
+    <p class="description">@L["Every page of the Showcase, placed by its category, and two actions. Open it with the button or with Ctrl+K, which the Showcase routes as a shortcut of its own, and type a component's name or a category."]</p>
+    <div class="demo-box">
+        <div class="demo-row demo-controls">
+            <FormaButton Variant="ButtonVariant.Primary" OnClick="OpenPalette">@L["Open the Command Palette"]</FormaButton>
+        </div>
+        <p class="demo-readout">@L["Last action run:"] <span>@(_lastAction ?? L["none yet"])</span></p>
+        <FormaCommandPalette Commands="_commands" @bind-Open="_isOpen" />
+    </div>
+</div>

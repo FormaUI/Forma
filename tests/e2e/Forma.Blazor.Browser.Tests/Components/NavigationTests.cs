@@ -132,6 +132,101 @@ public sealed partial class NavigationTests
         }
     }
 
+    public sealed class CommandPalette(BrowserHost host)
+    {
+        // Whether the palette fills the viewport, once its opening has settled, and whether the viewport is a phone's.
+        private const string ReadFill = """
+            () => {
+                const box = document.querySelector('#palette').getBoundingClientRect();
+                const isPhone = matchMedia('(max-width: 40rem)').matches;
+                const fills = Math.round(box.width) >= innerWidth - 1 && Math.round(box.height) >= innerHeight - 1;
+                return `${isPhone ? 'phone' : 'wider'} ${fills ? 'fills' : 'leaves room'}`;
+            }
+            """;
+
+        private const string IsSettled = """
+            () => ['none', 'matrix(1, 0, 0, 1, 0, 0)'].includes(getComputedStyle(document.querySelector('#palette')).transform)
+            """;
+
+        private static ILocator GetField(IPage page)
+            => page.GetByRole(AriaRole.Combobox, new() { Name = "Search Commands", Exact = true });
+
+        // Opens the palette from the keyboard, as a press focuses a button in some engines and not in WebKit, so the opener holds the
+        // focus the palette hands back as it closes.
+        private static async Task OpenFromAsync(IPage page, ILocator opener)
+        {
+            await opener.FocusAsync();
+            await page.Keyboard.PressAsync("Enter");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_search_move_and_run_an_action_closing_first_and_returning_the_focus_to_its_opener(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "command-palette");
+            await using var _ = context;
+            var opener = page.Locator("#open");
+            var field = GetField(page);
+            var options = page.GetByRole(AriaRole.Option);
+            await OpenFromAsync(page, opener);
+            await Assertions.Expect(field).ToBeFocusedAsync();
+
+            // Act
+            await field.PressSequentiallyAsync("ord");
+            await Assertions.Expect(options).ToHaveCountAsync(2);
+            await page.Keyboard.PressAsync("ArrowDown");
+            await Assertions.Expect(field).ToHaveAttributeAsync("aria-activedescendant", (await options.Nth(1).GetAttributeAsync("id"))!);
+            await page.Keyboard.PressAsync("Enter");
+
+            // Assert — the name starting with the query first, the action run, the palette closed and the focus back on its opener
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync("refreshed");
+            await Assertions.Expect(page.Locator("#palette")).ToBeHiddenAsync();
+            await Assertions.Expect(opener).ToBeFocusedAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_list_a_name_starting_with_the_query_first_and_close_on_escape(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "command-palette");
+            await using var _ = context;
+            var opener = page.Locator("#open");
+            var field = GetField(page);
+            await OpenFromAsync(page, opener);
+            await field.PressSequentiallyAsync("ord");
+
+            await Assertions.Expect(page.Locator(".forma-command-palette-name")).ToHaveTextAsync(["Orders", "Refresh the Orders"]);
+
+            // Act
+            await page.Keyboard.PressAsync("Escape");
+
+            // Assert
+            await Assertions.Expect(page.Locator("#palette")).ToBeHiddenAsync();
+            await Assertions.Expect(opener).ToBeFocusedAsync();
+            Assert.Equal("none", await page.Locator("#result").TextContentAsync());
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_fill_the_viewport_where_it_is_a_phone_s_and_leave_room_around_it_elsewhere(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "command-palette");
+            await using var _ = context;
+            await page.Locator("#open").ClickAsync();
+            await Assertions.Expect(GetField(page)).ToBeFocusedAsync();
+            await page.WaitForFunctionAsync(IsSettled);
+
+            // Act
+            var fill = await page.EvaluateAsync<string>(ReadFill);
+
+            // Assert
+            Assert.Contains(fill, (string[])["phone fills", "wider leaves room"]);
+        }
+    }
+
     public sealed class Pagination(BrowserHost host)
     {
         // Gives every pager the width, and names each row that reaches past it, by its spill in the row's direction.

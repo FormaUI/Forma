@@ -9,6 +9,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- `FormaCommandPalette` searches the commands a host hands it as `PaletteCommand`s, each a name, the `Place` it lives,
+  an optional `Icon` and the `Url` it goes to or the action it `Run`s, in a dialog the host opens through `Open`, from a
+  button or from a shortcut it routes. Every word typed narrows the commands to those whose name or place holds it,
+  ignoring case and accents, a name starting with the query first; the arrows move through them, Enter or a press runs
+  one, closing the palette first, and Escape closes it, the focus going back to where it was opened from. A polite
+  status says how many match, and on a phone the palette fills the screen.
 - A [`FormaDialog`](docs/component-catalog.md#formadialog) given `FullScreenOnPhone` fills the viewport, without
   corners, where the viewport is a phone's.
 - `FormaStepper` draws the steps of an ordered flow as a numbered strip, marking the one the reader is on with

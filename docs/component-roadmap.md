@@ -1,6 +1,6 @@
 # Forma Component Roadmap
 
-**21 components not yet implemented, none in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 21 not yet started, and a component in progress stands in the catalog's structure until then.
+**20 components not yet implemented, none in progress.** Each moves to [the component catalog](component-catalog.md) when it is approved; the structure lists the 20 not yet started, and a component in progress stands in the catalog's structure until then.
 
 ## Components Structure
 
@@ -29,8 +29,6 @@ Forma.Blazor/Components/
 │   └── FormaImageEditor
 ├── (1) Menus/
 │   └── FormaContextMenu
-├── (1) Navigation/
-│   └── FormaCommandPalette
 └── (1) Windows/
     └── FormaLaunchBar
 
@@ -45,15 +43,14 @@ The components still to build, in the order dependency and reuse suggest. What i
 
 | Order | Components | Rationale |
 |---|---|---|
-| 1 | `FormaCommandPalette` | Standalone over the dialog, the search box and the input router, and asked for by a host whose destinations and actions outgrow its menus |
-| 2 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
-| 3 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
-| 4 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
-| 5 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
-| 6 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
-| 7 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
-| 8 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
-| 9 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
+| 1 | `FormaNotesEditor`, `FormaExportButton`, `FormaDesignPicker`, `FormaFontPicker` | Feature-specific components, built with their feature pages |
+| 2 | `FormaPermissionMatrix`, `FormaProductOptionsEditor`, `FormaFilterEditor` | Complex editors, built alongside their pages |
+| 3 | `FormaDeleteButton`, `FormaUpdateButton`, `FormaEditButton`, `FormaAddButton`, `FormaDuplicateButton`, `FormaRefreshButton`, `FormaShareButton`, `FormaPublishButton` | The rest of the icon-button vocabulary, so a row's actions stop being markup of each page's own |
+| 4 | `FormaContextMenu` | A shortcut to the overflow menu's actions, once there is a menu worth opening that way |
+| 5 | `FormaMediaPicker` | The second type-restricted skin over `FormaFilePicker`, beside `FormaImagePicker` |
+| 6 | `FormaLaunchBar` | The bar a workspace is launched from, beside the rest area |
+| 7 | `FormaGallery` | A media-only surface built on the data view, so it comes after the data view and before the editor its tiles launch — see [the gallery design](gallery-design.md) |
+| 8 | `FormaImageEditor` | The heaviest media component and the last, since it needs the surfaces above to launch it |
 
 ## Components
 
@@ -65,15 +62,6 @@ An icon button for adding. Its design is [icon-buttons-design.md](icon-buttons-d
 |---|---|
 | **Old pattern** | The "new" button in each page's toolbar, opening the new-item modal |
 | **Used in** | `FormaToolbar` actions, `FormaMultiSelect`'s add-new affordance, and any editor that appends a row |
-
-### `FormaCommandPalette`
-
-A dialog searching the commands a host declares, opened by a shortcut or a button, running the one the reader picks.
-
-| | |
-|---|---|
-| **Old pattern** | None |
-| **Used in** | Any host with more destinations and actions than its menus show at once, each command going to an address or running an action |
 
 ### `FormaContextMenu`
 

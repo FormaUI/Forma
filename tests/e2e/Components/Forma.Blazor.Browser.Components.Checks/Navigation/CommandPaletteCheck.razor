@@ -1,0 +1,33 @@
+@page "/{Runtime}/command-palette"
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Navigation
+
+@* Three commands, the first running an action that says it ran, in a palette a button opens. *@
+<FormaButton Id="open" OnClick="Open">Open</FormaButton>
+<p id="result">@_result</p>
+<FormaCommandPalette Id="palette" Commands="_commands" @bind-Open="_isOpen" />
+
+@code {
+    private IReadOnlyList<PaletteCommand> _commands = [];
+    private bool _isOpen;
+    private string _result = "none";
+
+    protected override void OnInitialized()
+        => _commands =
+        [
+            new("Refresh the Orders") { Place = "Store › Orders", Run = Refresh },
+            new("Orders") { Place = "Store", Url = new Uri("orders", UriKind.Relative) },
+            new("Settings") { Place = "Account", Url = new Uri("settings", UriKind.Relative) },
+        ];
+
+    private void Open()
+        => _isOpen = true;
+
+    private Task Refresh()
+    {
+        _result = "refreshed";
+        StateHasChanged();
+
+        return Task.CompletedTask;
+    }
+}

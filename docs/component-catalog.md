@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**76 components implemented, none in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**77 components implemented, none in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -72,8 +72,9 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaDropDownMenu
 │   ├── ✅ FormaOverflowMenu
 │   └── ✅ FormaShareMenu
-├── (3 / 3) Navigation/
+├── (4 / 4) Navigation/
 │   ├── ✅ FormaBreadcrumb
+│   ├── ✅ FormaCommandPalette
 │   ├── ✅ FormaPagination
 │   └── ✅ FormaStepper
 ├── (1 / 1) Page/
@@ -191,6 +192,15 @@ The area is the surface that stacks command bars; each bar is a track of command
 |---|---|
 | **Old pattern** | Each page's strip of actions above its content, drawn per page |
 | **Used in** | The region above any page's content: `FormaExplorer`'s header, a list page's action strip, an editor's publish bar |
+
+### `FormaCommandPalette`
+
+A dialog searching the commands a host declares, opened by a shortcut or a button, running the one the reader picks.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | Any host with more destinations and actions than its menus show at once, each command going to an address or running an action |
 
 ### `FormaCompactRichTextEditor`
 

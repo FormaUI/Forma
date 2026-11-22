@@ -72,5 +72,16 @@
     "Choose Your Photos": "Elige Tus Fotos",
     "Pay": "Paga",
     "Download without the Watermark": "Descarga sin la Marca de Agua"
+  },
+  "FormaCommandPalettePage": {
+    "A dialog searching the commands a host declares, each its name and where it lives, running the one the reader picks: the arrows move through the results, Enter or a press runs one, and Escape closes it.": "Un diálogo que busca entre los comandos que declara el anfitrión, cada uno con su nombre y el lugar donde está, y ejecuta el que el lector elige: las flechas recorren los resultados, Enter o una pulsación ejecuta uno y Escape lo cierra.",
+    "The Showcase's Pages and Actions": "Las Páginas y Acciones del Showcase",
+    "Every page of the Showcase, placed by its category, and two actions. Open it with the button or with Ctrl+K, which the Showcase routes as a shortcut of its own, and type a component's name or a category.": "Cada página del Showcase, situada por su categoría, y dos acciones. Ábrelo con el botón o con Ctrl+K, que el Showcase enruta como un atajo propio, y escribe el nombre de un componente o una categoría.",
+    "Open the Command Palette": "Abrir la Paleta de Comandos",
+    "Last action run:": "Última acción ejecutada:",
+    "none yet": "ninguna aún",
+    "Say Hello": "Saludar",
+    "Count to Three": "Contar hasta Tres",
+    "Actions": "Acciones"
   }
 }

@@ -1,0 +1,69 @@
+@namespace Forma.Blazor.Components.Navigation
+@inherits FormaElementBase
+@using Forma.Blazor.Components.Feedback
+@using Forma.Blazor.Components.Virtualization
+<FormaDialog @ref="Dialog"
+             Id="@Id"
+             Class="@RootClass"
+             Style="@RootStyle"
+             @attributes="AdditionalAttributes"
+             aria-label="@EffectiveAriaLabel"
+             Opened="Open"
+             OnClose="CloseAsync"
+             FullScreenOnPhone="true"
+             Options="PaletteDialogOptions">
+    <Body>
+        <div class="forma-command-palette-search">
+            <span class="forma-command-palette-search-glyph" aria-hidden="true"><FormaIcon Icon="Glyph.Search" Size="IconSize.Small" /></span>
+            <input id="@SearchId"
+                   class="forma-field-input forma-command-palette-field"
+                   @ref="_search"
+                   type="text"
+                   role="combobox"
+                   aria-label="@L["Search Commands"]"
+                   aria-autocomplete="list"
+                   aria-expanded="true"
+                   aria-controls="@ListId"
+                   aria-activedescendant="@ActiveOptionId"
+                   autocomplete="off"
+                   spellcheck="false"
+                   autofocus
+                   placeholder="@EffectivePlaceholder"
+                   value="@ShownQuery"
+                   disabled="@(!RendererInfo.IsInteractive)" />
+        </div>
+        @* A press on a result keeps the focus in the field, which the keys move through the results from. *@
+        <div id="@ListId" class="forma-command-palette-list" role="listbox" aria-label="@L["Commands"]" @onpointerdown:preventDefault @onmousedown:preventDefault>
+            <FormaVirtualize TItem="PaletteEntry" @ref="Virtualizer" Items="_results" ItemKey="@(entry => entry.Index)" ItemSize="40" PinnedKeys="PinnedIndexes">
+                <ItemContent Context="entry">
+                    <div id="@GetOptionId(entry.Index)"
+                         class="@GetOptionClass(entry.Index)"
+                         role="option"
+                         aria-setsize="@_results.Count"
+                         aria-posinset="@(entry.Index + 1)"
+                         aria-selected="@(entry.Index == _activeIndex ? "true" : "false")"
+                         @onclick="() => RunAsync(entry.Command)">
+                        <span class="forma-command-palette-glyph" aria-hidden="true">
+                            @if (entry.Command.Icon is { } icon)
+                            {
+                                <FormaIcon Icon="icon" Size="IconSize.Small" />
+                            }
+                        </span>
+                        <span class="forma-command-palette-name">@entry.Command.Name</span>
+                        @if (entry.Command.Place is { } place)
+                        {
+                            @* The name and the place are read as two phrases, which their spans alone would run into one word. *@
+                            <span class="forma-command-palette-hidden">, </span>
+                            <span class="forma-command-palette-place">@place</span>
+                        }
+                    </div>
+                </ItemContent>
+            </FormaVirtualize>
+        </div>
+        @if (_results.Count == 0)
+        {
+            <p class="forma-command-palette-empty">@L["No commands match."]</p>
+        }
+        <div class="forma-command-palette-hidden" role="status">@_announcement</div>
+    </Body>
+</FormaDialog>

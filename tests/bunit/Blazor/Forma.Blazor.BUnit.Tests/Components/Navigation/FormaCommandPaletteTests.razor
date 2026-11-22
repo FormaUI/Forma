@@ -1,0 +1,273 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Navigation
+@using Forma.Framework.Icons
+@using Microsoft.AspNetCore.Components.Web
+
+@code {
+    private static readonly Func<Task> Nothing = () => Task.CompletedTask;
+
+    // A workspace's commands: where each lives, and the address or the action it takes.
+    private static IReadOnlyList<PaletteCommand> CreateCommands()
+        =>
+        [
+            new("Orders") { Place = "Store", Url = new Uri("store/orders", UriKind.Relative) },
+            new("Settings") { Place = "Store", Icon = Glyph.Settings, Run = Nothing },
+            new("New Order") { Place = "Store › Orders", Run = Nothing },
+            new("Settings") { Place = "Account", Run = Nothing },
+            new("Reset password") { Place = "Account › Settings", Run = Nothing },
+        ];
+
+    private static IReadOnlyList<string> GetResults<TComponent>(IRenderedComponent<TComponent> cut)
+        where TComponent : IComponent
+        => [.. cut.FindAll("[role=option]").Select(option => $"{option.QuerySelector(".forma-command-palette-name")!.TextContent} ({option.QuerySelector(".forma-command-palette-place")?.TextContent})")];
+
+    private static string GetActive<TComponent>(IRenderedComponent<TComponent> cut)
+        where TComponent : IComponent
+        => cut.Find(".forma-command-palette-option.is-active .forma-command-palette-name").TextContent;
+
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_name_its_dialog_with_the_library_s_name_and_search_through_a_combobox_over_its_list()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" Open="true" />);
+
+            // Assert
+            var field = cut.Find("input[role=combobox]");
+            var list = cut.Find("[role=listbox]");
+            Assert.Multiple(
+                () => Assert.Equal("Command Palette", cut.Find("dialog").GetAttribute("aria-label")),
+                () => Assert.Equal("Search Commands", field.GetAttribute("aria-label")),
+                () => Assert.Equal(list.Id, field.GetAttribute("aria-controls")),
+                () => Assert.Equal(cut.FindAll("[role=option]")[0].Id, field.GetAttribute("aria-activedescendant")),
+                () => Assert.Equal("Type a command or where it lives", field.GetAttribute("placeholder")));
+        }
+
+        [Fact]
+        public void Should_list_every_command_in_the_host_s_order_read_with_its_place_and_drawn_with_its_icon_while_nothing_is_typed()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" Open="true" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["Orders (Store)", "Settings (Store)", "New Order (Store › Orders)", "Settings (Account)", "Reset password (Account › Settings)"], GetResults(cut)),
+                () => Assert.Equal("Orders, Store", string.Join(' ', cut.FindAll("[role=option]")[0].TextContent.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries))),
+                () => Assert.Single(cut.FindComponents<FormaIcon>(), icon => icon.Instance.Icon == Glyph.Settings),
+                () => Assert.All(cut.FindAll(".forma-command-palette-glyph"), glyph => Assert.Equal("true", glyph.GetAttribute("aria-hidden"))));
+        }
+
+        [Fact]
+        public void Should_fill_a_phone_s_screen()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" Open="true" />);
+
+            // Assert
+            Assert.Contains("is-full-screen-on-phone", cut.Find("dialog").ClassList);
+        }
+
+        [Theory]
+        [InlineData(false, false)]
+        [InlineData(true, true)]
+        public void Should_refuse_a_command_without_exactly_one_of_an_address_and_an_action(bool hasUrl, bool hasRun)
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            IReadOnlyList<PaletteCommand> commands = [new("Orders") { Url = hasUrl ? new Uri("orders", UriKind.Relative) : null, Run = hasRun ? Nothing : null }];
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaCommandPalette Commands="commands" Open="true" />));
+        }
+    }
+
+    public sealed class Search
+    {
+        [Fact]
+        public async Task Should_rank_a_name_starting_with_the_query_then_a_word_of_a_name_then_a_name_holding_it_then_a_place_holding_it()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            var fields = new TextFieldProbe(ctx);
+            var cut = ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" Open="true" />);
+
+            // Act
+            await fields.TypeAsync(cut.Find("input[role=combobox]"), "or");
+
+            // Assert — "Orders", then "New Order", then pass-w-or-d, then St-or-e
+            Assert.Equal(["Orders (Store)", "New Order (Store › Orders)", "Reset password (Account › Settings)", "Settings (Store)"], GetResults(cut));
+        }
+
+        [Fact]
+        public async Task Should_find_a_command_by_its_place_after_those_found_by_name()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            var fields = new TextFieldProbe(ctx);
+            var cut = ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" Open="true" />);
+
+            // Act
+            await fields.TypeAsync(cut.Find("input[role=combobox]"), "settings");
+
+            // Assert — both commands named so, in the host's order, then the one living under it
+            Assert.Equal(["Settings (Store)", "Settings (Account)", "Reset password (Account › Settings)"], GetResults(cut));
+        }
+
+        [Fact]
+        public async Task Should_keep_only_the_commands_holding_every_word_typed_whatever_their_case_and_accents()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            var fields = new TextFieldProbe(ctx);
+            var cut = ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" Open="true" />);
+
+            // Act
+            await fields.TypeAsync(cut.Find("input[role=combobox]"), "SÉTTINGS account");
+
+            // Assert
+            Assert.Equal(["Settings (Account)", "Reset password (Account › Settings)"], GetResults(cut));
+        }
+
+        [Fact]
+        public async Task Should_say_how_many_commands_match_and_say_so_when_none_does()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            var fields = new TextFieldProbe(ctx);
+            var cut = ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" Open="true" />);
+            var field = cut.Find("input[role=combobox]");
+
+            // Act
+            await fields.TypeAsync(field, "settings");
+            var some = cut.Find("[role=status]").TextContent;
+            await fields.TypeAsync(field, "invoices");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("3 commands", some),
+                () => Assert.Equal("No commands match.", cut.Find("[role=status]").TextContent),
+                () => Assert.Equal("No commands match.", cut.Find(".forma-command-palette-empty").TextContent),
+                () => Assert.Empty(cut.FindAll("[role=option]")));
+        }
+
+        [Fact]
+        public async Task Should_start_from_every_command_each_time_it_opens()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            var fields = new TextFieldProbe(ctx);
+            var cut = ctx.Render<FormaCommandPalette>(parameters => parameters
+                .Add(p => p.Commands, CreateCommands())
+                .Add(p => p.Open, true));
+            await fields.TypeAsync(cut.Find("input[role=combobox]"), "orders");
+            cut.Render(parameters => parameters.Add(p => p.Open, false));
+
+            // Act
+            cut.Render(parameters => parameters.Add(p => p.Open, true));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(5, cut.FindAll("[role=option]").Count),
+                () => Assert.Equal(string.Empty, cut.Find("input[role=combobox]").GetAttribute("value") ?? string.Empty));
+        }
+    }
+
+    public sealed class Keys
+    {
+        [Fact]
+        public void Should_have_the_router_take_the_host_s_policy_as_it_first_renders_though_closed()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            var router = new InputRouterProbe(ctx);
+
+            // Act
+            ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" />);
+
+            // Assert — the host's shortcut that opens the palette is among the routes the policy carries
+            Assert.Contains(router.Module.Invocations, invocation => invocation.Identifier == "configure");
+        }
+
+        [Fact]
+        public void Should_claim_the_arrows_and_enter_on_its_field()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            var router = new InputRouterProbe(ctx);
+
+            // Act
+            ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" Open="true" />);
+
+            // Assert
+            Assert.Equal(["command-palette.next:ArrowDown", "command-palette.previous:ArrowUp", "command-palette.run:Enter"], InputRouterProbe.GetRoutes(router.Registrations.Last(registration => InputRouterProbe.GetRoutes(registration).Any(route => route.StartsWith("command-palette.", StringComparison.Ordinal)))));
+        }
+
+        [Fact]
+        public async Task Should_move_through_the_results_with_the_arrows_going_round_from_either_end()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            var router = new InputRouterProbe(ctx);
+            var cut = ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" Open="true" />);
+
+            // Act
+            await router.RouteAsync("command-palette.next", "ArrowDown");
+            var second = GetActive(cut);
+            await router.RouteAsync("command-palette.previous", "ArrowUp");
+            await router.RouteAsync("command-palette.previous", "ArrowUp");
+
+            // Assert — from the first to the second, back, and round to the last
+            Assert.Multiple(
+                () => Assert.Equal("Settings", second),
+                () => Assert.Equal("Reset password", GetActive(cut)),
+                () => Assert.Equal(cut.Find(".forma-command-palette-option.is-active").Id, cut.Find("input[role=combobox]").GetAttribute("aria-activedescendant")));
+        }
+
+        [Fact]
+        public async Task Should_close_and_then_run_the_action_the_arrows_rest_on_with_enter()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            var router = new InputRouterProbe(ctx);
+            var steps = new List<string>();
+            IReadOnlyList<PaletteCommand> commands =
+            [
+                new("Orders") { Url = new Uri("orders", UriKind.Relative) },
+                new("Refresh") { Run = () => { steps.Add("ran"); return Task.CompletedTask; } },
+            ];
+            var cut = ctx.Render(@<FormaCommandPalette Commands="commands" Open="true" OpenChanged="@((bool open) => steps.Add($"open {open}"))" />);
+            await router.RouteAsync("command-palette.next", "ArrowDown");
+
+            // Act
+            await router.RouteAsync("command-palette.run", "Enter");
+
+            // Assert
+            Assert.Equal(["open False", "ran"], steps);
+        }
+
+        [Fact]
+        public async Task Should_go_to_the_address_of_a_command_pressed()
+        {
+            // Arrange
+            using var ctx = new FormaCommandPaletteTests();
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            var cut = ctx.Render(@<FormaCommandPalette Commands="CreateCommands()" Open="true" />);
+
+            // Act
+            await cut.FindAll("[role=option]")[0].ClickAsync(new MouseEventArgs());
+
+            // Assert
+            Assert.Equal(navigation.ToAbsoluteUri("store/orders").ToString(), navigation.Uri);
+        }
+    }
+}

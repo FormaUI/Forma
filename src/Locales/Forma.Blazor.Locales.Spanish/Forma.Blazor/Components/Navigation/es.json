@@ -16,5 +16,13 @@
   "FormaStepper": {
     "Steps": "Pasos",
     "Completed": "Completado"
+  },
+  "FormaCommandPalette": {
+    "Command Palette": "Paleta de Comandos",
+    "Type a command or where it lives": "Buscar un comando o el lugar donde está",
+    "Search Commands": "Buscar Comandos",
+    "Commands": "Comandos",
+    "No commands match.": "Ningún comando coincide.",
+    "[$ plural; one: # command; other: # commands; $]": "[$ plural; one: # comando; other: # comandos; $]"
   }
 }
