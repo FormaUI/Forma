@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Forma.Framework.Browser
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
 @code {
@@ -19,6 +20,27 @@
             // Assert
             cut.Find(".forma-tab-list");
             cut.Find(".forma-tab-panels");
+        }
+
+        [Fact]
+        public void Should_keep_its_tabs_on_a_strip_that_scrolls_behind_arrows_named_for_the_tabs()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs>
+                    <FormaTab Title="Tab 1">Content 1</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var strip = cut.FindComponent<FormaFreezePane>();
+            Assert.Multiple(
+                () => Assert.Equal(ScrollNavigation.Arrows, strip.Instance.Options.Navigation),
+                () => Assert.Equal("Scroll Tabs Back", strip.Instance.Options.ScrollBackLabel),
+                () => Assert.Equal("Scroll Tabs Forward", strip.Instance.Options.ScrollForwardLabel),
+                () => Assert.NotNull(strip.Find(".forma-tab-list[role=tablist]")));
         }
 
         [Fact]

@@ -26,6 +26,13 @@ public sealed partial class FormaTabs : FormaElementBase
     private FormaTab? FocusableTab
         => _focusedTab ?? _tabs.FirstOrDefault(IsActive) ?? _tabs.FirstOrDefault();
 
+    private FreezePaneOptions StripOptions
+        => FreezePaneOptions.Arrows with
+        {
+            ScrollBackLabel = L["Scroll Tabs Back"],
+            ScrollForwardLabel = L["Scroll Tabs Forward"],
+        };
+
     /// <summary>The <see cref="FormaTab"/> children this panel switches between.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 

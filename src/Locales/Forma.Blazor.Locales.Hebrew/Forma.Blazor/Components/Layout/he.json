@@ -19,5 +19,9 @@
     "Scroll Up": "גלילה למעלה",
     "Scroll Down": "גלילה למטה",
     "Resize Frozen Region": "שינוי גודל האזור המוצמד"
+  },
+  "FormaTabs": {
+    "Scroll Tabs Back": "גלילת לשוניות אחורה",
+    "Scroll Tabs Forward": "גלילת לשוניות קדימה"
   }
 }

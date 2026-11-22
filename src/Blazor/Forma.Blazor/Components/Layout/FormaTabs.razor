@@ -6,31 +6,34 @@
          style="@RootStyle"
          @attributes="AdditionalAttributes"
          @ref="RootElement">
-        <div class="forma-tab-list" role="tablist" aria-label="@Label" @ref="_tabList">
-            @foreach (var tab in _tabs)
-            {
-                var isActive = IsActive(tab);
-                var tabElementId = FormaTabs.GetTabElementId(tab);
-                var panelElementId = FormaTabs.GetPanelElementId(tab);
+        @* The strip keeps to one line, scrolling behind an arrow at each end the tabs continue past. *@
+        <FormaFreezePane Class="forma-tab-strip" Options="StripOptions">
+            <div class="forma-tab-list" role="tablist" aria-label="@Label" @ref="_tabList">
+                @foreach (var tab in _tabs)
+                {
+                    var isActive = IsActive(tab);
+                    var tabElementId = FormaTabs.GetTabElementId(tab);
+                    var panelElementId = FormaTabs.GetPanelElementId(tab);
 
-                <button class="forma-tab-button @(isActive ? "active" : "") @(tab.Trailing && tab == _tabs.FirstOrDefault(candidate => candidate.Trailing) ? "forma-tab-button-trailing" : "")"
-                        type="button"
-                        role="tab"
-                        id="@tabElementId"
-                        aria-selected="@isActive.ToString().ToLowerInvariant()"
-                        aria-controls="@panelElementId"
-                        disabled="@(!RendererInfo.IsInteractive)"
-                        tabindex="@(tab == FocusableTab ? "0" : "-1")"
-                        @ref="_tabButtons[tab]"
-                        @onclick="() => SelectTabAsync(tab)">
-                    @if (tab.Icon is { } icon)
-                    {
-                        <FormaIcon Icon="icon" Size="IconSize.Small" />
-                    }
-                    @tab.Title
-                </button>
-            }
-        </div>
+                    <button class="forma-tab-button @(isActive ? "active" : "") @(tab.Trailing && tab == _tabs.FirstOrDefault(candidate => candidate.Trailing) ? "forma-tab-button-trailing" : "")"
+                            type="button"
+                            role="tab"
+                            id="@tabElementId"
+                            aria-selected="@isActive.ToString().ToLowerInvariant()"
+                            aria-controls="@panelElementId"
+                            disabled="@(!RendererInfo.IsInteractive)"
+                            tabindex="@(tab == FocusableTab ? "0" : "-1")"
+                            @ref="_tabButtons[tab]"
+                            @onclick="() => SelectTabAsync(tab)">
+                        @if (tab.Icon is { } icon)
+                        {
+                            <FormaIcon Icon="icon" Size="IconSize.Small" />
+                        }
+                        @tab.Title
+                    </button>
+                }
+            </div>
+        </FormaFreezePane>
 
         <div class="forma-tab-panels">
             @ChildContent

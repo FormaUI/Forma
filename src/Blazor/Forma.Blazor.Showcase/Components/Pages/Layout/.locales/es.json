@@ -217,6 +217,7 @@
     "Basic Tabs": "Pestañas básicas",
     "Tabs with Icons": "Pestañas con iconos",
     "Many Tabs": "Muchas pestañas",
+    "Tabs past the strip's width stay on one line, and the strip scrolls behind an arrow at each end they continue past.": "Las pestañas que superan el ancho de la tira siguen en una sola línea, y la tira se desplaza tras una flecha en cada extremo por el que continúan.",
     "General": "General",
     "SEO": "SEO",
     "Settings": "Configuración",

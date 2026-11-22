@@ -15,6 +15,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - A `SelectOption` carries an optional `Icon`, drawn ahead of its label in `FormaSelect`'s list and trigger and in
   `FormaMultiSelect`'s list and tags, and an `IconLabel`, which describes the option, or the trigger showing it, to
   assistive technology and follows the label in the browser's own list a static page draws.
+- [`FormaTabs`](docs/component-catalog.md#formatabs) keeps its tabs on one line, the strip scrolling behind an arrow at
+  each end they continue past, named Scroll Tabs Back and Scroll Tabs Forward. Tabs past the strip's width wrapped onto
+  a second line.
 - A [`FormaFreezePane`](docs/component-catalog.md#formafreezepane), and every strip of tabs or commands built on one,
   keeps the element holding the focus inside it in view as an arrow appearing beside it narrows it, where the focused
   element ended under the arrow.

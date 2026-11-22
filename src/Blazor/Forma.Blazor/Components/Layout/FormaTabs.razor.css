@@ -3,15 +3,22 @@
     flex-direction: column;
 }
 
-.forma-tab-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-1);
-    border-block-end: 2px solid var(--border-color);
+.forma-tabs > ::deep .forma-tab-strip {
     margin-block-end: var(--space-4);
 }
 
+/* One line, as wide as its tabs and never narrower than the strip, so its rule runs under every tab however far the strip scrolls. */
+.forma-tab-list {
+    display: flex;
+    gap: var(--space-1);
+    inline-size: max-content;
+    min-inline-size: 100%;
+    border-block-end: 2px solid var(--border-color);
+}
+
 .forma-tab-button {
+    flex-shrink: 0;
+    white-space: nowrap;
     min-block-size: var(--target-size-md);
     padding: 0 var(--space-4);
     border: none;
@@ -44,9 +51,10 @@
     }
 }
 
+/* Inward, since the strip clips what stands outside a tab. */
 .forma-tab-button:focus-visible {
     outline: none;
-    box-shadow: var(--focus-ring);
+    box-shadow: var(--focus-ring-inset);
     border-radius: var(--radius-sm);
 }
 

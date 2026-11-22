@@ -19,5 +19,9 @@
     "Scroll Up": "Desplazar Arriba",
     "Scroll Down": "Desplazar Abajo",
     "Resize Frozen Region": "Redimensionar la Región Fijada"
+  },
+  "FormaTabs": {
+    "Scroll Tabs Back": "Desplazar Pestañas Atrás",
+    "Scroll Tabs Forward": "Desplazar Pestañas Adelante"
   }
 }
