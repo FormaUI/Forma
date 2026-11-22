@@ -108,15 +108,48 @@ failed, so a fix to a host's startup reaches both.
   WebView2, and Android's E2E. The MAUI example's builds for iOS and Mac Catalyst, on a hosted Mac, are reported
   beside them and hold nothing. The nightly run on `dev` holds the same coverage as a candidate's.
 
-**A change runs the gates its reach calls for.** Before a commit, it runs the fast gate, the format check where C#
-changed, and the browser checks for what it touches, `scripts/build/browser.ps1 -Filter`. While it's made, a
-browser check runs in one runtime, `Runtime=server` among the filter's terms, and in every runtime once the change
-is otherwise done; a change split into commits runs the fast gate on each, and the browser checks and the format
-check once, on its final state. It runs the full gate
-locally where it changes what every component rests on, shared interop, the component bases, the hosts or the
-build, and where a failure CI found is being reproduced. Everything else the full gate covers runs in CI, nightly on
-`dev` and on every push to `candidate`, and the nightly run files what fails, so an intermittent failure or a
-regression a narrower run missed comes back as an issue before a candidate is selected.
+### What a change runs
+
+**Verification follows the change, not the product.** It aims at the most useful verification with the least redundant
+work, serial waiting and contention for the machine. A change runs the checks of what it changed and of what depends on
+it, at three points: targeted checks while it's implemented, the development gate once its change set is complete, and
+the full gate at integration and release.
+
+**The affected set** is what a change reaches: the projects, components and behaviors it changed and everything that
+depends on them, transitive dependencies and shared foundations included. A change to the component bases,
+`FormaField`, the input router, the DOM watcher and engine, `FormaFreezePane`, the tokens or a shared stylesheet reaches
+every component resting on it; one to the bases, the hosts or the build reaches every component. Where what a change
+reaches can't be determined reliably, the set widens until it can be trusted. The command that computes it names why it
+chose each check.
+
+**The browser coverage follows what the change affects.** A change to how a component behaves or looks runs its browser
+checks, `scripts/build/browser.ps1 -Filter`, in the Server and WebAssembly runtimes by default. Its reach widens that:
+
+- culture routing, navigation, hydration and render-mode-specific behavior add the render modes they differ in, the
+  static render, both Auto runtimes and the web view;
+- browser interop adds the other engines, WebKit's among them;
+- mobile-specific behavior adds the platform, Android's emulator or its web view.
+
+A change with no UI, a service's or a script's that nothing renders, runs no browser check.
+
+- **Targeted checks while implementing** are the quick tests of what's being changed, by filter, for feedback within
+  minutes. They may run in the working tree where that's safe, nothing else editing or building what they read.
+- **A coherent change is committed once its checks pass.** Each commit is one change, made as it's completed, never
+  accumulated with unrelated changes and split from one working tree afterward.
+- **The development gate** closes a change set. It runs the cumulative affected set of every commit in the set, not the
+  last commit's alone: their tests, the browser coverage above, the format check where C# changed and the locale lint
+  where strings changed. A change set isn't finished until it passes, and a check whose inputs nothing has changed
+  since it passed doesn't run again. The fast gate runs on every push in CI besides.
+- **An authoritative gate runs on an immutable snapshot,** an export or a worktree of the commit, with its own build
+  output and its own resources where they'd collide, never on the tree being edited, so the next change is made while
+  it runs. The machine's one Android emulator is never shared by two runs.
+- **A failure outside the change is recorded and investigated independently,** preferably by another agent in a
+  worktree of its own, and blocks the work only where it invalidates the change's verification.
+
+**The full gate runs at integration and release.** Every component in every render mode, browser, language and
+platform is checked when `dev` is merged into `candidate` and again before a release, where it's mandatory, as well as
+nightly on `dev` and locally where a failure CI found is being reproduced. The nightly run files what fails, so an
+intermittent failure or a regression a narrower run missed comes back as an issue before a candidate is selected.
 
 ## Branches and promotion
 

@@ -24,13 +24,13 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | The component suite on iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
-| [The build](#the-build) | Faster tests, a faster gate, and builds in processes of their own |
+| [The build](#the-build) | Faster tests, a faster gate, and builds in processes of their own; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Two components on the roadmap, eight changes fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
-- **A change is a commit,** each passing the gate.
+- **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
 - **Breaking changes say how to migrate** from the first release on: [the changelog](../CHANGELOG.md)'s entry names each change that breaks what the release before it allowed, as [Versioning's preview stage](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/versions.md#stages) promises. Until then they were made directly, and [the feature history](../FEATURE-HISTORY.md) lists what each month broke.
 - **Documents move with their change.** A design, a README, the catalog, the roadmap, this file and the changelog change in the commit that changes what they describe.
 
@@ -162,6 +162,14 @@ DOMQL's language now lives in Nexo, which was ported out of DOMQL, and DOMQL has
   project under that build's spelling, and a build spelling the drive letter in the other case listed
   `Forma.Framework.Culture.Browser.Interop`'s JS initializer twice and stopped in its compression; the incremental build
   takes the time it took before.
+- **The affected-checks command, next.** [The verification design](verification-design.md#what-a-change-runs) runs a
+  change's checks by its affected set. A command is to compute that set from a change set's commits: the test projects
+  and classes and the browser check pages each changed path reaches, transitively, with the render modes, engines and
+  platforms its reach adds, each check named with why it was chosen, and the set widened where a path's reach isn't
+  mapped. Until then, the set is worked out by hand from the same rules.
+- **The examples' locale lint, with Locali 1.0.0-preview.27.** From that release a run of `Forma.slnx` no longer reads
+  the locale files under `examples/`, which `Forma.Examples.slnx` owns, so the move to it lints that solution too and
+  fixes the warnings it reports.
 
 <a id="the-input-routers-host-routes"></a>
 

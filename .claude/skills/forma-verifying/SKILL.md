@@ -30,9 +30,23 @@ No project generates a documentation file, so nothing reports an undocumented pu
 The build has one entry at the repository's root, with a module and a wrapper script for each narrower loop
 beside it, as the repository's build documentation sets out with every command and parameter.
 
-- Do run before each commit the gates the repository's verification design sets for the change's reach, the
-  fast gate or the full gate, which runs every platform check the machine can and names each one it couldn't;
-  a wrapper beside the module runs one part of either.
+- Do verify a change by its affected set, as the repository's verification design sets out: the checks of what it
+  changed and of everything depending on it, transitively, a shared foundation reaching every component resting on
+  it; widen the set wherever its reach can't be determined reliably.
+- Do run a UI change's browser checks in the Server and WebAssembly runtimes, and add what its reach calls for: the
+  render modes for culture routing, navigation, hydration or render-mode-specific behavior, the other engines for
+  browser interop, the platform for mobile-specific behavior; a change with no UI runs none.
+- Do run targeted checks while implementing, in the working tree where nothing else edits or builds what they read,
+  and commit each coherent change once its checks pass; never accumulate unrelated changes to split afterward.
+- Do close a change set with its development gate, the cumulative affected set of every commit in it, on an
+  immutable snapshot, an export or a worktree with its own build output, while work goes on in the tree; a set isn't
+  finished until it passes, and a check whose inputs haven't changed since it passed isn't run again.
+- Do record a failure outside the change and have it investigated independently, by another agent in a worktree of
+  its own, blocking the work only where it invalidates the change's verification; never run two checks on the one
+  Android emulator at once.
+- Do leave the full gate, which runs every platform check the machine can and names each one it couldn't, to
+  merging `dev` into `candidate` and to a release, where it's mandatory; a wrapper beside the module runs one part
+  of either gate.
 - Do narrow a test run to one project, a filter or the build already on disk, and hunt a test that fails
   sometimes by repeating the run past its failures, so the failure shows as a rate; run other test projects
   beside it to load the machine, so a race a busy machine exposes shows here too, and record the waits made

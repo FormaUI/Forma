@@ -70,6 +70,9 @@ Every component replaces something in the legacy application the repository docu
 The gate is the build with no warnings, every test project, the format check, the task programs' build, every task script's contract and the build's own cases, the locale lint, the script tests, the examples' smoke checks and the browser check, each platform's where the machine can run it, and the Showcase for anything that renders; the repository document lists the commands, and the fast gate among them, and the verification design sets which gates a change runs before its commit.
 
 - Do treat every warning, the compiler's or MSBuild's, as a build failure; the `.editorconfig` severity table decides what the compiler reports, and the answer to an unwanted diagnostic is that table, never a local suppression.
+- Do verify a change by its affected set, the checks of what it changed and of everything depending on it, its browser checks where it changes how a component behaves or looks, in the runtimes its reach calls for; the verification design sets out the affected set, the browser coverage and the gates.
+- Do close every change set with its development gate, the cumulative affected set of its commits, run on an immutable snapshot while work goes on; the full gate is mandatory when `dev` is merged into `candidate` and before a release.
+- Do commit each coherent change once its checks pass, and have a failure outside the change investigated independently rather than stopping to chase it.
 
 ## Working agreement
 
@@ -80,12 +83,12 @@ The gate is the build with no warnings, every test project, the format check, th
 - Do verify both directions, color-independent states, accessible names and focus, touch targets, and every render mode the library supports before review; the `forma-checking-components` skill carries the full standard.
 - Do present the component for review and stop; iterate on that same component until the maintainer declares it complete.
 - Do move a component from the roadmap to the catalog after approval, and from the roadmap's structure to the catalog's when its implementation starts.
-- Do finish a piece of work with it unstaged, report what changed and what the gate said, and propose a commit message for the maintainer to run themselves.
+- Do commit each change of a task the maintainer approved once its checks pass, and finish the task by reporting what changed and what the development gate said, asking before the push.
 - Do present a wholesale rename as a ledger of `current -> proposed` lines with a per-member note on what each member does, and apply only what the maintainer's review of that ledger decides; members it leaves unlisted stay unchanged.
 - Do keep changes minimal and on-scope.
 - Don't move to the next component before the current one is approved.
 - Don't mark a component complete on your own judgment.
-- Don't run a state-changing Git command, `add`, `commit`, `push`, `reset`, `restore`, `stash`, a path-scoped `checkout`, without permission for that command, asked for once the work exists and the maintainer can see what is in it. An instruction given up front about work not yet done grants nothing, and neither does permission for an earlier commit; read-only Git needs no permission at all.
+- Don't run a state-changing Git command, `push`, `reset`, `restore`, `stash`, a path-scoped `checkout`, without permission for that command, asked for once the work exists and the maintainer can see what is in it; staging and committing a change of an approved task once its checks pass is the exception. An instruction given up front about work not yet done grants nothing, and neither does permission for an earlier push; read-only Git needs no permission at all.
 - Don't retrofit new conventions onto existing components unless asked.
 
 ## Commit messages
