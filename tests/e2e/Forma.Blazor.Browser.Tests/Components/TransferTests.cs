@@ -189,13 +189,14 @@ public sealed class TransferTests
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_reopen_an_image_held_as_a_data_address_past_a_message(string runtime)
         {
-            // Arrange — an image of a hundred kilobytes in the document
+            // Arrange — an image of a hundred kilobytes in the document, sized by its markup, since its data decodes to no picture and
+            // WebKit can leave a broken image at no size at all
             var (context, page) = await OpenAsync(host, runtime, "transfer");
             await using var _ = context;
             var canvas = page.Locator("#forma-body .forma-composer-rich-text-canvas");
             await WaitForInputScopeAsync(page, "#forma-body .forma-composer-rich-text-canvas");
             var source = "data:image/png;base64," + new string('A', 100_000);
-            await canvas.EvaluateAsync("(canvas, source) => { canvas.innerHTML = '<figure class=\"forma-composer-image\"><img src=\"' + source + '\" alt=\"Large\" /></figure>'; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", source);
+            await canvas.EvaluateAsync("(canvas, source) => { canvas.innerHTML = '<figure class=\"forma-composer-image\"><img src=\"' + source + '\" alt=\"Large\" width=\"64\" height=\"64\" /></figure>'; canvas.dispatchEvent(new Event('input', { bubbles: true })); }", source);
 
             // Act
             await canvas.Locator("img").DblClickAsync();
