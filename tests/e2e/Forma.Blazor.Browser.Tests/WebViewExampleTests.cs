@@ -119,7 +119,8 @@ public sealed class WebViewExampleTests(BrowserHost host)
     }
 
     // What tells a web view its application's coordinator let go of from one whose document missed a single switch: the native
-    // windows' titles, which follow the application's culture, and whether the document follows a switch to English after it.
+    // windows' titles, which follow the application's culture, and whether the document follows a switch to English and back to
+    // Hebrew after it, which moves the application's culture twice whatever the document reads.
     private static async Task<string> DescribeFollowingAsync(WebViewApplication application, IPage page)
     {
         var titles = string.Join(", ", NativeWindows.Find(application.ProcessId).Select(NativeWindows.GetTitle));
@@ -127,17 +128,20 @@ public sealed class WebViewExampleTests(BrowserHost host)
         try
         {
             await page.Locator(".english").ClickAsync(new() { Timeout = 5000 });
-            await WaitForDocumentAsync(page, "en-US/ltr", 5000);
+            await Assertions.Expect(page.Locator(".welcome")).ToHaveTextAsync("Welcome", new() { Timeout = 5000 });
+            await page.Locator(".hebrew").ClickAsync(new() { Timeout = 5000 });
+            await Assertions.Expect(page.Locator(".welcome")).ToHaveTextAsync(Welcome, new() { Timeout = 5000 });
+            await WaitForDocumentAsync(page, "he/rtl", 5000);
 
-            return $"the native windows' titles read {titles}, and a switch to English after it moved the document to en-US/ltr";
+            return $"the native windows' titles read {titles}, and a switch to English and back to Hebrew after it moved the document to he/rtl, so the document missed that one switch";
         }
         catch (TimeoutException exception)
         {
-            return $"the native windows' titles read {titles}, and a switch to English after it didn't move the document: {exception.Message}";
+            return $"the native windows' titles read {titles}, and a switch to English and back to Hebrew after it didn't move the document, so it follows no switch: {exception.Message}";
         }
         catch (PlaywrightException exception)
         {
-            return $"the native windows' titles read {titles}, and a switch to English after it couldn't be made: {exception.Message}";
+            return $"the native windows' titles read {titles}, and a switch to English and back to Hebrew after it couldn't be made: {exception.Message}";
         }
     }
 
