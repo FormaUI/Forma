@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.14`
 
-*Unreleased*
+*November 23, 2026*
 
 - `InputRegistration.SyncAsync` returns once what is registered matches the latest sync, waiting for a registration
   still in flight, so a [`FormaPopover`](docs/component-catalog.md#formapopover) rendered again while its scope
