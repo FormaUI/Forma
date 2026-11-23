@@ -2,7 +2,10 @@
 @attribute [ShowcasePage("FormaLinkTabs")]
 @rendermode InteractiveServer
 @using Forma.Blazor.Components.Navigation
+@using Forma.Framework.Culture.Router
 @using Microsoft.AspNetCore.Components.Routing
+@inject CultureRouter Router
+@inject CultureSwitcher Switcher
 
 <h1>FormaLinkTabs</h1>
 <p class="description">@L["A strip of tabs that link to pages, for a section whose pages each have an address of their own. The tab of the page the reader is on is marked current by an underline as well as its color, and every tab is a link that works before the page is interactive."]</p>
@@ -42,37 +45,41 @@
 @code {
     private LinkTab[] SectionTabs =>
     [
-        new(L["Breadcrumb"], "breadcrumb"),
-        new(L["Command Palette"], "command-palette"),
-        new(L["Link Tabs"], "link-tabs"),
-        new(L["Pagination"], "pagination"),
-        new(L["Stepper"], "stepper"),
+        CreateTab(L["Breadcrumb"], "/breadcrumb"),
+        CreateTab(L["Command Palette"], "/command-palette"),
+        CreateTab(L["Link Tabs"], "/link-tabs"),
+        CreateTab(L["Pagination"], "/pagination"),
+        CreateTab(L["Stepper"], "/stepper"),
     ];
 
     private LinkTab[] IconTabs =>
     [
-        new(L["Tabs"], "tabs") { Icon = Glyph.Layout },
-        new(L["Link Tabs"], "link-tabs") { Icon = Glyph.Link },
-        new(L["Splitter"], "splitter") { Icon = Glyph.Columns },
-        new(L["Showcase"], "") { Icon = Glyph.Home, Match = NavLinkMatch.All, Trailing = true },
+        CreateTab(L["Tabs"], "/tabs") with { Icon = Glyph.Layout },
+        CreateTab(L["Link Tabs"], "/link-tabs") with { Icon = Glyph.Link },
+        CreateTab(L["Splitter"], "/splitter") with { Icon = Glyph.Columns },
+        CreateTab(L["Showcase"], "/") with { Icon = Glyph.Home, Match = NavLinkMatch.All, Trailing = true },
     ];
 
     private LinkTab[] ManyTabs =>
     [
-        new(L["Breadcrumb"], "breadcrumb"),
-        new(L["Command Palette"], "command-palette"),
-        new(L["Link Tabs"], "link-tabs"),
-        new(L["Pagination"], "pagination"),
-        new(L["Stepper"], "stepper"),
-        new(L["Tabs"], "tabs"),
-        new(L["Splitter"], "splitter"),
-        new(L["Freeze Pane"], "freeze-pane"),
+        CreateTab(L["Breadcrumb"], "/breadcrumb"),
+        CreateTab(L["Command Palette"], "/command-palette"),
+        CreateTab(L["Link Tabs"], "/link-tabs"),
+        CreateTab(L["Pagination"], "/pagination"),
+        CreateTab(L["Stepper"], "/stepper"),
+        CreateTab(L["Tabs"], "/tabs"),
+        CreateTab(L["Splitter"], "/splitter"),
+        CreateTab(L["Freeze Pane"], "/freeze-pane"),
     ];
 
     private LinkTab[] ElsewhereTabs =>
     [
-        new(L["Text Box"], "text-box"),
-        new(L["Select"], "select"),
-        new(L["Combo Box"], "combo-box"),
+        CreateTab(L["Text Box"], "/text-box"),
+        CreateTab(L["Select"], "/select"),
+        CreateTab(L["Combo Box"], "/combo-box"),
     ];
+
+    // A tab goes to the page in the culture the showcase reads in, as its own links do.
+    private LinkTab CreateTab(string title, string path)
+        => new(title, Router.GetPath(Switcher.CurrentRoute, path));
 }
