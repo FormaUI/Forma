@@ -28,7 +28,6 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Two components built and in review, eight changes fixed |
-| [A tab strip's current tab in view](#a-tab-strips-current-tab-in-view) | Open, with a proposal |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -223,18 +222,6 @@ listed here in the order they are taken, each with what the code does and its st
 | The explorer's toolbar in a bounded height | The header keeps its height in an explorer held short, but an open upload panel kept its full height and pushed the media out of the explorer. The media now give way first, and the panel then scrolls what it holds | Fixed |
 | A row removed under the focus | A command removing the row it was run from, as a row's menu deleting the row does, left the focus on the page's body. The data view hands it to the item after it, else the one before, else the first control of its empty state | Fixed |
 | Sharing from a static page | `FormaShareMenu`'s trigger was disabled on a page rendered statically. It opens the browser's own popover there, its networks, email and download links and the commands a script runs disabled | Fixed |
-
-<a id="a-tab-strips-current-tab-in-view"></a>
-
-## A tab strip's current tab in view
-
-`FormaTabs` and `FormaLinkTabs` keep their tabs on one line in a freeze pane, which keeps the focused tab in view but
-opens at the strip's start. A strip whose current tab lies past its width, such as a later page's tab on a phone, draws
-it out of view until the reader scrolls to it.
-
-**Proposal:** the freeze pane takes the element its strip marks current, the tabs' active tab and the link tabs'
-current tab, and scrolls it into view along the inline axis as it is drawn and whenever it changes, as it already
-keeps the focused element in view.
 
 <a id="deferred"></a>
 

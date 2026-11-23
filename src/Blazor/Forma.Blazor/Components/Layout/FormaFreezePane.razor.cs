@@ -101,6 +101,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
                 ForwardAction = ScrollForwardAction,
             },
             WheelAction = WantsWheel ? ScrollAction : null,
+            CurrentSelector = Options.CurrentSelector,
         };
 
     // The wheel moves inline content only; along the block axis the browser already scrolls by it.
@@ -108,7 +109,7 @@ public sealed partial class FormaFreezePane : FormaElementBase
         => !IsBlockAxis && Options.PageOnWheelGesture;
 
     private bool WantsInteraction
-        => WantsWheel || ShowsArrows;
+        => WantsWheel || ShowsArrows || Options.CurrentSelector is not null;
 
     /// <inheritdoc />
     protected override void OnParametersSet()

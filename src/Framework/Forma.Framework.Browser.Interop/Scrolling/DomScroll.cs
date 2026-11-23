@@ -96,6 +96,7 @@ public sealed class DomScroll : IDomScrollObservation
             Buttons = options.Buttons is { } buttons
                 ? new ButtonsDescription { Container = buttons.Container, BackButtonSelector = buttons.BackSelector, ForwardButtonSelector = buttons.ForwardSelector, BackAction = buttons.BackAction, ForwardAction = buttons.ForwardAction }
                 : null,
+            Current = options.CurrentSelector,
         };
 
     private static StepsDescription DescribeSteps(ScrollStepOptions options)
@@ -128,6 +129,8 @@ public sealed class DomScroll : IDomScrollObservation
         public required string? Wheel { get; init; }
 
         public required ButtonsDescription? Buttons { get; init; }
+
+        public required string? Current { get; init; }
     }
 
     /// <summary>The scroll buttons as the browser reads them.</summary>

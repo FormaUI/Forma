@@ -29,6 +29,7 @@ public sealed partial class FormaLinkTabs : FormaElementBase
         {
             ScrollBackLabel = L["Scroll Tabs Back"],
             ScrollForwardLabel = L["Scroll Tabs Forward"],
+            CurrentSelector = "[aria-current=page]",
         };
 
     /// <inheritdoc />

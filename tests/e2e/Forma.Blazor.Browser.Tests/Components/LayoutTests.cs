@@ -379,6 +379,19 @@ public sealed class LayoutTests
     {
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_bring_its_active_tab_into_a_strip_too_narrow_for_its_tabs(string runtime)
+        {
+            // Act
+            var (context, page) = await OpenAsync(host, runtime, "tabs");
+            await using var _ = context;
+
+            // Assert — the strip scrolls rather than the tab standing past its end
+            await Assertions.Expect(page.Locator("#tab-audit")).ToBeInViewportAsync(new() { Ratio = 1 });
+            await Assertions.Expect(page.Locator("#tab-overview")).Not.ToBeInViewportAsync(new() { Ratio = 1 });
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_select_the_tab_pressed_and_the_tab_the_arrow_keys_reach_without_submitting_its_form(string runtime)
         {
             // Arrange

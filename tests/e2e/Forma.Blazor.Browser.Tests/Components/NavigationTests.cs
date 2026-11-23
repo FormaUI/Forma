@@ -41,9 +41,10 @@ public sealed partial class NavigationTests
             // Act
             await tabs.GetByRole(AriaRole.Link, new() { Name = "Members", Exact = true }).ClickAsync();
 
-            // Assert
+            // Assert — the narrow strip follows too, bringing its newly current tab into view
             await Assertions.Expect(page).ToHaveURLAsync(new Regex($"{Regex.Escape(membersPath)}$"));
             await Assertions.Expect(tabs.Locator("[aria-current=page]")).ToHaveTextAsync("Members");
+            await Assertions.Expect(page.Locator("#narrow-link-tabs [aria-current=page]")).ToBeInViewportAsync(new() { Ratio = 1 });
         }
 
         [Theory]
@@ -54,9 +55,11 @@ public sealed partial class NavigationTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "link-tabs/settings");
             await using var _ = context;
 
-            // Assert — the overview matches only its own address, so a page beneath it leaves it unmarked
+            // Assert — the overview matches only its own address, so a page beneath it leaves it unmarked, and the narrow strip scrolls
+            // its last tab into view
             await Assertions.Expect(page.Locator("#link-tabs [aria-current=page]")).ToHaveTextAsync("Settings");
             await Assertions.Expect(page.Locator("#link-tabs [aria-current]")).ToHaveCountAsync(1);
+            await Assertions.Expect(page.Locator("#narrow-link-tabs [aria-current=page]")).ToBeInViewportAsync(new() { Ratio = 1 });
         }
     }
 

@@ -252,4 +252,78 @@ describe('ScrollContainer', () => {
             expect(container.scrollTop).toBe(120);
         });
     });
+
+    describe('revealing an element', () => {
+        // Elements in a 300px container scrolled to its start, the third reaching 50px past its end.
+        const rect = (element, left, right, top = 0, bottom = 40) => { element.getBoundingClientRect = () => ({ left, right, top, bottom }); };
+
+        beforeEach(() => {
+            container.innerHTML = '<span class="frozen" id="f"></span><span id="a"></span><span id="b"></span><span id="c"></span>';
+            container.scrollTo = vi.fn();
+            rect(container, 0, 300, 0, 300);
+            rect(container.querySelector('#a'), 0, 100);
+            rect(container.querySelector('#b'), 100, 200);
+            rect(container.querySelector('#c'), 250, 350);
+            sizeScroller(container, { scrollLeft: 0, scrollWidth: 500, clientWidth: 300, scrollTop: 0, scrollHeight: 500, clientHeight: 300 });
+        });
+
+        it('brings an element past the end up to the end', () => {
+            const isMoving = new ScrollContainer(container).reveal(container.querySelector('#c'));
+
+            expect(isMoving).toBe(true);
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 50, behavior: 'instant' });
+        });
+
+        it('brings an element before the start back to the start', () => {
+            sizeScroller(container, { scrollLeft: 150 });
+            rect(container.querySelector('#a'), -150, -50);
+
+            new ScrollContainer(container).reveal(container.querySelector('#a'));
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 0, behavior: 'instant' });
+        });
+
+        it('leaves an element in view where it stands, reporting that it did not move', () => {
+            const isMoving = new ScrollContainer(container).reveal(container.querySelector('#b'));
+
+            expect(isMoving).toBe(false);
+            expect(container.scrollTo).not.toHaveBeenCalled();
+        });
+
+        it('brings the start of an element longer than the view to its start', () => {
+            rect(container.querySelector('#c'), 250, 650);
+            sizeScroller(container, { scrollWidth: 800 });
+
+            new ScrollContainer(container).reveal(container.querySelector('#c'));
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 250, behavior: 'instant' });
+        });
+
+        it('keeps an element clear of the frozen parts', () => {
+            sizeScroller(container, { scrollLeft: 200 });
+            rect(container.querySelector('#f'), 0, 120);
+            rect(container.querySelector('#b'), 50, 150);
+
+            new ScrollContainer(container).reveal(container.querySelector('#b'), { frozenSelector: '.frozen' });
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 130, behavior: 'instant' });
+        });
+
+        it('mirrors the movement in a right-to-left container', () => {
+            container.style.direction = 'rtl';
+            rect(container.querySelector('#c'), -50, 50);
+
+            new ScrollContainer(container).reveal(container.querySelector('#c'));
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: -50, behavior: 'instant' });
+        });
+
+        it('moves along the block axis', () => {
+            rect(container.querySelector('#c'), 0, 100, 250, 350);
+
+            new ScrollContainer(container, 'block').reveal(container.querySelector('#c'));
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ top: 50, behavior: 'instant' });
+        });
+    });
 });

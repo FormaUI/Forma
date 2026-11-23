@@ -11,6 +11,16 @@
 <output id="result">@(string.Join(' ', _selections))</output>
 <output id="submits">@_submits</output>
 
+@* Tabs too many for their narrow strip, the last of them active. *@
+<div style="inline-size: 12rem">
+    <FormaTabs Id="narrow-tabs" Label="Account" ActiveTabId="audit">
+        <FormaTab TabId="overview" Title="Overview">Overview</FormaTab>
+        <FormaTab TabId="members" Title="Members">Members</FormaTab>
+        <FormaTab TabId="billing" Title="Billing">Billing</FormaTab>
+        <FormaTab TabId="audit" Title="Audit">Audit</FormaTab>
+    </FormaTabs>
+</div>
+
 @code {
     private readonly object _model = new();
     private readonly List<string> _selections = [];

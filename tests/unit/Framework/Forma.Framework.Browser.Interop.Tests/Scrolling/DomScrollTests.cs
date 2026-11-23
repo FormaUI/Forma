@@ -49,7 +49,7 @@ public sealed class DomScrollTests
     public sealed class Interacting
     {
         [Fact]
-        public async Task Should_ask_the_browser_for_the_steps_the_buttons_and_the_wheel()
+        public async Task Should_ask_the_browser_for_the_steps_the_buttons_the_wheel_and_the_current_element()
         {
             // Arrange
             using var loggerFactory = new FakeLoggerFactory();
@@ -61,6 +61,7 @@ public sealed class DomScrollTests
                 Steps = new ScrollStepOptions { StopSelector = ".stop", FrozenSelector = ".frozen" },
                 Buttons = new ScrollButtons { Container = Pane, BackSelector = ".back", ForwardSelector = ".forward", BackAction = "pane.scroll-back", ForwardAction = "pane.scroll-forward" },
                 WheelAction = "pane.scroll",
+                CurrentSelector = "[aria-current=page]",
             };
 
             // Act
@@ -79,6 +80,7 @@ public sealed class DomScrollTests
                 () => Assert.Equal(".stop", FakeDomBrowser.GetOption(attach, "stops")),
                 () => Assert.Equal(".frozen", FakeDomBrowser.GetOption(attach, "frozenSelector")),
                 () => Assert.Equal("pane.scroll", FakeDomBrowser.GetOption(attach, "wheel")),
+                () => Assert.Equal("[aria-current=page]", FakeDomBrowser.GetOption(attach, "current")),
                 () => Assert.Equal(Pane, GetButtonOption("container")),
                 () => Assert.Equal(".back", GetButtonOption("backButtonSelector")),
                 () => Assert.Equal(".forward", GetButtonOption("forwardButtonSelector")),

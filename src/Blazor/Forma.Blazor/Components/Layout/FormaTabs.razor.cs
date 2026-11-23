@@ -31,6 +31,7 @@ public sealed partial class FormaTabs : FormaElementBase
         {
             ScrollBackLabel = L["Scroll Tabs Back"],
             ScrollForwardLabel = L["Scroll Tabs Forward"],
+            CurrentSelector = "[role=tab][aria-selected=true]",
         };
 
     /// <summary>The <see cref="FormaTab"/> children this panel switches between.</summary>

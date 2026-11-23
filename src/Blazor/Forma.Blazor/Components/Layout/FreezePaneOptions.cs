@@ -26,6 +26,9 @@ public sealed record FreezePaneOptions
     /// <summary>The accessible name of the draggable edge of the frozen region, where <see langword="null"/> is the pane's own.</summary>
     public string? FrozenEdgeLabel { get; init; }
 
+    /// <summary>The selector of the current element in the content, such as a strip's current tab, which the pane keeps in view.</summary>
+    public string? CurrentSelector { get; init; }
+
     /// <summary>Inline scrolling by the scrollbar, with the pane's own arrow names.</summary>
     public static FreezePaneOptions Default { get; } = new();
 

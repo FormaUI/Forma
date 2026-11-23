@@ -307,7 +307,7 @@ The engine runs each capability's actions and establishes its behaviors through 
 
 Composition lives in classes: anchored presentation combines placement and focus, and panning combines gestures and scrolling. A combination is expressed as a class with typed options, never as a serialized description of actions.
 
-Scrolling shows the model whole: its boundaries and frozen extents are facts, a step is an action, and its wheel route and step buttons are a behavior. Input policy is configured lazily before a qualified route attaches, movement stays local, and the component receives only the facts it asked for.
+Scrolling shows the model whole: its boundaries and frozen extents are facts, a step is an action, and its wheel route, its step buttons and the current element it keeps in view are a behavior. Input policy is configured lazily before a qualified route attaches, movement stays local, and the component receives only the facts it asked for.
 
 A component reaches the browser only through the engine and the watcher; a component's own script is the implementation of the actions and behaviors its component requests. Inside the browser, a capability's implementation composes its area's classes, and code implementing another capability may compose them too, owning and disposing the listeners and observers it creates. Capability loading is awaited before synchronous input handlers are installed, so such handlers call already-loaded local methods.
 

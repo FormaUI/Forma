@@ -96,6 +96,33 @@ export class ScrollContainer {
         return true;
     }
 
+    /**
+     * Moves the content the least distance that brings the element into view along the axis, past the frozen parts, its start
+     * first where it is longer than the view, and returns whether it moved.
+     * @param {Element} element An element of the content.
+     * @param {{ frozenSelector?: string | null }} options The selector of the frozen parts.
+     */
+    reveal(element, { frozenSelector = null } = {}) {
+        const box = this.#element.getBoundingClientRect();
+        const rect = element.getBoundingClientRect();
+        const inset = frozenSelector ? this.#frozenRegion(frozenSelector).extent : 0;
+        const isMirrored = this.#isMirrored();
+        const start = this.#isBlock ? rect.top - box.top : isMirrored ? box.right - rect.right : rect.left - box.left;
+        const end = this.#isBlock ? rect.bottom - box.top : isMirrored ? box.right - rect.left : rect.right - box.left;
+        const viewEnd = this.#isBlock ? this.#element.clientHeight : this.#element.clientWidth;
+        const offset = this.#offset();
+        const distance = start < inset ? start - inset : end > viewEnd ? Math.min(start - inset, end - viewEnd) : 0;
+        const nextOffset = Math.max(0, Math.min(this.#slack(), offset + distance));
+
+        if (Math.abs(nextOffset - offset) < 1) {
+            return false;
+        }
+
+        this.#scrollTo(nextOffset, 'instant');
+
+        return true;
+    }
+
     #isMirrored() {
         return !this.#isBlock && Direction.isRightToLeft(this.#element);
     }

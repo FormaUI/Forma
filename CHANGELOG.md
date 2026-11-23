@@ -34,6 +34,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - [`FormaTabs`](docs/component-catalog.md#formatabs) keeps its tabs on one line, the strip scrolling behind an arrow at
   each end they continue past, named Scroll Tabs Back and Scroll Tabs Forward. Tabs past the strip's width wrapped onto
   a second line.
+- `FormaTabs` and `FormaLinkTabs` keep their current tab in view: a strip whose active or current tab lies past its
+  width scrolls it into view as the strip is drawn, as an arrow appearing narrows it, and as another tab becomes
+  current, while a strip the reader scrolled stays put. A freeze pane keeps any element of its content in view this way
+  through `FreezePaneOptions.CurrentSelector`, and a DOM engine's scroll interaction through
+  `ScrollInteractionOptions.CurrentSelector`.
 - A [`FormaFreezePane`](docs/component-catalog.md#formafreezepane), and every strip of tabs or commands built on one,
   keeps the element holding the focus inside it in view as an arrow appearing beside it narrows it, where the focused
   element ended under the arrow.

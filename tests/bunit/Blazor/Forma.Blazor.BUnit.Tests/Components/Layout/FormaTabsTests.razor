@@ -44,6 +44,24 @@
         }
 
         [Fact]
+        public void Should_keep_its_active_tab_in_the_strip_s_view()
+        {
+            // Arrange
+            using var ctx = new FormaTabsTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaTabs ActiveTabId="second">
+                    <FormaTab Title="Tab 1" TabId="first">Content 1</FormaTab>
+                    <FormaTab Title="Tab 2" TabId="second">Content 2</FormaTab>
+                </FormaTabs>);
+
+            // Assert
+            var strip = cut.FindComponent<FormaFreezePane>();
+            Assert.Equal("Tab 2", Assert.Single(strip.FindAll(strip.Instance.Options.CurrentSelector!)).TextContent.Trim());
+        }
+
+        [Fact]
         public void Should_mark_the_first_trailing_tab_so_it_and_those_after_sit_at_the_end()
         {
             // Arrange

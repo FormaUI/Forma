@@ -6,6 +6,11 @@
    the tabs follow the address alone. *@
 <FormaLinkTabs Id="link-tabs" Items="Tabs" Label="Section" />
 
+@* The same tabs in a strip too narrow for them. *@
+<div style="inline-size: 10rem">
+    <FormaLinkTabs Id="narrow-link-tabs" Items="Tabs" Label="Narrow section" />
+</div>
+
 @code {
     private LinkTab[] Tabs =>
     [

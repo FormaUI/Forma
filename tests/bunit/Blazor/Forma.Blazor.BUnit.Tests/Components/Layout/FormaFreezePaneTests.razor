@@ -363,6 +363,20 @@
         }
 
         [Fact]
+        public void Should_keep_its_current_element_in_view_in_the_browser_with_no_other_movement()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            var probe = new DomProbe<ScrollState>(ctx);
+
+            // Act
+            ctx.Render(@<FormaFreezePane Options="@(new FreezePaneOptions { PageOnWheelGesture = false, CurrentSelector = "[aria-current=page]" })"><a aria-current="page">One</a></FormaFreezePane>);
+
+            // Assert
+            Assert.Equal("[aria-current=page]", DomProbe<ScrollState>.GetOption(Assert.Single(probe.Interactions), "current"));
+        }
+
+        [Fact]
         public void Should_mark_a_pane_that_scrolls_its_other_axis_too()
         {
             // Arrange

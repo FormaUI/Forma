@@ -54,6 +54,21 @@
         }
 
         [Fact]
+        public void Should_keep_its_current_tab_in_the_strip_s_view()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("store/customers");
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="CreateStoreTabs()" />);
+
+            // Assert
+            var strip = cut.FindComponent<FormaFreezePane>();
+            Assert.Equal("Customers", Assert.Single(strip.FindAll(strip.Instance.Options.CurrentSelector!)).TextContent.Trim());
+        }
+
+        [Fact]
         public void Should_draw_a_tab_s_icon_before_its_title()
         {
             // Arrange

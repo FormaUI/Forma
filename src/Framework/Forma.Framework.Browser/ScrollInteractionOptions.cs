@@ -11,4 +11,7 @@ public sealed record ScrollInteractionOptions
 
     /// <summary>The action a vertical wheel turn over the container is routed as, <c>{owner}.{action}</c>.</summary>
     public string? WheelAction { get; init; }
+
+    /// <summary>The selector of the current element, which the container keeps in view.</summary>
+    public string? CurrentSelector { get; init; }
 }

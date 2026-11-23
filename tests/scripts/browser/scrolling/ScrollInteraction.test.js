@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { ScrollInteraction } from '#browser/scrolling/ScrollInteraction.mjs';
 import { configure, describe as describeScope, register, resolve } from '#input/InputRouter.js';
-import { sizeScroller, stubMutationObserver } from '#support/platform.js';
+import { sizeScroller, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 
 describe('ScrollInteraction', () => {
     /** @type {ReturnType<typeof stubMutationObserver>} */
@@ -250,5 +250,102 @@ describe('ScrollInteraction turned by a wheel', () => {
         wheel({ deltaY: 120 });
 
         expect(track.scrollLeft).toBe(-120);
+    });
+});
+
+describe('ScrollInteraction keeping the current element in view', () => {
+    /** @type {ReturnType<typeof stubMutationObserver>} */
+    let mutations;
+    /** @type {ReturnType<typeof stubResizeObserver>} */
+    let resizes;
+    /** @type {HTMLElement} */
+    let track;
+    /** @type {ScrollInteraction[]} */
+    let handles;
+
+    const rect = (element, left, right) => { element.getBoundingClientRect = () => ({ left, right, top: 0, bottom: 40 }); };
+
+    // Two tabs of 200px in a 300px track scrolled to its start, the current one lying past its end.
+    beforeEach(() => {
+        mutations = stubMutationObserver();
+        resizes = stubResizeObserver();
+        document.body.innerHTML = '<div id="track"><a id="first"></a><a id="second" aria-current="page"></a></div>';
+        track = document.querySelector('#track');
+        track.scrollTo = vi.fn(({ left }) => { track.scrollLeft = left; });
+        sizeScroller(track, { scrollLeft: 0, scrollWidth: 600, clientWidth: 300 });
+        rect(track, 0, 300);
+        rect(track.querySelector('#first'), 0, 200);
+        rect(track.querySelector('#second'), 400, 600);
+        handles = [];
+    });
+
+    afterEach(() => {
+        handles.splice(0).forEach(handle => handle.dispose());
+        mutations.restore();
+        resizes.restore();
+    });
+
+    const attachInteraction = options => {
+        const handle = new ScrollInteraction(track, options);
+        handles.push(handle);
+
+        return handle;
+    };
+
+    it('brings the current element into view as it attaches', () => {
+        attachInteraction({ current: '[aria-current=page]' });
+
+        expect(track.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 300, behavior: 'instant' });
+    });
+
+    it('brings it back into view as the track narrows', () => {
+        attachInteraction({ current: '[aria-current=page]' });
+        rect(track.querySelector('#second'), 100, 300);
+        rect(track, 0, 260);
+        sizeScroller(track, { clientWidth: 260 });
+        track.scrollTo.mockClear();
+
+        resizes.latest().deliver([{ target: track }]);
+
+        expect(track.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 340, behavior: 'instant' });
+    });
+
+    it('brings another element into view as it becomes current', () => {
+        attachInteraction({ current: '[aria-current=page]' });
+        rect(track.querySelector('#first'), -300, -100);
+        track.querySelector('#second').removeAttribute('aria-current');
+        track.querySelector('#first').setAttribute('aria-current', 'page');
+        track.scrollTo.mockClear();
+
+        mutations.latest().deliver([]);
+
+        expect(track.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 0, behavior: 'instant' });
+    });
+
+    it('leaves the track where the reader moved it while the same element stays current', () => {
+        attachInteraction({ current: '[aria-current=page]' });
+        track.scrollLeft = 0;
+        rect(track.querySelector('#second'), 400, 600);
+        track.scrollTo.mockClear();
+
+        mutations.latest().deliver([]);
+
+        expect(track.scrollTo).not.toHaveBeenCalled();
+    });
+
+    it('keeps nothing in view where no selector is named', () => {
+        attachInteraction({});
+
+        expect(track.scrollTo).not.toHaveBeenCalled();
+        expect(mutations.instances).toHaveLength(0);
+    });
+
+    it('stops keeping the element in view once disposed', () => {
+        const handle = attachInteraction({ current: '[aria-current=page]' });
+
+        handle.dispose();
+
+        expect(mutations.latest().isConnected).toBe(false);
+        expect(resizes.latest().targets).toEqual([]);
     });
 });
