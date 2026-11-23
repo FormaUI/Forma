@@ -27,7 +27,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests, a faster gate, builds in processes of their own and the examples' locale lint; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Four components built and in review, twelve changes fixed |
+| [A host's requests](#a-hosts-requests) | Four components built and in review, thirteen changes fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -214,7 +214,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 
 A host's list of what it needs from Forma named four components Forma lacked, `FormaComboBox`, `FormaLinkTabs`,
 `FormaLineChart` and `FormaBarChart`, all now built and in review, as [the catalog](component-catalog.md) marks them, and a
-search of its commands, which `FormaCommandPalette` is. It also named twelve changes to components that exist, listed
+search of its commands, which `FormaCommandPalette` is. It also named thirteen changes to components that exist, listed
 here in the order they are taken, each with what the code does and its state.
 
 | Request | What the code does | State |
@@ -231,6 +231,7 @@ here in the order they are taken, each with what the code does and its state.
 | The share menu's commands on a static page | Copy Link, Print and the device's share were drawn disabled on a page rendered statically. The page's script enables each the browser can run and runs it | Fixed |
 | A list as wide as its field | The combo box's, the select's and the multi-select's lists were as wide as their options, narrower than a wide field. Each is now at least as wide as its field | Fixed |
 | A stepper on a static page | A statically rendered stepper, measured by no renderer, cut each name short at a phone's width. The page's script measures it, so its steps not current show by their numbers | Fixed |
+| A stepper's current marker apart from its marks | `FormaStepper` filled its current marker in the active color its completed steps' marks take, and no one shade fills the marker deep enough for its number and draws the marks light enough on a dark band. The current marker takes its fill from `--forma-stepper-current-marker-bg-color`, the active color where it's unset | Fixed |
 
 <a id="deferred"></a>
 

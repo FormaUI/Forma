@@ -25,6 +25,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - In forced colors a chart draws every series, mark and legend key in the text color, where a bar's and a mark's key
   could vanish, and a printed chart keeps its bars, markers and keys, each bar but the first in a texture of its own, as
   [the charts design](docs/charts-design.md) sets out.
+- `FormaStepper`'s current marker takes its fill and border from `--forma-stepper-current-marker-bg-color`, the active
+  color where it's unset, so a theme can fill it in a shade its number reads on apart from the completed steps' marks.
 
 ## `1.0.0-preview.15`
 

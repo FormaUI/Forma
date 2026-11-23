@@ -139,9 +139,11 @@ a.forma-stepper-target {
     font-weight: 600;
 }
 
+/* The current marker's fill is a hook of its own beside its number's, so a theme can fill it in a shade its number reads on
+   apart from the completed steps' marks. */
 .forma-stepper-step.is-current .forma-stepper-marker {
-    border-color: var(--forma-stepper-active-color, var(--primary-color));
-    background-color: var(--forma-stepper-active-color, var(--primary-color));
+    border-color: var(--forma-stepper-current-marker-bg-color, var(--forma-stepper-active-color, var(--primary-color)));
+    background-color: var(--forma-stepper-current-marker-bg-color, var(--forma-stepper-active-color, var(--primary-color)));
     color: var(--forma-stepper-current-marker-color, var(--primary-fg-color));
 }
 
