@@ -42,7 +42,7 @@ public sealed partial class NavigationTests
             await tabs.GetByRole(AriaRole.Link, new() { Name = "Members", Exact = true }).ClickAsync();
 
             // Assert
-            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync(new Regex($"{Regex.Escape(membersPath)}$"));
+            await Assertions.Expect(page).ToHaveURLAsync(new Regex($"{Regex.Escape(membersPath)}$"));
             await Assertions.Expect(tabs.Locator("[aria-current=page]")).ToHaveTextAsync("Members");
         }
 

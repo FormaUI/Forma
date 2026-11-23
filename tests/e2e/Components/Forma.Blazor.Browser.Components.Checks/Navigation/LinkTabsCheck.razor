@@ -2,13 +2,11 @@
 @page "/{Runtime}/link-tabs/members"
 @page "/{Runtime}/link-tabs/settings"
 
-@* Tabs to the three pages of one section, its overview matched exactly, each page's address shown where the check reads it. *@
+@* Tabs to the three pages of one section, its overview matched exactly. Going between them keeps the page and its parameters, so
+   the tabs follow the address alone. *@
 <FormaLinkTabs Id="link-tabs" Items="Tabs" Label="Section" />
-<output id="result">@Navigation.ToBaseRelativePath(Navigation.Uri)</output>
 
 @code {
-    [Inject] private NavigationManager Navigation { get; set; } = default!;
-
     private LinkTab[] Tabs =>
     [
         new("Overview", $"{Runtime}/link-tabs") { Match = NavLinkMatch.All },
