@@ -9,6 +9,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- Every role takes a fifth member, `-ink-color`: its color as text and marks on the paper or on its subtle tint, such as
+  a link, the combo box's offer to add text, or a badge's label. It is the role's `-emphasis-color` in the light theme,
+  and a dark theme sets the two apart, the ink a shade light enough to read on dark paper and the emphasis a fill dark
+  enough under white text, as the README's theme contract sets out. `--link-color` is the primary ink, and
+  `--link-hover-color` mixes it toward the text ink. To migrate, a theme that set a role's `-emphasis-color` for its
+  text on dark paper sets its `-ink-color` instead.
 - `FormaLineChart` draws a span: with `Range` set to `ChartRange.Span` it runs from `Start` to `End`, or from its first
   point's time to its last's where either is null, each point at its own time, and labels round steps of the calendar
   from minutes to years, as [the charts design](docs/charts-design.md) sets out. A `ChartPoint` carries a `Mark`, a

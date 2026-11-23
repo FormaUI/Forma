@@ -600,7 +600,7 @@ body {
 
 .demo-readout-live {
     --forma-status-badge-bg-color: var(--primary-subtle-color);
-    --forma-status-badge-fg-color: var(--primary-emphasis-color);
+    --forma-status-badge-fg-color: var(--primary-ink-color);
 }
 
 .demo-controls {

@@ -27,7 +27,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests, a faster gate, builds in processes of their own and the examples' locale lint; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Four components built and in review, eight changes fixed |
+| [A host's requests](#a-hosts-requests) | Four components built and in review, nine changes fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -214,7 +214,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 
 A host's list of what it needs from Forma named four components Forma lacked, `FormaComboBox`, `FormaLinkTabs`,
 `FormaLineChart` and `FormaBarChart`, all now built and in review, as [the catalog](component-catalog.md) marks them, and a
-search of its commands, which `FormaCommandPalette` is. It also named eight changes to components that exist, listed
+search of its commands, which `FormaCommandPalette` is. It also named nine changes to components that exist, listed
 here in the order they are taken, each with what the code does and its state.
 
 | Request | What the code does | State |
@@ -227,6 +227,7 @@ here in the order they are taken, each with what the code does and its state.
 | The explorer's toolbar in a bounded height | The header keeps its height in an explorer held short, but an open upload panel kept its full height and pushed the media out of the explorer. The media now give way first, and the panel then scrolls what it holds | Fixed |
 | A row removed under the focus | A command removing the row it was run from, as a row's menu deleting the row does, left the focus on the page's body. The data view hands it to the item after it, else the one before, else the first control of its empty state | Fixed |
 | Sharing from a static page | `FormaShareMenu`'s trigger was disabled on a page rendered statically. It opens the browser's own popover there, its networks, email and download links and the commands a script runs disabled | Fixed |
+| A role's color as text in a dark theme | A role's `-emphasis-color` was both the hover fill under white text and the role's color as text on the paper, which no one dark value serves. Each role now has an `-ink-color` for text, the emphasis in the light theme, which a dark theme sets apart | Fixed |
 
 <a id="deferred"></a>
 

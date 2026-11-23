@@ -54,7 +54,7 @@
     padding-block: var(--space-2);
     padding-inline: var(--space-3);
     /* Darkened because the plain token on its own tint measures 4.16:1, under the 4.5:1 text floor. */
-    color: var(--danger-emphasis-color);
+    color: var(--danger-ink-color);
     font-size: var(--font-size-sm);
 }
 

@@ -97,42 +97,51 @@
 
     /* ============================================================
        Roles — the six colors a component reaches for by name. A theme redefines each solid; the
-       rest of the family derives. Every role has the same four members:
+       rest of the family derives. Every role has the same five members:
          -color           the solid
-         -emphasis-color  stronger than the solid: what hover and active are cut from
+         -emphasis-color  stronger than the solid: the fill hover and active are cut from
          -subtle-color    the tint behind a selected row, an active tab, a badge
          -fg-color        text and marks drawn on the solid
+         -ink-color       text and marks drawn in the role's color on the paper or on its subtle tint
+       A light theme's ink is its emphasis; a dark theme sets the two apart, since text on dark paper
+       wants a lighter shade than a fill under white text does.
        Primary is the brand accent; Secondary is the neutral solid beside it; the other four are status.
        ============================================================ */
     --primary-color: #0066bf;
     --primary-emphasis-color: color-mix(in srgb, var(--primary-color) 82%, black);
     --primary-subtle-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
     --primary-fg-color: var(--white-color);
+    --primary-ink-color: var(--primary-emphasis-color);
 
     --secondary-color: var(--gray-600);
     --secondary-emphasis-color: var(--gray-700);
     --secondary-subtle-color: var(--gray-100);
     --secondary-fg-color: var(--white-color);
+    --secondary-ink-color: var(--secondary-emphasis-color);
 
     --success-color: #28a745;
     --success-emphasis-color: color-mix(in srgb, var(--success-color) 82%, black);
     --success-subtle-color: color-mix(in srgb, var(--success-color) 10%, transparent);
     --success-fg-color: var(--white-color);
+    --success-ink-color: var(--success-emphasis-color);
 
     --danger-color: #c4314b;
     --danger-emphasis-color: color-mix(in srgb, var(--danger-color) 82%, black);
     --danger-subtle-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
     --danger-fg-color: var(--white-color);
+    --danger-ink-color: var(--danger-emphasis-color);
 
     --warning-color: #ffc107;
     --warning-emphasis-color: color-mix(in srgb, var(--warning-color) 82%, black);
     --warning-subtle-color: color-mix(in srgb, var(--warning-color) 10%, transparent);
     --warning-fg-color: var(--gray-800);  /* dark on yellow */
+    --warning-ink-color: var(--warning-emphasis-color);
 
     --info-color: #307fdd;
     --info-emphasis-color: color-mix(in srgb, var(--info-color) 82%, black);
     --info-subtle-color: color-mix(in srgb, var(--info-color) 10%, transparent);
     --info-fg-color: var(--white-color);
+    --info-ink-color: var(--info-emphasis-color);
 
     /* ============================================================
        Text — primary and secondary. Content and every enabled target's label or glyph take the
@@ -208,9 +217,9 @@
     --focus-ring: 0 0 0 var(--focus-ring-gap) var(--input-bg-color), 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--focus-color);
     --focus-ring-inset: inset 0 0 0 var(--focus-ring-width) var(--focus-color), inset 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--input-bg-color);
 
-    /* Links — the primary emphasis, so a link reads as accent text over prose; hover darkens further. */
-    --link-color: var(--primary-emphasis-color);
-    --link-hover-color: color-mix(in srgb, var(--primary-color) 62%, black);
+    /* Links — the primary ink, so a link reads as accent text over prose; hover moves it toward the text ink. */
+    --link-color: var(--primary-ink-color);
+    --link-hover-color: color-mix(in srgb, var(--primary-ink-color) 76%, var(--text-primary-color));
 
     /* Borders — cut from the scale, so they follow the theme. */
     --border-color: color-mix(in srgb, var(--gray-600) 16%, transparent);

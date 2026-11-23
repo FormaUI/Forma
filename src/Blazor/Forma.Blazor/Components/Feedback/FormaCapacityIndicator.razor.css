@@ -22,7 +22,7 @@
 
 .forma-capacity-indicator-full {
     --forma-status-badge-bg-color: var(--forma-capacity-indicator-full-badge-bg-color, var(--danger-subtle-color));
-    --forma-status-badge-fg-color: var(--forma-capacity-indicator-full-badge-fg-color, var(--danger-emphasis-color));
+    --forma-status-badge-fg-color: var(--forma-capacity-indicator-full-badge-fg-color, var(--danger-ink-color));
 }
 
 .forma-capacity-indicator-readout {

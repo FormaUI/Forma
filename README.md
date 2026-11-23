@@ -297,9 +297,14 @@ follows from them, hover, focus, links, backdrops and borders among them:
 
 The canvas, the backdrop every other backdrop is laid on, stands below the paper, `--gray-0`, in every theme. A
 light scale holds it as `--gray-100`. A dark theme, whose scale runs from dark paper at `--gray-0` to light ink at
-`--gray-800`, has no step below its paper, so it sets the canvas too. Every role's `-emphasis-color` but the
-secondary's, a step of the scale, is its solid mixed toward black, which reads stronger on light paper alone, so a dark
-theme sets the emphasis of each of those roles it uses as well:
+`--gray-800`, has no step below its paper, so it sets the canvas too.
+
+A role's color does two jobs on a page, and a dark theme gives each its own shade. Its `-emphasis-color` is the fill
+a hover or an active state is cut from, under the role's `-fg-color` text, and its `-ink-color` is the role's color
+as text and marks on the paper or on its subtle tint, such as a link. In a light theme the ink is the emphasis, the
+solid mixed toward black, which reads well both ways. On dark paper text wants a lighter shade than a fill under
+white text does, so a dark theme sets the ink of each role it uses, and keeps the emphasis a fill dark enough for its
+text:
 
 ```css
 :root {
@@ -307,7 +312,7 @@ theme sets the emphasis of each of those roles it uses as well:
     --gray-100: #2b2d31;
     --gray-800: #f2f3f5;
     --backdrop-canvas-bg-color: #141517;
-    --primary-emphasis-color: color-mix(in srgb, var(--primary-color) 70%, white);
+    --primary-ink-color: color-mix(in srgb, var(--primary-color) 70%, white);
 }
 ```
 

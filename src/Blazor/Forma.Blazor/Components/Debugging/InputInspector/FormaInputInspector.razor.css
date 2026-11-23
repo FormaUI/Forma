@@ -217,7 +217,7 @@
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-structural {
     --forma-status-badge-bg-color: var(--primary-subtle-color);
-    --forma-status-badge-fg-color: var(--primary-emphasis-color);
+    --forma-status-badge-fg-color: var(--primary-ink-color);
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-active {

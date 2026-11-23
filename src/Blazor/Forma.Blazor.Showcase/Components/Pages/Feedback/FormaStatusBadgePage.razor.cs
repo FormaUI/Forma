@@ -38,8 +38,8 @@ public sealed partial class FormaStatusBadgePage
         Catalog.Add(new("order-canceled", CssColor.FromRgba(125, 137, 156, 0.20), CssColor.FromHex(0x5a6675)) { Marker = Glyph.Prohibited });
 
         // Statuses read from the theme's role tokens, which a theme recolors by redefining them.
-        Catalog.Add(new("theme-booked", CssColorValue.FromProperty("--primary-subtle-color"), CssColorValue.FromProperty("--primary-emphasis-color")) { Marker = Glyph.Clock });
-        Catalog.Add(new("theme-flagged", CssColorValue.FromProperty("--danger-subtle-color"), CssColorValue.FromProperty("--danger-emphasis-color")) { Marker = Glyph.Warning });
-        Catalog.Add(new("theme-archived", CssColorValue.FromProperty("--secondary-subtle-color"), CssColorValue.FromProperty("--secondary-emphasis-color")) { Marker = Glyph.Package });
+        Catalog.Add(new("theme-booked", CssColorValue.FromProperty("--primary-subtle-color"), CssColorValue.FromProperty("--primary-ink-color")) { Marker = Glyph.Clock });
+        Catalog.Add(new("theme-flagged", CssColorValue.FromProperty("--danger-subtle-color"), CssColorValue.FromProperty("--danger-ink-color")) { Marker = Glyph.Warning });
+        Catalog.Add(new("theme-archived", CssColorValue.FromProperty("--secondary-subtle-color"), CssColorValue.FromProperty("--secondary-ink-color")) { Marker = Glyph.Package });
     }
 }

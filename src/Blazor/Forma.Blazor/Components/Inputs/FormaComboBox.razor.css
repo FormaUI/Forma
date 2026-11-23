@@ -85,7 +85,7 @@
 
 /* The offer to add is set apart from the options by its glyph and its quoted text. */
 .forma-combo-box-option-add {
-    color: var(--primary-emphasis-color);
+    color: var(--primary-ink-color);
 }
 
 .forma-combo-box-empty {
