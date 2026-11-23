@@ -38,6 +38,10 @@ public sealed class WebViewApplication : IAsyncDisposable
     public bool HasExited
         => _process.HasExited;
 
+    /// <summary>Whether the application has stopped: its process exited, or its browser, which every web view is a page of, disconnected.</summary>
+    public bool HasStopped
+        => _process.HasExited || !Browser.IsConnected;
+
     /// <summary>The browser every web view is a page of.</summary>
     public IBrowser Browser { get; }
 

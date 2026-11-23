@@ -277,19 +277,60 @@ public static partial class ComponentChecks
     // the check's page once prepared, as a browser's page opens prepared, so Blazor starts once in the web view: a web view keeps the
     // renderer of the page it left until the next page attaches its own, and a render that renderer makes meanwhile reaches the next
     // page before that page can take it, which ends the check host. Every web view shares the application's context, so the check's
-    // end takes back what it routed and granted, and closes its web view. The first web view is found before the check takes its turn,
-    // and the check names the web view it opens, so it finds its own however late another opens, and closes it by that name however
-    // far the check came; both presses go through the first web view, which takes them in turn, so a close follows the open it closes.
+    // end takes back what it routed and granted, and closes its web view. The check takes its turn before it asks for the application,
+    // which its turn finds answering or starts anew, and names the web view it opens, so it finds its own however late another opens,
+    // and closes it by that name however far the check came; both presses go through the first web view, which takes them in turn, so a
+    // close follows the open it closes. A check whose application stops before its end fails with what the application last wrote.
     // Whatever fails on the way, the turn passes on and no native window stays open.
     private static async Task<(IBrowserContext Context, IPage Page)> OpenInWebViewAsync(BrowserHost host, string path, Func<IPage, Task>? prepare)
     {
         Assert.SkipUnless(OperatingSystem.IsWindows(), "WebView2 runs on Windows alone, so the web view's checks run in the Windows gate.");
 
-        var application = await host.GetWebViewApplicationAsync().ConfigureAwait(false);
-        var control = await application.GetWebViewAsync("A").ConfigureAwait(false);
         await host.WebViewTurn.WaitAsync().ConfigureAwait(false);
+        WebViewApplication application;
+        IPage control;
+
+        try
+        {
+            (application, control) = await host.GetWebViewApplicationAsync().ConfigureAwait(false);
+        }
+        catch
+        {
+            host.WebViewTurn.Release();
+
+            throw;
+        }
+
         var name = $"check-{Guid.NewGuid().ToString("N", System.Globalization.CultureInfo.InvariantCulture)[..8]}";
         var hasEnded = 0;
+
+        async Task CloseAsync(IPage? page)
+        {
+            var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            if (page is not null)
+            {
+                page.Close += (_, _) => closed.TrySetResult();
+                await page.Context.UnrouteAllAsync().ConfigureAwait(false);
+                await page.Context.ClearPermissionsAsync().ConfigureAwait(false);
+            }
+
+            await control.Locator("#other").FillAsync(name).ConfigureAwait(false);
+            await control.Locator("#other").BlurAsync().ConfigureAwait(false);
+            await control.Locator("#close-other").ClickAsync().ConfigureAwait(false);
+
+            if (page is { IsClosed: false })
+            {
+                try
+                {
+                    await closed.Task.WaitAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
+                }
+                catch (TimeoutException exception)
+                {
+                    throw new TimeoutException($"The web view {name} didn't close within 30 seconds of its check's end. The check host last wrote:{Environment.NewLine}{application.GetOutput(80)}", exception);
+                }
+            }
+        }
 
         async Task EndAsync(IPage? page)
         {
@@ -300,29 +341,23 @@ public static partial class ComponentChecks
 
             try
             {
-                var closed = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                Exception? closeFailure = null;
 
-                if (page is not null)
+                try
                 {
-                    page.Close += (_, _) => closed.TrySetResult();
-                    await page.Context.UnrouteAllAsync().ConfigureAwait(false);
-                    await page.Context.ClearPermissionsAsync().ConfigureAwait(false);
+                    if (!application.HasStopped)
+                    {
+                        await CloseAsync(page).ConfigureAwait(false);
+                    }
+                }
+                catch (Exception exception) when (application.HasStopped)
+                {
+                    closeFailure = exception;
                 }
 
-                await control.Locator("#other").FillAsync(name).ConfigureAwait(false);
-                await control.Locator("#other").BlurAsync().ConfigureAwait(false);
-                await control.Locator("#close-other").ClickAsync().ConfigureAwait(false);
-
-                if (page is { IsClosed: false })
+                if (application.HasStopped)
                 {
-                    try
-                    {
-                        await closed.Task.WaitAsync(TimeSpan.FromSeconds(30)).ConfigureAwait(false);
-                    }
-                    catch (TimeoutException exception)
-                    {
-                        throw new TimeoutException($"The web view {name} didn't close within 30 seconds of its check's end. The check host last wrote:{Environment.NewLine}{application.GetOutput(80)}", exception);
-                    }
+                    throw new InvalidOperationException($"The check host stopped before the check in its web view {name} ended. It last wrote:{Environment.NewLine}{application.GetOutput(80)}", closeFailure);
                 }
             }
             finally

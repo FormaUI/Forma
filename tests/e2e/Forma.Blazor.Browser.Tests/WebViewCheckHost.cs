@@ -26,10 +26,19 @@ public static class WebViewCheckHost
     {
         ArgumentNullException.ThrowIfNull(application);
 
-        return application.FindWebViewAsync(
-            async page => await page.EvaluateAsync<string>("() => `${document.querySelector('#web-view')?.textContent}|${document.querySelector('#runtime')?.textContent}`").ConfigureAwait(false) == $"{name}|WebView True",
-            $"named {name} rendered interactively",
-            TimeSpan.FromSeconds(30));
+        return application.FindWebViewAsync(page => IsRenderingAsync(page, name), $"named {name} rendered interactively", TimeSpan.FromSeconds(30));
+    }
+
+    /// <summary>Whether <paramref name="page"/> is the page of the check host's web view <paramref name="name"/> names, rendering interactively.</summary>
+    /// <param name="page">The page asked.</param>
+    /// <param name="name">The web view's name, <c>A</c> for the first.</param>
+    /// <returns>Whether it is.</returns>
+    /// <exception cref="PlaywrightException">The page closed or crashed.</exception>
+    public static async Task<bool> IsRenderingAsync(IPage page, string name)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        return await page.EvaluateAsync<string>("() => `${document.querySelector('#web-view')?.textContent}|${document.querySelector('#runtime')?.textContent}`").ConfigureAwait(false) == $"{name}|WebView True";
     }
 
     /// <summary>Finds the page of the check host's web view <paramref name="name"/> names, once it shows the blank page <see cref="GetBlankPath"/> gives it.</summary>

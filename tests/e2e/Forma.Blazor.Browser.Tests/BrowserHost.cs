@@ -20,6 +20,7 @@ public sealed class BrowserHost : IAsyncLifetime
     private readonly Lock _androidLock = new();
     private readonly Lock _webKitLock = new();
     private Task<WebViewApplication>? _webView;
+    private IPage? _webViewControl;
     private Task<AndroidCheckApplication>? _android;
     private Task<IBrowser>? _webKit;
     private IPlaywright? _playwright;
@@ -201,14 +202,35 @@ public sealed class BrowserHost : IAsyncLifetime
         }
     }
 
-    /// <summary>The WebView check host the component checks open their pages in under the WebView runtime, started as the first of them asks for it.</summary>
-    /// <returns>The application.</returns>
-    public Task<WebViewApplication> GetWebViewApplicationAsync()
+    /// <summary>The WebView check host the component checks open their pages in under the WebView runtime, with the page of its first web view, <c>A</c>, through which each check opens and closes its own, started as the first of them asks for it and started again as one asks for it once it stopped answering.</summary>
+    /// <returns>The application and its first web view's page.</returns>
+    /// <remarks>
+    /// A check asks for it in its <see cref="WebViewTurn"/>, so an application stopped here has no check left in it. An application stops
+    /// answering once its process exits, its browser disconnects, or its first web view, once found, no longer renders interactively; it is
+    /// stopped, what it last wrote goes to the output of the check that asked, and another starts in its place. While its first web view
+    /// has never been found, as in an application still starting, each check that asks looks for it again.
+    /// </remarks>
+    public async Task<(WebViewApplication Application, IPage Control)> GetWebViewApplicationAsync()
     {
-        lock (_webViewLock)
+        var application = await GetStartedWebViewApplicationAsync().ConfigureAwait(false);
+
+        if (!await IsAnsweringAsync(application).ConfigureAwait(false))
         {
-            return _webView ??= WebViewCheckHost.StartAsync();
+            TestContext.Current.TestOutputHelper?.WriteLine($"The WebView check host stopped answering, so another starts in its place. It last wrote:{Environment.NewLine}{application.GetOutput(80)}");
+
+            lock (_webViewLock)
+            {
+                _webView = null;
+                _webViewControl = null;
+            }
+
+            await application.DisposeAsync().ConfigureAwait(false);
+            application = await GetStartedWebViewApplicationAsync().ConfigureAwait(false);
         }
+
+        _webViewControl ??= await application.GetWebViewAsync("A").ConfigureAwait(false);
+
+        return (application, _webViewControl);
     }
 
     /// <summary>The Android check host the component checks open their pages in under the android runtime, started as the first of them asks for it.</summary>
@@ -349,6 +371,34 @@ public sealed class BrowserHost : IAsyncLifetime
         _standalone = app;
 
         return address;
+    }
+
+    // The WebView check host running, started where none is.
+    private Task<WebViewApplication> GetStartedWebViewApplicationAsync()
+    {
+        lock (_webViewLock)
+        {
+            return _webView ??= WebViewCheckHost.StartAsync();
+        }
+    }
+
+    // Whether the WebView check host still answers: its process runs, its browser is connected, and its first web view, where it was
+    // found, still renders interactively.
+    private async Task<bool> IsAnsweringAsync(WebViewApplication application)
+    {
+        if (application.HasStopped)
+        {
+            return false;
+        }
+
+        try
+        {
+            return _webViewControl is null || await WebViewCheckHost.IsRenderingAsync(_webViewControl, "A").ConfigureAwait(false);
+        }
+        catch (PlaywrightException)
+        {
+            return false;
+        }
     }
 
     // Runs each disposal in turn from the one at index, every one of them whatever an earlier one throws.
