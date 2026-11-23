@@ -49,6 +49,26 @@
         }
 
         [Fact]
+        public void Should_write_nothing_over_the_field_as_its_edits_first_listen()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Status = 2 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Assert — the committed label is the text the edits start from, so nothing waits to land on what the reader types first
+            Assert.Multiple(
+                () => Assert.DoesNotContain(probe.Engine.Invocations, invocation => invocation.Identifier == "invoke" && invocation.Arguments[3] is "write"),
+                () => Assert.Equal("(UTC+01:00) Madrid", fields.GetText(cut.Find("input"))));
+        }
+
+        [Fact]
         public async Task Should_narrow_the_list_by_every_word_typed_ignoring_case_and_accents_without_changing_the_value()
         {
             // Arrange

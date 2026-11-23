@@ -200,7 +200,10 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
     protected override void OnInitialized()
     {
         _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
-        _edits = new DomTextEdits(Context.DomEngine, null, HandleTextChangedAsync);
+
+        // The edits start from the text the field is first drawn with, so their first sync has nothing of .NET's own to write over
+        // what the reader types the moment the field listens.
+        _edits = new DomTextEdits(Context.DomEngine, Options is null ? null : FieldText, HandleTextChangedAsync);
         JoinForm(SettleEditsAsync);
 
         base.OnInitialized();
