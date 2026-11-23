@@ -161,8 +161,9 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
     private string? ShownText
         => _edits.GetShownText(FieldText);
 
+    // A read-only field lists the option it holds alone, so it posts its value and offers no other.
     private IReadOnlyList<SelectOption<TValue>> NativeOptions
-        => !ReadOnly ? Options : FindCommittedOption() is { } chosenOption ? [chosenOption] : IsValueUnnamed ? [] : Options;
+        => !ReadOnly ? Options : FindCommittedOption() is { } chosenOption ? [chosenOption] : [];
 
     private string ListId
         => $"{ElementId}-list";

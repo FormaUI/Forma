@@ -5,6 +5,13 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.16`
+
+*Unreleased*
+
+- A read-only `FormaComboBox` holding no value offers no option to choose on a statically rendered page, where it offered
+  every option the browser's own list could post.
+
 ## `1.0.0-preview.15`
 
 *November 23, 2026*

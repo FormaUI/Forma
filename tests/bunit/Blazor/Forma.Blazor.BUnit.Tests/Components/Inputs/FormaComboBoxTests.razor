@@ -724,5 +724,22 @@
                 () => Assert.Equal("true", select.GetAttribute("aria-readonly")),
                 () => Assert.Equal(["2"], cut.FindAll("option").Select(option => option.GetAttribute("value"))));
         }
+
+        [Fact]
+        public void Should_post_no_value_read_only_where_it_holds_none_offering_no_option()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" ReadOnly="true" name="Zone" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal([string.Empty], cut.FindAll("option").Select(option => option.GetAttribute("value")));
+        }
     }
 }
