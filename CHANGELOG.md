@@ -11,6 +11,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 - A read-only `FormaComboBox` holding no value offers no option to choose on a statically rendered page, where it offered
   every option the browser's own list could post.
+- Under a coarse pointer, the text of `FormaComboBox`, `FormaTimeBox`, `FormaDateBox` and `FormaDateRangePicker` keeps
+  clear of the button at the field's end, which grows to a touch target there.
 - A `LinkTab` stands at the strip's far end by `IsTrailing`, named as a data record's flags are. To migrate, set
   `IsTrailing` where a tab set `Trailing`.
 - `FormaLineChart` and `FormaBarChart` refuse a point's value or a threshold that isn't a finite number with an

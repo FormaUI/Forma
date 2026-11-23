@@ -23,7 +23,7 @@
     align-items: center;
     gap: var(--space-2);
     /* Room for the clear button: its inset from the edge and its own width. */
-    padding-inline-end: calc(var(--space-2) + 1.5rem);
+    padding-inline-end: calc(var(--space-2) + var(--target-size-sm));
     cursor: pointer;
     text-align: start;
     touch-action: manipulation;
@@ -114,8 +114,10 @@
     cursor: default;
 }
 
+/* The clear button grows to a touch target, and the range keeps clear of it. */
 @media (pointer: coarse) {
     .forma-date-range-picker-trigger {
         min-block-size: var(--target-size-touch);
+        padding-inline-end: calc(var(--space-2) + var(--target-size-touch));
     }
 }

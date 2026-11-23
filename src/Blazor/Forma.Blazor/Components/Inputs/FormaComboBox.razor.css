@@ -107,6 +107,11 @@
 }
 
 @media (pointer: coarse) {
+    /* The button grows to a touch target, and the text keeps clear of it. */
+    .forma-combo-box > input {
+        padding-inline-end: calc(var(--space-2) + var(--target-size-touch));
+    }
+
     .forma-combo-box-list {
         max-block-size: calc(var(--target-size-touch) * 6);
     }
