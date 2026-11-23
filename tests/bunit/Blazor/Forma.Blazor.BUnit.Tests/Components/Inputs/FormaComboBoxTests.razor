@@ -322,7 +322,6 @@
             Assert.Multiple(
                 () => Assert.Equal("Enterprise", movedTo),
                 () => Assert.Equal("true", disabledMark),
-
                 () => Assert.Equal(1, afterPress),
                 () => Assert.Equal(1, model.Status),
                 () => Assert.Equal("Free", cut.Find("input").GetAttribute("value")));
@@ -412,6 +411,34 @@
             // Assert
             Assert.Multiple(
                 () => Assert.Equal("(UTC+01:00) Madrid", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal(2, model.Status));
+        }
+
+        [Fact]
+        public async Task Should_neither_open_nor_change_its_value_while_read_only()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var router = new InputRouterProbe(ctx);
+            var model = new FakeModel { Status = 2 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" ReadOnly="true" />
+            </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+
+            // Act
+            await PressAsync(router, cut, "combobox.next", "ArrowDown");
+            var expandedAfterArrow = cut.Find("input").GetAttribute("aria-expanded");
+            await fields.TypeAsync(cut.Find("input"), "bogota");
+            await probe.ReportAsync(new FocusState(IsWithin: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(cut.Find("input").HasAttribute("readonly")),
+                () => Assert.Equal("false", expandedAfterArrow),
+                () => Assert.Equal("false", cut.Find("input").GetAttribute("aria-expanded")),
                 () => Assert.Equal(2, model.Status));
         }
 
