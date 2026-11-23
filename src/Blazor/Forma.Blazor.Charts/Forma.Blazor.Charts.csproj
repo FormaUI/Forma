@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <Description>FormaLineChart and FormaBarChart, the charts of figures over time of the Forma component library.</Description>
+        <!-- The charts borrow the product's namespace, so their locale files embed and resolve as the product's own do. -->
+        <RootNamespace>Forma.Blazor.Components.Charts</RootNamespace>
+        <StaticWebAssetBasePath>_content/$(AssemblyName)</StaticWebAssetBasePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.Components" />
+        <PackageReference Include="Microsoft.AspNetCore.Components.Web" />
+    </ItemGroup>
+
+    <!-- The product, whose package this one depends on. -->
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Blazor\Forma.Blazor.csproj" />
+    </ItemGroup>
+
+    <!-- The Framework assemblies the charts compile against, each a package this one depends on. -->
+    <ItemGroup>
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+    </ItemGroup>
+
+    <Import Project="$(ComponentAnalyzersTargets)" />
+
+</Project>

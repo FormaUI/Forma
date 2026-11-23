@@ -1,0 +1,55 @@
+@page "/bar-chart"
+@attribute [ShowcasePage("FormaBarChart")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Charts
+
+<h1>FormaBarChart</h1>
+<p class="description">@L["Bars of one to four named series over a shared time axis, each period's bars side by side in the series' order and missing where a period has no data, with a threshold line. Hover a period, or tab to the chart and move with the arrows, to read its values; assistive technology reads them as a table."]</p>
+
+<div class="demo-section">
+    <h2>@L["Failures per Day"]</h2>
+    <p class="description">@L["Two series over thirty days against an alert level, the days nothing was reported left empty."]</p>
+    <div class="demo-box">
+        <FormaBarChart Title="@L["Failures"]" Series="_failures" Range="ChartRange.ThirtyDays" Threshold="_alertLevel" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Storage Over Thirteen Months"]</h2>
+    <p class="description">@L["A single series, a month to each period, named by the chart's title alone."]</p>
+    <div class="demo-box">
+        <FormaBarChart Title="@L["Storage Used"]" Series="_storage" Range="ChartRange.ThirteenMonths" ValueFormat="#,0' GB'" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Four Series in Each Period"]</h2>
+    <p class="description">@L["Every period stands its bars in the legend's order, so a bar's place tells its series apart without its color."]</p>
+    <div class="demo-box">
+        <FormaBarChart Title="@L["Requests by Region"]" Series="_regions" Range="ChartRange.Day" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Growth and Shrinkage"]</h2>
+    <p class="description">@L["A value beneath zero grows its bar down from the baseline."]</p>
+    <div class="demo-box">
+        <FormaBarChart Title="@L["Storage Change"]" Series="_change" Range="ChartRange.ThirteenMonths" ValueFormat="+#,0' GB';-#,0' GB';0' GB'" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["No Data"]</h2>
+    <p class="description">@L["A chart whose series hold no value in any period says so over its plot."]</p>
+    <div class="demo-box">
+        <FormaBarChart Title="@L["Failures"]" Series="_empty" Range="ChartRange.ThirtyDays" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Narrow Width"]</h2>
+    <p class="description">@L["At a phone's width each period's bars narrow to fit it, and the time axis labels fewer periods."]</p>
+    <div class="demo-box demo-box-narrow">
+        <FormaBarChart Title="@L["Failures"]" Series="_failures" Range="ChartRange.ThirtyDays" Threshold="_alertLevel" />
+    </div>
+</div>

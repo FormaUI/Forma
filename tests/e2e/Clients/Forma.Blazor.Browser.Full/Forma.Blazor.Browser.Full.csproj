@@ -13,6 +13,7 @@
     <ItemGroup>
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor\Forma.Blazor.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.WebAssembly\Forma.Blazor.WebAssembly.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Charts\Forma.Blazor.Charts.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
         <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Composer\Forma.Blazor.Composer.csproj" />

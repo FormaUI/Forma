@@ -1,0 +1,63 @@
+@page "/line-chart"
+@attribute [ShowcasePage("FormaLineChart")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Charts
+
+<h1>FormaLineChart</h1>
+<p class="description">@L["Lines of one to four named series over a shared time axis, broken where a period has no data, with a threshold line and a band between two series. Hover a period, or tab to the chart and move with the arrows, to read its values; assistive technology reads them as a table."]</p>
+
+<div class="demo-section">
+    <h2>@L["Page Load Over a Day"]</h2>
+    <p class="description">@L["The median and the 95th percentile of page load each hour, the band between them filled, the target marked, and two hours of an outage left as a gap."]</p>
+    <div class="demo-box">
+        <FormaLineChart Title="@L["Page Load"]" Series="_pageLoad" Range="ChartRange.Day" ValueFormat="#,0' ms'" Band="new ChartBand(0, 1)" Threshold="_loadTarget" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Readers Online in the Last Hour"]</h2>
+    <p class="description">@L["A single series, named by the chart's title alone, a minute to each period."]</p>
+    <div class="demo-box">
+        <FormaLineChart Title="@L["Readers Online"]" Series="_readers" Range="ChartRange.Hour" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["CPU and Memory Over Thirty Days"]</h2>
+    <p class="description">@L["Two series in percent, a day to each period, against a limit."]</p>
+    <div class="demo-box">
+        <FormaLineChart Title="@L["Server Use"]" Series="_serverUse" Range="ChartRange.ThirtyDays" ValueFormat="0'%'" Threshold="_useLimit" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Four Series Told Apart Without Color"]</h2>
+    <p class="description">@L["Each series keeps its own dash and marker, as its key in the legend draws them, so the lines stay apart in grayscale and in forced colors."]</p>
+    <div class="demo-box">
+        <FormaLineChart Title="@L["Response Time by Region"]" Series="_regions" Range="ChartRange.Day" ValueFormat="#,0' ms'" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Points Standing Alone"]</h2>
+    <p class="description">@L["A period with data between two without is drawn as its marker alone, as is each series' last point."]</p>
+    <div class="demo-box">
+        <FormaLineChart Title="@L["Backups Completed"]" Series="_backups" Range="ChartRange.ThirtyDays" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["No Data"]</h2>
+    <p class="description">@L["A chart whose series hold no value in any period says so over its plot."]</p>
+    <div class="demo-box">
+        <FormaLineChart Title="@L["Page Load"]" Series="_empty" Range="ChartRange.Day" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Narrow Width"]</h2>
+    <p class="description">@L["At a phone's width the plot keeps every period, and the time axis labels fewer of them."]</p>
+    <div class="demo-box demo-box-narrow">
+        <FormaLineChart Title="@L["Page Load"]" Series="_pageLoad" Range="ChartRange.Day" ValueFormat="#,0' ms'" Band="new ChartBand(0, 1)" Threshold="_loadTarget" />
+    </div>
+</div>

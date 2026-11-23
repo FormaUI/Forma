@@ -28,6 +28,14 @@ set out. What Forma gained before its first release, month by month, is in [the 
   without its query and fragment, is the tab's or, for a tab whose `Match` is `NavLinkMatch.Prefix`, lies beneath it; of
   several, the tab with the longest address is current. A tab carries an optional `Icon`, and a `Trailing` tab stands
   at the strip's far end. Every tab is a link, so a statically rendered page goes between pages through them.
+- `FormaLineChart` and `FormaBarChart`, in the new package `formaui-net.Blazor.Charts`, draw one to four `ChartSeries` over
+  a `ChartRange`, an hour of minutes, a day of hours, thirty days or thirteen months, ending with the period that holds
+  `End` or now, as [the charts design](docs/charts-design.md) sets out. Each `ChartPoint` stands in the period holding its
+  time on the clock of the host's `TimeProvider`, and a period without a value is a gap, never a zero. Either chart marks
+  a `ChartThreshold`, the line chart fills a `ChartBand` between two series, and `ValueFormat` writes the values. A
+  series keeps the color, the dash and the marker of its place, the colors the tokens `--chart-series-1-color` to
+  `--chart-series-4-color`; a reader reads a period by hovering it or moving through the periods from the keyboard, and
+  assistive technology reads every value as a table.
 - A `SelectOption`'s `IsDisabled` shows it without letting it be chosen: `FormaSelect` and `FormaMultiSelect` draw it
   in the disabled tone and mark it `aria-disabled` or disable its box, the arrows and the type-ahead pass over it, a press
   chooses nothing, and the browser's own list a static page draws disables it unless it's the option chosen.

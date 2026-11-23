@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**77 components implemented, two in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**77 components implemented, four in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -92,6 +92,9 @@ Forma.Blazor/Components/
     └── ✅ FormaWindow
 
 src/Blazor/
+├── (0 / 2) Forma.Blazor.Charts/
+│   ├── ◐ FormaBarChart
+│   └── ◐ FormaLineChart
 ├── (1 / 1) Forma.Blazor.Composer/
 │   └── ✅ FormaComposer
 ├── (2 / 2) Forma.Blazor.Composer/RichTextEditor/

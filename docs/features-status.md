@@ -20,14 +20,14 @@ The gate runs every check [the verification design](verification-design.md#gates
 
 | Work | State |
 | --- | --- |
-| [Components to build](#components-to-build) | The combo box and the link tabs built and in review, then the roadmap |
+| [Components to build](#components-to-build) | The combo box, the link tabs and the line and bar charts built and in review, then the roadmap |
 | [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | The component suite on iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests, a faster gate, builds in processes of their own and the examples' locale lint; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Two components built and in review, eight changes fixed |
+| [A host's requests](#a-hosts-requests) | Four components built and in review, eight changes fixed |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -46,6 +46,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | Bars: the toolbar, the search and selection toolbars, the status strip | [Catalog](component-catalog.md#formatoolbar), [toolbar design](toolbar-design.md) | Implemented | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Buttons: the button, close, eye and toggle buttons | [Catalog](component-catalog.md#formabutton), [icon buttons design](icon-buttons-design.md) | Implemented; eight more icon buttons [planned](#components-to-build) | [August 2026](../FEATURE-HISTORY.md#2026-08) |
+| Charts: the line and bar charts | [Charts design](charts-design.md) | Built, in review | [`1.0.0-preview.14`](../CHANGELOG.md#100-preview14) |
 | Collections: the sortable list | [Catalog](component-catalog.md#formasortablelisttitem) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
 | Feedback: dialogs, popovers, toasts, the spinner, status badges and the capacity indicator | [Catalog](component-catalog.md#formadialog), [popover design](popover-design.md) | Implemented | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Files: the file picker, uploader and viewer and the image picker | [Catalog](component-catalog.md#formafileviewer), [resources design](resources-design.md) | Implemented; the media picker [planned](#components-to-build) | [August 2026](../FEATURE-HISTORY.md#2026-08) |
@@ -118,7 +119,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## Components to build
 
-The combo box and the link tabs are built and in review. [The roadmap](component-roadmap.md) orders what is built after them: the notes editor, export button, design picker and font picker; the line and bar charts; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
+The combo box, the link tabs and the line and bar charts are built and in review, the charts as [the charts design](charts-design.md) sets them out. [The roadmap](component-roadmap.md) orders what is built after them: the notes editor, export button, design picker and font picker; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
 
 <a id="blazor-hybrid-on-phones-and-macs"></a>
 
@@ -211,9 +212,10 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 
 ## A host's requests
 
-A host's list of what it needs from Forma named two components Forma lacked, `FormaComboBox` and `FormaLinkTabs`, both
-now built and in review, as [the catalog](component-catalog.md) marks them, and eight changes to components that exist,
-listed here in the order they are taken, each with what the code does and its state.
+A host's list of what it needs from Forma named four components Forma lacked, `FormaComboBox`, `FormaLinkTabs`,
+`FormaLineChart` and `FormaBarChart`, all now built and in review, as [the catalog](component-catalog.md) marks them, and a
+search of its commands, which `FormaCommandPalette` is. It also named eight changes to components that exist, listed
+here in the order they are taken, each with what the code does and its state.
 
 | Request | What the code does | State |
 | --- | --- | --- |

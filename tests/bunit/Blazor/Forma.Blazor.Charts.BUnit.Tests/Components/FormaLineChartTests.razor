@@ -1,0 +1,325 @@
+@inherits FormaBunitContext
+
+@code {
+    private static readonly CultureInfo English = CultureInfo.GetCultureInfo("en-US");
+
+    // A series of points, each a time and its value.
+    private static ChartSeries CreateSeries(string name, params (string Time, double? Value)[] points)
+        => new(name, [.. points.Select(point => new ChartPoint(DateTimeOffset.Parse(point.Time, CultureInfo.InvariantCulture), point.Value))]);
+
+    // The context's clock in the time zone named.
+    private static FormaLineChartTests CreateContext(string timeZoneId = "UTC")
+    {
+        var ctx = new FormaLineChartTests();
+        ctx.Clock.SetLocalTimeZone(TimeZoneInfo.FindSystemTimeZoneById(timeZoneId));
+
+        return ctx;
+    }
+
+    // Each row of the chart's table: its period and each series' value.
+    private static string[][] ReadTable(IRenderedComponent<ContainerFragment> cut)
+        => [.. cut.FindAll(".forma-chart-table tbody tr").Select(row => row.Children.Select(cell => cell.TextContent.Trim()).ToArray())];
+
+    private static string FormatHour(int year, int month, int day, int hour)
+        => new DateTime(year, month, day, hour, 0, 0, DateTimeKind.Unspecified).ToString("g", English);
+
+    public sealed class Periods
+    {
+        [Fact]
+        public void Should_cover_a_day_of_hours_ending_with_the_hour_that_holds_its_end()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T14:30:00Z", CultureInfo.InvariantCulture);
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Page load" Series='[CreateSeries("Median")]' Range="ChartRange.Day" End="end" />);
+
+            // Assert
+            var rows = ReadTable(cut);
+            Assert.Multiple(
+                () => Assert.Equal(24, rows.Length),
+                () => Assert.Equal(FormatHour(2026, 11, 22, 15), rows[0][0]),
+                () => Assert.Equal(FormatHour(2026, 11, 23, 14), rows[^1][0]));
+        }
+
+        [Fact]
+        public void Should_hold_the_hours_that_passed_on_a_day_its_zone_turns_its_clock_back()
+        {
+            // Arrange — Madrid's clock turns back from 03:00 to 02:00 on October 25, 2026
+            using var ctx = CreateContext("Europe/Madrid");
+            var end = DateTimeOffset.Parse("2026-10-25T11:30:00Z", CultureInfo.InvariantCulture);
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Page load" Series='[CreateSeries("Median")]' Range="ChartRange.Day" End="end" />);
+
+            // Assert — 24 hours that passed, the hour from two o'clock read twice
+            var periods = ReadTable(cut).Select(row => row[0]).ToList();
+            Assert.Multiple(
+                () => Assert.Equal(24, periods.Count),
+                () => Assert.Equal(2, periods.Count(period => period == FormatHour(2026, 10, 25, 2))),
+                () => Assert.Equal(FormatHour(2026, 10, 24, 14), periods[0]),
+                () => Assert.Equal(FormatHour(2026, 10, 25, 12), periods[^1]));
+        }
+
+        [Fact]
+        public void Should_start_each_day_at_its_zone_s_midnight()
+        {
+            // Arrange — Kolkata stands five and a half hours ahead of the universal clock
+            using var ctx = CreateContext("Asia/Kolkata");
+            var end = DateTimeOffset.Parse("2026-11-23T00:00:00Z", CultureInfo.InvariantCulture);
+            var visits = CreateSeries("Visits", ("2026-11-22T18:00:00Z", 5), ("2026-11-22T19:00:00Z", 7));
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Visits" Series="[visits]" Range="ChartRange.ThirtyDays" End="end" />);
+
+            // Assert — half past eleven on the 22nd and half past midnight on the 23rd, on Kolkata's clock
+            var rows = ReadTable(cut);
+            Assert.Multiple(
+                () => Assert.Equal(30, rows.Length),
+                () => Assert.Equal(new DateTime(2026, 10, 25).ToString("d", English), rows[0][0]),
+                () => Assert.Equal([new DateTime(2026, 11, 22).ToString("d", English), "5"], rows[^2]),
+                () => Assert.Equal([new DateTime(2026, 11, 23).ToString("d", English), "7"], rows[^1]));
+        }
+
+        [Fact]
+        public void Should_cover_thirteen_months_ending_with_the_month_that_holds_its_end()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:00Z", CultureInfo.InvariantCulture);
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Storage" Series='[CreateSeries("Used")]' Range="ChartRange.ThirteenMonths" End="end" />);
+
+            // Assert
+            var periods = ReadTable(cut).Select(row => row[0]).ToList();
+            Assert.Equal(["November 2025", "December 2025", "January 2026"], periods.Take(3));
+            Assert.Equal(["October 2026", "November 2026"], periods.TakeLast(2));
+        }
+
+        [Fact]
+        public void Should_end_with_the_period_holding_its_clock_s_now_where_no_end_is_given()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            ctx.Clock.SetUtcNow(DateTimeOffset.Parse("2026-11-23T14:30:00Z", CultureInfo.InvariantCulture));
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Page load" Series='[CreateSeries("Median")]' Range="ChartRange.Day" />);
+
+            // Assert
+            Assert.Equal(FormatHour(2026, 11, 23, 14), ReadTable(cut)[^1][0]);
+        }
+    }
+
+    public sealed class Values
+    {
+        [Fact]
+        public void Should_place_each_point_in_its_period_and_say_a_period_without_one_holds_no_data()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
+            var load = CreateSeries("Load", ("2026-11-23T11:58:10Z", 120), ("2026-11-23T11:58:50Z", 130), ("2026-11-23T11:59:00Z", null), ("2026-11-23T09:00:00Z", 999));
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Load" Series="[load]" Range="ChartRange.Hour" End="end" />);
+
+            // Assert — the later of two points in one minute, a null and a missing minute both without data, a point outside ignored
+            var values = ReadTable(cut).Select(row => row[1]).ToList();
+            Assert.Multiple(
+                () => Assert.Equal(["130", "No data", "No data"], values.TakeLast(3)),
+                () => Assert.DoesNotContain("999", values));
+        }
+
+        [Fact]
+        public void Should_write_its_values_and_scale_by_its_format_in_its_culture()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
+            var load = CreateSeries("Load", ("2026-11-23T12:00:00Z", 1234.5));
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Load" Series="[load]" Range="ChartRange.Hour" End="end" ValueFormat="#,0.0' ms'" />);
+
+            // Assert — the scale reaches 1,234.5 in even steps of 500
+            Assert.Multiple(
+                () => Assert.Equal("1,234.5 ms", ReadTable(cut)[^1][1]),
+                () => Assert.Equal(["0.0 ms", "500.0 ms", "1,000.0 ms", "1,500.0 ms"], cut.FindAll(".forma-chart-value-label").Select(label => label.TextContent.Trim())));
+        }
+    }
+
+    public sealed class Lines
+    {
+        [Fact]
+        public void Should_break_a_line_where_a_period_has_no_data()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
+            var load = CreateSeries("Load", ("2026-11-23T11:56:00Z", 1), ("2026-11-23T11:57:00Z", 2), ("2026-11-23T11:59:00Z", 3), ("2026-11-23T12:00:00Z", 4));
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Load" Series="[load]" Range="ChartRange.Hour" End="end" />);
+
+            // Assert
+            Assert.Equal(2, cut.FindAll("polyline.forma-chart-line").Count);
+        }
+
+        [Fact]
+        public void Should_mark_a_point_standing_alone_between_gaps_and_its_series_last_point()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
+            var load = CreateSeries("Load", ("2026-11-23T11:50:00Z", 1), ("2026-11-23T11:56:00Z", 2), ("2026-11-23T11:57:00Z", 3));
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Load" Series="[load]" Range="ChartRange.Hour" End="end" />);
+
+            // Assert — 11:50 alone and 11:57 last; 11:56 draws its marker only while its period is read
+            var markers = cut.FindAll(".forma-chart-marker");
+            Assert.Multiple(
+                () => Assert.Equal(3, markers.Count),
+                () => Assert.Equal([true, false, true], markers.Select(marker => marker.ClassList.Contains("is-standing"))));
+        }
+
+        [Fact]
+        public void Should_fill_its_band_between_its_two_series_and_mark_its_threshold_within_its_scale()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
+            var median = CreateSeries("Median", ("2026-11-23T11:59:00Z", 100), ("2026-11-23T12:00:00Z", 120));
+            var slowest = CreateSeries("95th percentile", ("2026-11-23T11:59:00Z", 300), ("2026-11-23T12:00:00Z", 340));
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Page load" Series="[median, slowest]" Range="ChartRange.Hour" End="end" Band="new ChartBand(0, 1)" Threshold='@(new ChartThreshold(500, "Target"))' />);
+
+            // Assert — the threshold lifts the scale past 500, to 600 in steps of 200
+            Assert.Multiple(
+                () => Assert.Single(cut.FindAll("polygon.forma-chart-band.forma-chart-series-2")),
+                () => Assert.Equal("Target", cut.Find(".forma-chart-threshold-label").TextContent),
+                () => Assert.Contains("inset-block-end: 83.333%", cut.Find(".forma-chart-threshold").GetAttribute("style"), StringComparison.Ordinal),
+                () => Assert.Equal("600", cut.FindAll(".forma-chart-value-label")[^1].TextContent.Trim()));
+        }
+
+        [Fact]
+        public void Should_draw_a_legend_for_two_series_and_none_for_one()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
+
+            // Act
+            var single = ctx.Render(@<FormaLineChart Title="Readers" Series='[CreateSeries("Readers")]' Range="ChartRange.Hour" End="end" />);
+            var pair = ctx.Render(@<FormaLineChart Title="Machine" Series='[CreateSeries("CPU"), CreateSeries("Memory")]' Range="ChartRange.Hour" End="end" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(single.FindAll(".forma-chart-legend")),
+                () => Assert.Equal(["CPU", "Memory"], pair.FindAll(".forma-chart-legend-name").Select(name => name.TextContent)));
+        }
+    }
+
+    public sealed class Reading
+    {
+        [Fact]
+        public void Should_read_its_last_period_from_its_range_control_until_the_reader_moves_it()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
+            var load = CreateSeries("Load", ("2026-11-23T11:59:00Z", 3), ("2026-11-23T12:00:00Z", 4));
+            var cut = ctx.Render(@<FormaLineChart Title="Load" Series="[load]" Range="ChartRange.Hour" End="end" />);
+            var control = cut.Find("input.forma-chart-scrubber");
+            var lastText = $"{new DateTime(2026, 11, 23, 12, 0, 0).ToString("g", English)}, Load 4";
+            var readsLast = control.GetAttribute("aria-valuetext") == lastText && control.GetAttribute("max") == "59";
+
+            // Act
+            control.Input("58");
+
+            // Assert
+            var periods = cut.FindAll(".forma-chart-period");
+            Assert.Multiple(
+                () => Assert.True(readsLast, "The range control doesn't start on the last of the hour's sixty periods."),
+                () => Assert.Equal($"{new DateTime(2026, 11, 23, 11, 59, 0).ToString("g", English)}, Load 3", cut.Find("input.forma-chart-scrubber").GetAttribute("aria-valuetext")),
+                () => Assert.True(periods[58].ClassList.Contains("is-read")),
+                () => Assert.False(periods[59].ClassList.Contains("is-read")));
+        }
+
+        [Fact]
+        public void Should_leave_its_range_control_out_and_keep_its_table_when_rendered_statically()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Load" Series='[CreateSeries("Load")]' Range="ChartRange.Hour" End="end" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("input.forma-chart-scrubber")),
+                () => Assert.Equal(60, ReadTable(cut).Length));
+        }
+
+        [Fact]
+        public void Should_name_its_figure_and_table_by_its_title_and_hide_its_drawing_from_assistive_technology()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Id="load" Title="Load" Series='[CreateSeries("Load")]' Range="ChartRange.Hour" End="end" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Load", cut.Find("#load-title").TextContent),
+                () => Assert.Equal("load-title", cut.Find("figure").GetAttribute("aria-labelledby")),
+                () => Assert.Equal("load-title", cut.Find("table").GetAttribute("aria-labelledby")),
+                () => Assert.Equal("true", cut.Find(".forma-chart-figure").GetAttribute("aria-hidden")));
+        }
+
+        [Fact]
+        public async Task Should_write_its_table_in_the_culture_it_switches_to()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
+            var cut = ctx.Render(@<FormaLineChart Title="Load" Series='[CreateSeries("Load")]' Range="ChartRange.Hour" End="end" />);
+
+            // Act
+            await ctx.ChangeCultureAsync("he");
+
+            // Assert
+            var hebrew = CultureInfo.GetCultureInfo("he");
+            Assert.Multiple(
+                () => Assert.Equal("זמן", cut.Find(".forma-chart-table thead th").TextContent),
+                () => Assert.Equal([new DateTime(2026, 11, 23, 12, 0, 0).ToString("g", hebrew), "אין נתונים"], ReadTable(cut)[^1]));
+        }
+    }
+
+    public sealed class Validation
+    {
+        [Fact]
+        public void Should_refuse_no_series_more_than_four_and_a_band_within_one_series()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            ChartSeries[] five = [CreateSeries("A"), CreateSeries("B"), CreateSeries("C"), CreateSeries("D"), CreateSeries("E")];
+
+            // Act & Assert
+            Assert.Multiple(
+                () => Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaLineChart Title="Load" Series="[]" />)),
+                () => Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaLineChart Title="Load" Series="five" />)),
+                () => Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaLineChart Title="Load" Series='[CreateSeries("A"), CreateSeries("B")]' Band="new ChartBand(1, 1)" />)),
+                () => Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaLineChart Title="Load" Series='[CreateSeries("A")]' Band="new ChartBand(0, 1)" />)),
+                () => Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaLineChart Title=" " Series='[CreateSeries("A")]' />)));
+        }
+    }
+}

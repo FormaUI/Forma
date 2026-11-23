@@ -1,0 +1,24 @@
+@page "/{Runtime}/bar-chart"
+
+@* Thirty days of two series, failures from 1 each day and retries half as many, the 4th, 14th and 24th days without failures. The
+   points stand at noon on the universal clock, and the range ends a second past the last, so each lands on a day of its own. *@
+<FormaBarChart Id="check" Title="Failures" Series="Series" Range="ChartRange.ThirtyDays" End="End" Threshold="Alert" />
+
+@code {
+    private static readonly DateTimeOffset LastPoint = new(2026, 11, 23, 12, 0, 0, TimeSpan.Zero);
+
+    private static DateTimeOffset End
+        => LastPoint.AddSeconds(1);
+
+    private static ChartThreshold Alert { get; } = new(25, "Alert level");
+
+    private static IReadOnlyList<ChartSeries> Series { get; } =
+    [
+        new("Failures", CreatePoints(index => (index + 1) % 10 == 4 ? null : index + 1)),
+        new("Retries", CreatePoints(index => (index + 1) / 2)),
+    ];
+
+    // A point at noon each day of the thirty ending with the last, the first the oldest.
+    private static ChartPoint[] CreatePoints(Func<int, double?> getValue)
+        => [.. Enumerable.Range(0, 30).Select(index => new ChartPoint(LastPoint.AddDays(index - 29), getValue(index)))];
+}

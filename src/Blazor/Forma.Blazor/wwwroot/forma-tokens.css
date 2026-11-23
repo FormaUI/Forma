@@ -229,6 +229,23 @@
     --media-shade-color: color-mix(in srgb, var(--black-color) 70%, transparent);
 
     /* ============================================================
+       Charts — a chart's series in the order a chart takes them, validated as a set against the paper so
+       adjacent series stay apart for color-blind readers; a dark theme sets its own four, stepped for its
+       surface. The grid, the baseline and a threshold are cut from the scale and the ink.
+       ============================================================ */
+    --chart-series-1-color: #2a78d6;
+    --chart-series-2-color: #eb6834;
+    --chart-series-3-color: #1baf7a;
+    --chart-series-4-color: #eda100;
+    --chart-grid-color: var(--gray-200);
+    --chart-baseline-color: var(--gray-400);
+    --chart-threshold-color: var(--text-secondary-color);
+    --chart-surface-color: var(--backdrop-flat-bg-color);  /* the ring around a marker, and the gap between bars */
+    --chart-plot-block-size: 12rem;
+    --chart-bar-inline-size: 1.5rem;   /* 24px: the widest a bar draws, the air of its period beside it */
+    --chart-marker-size: 0.5rem;       /* 8px: a line's marker */
+
+    /* ============================================================
        Chrome — the band a specific kind of surface paints for itself, each themable on its own. A frame
        is a raised backdrop with chrome: a title bar, an optional header band, the body, an optional
        footer band; a window floats a frame and a dialog is a modal window, and both read the same tokens.

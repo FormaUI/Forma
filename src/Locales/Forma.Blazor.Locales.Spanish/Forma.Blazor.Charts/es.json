@@ -1,0 +1,7 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaChartFrame": {
+    "Time": "Hora",
+    "No data": "Sin datos"
+  }
+}

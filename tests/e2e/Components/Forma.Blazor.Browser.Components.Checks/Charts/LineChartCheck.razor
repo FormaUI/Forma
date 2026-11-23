@@ -1,0 +1,30 @@
+@page "/{Runtime}/line-chart"
+
+@* A day of two series, the median 10 ms more each hour from 100 ms and the 95th percentile 200 ms above it, the band between
+   them filled and a target marked. The points stand on the hour of the universal clock, and the day ends a second past the
+   last, so each lands in a period of its own. *@
+<FormaLineChart Id="check" Title="Page load" Series="Series" Range="ChartRange.Day" End="End" ValueFormat="#,0' ms'" Band="new ChartBand(0, 1)" Threshold="Target" />
+
+@* The same chart in a right-to-left container. *@
+<div dir="rtl">
+    <FormaLineChart Id="rtl-chart" Title="Page load" Series="Series" Range="ChartRange.Day" End="End" ValueFormat="#,0' ms'" />
+</div>
+
+@code {
+    private static readonly DateTimeOffset LastPoint = new(2026, 11, 23, 12, 0, 0, TimeSpan.Zero);
+
+    private static DateTimeOffset End
+        => LastPoint.AddSeconds(1);
+
+    private static ChartThreshold Target { get; } = new(3000, "Target");
+
+    private static IReadOnlyList<ChartSeries> Series { get; } =
+    [
+        new("Median", CreatePoints(index => 100 + (index * 10))),
+        new("95th percentile", CreatePoints(index => 300 + (index * 10))),
+    ];
+
+    // A point each hour of the day ending with the last, the first the oldest.
+    private static ChartPoint[] CreatePoints(Func<int, double> getValue)
+        => [.. Enumerable.Range(0, 24).Select(index => new ChartPoint(LastPoint.AddHours(index - 23), getValue(index)))];
+}

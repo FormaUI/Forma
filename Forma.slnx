@@ -45,6 +45,7 @@
     <Project Path="src\AddOns\Forma.AddOns.Resources.Markdown\Forma.AddOns.Resources.Markdown.csproj" />
     <Project Path="src\AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
     <Project Path="src\Blazor\Forma.Blazor.Explorer\Forma.Blazor.Explorer.csproj" />
+    <Project Path="src\Blazor\Forma.Blazor.Charts\Forma.Blazor.Charts.csproj" />
     <Project Path="src\Blazor\Forma.Blazor.DataView\Forma.Blazor.DataView.csproj" />
     <Project Path="src\Blazor\Forma.Blazor.Server\Forma.Blazor.Server.csproj" />
     <Project Path="src\Blazor\Forma.Blazor.WebAssembly\Forma.Blazor.WebAssembly.csproj" />
@@ -60,6 +61,7 @@
     <Project Path="tests\bunit\Blazor\Forma.Blazor.BUnit.Tests\Forma.Blazor.BUnit.Tests.csproj" />
     <Project Path="tests\unit\Blazor\Forma.Blazor.Tests\Forma.Blazor.Tests.csproj" />
     <Project Path="tests\bunit\Blazor\Forma.Blazor.Explorer.BUnit.Tests\Forma.Blazor.Explorer.BUnit.Tests.csproj" />
+    <Project Path="tests\bunit\Blazor\Forma.Blazor.Charts.BUnit.Tests\Forma.Blazor.Charts.BUnit.Tests.csproj" />
     <Project Path="tests\bunit\Blazor\Forma.Blazor.DataView.BUnit.Tests\Forma.Blazor.DataView.BUnit.Tests.csproj" />
     <Project Path="tests\unit\Blazor\Forma.Blazor.DataView.Tests\Forma.Blazor.DataView.Tests.csproj" />
     <Project Path="tests\bunit\Blazor\Forma.Blazor.Composer.BUnit.Tests\Forma.Blazor.Composer.BUnit.Tests.csproj" />

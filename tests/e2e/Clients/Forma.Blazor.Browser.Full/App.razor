@@ -3,6 +3,7 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Components.Web
 @using Forma.Blazor.Components
+@using Forma.Blazor.Components.Charts
 @using Forma.Blazor.Components.Composer
 @using Forma.Blazor.Components.DataView
 @using Forma.Framework.Composer.Documents
@@ -28,10 +29,15 @@
     <FormaDataCards TItem="Row" />
 </FormaDataView>
 
+<FormaLineChart Title="Rows" Series="_series" />
+<FormaBarChart Title="Rows" Series="_series" />
+
 @code {
     private ComposerDocument? _document;
 
     private readonly IQueryable<Row> _rows = new Row[] { new("One", 1), new("Two", 2) }.AsQueryable();
+
+    private readonly IReadOnlyList<ChartSeries> _series = [new("Rows", [new(DateTimeOffset.UtcNow, 2)])];
 
     [Inject] private ICultureSwitch CultureSwitch { get; set; } = default!;
 

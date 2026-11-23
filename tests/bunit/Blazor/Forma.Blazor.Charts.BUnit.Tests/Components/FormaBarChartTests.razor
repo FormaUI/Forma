@@ -1,0 +1,73 @@
+@inherits FormaBunitContext
+
+@code {
+    private static readonly DateTimeOffset End = DateTimeOffset.Parse("2026-11-23T12:00:00Z", CultureInfo.InvariantCulture);
+
+    private static ChartSeries CreateSeries(string name, params (string Time, double? Value)[] points)
+        => new(name, [.. points.Select(point => new ChartPoint(DateTimeOffset.Parse(point.Time, CultureInfo.InvariantCulture), point.Value))]);
+
+    private static FormaBarChartTests CreateContext()
+    {
+        var ctx = new FormaBarChartTests();
+        ctx.Clock.SetLocalTimeZone(TimeZoneInfo.Utc);
+
+        return ctx;
+    }
+
+    public sealed class Bars
+    {
+        [Fact]
+        public void Should_stand_each_period_s_bars_in_its_series_order_and_leave_a_gap_where_one_has_no_data()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var failures = CreateSeries("Failures", ("2026-11-22T08:00:00Z", 4), ("2026-11-23T08:00:00Z", 6));
+            var retries = CreateSeries("Retries", ("2026-11-23T08:00:00Z", 2));
+
+            // Act
+            var cut = ctx.Render(@<FormaBarChart Title="Failures per day" Series="[failures, retries]" End="End" />);
+
+            // Assert — the 22nd draws one bar in the first slot, the 23rd two, and every other day none
+            var periods = cut.FindAll(".forma-chart-period");
+            var slots = periods.Select(period => string.Join(",", period.QuerySelectorAll(".forma-chart-bar-slot").Select(slot => slot.QuerySelector(".forma-chart-bar")?.ClassList.Contains("forma-chart-series-2") switch { true => "2", false => "1", null => "-" }))).ToList();
+            Assert.Multiple(
+                () => Assert.Equal(30, periods.Count),
+                () => Assert.Equal(["1,-", "1,2"], slots.TakeLast(2)),
+                () => Assert.All(slots.SkipLast(2), slot => Assert.Equal("-,-", slot)));
+        }
+
+        [Fact]
+        public void Should_grow_each_bar_from_the_baseline_to_its_value()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+            var storage = CreateSeries("Storage", ("2026-11-23T08:00:00Z", 30), ("2026-11-22T08:00:00Z", -10));
+
+            // Act
+            var cut = ctx.Render(@<FormaBarChart Title="Storage growth" Series="[storage]" End="End" />);
+
+            // Assert — the scale runs from -10 to 30 in steps of 10, its baseline a quarter of the way up
+            var bars = cut.FindAll(".forma-chart-bar");
+            Assert.Multiple(
+                () => Assert.Equal("inset-block-end: 0%; inset-block-start: 75%;", bars[0].GetAttribute("style")),
+                () => Assert.True(bars[0].ClassList.Contains("is-negative")),
+                () => Assert.Equal("inset-block-end: 25%; inset-block-start: 0%;", bars[1].GetAttribute("style")),
+                () => Assert.True(cut.Find(".forma-chart-gridline.is-baseline").GetAttribute("style")!.Contains("25%", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public void Should_say_it_has_no_data_where_no_series_holds_a_value()
+        {
+            // Arrange
+            using var ctx = CreateContext();
+
+            // Act
+            var cut = ctx.Render(@<FormaBarChart Title="Failures per day" Series='[CreateSeries("Failures")]' End="End" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("No data", cut.Find(".forma-chart-empty").TextContent),
+                () => Assert.Empty(cut.FindAll(".forma-chart-bar")));
+        }
+    }
+}

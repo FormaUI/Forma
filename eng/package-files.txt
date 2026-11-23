@@ -100,6 +100,18 @@ formaui-net.Blazor
     staticwebassets/forma-tokens.css
     staticwebassets/formaui-net.Blazor.{fingerprint}.bundle.scp.css
 
+formaui-net.Blazor.Charts
+    build/formaui-net.Blazor.Charts.PackageAssets.json
+    build/formaui-net.Blazor.Charts.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Blazor.Charts.targets
+    buildTransitive/formaui-net.Blazor.Charts.targets
+    lib/net11.0/Forma.Blazor.Charts.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/formaui-net.Blazor.Charts.{fingerprint}.bundle.scp.css
+
 formaui-net.Blazor.Composer
     build/formaui-net.Blazor.Composer.PackageAssets.json
     build/formaui-net.Blazor.Composer.targets

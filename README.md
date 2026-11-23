@@ -311,6 +311,10 @@ theme sets the emphasis of each of those roles it uses as well:
 }
 ```
 
+A chart's series colors are validated as a set against light paper, so a dark theme that draws charts sets the four
+[the charts' README](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Charts/README.md#colors-and-themes)
+lists for a dark surface, `--chart-series-1-color` to `--chart-series-4-color`.
+
 A component's own hooks are named `--forma-{component}-{part}-{property}` and fall back to the theme's tokens, so a host
 sets one where it differs. A page with a sticky header moves the toasts below it:
 
@@ -881,6 +885,7 @@ Each package's README covers installing, registering and using it.
 | [`formaui-net.Blazor.DataView`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.DataView/README.md) | `FormaDataView`, the collection component, with grid, list, card and tree views |
 | [`formaui-net.Blazor.Explorer`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Explorer/README.md) | `FormaExplorer`, a file manager over the files a site holds |
 | [`formaui-net.Blazor.Composer`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Composer/README.md) | `FormaComposer`, a rich text editor assembled from plugins |
+| [`formaui-net.Blazor.Charts`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Charts/README.md) | `FormaLineChart` and `FormaBarChart`, figures over time with a threshold, a band and a table for assistive technology |
 | [`formaui-net.AddOns.Composer.Plugins.Explorer`](https://github.com/FormaUI/Forma/blob/main/src/AddOns/Forma.AddOns.Composer.Plugins.Explorer/README.md) | Inserting a stored file into `FormaComposer` through `FormaExplorer` |
 | [`formaui-net.AddOns.Emojis.Twemoji`](https://github.com/FormaUI/Forma/blob/main/src/AddOns/Forma.AddOns.Emojis.Twemoji/README.md) | Twemoji artwork and catalog for `FormaEmoji` and `FormaEmojiPicker` |
 | [`formaui-net.AddOns.Resources.Markdown`](https://github.com/FormaUI/Forma/blob/main/src/AddOns/Forma.AddOns.Resources.Markdown/README.md) | Markdown documents rendered as pages in `FormaFileViewer` |
