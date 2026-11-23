@@ -104,6 +104,7 @@
                 () => Assert.Equal(new DateTime(2026, 11, 17).ToString("d", English), periods[0]),
                 () => Assert.Equal(new DateTime(2026, 11, 23).ToString("d", English), periods[^1]));
         }
+
         [Fact]
         public async Task Should_cover_thirteen_months_ending_with_the_month_that_holds_its_end()
         {
@@ -116,8 +117,10 @@
 
             // Assert
             var periods = ReadTable(cut).Select(row => row[0]).ToList();
-            Assert.Equal(["November 2025", "December 2025", "January 2026"], periods.Take(3));
-            Assert.Equal(["October 2026", "November 2026"], periods.TakeLast(2));
+            Assert.Multiple(
+                () => Assert.Equal(13, periods.Count),
+                () => Assert.Equal(["November 2025", "December 2025", "January 2026"], periods.Take(3)),
+                () => Assert.Equal(["October 2026", "November 2026"], periods.TakeLast(2)));
         }
 
         [Fact]
@@ -343,6 +346,25 @@
             Assert.Multiple(
                 () => Assert.Equal(["1/1/2024", "3/1/2024", "1/1/2025"], ReadTable(cut).Select(row => row[0])),
                 () => Assert.Equal(["0", "163.93", "1000"], points));
+        }
+
+        [Fact]
+        public async Task Should_run_a_span_from_its_start_to_its_end_and_leave_out_the_points_outside_it()
+        {
+            // Arrange — a span of 100 days from April 1, 2024, a point before it, three within and one after
+            using var ctx = await CreateContextAsync();
+            var start = DateTimeOffset.Parse("2024-04-01T00:00:00Z", CultureInfo.InvariantCulture);
+            var end = DateTimeOffset.Parse("2024-07-10T00:00:00Z", CultureInfo.InvariantCulture);
+            var value = CreateSeries("Value", ("2024-03-01T00:00:00Z", 90), ("2024-04-11T00:00:00Z", 100), ("2024-05-21T00:00:00Z", 110), ("2024-07-10T00:00:00Z", 120), ("2024-08-01T00:00:00Z", 130));
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Value" Series="[value]" Range="ChartRange.Span" Start="start" End="end" />);
+
+            // Assert — a tenth, a half and the whole of the way along, and no row for the points outside
+            var points = cut.Find("polyline.forma-chart-line").GetAttribute("points")!.Split(' ').Select(point => point.Split(',')[0]);
+            Assert.Multiple(
+                () => Assert.Equal(["4/11/2024", "5/21/2024", "7/10/2024"], ReadTable(cut).Select(row => row[0])),
+                () => Assert.Equal(["100", "500", "1000"], points));
         }
 
         [Fact]
