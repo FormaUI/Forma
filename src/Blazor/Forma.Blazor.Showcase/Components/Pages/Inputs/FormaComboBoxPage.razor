@@ -27,6 +27,15 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["A Name the List Doesn't Keep"]</h2>
+        <p class="description">@L["The value is a team the list keeps or a free name. A name added here never joins the list, and the field shows the name it holds through its value label, as it does for the free name it opens with."]</p>
+        <div class="demo-box">
+            <FormaComboBox TValue="TeamChoice" @bind-Value="Model.Opponent" Options="KeptTeamChoices" Label="@L["Opponent"]" OptionFactory="CreateFreeNameAsync" ValueLabel="GetTeamName" />
+            <p class="demo-note">@L["Value"]: <code>@FormatOpponent()</code></p>
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["An Option That Can't Be Chosen"]</h2>
         <p class="description">@L["An option can be shown but not chosen: it reads in the disabled tone, the arrows pass over it, and neither a press nor its name typed in full commits it."]</p>
         <div class="demo-box">
@@ -65,11 +74,34 @@
         new(5, "Sevilla FC"),
     ];
 
+    private static readonly IReadOnlyList<SelectOption<TeamChoice>> KeptTeamChoices =
+    [
+        new(new(1, "Real Madrid"), "Real Madrid"),
+        new(new(2, "FC Barcelona"), "FC Barcelona"),
+        new(new(3, "Valencia CF"), "Valencia CF"),
+    ];
+
     private ComboBoxDemoModel Model { get; set; } = new()
     {
+        Opponent = new(null, "CD Leganés B"),
         ReadOnlyPlan = 2,
         DisabledPlan = 1,
     };
+
+    // A free name is an option of its own the list never keeps.
+    private static Task<SelectOption<TeamChoice>?> CreateFreeNameAsync(string name)
+        => Task.FromResult<SelectOption<TeamChoice>?>(new(new(null, name), name));
+
+    private static string GetTeamName(TeamChoice choice)
+        => choice.Name;
+
+    private string FormatOpponent()
+        => Model.Opponent switch
+        {
+            null => "—",
+            { Id: { } id } => L["Kept team {Id}", id],
+            { Name: var name } => L["Free name \"{Name}\"", name],
+        };
 
     // A short pause stands for the server creating the team; a name shorter than three letters is refused.
     private async Task<SelectOption<int?>?> CreateTeamAsync(string name)
@@ -89,10 +121,14 @@
 
     private void HandleSubmit() { }
 
+    // A team the list keeps, by its identifier, or a free name the list doesn't keep.
+    private sealed record TeamChoice(int? Id, string Name);
+
     private sealed class ComboBoxDemoModel
     {
         public string? TimeZone { get; set; }
         public int? Team { get; set; }
+        public TeamChoice? Opponent { get; set; }
         public int? Plan { get; set; }
         public int? ReadOnlyPlan { get; set; }
         public int? DisabledPlan { get; set; }

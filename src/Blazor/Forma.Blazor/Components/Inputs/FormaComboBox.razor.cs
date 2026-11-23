@@ -95,8 +95,11 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
     /// <summary>The text shown in the field while it holds none.</summary>
     [Parameter] public string? Placeholder { get; set; }
 
+    /// <summary>The label a value no option holds goes by, where null uses the value's own text in the culture.</summary>
+    [Parameter] public Func<TValue, string>? ValueLabel { get; set; }
+
     /// <summary>Creates the option for text no option names, which the field then commits, or answers null to refuse it.</summary>
-    /// <remarks>The list offers to add typed text only where the factory is set. The field commits the option it answers and shows its label until <see cref="Options"/> holds it, so the host adds the option to its list rather than binding its value.</remarks>
+    /// <remarks>The list offers to add typed text only where the factory is set. The field commits the option it answers and shows its label for as long as it holds the option's value, whether or not <see cref="Options"/> comes to hold the option.</remarks>
     [Parameter] public Func<string, Task<SelectOption<TValue>?>>? OptionFactory { get; set; }
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
@@ -144,7 +147,11 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
     // The committed value's label, or the value itself where no option carries it.
     private string CommittedText
         => CommittedOption?.Label
-            ?? (EqualityComparer<TValue>.Default.Equals(Value, default) ? string.Empty : Convert.ToString(Value, Context.CultureState.Culture) ?? string.Empty);
+            ?? (!IsValueUnnamed ? string.Empty : ValueLabel is { } valueLabel ? valueLabel(Value!) : Convert.ToString(Value, Context.CultureState.Culture) ?? string.Empty);
+
+    // A value set that no option holds.
+    private bool IsValueUnnamed
+        => CommittedOption is null && !EqualityComparer<TValue>.Default.Equals(Value, default);
 
     private string FieldText
         => _isEdited ? _text ?? string.Empty : CommittedText;
@@ -154,7 +161,7 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
         => _edits.GetShownText(FieldText);
 
     private IReadOnlyList<SelectOption<TValue>> NativeOptions
-        => ReadOnly && FindCommittedOption() is { } chosenOption ? [chosenOption] : Options;
+        => !ReadOnly ? Options : FindCommittedOption() is { } chosenOption ? [chosenOption] : IsValueUnnamed ? [] : Options;
 
     private string ListId
         => $"{ElementId}-list";

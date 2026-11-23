@@ -10,7 +10,7 @@
         @if (IsNative)
         {
             @* A statically rendered page chooses in the browser's own list, each option posting its value in the invariant form the server
-               binds; a read-only one lists the option chosen alone, so it still posts it. *@
+               binds, a value no option holds among them; a read-only one lists the value chosen alone, so it still posts it. *@
             var chosenOption = FindCommittedOption();
             <select id="@ElementId"
                     data-rid="@Context.RuntimeId"
@@ -22,7 +22,11 @@
                     name="@ControlName"
                     disabled="@Disabled"
                     required="@Required">
-                @if (chosenOption is null)
+                @if (IsValueUnnamed)
+                {
+                    <option value="@FormValue.Format(Value)" selected>@CommittedText</option>
+                }
+                else if (chosenOption is null)
                 {
                     <option value="" selected>@(Placeholder ?? string.Empty)</option>
                 }

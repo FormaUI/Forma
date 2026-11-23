@@ -11,6 +11,9 @@
             new(4, "(UTC+01:00) Berlin"),
         ];
 
+        private static string FormatZone(int? zone)
+            => "Zone " + zone;
+
         private static List<string> GetEntries<TComponent>(IRenderedComponent<TComponent> cut)
             where TComponent : IComponent
             => [.. cut.FindAll("[role=option]").Select(option => option.TextContent.Trim())];
@@ -539,6 +542,90 @@
                 () => Assert.Equal(["1", "2", "3"], cut.FindAll("option").Select(option => option.GetAttribute("value"))),
                 () => Assert.Equal(["Team"], cut.FindAll("option[selected]").Select(option => option.TextContent)),
                 () => Assert.Equal([true, false, false], cut.FindAll("option").Select(option => option.HasAttribute("disabled"))));
+        }
+
+        [Fact]
+        public void Should_show_a_value_no_option_holds_by_the_label_its_value_label_gives()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var model = new FakeModel { Status = 7 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" ValueLabel="FormatZone" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("Zone 7", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_show_a_value_no_option_holds_by_its_own_text_where_no_value_label_is_given()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var model = new FakeModel { Status = 7 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("7", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_show_a_value_an_option_holds_by_the_option_s_label_whatever_its_value_label_gives()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var model = new FakeModel { Status = 2 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" ValueLabel="FormatZone" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("(UTC+01:00) Madrid", cut.Find("input").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_offer_a_value_no_option_holds_in_the_browser_s_own_list_so_a_static_page_posts_it_back()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel { Status = 7 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" ValueLabel="FormatZone" name="Zone" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["7", "1", "2", "3", "4"], cut.FindAll("option").Select(option => option.GetAttribute("value"))),
+                () => Assert.Equal(["Zone 7"], cut.FindAll("option[selected]").Select(option => option.TextContent)));
+        }
+
+        [Fact]
+        public void Should_post_a_value_no_option_holds_read_only_offering_no_other()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new FakeModel { Status = 7 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" ReadOnly="true" name="Zone" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal(["7"], cut.FindAll("option").Select(option => option.GetAttribute("value")));
         }
 
         [Fact]

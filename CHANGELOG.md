@@ -14,8 +14,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   first. Typing changes only the text and the arrows only the active option; a value is committed when an option is
   chosen, or when the field is left on text naming exactly one option that can be chosen, and leaving on no text clears
   a value that can be empty. An `OptionFactory` adds text no option names: the list offers it, the factory creates the
-  option or refuses it, and the field commits and shows the option it answers. A polite status says how many options
-  match, and a statically rendered page chooses in the browser's own list.
+  option or refuses it, and the field commits and shows the option it answers for as long as it holds that value. A
+  value no option holds, such as a free name a saved record binds, shows the text `ValueLabel` gives it, else its own
+  text in the culture. A polite status says how many options match, and a statically rendered page chooses in the
+  browser's own list, which offers a value no option holds as it stands, so the form posts it back.
 - `FormaLinkTabs` draws `Items`, a list of `LinkTab`s, as a strip of tabs that link to pages, in a navigation landmark
   named by `Label` and drawn as `FormaTabs` draws its strip. The tab of the page the reader is on is marked
   `aria-current="page"`, and it follows the page as the reader moves on. A tab is current where the page's address,
