@@ -218,6 +218,8 @@ public sealed class PickersTests
         }
     }
 
+    // A combo box opens its list for text typed while the reader is within it, which its focus watch tells it, so a check types into
+    // one once its edits listen and its focus watch delivers.
     public sealed class ComboBox(BrowserHost host)
     {
         [Theory]
@@ -229,6 +231,7 @@ public sealed class PickersTests
             await using var _ = context;
             var field = page.Locator("#check");
             await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
+            await ComponentChecks.WaitForObservationAsync(page, "#check", "focus");
             await field.EvaluateAsync("field => field.closest('.forma-combo-box').style.inlineSize = '30rem'");
 
             // Act
@@ -250,6 +253,7 @@ public sealed class PickersTests
             await using var _ = context;
             var field = page.Locator("#check");
             await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
+            await ComponentChecks.WaitForObservationAsync(page, "#check", "focus");
 
             // Act — "bogota", without its accent, leaves Bogotá alone in the list, and active
             await field.FillAsync("bogota");
@@ -274,6 +278,7 @@ public sealed class PickersTests
             await using var _ = context;
             var field = page.Locator("#check");
             await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
+            await ComponentChecks.WaitForObservationAsync(page, "#check", "focus");
 
             // Act
             await field.FillAsync("(utc+01:00) BERLIN");
@@ -293,6 +298,7 @@ public sealed class PickersTests
             await using var _ = context;
             var field = page.Locator("#team");
             await ComponentChecks.WaitForInteractionAsync(page, "#team", "edits");
+            await ComponentChecks.WaitForObservationAsync(page, "#team", "focus");
 
             // Act — the list offers only to add Getafe, which Enter takes
             await field.FillAsync("Getafe");
@@ -314,6 +320,7 @@ public sealed class PickersTests
             await using var _ = context;
             var field = page.Locator("#check");
             await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
+            await ComponentChecks.WaitForObservationAsync(page, "#check", "focus");
             await field.FillAsync("bogota");
             await ComponentChecks.WaitForInputRouteAsync(page, "#check", "combobox.choose");
 
