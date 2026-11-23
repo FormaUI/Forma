@@ -439,19 +439,36 @@ public static partial class ComponentChecks
         }
     }
 
-    // What a page reports going wrong: its console's errors, its uncaught errors and the requests that failed.
+    // What a page reports going wrong: its console's errors, its uncaught errors and the requests that failed. Each is also written to
+    // the check's output, which the runner prints with whatever failure the check ends in.
     private static System.Collections.Concurrent.ConcurrentQueue<string> WatchProblems(IPage page)
     {
         var problems = new System.Collections.Concurrent.ConcurrentQueue<string>();
+        var output = TestContext.Current.TestOutputHelper;
+
+        void Report(string problem)
+        {
+            problems.Enqueue(problem);
+
+            try
+            {
+                output?.WriteLine($"The page reported {problem}");
+            }
+            catch (InvalidOperationException)
+            {
+                // The check has ended, and its output with it.
+            }
+        }
+
         page.Console += (_, message) =>
         {
             if (message.Type == "error")
             {
-                problems.Enqueue($"console: {message.Text}");
+                Report($"console: {message.Text}");
             }
         };
-        page.PageError += (_, error) => problems.Enqueue($"error: {error}");
-        page.RequestFailed += (_, request) => problems.Enqueue($"request: {request.Url} {request.Failure}");
+        page.PageError += (_, error) => Report($"error: {error}");
+        page.RequestFailed += (_, request) => Report($"request: {request.Url} {request.Failure}");
 
         return problems;
     }
