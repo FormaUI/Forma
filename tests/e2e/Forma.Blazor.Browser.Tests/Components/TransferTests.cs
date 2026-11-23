@@ -10,8 +10,8 @@ using static Forma.Blazor.Browser.Tests.ComponentChecks;
 /// <summary>Values a reader can make larger than a circuit message, through each channel they take to .NET, and the actions that read them, in every runtime under Blazor's default hub limit.</summary>
 public sealed class TransferTests
 {
-    // A value of megabytes reaches .NET in pieces before the page shows it or its save answers, which the check waits for as it
-    // waits for a script's answer.
+    // A value larger than a circuit message, megabytes of text or a range of thousands of items, reaches .NET in pieces before the
+    // page shows it or its save answers, which the check waits for as it waits for a script's answer.
     private static readonly LocatorAssertionsToHaveTextOptions Reached = new() { Timeout = 30_000 };
 
     // A document of two megabytes in words and paragraphs, as a reader's document runs, since WebKit takes half a minute to lay out
@@ -162,7 +162,7 @@ public sealed class TransferTests
             await GetName(page, $"Item {Count}").ClickAsync(new() { Modifiers = [KeyboardModifier.Shift] });
 
             // Assert
-            await Assertions.Expect(page.Locator("#selected")).ToHaveTextAsync($"{Count}");
+            await Assertions.Expect(page.Locator("#selected")).ToHaveTextAsync($"{Count}", Reached);
         }
 
         [Theory]
