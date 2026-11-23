@@ -222,6 +222,7 @@ formaui-net.Framework.Browser.Interop
     LICENSE
     NOTICE
     README.md
+    staticwebassets/formaui-net.Framework.Browser.Interop.{fingerprint}.lib.module.js
     staticwebassets/scripts/behaviors/AnchoredPopover.js
     staticwebassets/scripts/behaviors/DragGesture.js
     staticwebassets/scripts/behaviors/DropZone.js
@@ -234,7 +235,9 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/CapabilityCounts.mjs
     staticwebassets/scripts/components/Dialog.js
     staticwebassets/scripts/components/Frame.js
+    staticwebassets/scripts/components/ShareMenu.js
     staticwebassets/scripts/components/Splitter.js
+    staticwebassets/scripts/components/Stepper.js
     staticwebassets/scripts/components/Virtualize.js
     staticwebassets/scripts/components/Window.js
     staticwebassets/scripts/DomElement.mjs

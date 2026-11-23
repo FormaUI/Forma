@@ -163,6 +163,27 @@ public sealed class MenusTests
 
     public sealed class ShareMenu(BrowserHost host)
     {
+        [Fact]
+        public async Task Should_copy_its_link_from_its_sheet_on_a_static_page()
+        {
+            // Arrange
+            var (context, page) = await host.OpenPageAsync(await host.GetComponentsAddressAsync());
+            await using var _ = context;
+            await context.GrantPermissionsAsync(["clipboard-read", "clipboard-write"]);
+            await page.GotoAsync("static/share-menu");
+            await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync("Static False");
+            await page.Locator(".forma-share-menu > button").ClickAsync();
+            var copy = page.Locator(".forma-share-menu-sheet button[data-forma-share-command=copy]");
+            await Assertions.Expect(copy).ToBeEnabledAsync();
+            await Assertions.Expect(page.Locator(".forma-share-menu-sheet button[data-forma-share-command=print]")).ToBeEnabledAsync();
+
+            // Act
+            await copy.ClickAsync();
+
+            // Assert — the page's script ran the command no renderer could, closing the sheet first
+            await Assertions.Expect(page.Locator(".forma-share-menu-sheet")).Not.ToBeVisibleAsync();
+            await page.WaitForFunctionAsync("async address => (await navigator.clipboard.readText()) === address", await copy.GetAttributeAsync("data-forma-share-url"));
+        }
         private static readonly string[] Networks = ["Facebook", "X", "WhatsApp", "Telegram", "Bluesky", "Reddit", "Snapchat", "LinkedIn"];
 
         // A share surface standing in for the platform's, recording what it is handed.

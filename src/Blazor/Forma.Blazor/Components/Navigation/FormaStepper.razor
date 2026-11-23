@@ -5,7 +5,8 @@
      class="@RootClass"
      style="@RootStyle"
      @attributes="AdditionalAttributes"
-     @ref="RootElement">
+     @ref="RootElement"
+     data-forma-static-stepper="@StaticMark">
     <ol class="forma-stepper-list" aria-label="@EffectiveAriaLabel" @ref="_list">
         @for (var index = 0; index < Steps.Count; index++)
         {

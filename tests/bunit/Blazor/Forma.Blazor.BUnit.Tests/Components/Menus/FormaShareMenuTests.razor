@@ -63,7 +63,7 @@
         }
 
         [Fact]
-        public void Should_draw_the_commands_a_script_runs_disabled_before_the_renderer_is_interactive()
+        public void Should_draw_the_commands_the_page_s_script_runs_disabled_each_naming_its_command_and_the_device_s_share_hidden()
         {
             // Arrange
             using var ctx = new FormaShareMenuTests();
@@ -72,12 +72,16 @@
             // Act
             var cut = ctx.Render(@<FormaShareMenu Item="Article" />);
 
-            // Assert
-            var commands = cut.FindAll(".forma-share-menu-sheet button");
+            // Assert — the script enables what the browser runs; until it does, nothing a static page can't run is offered
+            var commands = cut.FindAll(".forma-share-menu-sheet button[data-forma-share-command]");
+            var share = commands.Single(command => command.GetAttribute("data-forma-share-command") == "share");
+            var copy = commands.Single(command => command.GetAttribute("data-forma-share-command") == "copy");
             Assert.Multiple(
-                () => Assert.Contains(commands, command => command.TextContent.Contains("Copy Link", StringComparison.Ordinal)),
-                () => Assert.Contains(commands, command => command.TextContent.Contains("Print", StringComparison.Ordinal)),
-                () => Assert.All(commands, command => Assert.True(command.HasAttribute("disabled"))));
+                () => Assert.Equal(["share", "copy", "print"], commands.Select(command => command.GetAttribute("data-forma-share-command"))),
+                () => Assert.All(commands, command => Assert.True(command.HasAttribute("disabled"))),
+                () => Assert.True(share.ParentElement!.HasAttribute("hidden")),
+                () => Assert.Equal("https://example.com/news/stage-12?ref=a b", copy.GetAttribute("data-forma-share-url")),
+                () => Assert.Equal(copy.GetAttribute("data-forma-share-url"), share.GetAttribute("data-forma-share-url")));
         }
 
         [Fact]

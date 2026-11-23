@@ -31,6 +31,10 @@ public sealed partial class FormaStepper : FormaElementBase
     private double? _rulerInlineSize;
     private bool _isCompact;
 
+    // A stepper rendered statically marks itself for the page's script, which measures whether its names fit, as no renderer can.
+    private string? StaticMark
+        => RendererInfo.IsInteractive ? null : string.Empty;
+
     private string EffectiveAriaLabel
         => AriaLabel ?? L["Steps"].Value;
 

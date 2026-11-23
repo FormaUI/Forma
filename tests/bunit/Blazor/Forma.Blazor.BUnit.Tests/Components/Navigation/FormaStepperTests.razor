@@ -29,6 +29,23 @@
         }
 
         [Fact]
+        public void Should_mark_itself_for_the_page_s_script_when_rendered_statically_and_not_when_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+            using var staticCtx = new FormaStepperTests();
+            staticCtx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var interactive = ctx.Render(@<FormaStepper Steps="CreateSteps()" />);
+            var rendered = staticCtx.Render(@<FormaStepper Steps="CreateSteps()" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(interactive.Find(".forma-stepper").HasAttribute("data-forma-static-stepper")),
+                () => Assert.True(rendered.Find(".forma-stepper").HasAttribute("data-forma-static-stepper")));
+        }
+        [Fact]
         public void Should_take_the_host_s_name_for_its_steps()
         {
             // Arrange

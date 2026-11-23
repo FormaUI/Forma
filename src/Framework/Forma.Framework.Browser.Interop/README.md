@@ -208,6 +208,14 @@ path where the host hasn't registered one, does neither, or declines.
 | `Virtualize` | Tells a virtualized list's owner where the list stands in what scrolls it and how much room its drawn items take, and scrolls it to an offset or an item. |
 | `Window` | Shows a window in the top layer, raises it in front of the others, returns focus to where it was inside it, and tells its owner of each press inside it. |
 
+## On a statically rendered page
+
+A page rendered statically has no renderer for a component to call into, so the assembly's JavaScript initializer,
+which Blazor loads on every page, runs the scripts a component draws for there: `ShareMenu.js` enables the share
+sheet's Copy Link, Print and device share where the browser can run each, and runs the one pressed, and `Stepper.js`
+measures a stepper whose names may not fit. Each finds its components again after every enhanced update. A host
+needs nothing to set them up.
+
 ## License
 
 Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).

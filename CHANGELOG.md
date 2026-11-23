@@ -15,6 +15,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   enough under white text, as the README's theme contract sets out. `--link-color` is the primary ink, and
   `--link-hover-color` mixes it toward the text ink. To migrate, a theme that set a role's `-emphasis-color` for its
   text on dark paper sets its `-ink-color` instead.
+- `FormaShareMenu`'s Copy Link, Print and the device's own share work on a statically rendered page: the page's script
+  enables each the browser can run, shows the device's share where the browser offers one, and runs the one pressed.
+- A statically rendered `FormaStepper` shows its steps not current by their numbers alone where its names don't fit,
+  as an interactive one does, the page's script measuring it.
 - `FormaComboBox`'s, `FormaSelect`'s and `FormaMultiSelect`'s lists open at least as wide as their fields, so a list
   reads as its field's own. An anchored popover publishes its anchor's width as `--forma-popover-anchor-inline-size`.
 - `FormaLineChart` draws a span: with `Range` set to `ChartRange.Span` it runs from `Start` to `End`, or from its first

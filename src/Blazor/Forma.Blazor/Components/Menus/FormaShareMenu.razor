@@ -7,7 +7,8 @@
 @if (!RendererInfo.IsInteractive)
 {
     @* A statically rendered page opens the browser's own popover from the trigger: the networks, the email and the download are
-       links, and a command a script runs is drawn disabled. *@
+       links, and Copy Link, Print and the device's own share are drawn for the page's script, which enables each the browser
+       can run, shows the device's share where the browser offers one, and runs the one pressed. *@
     <span class="forma-share-menu">
         <FormaButton Id="@Id"
                      Class="@RootClass"
@@ -25,6 +26,10 @@
                 <div class="forma-share-menu-sheet-header">@itemHeader</div>
             }
             <ul class="forma-share-menu-sheet-list">
+                @if (Item is { Address: { } sharedAddress })
+                {
+                    <li hidden><button type="button" class="forma-share-menu-sheet-item" data-forma-share-command="share" data-forma-share-title="@Item.Name" data-forma-share-url="@sharedAddress" disabled><FormaIcon Icon="Glyph.Share" Size="IconSize.Small" /><span>@L["Share"]</span></button></li>
+                }
                 @foreach (var target in _supportedTargets)
                 {
                     <li @key="target.Id">
@@ -48,9 +53,9 @@
                 }
                 @if (OffersCopyLink)
                 {
-                    <li><button type="button" class="forma-share-menu-sheet-item" disabled><FormaIcon Icon="Glyph.Link" Size="IconSize.Small" /><span>@L["Copy Link"]</span></button></li>
+                    <li><button type="button" class="forma-share-menu-sheet-item" data-forma-share-command="copy" data-forma-share-url="@Item!.Address" disabled><FormaIcon Icon="Glyph.Link" Size="IconSize.Small" /><span>@L["Copy Link"]</span></button></li>
                 }
-                <li><button type="button" class="forma-share-menu-sheet-item" disabled><FormaIcon Icon="Glyph.Print" Size="IconSize.Small" /><span>@L["Print"]</span></button></li>
+                <li><button type="button" class="forma-share-menu-sheet-item" data-forma-share-command="print" disabled><FormaIcon Icon="Glyph.Print" Size="IconSize.Small" /><span>@L["Print"]</span></button></li>
             </ul>
         </div>
     </span>

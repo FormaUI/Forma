@@ -65,6 +65,21 @@ public sealed partial class NavigationTests
 
     public sealed partial class Stepper(BrowserHost host)
     {
+        [Fact]
+        public async Task Should_show_its_steps_not_current_by_their_numbers_where_their_names_dont_fit_on_a_static_page()
+        {
+            // Arrange
+            var (context, page) = await host.OpenPageAsync(await host.GetComponentsAddressAsync());
+            await using var _ = context;
+
+            // Act
+            await page.GotoAsync("static/stepper");
+
+            // Assert — the page's script measures the steppers no renderer does, the one held to 20rem too narrow for its names
+            await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync("Static False");
+            await Assertions.Expect(page.Locator("#narrow .forma-stepper")).ToContainClassAsync("is-compact");
+            await Assertions.Expect(page.Locator("#wide .forma-stepper")).Not.ToContainClassAsync("is-compact");
+        }
         // How far a stepper's steps reach past it, and each step: its name, whether its name is drawn, how far its top stands from
         // the first step's, and whether it is the current step.
         private const string ReadSteps = """
