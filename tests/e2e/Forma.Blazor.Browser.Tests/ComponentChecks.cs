@@ -101,6 +101,28 @@ public static partial class ComponentChecks
     public static Task WaitForInViewportAsync(ILocator item)
         => Assertions.Expect(item).ToBeInViewportAsync(new() { Timeout = 30000 });
 
+    /// <summary>Waits until the element <paramref name="selector"/> names stands whole within the view of the strip that scrolls it, to within the pixel a browser scrolling by whole pixels can leave past the strip's end.</summary>
+    /// <param name="page">The page read.</param>
+    /// <param name="selector">The element's selector.</param>
+    /// <returns>A task that completes once the element is in the strip's view.</returns>
+    public static Task WaitForInStripViewAsync(IPage page, string selector)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        return page.WaitForFunctionAsync(
+            """
+            selector => {
+                const element = document.querySelector(selector);
+                const view = element?.closest('.forma-freeze-pane-viewport');
+                if (!view) return false;
+                const box = element.getBoundingClientRect();
+                const bounds = view.getBoundingClientRect();
+                return box.left >= bounds.left - 1 && box.right <= bounds.right + 1;
+            }
+            """,
+            selector);
+    }
+
     /// <summary>Waits until the input router has registered the element <paramref name="selector"/> names, which a component's script does once it answers input.</summary>
     /// <param name="page">The page read.</param>
     /// <param name="selector">The element's selector.</param>

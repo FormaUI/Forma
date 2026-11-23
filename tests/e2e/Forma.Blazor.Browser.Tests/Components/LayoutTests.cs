@@ -386,7 +386,7 @@ public sealed class LayoutTests
             await using var _ = context;
 
             // Assert — the strip scrolls rather than the tab standing past its end
-            await Assertions.Expect(page.Locator("#tab-audit")).ToBeInViewportAsync(new() { Ratio = 1 });
+            await WaitForInStripViewAsync(page, "#tab-audit");
             await Assertions.Expect(page.Locator("#tab-overview")).Not.ToBeInViewportAsync(new() { Ratio = 1 });
         }
 

@@ -44,7 +44,7 @@ public sealed partial class NavigationTests
             // Assert — the narrow strip follows too, bringing its newly current tab into view
             await Assertions.Expect(page).ToHaveURLAsync(new Regex($"{Regex.Escape(membersPath)}$"));
             await Assertions.Expect(tabs.Locator("[aria-current=page]")).ToHaveTextAsync("Members");
-            await Assertions.Expect(page.Locator("#narrow-link-tabs [aria-current=page]")).ToBeInViewportAsync(new() { Ratio = 1 });
+            await ComponentChecks.WaitForInStripViewAsync(page, "#narrow-link-tabs [aria-current=page]");
         }
 
         [Theory]
@@ -59,7 +59,7 @@ public sealed partial class NavigationTests
             // its last tab into view
             await Assertions.Expect(page.Locator("#link-tabs [aria-current=page]")).ToHaveTextAsync("Settings");
             await Assertions.Expect(page.Locator("#link-tabs [aria-current]")).ToHaveCountAsync(1);
-            await Assertions.Expect(page.Locator("#narrow-link-tabs [aria-current=page]")).ToBeInViewportAsync(new() { Ratio = 1 });
+            await ComponentChecks.WaitForInStripViewAsync(page, "#narrow-link-tabs [aria-current=page]");
         }
     }
 
