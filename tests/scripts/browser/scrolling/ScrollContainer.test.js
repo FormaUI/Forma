@@ -283,6 +283,31 @@ describe('ScrollContainer', () => {
             expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 0, behavior: 'instant' });
         });
 
+        it('brings the whole of an element ending part of a pixel past the end into view', () => {
+            rect(container.querySelector('#c'), 200.4, 300.4);
+
+            new ScrollContainer(container).reveal(container.querySelector('#c'));
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 1, behavior: 'instant' });
+        });
+
+        it('rounds the offset so an element starting part of a pixel before the start comes whole into view', () => {
+            sizeScroller(container, { scrollLeft: 150 });
+            rect(container.querySelector('#a'), -20.6, 79.4);
+
+            new ScrollContainer(container).reveal(container.querySelector('#a'));
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 129, behavior: 'instant' });
+        });
+
+        it('rounds the offset so an element ending part of a pixel past the end comes whole into view', () => {
+            rect(container.querySelector('#c'), 250, 350.3);
+
+            new ScrollContainer(container).reveal(container.querySelector('#c'));
+
+            expect(container.scrollTo).toHaveBeenCalledExactlyOnceWith({ left: 51, behavior: 'instant' });
+        });
+
         it('leaves an element in view where it stands, reporting that it did not move', () => {
             const isMoving = new ScrollContainer(container).reveal(container.querySelector('#b'));
 

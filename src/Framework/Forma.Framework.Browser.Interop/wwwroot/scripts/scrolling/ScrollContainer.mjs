@@ -111,10 +111,17 @@ export class ScrollContainer {
         const end = this.#isBlock ? rect.bottom - box.top : isMirrored ? box.right - rect.left : rect.right - box.left;
         const viewEnd = this.#isBlock ? this.#element.clientHeight : this.#element.clientWidth;
         const offset = this.#offset();
-        const distance = start < inset ? start - inset : end > viewEnd ? Math.min(start - inset, end - viewEnd) : 0;
-        const nextOffset = Math.max(0, Math.min(this.#slack(), offset + distance));
+        const startDistance = start - inset;
+        const endDistance = end - viewEnd;
 
-        if (Math.abs(nextOffset - offset) < 1) {
+        // An offset aligning one of the element's edges is rounded so that edge lands inside the view, since a browser may keep
+        // the offset in whole pixels.
+        const target = startDistance < 0 || (endDistance > 0 && startDistance < endDistance)
+            ? Math.floor(offset + startDistance)
+            : endDistance > 0 ? Math.ceil(offset + endDistance) : offset;
+        const nextOffset = Math.max(0, Math.min(this.#slack(), target));
+
+        if (nextOffset === offset) {
             return false;
         }
 
