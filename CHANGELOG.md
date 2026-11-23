@@ -23,6 +23,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
   reads as its field's own. An anchored popover publishes its anchor's width as `--forma-popover-anchor-inline-size`.
 - `ChartRange.SevenDays` charts a week of one-day periods, and a chart fills the inline size it's given, holding
   `--chart-min-inline-size` where a host sizes it by its content, as a start-justified grid does.
+- A chart's table, hidden from view for assistive technology, no longer widens a page narrower than its columns.
 - `FormaLineChart` draws a span: with `Range` set to `ChartRange.Span` it runs from `Start` to `End`, or from its first
   point's time to its last's where either is null, each point at its own time, and labels round steps of the calendar
   from minutes to years, as [the charts design](docs/charts-design.md) sets out. A `ChartPoint` carries a `Mark`, a
