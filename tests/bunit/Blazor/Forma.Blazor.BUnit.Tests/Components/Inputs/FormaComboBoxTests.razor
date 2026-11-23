@@ -191,7 +191,7 @@
         }
 
         [Fact]
-        public async Task Should_commit_text_naming_an_option_exactly_as_the_field_commits_it_before_its_focus_is_reported_leaving()
+        public async Task Should_commit_text_naming_an_option_exactly_once_the_focus_is_reported_leaving_after_the_field_committed_it()
         {
             // Arrange
             using var ctx = new FormaComboBoxTests();
@@ -202,13 +202,69 @@
                 <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
             </FakeFormHost>);
 
-            // Act — the text and its commit arrive together, as the field is left, with no word yet of the focus leaving
+            // Act — the text and its commit arrive as the field is left, before the first word of the focus, which then says it left
             await fields.ChangeAsync(cut.Find("input"), "(utc+01:00) berlin");
+            var statusBeforeLeaving = model.Status;
+            await probe.ReportAsync(new FocusState(IsWithin: false));
 
             // Assert
             Assert.Multiple(
+                () => Assert.Equal(2, statusBeforeLeaving),
                 () => Assert.Equal(4, model.Status),
                 () => Assert.Equal("(UTC+01:00) Berlin", cut.Find("input").GetAttribute("value")));
+        }
+
+        [Fact]
+        public async Task Should_leave_text_the_field_commits_before_the_focus_is_first_reported_to_the_action_that_follows()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var router = new InputRouterProbe(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Status = 2 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Act — Enter commits the field's text as it chooses, before the focus watch has said the reader is in the field
+            await fields.TypeAsync(cut.Find("input"), "bogota");
+            await fields.CommitAsync(cut.Find("input"));
+            var textAfterCommit = fields.GetText(cut.Find("input"));
+            var expandedAfterCommit = cut.Find("input").GetAttribute("aria-expanded");
+            await PressAsync(router, cut, "combobox.choose", "Enter");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("bogota", textAfterCommit),
+                () => Assert.Equal("true", expandedAfterCommit),
+                () => Assert.Equal(3, model.Status));
+        }
+
+        [Fact]
+        public async Task Should_resolve_text_that_arrives_after_the_focus_is_reported_leaving()
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Status = 2 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+            await probe.ReportAsync(new FocusState(IsWithin: true));
+
+            // Act — the text is on its way as the focus leaves, the leaving reported first
+            var held = fields.CommitHeld(cut.Find("input"), "(utc+01:00) berlin");
+            var leaving = probe.ReportAsync(new FocusState(IsWithin: false));
+            await held.ReleaseAsync();
+            await leaving;
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Multiple(
+                () => Assert.Equal(4, model.Status),
+                () => Assert.Equal("(UTC+01:00) Berlin", cut.Find("input").GetAttribute("value")),
+                () => Assert.Equal("false", cut.Find("input").GetAttribute("aria-expanded"))));
         }
 
         [Fact]

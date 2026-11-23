@@ -109,6 +109,7 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
     private IDomObservation<FocusWatchOptions, FocusState>? _focusState;
     private ElementReference _anchorElement;
     private bool _isWithin;
+    private bool _isOutside;
     private bool _isTextFaulted;
 
     // The edit in progress: the text typed, the value it began over, which a different value bound from outside replaces.
@@ -367,15 +368,15 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
             _activeIndex = FindTakeableIndex(0, 1);
             Announce();
 
-            if (!IsOpen && !change.IsCommit)
+            if (!IsOpen && !change.IsCommit && !_isOutside)
             {
                 await Popover.OpenAsync(RootElement);
             }
         }
 
-        // The field commits its text as it's left, and the focus leaving can arrive before the text it commits, so a commit after the
-        // focus has left resolves the text as leaving resolves it; a commit while the field holds the focus, as one on Enter, leaves it.
-        if (change.IsCommit && !_isWithin)
+        // A commit made once the focus is known to have gone resolves the text as leaving does; one made while the focus is within, or
+        // before the focus is first reported, as one on Enter can be, leaves the text to the action that follows it.
+        if (change.IsCommit && _isOutside)
         {
             if (IsOpen)
             {
@@ -388,15 +389,24 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
         await InvokeAsync(StateHasChanged);
     }
 
-    // Leaving the field closes the list and resolves the text; a press on the list or the button keeps the focus, so only a move
-    // elsewhere leaves.
+    // Leaving the field closes the list and resolves the text once every edit the field sent before has arrived; a press on the list or
+    // the button keeps the focus, so only a move elsewhere leaves, and a first report finding the focus gone from an edited field leaves.
     private Task HandleFocusStateAsync(FocusState state)
         => InvokeAsync(async () =>
         {
-            var hasLeft = _isWithin && !state.IsWithin;
+            var hasLeft = !state.IsWithin && (_isWithin || (!_isOutside && _isEdited));
             _isWithin = state.IsWithin;
+            _isOutside = !state.IsWithin;
 
             if (!hasLeft)
+            {
+                return;
+            }
+
+            var isSettled = await _edits.SettleAsync();
+
+            // Back in the field while its edits arrived, the reader is still editing.
+            if (IsDisposed || _isWithin)
             {
                 return;
             }
@@ -406,7 +416,11 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
                 await Popover.CloseAsync();
             }
 
-            ResolveEdit();
+            if (isSettled)
+            {
+                ResolveEdit();
+            }
+
             StateHasChanged();
         });
 
