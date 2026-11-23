@@ -50,7 +50,8 @@ no services of their own, so the host registers Forma as the library's README se
 
 `Series` holds one to four `ChartSeries`, each a name and its `ChartPoint`s, a time and a value. A point
 stands in the period that holds its time; a period with no point, or with a point whose value is null,
-is a gap, which breaks a line and leaves a bar out, and never reads as zero.
+is a gap, which breaks a line and leaves a bar out, and never reads as zero. A value and a threshold are finite
+numbers: a chart refuses `NaN` or an infinity with an `ArgumentException` naming the series and the point's time.
 
 `FormaBarChart` takes the same parameters but `Band`, `Start` and `IncludeZero`, and draws each period's
 bars side by side in the order of `Series`.

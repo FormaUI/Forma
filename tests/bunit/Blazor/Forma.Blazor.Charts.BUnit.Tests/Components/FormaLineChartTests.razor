@@ -450,5 +450,18 @@
                 () => Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaLineChart Title="Load" Series='[CreateSeries("A")]' Range="ChartRange.Hour" Start="DateTimeOffset.UnixEpoch" />)),
                 () => Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaLineChart Title="Load" Series="[CreateMarkedSeries(5)]" Range="ChartRange.Span" />)));
         }
+
+        [Fact]
+        public async Task Should_refuse_a_value_or_a_threshold_that_isn_t_a_finite_number()
+        {
+            // Arrange
+            using var ctx = await CreateContextAsync();
+            var undefined = CreateSeries("Load", ("2026-11-23T08:00:00Z", double.NaN));
+
+            // Act & Assert
+            Assert.Multiple(
+                () => Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaLineChart Title="Load" Series="[undefined]" Range="ChartRange.Span" />)),
+                () => Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaLineChart Title="Load" Series='[CreateSeries("Load")]' Threshold='new ChartThreshold(double.NegativeInfinity, "Floor")' />)));
+        }
     }
 }

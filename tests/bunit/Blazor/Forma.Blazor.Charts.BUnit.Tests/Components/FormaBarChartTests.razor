@@ -81,5 +81,20 @@
             // Act & Assert
             Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaBarChart Title="Failures" Series='[CreateSeries("Failures")]' Range="ChartRange.Span" />));
         }
+
+        [Fact]
+        public async Task Should_refuse_a_value_or_a_threshold_that_isn_t_a_finite_number()
+        {
+            // Arrange
+            using var ctx = await CreateContextAsync();
+            var undefined = CreateSeries("Failures", ("2026-11-23T08:00:00Z", double.NaN));
+            var unbounded = CreateSeries("Failures", ("2026-11-23T08:00:00Z", double.PositiveInfinity));
+
+            // Act & Assert
+            Assert.Multiple(
+                () => Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaBarChart Title="Failures" Series="[undefined]" End="End" />)),
+                () => Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaBarChart Title="Failures" Series="[unbounded]" End="End" />)),
+                () => Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaBarChart Title="Failures" Series='[CreateSeries("Failures")]' End="End" Threshold='new ChartThreshold(double.NaN, "Alert level")' />)));
+        }
     }
 }

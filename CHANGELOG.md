@@ -13,6 +13,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   every option the browser's own list could post.
 - A `LinkTab` stands at the strip's far end by `IsTrailing`, named as a data record's flags are. To migrate, set
   `IsTrailing` where a tab set `Trailing`.
+- `FormaLineChart` and `FormaBarChart` refuse a point's value or a threshold that isn't a finite number with an
+  `ArgumentException` naming the series and the point's time, where drawing such a value failed.
 
 ## `1.0.0-preview.15`
 

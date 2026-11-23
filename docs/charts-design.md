@@ -30,7 +30,9 @@ question for a reader who can't see it.
   A point stands in the period that holds its time, the last one listed where several fall in one period, and a point
   outside the range is not drawn.
 - **A gap is a gap.** A period with no point, or with a point whose value is null, draws nothing: a line breaks
-  there, a bar is missing, a band stops, and the table and readout say there is no data. A gap is never a zero.
+  there, a bar is missing, a band stops, and the table and readout say there is no data. A gap is never a zero, and
+  never `NaN`: null is the host saying a period has no data, while a value that isn't a finite number is an error in
+  the host's figures, which the chart refuses rather than hiding as a gap.
 - **One axis.** Every series shares one value scale, from zero or the lowest value beneath it to the highest value or
   the threshold above it, rounded out to three or four even steps. A line chart whose values stand far from zero, such
   as an account's balance, leaves zero out with `IncludeZero`, fitting the scale to its values; a bar grows from zero,
