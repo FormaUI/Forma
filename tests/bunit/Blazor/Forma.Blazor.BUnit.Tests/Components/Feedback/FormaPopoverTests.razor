@@ -119,6 +119,67 @@
         }
 
         [Fact]
+        public async Task Should_open_and_hand_its_content_the_focus_only_once_its_scope_is_registered_though_it_renders_again_meanwhile()
+        {
+            // Arrange — rendered again while its scope's registration still waits on the browser
+            using var ctx = new FormaPopoverTests();
+            var register = new HeldObjectReferenceHandler("register");
+            ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js").AddInvocationHandler(register);
+            var script = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/AnchoredPopover.js");
+            var isRegistered = false;
+            bool? isRegisteredWhenOpened = null;
+            bool? isRegisteredWhenFocused = null;
+            script.SetupModule("attach", _ => true).SetupVoid("open", _ =>
+            {
+                isRegisteredWhenOpened ??= isRegistered;
+                return true;
+            }).SetVoidResult();
+            var cut = ctx.Render(@<FormaPopover Anchor="default" OnOpened="() => isRegisteredWhenFocused ??= isRegistered"><p>Content</p></FormaPopover>);
+            var popover = cut.FindComponent<FormaPopover>();
+            await popover.InvokeAsync(() => popover.Instance.OpenAsync(default));
+            popover.Render();
+
+            // Act
+            await cut.ReleaseAsync(() =>
+            {
+                isRegistered = true;
+                register.Answer(Assert.Single(register.HeldCalls), new FakeJSObjectReference((_, _) => null));
+            });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isRegisteredWhenOpened),
+                () => Assert.True(isRegisteredWhenFocused));
+        }
+
+        [Fact]
+        public async Task Should_stay_unopened_when_closed_while_its_scope_registers()
+        {
+            // Arrange — closed while its scope's registration still waits on the browser
+            using var ctx = new FormaPopoverTests();
+            var register = new HeldObjectReferenceHandler("register");
+            ctx.JSInterop.SetupModule("./_content/forma/input/scripts/InputRouter.js").AddInvocationHandler(register);
+            var script = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/behaviors/AnchoredPopover.js");
+            var popup = script.SetupModule("attach", _ => true);
+            popup.SetupVoid("open", _ => true).SetVoidResult();
+            var openedCount = 0;
+            var cut = ctx.Render(@<FormaPopover Anchor="default" OnOpened="() => openedCount++"><p>Content</p></FormaPopover>);
+            var popover = cut.FindComponent<FormaPopover>();
+            await popover.InvokeAsync(() => popover.Instance.OpenAsync(default));
+            var closing = popover.InvokeAsync(() => popover.Instance.CloseAsync());
+
+            // Act
+            await cut.ReleaseAsync(() => register.Answer(Assert.Single(register.HeldCalls), new FakeJSObjectReference((_, _) => null)));
+            await closing;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(popover.Instance.IsOpen),
+                () => Assert.Empty(popup.Invocations["open"]),
+                () => Assert.Equal(0, openedCount));
+        }
+
+        [Fact]
         public async Task Should_register_its_content_s_routes()
         {
             // Arrange

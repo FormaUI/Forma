@@ -53,6 +53,7 @@ public sealed partial class FormaPopover : FormaElementBase
     private InputRegistration _inputRegistration = default!;
     private InputProfile _inputProfile = default!;
     private ElementReference _trigger;
+    private bool _isClosing;
 
     /// <summary>Whether the popover is open.</summary>
     public bool IsOpen { get; private set; }
@@ -111,16 +112,27 @@ public sealed partial class FormaPopover : FormaElementBase
 
     private async Task CloseAsync(bool returnsFocus)
     {
-        if (!IsOpen)
+        if (!IsOpen || _isClosing)
         {
             return;
         }
 
-        // The scope goes before the content does, so nothing is routed to a popover on its way out.
-        await _inputRegistration.SyncAsync(RootElement, _inputProfile, shouldRegister: false);
+        // Until the open state changes, the popup is the close's, so a render waiting on the scope opens nothing.
+        _isClosing = true;
 
-        // Focus is moved while the content is still in the document, so where it is can be seen.
-        await _popup.CloseAsync(returnsFocus);
+        try
+        {
+            // The scope goes before the content does, so nothing is routed to a popover on its way out.
+            await _inputRegistration.SyncAsync(RootElement, _inputProfile, shouldRegister: false);
+
+            // Focus is moved while the content is still in the document, so where it is can be seen.
+            await _popup.CloseAsync(returnsFocus);
+        }
+        finally
+        {
+            _isClosing = false;
+        }
+
         await SetOpenAsync(false);
     }
 
@@ -136,7 +148,11 @@ public sealed partial class FormaPopover : FormaElementBase
     {
         // The scope is in place before the focus moves into the content, so a key typed as it moves is routed to the popover.
         await _inputRegistration.SyncAsync(RootElement, _inputProfile, shouldRegister: IsOpen, isActive: IsOpen, within: [_trigger]);
-        await _popup.SyncAsync(IsOpen, RootElement, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment);
+
+        if (!_isClosing)
+        {
+            await _popup.SyncAsync(IsOpen, RootElement, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment);
+        }
     }
 
     /// <inheritdoc />

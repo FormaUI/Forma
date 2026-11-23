@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>An input registration a component holds on one of its elements, in step with the profile and the hold the component last gave it.</summary>
-/// <remarks>Each sync records what the component wants; one settle runs at a time and carries on until what is registered matches the latest sync, so a profile or an element that changed while a registration was in flight is applied once it lands, and a registration that lands unwanted is released at once. The parent and the elements counted as inside are given only when a registration is made, so a change to either releases the registration and makes it again. A registration the router refused is asked for again on the next sync. Disposal lets a settle underway finish before it releases what the settle registered and the reference the router calls back through goes, without waiting for it, so a runtime that never answers the settle, as a web view being torn down answers none, can't hold disposal open.</remarks>
+/// <remarks>Each sync records what the component wants and joins the settle underway, starting one where none is; a settle carries on until what is registered matches the latest sync, so every sync returns once it does, a profile or an element that changed while a registration was in flight is applied once it lands, and a registration that lands unwanted is released at once. The parent and the elements counted as inside are given only when a registration is made, so a change to either releases the registration and makes it again. A registration the router refused is asked for again on the next sync. Disposal lets a settle underway finish before it releases what the settle registered and the reference the router calls back through goes, without waiting for it, so a runtime that never answers the settle, as a web view being torn down answers none, can't hold disposal open.</remarks>
 public sealed class InputRegistration : IAsyncDisposable
 {
     private readonly InputRouter _router;
@@ -45,12 +45,11 @@ public sealed class InputRegistration : IAsyncDisposable
 
         _request = new Request(element, profile, shouldRegister && !_isDisposed, isActive, parent, within);
 
-        if (_settle is { IsCompleted: false })
+        if (_settle is not { IsCompleted: false })
         {
-            return;
+            _settle = SettleAsync();
         }
 
-        _settle = SettleAsync();
         await _settle;
     }
 

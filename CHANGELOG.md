@@ -9,6 +9,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 *Unreleased*
 
+- `InputRegistration.SyncAsync` returns once what is registered matches the latest sync, waiting for a registration
+  still in flight, so a [`FormaPopover`](docs/component-catalog.md#formapopover) rendered again while its scope
+  registers opens, and hands its content the focus, only once that scope routes the keys typed into it. A sync made
+  while a registration was in flight returned at once.
 - `FormaComboBox` chooses one value from `Options`, a list of `SelectOption`s that narrows as the reader types: every
   word must start or appear in an option's label, ignoring case and accents, and a label starting with the text comes
   first. Typing changes only the text and the arrows only the active option; a value is committed when an option is

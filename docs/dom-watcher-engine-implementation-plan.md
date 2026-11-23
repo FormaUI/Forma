@@ -76,7 +76,7 @@ The component keeps its rendering, CSS variables, labels, options, frozen-edge c
 
 An arrow requests a local action: the arrow buttons stay native buttons, and their activation reaches the step through the input router's click handling, so Enter and Space activate them as a click does, a disabled arrow does nothing, the host can remap the action, and one activation runs one step. The managed click handler goes, so an activation cannot step twice. C# receives the boundary state its rendering needs.
 
-The observation and the wheel interaction both use latest-request settlement, following `InputRegistration`'s requested-against-applied discipline. Its `SyncAsync` returns at once when another settle is underway; the new shared helper instead defines awaitable settlement, so every caller joins settlement of the latest known request; intermediate configurations can be superseded without being applied. `InputRegistration` itself is left unchanged in this migration.
+The observation and the wheel interaction both use latest-request settlement, following `InputRegistration`'s requested-against-applied discipline. The new shared helper defines awaitable settlement, so every caller joins settlement of the latest known request; intermediate configurations can be superseded without being applied. `InputRegistration` itself is left unchanged in this migration.
 
 One internal registration identifier and generation reject obsolete callbacks and late attachments. State transport is bounded per subscription, and application and transport failures are reported through the existing logger and browser diagnostics. Batching, acknowledgements, generic event descriptors, occurrence queues, command-causality tokens, reconnect epochs and a universal result hierarchy each wait for the evidence named under growing the design, below.
 
@@ -188,7 +188,7 @@ Each of these is added when its evidence or first consumer arrives.
 | Cross-subscription batching | Counters showing channel overhead worth addressing, kept within per-subscription timing and bounds. |
 | Additional public statuses or results | A real caller that branches differently on them. |
 | Protocol epochs | An owner or session replacement that could confuse messages despite the registration lifetime guards. |
-| Sharing the settling helper with `InputRegistration` | The DOM registrations having demonstrated awaitable settlement. It changes observable behavior, since overlapping calls would then await settlement, and takes a review of its own. |
+| Sharing the settling helper with `InputRegistration` | The DOM registrations having demonstrated awaitable settlement. `InputRegistration`'s callers already join its settle as theirs do. |
 
 ## Migrating folders
 

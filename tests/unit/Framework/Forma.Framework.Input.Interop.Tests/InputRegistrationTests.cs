@@ -193,9 +193,10 @@ public sealed class InputRegistrationTests
             var pending = registration.SyncAsync(Element, Profile);
 
             // Act
-            await registration.SyncAsync(Element, Profile, shouldRegister: false);
+            var release = registration.SyncAsync(Element, Profile, shouldRegister: false);
             script.Held!.Answer(script.Handle);
             await pending;
+            await release;
 
             // Assert
             Assert.False(registration.IsRegistered);
@@ -213,9 +214,10 @@ public sealed class InputRegistrationTests
             var pending = registration.SyncAsync(Element, Profile);
 
             // Act
-            await registration.SyncAsync(Element, OtherProfile);
+            var change = registration.SyncAsync(Element, OtherProfile);
             script.Held!.Answer(script.Handle);
             await pending;
+            await change;
 
             // Assert
             var update = Assert.Single(script.Handle.Calls, call => call.Identifier == "update");
@@ -233,13 +235,37 @@ public sealed class InputRegistrationTests
             var first = registration.SyncAsync(Element, Profile);
 
             // Act
-            await registration.SyncAsync(Element, Profile);
+            var second = registration.SyncAsync(Element, Profile);
             script.Held!.Answer(script.Handle);
             await first;
+            await second;
 
             // Assert
             Assert.True(registration.IsRegistered);
             Assert.Equal(1, script.Module.Calls.Count(call => call.Identifier == "register"));
+        }
+
+        [Fact]
+        public async Task Should_return_from_a_sync_made_while_a_registration_is_in_flight_once_the_registration_lands()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var script = new RecordingScript(holdsRegister: true);
+            await using var router = CreateRouter(script, loggerFactory);
+            await using var registration = new InputRegistration(router);
+            var first = registration.SyncAsync(Element, Profile);
+
+            // Act
+            var second = registration.SyncAsync(Element, Profile, isActive: true);
+            var isReturnedEarly = second.IsCompleted;
+            script.Held!.Answer(script.Handle);
+            await first;
+            await second;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(isReturnedEarly),
+                () => Assert.True(registration.IsActive));
         }
 
         [Fact]
