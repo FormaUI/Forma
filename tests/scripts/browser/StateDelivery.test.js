@@ -36,6 +36,29 @@ describe('StateDelivery', () => {
         expect(sent.map(send => send.state)).toEqual(['first']);
     });
 
+    it('tells what waits for it once it has opened, in that task, after sending what it held', async () => {
+        let sentWhenOpened = null;
+        const opened = vi.fn(() => { sentWhenOpened = sent.map(send => send.state); });
+        delivery.offer('first');
+        delivery.open(opened);
+
+        expect(opened).not.toHaveBeenCalled();
+
+        await settle();
+
+        expect(opened).toHaveBeenCalledOnce();
+        expect(sentWhenOpened).toEqual(['first']);
+    });
+
+    it('tells nothing of an opening its close overtook', async () => {
+        const opened = vi.fn();
+        delivery.open(opened);
+        delivery.close();
+        await settle();
+
+        expect(opened).not.toHaveBeenCalled();
+    });
+
     it('folds what was measured before it opened into the latest sample', async () => {
         delivery.offer('first');
         delivery.offer('second');

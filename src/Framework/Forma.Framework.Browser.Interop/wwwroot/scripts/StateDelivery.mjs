@@ -36,8 +36,11 @@ export class StateDelivery {
         return this.#isSuspended;
     }
 
-    /** Starts delivery. */
-    open() {
+    /**
+     * Starts delivery in the next task, sending what was measured meanwhile.
+     * @param {() => void} [opened] Called in that task once what was waiting is sent, unless delivery closes first.
+     */
+    open(opened = () => {}) {
         if (this.#isOpen || this.#openTimeout !== null || this.#isClosed) {
             return;
         }
@@ -46,6 +49,7 @@ export class StateDelivery {
             this.#openTimeout = null;
             this.#isOpen = true;
             this.#flush();
+            opened();
         }, 0);
     }
 

@@ -205,14 +205,22 @@ describe('DomWatcher', () => {
     });
 
     it('describes the observations made of an element by capability, once they deliver and until they are released', async () => {
+        const inside = document.createElement('button');
+        track.appendChild(inside);
         const before = describeElement(track).capabilities;
 
         await attach(runtimeKey, receiver, { token: '2', generation: 1, capability: 'focus', target: track, options: {} });
         const attached = describeElement(track).capabilities;
+        await nextTask();
+        const delivering = describeElement(track).capabilities;
+        inside.focus();
+        const sentOnceDescribed = receiver.invokeMethodAsync.mock.calls.map(([, , , state]) => state.value);
         detach(runtimeKey, '2', 1);
 
         expect(before).toEqual([]);
-        expect(attached).toEqual(['focus']);
+        expect(attached).toEqual([]);
+        expect(delivering).toEqual(['focus']);
+        expect(sentOnceDescribed).toEqual([{ isWithin: true }]);
         expect(describeElement(track).capabilities).toEqual([]);
         expect(describeElement(null).capabilities).toEqual([]);
     });
@@ -220,8 +228,20 @@ describe('DomWatcher', () => {
     it('describes an observation while any owner still makes it', async () => {
         await attach(runtimeKey, receiver, request());
         await attach('owner-2', fakeOwner(), request());
+        await nextTask();
 
         release('owner-2');
+
+        expect(describeElement(track).capabilities).toEqual(['scroll']);
+    });
+
+    it('takes back nothing another owner\'s observation is described by when one is released before it delivers', async () => {
+        await attach(runtimeKey, receiver, request());
+        await nextTask();
+        await attach('owner-2', fakeOwner(), request());
+
+        release('owner-2');
+        await nextTask();
 
         expect(describeElement(track).capabilities).toEqual(['scroll']);
     });
@@ -231,6 +251,7 @@ describe('DomWatcher', () => {
 
         detach(runtimeKey, '1', 2);
         await overtaken;
+        await nextTask();
 
         expect(describeElement(track).capabilities).toEqual([]);
     });

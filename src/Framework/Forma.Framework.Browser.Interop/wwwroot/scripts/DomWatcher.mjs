@@ -74,9 +74,8 @@ export class DomWatcher {
             { deliversEveryState: Observer.deliversEveryState === true });
         const observer = new Observer(target, options, state => delivery.offer(state));
         const hold = this.#elements.get(target).hold(() => this.#registrations.remove(token, generation));
+        let isCounted = false;
 
-        // Counted before the install, whose refusal releases the resource and with it the count, and in the task that opens the delivery.
-        observedCapabilities.add(target, capability);
         this.#registrations.install(token, generation, {
             observer,
             delivery,
@@ -84,12 +83,21 @@ export class DomWatcher {
                 hold.dispose();
                 observer.dispose();
                 delivery.close();
-                observedCapabilities.remove(target, capability);
+
+                if (isCounted) {
+                    observedCapabilities.remove(target, capability);
+                }
             },
         });
 
         const baseline = observer.read();
-        delivery.open();
+
+        // Counted once its delivery opens, so whatever acts on the description finds each later state sent as it is measured; a release
+        // before then, a refused install's among them, closes the delivery and has no count to take back.
+        delivery.open(() => {
+            isCounted = true;
+            observedCapabilities.add(target, capability);
+        });
 
         return baseline;
     }
