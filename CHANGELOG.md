@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.15`
 
-*Unreleased*
+*November 23, 2026*
 
 - Every role takes a fifth member, `-ink-color`: its color as text and marks on the paper or on its subtle tint, such as
   a link, the combo box's offer to add text, or a badge's label. It is the role's `-emphasis-color` in the light theme,
@@ -30,6 +30,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
   point's value in the readout and the table. A `ChartSeries` that `IsFilled` washes the area beneath its line,
   `IncludeZero` fits a line chart's scale to its values where it is false, and either chart's `ShowTable` puts its
   table behind a toggle every reader opens.
+
 ## `1.0.0-preview.14`
 
 *November 23, 2026*
