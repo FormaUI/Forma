@@ -331,7 +331,10 @@
 }
 
 .forma-chart-bar.is-negative {
-    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+    border-start-start-radius: 0;
+    border-start-end-radius: 0;
+    border-end-start-radius: var(--radius-sm);
+    border-end-end-radius: var(--radius-sm);
 }
 
 /* ---- Readout ---- */
@@ -543,40 +546,59 @@
     font-size: var(--font-size-xs);
 }
 
-/* Forced colors keep each line's dash and marker; each bar takes a texture of its own. */
+/* Forced colors draw every series and mark in the text color on the canvas, each line keeping its dash and marker and
+   each mark its shape, and keep the readout's edge, which its shadow drew. */
 @media (forced-colors: active) {
+    .forma-chart {
+        --chart-surface-color: Canvas;
+    }
+
+    .forma-chart-series-1,
+    .forma-chart-series-2,
+    .forma-chart-series-3,
+    .forma-chart-series-4,
+    .forma-chart-mark-key {
+        --forma-chart-series-color: CanvasText;
+    }
+
     .forma-chart-line,
     .forma-chart-marker,
     .forma-chart-bar,
+    .forma-chart-key,
     .forma-chart-key::before,
-    .forma-chart-key::after {
+    .forma-chart-key::after,
+    .forma-chart-mark-key {
         forced-color-adjust: none;
     }
 
-    .forma-chart-line {
-        stroke: CanvasText;
+    .forma-chart-readout {
+        outline: 1px solid CanvasText;
     }
+}
 
-    .forma-chart-marker,
-    .forma-chart-key::after,
-    .forma-bar-chart .forma-chart-key,
-    .forma-chart-bar {
-        background: CanvasText;
+/* A printed chart keeps its marks, which are drawn as backgrounds a browser leaves out of a print by default. */
+@media print {
+    .forma-chart {
+        print-color-adjust: exact;
     }
+}
 
+/* In forced colors and in print, each bar but the first takes a texture of its own, so its series stays apart without color. */
+@media print, (forced-colors: active) {
     .forma-chart-bar.forma-chart-series-2,
     .forma-bar-chart .forma-chart-series-2 .forma-chart-key {
-        background: repeating-linear-gradient(45deg, CanvasText 0 2px, Canvas 2px 5px);
+        background: repeating-linear-gradient(45deg, var(--forma-chart-series-color) 0 2px, var(--chart-surface-color) 2px 5px);
     }
 
     .forma-chart-bar.forma-chart-series-3,
     .forma-bar-chart .forma-chart-series-3 .forma-chart-key {
-        background: repeating-linear-gradient(135deg, CanvasText 0 2px, Canvas 2px 5px);
+        background: repeating-linear-gradient(135deg, var(--forma-chart-series-color) 0 2px, var(--chart-surface-color) 2px 5px);
     }
 
     .forma-chart-bar.forma-chart-series-4,
     .forma-bar-chart .forma-chart-series-4 .forma-chart-key {
-        background: repeating-linear-gradient(45deg, CanvasText 0 1px, Canvas 1px 4px), repeating-linear-gradient(135deg, CanvasText 0 1px, Canvas 1px 4px);
-        background-blend-mode: darken;
+        background:
+            repeating-linear-gradient(45deg, var(--forma-chart-series-color) 0 1px, transparent 1px 4px),
+            repeating-linear-gradient(135deg, var(--forma-chart-series-color) 0 1px, var(--chart-surface-color) 1px 4px);
     }
 }

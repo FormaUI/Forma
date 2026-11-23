@@ -22,6 +22,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   links, `FormaStepper`'s completed steps, a field's error, required mark and valid or invalid border, a selected
   option's or menu item's check, a selected item of the data view, a destructive menu item and the explorer's folders
   among them. In the light theme they take the emphasis, a little darker than the solid several drew in.
+- In forced colors a chart draws every series, mark and legend key in the text color, where a bar's and a mark's key
+  could vanish, and a printed chart keeps its bars, markers and keys, each bar but the first in a texture of its own, as
+  [the charts design](docs/charts-design.md) sets out.
 
 ## `1.0.0-preview.15`
 

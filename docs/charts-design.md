@@ -50,7 +50,9 @@ question for a reader who can't see it.
   to keep its color. A line also carries its own dash, solid, long dash, dot and dash-dot in that order, and its own
   marker, circle, square, triangle and diamond, drawn at a point standing alone between gaps, at the line's last
   point and at the period being read. Bars stand in each period in the legend's order. Two or more series carry a
-  legend whose keys draw the dash, the marker or the bar, and forced colors and print add a texture to each bar.
+  legend whose keys draw the dash, the marker or the bar. Forced colors draw every series and mark in the text color,
+  and forced colors and print give each series' bars but the first's a texture of its own, which the legend's key
+  repeats.
 - **Reading the values.** Hovering a period, or moving through the periods from the keyboard, shows its readout: the
   period in full, then each series' value before its name, keyed by its mark, or no data. The keyboard reaches the
   periods through one native range control, so the arrows, Home and End move between periods in the page's direction

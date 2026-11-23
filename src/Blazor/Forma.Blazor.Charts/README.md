@@ -125,7 +125,7 @@ culture runs time from the right.
 
 Each series takes the color of its place in `Series`, so a host keeps a series in its place to keep its
 color. A line also draws its own dash and marker, and each period's bars stand in the series' order, so a
-series is told apart without color; forced colors and print add a texture to each bar.
+series is told apart without color; forced colors and print give each series' bars but the first's a texture.
 
 The colors are tokens a theme sets:
 
