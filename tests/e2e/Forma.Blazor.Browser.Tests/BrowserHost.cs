@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Browser.Tests;
 
+using System.Net.NetworkInformation;
+
 using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Builder;
@@ -135,6 +137,7 @@ public sealed class BrowserHost : IAsyncLifetime
     {
         var context = await Browser.NewContextAsync(new() { BaseURL = (address ?? await GetAddressAsync().ConfigureAwait(false)).ToString() }).ConfigureAwait(false);
         var page = await context.NewPageAsync().ConfigureAwait(false);
+        WatchConnectionFailures(page, "ERR_NO_BUFFER_SPACE");
 
         return (context, page);
     }
@@ -148,6 +151,7 @@ public sealed class BrowserHost : IAsyncLifetime
 
         var context = await (await GetWebKitAsync().ConfigureAwait(false)).NewContextAsync(new() { BaseURL = address.ToString() }).ConfigureAwait(false);
         var page = await context.NewPageAsync().ConfigureAwait(false);
+        WatchConnectionFailures(page, "Could not connect to server");
 
         return (context, page);
     }
@@ -363,6 +367,49 @@ public sealed class BrowserHost : IAsyncLifetime
         {
             await DisposeInTurnAsync(disposals, index + 1).ConfigureAwait(false);
         }
+    }
+
+    // Writes the machine's TCP connections to the check's output the first time one of the page's requests fails with failure, the
+    // engine's text for a connection the machine refuses once its ports are spent, so the check says what held them.
+    private static void WatchConnectionFailures(IPage page, string failure)
+    {
+        var output = TestContext.Current.TestOutputHelper;
+        var hasDescribed = 0;
+
+        page.RequestFailed += (_, request) =>
+        {
+            if (request.Failure?.Contains(failure, StringComparison.Ordinal) != true || Interlocked.Exchange(ref hasDescribed, 1) == 1)
+            {
+                return;
+            }
+
+            try
+            {
+                output?.WriteLine($"The request for {request.Url} failed with {request.Failure}. {DescribeTcpConnections()}");
+            }
+            catch (InvalidOperationException)
+            {
+                // The check has ended, and its output with it.
+            }
+        };
+    }
+
+    // The machine's TCP connections: how many are in each state, and the remote ports the most of them wait in TIME_WAIT on.
+    private static string DescribeTcpConnections()
+    {
+        var connections = IPGlobalProperties.GetIPGlobalProperties().GetActiveTcpConnections();
+        var states = connections
+            .GroupBy(connection => connection.State)
+            .OrderByDescending(group => group.Count())
+            .Select(group => $"{group.Count()} {group.Key}");
+        var waitingPorts = connections
+            .Where(connection => connection.State == TcpState.TimeWait)
+            .GroupBy(connection => connection.RemoteEndPoint.Port)
+            .OrderByDescending(group => group.Count())
+            .Take(5)
+            .Select(group => $"{group.Count()} on port {group.Key}");
+
+        return $"The machine's TCP connections: {string.Join(", ", states)}; in TIME_WAIT, {string.Join(", ", waitingPorts)}.";
     }
 
     private static string GetFolder(string variable, string fallback)
