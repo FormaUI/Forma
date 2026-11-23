@@ -420,8 +420,14 @@ public sealed class ExplorerTests
 
     public sealed class ExplorerThumbnails(BrowserHost host)
     {
+        // Whether every still has loaded.
+        private const string Loaded = "() => [...document.querySelectorAll('img.forma-explorer-thumbnail, .forma-explorer-thumbnail-marked img')].every(image => image.complete && image.naturalWidth > 0)";
+
         // Whether every frame the page draws has decoded and every still has loaded.
-        private const string Drawn = "() => [...document.querySelectorAll('.forma-explorer-thumbnail-marked video')].every(video => video.readyState >= 2 && video.videoWidth > 0) && [...document.querySelectorAll('img.forma-explorer-thumbnail, .forma-explorer-thumbnail-marked img')].every(image => image.complete && image.naturalWidth > 0)";
+        private const string Drawn = $"() => [...document.querySelectorAll('.forma-explorer-thumbnail-marked video')].every(video => video.readyState >= 2 && video.videoWidth > 0) && ({Loaded})()";
+
+        // Whether every video stands over its kind's glyph, which shows wherever the browser draws no frame.
+        private const string OverGlyph = "() => [...document.querySelectorAll('.forma-explorer-thumbnail-marked video')].every(video => video.previousElementSibling?.matches('.forma-explorer-thumbnail-glyph') && video.previousElementSibling.firstElementChild !== null)";
 
         // What each of an explorer's thumbnails draws, by the item's name, a frame, a still or a glyph, and how far its mark stands
         // inside the thumbnail's end and bottom edges.
@@ -444,14 +450,17 @@ public sealed class ExplorerTests
             var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer-thumbnails");
             await using var _ = context;
 
-            // Act
+            // Act — WebKit's Windows build decodes a clip through the machine's own media decoders, which a Windows server can
+            // lack, so there the frame is awaited no further than the video drawn over its glyph
             await Assertions.Expect(page.Locator(".forma-explorer-thumbnail-marked video")).ToHaveCountAsync(2);
-            await page.WaitForFunctionAsync(Drawn);
+            await page.WaitForFunctionAsync(runtime == "webkit" && OperatingSystem.IsWindows() ? Loaded : Drawn);
+            var isOverGlyph = await page.EvaluateAsync<bool>(OverGlyph);
             var tiles = await page.EvaluateAsync<string[]>(Thumbnails, "thumbnails");
             var cells = await page.EvaluateAsync<string[]>(Thumbnails, "details");
 
             // Assert — a tile's mark stands just inside its corner, and a cell's fills it
             Assert.Multiple(
+                () => Assert.True(isOverGlyph, "A video doesn't stand over its kind's glyph, so a frame the browser can't draw leaves the thumbnail empty."),
                 () => Assert.Equal(
                     ["clip.mp4 frame, marked 4 4", "document.pdf still, marked 4 4", "picture.svg still", "still.mp4 still, marked 4 4", "unviewed.mp4 glyph"],
                     tiles),
