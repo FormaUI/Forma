@@ -6,10 +6,12 @@
     private static ChartSeries CreateSeries(string name, params (string Time, double? Value)[] points)
         => new(name, [.. points.Select(point => new ChartPoint(DateTimeOffset.Parse(point.Time, CultureInfo.InvariantCulture), point.Value))]);
 
-    private static FormaBarChartTests CreateContext()
+    // The context in English, its clock on the universal one.
+    private static async Task<FormaBarChartTests> CreateContextAsync()
     {
         var ctx = new FormaBarChartTests();
         ctx.Clock.SetLocalTimeZone(TimeZoneInfo.Utc);
+        await ctx.ChangeCultureAsync("en-US");
 
         return ctx;
     }
@@ -17,10 +19,10 @@
     public sealed class Bars
     {
         [Fact]
-        public void Should_stand_each_period_s_bars_in_its_series_order_and_leave_a_gap_where_one_has_no_data()
+        public async Task Should_stand_each_period_s_bars_in_its_series_order_and_leave_a_gap_where_one_has_no_data()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var failures = CreateSeries("Failures", ("2026-11-22T08:00:00Z", 4), ("2026-11-23T08:00:00Z", 6));
             var retries = CreateSeries("Retries", ("2026-11-23T08:00:00Z", 2));
 
@@ -37,10 +39,10 @@
         }
 
         [Fact]
-        public void Should_grow_each_bar_from_the_baseline_to_its_value()
+        public async Task Should_grow_each_bar_from_the_baseline_to_its_value()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var storage = CreateSeries("Storage", ("2026-11-23T08:00:00Z", 30), ("2026-11-22T08:00:00Z", -10));
 
             // Act
@@ -56,10 +58,10 @@
         }
 
         [Fact]
-        public void Should_say_it_has_no_data_where_no_series_holds_a_value()
+        public async Task Should_say_it_has_no_data_where_no_series_holds_a_value()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
 
             // Act
             var cut = ctx.Render(@<FormaBarChart Title="Failures per day" Series='[CreateSeries("Failures")]' End="End" />);

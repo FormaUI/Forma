@@ -7,11 +7,12 @@
     private static ChartSeries CreateSeries(string name, params (string Time, double? Value)[] points)
         => new(name, [.. points.Select(point => new ChartPoint(DateTimeOffset.Parse(point.Time, CultureInfo.InvariantCulture), point.Value))]);
 
-    // The context's clock in the time zone named.
-    private static FormaLineChartTests CreateContext(string timeZoneId = "UTC")
+    // The context in English, its clock in the time zone named.
+    private static async Task<FormaLineChartTests> CreateContextAsync(string timeZoneId = "UTC")
     {
         var ctx = new FormaLineChartTests();
         ctx.Clock.SetLocalTimeZone(TimeZoneInfo.FindSystemTimeZoneById(timeZoneId));
+        await ctx.ChangeCultureAsync("en-US");
 
         return ctx;
     }
@@ -26,10 +27,10 @@
     public sealed class Periods
     {
         [Fact]
-        public void Should_cover_a_day_of_hours_ending_with_the_hour_that_holds_its_end()
+        public async Task Should_cover_a_day_of_hours_ending_with_the_hour_that_holds_its_end()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T14:30:00Z", CultureInfo.InvariantCulture);
 
             // Act
@@ -44,10 +45,10 @@
         }
 
         [Fact]
-        public void Should_hold_the_hours_that_passed_on_a_day_its_zone_turns_its_clock_back()
+        public async Task Should_hold_the_hours_that_passed_on_a_day_its_zone_turns_its_clock_back()
         {
             // Arrange — Madrid's clock turns back from 03:00 to 02:00 on October 25, 2026
-            using var ctx = CreateContext("Europe/Madrid");
+            using var ctx = await CreateContextAsync("Europe/Madrid");
             var end = DateTimeOffset.Parse("2026-10-25T11:30:00Z", CultureInfo.InvariantCulture);
 
             // Act
@@ -63,10 +64,10 @@
         }
 
         [Fact]
-        public void Should_start_each_day_at_its_zone_s_midnight()
+        public async Task Should_start_each_day_at_its_zone_s_midnight()
         {
             // Arrange — Kolkata stands five and a half hours ahead of the universal clock
-            using var ctx = CreateContext("Asia/Kolkata");
+            using var ctx = await CreateContextAsync("Asia/Kolkata");
             var end = DateTimeOffset.Parse("2026-11-23T00:00:00Z", CultureInfo.InvariantCulture);
             var visits = CreateSeries("Visits", ("2026-11-22T18:00:00Z", 5), ("2026-11-22T19:00:00Z", 7));
 
@@ -83,10 +84,10 @@
         }
 
         [Fact]
-        public void Should_cover_thirteen_months_ending_with_the_month_that_holds_its_end()
+        public async Task Should_cover_thirteen_months_ending_with_the_month_that_holds_its_end()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T12:00:00Z", CultureInfo.InvariantCulture);
 
             // Act
@@ -99,10 +100,10 @@
         }
 
         [Fact]
-        public void Should_end_with_the_period_holding_its_clock_s_now_where_no_end_is_given()
+        public async Task Should_end_with_the_period_holding_its_clock_s_now_where_no_end_is_given()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             ctx.Clock.SetUtcNow(DateTimeOffset.Parse("2026-11-23T14:30:00Z", CultureInfo.InvariantCulture));
 
             // Act
@@ -116,10 +117,10 @@
     public sealed class Values
     {
         [Fact]
-        public void Should_place_each_point_in_its_period_and_say_a_period_without_one_holds_no_data()
+        public async Task Should_place_each_point_in_its_period_and_say_a_period_without_one_holds_no_data()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
             var load = CreateSeries("Load", ("2026-11-23T11:58:10Z", 120), ("2026-11-23T11:58:50Z", 130), ("2026-11-23T11:59:00Z", null), ("2026-11-23T09:00:00Z", 999));
 
@@ -134,10 +135,10 @@
         }
 
         [Fact]
-        public void Should_write_its_values_and_scale_by_its_format_in_its_culture()
+        public async Task Should_write_its_values_and_scale_by_its_format_in_its_culture()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
             var load = CreateSeries("Load", ("2026-11-23T12:00:00Z", 1234.5));
 
@@ -154,10 +155,10 @@
     public sealed class Lines
     {
         [Fact]
-        public void Should_break_a_line_where_a_period_has_no_data()
+        public async Task Should_break_a_line_where_a_period_has_no_data()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
             var load = CreateSeries("Load", ("2026-11-23T11:56:00Z", 1), ("2026-11-23T11:57:00Z", 2), ("2026-11-23T11:59:00Z", 3), ("2026-11-23T12:00:00Z", 4));
 
@@ -169,10 +170,10 @@
         }
 
         [Fact]
-        public void Should_mark_a_point_standing_alone_between_gaps_and_its_series_last_point()
+        public async Task Should_mark_a_point_standing_alone_between_gaps_and_its_series_last_point()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
             var load = CreateSeries("Load", ("2026-11-23T11:50:00Z", 1), ("2026-11-23T11:56:00Z", 2), ("2026-11-23T11:57:00Z", 3));
 
@@ -187,10 +188,10 @@
         }
 
         [Fact]
-        public void Should_fill_its_band_between_its_two_series_and_mark_its_threshold_within_its_scale()
+        public async Task Should_fill_its_band_between_its_two_series_and_mark_its_threshold_within_its_scale()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
             var median = CreateSeries("Median", ("2026-11-23T11:59:00Z", 100), ("2026-11-23T12:00:00Z", 120));
             var slowest = CreateSeries("95th percentile", ("2026-11-23T11:59:00Z", 300), ("2026-11-23T12:00:00Z", 340));
@@ -207,10 +208,10 @@
         }
 
         [Fact]
-        public void Should_draw_a_legend_for_two_series_and_none_for_one()
+        public async Task Should_draw_a_legend_for_two_series_and_none_for_one()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
 
             // Act
@@ -227,10 +228,10 @@
     public sealed class Reading
     {
         [Fact]
-        public void Should_read_its_last_period_from_its_range_control_until_the_reader_moves_it()
+        public async Task Should_read_its_last_period_from_its_range_control_until_the_reader_moves_it()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
             var load = CreateSeries("Load", ("2026-11-23T11:59:00Z", 3), ("2026-11-23T12:00:00Z", 4));
             var cut = ctx.Render(@<FormaLineChart Title="Load" Series="[load]" Range="ChartRange.Hour" End="end" />);
@@ -251,10 +252,10 @@
         }
 
         [Fact]
-        public void Should_leave_its_range_control_out_and_keep_its_table_when_rendered_statically()
+        public async Task Should_leave_its_range_control_out_and_keep_its_table_when_rendered_statically()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
             var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
 
@@ -268,10 +269,10 @@
         }
 
         [Fact]
-        public void Should_name_its_figure_and_table_by_its_title_and_hide_its_drawing_from_assistive_technology()
+        public async Task Should_name_its_figure_and_table_by_its_title_and_hide_its_drawing_from_assistive_technology()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
 
             // Act
@@ -289,7 +290,7 @@
         public async Task Should_write_its_table_in_the_culture_it_switches_to()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             var end = DateTimeOffset.Parse("2026-11-23T12:00:30Z", CultureInfo.InvariantCulture);
             var cut = ctx.Render(@<FormaLineChart Title="Load" Series='[CreateSeries("Load")]' Range="ChartRange.Hour" End="end" />);
 
@@ -307,10 +308,10 @@
     public sealed class Validation
     {
         [Fact]
-        public void Should_refuse_no_series_more_than_four_and_a_band_within_one_series()
+        public async Task Should_refuse_no_series_more_than_four_and_a_band_within_one_series()
         {
             // Arrange
-            using var ctx = CreateContext();
+            using var ctx = await CreateContextAsync();
             ChartSeries[] five = [CreateSeries("A"), CreateSeries("B"), CreateSeries("C"), CreateSeries("D"), CreateSeries("E")];
 
             // Act & Assert
