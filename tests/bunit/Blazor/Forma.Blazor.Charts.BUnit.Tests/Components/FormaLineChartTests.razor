@@ -108,13 +108,13 @@
         {
             // Arrange
             using var ctx = await CreateContextAsync();
-            ctx.Clock.SetUtcNow(DateTimeOffset.Parse("2026-11-23T14:30:00Z", CultureInfo.InvariantCulture));
+            ctx.Clock.SetUtcNow(DateTimeOffset.Parse("2040-06-15T14:30:00Z", CultureInfo.InvariantCulture));
 
             // Act
             var cut = ctx.Render(@<FormaLineChart Title="Page load" Series='[CreateSeries("Median")]' Range="ChartRange.Day" />);
 
             // Assert
-            Assert.Equal(FormatHour(2026, 11, 23, 14), ReadTable(cut)[^1][0]);
+            Assert.Equal(FormatHour(2040, 6, 15, 14), ReadTable(cut)[^1][0]);
         }
     }
 
