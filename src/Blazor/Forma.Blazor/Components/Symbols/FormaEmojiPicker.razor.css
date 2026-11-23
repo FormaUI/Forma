@@ -39,8 +39,8 @@
 
 /* The underline keeps the selected tab legible with color removed. */
 .forma-emoji-picker-tab[aria-selected="true"] {
-    border-block-end-color: var(--forma-emoji-picker-tab-active-color, var(--primary-color));
-    color: var(--forma-emoji-picker-tab-active-color, var(--primary-color));
+    border-block-end-color: var(--forma-emoji-picker-tab-active-color, var(--primary-ink-color));
+    color: var(--forma-emoji-picker-tab-active-color, var(--primary-ink-color));
 }
 
 .forma-emoji-picker-tab:focus-visible {

@@ -32,7 +32,7 @@
 
 @media (hover: hover) {
     .forma-color-picker-swatch-wrapper:hover .forma-color-picker-swatch {
-        border-color: var(--primary-color);
+        border-color: var(--primary-ink-color);
     }
 }
 

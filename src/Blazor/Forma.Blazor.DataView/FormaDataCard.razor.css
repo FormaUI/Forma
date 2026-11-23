@@ -27,12 +27,12 @@
 
 /* A selected card takes the tint and an emphasized border; the check in its corner says so without color. */
 .forma-data-card-selected {
-    border-color: var(--primary-color);
+    border-color: var(--primary-ink-color);
     background: var(--forma-data-card-selected-bg-color, var(--primary-subtle-color));
 }
 
 .forma-data-card-selected .forma-data-card-name {
-    color: var(--primary-color);
+    color: var(--primary-ink-color);
     font-weight: 700;
 }
 

@@ -34,7 +34,7 @@
 }
 
 .forma-data-list-item-selected .forma-data-list-item-name {
-    color: var(--primary-color);
+    color: var(--primary-ink-color);
     font-weight: 700;
 }
 
@@ -64,7 +64,7 @@
 }
 
 ::deep .forma-data-list-item-check {
-    color: var(--primary-color);
+    color: var(--primary-ink-color);
 }
 
 /* The marker carries the focus but cannot show it, so the row draws the ring. */

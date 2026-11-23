@@ -51,7 +51,7 @@
 
 @media (hover: hover) {
     .forma-multi-select-trigger:hover:not(:disabled) {
-        border-color: var(--primary-color);
+        border-color: var(--primary-ink-color);
     }
 }
 
@@ -126,7 +126,7 @@
 
 ::deep .forma-multi-select-add {
     justify-content: flex-start;
-    color: var(--primary-color);
+    color: var(--primary-ink-color);
 }
 
 @media (pointer: coarse) {

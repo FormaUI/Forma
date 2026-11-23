@@ -33,12 +33,12 @@
 /* A field's validation colors the frame, which the outline draws. */
 .forma-textarea.modified.valid {
     border-color: transparent;
-    outline-color: var(--forma-valid-color, var(--success-color));
+    outline-color: var(--forma-valid-color, var(--success-ink-color));
 }
 
 .forma-textarea.modified.invalid {
     border-color: transparent;
-    outline-color: var(--forma-invalid-color, var(--danger-color));
+    outline-color: var(--forma-invalid-color, var(--danger-ink-color));
 }
 
 /* Forced colors paint a transparent border in the text's color, so the borders take the area's own, and focus shows as an outline. */

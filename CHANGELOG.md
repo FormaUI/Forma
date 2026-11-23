@@ -17,6 +17,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `IsTrailing` where a tab set `Trailing`.
 - `FormaLineChart` and `FormaBarChart` refuse a point's value or a threshold that isn't a finite number with an
   `ArgumentException` naming the series and the point's time, where drawing such a value failed.
+- Every component draws a role's color as text or a mark on the paper in the role's `-ink-color`, so a dark theme that
+  sets the ink reads them: the current tab of `FormaTabs`, `FormaLinkTabs` and `FormaEmojiPicker`, `FormaBreadcrumb`'s
+  links, `FormaStepper`'s completed steps, a field's error, required mark and valid or invalid border, a selected
+  option's or menu item's check, a selected item of the data view, a destructive menu item and the explorer's folders
+  among them. In the light theme they take the emphasis, a little darker than the solid several drew in.
 
 ## `1.0.0-preview.15`
 

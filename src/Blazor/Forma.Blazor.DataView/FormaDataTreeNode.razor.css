@@ -50,7 +50,7 @@
 
 .forma-data-tree-node-selected .forma-data-tree-node-name,
 .forma-data-tree-node-current .forma-data-tree-node-name {
-    color: var(--primary-color);
+    color: var(--primary-ink-color);
     font-weight: 700;
 }
 

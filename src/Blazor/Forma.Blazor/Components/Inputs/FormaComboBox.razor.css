@@ -75,7 +75,7 @@
 
 .forma-combo-box-option-check {
     flex-shrink: 0;
-    color: var(--primary-color);
+    color: var(--primary-ink-color);
 }
 
 /* An option that can't be chosen, or the offer to add while an addition is under way, reads in the disabled tone. */

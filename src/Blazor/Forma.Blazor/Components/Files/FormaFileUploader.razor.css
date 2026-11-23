@@ -42,14 +42,14 @@
 }
 
 .forma-file-uploader-completed .forma-file-uploader-mark {
-    color: var(--success-color);
+    color: var(--success-ink-color);
 }
 
 .forma-file-uploader-failed .forma-file-uploader-mark,
 .forma-file-uploader-failed .forma-file-uploader-state,
 .forma-file-uploader-refused .forma-file-uploader-mark,
 .forma-file-uploader-refused .forma-file-uploader-state {
-    color: var(--danger-color);
+    color: var(--danger-ink-color);
 }
 
 .forma-file-uploader-refused {

@@ -301,7 +301,8 @@ light scale holds it as `--gray-100`. A dark theme, whose scale runs from dark p
 
 A role's color does two jobs on a page, and a dark theme gives each its own shade. Its `-emphasis-color` is the fill
 a hover or an active state is cut from, under the role's `-fg-color` text, and its `-ink-color` is the role's color
-as text and marks on the paper or on its subtle tint, such as a link. In a light theme the ink is the emphasis, the
+as text and marks on the paper or on its subtle tint, such as a link, a current tab, a selected option's check or a
+field's error and its border. In a light theme the ink is the emphasis, the
 solid mixed toward black, which reads well both ways. On dark paper text wants a lighter shade than a fill under
 white text does, so a dark theme sets the ink of each role it uses, and keeps the emphasis a fill dark enough for its
 text:

@@ -222,12 +222,12 @@
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-active {
     --forma-status-badge-bg-color: color-mix(in srgb, var(--info-color) 14%, transparent);
-    --forma-status-badge-fg-color: var(--info-color);
+    --forma-status-badge-fg-color: var(--info-ink-color);
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-native {
     --forma-status-badge-bg-color: color-mix(in srgb, var(--success-color) 14%, transparent);
-    --forma-status-badge-fg-color: var(--success-color);
+    --forma-status-badge-fg-color: var(--success-ink-color);
 }
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-none {
@@ -237,5 +237,5 @@
 
 .forma-input-inspector ::deep .forma-input-inspector-badge-modal {
     --forma-status-badge-bg-color: color-mix(in srgb, var(--danger-color) 12%, transparent);
-    --forma-status-badge-fg-color: var(--danger-color);
+    --forma-status-badge-fg-color: var(--danger-ink-color);
 }

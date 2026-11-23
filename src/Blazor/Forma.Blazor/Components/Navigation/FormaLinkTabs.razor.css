@@ -54,8 +54,8 @@
 
 /* After the hover, so the current tab keeps its mark under the pointer. */
 .forma-link-tab[aria-current="page"] {
-    color: var(--primary-color);
-    border-block-end-color: var(--primary-color);
+    color: var(--primary-ink-color);
+    border-block-end-color: var(--primary-ink-color);
     font-weight: 500;
 }
 

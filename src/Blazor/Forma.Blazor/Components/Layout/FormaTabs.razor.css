@@ -59,8 +59,8 @@
 }
 
 .forma-tab-button.active {
-    color: var(--primary-color);
-    border-block-end-color: var(--primary-color);
+    color: var(--primary-ink-color);
+    border-block-end-color: var(--primary-ink-color);
     font-weight: 500;
 }
 

@@ -88,7 +88,7 @@
 ::deep .forma-dropdown-menu-item-check {
     margin-inline-start: auto;
     padding-inline-start: var(--space-4);
-    color: var(--forma-dropdown-menu-selected-color, var(--primary-color));
+    color: var(--forma-dropdown-menu-selected-color, var(--primary-ink-color));
 }
 
 @media (pointer: coarse) {
@@ -108,13 +108,13 @@
 
     ::deep .forma-dropdown-menu-item.is-destructive:hover:not(:disabled) {
         background: var(--forma-dropdown-menu-destructive-bg-color, var(--danger-subtle-color));
-        color: var(--forma-dropdown-menu-destructive-color, var(--danger-color));
+        color: var(--forma-dropdown-menu-destructive-color, var(--danger-ink-color));
     }
 }
 
 /* Keyboard focus takes the hover emphasis. */
 ::deep .forma-dropdown-menu-item.is-destructive:focus-visible {
-    color: var(--forma-dropdown-menu-destructive-color, var(--danger-color));
+    color: var(--forma-dropdown-menu-destructive-color, var(--danger-ink-color));
 }
 
 ::deep .forma-dropdown-menu-item:focus-visible .forma-icon {

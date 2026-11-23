@@ -13,7 +13,7 @@
 
 .forma-breadcrumb-root-icon {
     display: inline-flex;
-    color: var(--primary-color);
+    color: var(--primary-ink-color);
     flex-shrink: 0;
 }
 
@@ -71,7 +71,7 @@ span.forma-breadcrumb-item {
 }
 
 ::deep button.forma-breadcrumb-item {
-    --forma-button-ghost-hover-color: var(--primary-color);
+    --forma-button-ghost-hover-color: var(--primary-ink-color);
 }
 
 .forma-breadcrumb-item.is-current,
@@ -87,6 +87,6 @@ span.forma-breadcrumb-item {
 
 /* The open menu's trigger takes the accent. */
 ::deep .forma-breadcrumb-chevron[aria-expanded="true"] {
-    --forma-button-ghost-color: var(--primary-color);
+    --forma-button-ghost-color: var(--primary-ink-color);
 }
 

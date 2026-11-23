@@ -11,8 +11,8 @@
 /* A pressed toggle: the hover fill and the accent color. */
 ::deep .forma-toggle-button-pressed {
     --forma-button-ghost-bg-color: var(--button-quiet-hover-color);
-    --forma-button-ghost-color: var(--primary-color);
-    --forma-button-ghost-hover-color: var(--primary-color);
+    --forma-button-ghost-color: var(--primary-ink-color);
+    --forma-button-ghost-hover-color: var(--primary-ink-color);
 }
 
 /* Disabled, a pressed toggle keeps its fill, so whether it is on still shows. */

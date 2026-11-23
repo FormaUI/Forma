@@ -33,7 +33,7 @@
 .forma-explorer-folder-tree ::deep .forma-explorer-folder-icon {
     display: inline-flex;
     font-size: var(--font-size-sm);
-    color: var(--primary-color);
+    color: var(--primary-ink-color);
 }
 
 .forma-explorer-folder-tree ::deep .forma-data-tree-node .forma-data-tree-node-detail {

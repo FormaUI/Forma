@@ -15,7 +15,7 @@
 .forma-composer-dialog-error {
     margin: 0;
     font-size: var(--font-size-sm);
-    color: var(--forma-composer-dialog-error-color, var(--danger-color));
+    color: var(--forma-composer-dialog-error-color, var(--danger-ink-color));
 }
 
 /* The fields carry the scope of the dialog that renders them. */

@@ -51,11 +51,11 @@
 
 /* Validation states */
 ::deep .forma-field-input.modified.valid {
-    border-color: var(--forma-valid-color, var(--success-color));
+    border-color: var(--forma-valid-color, var(--success-ink-color));
 }
 
 ::deep .forma-field-input.modified.invalid {
-    border-color: var(--forma-invalid-color, var(--danger-color));
+    border-color: var(--forma-invalid-color, var(--danger-ink-color));
 }
 
 /* ---------- label ---------- */
@@ -139,7 +139,7 @@
 
 /* ---------- required asterisk ---------- */
 .forma-field-required {
-    color: var(--forma-required-color, var(--danger-color));
+    color: var(--forma-required-color, var(--danger-ink-color));
 }
 
 /* ---------- description ---------- */
@@ -159,7 +159,7 @@
 
 .forma-field-message {
     display: block;
-    color: var(--forma-invalid-color, var(--danger-color));
+    color: var(--forma-invalid-color, var(--danger-ink-color));
 }
 
 .forma-field-message + .forma-field-message {

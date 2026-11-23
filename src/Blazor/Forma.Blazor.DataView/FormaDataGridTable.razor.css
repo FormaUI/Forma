@@ -228,7 +228,7 @@ td.forma-data-grid-menu-column {
 
 /* The caption is a ghost button with no inline padding, so it starts on the gutter the boxes below it sit on. */
 ::deep .forma-data-grid-master-caption {
-    --forma-button-ghost-color: var(--primary-color);
+    --forma-button-ghost-color: var(--primary-ink-color);
     padding-inline: 0;
     font-weight: inherit;
 }
@@ -251,7 +251,7 @@ td.forma-data-grid-menu-column {
 }
 
 ::deep .forma-data-grid-editor.invalid {
-    border-color: var(--danger-color);
+    border-color: var(--danger-ink-color);
 }
 
 ::deep input[type="checkbox"].forma-data-grid-editor {

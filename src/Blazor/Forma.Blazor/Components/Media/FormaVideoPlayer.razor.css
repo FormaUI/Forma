@@ -43,7 +43,7 @@
     padding-block: var(--space-3);
     font-size: var(--font-size-sm);
     text-align: center;
-    color: var(--forma-video-player-fallback-color, var(--primary-color));
+    color: var(--forma-video-player-fallback-color, var(--primary-ink-color));
 }
 /* The iframe player the service replaces its markup with stands in for the link. */
 [role="group"]:has(iframe) > .forma-video-player-fallback {

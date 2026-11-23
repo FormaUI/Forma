@@ -121,8 +121,8 @@ a.forma-stepper-target {
 
 /* --- Completed --- */
 .forma-stepper-step.is-completed .forma-stepper-marker {
-    border-color: var(--forma-stepper-active-color, var(--primary-color));
-    color: var(--forma-stepper-active-color, var(--primary-color));
+    border-color: var(--forma-stepper-active-color, var(--primary-ink-color));
+    color: var(--forma-stepper-active-color, var(--primary-ink-color));
 }
 
 .forma-stepper-step.is-completed .forma-stepper-target {

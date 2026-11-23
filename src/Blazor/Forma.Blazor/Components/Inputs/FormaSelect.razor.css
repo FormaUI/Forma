@@ -20,7 +20,7 @@
 
 @media (hover: hover) {
     .forma-select-trigger:hover:not(:disabled) {
-        border-color: var(--primary-color);
+        border-color: var(--primary-ink-color);
     }
 }
 
@@ -115,7 +115,7 @@
 
 .forma-select-option-check {
     flex-shrink: 0;
-    color: var(--primary-color);
+    color: var(--primary-ink-color);
 }
 
 .forma-select-empty {

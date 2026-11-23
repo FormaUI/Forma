@@ -23,11 +23,11 @@
 /* Valid shows once the value is modified; invalid shows at once, since a submitted untouched
    field is invalid without being modified. */
 .forma-number-input.modified.valid {
-    border-color: var(--forma-valid-color, var(--success-color));
+    border-color: var(--forma-valid-color, var(--success-ink-color));
 }
 
 .forma-number-input.invalid {
-    border-color: var(--forma-invalid-color, var(--danger-color));
+    border-color: var(--forma-invalid-color, var(--danger-ink-color));
 }
 
 /* ---------- adornment ---------- */

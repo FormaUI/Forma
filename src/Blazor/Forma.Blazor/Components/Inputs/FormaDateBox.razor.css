@@ -6,7 +6,7 @@
 
 /* ---------- root ---------- */
 .forma-date-box {
-    --forma-date-box-primary-color: var(--primary-color);
+    --forma-date-box-primary-color: var(--primary-ink-color);
     --forma-date-box-radius: var(--radius-md);
 
     position: relative;
@@ -67,7 +67,7 @@
 /* ---------- clear ---------- */
 /* Clear floats at the end of the trigger, in the danger color. */
 ::deep .forma-date-box-clear {
-    --forma-button-ghost-hover-color: var(--danger-color);
+    --forma-button-ghost-hover-color: var(--danger-ink-color);
     --forma-button-ghost-hover-bg-color: var(--danger-subtle-color);
     position: absolute;
     inset-inline-end: var(--space-2);
