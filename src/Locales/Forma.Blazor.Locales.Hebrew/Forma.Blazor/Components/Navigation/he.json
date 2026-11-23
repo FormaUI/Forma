@@ -24,5 +24,9 @@
     "Commands": "פקודות",
     "No commands match.": "אין פקודות מתאימות.",
     "[$ plural; one: # command; other: # commands; $]": "[$ plural; one: פקודה אחת; two: שתי פקודות; other: # פקודות; $]"
+  },
+  "FormaLinkTabs": {
+    "Scroll Tabs Back": "גלילת לשוניות אחורה",
+    "Scroll Tabs Forward": "גלילת לשוניות קדימה"
   }
 }

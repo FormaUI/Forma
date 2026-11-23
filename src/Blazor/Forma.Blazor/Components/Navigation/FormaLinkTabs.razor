@@ -1,0 +1,30 @@
+@namespace Forma.Blazor.Components.Navigation
+@inherits FormaElementBase
+<nav id="@Id"
+     data-rid="@Context.RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
+     aria-label="@Label">
+    @* The strip keeps to one line, scrolling behind an arrow at each end the tabs continue past. *@
+    <FormaFreezePane Class="forma-link-tab-strip" Options="StripOptions">
+        <ul class="forma-link-tab-list">
+            @for (var index = 0; index < Items.Count; index++)
+            {
+                var tab = Items[index];
+                var isCurrent = index == _currentIndex;
+
+                <li class="@GetItemClass(index)">
+                    <a class="forma-link-tab" href="@tab.Url" aria-current="@(isCurrent ? "page" : null)">
+                        @if (tab.Icon is { } icon)
+                        {
+                            <FormaIcon Icon="icon" Size="IconSize.Small" />
+                        }
+                        @tab.Title
+                    </a>
+                </li>
+            }
+        </ul>
+    </FormaFreezePane>
+</nav>

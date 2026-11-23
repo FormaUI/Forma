@@ -20,14 +20,15 @@ The gate runs every check [the verification design](verification-design.md#gates
 
 | Work | State |
 | --- | --- |
-| [Components to build](#components-to-build) | The roadmap, the combo box and the link tabs first |
+| [Components to build](#components-to-build) | The combo box and the link tabs built and in review, then the roadmap |
 | [Blazor Hybrid on phones and Macs](#blazor-hybrid-on-phones-and-macs) | The component suite on iOS and Mac Catalyst |
 | [The DOM watcher and engine](#the-dom-watcher-and-engine) | Steps 5 to 11 open |
 | [The composer's later phases](#the-composers-later-phases) | Planned |
 | [The build](#the-build) | Faster tests, a faster gate, and builds in processes of their own; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Two components on the roadmap, eight changes fixed |
+| [A host's requests](#a-hosts-requests) | Two components built and in review, eight changes fixed |
+| [A tab strip's current tab in view](#a-tab-strips-current-tab-in-view) | Open, with a proposal |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -118,7 +119,7 @@ Each feature, the document that states it, its state, and the month it first lan
 
 ## Components to build
 
-[The roadmap](component-roadmap.md) orders what is built next: the combo box and the link tabs; the notes editor, export button, design picker and font picker; the line and bar charts; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
+The combo box and the link tabs are built and in review. [The roadmap](component-roadmap.md) orders what is built after them: the notes editor, export button, design picker and font picker; the line and bar charts; the permission matrix, product options editor and filter editor; the remaining icon buttons; the context menu; the media picker; the launch bar; the gallery; and the image editor.
 
 <a id="blazor-hybrid-on-phones-and-macs"></a>
 
@@ -208,9 +209,9 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 
 ## A host's requests
 
-A host's list of what it needs from Forma named two components Forma lacks, `FormaComboBox` and `FormaLinkTabs`, which
-[the roadmap](component-roadmap.md) builds first, and eight changes to components that exist, listed here in the order
-they are taken, each with what the code does and its state.
+A host's list of what it needs from Forma named two components Forma lacked, `FormaComboBox` and `FormaLinkTabs`, both
+now built and in review, as [the catalog](component-catalog.md) marks them, and eight changes to components that exist,
+listed here in the order they are taken, each with what the code does and its state.
 
 | Request | What the code does | State |
 | --- | --- | --- |
@@ -222,6 +223,18 @@ they are taken, each with what the code does and its state.
 | The explorer's toolbar in a bounded height | The header keeps its height in an explorer held short, but an open upload panel kept its full height and pushed the media out of the explorer. The media now give way first, and the panel then scrolls what it holds | Fixed |
 | A row removed under the focus | A command removing the row it was run from, as a row's menu deleting the row does, left the focus on the page's body. The data view hands it to the item after it, else the one before, else the first control of its empty state | Fixed |
 | Sharing from a static page | `FormaShareMenu`'s trigger was disabled on a page rendered statically. It opens the browser's own popover there, its networks, email and download links and the commands a script runs disabled | Fixed |
+
+<a id="a-tab-strips-current-tab-in-view"></a>
+
+## A tab strip's current tab in view
+
+`FormaTabs` and `FormaLinkTabs` keep their tabs on one line in a freeze pane, which keeps the focused tab in view but
+opens at the strip's start. A strip whose current tab lies past its width, such as a later page's tab on a phone, draws
+it out of view until the reader scrolls to it.
+
+**Proposal:** the freeze pane takes the element its strip marks current, the tabs' active tab and the link tabs'
+current tab, and scrolls it into view along the inline axis as it is drawn and whenever it changes, as it already
+keeps the focused element in view.
 
 <a id="deferred"></a>
 

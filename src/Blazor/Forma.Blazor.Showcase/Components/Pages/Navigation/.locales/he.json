@@ -85,5 +85,32 @@
     "Say Hello": "אמירת שלום",
     "Count to Three": "ספירה עד שלוש",
     "Actions": "פעולות"
+  },
+  "FormaLinkTabsPage": {
+    "A strip of tabs that link to pages, for a section whose pages each have an address of their own. The tab of the page the reader is on is marked current by an underline as well as its color, and every tab is a link that works before the page is interactive.": "רצועת לשוניות המקשרות לדפים, עבור מקטע שלכל אחד מדפיו כתובת משלו. הלשונית של הדף שבו נמצא הקורא מסומנת כנוכחית בקו תחתון וגם בצבעה, וכל לשונית היא קישור שפועל עוד לפני שהדף אינטראקטיבי.",
+    "Pages of a Section": "דפים של מקטע",
+    "Each tab links to a page of the showcase's navigation section, and the tab of this page is marked current.": "כל לשונית מקשרת לדף במקטע הניווט של התצוגה, והלשונית של דף זה מסומנת כנוכחית.",
+    "Navigation Components": "רכיבי ניווט",
+    "Icons and a Trailing Tab": "סמלים ולשונית בסוף",
+    "Each tab draws an icon before its title, and the showcase's home tab stands at the far end. The home tab matches only its own address, so it isn't marked on this page beneath it.": "כל לשונית מציירת סמל לפני הכותרת שלה, ולשונית הבית של התצוגה עומדת בקצה הרחוק. לשונית הבית תואמת רק את הכתובת שלה עצמה, ולכן אינה מסומנת בדף זה, שנמצא תחתיה.",
+    "Showcase Pages": "דפי התצוגה",
+    "Past Their Width": "מעבר לרוחבן",
+    "In a narrow column the strip keeps to one line, and scrolls behind an arrow at each end its tabs continue past.": "בעמודה צרה הרצועה נשארת בשורה אחת, ונגללת מאחורי חץ בכל קצה שהלשוניות שלה ממשיכות מעבר לו.",
+    "Navigation and Layout Components": "רכיבי ניווט ופריסה",
+    "No Current Page": "אין דף נוכחי",
+    "None of these tabs links to this page or to a page it lies beneath, so none is marked current.": "אף אחת מהלשוניות האלה אינה מקשרת לדף זה או לדף שהוא נמצא תחתיו, ולכן אף אחת אינה מסומנת כנוכחית.",
+    "Input Components": "רכיבי קלט",
+    "Breadcrumb": "נתיב ניווט",
+    "Command Palette": "לוח פקודות",
+    "Link Tabs": "לשוניות קישור",
+    "Pagination": "עימוד",
+    "Stepper": "שלבים",
+    "Tabs": "לשוניות",
+    "Splitter": "מפצל",
+    "Showcase": "התצוגה",
+    "Freeze Pane": "חלונית מוקפאת",
+    "Text Box": "תיבת טקסט",
+    "Select": "בחירה",
+    "Combo Box": "תיבה משולבת"
   }
 }

@@ -25,6 +25,41 @@ public sealed partial class NavigationTests
         }
     }
 
+    public sealed class LinkTabs(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_go_to_the_page_of_the_tab_pressed_and_mark_that_tab_current(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "link-tabs");
+            await using var _ = context;
+            var tabs = page.Locator("#link-tabs");
+            var membersPath = "link-tabs/members";
+            await Assertions.Expect(tabs.Locator("[aria-current=page]")).ToHaveTextAsync("Overview");
+
+            // Act
+            await tabs.GetByRole(AriaRole.Link, new() { Name = "Members", Exact = true }).ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#result")).ToHaveTextAsync(new Regex($"{Regex.Escape(membersPath)}$"));
+            await Assertions.Expect(tabs.Locator("[aria-current=page]")).ToHaveTextAsync("Members");
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_mark_the_tab_of_the_page_it_opens_on_beneath_none_of_the_others(string runtime)
+        {
+            // Act
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "link-tabs/settings");
+            await using var _ = context;
+
+            // Assert — the overview matches only its own address, so a page beneath it leaves it unmarked
+            await Assertions.Expect(page.Locator("#link-tabs [aria-current=page]")).ToHaveTextAsync("Settings");
+            await Assertions.Expect(page.Locator("#link-tabs [aria-current]")).ToHaveCountAsync(1);
+        }
+    }
+
     public sealed partial class Stepper(BrowserHost host)
     {
         // How far a stepper's steps reach past it, and each step: its name, whether its name is drawn, how far its top stands from

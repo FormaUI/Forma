@@ -24,5 +24,9 @@
     "Commands": "Comandos",
     "No commands match.": "Ningún comando coincide.",
     "[$ plural; one: # command; other: # commands; $]": "[$ plural; one: # comando; other: # comandos; $]"
+  },
+  "FormaLinkTabs": {
+    "Scroll Tabs Back": "Desplazar Pestañas Atrás",
+    "Scroll Tabs Forward": "Desplazar Pestañas Adelante"
   }
 }

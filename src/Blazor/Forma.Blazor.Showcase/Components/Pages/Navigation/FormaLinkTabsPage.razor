@@ -1,0 +1,78 @@
+@page "/link-tabs"
+@attribute [ShowcasePage("FormaLinkTabs")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Navigation
+@using Microsoft.AspNetCore.Components.Routing
+
+<h1>FormaLinkTabs</h1>
+<p class="description">@L["A strip of tabs that link to pages, for a section whose pages each have an address of their own. The tab of the page the reader is on is marked current by an underline as well as its color, and every tab is a link that works before the page is interactive."]</p>
+
+<div class="demo-section">
+    <h2>@L["Pages of a Section"]</h2>
+    <p class="description">@L["Each tab links to a page of the showcase's navigation section, and the tab of this page is marked current."]</p>
+    <div class="demo-box">
+        <FormaLinkTabs Items="SectionTabs" Label="@L["Navigation Components"]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Icons and a Trailing Tab"]</h2>
+    <p class="description">@L["Each tab draws an icon before its title, and the showcase's home tab stands at the far end. The home tab matches only its own address, so it isn't marked on this page beneath it."]</p>
+    <div class="demo-box">
+        <FormaLinkTabs Items="IconTabs" Label="@L["Showcase Pages"]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Past Their Width"]</h2>
+    <p class="description">@L["In a narrow column the strip keeps to one line, and scrolls behind an arrow at each end its tabs continue past."]</p>
+    <div class="demo-box demo-box-narrow">
+        <FormaLinkTabs Items="ManyTabs" Label="@L["Navigation and Layout Components"]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["No Current Page"]</h2>
+    <p class="description">@L["None of these tabs links to this page or to a page it lies beneath, so none is marked current."]</p>
+    <div class="demo-box">
+        <FormaLinkTabs Items="ElsewhereTabs" Label="@L["Input Components"]" />
+    </div>
+</div>
+
+@code {
+    private LinkTab[] SectionTabs =>
+    [
+        new(L["Breadcrumb"], "breadcrumb"),
+        new(L["Command Palette"], "command-palette"),
+        new(L["Link Tabs"], "link-tabs"),
+        new(L["Pagination"], "pagination"),
+        new(L["Stepper"], "stepper"),
+    ];
+
+    private LinkTab[] IconTabs =>
+    [
+        new(L["Tabs"], "tabs") { Icon = Glyph.Layout },
+        new(L["Link Tabs"], "link-tabs") { Icon = Glyph.Link },
+        new(L["Splitter"], "splitter") { Icon = Glyph.Columns },
+        new(L["Showcase"], "") { Icon = Glyph.Home, Match = NavLinkMatch.All, Trailing = true },
+    ];
+
+    private LinkTab[] ManyTabs =>
+    [
+        new(L["Breadcrumb"], "breadcrumb"),
+        new(L["Command Palette"], "command-palette"),
+        new(L["Link Tabs"], "link-tabs"),
+        new(L["Pagination"], "pagination"),
+        new(L["Stepper"], "stepper"),
+        new(L["Tabs"], "tabs"),
+        new(L["Splitter"], "splitter"),
+        new(L["Freeze Pane"], "freeze-pane"),
+    ];
+
+    private LinkTab[] ElsewhereTabs =>
+    [
+        new(L["Text Box"], "text-box"),
+        new(L["Select"], "select"),
+        new(L["Combo Box"], "combo-box"),
+    ];
+}

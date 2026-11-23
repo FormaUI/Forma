@@ -1,0 +1,277 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Components.Navigation
+@using Forma.Framework.Localization
+@using Forma.Tests.Localization
+@using Microsoft.AspNetCore.Components.Routing
+@using Microsoft.Extensions.DependencyInjection
+
+@code {
+    private static LinkTab[] CreateStoreTabs() =>
+    [
+        new("Orders", "store/orders"),
+        new("Products", "store/products"),
+        new("Customers", "store/customers"),
+    ];
+
+    private static IReadOnlyList<string?> GetCurrentMarks<TComponent>(IRenderedComponent<TComponent> cut)
+        where TComponent : IComponent
+        => [.. cut.FindAll("a.forma-link-tab").Select(link => link.GetAttribute("aria-current"))];
+
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_a_navigation_landmark_named_by_its_label_holding_a_link_for_each_tab()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="CreateStoreTabs()" Label="Store" />);
+
+            // Assert
+            var links = cut.FindAll("nav.forma-link-tabs ul.forma-link-tab-list > li > a.forma-link-tab");
+            Assert.Multiple(
+                () => Assert.Equal("Store", cut.Find("nav").GetAttribute("aria-label")),
+                () => Assert.Equal(["Orders", "Products", "Customers"], links.Select(link => link.TextContent.Trim())),
+                () => Assert.Equal(["store/orders", "store/products", "store/customers"], links.Select(link => link.GetAttribute("href"))));
+        }
+
+        [Fact]
+        public void Should_scroll_its_strip_behind_arrows_named_for_its_tabs()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="CreateStoreTabs()" />);
+
+            // Assert
+            var strip = cut.FindComponent<FormaFreezePane>();
+            Assert.Multiple(
+                () => Assert.Equal(ScrollNavigation.Arrows, strip.Instance.Options.Navigation),
+                () => Assert.Equal("Scroll Tabs Back", strip.Instance.Options.ScrollBackLabel),
+                () => Assert.Equal("Scroll Tabs Forward", strip.Instance.Options.ScrollForwardLabel));
+        }
+
+        [Fact]
+        public void Should_draw_a_tab_s_icon_before_its_title()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            LinkTab[] tabs = [new("Orders", "store/orders") { Icon = Glyph.Cart }, new("Products", "store/products")];
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="tabs" />);
+
+            // Assert
+            var links = cut.FindAll("a.forma-link-tab");
+            Assert.Multiple(
+                () => Assert.Single(links[0].QuerySelectorAll(".forma-icon-sm")),
+                () => Assert.Empty(links[1].QuerySelectorAll(".forma-icon-sm")));
+        }
+
+        [Fact]
+        public void Should_mark_the_first_trailing_tab_so_it_and_those_after_sit_at_the_end()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            LinkTab[] tabs =
+            [
+                new("Orders", "store/orders"),
+                new("Settings", "store/settings") { Trailing = true },
+                new("Help", "store/help") { Trailing = true },
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="tabs" />);
+
+            // Assert
+            Assert.Equal(
+                [false, true, false],
+                cut.FindAll("li.forma-link-tab-item").Select(item => item.ClassList.Contains("forma-link-tab-item-trailing")));
+        }
+
+        [Fact]
+        public async Task Should_name_its_arrows_again_in_the_culture_switched_to()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            using var culture = new CultureFixture("en");
+            var entries = new CultureEntryDictionary(new Dictionary<string, IReadOnlyDictionary<string, string>>
+            {
+                ["he"] = new Dictionary<string, string> { ["Scroll Tabs Back"] = "גלילת לשוניות אחורה" },
+            });
+            ctx.Services.AddSingleton<IStringLocaleFactory>(new StubStringLocaleFactory(entries));
+            var cut = ctx.Render(@<FormaLinkTabs Items="CreateStoreTabs()" />);
+
+            // Act
+            await ctx.ChangeCultureAsync("en", "he");
+
+            // Assert
+            Assert.Equal("גלילת לשוניות אחורה", cut.FindComponent<FormaFreezePane>().Instance.Options.ScrollBackLabel);
+        }
+
+        [Fact]
+        public void Should_render_its_links_enabled_and_the_current_one_marked_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("store/products");
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="CreateStoreTabs()" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.All(cut.FindAll("a.forma-link-tab"), link => Assert.False(link.HasAttribute("disabled"))),
+                () => Assert.Equal([null, "page", null], GetCurrentMarks(cut)));
+        }
+
+        [Fact]
+        public void Should_refuse_a_tab_with_no_title()
+        {
+            // Act
+            var exception = Record.Exception(() => new LinkTab(" ", "store/orders"));
+
+            // Assert
+            Assert.IsType<ArgumentException>(exception);
+        }
+    }
+
+    public sealed class CurrentTab
+    {
+        [Fact]
+        public void Should_mark_the_tab_whose_address_is_the_page_s()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("store/orders");
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="CreateStoreTabs()" />);
+
+            // Assert
+            Assert.Equal(["page", null, null], GetCurrentMarks(cut));
+        }
+
+        [Fact]
+        public void Should_mark_a_tab_matching_by_prefix_on_a_page_beneath_it()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("store/orders/42");
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="CreateStoreTabs()" />);
+
+            // Assert
+            Assert.Equal(["page", null, null], GetCurrentMarks(cut));
+        }
+
+        [Fact]
+        public void Should_mark_only_the_tab_with_the_longest_address_of_those_the_page_matches()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("store/orders/42");
+            LinkTab[] tabs = [new("Store", "store"), new("Orders", "store/orders"), new("Home", "")];
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="tabs" />);
+
+            // Assert
+            Assert.Equal([null, "page", null], GetCurrentMarks(cut));
+        }
+
+        [Fact]
+        public void Should_leave_a_tab_matching_its_whole_address_unmarked_on_a_page_beneath_it()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("store/orders");
+            LinkTab[] tabs = [new("Home", "") { Match = NavLinkMatch.All }, new("Store", "store") { Match = NavLinkMatch.All }];
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="tabs" />);
+
+            // Assert
+            Assert.Equal([null, null], GetCurrentMarks(cut));
+        }
+
+        [Fact]
+        public void Should_compare_addresses_without_their_query_fragment_case_or_trailing_separator()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("Store/Orders/?sort=date#latest");
+            LinkTab[] tabs = [new("Orders", "store/orders") { Match = NavLinkMatch.All }, new("Products", "store/products?sort=name")];
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="tabs" />);
+
+            // Assert
+            Assert.Equal(["page", null], GetCurrentMarks(cut));
+        }
+
+        [Fact]
+        public void Should_leave_a_tab_unmarked_whose_address_only_begins_the_page_s_last_segment()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("store/orders");
+            LinkTab[] tabs = [new("Order", "store/order")];
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="tabs" />);
+
+            // Assert
+            Assert.Equal([null], GetCurrentMarks(cut));
+        }
+
+        [Fact]
+        public void Should_mark_no_tab_on_a_page_none_of_them_matches()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("account");
+
+            // Act
+            var cut = ctx.Render(@<FormaLinkTabs Items="CreateStoreTabs()" />);
+
+            // Assert
+            Assert.Equal([null, null, null], GetCurrentMarks(cut));
+        }
+
+        [Fact]
+        public void Should_mark_the_tab_of_each_page_the_reader_goes_to()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            var navigation = ctx.Services.GetRequiredService<NavigationManager>();
+            navigation.NavigateTo("store/orders");
+            var cut = ctx.Render(@<FormaLinkTabs Items="CreateStoreTabs()" />);
+
+            // Act
+            navigation.NavigateTo("store/customers");
+
+            // Assert
+            cut.WaitForAssertion(() => Assert.Equal([null, null, "page"], GetCurrentMarks(cut)));
+        }
+
+        [Fact]
+        public void Should_mark_the_tab_of_the_page_among_tabs_handed_to_it_again()
+        {
+            // Arrange
+            using var ctx = new FormaLinkTabsTests();
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("store/customers");
+            var cut = ctx.Render<FormaLinkTabs>(parameters => parameters.Add(tabs => tabs.Items, CreateStoreTabs()));
+
+            // Act
+            cut.Render(parameters => parameters.Add(tabs => tabs.Items, [new LinkTab("Customers", "store/customers"), .. CreateStoreTabs()[..2]]));
+
+            // Assert
+            Assert.Equal(["page", null, null], GetCurrentMarks(cut));
+        }
+    }
+}

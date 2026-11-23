@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**77 components implemented, one in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**77 components implemented, two in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -73,9 +73,10 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaDropDownMenu
 │   ├── ✅ FormaOverflowMenu
 │   └── ✅ FormaShareMenu
-├── (4 / 4) Navigation/
+├── (4 / 5) Navigation/
 │   ├── ✅ FormaBreadcrumb
 │   ├── ✅ FormaCommandPalette
+│   ├── ◐ FormaLinkTabs
 │   ├── ✅ FormaPagination
 │   └── ✅ FormaStepper
 ├── (1 / 1) Page/

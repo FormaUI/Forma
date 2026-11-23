@@ -83,5 +83,32 @@
     "Say Hello": "Saludar",
     "Count to Three": "Contar hasta Tres",
     "Actions": "Acciones"
+  },
+  "FormaLinkTabsPage": {
+    "A strip of tabs that link to pages, for a section whose pages each have an address of their own. The tab of the page the reader is on is marked current by an underline as well as its color, and every tab is a link that works before the page is interactive.": "Una franja de pestañas que enlazan a páginas, para una sección cuyas páginas tienen cada una su propia dirección. La pestaña de la página en la que está el lector se marca como actual con un subrayado además de su color, y cada pestaña es un enlace que funciona antes de que la página sea interactiva.",
+    "Pages of a Section": "Páginas de una Sección",
+    "Each tab links to a page of the showcase's navigation section, and the tab of this page is marked current.": "Cada pestaña enlaza a una página de la sección de navegación de la muestra, y la pestaña de esta página se marca como actual.",
+    "Navigation Components": "Componentes de Navegación",
+    "Icons and a Trailing Tab": "Iconos y una Pestaña al Final",
+    "Each tab draws an icon before its title, and the showcase's home tab stands at the far end. The home tab matches only its own address, so it isn't marked on this page beneath it.": "Cada pestaña dibuja un icono antes de su título, y la pestaña de inicio de la muestra se sitúa en el extremo opuesto. La pestaña de inicio solo coincide con su propia dirección, así que no se marca en esta página, que está debajo de ella.",
+    "Showcase Pages": "Páginas de la Muestra",
+    "Past Their Width": "Más Allá de su Ancho",
+    "In a narrow column the strip keeps to one line, and scrolls behind an arrow at each end its tabs continue past.": "En una columna estrecha, la franja se mantiene en una sola línea y se desplaza tras una flecha en cada extremo por el que continúan sus pestañas.",
+    "Navigation and Layout Components": "Componentes de Navegación y Diseño",
+    "No Current Page": "Sin Página Actual",
+    "None of these tabs links to this page or to a page it lies beneath, so none is marked current.": "Ninguna de estas pestañas enlaza a esta página ni a una página bajo la que se encuentre, así que ninguna se marca como actual.",
+    "Input Components": "Componentes de Entrada",
+    "Breadcrumb": "Ruta de Navegación",
+    "Command Palette": "Paleta de Comandos",
+    "Link Tabs": "Pestañas de Enlace",
+    "Pagination": "Paginación",
+    "Stepper": "Indicador de Pasos",
+    "Tabs": "Pestañas",
+    "Splitter": "Divisor",
+    "Showcase": "Muestra",
+    "Freeze Pane": "Panel Fijo",
+    "Text Box": "Cuadro de Texto",
+    "Select": "Selector",
+    "Combo Box": "Cuadro Combinado"
   }
 }
