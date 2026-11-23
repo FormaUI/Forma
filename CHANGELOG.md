@@ -11,6 +11,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 - A read-only `FormaComboBox` holding no value offers no option to choose on a statically rendered page, where it offered
   every option the browser's own list could post.
+- A `LinkTab` stands at the strip's far end by `IsTrailing`, named as a data record's flags are. To migrate, set
+  `IsTrailing` where a tab set `Trailing`.
 
 ## `1.0.0-preview.15`
 

@@ -24,7 +24,7 @@ public sealed record LinkTab
     public NavLinkMatch Match { get; init; } = NavLinkMatch.Prefix;
 
     /// <summary>Whether the tab sits at the far end of the strip, after every leading tab.</summary>
-    public bool Trailing { get; init; }
+    public bool IsTrailing { get; init; }
 
     /// <summary>Creates a tab from its title and the address it links to.</summary>
     public LinkTab(string title, string url)

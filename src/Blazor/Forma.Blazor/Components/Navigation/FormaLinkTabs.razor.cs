@@ -83,7 +83,7 @@ public sealed partial class FormaLinkTabs : FormaElementBase
     {
         for (var index = 0; index < Items.Count; index++)
         {
-            if (Items[index].Trailing)
+            if (Items[index].IsTrailing)
             {
                 return index;
             }

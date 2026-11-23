@@ -57,7 +57,7 @@
         CreateTab(L["Tabs"], "/tabs") with { Icon = Glyph.Layout },
         CreateTab(L["Link Tabs"], "/link-tabs") with { Icon = Glyph.Link },
         CreateTab(L["Splitter"], "/splitter") with { Icon = Glyph.Columns },
-        CreateTab(L["Showcase"], "/") with { Icon = Glyph.Home, Match = NavLinkMatch.All, Trailing = true },
+        CreateTab(L["Showcase"], "/") with { Icon = Glyph.Home, Match = NavLinkMatch.All, IsTrailing = true },
     ];
 
     private LinkTab[] ManyTabs =>
