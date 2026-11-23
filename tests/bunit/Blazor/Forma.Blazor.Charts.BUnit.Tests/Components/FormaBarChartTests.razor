@@ -71,5 +71,15 @@
                 () => Assert.Equal("No data", cut.Find(".forma-chart-empty").TextContent),
                 () => Assert.Empty(cut.FindAll(".forma-chart-bar")));
         }
+
+        [Fact]
+        public async Task Should_refuse_a_span_which_has_no_periods_to_stand_bars_in()
+        {
+            // Arrange
+            using var ctx = await CreateContextAsync();
+
+            // Act & Assert
+            Assert.Throws<ArgumentException>(() => ctx.Render(@<FormaBarChart Title="Failures" Series='[CreateSeries("Failures")]' Range="ChartRange.Span" />));
+        }
     }
 }

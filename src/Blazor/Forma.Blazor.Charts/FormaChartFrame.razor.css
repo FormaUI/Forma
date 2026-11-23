@@ -202,6 +202,11 @@
     stroke: none;
 }
 
+.forma-chart-fill {
+    fill: color-mix(in srgb, var(--forma-chart-series-color) 10%, transparent);
+    stroke: none;
+}
+
 /* ---- Periods ---- */
 
 .forma-chart-period {
@@ -212,16 +217,18 @@
 .forma-chart-crosshair {
     position: absolute;
     inset-block: 0;
-    inset-inline-start: calc(50% - 0.5px);
+    inset-inline-start: calc(var(--forma-chart-slot-center) - 0.5px);
     display: none;
     inline-size: 1px;
     background: var(--chart-baseline-color);
 }
 
-/* A marker shows at a point standing alone, at the series' last point, and in the period being read. */
+/* A marker shows at a point standing alone, at a point carrying a mark, at the series' last point, and in the period being
+   read, over the value labels, so a point at the plot's edge stays whole. */
 .forma-chart-marker {
     position: absolute;
-    inset-inline-start: calc(50% - var(--chart-marker-size) / 2);
+    z-index: 3;
+    inset-inline-start: calc(var(--forma-chart-slot-center) - var(--chart-marker-size) / 2);
     display: none;
     inline-size: var(--chart-marker-size);
     block-size: var(--chart-marker-size);
@@ -248,6 +255,52 @@
 .forma-chart-marker.forma-chart-series-4,
 .forma-line-chart .forma-chart-series-4 .forma-chart-key::after {
     clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+}
+
+/* A point carrying a mark draws the mark's own shape, larger and drawn apart from a series' filled markers: a ring, a hollow
+   square, a plus or a cross, in its series' color. The legend keys each mark in the ink, since a mark spans the series. */
+.forma-chart-marker.is-marked,
+.forma-chart-mark-key {
+    inset-inline-start: calc(var(--forma-chart-slot-center) - var(--chart-mark-size) / 2);
+    inline-size: var(--chart-mark-size);
+    block-size: var(--chart-mark-size);
+    margin-block-end: calc(var(--chart-mark-size) / -2);
+    clip-path: none;
+    border-radius: 0;
+}
+
+.forma-chart-mark-key {
+    position: relative;
+    inset-inline-start: auto;
+    display: inline-block;
+    flex-shrink: 0;
+    margin: 0;
+    --forma-chart-series-color: var(--text-secondary-color);
+}
+
+.forma-chart-marker.is-marked.forma-chart-mark-1,
+.forma-chart-mark-1 .forma-chart-mark-key {
+    border: 2px solid var(--forma-chart-series-color);
+    border-radius: 50%;
+    background: var(--chart-surface-color);
+}
+
+.forma-chart-marker.is-marked.forma-chart-mark-2,
+.forma-chart-mark-2 .forma-chart-mark-key {
+    border: 2px solid var(--forma-chart-series-color);
+    background: var(--chart-surface-color);
+}
+
+.forma-chart-marker.is-marked.forma-chart-mark-3,
+.forma-chart-mark-3 .forma-chart-mark-key {
+    background: var(--forma-chart-series-color);
+    clip-path: polygon(35% 0, 65% 0, 65% 35%, 100% 35%, 100% 65%, 65% 65%, 65% 100%, 35% 100%, 35% 65%, 0 65%, 0 35%, 35% 35%);
+}
+
+.forma-chart-marker.is-marked.forma-chart-mark-4,
+.forma-chart-mark-4 .forma-chart-mark-key {
+    background: var(--forma-chart-series-color);
+    clip-path: polygon(20% 0, 50% 30%, 80% 0, 100% 20%, 70% 50%, 100% 80%, 80% 100%, 50% 70%, 20% 100%, 0 80%, 30% 50%, 0 20%);
 }
 
 /* Bars stand in their period in the series' order, each at most the bar's width, the period's air beside them. */
@@ -303,6 +356,19 @@
     inset-inline-end: 100%;
 }
 
+/* On a chart under 28rem the readout spans the plot from its inline start, since a slot's side leaves too little room for its
+   rows; a slot's offset and span are its start and the plot's width, each in its own widths. */
+@container forma-chart (inline-size < 28rem) {
+    .forma-chart-readout,
+    .forma-chart-readout.is-end {
+        inset-inline-start: calc(var(--forma-chart-slot-offset) * -100%);
+        inset-inline-end: auto;
+        inline-size: calc(var(--forma-chart-slot-span) * 100%);
+        max-inline-size: none;
+        margin-inline: 0;
+    }
+}
+
 .forma-chart-readout-period {
     color: var(--text-secondary-color);
     font-size: var(--font-size-xs);
@@ -321,6 +387,13 @@
 
 .forma-chart-readout-name {
     color: var(--text-secondary-color);
+}
+
+/* A point's mark and note stand beneath its value, in line with it past its key. */
+.forma-chart-readout-note {
+    padding-inline-start: calc(var(--space-5) + var(--space-2));
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-xs);
 }
 
 /* The period under the pointer, or read from the keyboard, shows its crosshair, its markers and its readout. */
@@ -419,9 +492,9 @@
 
 /* ---- Reading without the drawing ---- */
 
-/* The range control and the table stay in the accessibility tree, hidden from view. */
+/* The range control, and the table unless a toggle shows it, stay in the accessibility tree, hidden from view. */
 .forma-chart-scrubber,
-.forma-chart-table {
+.forma-chart-table-view:not(.is-shown) {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
@@ -431,6 +504,40 @@
     overflow: hidden;
     clip-path: inset(50%);
     white-space: nowrap;
+}
+
+/* The table a toggle shows, for every reader. */
+.forma-chart-table-toggle {
+    display: flex;
+    align-items: center;
+    min-block-size: var(--target-size-sm);
+    color: var(--text-secondary-color);
+    cursor: pointer;
+}
+
+@media (pointer: coarse) {
+    .forma-chart-table-toggle {
+        min-block-size: var(--target-size-touch);
+    }
+}
+
+.forma-chart-table-view.is-shown .forma-chart-table {
+    inline-size: 100%;
+    margin-block-start: var(--space-2);
+    border-collapse: collapse;
+    font-variant-numeric: tabular-nums;
+}
+
+.forma-chart-table-view.is-shown :is(th, td) {
+    padding: var(--space-1) var(--space-2);
+    border-block-end: 1px solid var(--chart-grid-color);
+    text-align: start;
+}
+
+.forma-chart-table-note {
+    display: block;
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-xs);
 }
 
 /* Forced colors keep each line's dash and marker; each bar takes a texture of its own. */

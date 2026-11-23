@@ -10,15 +10,25 @@
         aria-labelledby="@TitleId">
     <figcaption id="@TitleId" class="forma-chart-title">@Title</figcaption>
 
-    @* A legend for two or more series; a single series is named by the title. *@
-    @if (Series.Count > 1)
+    @* A legend for two or more series, a single series named by the title, and for the marks the points carry. *@
+    @if (HasLegend)
     {
         <ul class="forma-chart-legend" aria-hidden="true">
-            @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
+            @if (Series.Count > 1)
             {
-                <li class="forma-chart-legend-item @GetSeriesClass(seriesIndex)">
-                    <span class="forma-chart-key"></span>
-                    <span class="forma-chart-legend-name">@Series[seriesIndex].Name</span>
+                @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
+                {
+                    <li class="forma-chart-legend-item @GetSeriesClass(seriesIndex)">
+                        <span class="forma-chart-key"></span>
+                        <span class="forma-chart-legend-name">@Series[seriesIndex].Name</span>
+                    </li>
+                }
+            }
+            @for (var markIndex = 0; HasMarkLegend && markIndex < Layout.Marks.Count; markIndex++)
+            {
+                <li class="forma-chart-legend-item forma-chart-legend-mark @GetMarkClass(markIndex)">
+                    <span class="forma-chart-mark-key"></span>
+                    <span class="forma-chart-legend-name">@Layout.Marks[markIndex].Name</span>
                 </li>
             }
         </ul>
@@ -44,6 +54,18 @@
             @if (Kind is ChartKind.Line)
             {
                 <svg class="forma-chart-lines" viewBox="0 0 1000 1000" preserveAspectRatio="none" focusable="false">
+                    @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
+                    {
+                        var fillIndex = seriesIndex;
+
+                        @if (Series[fillIndex].IsFilled)
+                        {
+                            @foreach (var (first, last) in Layout.GetLineRuns(fillIndex))
+                            {
+                                <polygon class="forma-chart-fill @GetSeriesClass(fillIndex)" points="@GetFillPoints(fillIndex, first, last)" />
+                            }
+                        }
+                    }
                     @if (Band is { } band)
                     {
                         @foreach (var (first, last) in Layout.GetBandRuns(band.LowerSeriesIndex, band.UpperSeriesIndex))
@@ -103,6 +125,10 @@
                                 <span class="forma-chart-readout-value"><bdi>@GetValueText(seriesIndex, periodIndex)</bdi></span>
                                 <span class="forma-chart-readout-name">@Series[seriesIndex].Name</span>
                             </span>
+                            @if (GetPointNote(seriesIndex, periodIndex) is { } note)
+                            {
+                                <span class="forma-chart-readout-note">@note</span>
+                            }
                         }
                     </div>
                 </div>
@@ -123,7 +149,7 @@
     </div>
 
     @* The keyboard moves through the periods by a native range control, which a renderer must answer to move the readout. *@
-    @if (RendererInfo.IsInteractive)
+    @if (RendererInfo.IsInteractive && Layout.Timeline.Count > 0)
     {
         <input class="forma-chart-scrubber"
                type="range"
@@ -137,29 +163,42 @@
                @bind:event="oninput" />
     }
 
-    <table class="forma-chart-table" aria-labelledby="@TitleId">
-        <thead>
-            <tr>
-                <th scope="col">@L["Time"]</th>
-                @foreach (var series in Series)
-                {
-                    <th scope="col">@series.Name</th>
-                }
-            </tr>
-        </thead>
-        <tbody>
-            @for (var index = 0; index < Layout.Timeline.Count; index++)
-            {
-                var rowIndex = index;
-
+    @* The table stands open and visually hidden for assistive technology, or behind a toggle every reader opens. *@
+    <details class="@TableViewClass" open="@(!ShowTable)">
+        @if (ShowTable)
+        {
+            <summary class="forma-chart-table-toggle">@L["Show as Table"]</summary>
+        }
+        <table class="forma-chart-table" aria-labelledby="@TitleId">
+            <thead>
                 <tr>
-                    <th scope="row">@Layout.PeriodTexts[rowIndex]</th>
-                    @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
+                    <th scope="col">@L["Time"]</th>
+                    @foreach (var series in Series)
                     {
-                        <td>@GetValueText(seriesIndex, rowIndex)</td>
+                        <th scope="col">@series.Name</th>
                     }
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @for (var index = 0; index < Layout.Timeline.Count; index++)
+                {
+                    var rowIndex = index;
+    
+                    <tr>
+                        <th scope="row">@Layout.PeriodTexts[rowIndex]</th>
+                        @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
+                        {
+                            <td>
+                                @GetValueText(seriesIndex, rowIndex)
+                                @if (GetPointNote(seriesIndex, rowIndex) is { } note)
+                                {
+                                    <span class="forma-chart-table-note">@note</span>
+                                }
+                            </td>
+                        }
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </details>
 </figure>

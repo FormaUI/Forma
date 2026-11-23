@@ -98,6 +98,32 @@ public sealed class ChartsTests
             // Assert
             Assert.Empty(await page.EvaluateAsync<string[]>(ReadOverflow, "check"));
         }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_read_a_span_s_first_point_with_its_mark_and_note_and_show_its_table_from_its_toggle(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "line-chart");
+            await using var _ = context;
+            var chart = page.Locator("#span-chart");
+            var control = chart.Locator("input.forma-chart-scrubber");
+            await control.FocusAsync();
+
+            // Act
+            await page.Keyboard.PressAsync("Home");
+            await Assertions.Expect(control).ToHaveAttributeAsync("aria-valuetext", new System.Text.RegularExpressions.Regex(@"Value 1,000 \(Deposit: Opened\)$"));
+            var readout = chart.Locator(".forma-chart-period").First.Locator(".forma-chart-readout");
+            await Assertions.Expect(readout).ToBeVisibleAsync();
+            await chart.Locator("summary").ClickAsync();
+
+            // Assert — the marked points drawn in their marks' shapes, the readout naming the mark and the note, and the table open
+            await Assertions.Expect(readout.Locator(".forma-chart-readout-note")).ToHaveTextAsync("Deposit: Opened");
+            await Assertions.Expect(chart.Locator(".forma-chart-marker.is-marked")).ToHaveCountAsync(2);
+            await Assertions.Expect(chart.Locator(".forma-chart-legend-name")).ToHaveTextAsync(["Deposit", "Fee"]);
+            await Assertions.Expect(chart.Locator(".forma-chart-table tbody tr")).ToHaveCountAsync(3);
+            await Assertions.Expect(chart.Locator(".forma-chart-table")).ToBeVisibleAsync();
+        }
     }
 
     public sealed class BarChart(BrowserHost host)

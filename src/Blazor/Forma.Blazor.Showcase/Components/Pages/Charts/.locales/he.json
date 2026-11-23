@@ -34,7 +34,21 @@
     "A period with data between two without is drawn as its marker alone, as is each series' last point.": "תקופה עם נתונים בין שתיים בלעדיהם מצוירת כסמן בלבד, וכך גם הנקודה האחרונה של כל סדרה.",
     "Backups Completed": "גיבויים שהושלמו",
     "Backups": "גיבויים",
-    "At a phone's width the plot keeps every period, and the time axis labels fewer of them.": "ברוחב של טלפון השרטוט שומר על כל התקופות, וציר הזמן מתייג פחות מהן."
+    "At a phone's width the plot keeps every period, and the time axis labels fewer of them.": "ברוחב של טלפון השרטוט שומר על כל התקופות, וציר הזמן מתייג פחות מהן.",
+    "An Investment Since It Opened": "השקעה מאז פתיחתה",
+    "A span from the first entry to the last, each point at the day it was recorded, the area beneath the line filled and the scale fitted to the values. Each deposit, withdrawal and fee is drawn in a shape of its own, named in the legend, and its note is read with its value; the table opens from a toggle beneath the chart.": "טווח מהרישום הראשון ועד האחרון, כל נקודה ביום שבו נרשמה, השטח שמתחת לקו ממולא והסולם מותאם לערכים. כל הפקדה, משיכה ועמלה מצוירת בצורה משלה, ששמה מופיע במקרא, וההערה שלה נקראת עם ערכה; הטבלה נפתחת ממתג מתחת לתרשים.",
+    "Retirement Account": "חשבון פרישה",
+    "A Return Against Another": "תשואה מול תשואה אחרת",
+    "Two returns in percent over the same span, the baseline at zero where a return turns to a loss.": "שתי תשואות באחוזים לאורך אותו טווח, קו הבסיס באפס, היכן שתשואה הופכת להפסד.",
+    "Return Since Opening": "תשואה מאז הפתיחה",
+    "This Account": "חשבון זה",
+    "Market Index": "מדד השוק",
+    "Deposit": "הפקדה",
+    "Withdrawal": "משיכה",
+    "Fee": "עמלה",
+    "Recorded Value": "ערך רשום",
+    "The account opened": "החשבון נפתח",
+    "Yearly management fee": "דמי ניהול שנתיים"
   },
   "FormaBarChartPage": {
     "Bars of one to four named series over a shared time axis, each period's bars side by side in the series' order and missing where a period has no data, with a threshold line. Hover a period, or tab to the chart and move with the arrows, to read its values; assistive technology reads them as a table.": "עמודות של סדרה אחת עד ארבע סדרות בעלות שם על ציר זמן משותף, העמודות של כל תקופה זו לצד זו בסדר הסדרות וחסרות היכן שלתקופה אין נתונים, עם קו סף. רחפו מעל תקופה, או הגיעו לתרשים ב-Tab ונועו בחצים, כדי לקרוא את ערכיה; טכנולוגיות מסייעות קוראות אותם כטבלה.",

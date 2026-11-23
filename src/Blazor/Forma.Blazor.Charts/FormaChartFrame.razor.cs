@@ -31,7 +31,10 @@ public sealed partial class FormaChartFrame : FormaElementBase
     /// <summary>The span of time the chart covers.</summary>
     [Parameter] public ChartRange Range { get; set; }
 
-    /// <summary>The time the chart's last period holds.</summary>
+    /// <summary>The time a span starts at.</summary>
+    [Parameter] public DateTimeOffset? Start { get; set; }
+
+    /// <summary>The time the chart's last period holds, or a span ends at.</summary>
     [Parameter] public DateTimeOffset? End { get; set; }
 
     /// <summary>The .NET numeric format the chart writes its values in.</summary>
@@ -42,6 +45,12 @@ public sealed partial class FormaChartFrame : FormaElementBase
 
     /// <summary>The band the chart fills between two of its series.</summary>
     [Parameter] public ChartBand? Band { get; set; }
+
+    /// <summary>Whether the chart's value scale reaches zero.</summary>
+    [Parameter] public bool IncludeZero { get; set; } = true;
+
+    /// <summary>Whether a toggle beneath the chart shows its table to every reader.</summary>
+    [Parameter] public bool ShowTable { get; set; }
 
     [Inject] private TimeProvider Clock { get; set; } = default!;
 
@@ -61,7 +70,7 @@ public sealed partial class FormaChartFrame : FormaElementBase
 
             if (_layout is null || _isLayoutStale || !ReferenceEquals(culture, _layoutCulture))
             {
-                _layout = ChartLayout.Create(Series, Range, End ?? Clock.GetUtcNow(), Clock.LocalTimeZone, culture, ValueFormat ?? DefaultValueFormat, Threshold);
+                _layout = ChartLayout.Create(Series, Range, Start, End, Clock.GetUtcNow(), Clock.LocalTimeZone, culture, ValueFormat ?? DefaultValueFormat, Threshold, IncludeZero);
                 _layoutCulture = culture;
                 _isLayoutStale = false;
             }
@@ -69,6 +78,17 @@ public sealed partial class FormaChartFrame : FormaElementBase
             return _layout;
         }
     }
+
+    private string TableViewClass
+        => ShowTable ? "forma-chart-table-view is-shown" : "forma-chart-table-view";
+
+    // Whether the legend draws: for two or more series, or for the marks a line chart's points carry.
+    private bool HasLegend
+        => Series.Count > 1 || HasMarkLegend;
+
+    // Whether the legend keys the marks, which a line chart draws its points in.
+    private bool HasMarkLegend
+        => Kind is ChartKind.Line && Layout.Marks.Count > 0;
 
     // The period the keyboard reads, the last until the reader moves.
     private int ReadIndex
@@ -86,6 +106,10 @@ public sealed partial class FormaChartFrame : FormaElementBase
 
     private static string FormatPercent(double fraction)
         => (fraction * 100).ToString("0.###", CultureInfo.InvariantCulture) + "%";
+
+    // A ratio a stylesheet reads, as a plain number.
+    private static string FormatRatio(double ratio)
+        => ratio.ToString("0.####", CultureInfo.InvariantCulture);
 
     private static string FormatCoordinate(double fraction)
         => (fraction * 1000).ToString("0.##", CultureInfo.InvariantCulture);
@@ -106,13 +130,21 @@ public sealed partial class FormaChartFrame : FormaElementBase
         return string.Join(' ', upper.Concat(lower));
     }
 
+    // The area between a run of a series' line and the baseline.
+    private string GetFillPoints(int seriesIndex, int first, int last)
+    {
+        var baseline = FormatCoordinate(1 - Layout.GetBaseline());
+
+        return $"{GetLinePoints(seriesIndex, first, last)} {FormatCoordinate(Layout.GetCenter(last))},{baseline} {FormatCoordinate(Layout.GetCenter(first))},{baseline}";
+    }
+
     private string GetPoint(int index, double value)
         => $"{FormatCoordinate(Layout.GetCenter(index))},{FormatCoordinate(1 - Layout.Scale.GetFraction(value))}";
 
     // The bar's extent between the baseline and its value, from the plot's bottom and from its top.
     private string GetBarStyle(double value)
     {
-        var baseline = Layout.Scale.GetFraction(0);
+        var baseline = Layout.GetBaseline();
         var reach = Layout.Scale.GetFraction(value);
 
         return $"inset-block-end: {FormatPercent(Math.Min(baseline, reach))}; inset-block-start: {FormatPercent(1 - Math.Max(baseline, reach))};";
@@ -121,9 +153,18 @@ public sealed partial class FormaChartFrame : FormaElementBase
     private string GetValueText(int seriesIndex, int index)
         => Layout.Values[seriesIndex][index] is { } value ? Layout.FormatValue(value) : L["No data"];
 
-    // What the keyboard's range control says of a period: the period, then each series' name and value.
+    // What the mark and the note of a series' point in a slot say beside its value.
+    private string? GetPointNote(int seriesIndex, int index)
+        => Layout.Points[seriesIndex][index] is { } point && (point.Mark is not null || !string.IsNullOrWhiteSpace(point.Note))
+            ? string.Join(": ", new[] { point.Mark?.Name, point.Note }.Where(text => !string.IsNullOrWhiteSpace(text)))
+            : null;
+
+    // What the keyboard's range control says of a period: the period, then each series' name, value, and what its point notes.
     private string GetReading(int index)
-        => string.Join(", ", Series.Select((series, seriesIndex) => $"{series.Name} {GetValueText(seriesIndex, index)}").Prepend(Layout.PeriodTexts[index]));
+        => string.Join(", ", Series.Select((series, seriesIndex) => GetPointNote(seriesIndex, index) is { } note ? $"{series.Name} {GetValueText(seriesIndex, index)} ({note})" : $"{series.Name} {GetValueText(seriesIndex, index)}").Prepend(Layout.PeriodTexts[index]));
+
+    private static string GetMarkClass(int markIndex)
+        => $"forma-chart-mark-{markIndex + 1}";
 
     private static string GetGridlineClass(double tick)
         => tick == 0 ? "forma-chart-gridline is-baseline" : "forma-chart-gridline";
@@ -138,11 +179,23 @@ public sealed partial class FormaChartFrame : FormaElementBase
     private string GetPeriodClass(int index)
         => index == ReadIndex ? "forma-chart-period is-read" : "forma-chart-period";
 
+    // A slot's column spans the stretch of the axis nearer it than its neighbors, and the slot stands at its own place within it.
     private string GetPeriodStyle(int index)
-        => $"inset-inline-start: {FormatPercent((double)index / Layout.Timeline.Count)}; inline-size: {FormatPercent(1.0 / Layout.Timeline.Count)};";
+    {
+        var (start, end) = Layout.Timeline.GetBounds(index);
+        var center = end > start ? (Layout.GetCenter(index) - start) / (end - start) : 0.5;
+
+        var size = end - start;
+
+        return $"inset-inline-start: {FormatPercent(start)}; inline-size: {FormatPercent(size)}; --forma-chart-slot-center: {FormatPercent(center)}; --forma-chart-slot-offset: {FormatRatio(start / size)}; --forma-chart-slot-span: {FormatRatio(1 / size)};";
+    }
 
     private string GetMarkerClass(int seriesIndex, int index)
-        => Layout.IsStanding(seriesIndex, index) ? $"forma-chart-marker {GetSeriesClass(seriesIndex)} is-standing" : $"forma-chart-marker {GetSeriesClass(seriesIndex)}";
+    {
+        var markerClass = Layout.IsStanding(seriesIndex, index) ? $"forma-chart-marker {GetSeriesClass(seriesIndex)} is-standing" : $"forma-chart-marker {GetSeriesClass(seriesIndex)}";
+
+        return Layout.Points[seriesIndex][index]?.Mark is { } mark ? $"{markerClass} is-marked {GetMarkClass(Layout.GetMarkIndex(mark))}" : markerClass;
+    }
 
     // A readout opens away from the nearer edge, so it stays within the plot.
     private string GetReadoutClass(int index)
@@ -150,9 +203,9 @@ public sealed partial class FormaChartFrame : FormaElementBase
 
     // A label near either end aligns with that end rather than standing centered past it: within the nearest sixteenth of the
     // axis at any width, and within the nearest eighth on a narrow chart.
-    private string GetTimeLabelClass(ChartTimeLabel label)
+    private static string GetTimeLabelClass(ChartTimeLabel label)
     {
-        var center = Layout.GetCenter(label.Index);
+        var center = label.Position;
         var anchor = center switch
         {
             < EdgeLabelReach => " is-start is-near-start",
@@ -165,8 +218,8 @@ public sealed partial class FormaChartFrame : FormaElementBase
         return $"forma-chart-time-label is-tier-{label.Tier}{anchor}";
     }
 
-    private string GetTimeLabelStyle(ChartTimeLabel label)
-        => $"--forma-chart-label-center: {FormatPercent(Layout.GetCenter(label.Index))};";
+    private static string GetTimeLabelStyle(ChartTimeLabel label)
+        => $"--forma-chart-label-center: {FormatPercent(label.Position)};";
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

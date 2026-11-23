@@ -14,7 +14,10 @@ public sealed partial class FormaLineChart : FormaElementBase
     /// <summary>The span of time the chart covers.</summary>
     [Parameter] public ChartRange Range { get; set; } = ChartRange.Day;
 
-    /// <summary>The time the chart's last period holds, where null is now.</summary>
+    /// <summary>The time a span starts at, where null is its earliest point's time.</summary>
+    [Parameter] public DateTimeOffset? Start { get; set; }
+
+    /// <summary>The time the chart's last period holds, where null is now, or the time a span ends at, where null is its latest point's time.</summary>
     [Parameter] public DateTimeOffset? End { get; set; }
 
     /// <summary>The .NET numeric format the chart writes its values in, where null writes up to two decimals.</summary>
@@ -25,6 +28,12 @@ public sealed partial class FormaLineChart : FormaElementBase
 
     /// <summary>The band the chart fills between two of its series.</summary>
     [Parameter] public ChartBand? Band { get; set; }
+
+    /// <summary>Whether the chart's value scale reaches zero; false fits the scale to the values.</summary>
+    [Parameter] public bool IncludeZero { get; set; } = true;
+
+    /// <summary>Whether a toggle beneath the chart shows its table to every reader.</summary>
+    [Parameter] public bool ShowTable { get; set; }
 
     private FormaChartFrame Frame { get; set; } = default!;
 
@@ -37,6 +46,7 @@ public sealed partial class FormaLineChart : FormaElementBase
     {
         base.OnParametersSet();
         ChartValidation.Validate(Title, Series, Threshold);
+        ChartValidation.ValidateSpan(Range, Start, End);
 
         if (Band is { } band)
         {

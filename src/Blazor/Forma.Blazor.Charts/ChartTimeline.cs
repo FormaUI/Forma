@@ -1,28 +1,52 @@
 namespace Forma.Blazor.Components.Charts;
 
-/// <summary>The periods a chart's range divides into, ending with the period holding the chart's end, each starting on a minute, hour, day or month of the chart's time zone.</summary>
+/// <summary>
+/// The slots a chart's time axis holds, each a period or a moment: the periods a fixed range divides into, ending with the period
+/// holding the chart's end, or the moments a span's points stand at, each slot placed along the axis and holding a stretch of it a
+/// reader points at.
+/// </summary>
 internal sealed class ChartTimeline
 {
     private readonly DateTimeOffset[] _starts;
     private readonly DateTimeOffset _end;
+    private readonly double[] _centers;
+    private readonly (double Start, double End)[] _bounds;
 
-    private ChartTimeline(ChartRange range, DateTimeOffset[] starts, DateTimeOffset end, TimeZoneInfo timeZone)
+    private ChartTimeline(ChartRange range, DateTimeOffset[] starts, DateTimeOffset end, double[] centers, (double Start, double End)[] bounds, DateTimeOffset axisStart, TimeZoneInfo timeZone)
     {
         Range = range;
         _starts = starts;
         _end = end;
+        _centers = centers;
+        _bounds = bounds;
+        AxisStart = axisStart;
+        TimeZone = timeZone;
         LocalStarts = [.. starts.Select(start => TimeZoneInfo.ConvertTime(start, timeZone).DateTime)];
     }
 
     /// <summary>The range the timeline divides.</summary>
     public ChartRange Range { get; }
 
-    /// <summary>How many periods the timeline holds.</summary>
+    /// <summary>The time zone the timeline's clock reads.</summary>
+    public TimeZoneInfo TimeZone { get; }
+
+    /// <summary>How many slots the timeline holds.</summary>
     public int Count
         => _starts.Length;
 
-    /// <summary>Each period's start on the time zone's clock, in order.</summary>
+    /// <summary>Each slot's start, a period's or a moment's, in order.</summary>
+    public IReadOnlyList<DateTimeOffset> Starts
+        => _starts;
+
+    /// <summary>Each slot's start on the time zone's clock, in order.</summary>
     public IReadOnlyList<DateTime> LocalStarts { get; }
+
+    /// <summary>The time the axis starts at, its inline start.</summary>
+    public DateTimeOffset AxisStart { get; }
+
+    /// <summary>The time the axis ends at, its inline end.</summary>
+    public DateTimeOffset AxisEnd
+        => _end;
 
     /// <summary>Creates the timeline of <paramref name="range"/> ending with the period that holds <paramref name="end"/>, on the clock of <paramref name="timeZone"/>.</summary>
     /// <remarks>
@@ -45,7 +69,7 @@ internal sealed class ChartTimeline
                     var lastDay = localEnd.Date;
                     var starts = Enumerable.Range(0, 31).Select(index => ToInstant(lastDay.AddDays(index - 29), timeZone)).ToArray();
 
-                    return new ChartTimeline(range, starts[..30], starts[30], timeZone);
+                    return CreatePeriods(range, starts[..30], starts[30], timeZone);
                 }
 
             case ChartRange.ThirteenMonths:
@@ -53,17 +77,52 @@ internal sealed class ChartTimeline
                     var lastMonth = new DateTime(localEnd.Year, localEnd.Month, 1, 0, 0, 0, DateTimeKind.Unspecified);
                     var starts = Enumerable.Range(0, 14).Select(index => ToInstant(lastMonth.AddMonths(index - 12), timeZone)).ToArray();
 
-                    return new ChartTimeline(range, starts[..13], starts[13], timeZone);
+                    return CreatePeriods(range, starts[..13], starts[13], timeZone);
                 }
 
             default:
-                throw new ArgumentOutOfRangeException(nameof(range), range, "The range is an hour, a day, thirty days or thirteen months.");
+                throw new ArgumentOutOfRangeException(nameof(range), range, "A fixed range is an hour, a day, thirty days or thirteen months.");
         }
     }
 
-    /// <summary>The index of the period holding <paramref name="time"/>, or -1 for a time outside the timeline.</summary>
+    /// <summary>Creates the timeline of a span from <paramref name="start"/> to <paramref name="end"/>, its slots the moments of <paramref name="times"/> within it, each placed by its time.</summary>
+    /// <remarks>A slot holds the stretch of the axis nearer its moment than either neighbor's. A span whose start and end are one moment places it at the middle.</remarks>
+    public static ChartTimeline CreateSpan(IEnumerable<DateTimeOffset> times, DateTimeOffset start, DateTimeOffset end, TimeZoneInfo timeZone)
+    {
+        var moments = times.Where(time => time >= start && time <= end).Distinct().Order().ToArray();
+        var length = (end - start).Ticks;
+        var centers = moments.Select(moment => length == 0 ? 0.5 : (double)(moment - start).Ticks / length).ToArray();
+        var bounds = centers.Select((center, index) => (
+            index == 0 ? 0 : (centers[index - 1] + center) / 2,
+            index == centers.Length - 1 ? 1 : (center + centers[index + 1]) / 2)).ToArray();
+
+        return new ChartTimeline(ChartRange.Span, moments, end, centers, bounds, start, timeZone);
+    }
+
+    /// <summary>Where the slot at <paramref name="index"/> stands along the axis, from 0 at its inline start to 1 at its end.</summary>
+    public double GetCenter(int index)
+        => _centers[index];
+
+    /// <summary>The stretch of the axis the slot at <paramref name="index"/> holds, from 0 at its inline start to 1 at its end.</summary>
+    public (double Start, double End) GetBounds(int index)
+        => _bounds[index];
+
+    /// <summary>Where <paramref name="time"/> stands along the axis, from 0 at its inline start to 1 at its end.</summary>
+    public double GetPosition(DateTimeOffset time)
+    {
+        var length = (AxisEnd - AxisStart).Ticks;
+
+        return length == 0 ? 0.5 : (double)(time - AxisStart).Ticks / length;
+    }
+
+    /// <summary>The index of the slot holding <paramref name="time"/>, the period holding it or the moment it is, or -1 for a time outside the timeline.</summary>
     public int FindIndex(DateTimeOffset time)
     {
+        if (Range is ChartRange.Span)
+        {
+            return Array.BinarySearch(_starts, time) is var moment and >= 0 ? moment : -1;
+        }
+
         if (time < _starts[0] || time >= _end)
         {
             return -1;
@@ -75,15 +134,20 @@ internal sealed class ChartTimeline
     }
 
     private static ChartTimeline CreateEven(ChartRange range, DateTimeOffset lastStart, TimeSpan length, int count, TimeZoneInfo timeZone)
-    {
-        var starts = Enumerable.Range(0, count).Select(index => lastStart - (length * (count - 1 - index))).ToArray();
+        => CreatePeriods(range, [.. Enumerable.Range(0, count).Select(index => lastStart - (length * (count - 1 - index)))], lastStart + length, timeZone);
 
-        return new ChartTimeline(range, starts, lastStart + length, timeZone);
+    // Periods share the axis evenly, each centered on its own stretch.
+    private static ChartTimeline CreatePeriods(ChartRange range, DateTimeOffset[] starts, DateTimeOffset end, TimeZoneInfo timeZone)
+    {
+        var count = starts.Length;
+        var centers = Enumerable.Range(0, count).Select(index => (index + 0.5) / count).ToArray();
+        var bounds = Enumerable.Range(0, count).Select(index => ((double)index / count, (double)(index + 1) / count)).ToArray();
+
+        return new ChartTimeline(range, starts, end, centers, bounds, starts[0], timeZone);
     }
 
-    // The moment the zone's clock reads the local time, the first where it reads it twice, and the first moment after it where the
-    // clock skips it.
-    private static DateTimeOffset ToInstant(DateTime localTime, TimeZoneInfo timeZone)
+    /// <summary>The moment the clock of <paramref name="timeZone"/> reads <paramref name="localTime"/>, the first where it reads it twice, and the first moment after it where the clock skips it.</summary>
+    public static DateTimeOffset ToInstant(DateTime localTime, TimeZoneInfo timeZone)
     {
         while (timeZone.IsInvalidTime(localTime))
         {

@@ -13,10 +13,14 @@ internal static class ShowcaseCharts
     public static IReadOnlyList<ChartPoint> CreateDailyPoints(DateTimeOffset now, int count, Func<int, double?> getValue)
         => [.. Enumerable.Range(0, count).Select(index => new ChartPoint(now.AddDays(index - (count - 1)), Round(getValue(index))))];
 
-    /// <summary>Creates a point a month back from <paramref name="now"/> for each of <paramref name="count"/> months, the first the oldest.</summary>
-    public static IReadOnlyList<ChartPoint> CreateMonthlyPoints(DateTimeOffset now, int count, Func<int, double?> getValue)
-        => [.. Enumerable.Range(0, count).Select(index => new ChartPoint(now.AddMonths(index - (count - 1)), Round(getValue(index))))];
+    /// <summary>Creates a point a month back from <paramref name="now"/> for each of <paramref name="count"/> months, the first the oldest, each rounded to <paramref name="decimals"/> places.</summary>
+    public static IReadOnlyList<ChartPoint> CreateMonthlyPoints(DateTimeOffset now, int count, Func<int, double?> getValue, int decimals = 0)
+        => [.. Enumerable.Range(0, count).Select(index => new ChartPoint(now.AddMonths(index - (count - 1)), Round(getValue(index), decimals)))];
 
-    private static double? Round(double? value)
-        => value is { } measured ? Math.Round(measured) : null;
+    /// <summary>The moment midnight of <paramref name="localDate"/> begins on the clock of <paramref name="timeZone"/>.</summary>
+    public static DateTimeOffset AtMidnight(DateTime localDate, TimeZoneInfo timeZone)
+        => new(localDate.Date, timeZone.GetUtcOffset(localDate.Date));
+
+    private static double? Round(double? value, int decimals = 0)
+        => value is { } measured ? Math.Round(measured, decimals) : null;
 }

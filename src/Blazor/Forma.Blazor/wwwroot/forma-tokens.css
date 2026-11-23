@@ -244,6 +244,7 @@
     --chart-plot-block-size: 12rem;
     --chart-bar-inline-size: 1.5rem;   /* 24px: the widest a bar draws, the air of its period beside it */
     --chart-marker-size: 0.5rem;       /* 8px: a line's marker */
+    --chart-mark-size: 0.75rem;        /* 12px: a point carrying a mark, drawn apart from the markers */
 
     /* ============================================================
        Chrome — the band a specific kind of surface paints for itself, each themable on its own. A frame

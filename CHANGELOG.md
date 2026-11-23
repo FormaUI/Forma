@@ -5,6 +5,17 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.15`
+
+*Unreleased*
+
+- `FormaLineChart` draws a span: with `Range` set to `ChartRange.Span` it runs from `Start` to `End`, or from its first
+  point's time to its last's where either is null, each point at its own time, and labels round steps of the calendar
+  from minutes to years, as [the charts design](docs/charts-design.md) sets out. A `ChartPoint` carries a `Mark`, a
+  `ChartMark` the line chart draws in a shape of its own and keys in the legend, and a `Note`, each given beside the
+  point's value in the readout and the table. A `ChartSeries` that `IsFilled` washes the area beneath its line,
+  `IncludeZero` fits a line chart's scale to its values where it is false, and either chart's `ShowTable` puts its
+  table behind a toggle every reader opens.
 ## `1.0.0-preview.14`
 
 *November 23, 2026*

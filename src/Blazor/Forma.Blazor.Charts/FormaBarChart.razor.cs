@@ -11,7 +11,7 @@ public sealed partial class FormaBarChart : FormaElementBase
     /// <summary>The chart's series, one to four, each drawn in the color of its place among them and standing in that place in every period.</summary>
     [Parameter, EditorRequired] public IReadOnlyList<ChartSeries> Series { get; set; } = default!;
 
-    /// <summary>The span of time the chart covers.</summary>
+    /// <summary>The span of time the chart covers, one of the fixed ranges.</summary>
     [Parameter] public ChartRange Range { get; set; } = ChartRange.ThirtyDays;
 
     /// <summary>The time the chart's last period holds, where null is now.</summary>
@@ -22,6 +22,9 @@ public sealed partial class FormaBarChart : FormaElementBase
 
     /// <summary>The value the chart marks with a labelled line.</summary>
     [Parameter] public ChartThreshold? Threshold { get; set; }
+
+    /// <summary>Whether a toggle beneath the chart shows its table to every reader.</summary>
+    [Parameter] public bool ShowTable { get; set; }
 
     private FormaChartFrame Frame { get; set; } = default!;
 
@@ -34,5 +37,10 @@ public sealed partial class FormaBarChart : FormaElementBase
     {
         base.OnParametersSet();
         ChartValidation.Validate(Title, Series, Threshold);
+
+        if (Range is ChartRange.Span)
+        {
+            throw new ArgumentException("A bar chart draws a bar for each period of a fixed range, and a span has no periods; draw a span with a line chart.", nameof(Range));
+        }
     }
 }

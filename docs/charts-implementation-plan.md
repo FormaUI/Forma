@@ -16,6 +16,9 @@ The steps that build [the charts design](charts-design.md), in order, each landi
 4. ✅ **Every runtime.** A check page for each chart in the check hosts, browser checks of the readout from the pointer
    and from the keyboard, the direction and a phone's width in every interactive runtime, static rendering and the
    inventory; the tokens in the token stylesheet and the theme contract; the catalog, the roadmap and the changelog.
+5. ✅ **Spans, marks and fills.** `ChartRange.Span` with `Start`, its points at their own times and its axis on the
+   calendar's round steps; `ChartMark` and a point's `Note`; a series' fill; `IncludeZero` and `ShowTable`; with tests,
+   Showcase sections of an account's value and of two returns, and a browser check of a span read from the keyboard.
 
 ## Open
 

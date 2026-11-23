@@ -11,6 +11,8 @@ public sealed partial class FormaLineChartPage
     private IReadOnlyList<ChartSeries> _serverUse = [];
     private IReadOnlyList<ChartSeries> _regions = [];
     private IReadOnlyList<ChartSeries> _backups = [];
+    private IReadOnlyList<ChartSeries> _investment = [];
+    private IReadOnlyList<ChartSeries> _returns = [];
     private IReadOnlyList<ChartSeries> _empty = [];
     private ChartThreshold? _loadTarget;
     private ChartThreshold? _useLimit;
@@ -55,5 +57,39 @@ public sealed partial class FormaLineChartPage
         ];
         _backups = [new(L["Backups"], ShowcaseCharts.CreateDailyPoints(now, 30, index => index is 4 or 12 or 13 or 14 or 21 or 26 or 27 ? 3 + (index % 4) : null))];
         _empty = [new(L["Median"], [])];
+        _investment = [CreateInvestment(now)];
+        _returns =
+        [
+            new(L["This Account"], ShowcaseCharts.CreateMonthlyPoints(now, 30, index => (index * 0.004) + (0.02 * Math.Sin(index / 3.0)), 4)),
+            new(L["Market Index"], ShowcaseCharts.CreateMonthlyPoints(now, 30, index => (index * 0.003) + (0.03 * Math.Cos(index / 4.0)) - 0.02, 4)),
+        ];
+    }
+
+    // An account's recorded value at each entry over two and a half years, each deposit, withdrawal and fee marked.
+    private ChartSeries CreateInvestment(DateTimeOffset now)
+    {
+        var deposit = new ChartMark(L["Deposit"]);
+        var withdrawal = new ChartMark(L["Withdrawal"]);
+        var fee = new ChartMark(L["Fee"]);
+        var today = TimeZoneInfo.ConvertTime(now, Clock.LocalTimeZone).Date;
+        DateTimeOffset GetDay(int months)
+        {
+            return ShowcaseCharts.AtMidnight(today.AddMonths(months - 30), Clock.LocalTimeZone);
+        }
+
+        return new(L["Recorded Value"],
+        [
+            new(GetDay(0), 10_000) { Mark = deposit, Note = L["The account opened"] },
+            new(GetDay(3), 10_240),
+            new(GetDay(7), 10_610),
+            new(GetDay(8), 12_610) { Mark = deposit },
+            new(GetDay(12), 12_530) { Mark = fee, Note = L["Yearly management fee"] },
+            new(GetDay(16), 13_080),
+            new(GetDay(19), 11_580) { Mark = withdrawal },
+            new(GetDay(24), 11_490) { Mark = fee, Note = L["Yearly management fee"] },
+            new(GetDay(27), 12_220),
+            new(GetDay(30), 12_760),
+        ])
+        { IsFilled = true };
     }
 }

@@ -6,6 +6,9 @@ internal static class ChartValidation
     /// <summary>The most series a chart draws, as many as its colors, dashes and markers tell apart.</summary>
     public const int MaximumSeriesCount = 4;
 
+    /// <summary>The most marks a chart's points carry, as many as its marks' shapes tell apart.</summary>
+    public const int MaximumMarkCount = 4;
+
     /// <summary>Checks a chart's title, its one to four named series, and its threshold's label.</summary>
     public static void Validate(string title, IReadOnlyList<ChartSeries> series, ChartThreshold? threshold)
     {
@@ -21,9 +24,28 @@ internal static class ChartValidation
             ArgumentNullException.ThrowIfNull(entry.Points, "Series");
         }
 
+        if (series.SelectMany(entry => entry.Points).Select(point => point.Mark).OfType<ChartMark>().Distinct().Count() > MaximumMarkCount)
+        {
+            throw new ArgumentException($"A chart's points carry at most {MaximumMarkCount} marks, as many as their shapes tell apart.", nameof(series));
+        }
+
         if (threshold is not null)
         {
             ArgumentException.ThrowIfNullOrWhiteSpace(threshold.Label, "Threshold");
+        }
+    }
+
+    /// <summary>Checks that a start belongs to a span, and that a span ends no earlier than it starts.</summary>
+    public static void ValidateSpan(ChartRange range, DateTimeOffset? start, DateTimeOffset? end)
+    {
+        if (start is not null && range is not ChartRange.Span)
+        {
+            throw new ArgumentException("A chart starts where its fixed range does, so a start belongs to a span alone.", nameof(start));
+        }
+
+        if (start is { } spanStart && end is { } spanEnd && spanEnd < spanStart)
+        {
+            throw new ArgumentException("A span ends no earlier than it starts.", nameof(end));
         }
     }
 }

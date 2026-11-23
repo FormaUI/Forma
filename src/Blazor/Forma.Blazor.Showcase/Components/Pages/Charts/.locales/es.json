@@ -34,7 +34,21 @@
     "A period with data between two without is drawn as its marker alone, as is each series' last point.": "Un período con datos entre dos sin ellos se dibuja solo con su marcador, igual que el último punto de cada serie.",
     "Backups Completed": "Copias de seguridad completadas",
     "Backups": "Copias de seguridad",
-    "At a phone's width the plot keeps every period, and the time axis labels fewer of them.": "Con el ancho de un teléfono, el trazado conserva todos los períodos y el eje de tiempo etiqueta menos de ellos."
+    "At a phone's width the plot keeps every period, and the time axis labels fewer of them.": "Con el ancho de un teléfono, el trazado conserva todos los períodos y el eje de tiempo etiqueta menos de ellos.",
+    "An Investment Since It Opened": "Una inversión desde su apertura",
+    "A span from the first entry to the last, each point at the day it was recorded, the area beneath the line filled and the scale fitted to the values. Each deposit, withdrawal and fee is drawn in a shape of its own, named in the legend, and its note is read with its value; the table opens from a toggle beneath the chart.": "Un intervalo desde el primer registro hasta el último, cada punto en el día en que se registró, el área bajo la línea rellena y la escala ajustada a los valores. Cada depósito, retiro y comisión se dibuja con una forma propia, nombrada en la leyenda, y su nota se lee con su valor; la tabla se abre desde un control bajo el gráfico.",
+    "Retirement Account": "Cuenta de retiro",
+    "A Return Against Another": "Un rendimiento frente a otro",
+    "Two returns in percent over the same span, the baseline at zero where a return turns to a loss.": "Dos rendimientos en porcentaje durante el mismo intervalo, con la línea base en cero, donde un rendimiento se vuelve pérdida.",
+    "Return Since Opening": "Rendimiento desde la apertura",
+    "This Account": "Esta cuenta",
+    "Market Index": "Índice de mercado",
+    "Deposit": "Depósito",
+    "Withdrawal": "Retiro",
+    "Fee": "Comisión",
+    "Recorded Value": "Valor registrado",
+    "The account opened": "Se abrió la cuenta",
+    "Yearly management fee": "Comisión anual de administración"
   },
   "FormaBarChartPage": {
     "Bars of one to four named series over a shared time axis, each period's bars side by side in the series' order and missing where a period has no data, with a threshold line. Hover a period, or tab to the chart and move with the arrows, to read its values; assistive technology reads them as a table.": "Barras de una a cuatro series con nombre sobre un eje de tiempo común, las barras de cada período una junto a otra en el orden de las series y ausentes donde un período no tiene datos, con una línea de umbral. Pasa el puntero sobre un período, o llega al gráfico con Tab y muévete con las flechas, para leer sus valores; las tecnologías de asistencia los leen como una tabla.",

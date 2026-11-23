@@ -1,7 +1,7 @@
 # Forma.Blazor.Charts
 
 `FormaLineChart` and `FormaBarChart`, the charts of figures over time of the **Forma** component library.
-Each draws one to four named series over the last hour, day, 30 days or 13 months, a gap wherever a period
+Each draws one to four named series over the last hour, day, 30 days or 13 months, or the line chart over any span, a gap wherever a period
 has no data, with a threshold line, and on the line chart a band between two series. A reader reads a
 period's values by hovering it or by moving through the periods from the keyboard, and assistive
 technology reads every value as a table.
@@ -52,8 +52,51 @@ no services of their own, so the host registers Forma as the library's README se
 stands in the period that holds its time; a period with no point, or with a point whose value is null,
 is a gap, which breaks a line and leaves a bar out, and never reads as zero.
 
-`FormaBarChart` takes the same parameters but `Band`, and draws each period's bars side by side in the
-order of `Series`.
+`FormaBarChart` takes the same parameters but `Band`, `Start` and `IncludeZero`, and draws each period's
+bars side by side in the order of `Series`.
+
+## A span and its events
+
+A span draws a history at the times its points were recorded, such as an account's value since it opened:
+
+```razor
+@inject IAccountHistory Accounts
+
+<FormaLineChart Title="Retirement account"
+                Series="_account"
+                Range="ChartRange.Span"
+                ValueFormat="#,0' €'"
+                IncludeZero="false"
+                ShowTable="true" />
+
+@code {
+    private static readonly ChartMark Deposit = new("Deposit");
+    private static readonly ChartMark Fee = new("Fee");
+
+    private IReadOnlyList<ChartSeries> _account = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        var entries = await Accounts.GetEntriesAsync();
+
+        _account =
+        [
+            new("Recorded value", [.. entries.Select(entry => new ChartPoint(entry.Day, entry.Value)
+            {
+                Mark = entry.Kind switch { EntryKind.Deposit => Deposit, EntryKind.Fee => Fee, _ => null },
+                Note = entry.Explanation,
+            })]) { IsFilled = true },
+        ];
+    }
+}
+```
+
+The span runs from `Start` to `End`, or from the first point's time to the last's where either is null, and
+its axis labels round steps of the calendar, from minutes to years. A point's `Mark`, a `ChartMark`, draws it
+in the mark's own shape and names it in the legend, up to four marks; its mark and its `Note` stand beside its
+value in the readout and the table. `IsFilled` washes the area beneath a series' line, `IncludeZero="false"`
+fits the scale to the values rather than reaching zero, and `ShowTable` puts the table behind a toggle every
+reader opens.
 
 ## The parameters
 
@@ -61,11 +104,14 @@ order of `Series`.
 | --- | --- |
 | `Title` | The chart's title, which names the figure and its table |
 | `Series` | One to four `ChartSeries` |
-| `Range` | `ChartRange.Hour` of one-minute periods, `Day` of one-hour periods, `ThirtyDays` of one-day periods or `ThirteenMonths` of one-month periods |
-| `End` | The time the last period holds, now where it is null |
+| `Range` | `ChartRange.Hour` of one-minute periods, `Day` of one-hour periods, `ThirtyDays` of one-day periods, `ThirteenMonths` of one-month periods, or on the line chart a `Span` whose points stand at their own times |
+| `Start` | On the line chart, the time a span starts at, its first point's time where it is null |
+| `End` | The time the last period holds, now where it is null, or the time a span ends at, its last point's time where it is null |
 | `ValueFormat` | The .NET numeric format of the axis, the readout and the table, up to two decimals where it is null |
 | `Threshold` | A `ChartThreshold`, a value and its label, drawn as a line across the plot |
 | `Band` | On the line chart, a `ChartBand` between the series at two indexes in `Series` |
+| `IncludeZero` | On the line chart, whether the scale reaches zero, true by default |
+| `ShowTable` | Whether a toggle beneath the chart shows its table to every reader |
 
 ## Time and culture
 

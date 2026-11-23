@@ -23,16 +23,17 @@ internal sealed class ChartScale
     /// <summary>The values a gridline stands at, from the lowest up.</summary>
     public IReadOnlyList<double> Ticks { get; }
 
-    /// <summary>Creates the scale reaching <paramref name="lowest"/> and <paramref name="highest"/>, and zero, in three or four even steps.</summary>
-    /// <remarks>A step is one, two, two and a half or five times a power of ten, the smallest of those at least a quarter of the span.</remarks>
-    public static ChartScale Create(double lowest, double highest)
+    /// <summary>Creates the scale reaching <paramref name="lowest"/> and <paramref name="highest"/>, and zero where <paramref name="includesZero"/>, in three or four even steps.</summary>
+    /// <remarks>A step is one, two, two and a half or five times a power of ten, the smallest of those at least a quarter of the span. A scale of one value alone reaches a tenth of it either side, and one of zero alone reaches 1.</remarks>
+    public static ChartScale Create(double lowest, double highest, bool includesZero = true)
     {
-        var minimum = Math.Min(0, lowest);
-        var maximum = Math.Max(0, highest);
+        var minimum = includesZero ? Math.Min(0, lowest) : lowest;
+        var maximum = includesZero ? Math.Max(0, highest) : highest;
 
         if (maximum <= minimum)
         {
-            maximum = minimum + 1;
+            var reach = minimum == 0 ? 1 : Math.Abs(minimum) / 10;
+            (minimum, maximum) = includesZero && minimum == 0 ? (0, 1) : (minimum - reach, maximum + reach);
         }
 
         var step = GetStep((maximum - minimum) / 4);

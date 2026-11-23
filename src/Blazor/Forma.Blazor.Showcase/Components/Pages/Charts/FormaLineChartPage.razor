@@ -39,6 +39,22 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["An Investment Since It Opened"]</h2>
+    <p class="description">@L["A span from the first entry to the last, each point at the day it was recorded, the area beneath the line filled and the scale fitted to the values. Each deposit, withdrawal and fee is drawn in a shape of its own, named in the legend, and its note is read with its value; the table opens from a toggle beneath the chart."]</p>
+    <div class="demo-box">
+        <FormaLineChart Title="@L["Retirement Account"]" Series="_investment" Range="ChartRange.Span" ValueFormat="#,0' €'" IncludeZero="false" ShowTable="true" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Return Against Another"]</h2>
+    <p class="description">@L["Two returns in percent over the same span, the baseline at zero where a return turns to a loss."]</p>
+    <div class="demo-box">
+        <FormaLineChart Title="@L["Return Since Opening"]" Series="_returns" Range="ChartRange.Span" ValueFormat="+0.0%;-0.0%;0%" />
+    </div>
+</div>
+
+<div class="demo-section">
     <h2>@L["Points Standing Alone"]</h2>
     <p class="description">@L["A period with data between two without is drawn as its marker alone, as is each series' last point."]</p>
     <div class="demo-box">

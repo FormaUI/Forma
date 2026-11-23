@@ -2,6 +2,7 @@
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "FormaChartFrame": {
     "Time": "זמן",
-    "No data": "אין נתונים"
+    "No data": "אין נתונים",
+    "Show as Table": "הצגה כטבלה"
   }
 }

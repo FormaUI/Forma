@@ -10,7 +10,24 @@
     <FormaLineChart Id="rtl-chart" Title="Page load" Series="Series" Range="ChartRange.Day" End="End" ValueFormat="#,0' ms'" />
 </div>
 
+@* A span of three entries at their own days, the first and second marked, the first with a note, its table behind a toggle. *@
+<FormaLineChart Id="span-chart" Title="Account" Series="SpanSeries" Range="ChartRange.Span" IncludeZero="false" ShowTable="true" />
+
 @code {
+    private static readonly ChartMark Deposit = new("Deposit");
+
+    private static readonly ChartMark Fee = new("Fee");
+
+    private static IReadOnlyList<ChartSeries> SpanSeries { get; } =
+    [
+        new("Value",
+        [
+            new(new DateTimeOffset(2024, 1, 1, 0, 0, 0, TimeSpan.Zero), 1000) { Mark = Deposit, Note = "Opened" },
+            new(new DateTimeOffset(2024, 3, 1, 0, 0, 0, TimeSpan.Zero), 980) { Mark = Fee },
+            new(new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero), 1150),
+        ]) { IsFilled = true },
+    ];
+
     private static readonly DateTimeOffset LastPoint = new(2026, 11, 23, 12, 0, 0, TimeSpan.Zero);
 
     private static DateTimeOffset End
