@@ -12,6 +12,12 @@ public static class WebViewCheckHost
     public static Task<WebViewApplication> StartAsync(IReadOnlyDictionary<string, string>? environment = null)
         => WebViewApplication.StartAsync(Environment.GetEnvironmentVariable("FORMA_BROWSER_WEBVIEW") ?? Path.Combine(RepositoryFolder.Find(), "artifacts", "browser", "webview"), "Forma.Blazor.Browser.WebView", environment);
 
+    /// <summary>The address of the check host's blank page, which Blazor never starts on, under the name of the web view <paramref name="name"/> names, which the web view is found by.</summary>
+    /// <param name="name">The web view's name.</param>
+    /// <returns>The address, from the check host's root.</returns>
+    public static string GetBlankPath(string name)
+        => $"/blank.html#{name}";
+
     /// <summary>Finds the page of the check host's web view <paramref name="name"/> names, once it renders interactively.</summary>
     /// <param name="application">The check host.</param>
     /// <param name="name">The web view's name, <c>A</c> for the first.</param>
@@ -24,6 +30,17 @@ public static class WebViewCheckHost
             async page => await page.EvaluateAsync<string>("() => `${document.querySelector('#web-view')?.textContent}|${document.querySelector('#runtime')?.textContent}`").ConfigureAwait(false) == $"{name}|WebView True",
             $"named {name} rendered interactively",
             TimeSpan.FromSeconds(30));
+    }
+
+    /// <summary>Finds the page of the check host's web view <paramref name="name"/> names, once it shows the blank page <see cref="GetBlankPath"/> gives it.</summary>
+    /// <param name="application">The check host.</param>
+    /// <param name="name">The web view's name.</param>
+    /// <returns>The web view's page.</returns>
+    public static Task<IPage> GetBlankWebViewAsync(this WebViewApplication application, string name)
+    {
+        ArgumentNullException.ThrowIfNull(application);
+
+        return application.FindWebViewAsync(page => Task.FromResult(page.Url.EndsWith(GetBlankPath(name), StringComparison.Ordinal)), $"named {name} at its blank page", TimeSpan.FromSeconds(30));
     }
 
     /// <summary>Opens the check host's second web view, <c>B</c>, from its first, <c>A</c>, once both render interactively.</summary>

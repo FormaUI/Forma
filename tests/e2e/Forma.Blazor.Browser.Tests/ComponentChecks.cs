@@ -273,12 +273,14 @@ public static partial class ComponentChecks
     }
 
     // A check in a web view opens its page in a native window of its own, through the application's first web view, at the size a
-    // check's page has in a browser; a page it prepares loads again once prepared, as a browser's page opens prepared, after its first
-    // load has started its renderer, since a web view reloaded while its renderer starts can leave it unstarted. Every web view
-    // shares the application's context, so the check's end takes back what it routed and granted, and closes its web view. The first
-    // web view is found before the check takes its turn, and the check names the web view it opens, so it finds its own however late
-    // another opens, and closes it by that name however far the check came; both presses go through the first web view, which takes
-    // them in turn, so a close follows the open it closes. Whatever fails on the way, the turn passes on and no native window stays open.
+    // check's page has in a browser. A page it prepares opens at the check host's blank page, which Blazor never starts on, and loads
+    // the check's page once prepared, as a browser's page opens prepared, so Blazor starts once in the web view: a web view keeps the
+    // renderer of the page it left until the next page attaches its own, and a render that renderer makes meanwhile reaches the next
+    // page before that page can take it, which ends the check host. Every web view shares the application's context, so the check's
+    // end takes back what it routed and granted, and closes its web view. The first web view is found before the check takes its turn,
+    // and the check names the web view it opens, so it finds its own however late another opens, and closes it by that name however
+    // far the check came; both presses go through the first web view, which takes them in turn, so a close follows the open it closes.
+    // Whatever fails on the way, the turn passes on and no native window stays open.
     private static async Task<(IBrowserContext Context, IPage Page)> OpenInWebViewAsync(BrowserHost host, string path, Func<IPage, Task>? prepare)
     {
         Assert.SkipUnless(OperatingSystem.IsWindows(), "WebView2 runs on Windows alone, so the web view's checks run in the Windows gate.");
@@ -333,20 +335,19 @@ public static partial class ComponentChecks
 
         try
         {
-            await control.Locator("#start-path").FillAsync($"/webview/{path}").ConfigureAwait(false);
+            await control.Locator("#start-path").FillAsync(prepare is null ? $"/webview/{path}" : WebViewCheckHost.GetBlankPath(name)).ConfigureAwait(false);
             await control.Locator("#start-path").BlurAsync().ConfigureAwait(false);
             await control.Locator("#open-as").FillAsync(name).ConfigureAwait(false);
             await control.Locator("#open-as").BlurAsync().ConfigureAwait(false);
             await control.Locator("#open").ClickAsync().ConfigureAwait(false);
-            page = await application.GetWebViewAsync(name).ConfigureAwait(false);
+            page = prepare is null ? await application.GetWebViewAsync(name).ConfigureAwait(false) : await application.GetBlankWebViewAsync(name).ConfigureAwait(false);
             var problems = WatchProblems(page);
             await page.SetViewportSizeAsync(1280, 720).ConfigureAwait(false);
 
             if (prepare is not null)
             {
-                await WaitForRendererAsync(page, "WebView", problems, () => application.GetOutput(80)).ConfigureAwait(false);
                 await prepare(page).ConfigureAwait(false);
-                await page.ReloadAsync().ConfigureAwait(false);
+                await page.GotoAsync(new Uri(new Uri(page.Url), $"/webview/{path}").ToString()).ConfigureAwait(false);
             }
 
             await WaitForRendererAsync(page, "WebView", problems, () => application.GetOutput(80)).ConfigureAwait(false);
