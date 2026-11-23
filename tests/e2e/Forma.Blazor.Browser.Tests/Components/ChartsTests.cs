@@ -85,6 +85,21 @@ public sealed class ChartsTests
 
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_fill_a_grid_area_that_sizes_it_by_its_content(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "line-chart");
+            await using var _ = context;
+
+            // Act
+            var width = await page.Locator("#content-sized").EvaluateAsync<double>("chart => chart.getBoundingClientRect().width");
+            var area = await page.Locator("#content-sized").EvaluateAsync<double>("chart => chart.parentElement.getBoundingClientRect().width");
+
+            // Assert — the chart takes its grid area's width rather than collapsing to its content's
+            Assert.True(Math.Abs(width - area) <= 1, $"The chart is {width}px wide in a grid area {area}px wide.");
+        }
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_keep_its_labels_within_a_phone_s_width(string runtime)
         {
             // Arrange

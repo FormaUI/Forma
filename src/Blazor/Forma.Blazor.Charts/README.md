@@ -1,7 +1,7 @@
 # Forma.Blazor.Charts
 
 `FormaLineChart` and `FormaBarChart`, the charts of figures over time of the **Forma** component library.
-Each draws one to four named series over the last hour, day, 30 days or 13 months, or the line chart over any span, a gap wherever a period
+Each draws one to four named series over the last hour, day, 7 days, 30 days or 13 months, or the line chart over any span, a gap wherever a period
 has no data, with a threshold line, and on the line chart a band between two series. A reader reads a
 period's values by hovering it or by moving through the periods from the keyboard, and assistive
 technology reads every value as a table.
@@ -104,7 +104,7 @@ reader opens.
 | --- | --- |
 | `Title` | The chart's title, which names the figure and its table |
 | `Series` | One to four `ChartSeries` |
-| `Range` | `ChartRange.Hour` of one-minute periods, `Day` of one-hour periods, `ThirtyDays` of one-day periods, `ThirteenMonths` of one-month periods, or on the line chart a `Span` whose points stand at their own times |
+| `Range` | `ChartRange.Hour` of one-minute periods, `Day` of one-hour periods, `SevenDays` or `ThirtyDays` of one-day periods, `ThirteenMonths` of one-month periods, or on the line chart a `Span` whose points stand at their own times |
 | `Start` | On the line chart, the time a span starts at, its first point's time where it is null |
 | `End` | The time the last period holds, now where it is null, or the time a span ends at, its last point's time where it is null |
 | `ValueFormat` | The .NET numeric format of the axis, the readout and the table, up to two decimals where it is null |

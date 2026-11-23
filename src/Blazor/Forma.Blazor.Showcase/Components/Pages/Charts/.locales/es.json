@@ -67,6 +67,9 @@
     "Growth and Shrinkage": "Crecimiento y reducción",
     "A value beneath zero grows its bar down from the baseline.": "Un valor bajo cero hace crecer su barra hacia abajo desde la línea base.",
     "Storage Change": "Cambio de almacenamiento",
-    "At a phone's width each period's bars narrow to fit it, and the time axis labels fewer periods.": "Con el ancho de un teléfono, las barras de cada período se estrechan para caber y el eje de tiempo etiqueta menos períodos."
+    "At a phone's width each period's bars narrow to fit it, and the time axis labels fewer periods.": "Con el ancho de un teléfono, las barras de cada período se estrechan para caber y el eje de tiempo etiqueta menos períodos.",
+    "Sign-ups Over a Week": "Registros durante una semana",
+    "Seven days, a day to each period.": "Siete días, un día por período.",
+    "Sign-ups": "Registros"
   }
 }

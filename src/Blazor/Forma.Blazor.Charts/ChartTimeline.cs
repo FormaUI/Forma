@@ -64,12 +64,13 @@ internal sealed class ChartTimeline
                 return CreateEven(range, end.AddTicks(-(localEnd.Ticks % TimeSpan.TicksPerMinute)), TimeSpan.FromMinutes(1), 60, timeZone);
             case ChartRange.Day:
                 return CreateEven(range, end.AddTicks(-(localEnd.Ticks % TimeSpan.TicksPerHour)), TimeSpan.FromHours(1), 24, timeZone);
-            case ChartRange.ThirtyDays:
+            case ChartRange.SevenDays or ChartRange.ThirtyDays:
                 {
+                    var count = range is ChartRange.SevenDays ? 7 : 30;
                     var lastDay = localEnd.Date;
-                    var starts = Enumerable.Range(0, 31).Select(index => ToInstant(lastDay.AddDays(index - 29), timeZone)).ToArray();
+                    var starts = Enumerable.Range(0, count + 1).Select(index => ToInstant(lastDay.AddDays(index - (count - 1)), timeZone)).ToArray();
 
-                    return CreatePeriods(range, starts[..30], starts[30], timeZone);
+                    return CreatePeriods(range, starts[..count], starts[count], timeZone);
                 }
 
             case ChartRange.ThirteenMonths:
@@ -81,7 +82,7 @@ internal sealed class ChartTimeline
                 }
 
             default:
-                throw new ArgumentOutOfRangeException(nameof(range), range, "A fixed range is an hour, a day, thirty days or thirteen months.");
+                throw new ArgumentOutOfRangeException(nameof(range), range, "A fixed range is an hour, a day, seven days, thirty days or thirteen months.");
         }
     }
 

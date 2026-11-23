@@ -67,6 +67,9 @@
     "Growth and Shrinkage": "גדילה וצמצום",
     "A value beneath zero grows its bar down from the baseline.": "ערך מתחת לאפס מגדיל את העמודה שלו כלפי מטה מקו הבסיס.",
     "Storage Change": "שינוי באחסון",
-    "At a phone's width each period's bars narrow to fit it, and the time axis labels fewer periods.": "ברוחב של טלפון העמודות של כל תקופה נעשות צרות כדי להתאים, וציר הזמן מתייג פחות תקופות."
+    "At a phone's width each period's bars narrow to fit it, and the time axis labels fewer periods.": "ברוחב של טלפון העמודות של כל תקופה נעשות צרות כדי להתאים, וציר הזמן מתייג פחות תקופות.",
+    "Sign-ups Over a Week": "הרשמות במשך שבוע",
+    "Seven days, a day to each period.": "שבעה ימים, יום לכל תקופה.",
+    "Sign-ups": "הרשמות"
   }
 }

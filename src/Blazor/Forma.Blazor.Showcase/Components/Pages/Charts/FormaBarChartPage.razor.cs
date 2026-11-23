@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaBarChartPage
 {
     private IReadOnlyList<ChartSeries> _failures = [];
+    private IReadOnlyList<ChartSeries> _signups = [];
     private IReadOnlyList<ChartSeries> _storage = [];
     private IReadOnlyList<ChartSeries> _regions = [];
     private IReadOnlyList<ChartSeries> _change = [];
@@ -36,6 +37,7 @@ public sealed partial class FormaBarChartPage
             new(L["Failed Payments"], ShowcaseCharts.CreateDailyPoints(now, 30, index => index % 9 == 4 ? null : 2 + (index % 4 * 2))),
         ];
         _alertLevel = new ChartThreshold(20, L["Alert Level"]);
+        _signups = [new(L["Sign-ups"], ShowcaseCharts.CreateDailyPoints(now, 7, index => 40 + (index * 6) + (index % 3 * 9)))];
         _storage = [new(L["Storage Used"], ShowcaseCharts.CreateMonthlyPoints(now, 13, index => 420 + (index * 38) + (index % 3 * 12)))];
         _regions =
         [

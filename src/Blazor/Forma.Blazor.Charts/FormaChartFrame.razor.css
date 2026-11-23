@@ -5,11 +5,14 @@
    hovers it and, from the keyboard, as the range control reads it.
    ============================================================ */
 
+/* A chart fills the inline size it's given, and keeps a floor where a host sizes it by its content, as a start-justified
+   grid or an inline block does, since its plot draws in fractions of its width and has no width of its own. */
 .forma-chart {
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
-    min-inline-size: 0;
+    inline-size: 100%;
+    min-inline-size: min(var(--chart-min-inline-size), 100%);
     margin: 0;
     container: forma-chart / inline-size;
     color: var(--text-primary-color);

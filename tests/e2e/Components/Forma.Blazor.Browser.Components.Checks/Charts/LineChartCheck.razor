@@ -13,6 +13,11 @@
 @* A span of three entries at their own days, the first and second marked, the first with a note, its table behind a toggle. *@
 <FormaLineChart Id="span-chart" Title="Account" Series="SpanSeries" Range="ChartRange.Span" IncludeZero="false" ShowTable="true" />
 
+@* The same chart in a grid that sizes each of its items by its content, as a start-justified grid does. *@
+<div style="display: grid; justify-items: start; inline-size: 40rem">
+    <FormaLineChart Id="content-sized" Title="Page load" Series="Series" Range="ChartRange.Day" End="End" />
+</div>
+
 @code {
     private static readonly ChartMark Deposit = new("Deposit");
 

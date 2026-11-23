@@ -234,7 +234,7 @@ internal sealed class ChartLayout
         => Timeline.Range switch
         {
             ChartRange.Hour or ChartRange.Day => localStart.ToString("g", _culture),
-            ChartRange.ThirtyDays => localStart.ToString("d", _culture),
+            ChartRange.SevenDays or ChartRange.ThirtyDays => localStart.ToString("d", _culture),
             ChartRange.ThirteenMonths => localStart.ToString(_culture.DateTimeFormat.YearMonthPattern, _culture),
             _ => localStart.ToString(Timeline.LocalStarts.All(start => start.TimeOfDay == TimeSpan.Zero) ? "d" : "g", _culture),
         };
@@ -254,6 +254,7 @@ internal sealed class ChartLayout
             {
                 ChartRange.Hour => localStart.Minute % 30 == 0 ? 0 : localStart.Minute % 15 == 0 ? 1 : localStart.Minute % 10 == 0 ? 2 : null,
                 ChartRange.Day => localStart.Hour % 12 == 0 ? 0 : localStart.Hour % 6 == 0 ? 1 : localStart.Hour % 3 == 0 ? 2 : null,
+                ChartRange.SevenDays => laterPeriodCount % 2 == 0 ? 0 : 1,
                 ChartRange.ThirtyDays => laterPeriodCount % 14 == 0 ? 0 : laterPeriodCount % 7 == 0 ? 1 : laterPeriodCount % 7 == 3 ? 2 : null,
                 _ => laterPeriodCount % 6 == 0 ? 0 : laterPeriodCount % 3 == 0 ? 1 : 2,
             };
@@ -271,7 +272,7 @@ internal sealed class ChartLayout
         => Timeline.Range switch
         {
             ChartRange.Hour or ChartRange.Day => localStart.ToString("t", _culture),
-            ChartRange.ThirtyDays => FormatShortDay(localStart),
+            ChartRange.SevenDays or ChartRange.ThirtyDays => FormatShortDay(localStart),
             _ => localStart.ToString("MMM", _culture),
         };
 

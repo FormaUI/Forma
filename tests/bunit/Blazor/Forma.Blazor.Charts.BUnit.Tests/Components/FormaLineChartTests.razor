@@ -88,6 +88,23 @@
         }
 
         [Fact]
+        public async Task Should_cover_seven_days_ending_with_the_day_that_holds_its_end()
+        {
+            // Arrange
+            using var ctx = await CreateContextAsync();
+            var end = DateTimeOffset.Parse("2026-11-23T14:30:00Z", CultureInfo.InvariantCulture);
+
+            // Act
+            var cut = ctx.Render(@<FormaLineChart Title="Visits" Series='[CreateSeries("Visits")]' Range="ChartRange.SevenDays" End="end" />);
+
+            // Assert
+            var periods = ReadTable(cut).Select(row => row[0]).ToList();
+            Assert.Multiple(
+                () => Assert.Equal(7, periods.Count),
+                () => Assert.Equal(new DateTime(2026, 11, 17).ToString("d", English), periods[0]),
+                () => Assert.Equal(new DateTime(2026, 11, 23).ToString("d", English), periods[^1]));
+        }
+        [Fact]
         public async Task Should_cover_thirteen_months_ending_with_the_month_that_holds_its_end()
         {
             // Arrange

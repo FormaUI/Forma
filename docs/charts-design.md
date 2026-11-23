@@ -16,7 +16,7 @@ question for a reader who can't see it.
   borrows its namespace, `Forma.Blazor.Components.Charts`, as the data view does. A host that draws no chart references
   nothing of it. The charts need no services, so the assembly has no registrar.
 - **A time axis of fixed ranges, or a span.** A chart covers a `ChartRange`: an hour of one-minute periods, a day of
-  one-hour periods, thirty days of one-day periods, or thirteen months of one-month periods, ending with the period
+  one-hour periods, seven or thirty days of one-day periods, or thirteen months of one-month periods, ending with the period
   holding `End`, now by the host's `TimeProvider` where `End` is null. Or it covers a span from `Start` to `End`, its
   first and last points' times where either is null, such as an account's whole life, each point standing at its own
   time rather than in a period. A bar chart draws periods alone, since a bar stands for a period.

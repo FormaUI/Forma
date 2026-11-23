@@ -4,17 +4,20 @@ namespace Forma.Blazor.Components.Charts;
 public enum ChartRange
 {
     /// <summary>An hour of one-minute periods.</summary>
-    Hour,
+    Hour = 0,
 
     /// <summary>A day of one-hour periods.</summary>
-    Day,
+    Day = 1,
+
+    /// <summary>Seven days of one-day periods.</summary>
+    SevenDays = 5,
 
     /// <summary>Thirty days of one-day periods.</summary>
-    ThirtyDays,
+    ThirtyDays = 2,
 
     /// <summary>Thirteen months of one-month periods.</summary>
-    ThirteenMonths,
+    ThirteenMonths = 3,
 
     /// <summary>The span from a chart's start to its end, each point at its own time.</summary>
-    Span,
+    Span = 4,
 }
