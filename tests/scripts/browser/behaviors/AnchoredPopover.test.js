@@ -55,6 +55,19 @@ describe('AnchoredPopover', () => {
         expect(popover.style.top).toBe('134px');
     });
 
+    it('publishes the anchor\'s inline size on the popover, again as the anchor widens', () => {
+        const handle = attach(popover, { anchor });
+        handle.open();
+        const opened = popover.style.getPropertyValue('--forma-popover-anchor-inline-size');
+        setAnchorRect({ top: 100, bottom: 130, left: 50, right: 370.4, width: 320.4, height: 30 });
+
+        resizes.latest().deliver([{ target: popover }]);
+        frames.flush();
+
+        expect(opened).toBe('40px');
+        expect(popover.style.getPropertyValue('--forma-popover-anchor-inline-size')).toBe('320px');
+    });
+
     it('flips above the anchor when there is no room below', () => {
         setAnchorRect({ top: 700, bottom: 730, left: 50, right: 90, width: 40, height: 30 });
         const handle = attach(popover, { anchor });

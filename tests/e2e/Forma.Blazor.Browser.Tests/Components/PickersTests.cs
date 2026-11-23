@@ -222,6 +222,27 @@ public sealed class PickersTests
     {
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_open_its_list_at_least_as_wide_as_its_field(string runtime)
+        {
+            // Arrange — a field wider than the one option its text leaves
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "combo-box");
+            await using var _ = context;
+            var field = page.Locator("#check");
+            await ComponentChecks.WaitForInteractionAsync(page, "#check", "edits");
+            await field.EvaluateAsync("field => field.closest('.forma-combo-box').style.inlineSize = '30rem'");
+
+            // Act
+            await field.FillAsync("bogota");
+            await Assertions.Expect(page.Locator("#check-list [role=option]")).ToHaveCountAsync(1);
+            await Assertions.Expect(page.Locator("#check-list")).ToBeVisibleAsync();
+
+            // Assert — the list reads as the field's own, at least the field's width
+            var fieldWidth = await field.EvaluateAsync<double>("field => field.closest('.forma-combo-box').getBoundingClientRect().width");
+            var listWidth = await page.Locator("#check-list").EvaluateAsync<double>("list => list.getBoundingClientRect().width");
+            Assert.True(listWidth >= fieldWidth - 1, $"The list is {listWidth}px wide under a field {fieldWidth}px wide.");
+        }
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_narrow_its_list_to_the_text_typed_and_commit_the_active_option_only_on_enter(string runtime)
         {
             // Arrange

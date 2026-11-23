@@ -46,13 +46,14 @@
 }
 
 /* ---------- popover ---------- */
-/* The list inside the FormaPopover. */
+/* The list inside the FormaPopover, at least as wide as its field, which the popover's placement publishes, so it reads as
+   the field's own. */
 .forma-select-popover {
     padding: var(--space-2);
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-    min-inline-size: 10rem;
+    min-inline-size: max(10rem, min(var(--forma-popover-anchor-inline-size), calc(100vw - var(--space-4))));
     max-inline-size: 20rem;
     max-block-size: 16rem;
     overflow-y: auto;

@@ -23,9 +23,10 @@
 }
 
 .forma-combo-box-list {
-    /* Six options show at once, and the list scrolls through the rest. */
+    /* Six options show at once, and the list scrolls through the rest. The list is at least as wide as its field, which its
+       popover's placement publishes, so it reads as the field's own. */
     max-block-size: calc(var(--target-size-md) * 6);
-    min-inline-size: min(16rem, calc(100vw - var(--space-4)));
+    min-inline-size: max(min(16rem, calc(100vw - var(--space-4))), var(--forma-popover-anchor-inline-size));
     max-inline-size: calc(100vw - var(--space-4));
     overflow-y: auto;
     padding-block: var(--space-1);

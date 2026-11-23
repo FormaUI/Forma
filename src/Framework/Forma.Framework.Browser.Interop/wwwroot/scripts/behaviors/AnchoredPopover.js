@@ -2,7 +2,8 @@
  * AnchoredPopover — a popover in the top layer kept positioned against its anchor
  *
  * The handle measures the anchor, applies the popover's position, and keeps the two
- * together for as long as the popover is open.
+ * together for as long as the popover is open, publishing the anchor's inline size on the
+ * popover as --forma-popover-anchor-inline-size.
  */
 
 import { FocusSurface } from '../focus/FocusSurface.mjs';
@@ -123,6 +124,9 @@ class AnchoredPopover {
 
         this.#popover.style.left = `${Math.round(inlineStart)}px`;
         this.#popover.style.top = `${Math.round(blockStart)}px`;
+
+        // The anchor's width, which a popover that should read as its anchor's own, such as a field's list, keeps as its least.
+        this.#popover.style.setProperty('--forma-popover-anchor-inline-size', `${Math.round(anchor.width)}px`);
     }
 
     /**
