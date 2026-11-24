@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**77 components implemented, four in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**81 components implemented, none in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -37,10 +37,10 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaFileUploader
 │   ├── ✅ FormaFileViewer
 │   └── ✅ FormaImagePicker
-├── (16 / 17) Inputs/
+├── (17 / 17) Inputs/
 │   ├── ✅ FormaCheckBox
 │   ├── ✅ FormaColorPicker
-│   ├── ◐ FormaComboBox
+│   ├── ✅ FormaComboBox
 │   ├── ✅ FormaCurrencyInput
 │   ├── ✅ FormaDatePicker
 │   ├── ✅ FormaDateRangePicker
@@ -73,10 +73,10 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaDropDownMenu
 │   ├── ✅ FormaOverflowMenu
 │   └── ✅ FormaShareMenu
-├── (4 / 5) Navigation/
+├── (5 / 5) Navigation/
 │   ├── ✅ FormaBreadcrumb
 │   ├── ✅ FormaCommandPalette
-│   ├── ◐ FormaLinkTabs
+│   ├── ✅ FormaLinkTabs
 │   ├── ✅ FormaPagination
 │   └── ✅ FormaStepper
 ├── (1 / 1) Page/
@@ -92,9 +92,9 @@ Forma.Blazor/Components/
     └── ✅ FormaWindow
 
 src/Blazor/
-├── (0 / 2) Forma.Blazor.Charts/
-│   ├── ◐ FormaBarChart
-│   └── ◐ FormaLineChart
+├── (2 / 2) Forma.Blazor.Charts/
+│   ├── ✅ FormaBarChart
+│   └── ✅ FormaLineChart
 ├── (1 / 1) Forma.Blazor.Composer/
 │   └── ✅ FormaComposer
 ├── (2 / 2) Forma.Blazor.Composer/RichTextEditor/
@@ -125,6 +125,15 @@ A region of the page in one of four looks, flat, raised, inset or canvas, told a
 |---|---|
 | **Old pattern** | Every panel drawing its own fill, border, corner and shadow, and the page background behind them |
 | **Used in** | `FormaExplorer` for its canvas and its header, folder tree and content cards, the Showcase's backdrop and layout pages, and any region of a page |
+
+### `FormaBarChart`
+
+Bars of one to four named series over a shared time axis, with a gap where a period has no data, as [the charts design](charts-design.md) sets out.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | An administrators' view of a site's health over time, such as failures per day and storage growth |
 
 ### `FormaBreadcrumb`
 
@@ -188,6 +197,15 @@ A hex color field with the platform's own color dialog behind the swatch beside 
 |---|---|
 | **Old pattern** | `tcp.js` custom color picker — click swatch → popup with gradient/hue selectors, hex input, opacity slider (`no-alpha` class disables) |
 | **Used in** | design (bg, primary, secondary, text, sidebar, link colors), settings (popup bg), store-settings (e-commerce accent), slider (bg, arrow, video filter), forms (text, button bg/text), product (badge) |
+
+### `FormaComboBox`
+
+A form input choosing one value from a list that narrows as the reader types, which can also take the typed text as a value the list doesn't hold.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | A choice among hundreds of options found by typing part of one, such as a time zone, and a value named where the list lacks it, such as a team not yet kept |
 
 ### `FormaCommandArea` / `FormaCommandBar`
 
@@ -485,6 +503,24 @@ An element registered with the input router as a scope, declared from markup. It
 |---|---|
 | **Old pattern** | None — input ownership was decided per component by whichever listener ran first |
 | **Used in** | A host declaring an input scope in markup: a region that routes its own keys, a surface held active while it is open, a modal barrier |
+
+### `FormaLineChart`
+
+Lines of one to four named series over a shared time axis, broken where a period has no data, with a threshold line and a band between two series, as [the charts design](charts-design.md) sets out.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | An administrators' view of a site's health over time, such as page load per hour, readers online, and CPU and memory |
+
+### `FormaLinkTabs`
+
+A strip of tabs that are links to pages, in a navigation landmark, the current page's tab marked, drawn as `FormaTabs` is.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | A section whose pages each have an address of their own, such as a workspace's areas |
 
 ### `FormaMultiSelect`
 
