@@ -736,6 +736,13 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     private int ListedItemCount
         => TotalCount ?? Items?.Count(item => item.Visibility != CatalogItemVisibility.Hidden) ?? MatchingCount ?? 0;
 
+    // The largest file an upload takes: the catalog's ceiling, or the uploader's own where the catalog sets none.
+    private long MaxFileBytes
+        => Constraints.MaxFileBytes > 0 ? Constraints.MaxFileBytes : FileUploaderOptions.Default.MaxFileSize;
+
+    private FileUploaderOptions UploaderOptions
+        => FileUploaderOptions.Default with { MaxFileSize = MaxFileBytes };
+
     private long KnownByteCount
         => TotalBytes ?? Items?.Sum(item => item.Resource?.Size ?? 0) ?? 0;
 
@@ -1445,12 +1452,12 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
             return;
         }
 
-        if (Constraints.MaxFileBytes > 0 && files.FirstOrDefault(file => file.Size > Constraints.MaxFileBytes) is { } largeFile)
+        if (files.FirstOrDefault(file => file.Size > MaxFileBytes) is { } largeFile)
         {
             await RejectAsync(
                 CatalogRejectionReason.FileBytes,
-                Constraints.MaxFileBytes,
-                L["\"{Name}\" is larger than {Size}.", largeFile.Name, ResourceFormatter.FromByteCount(Constraints.MaxFileBytes, Context.CultureState.Culture)].Value);
+                MaxFileBytes,
+                L["\"{Name}\" is larger than {Size}.", largeFile.Name, ResourceFormatter.FromByteCount(MaxFileBytes, Context.CultureState.Culture)].Value);
 
             return;
         }

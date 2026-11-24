@@ -1,0 +1,40 @@
+@inherits FormaBunitContext
+@using Bunit.TestDoubles
+@using Forma.Blazor.Components.Composer.Dialogs
+@using Forma.Blazor.Components.Composer.Plugins
+@using Forma.Blazor.Components.Files
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_judge_a_pick_by_the_uploader_s_cap_where_its_picker_sets_none()
+        {
+            // Arrange
+            using var ctx = new FormaComposerFileUploadDialogTests();
+            ctx.Services.AddSingleton<IFileStore>(new FakeFileStore());
+
+            // Act
+            var cut = ctx.Render(@<FormaComposerFileUploadDialog Opened="true" />);
+
+            // Assert
+            Assert.Equal(FileUploaderOptions.Default.MaxFileSize, cut.FindComponent<FormaFilePicker>().Instance.Options.MaxFileSize);
+        }
+
+        [Fact]
+        public void Should_read_a_file_up_to_the_size_its_picker_accepts()
+        {
+            // Arrange
+            using var ctx = new FormaComposerFileUploadDialogTests();
+            ctx.Services.AddSingleton<IFileStore>(new FakeFileStore());
+            var options = new FileUploadPluginOptions { Picker = new FilePickerOptions { MaxFileSize = 20L * 1024 * 1024 } };
+            var cut = ctx.Render(@<FormaComposerFileUploadDialog Opened="true" Options="options" />);
+
+            // Act
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("notes", "notes.txt", contentType: "text/plain"));
+
+            // Assert
+            Assert.Equal(20L * 1024 * 1024, cut.FindComponent<FormaFileUploader>().Instance.Options.MaxFileSize);
+        }
+    }
+}

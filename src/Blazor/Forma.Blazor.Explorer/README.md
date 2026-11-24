@@ -205,8 +205,10 @@ it supports it and the options permit it. `ExplorerItemOptions.Default` permits 
 and `ExplorerItemOptions.ReadOnly` permits browsing and selection.
 
 `Constraints` is a `CatalogConstraints` of the kinds the explorer lists and accepts, the kinds an
-upload may add where they differ, and the ceilings it keeps, each unlimited at zero; a refusal is
-announced in the explorer and raised through `OnRejected`. A folder can be chosen only where the
+upload may add where they differ, and the ceilings it keeps, each unlimited at zero but
+`MaxFileBytes`: an upload reads a file up to it, and up to `FileUploaderOptions.MaxFileSize`, 10 MiB,
+where it is zero, so a larger file is refused as it is picked. A refusal is announced in the explorer
+and raised through `OnRejected`. A folder can be chosen only where the
 accepted kinds name it, `contentType:image;folder`, and is entered otherwise, so an explorer that
 chooses images lets the reader into every folder to reach them:
 

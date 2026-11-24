@@ -382,6 +382,51 @@
         }
 
         [Fact]
+        public async Task Should_refuse_a_file_beyond_the_uploader_s_cap_where_the_catalog_sets_no_ceiling_on_one_file()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            var store = new FakeFileStore();
+            CatalogRejection? rejection = null;
+            var cut = ctx.Render(@<FormaExplorer Items="[]"
+                                                Store="store"
+                                                ItemOptions="ExplorerItemOptions.Default"
+                                                OnRejected="@(r => { rejection = r; return Task.CompletedTask; })" />);
+            await cut.Find(".forma-explorer-upload-button").ClickAsync(new());
+
+            // Act
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromBinary(new byte[(10 * 1024 * 1024) + 1], "film.mp4", contentType: "video/mp4"));
+
+            // Assert
+            Assert.NotNull(rejection);
+            Assert.Multiple(
+                () => Assert.Equal(CatalogRejectionReason.FileBytes, rejection.Reason),
+                () => Assert.Equal(10 * 1024 * 1024, rejection.Limit),
+                () => Assert.Equal("\"film.mp4\" is larger than 10 MB.", rejection.Message),
+                () => Assert.Empty(cut.FindAll(".forma-file-uploader")),
+                () => Assert.Empty(store.Saved));
+        }
+
+        [Fact]
+        public async Task Should_upload_through_an_uploader_capped_at_the_catalog_s_ceiling_on_one_file()
+        {
+            // Arrange — a store that refuses the file, so the panel and its uploader stay open
+            using var ctx = new FormaExplorerTests();
+            var store = new FakeFileStore { Refusals = { ["film.mp4"] = new FileRefusal(FileRefusalReason.DisallowedType) } };
+            var cut = ctx.Render(@<FormaExplorer Items="[]"
+                                                Store="store"
+                                                ItemOptions="ExplorerItemOptions.Default"
+                                                Constraints="@(new CatalogConstraints { MaxFileBytes = 20L * 1024 * 1024 })" />);
+            await cut.Find(".forma-explorer-upload-button").ClickAsync(new());
+
+            // Act
+            cut.FindComponent<InputFile>().UploadFiles(InputFileContent.CreateFromText("frames", "film.mp4", contentType: "video/mp4"));
+
+            // Assert
+            Assert.Equal(20L * 1024 * 1024, cut.FindComponent<FormaFileUploader>().Instance.Options.MaxFileSize);
+        }
+
+        [Fact]
         public async Task Should_keep_the_upload_panel_open_on_a_file_the_store_refused()
         {
             // Arrange

@@ -160,7 +160,7 @@ In `Forma.Blazor.Components.Composer.Plugins`.
 
 | Plugin | Contributes |
 | --- | --- |
-| `FileUploadPlugin` | Attaching files from the author's device to `ComposerDocument.Attachments`, listed beneath the canvas; `FileUploadPluginOptions.Picker` sets the files accepted. |
+| `FileUploadPlugin` | Attaching files from the author's device to `ComposerDocument.Attachments`, listed beneath the canvas; `FileUploadPluginOptions.Picker` sets the files accepted, a file larger than its `MaxFileSize`, or than 10 MiB where it sets none, refused as it is picked. |
 | `MaximizePlugin` | A toggle filling the viewport with the composer. |
 | `SelectionBarPlugin` | A toggle for the formatting bar that follows a selection. |
 | `ShortcutsPlugin` | A reference of every shortcut the surface answers, opened from the toolbar or with Ctrl+/. |

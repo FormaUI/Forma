@@ -51,6 +51,7 @@
             @if (_uploadPanel.PickedFiles is { Count: > 0 })
             {
                 <FormaFileUploader Files="_uploadPanel.PickedFiles"
+                                   Options="UploaderOptions"
                                    Store="Store"
                                    OnFailed="_uploadPanel.MarkFileLeftOut"
                                    OnRefused="_uploadPanel.MarkFileLeftOut"

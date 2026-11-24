@@ -298,6 +298,87 @@
         }
 
         [Fact]
+        public void Should_refuse_a_file_the_browser_says_is_larger_than_ten_mebibytes_before_reading_it()
+        {
+            // Arrange
+            using var ctx = new FormaFileUploaderTests();
+            var store = new FakeFileStore();
+            UploadRefusal? refusal = null;
+            var large = new FakeBrowserFile("large.mp4", "frames", "video/mp4", size: (10 * 1024 * 1024) + 1);
+            IReadOnlyList<IBrowserFile> files = [large, new FakeBrowserFile("small.txt", "notes")];
+
+            // Act
+            var cut = ctx.Render(@<FormaFileUploader Store="store"
+                                                 Files="files"
+                                                 OnRefused="@(reported => { refusal = reported; return Task.CompletedTask; })" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(["small.txt"], store.Saved);
+                Assert.Null(large.OpenedWith);
+                Assert.Equal(new FileRefusal(FileRefusalReason.TooLarge, 10 * 1024 * 1024), refusal!.Refusal);
+                Assert.Equal("\"large.mp4\" is larger than 10 MB.", refusal.Message);
+                Assert.Equal("Refused", cut.FindAll(".forma-file-uploader-state")[0].TextContent);
+            });
+        }
+
+        [Fact]
+        public void Should_read_a_file_up_to_its_cap()
+        {
+            // Arrange
+            using var ctx = new FormaFileUploaderTests();
+            var store = new FakeFileStore();
+            var file = new FakeBrowserFile("notes.txt", "notes");
+            IReadOnlyList<IBrowserFile> files = [file];
+
+            // Act
+            ctx.Render(@<FormaFileUploader Store="store" Files="files" Options="@(new FileUploaderOptions { MaxFileSize = 64 })" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["notes.txt"], store.Saved),
+                () => Assert.Equal(64, file.OpenedWith));
+        }
+
+        [Fact]
+        public void Should_fail_a_file_that_runs_past_its_cap_whatever_size_the_browser_gave_it()
+        {
+            // Arrange — the browser says ten bytes and sends a hundred
+            using var ctx = new FormaFileUploaderTests();
+            var store = new FakeFileStore();
+            UploadFailure? failure = null;
+            IReadOnlyList<IBrowserFile> files = [new FakeBrowserFile("forged.txt", new string('a', 100), size: 10)];
+
+            // Act
+            var cut = ctx.Render(@<FormaFileUploader Store="store"
+                                                 Files="files"
+                                                 Options="@(new FileUploaderOptions { MaxFileSize = 50 })"
+                                                 OnFailed="@(reported => { failure = reported; return Task.CompletedTask; })" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(store.Saved);
+                Assert.IsType<IOException>(failure!.Error);
+                Assert.Equal("Failed", cut.Find(".forma-file-uploader-state").TextContent);
+            });
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public void Should_reject_a_cap_of_no_bytes(long maxFileSize)
+        {
+            // Arrange
+            using var ctx = new FormaFileUploaderTests();
+            var store = new FakeFileStore();
+
+            // Act & Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render(@<FormaFileUploader Store="store" Options="@(new FileUploaderOptions { MaxFileSize = maxFileSize })" />));
+        }
+
+        [Fact]
         public void Should_say_why_the_store_refused_a_file_and_carry_on()
         {
             // Arrange

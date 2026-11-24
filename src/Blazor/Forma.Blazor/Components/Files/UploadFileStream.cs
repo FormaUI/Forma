@@ -1,7 +1,8 @@
 namespace Forma.Blazor.Components.Files;
 
-/// <summary>A read-only stream over an inner stream that reports the running count of bytes read.</summary>
-internal sealed class UploadFileStream(Stream innerStream, Action<long> onProgress) : Stream
+/// <summary>A read-only stream over an inner stream that reports the running count of bytes read, up to a ceiling.</summary>
+/// <remarks>Each read asks for one byte past what the ceiling leaves at most, so a stream longer than the ceiling fails the read that would pass it without handing its reader a byte beyond it.</remarks>
+internal sealed class UploadFileStream(Stream innerStream, long ceiling, Action<long> onProgress) : Stream
 {
     private long _bytesRead;
 
@@ -48,7 +49,7 @@ internal sealed class UploadFileStream(Stream innerStream, Action<long> onProgre
     /// <inheritdoc />
     public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
     {
-        var bytesRead = await innerStream.ReadAsync(buffer, cancellationToken);
+        var bytesRead = await innerStream.ReadAsync(buffer[..GetWindow(buffer.Length)], cancellationToken);
 
         Advance(bytesRead);
 
@@ -58,7 +59,7 @@ internal sealed class UploadFileStream(Stream innerStream, Action<long> onProgre
     /// <inheritdoc />
     public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
     {
-        var bytesRead = await innerStream.ReadAsync(buffer.AsMemory(offset, count), cancellationToken);
+        var bytesRead = await innerStream.ReadAsync(buffer.AsMemory(offset, GetWindow(count)), cancellationToken);
 
         Advance(bytesRead);
 
@@ -96,6 +97,15 @@ internal sealed class UploadFileStream(Stream innerStream, Action<long> onProgre
         }
 
         _bytesRead += bytesRead;
+
+        if (_bytesRead > ceiling)
+        {
+            throw new IOException($"The file is longer than the {ceiling} bytes it is read up to.");
+        }
+
         onProgress(_bytesRead);
     }
+
+    private int GetWindow(int count)
+        => (int)Math.Min(count, ceiling - _bytesRead + 1);
 }

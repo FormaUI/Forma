@@ -115,6 +115,7 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
     protected override async Task OnParametersSetAsync()
     {
         ArgumentNullException.ThrowIfNull(Options);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(Options.MaxFileSize, nameof(Options));
 
         _activeStore = Store
             ?? _registeredStore
@@ -431,12 +432,23 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
             return StoreOutcome.Failed;
         }
 
+        // A file the browser says is larger than the cap is refused before any of it is read.
+        if (file.Size > Options.MaxFileSize)
+        {
+            var refusal = new FileRefusal(FileRefusalReason.TooLarge, Options.MaxFileSize);
+            _batch.RefuseFile(index, refusal);
+            Rerender();
+            refusals.Add(new UploadRefusal(file.Name, refusal, GetRefusalText(file.Name, refusal)));
+
+            return StoreOutcome.Refused;
+        }
+
         SetUploadState(index, UploadState.Uploading, 0);
 
         try
         {
-            // The file's own size is the read ceiling.
-            await using var content = new UploadFileStream(file.OpenReadStream(file.Size, cancellationToken), read => ReportProgress(index, read));
+            // The cap is the read's ceiling, whatever size the browser gave the file.
+            await using var content = new UploadFileStream(file.OpenReadStream(Options.MaxFileSize, cancellationToken), Options.MaxFileSize, read => ReportProgress(index, read));
 
             var result = await _activeStore.SaveAsync(new FileContent(file.Name, file.ContentType, file.Size, content), cancellationToken);
 

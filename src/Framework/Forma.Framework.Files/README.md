@@ -23,6 +23,15 @@ A picker raises `OnFilesRejected` with its rejections and `OnFilesSelected` with
 accepted. `FormaFileUploader` raises `OnRefused` once for each refusal, `OnFailed` once for each
 failure and `OnCompleted` with the `ResourceInfo` every stored file became.
 
+`FormaFileUploader` reads a file up to `FileUploaderOptions.MaxFileSize`, 10 MiB unless a host sets
+another. A file the browser says is larger is refused as `TooLarge`, with the cap as its `Limit`,
+before any of it is read, and a file that runs past the cap fails, whatever size the browser gave
+it. A host storing larger files raises the cap:
+
+```razor
+<FormaFileUploader Files="_files" Options="@(new FileUploaderOptions { MaxFileSize = 100 * 1024 * 1024 })" />
+```
+
 ```razor
 @using Forma.Blazor.Components.Files
 @using Forma.Framework.Files

@@ -25,12 +25,20 @@ public sealed partial class FormaComposerFileUploadDialog(IFileStore? store = nu
     private IReadOnlyList<IBrowserFile> _files = [];
     private readonly List<ResourceInfo> _uploadedResources = [];
 
-    private static FileUploaderOptions UploaderOptions
-        => DetailedOptions;
+    // The uploader reads a file up to the size the picker accepts, and the picker judges a file by the uploader's cap where it sets none.
+    private FileUploaderOptions UploaderOptions
+        => Options.Picker.MaxFileSize is { } maxFileSize ? DetailedOptions with { MaxFileSize = maxFileSize } : DetailedOptions;
 
     /// <summary>The options of the file picker.</summary>
     private FilePickerOptions PickerOptions
-        => Options.Picker.MaxFiles == 1 ? Options.Picker with { AllowMultipleFiles = false } : Options.Picker;
+    {
+        get
+        {
+            var picker = Options.Picker.MaxFileSize is null ? Options.Picker with { MaxFileSize = DetailedOptions.MaxFileSize } : Options.Picker;
+
+            return picker.MaxFiles == 1 ? picker with { AllowMultipleFiles = false } : picker;
+        }
+    }
 
     /// <inheritdoc />
     protected override void OnParametersSet()

@@ -16,6 +16,9 @@ public sealed record FileUploaderOptions
         ShowTotalMetrics = true
     };
 
+    /// <summary>The size the uploader reads a file up to, in bytes: 10 MiB unless a host sets another.</summary>
+    public long MaxFileSize { get; init; } = 10 * 1024 * 1024;
+
     /// <summary>Whether the upload begins as soon as a new set of files arrives.</summary>
     public bool AutoStart { get; init; } = true;
 
