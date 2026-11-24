@@ -28,6 +28,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Four components built and in review, thirteen changes fixed |
+| [A security check](#a-security-check) | Planned, once the work under way is done |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -232,6 +233,24 @@ here in the order they are taken, each with what the code does and its state.
 | A list as wide as its field | The combo box's, the select's and the multi-select's lists were as wide as their options, narrower than a wide field. Each is now at least as wide as its field | Fixed |
 | A stepper on a static page | A statically rendered stepper, measured by no renderer, cut each name short at a phone's width. The page's script measures it, so its steps not current show by their numbers | Fixed |
 | A stepper's current marker apart from its marks | `FormaStepper` filled its current marker in the active color its completed steps' marks take, and no one shade fills the marker deep enough for its number and draws the marks light enough on a dark band. The current marker takes its fill from `--forma-stepper-current-marker-bg-color`, the active color where it's unset | Fixed |
+
+<a id="a-security-check"></a>
+
+## A security check
+
+A check of what Forma turns away, like the one a host ran on its own site, is planned once the work under way is done:
+
+- **Every surface tested for what it turns away.** Each place a component writes markup or a link from data it's
+  given, a `MarkupString`, an `href` or a script setting `innerHTML`, is found from the source, so a new one is covered
+  as it's added, and tested with hostile input such as a `javascript:` link and a script element.
+- **Malformed input refused, never thrown.** Text a reader types or a host passes that no component expects, such as a
+  NUL character, a lone surrogate, text where a number belongs or a value far past any length, ends neither a circuit
+  nor an application.
+- **Limits.** The sizes a component accepts from the browser, a value reaching .NET in pieces and an upload among them,
+  are set and checked.
+- **Dependencies.** CI checks every package, the NuGet packages and the script tests' npm packages, for known
+  vulnerabilities on each scheduled run, even when nothing changed.
+- **A scan of the running Showcase.** An OWASP ZAP scan, rerun from a script, with every finding fixed or explained.
 
 <a id="deferred"></a>
 
