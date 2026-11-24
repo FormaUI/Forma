@@ -62,6 +62,13 @@ starts it once the web view's channel to the application is in place.
 Each web view's document takes its culture, the application's by default, from its first Forma component,
 so the page carries no culture marker of its own.
 
+## Limits
+
+A web view has no hub between its page and the application, so SignalR's message limit doesn't apply. Forma holds
+what the page sends to limits of its own, as on a server: `JSTransferOptions.MaximumLength`, 16 MiB, for a value
+with no maximum of its own, `FileUploaderOptions.MaxFileSize`, 10 MiB, for an uploaded file, and a text field's
+`MaxLength`. The [library's README](https://github.com/FormaUI/Forma/blob/main/README.md#limits) sets each out.
+
 ## The application
 
 Every web view resolves from the application's one service provider, so by default they share its culture,

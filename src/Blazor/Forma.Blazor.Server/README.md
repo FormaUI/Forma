@@ -38,6 +38,21 @@ builder.AddFormaServerIntegration(options =>
 });
 ```
 
+## Limits
+
+The hub's and the circuit's limits are the host's, and Forma runs on their defaults:
+
+- **SignalR's `MaximumReceiveMessageSize`**, 32 KB by default, needs no raising for Forma. A value Forma sends
+  inline measures at most 16 KB as the hub carries it, the rest of the message left to the call around it, and a
+  larger value, and every file a reader uploads, travels as a stream Blazor sends in pieces under the limit. A host
+  keeps the default, or more where its own code needs it, which lets every client send messages that large.
+- **`CircuitOptions`**, and the hub's other options, need nothing changed: Forma brings a reconnecting circuit's
+  text fields and observations back in step itself.
+
+Forma holds what the browser sends to limits of its own: `JSTransferOptions.MaximumLength`, 16 MiB, for a value
+with no maximum of its own, `FileUploaderOptions.MaxFileSize`, 10 MiB, for an uploaded file, and a text field's
+`MaxLength`. The [library's README](https://github.com/FormaUI/Forma/blob/main/README.md#limits) sets each out.
+
 ## WebAssembly components
 
 A server that renders WebAssembly components, through `AddInteractiveWebAssemblyComponents()`, chooses how

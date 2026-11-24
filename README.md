@@ -31,7 +31,8 @@ In this README:
 7. [WebAssembly components](#webassembly-components)
 8. [Blazor Hybrid](#blazor-hybrid)
 9. [What the registration does](#what-the-registration-does)
-10. [More packages](#more-packages)
+10. [Limits](#limits)
+11. [More packages](#more-packages)
 
 ## Install
 
@@ -149,7 +150,7 @@ Aligning a row at its top edge keeps the boxes level when a validation message s
 ### Forms and long text
 
 **Forma stays within Blazor Server's default message limit, 32 KB**, so a host has no need to raise
-`MaximumReceiveMessageSize` for Forma:
+`MaximumReceiveMessageSize` for Forma, as [Limits](#limits) sets out:
 
 - A Forma text field sends the server what the reader changes as they type, rather than its whole text, so a long
   text never outgrows a message.
@@ -910,6 +911,29 @@ renders the framework's `ResourcePreloader`, `ImportMap` and `HeadOutlet`:
 - `PageRenderMode` is the render mode `Routes` takes. The `HeadOutlet` takes it too, so a page's title and
   `HeadContent` follow the page wherever it renders.
 - `PreloadAssets="false"` leaves out the `ResourcePreloader`, which serves a WebAssembly render mode.
+
+## Limits
+
+**The framework's limits are the host's.** Forma runs on their defaults, which its own hosts and checks keep, and
+needs none of them raised:
+
+| Limit | Default | What Forma needs of it |
+|-------|---------|------------------------|
+| SignalR's `MaximumReceiveMessageSize`, the largest message a circuit takes from the browser | 32 KB | Its default or more. A value Forma sends inline measures at most 16 KB as the hub carries it, and leaves the rest to the call around it; a larger value, and every file a reader uploads, travels as a stream Blazor sends in pieces under the limit. |
+| `CircuitOptions` and the hub's other options | The framework's | Nothing changed: a reconnecting circuit has its text fields and observations brought back in step by Forma itself. |
+
+A host that raises `MaximumReceiveMessageSize` for its own code lets every client send messages that large, which
+Forma doesn't need. A Blazor Hybrid application and a WebAssembly client have no hub, so no message limit applies
+there.
+
+**Forma's own limits hold what the browser sends**, whatever the framework allows, as
+[the security design](https://github.com/FormaUI/Forma/blob/main/docs/security-design.md#limits) sets out:
+
+| Limit | Default | What it caps |
+|-------|---------|--------------|
+| `JSTransferOptions.MaximumLength` | 16 MiB | A value the browser sends a component with no maximum of its own, such as a composer's document or a page composed for printing. A host registers its own `JSTransferOptions` to change it. |
+| `FileUploaderOptions.MaxFileSize` | 10 MiB | A file `FormaFileUploader` reads; a larger one is refused before any of it is read. `FormaExplorer` takes `CatalogConstraints.MaxFileBytes` in its place, and `FormaComposer` its picker's `MaxFileSize`. |
+| A text field's `MaxLength` | Unset | The text `FormaTextBox` and `FormaTextArea` take, and `FormaColorPicker`'s hex value, held in .NET as in the browser, so a browser ignoring the attribute can't pass it. |
 
 ## More packages
 
