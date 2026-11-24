@@ -5,7 +5,7 @@
 @using Microsoft.AspNetCore.Components.Forms
 
 <h1>FormaImagePicker</h1>
-<p class="description">@L["A thin skin over FormaFilePicker that pins the accept filter to images and shows a thumbnail of each one accepted."]</p>
+<p class="description">@L["A thin skin over FormaFilePicker that takes images alone, every image type unless the host names some, and shows a thumbnail of each one accepted."]</p>
 
 <div class="demo-section">
     <h2>@L["Basic Picker"]</h2>
@@ -37,12 +37,28 @@
 
 <div class="demo-section">
     <h2>@L["A Non-Image Rejected"]</h2>
-    <p class="description">@L["The accept filter is pinned, so a non-image file is declined the same way FormaFilePicker declines one."]</p>
+    <p class="description">@L["The accept filter holds to images, so a non-image file is declined the same way FormaFilePicker declines one."]</p>
     <div class="demo-box">
         <FormaImagePicker OnFilesSelected="@(files => HandleSelected("rejected", files))"
                           OnFilesRejected="@(files => HandleRejected("rejected", files))" />
         <ul class="demo-log">
             @foreach (var line in Log("rejected"))
+            {
+                <li>@line</li>
+            }
+        </ul>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["JPEG Alone"]</h2>
+    <p class="description">@L["Accept narrows the images to the types the host names, so a PNG is declined as a disallowed type."]</p>
+    <div class="demo-box">
+        <FormaImagePicker Options="@(new FilePickerOptions { Accept = "image/jpeg, .jpg, .jpeg" })"
+                          OnFilesSelected="@(files => HandleSelected("jpeg", files))"
+                          OnFilesRejected="@(files => HandleRejected("jpeg", files))" />
+        <ul class="demo-log">
+            @foreach (var line in Log("jpeg"))
             {
                 <li>@line</li>
             }

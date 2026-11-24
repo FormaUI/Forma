@@ -479,7 +479,7 @@ Draws an icon: a glyph, a brand mark or a character.
 
 ### `FormaImagePicker`
 
-A file picker pinned to image types, previewing each accepted file as a thumbnail. Its design is [resources-design.md](resources-design.md).
+A file picker of images, of every image type unless its host names some, previewing each accepted file as a thumbnail. Its design is [resources-design.md](resources-design.md).
 
 | | |
 |---|---|

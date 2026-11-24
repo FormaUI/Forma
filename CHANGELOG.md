@@ -20,6 +20,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   minute or more than fourteen hours, which a `DateTimeOffset` can't hold. An earliest date or value after the latest,
   on `FormaCalendar`, `FormaDatePicker`, `FormaDateRangePicker`, `FormaDateTimePicker` and `FormaNumberInput`, throws
   an `ArgumentOutOfRangeException` naming the earliest, where it threw an `ArgumentException` naming neither.
+- `FormaImagePicker` takes the image types its options' `Accept` names, such as `image/jpeg` or `.jpg`, declining any
+  other image as a disallowed type, and every image type where it names none; it set `Accept` to `image/*` whatever
+  the host gave. An `Accept` naming a type that isn't an image throws an `ArgumentException`, where the picker took
+  every image in its place: to migrate, leave `Accept` unset on an image picker that took a type other than images.
 
 ## `1.0.0-preview.16`
 

@@ -34,16 +34,40 @@
         }
 
         [Fact]
-        public void Should_pin_accept_to_images_whatever_the_options_say()
+        public void Should_take_only_the_image_types_its_host_names()
+        {
+            // Arrange
+            using var ctx = new FormaImagePickerTests();
+            IReadOnlyList<RejectedFile>? rejected = null;
+            var cut = ctx.Render(@<FormaImagePicker Options="@(new FilePickerOptions { Accept = "image/jpeg, .jpg" })"
+                                                    OnFilesSelected="@(_ => Task.CompletedTask)"
+                                                    OnFilesRejected="@(files => { rejected = files; return Task.CompletedTask; })" />);
+            var input = cut.FindComponent<InputFile>();
+
+            // Act
+            input.UploadFiles(InputFileContent.CreateFromText("cover bytes", "cover.png", contentType: "image/png"));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("image/jpeg, .jpg", cut.Find("input[type=file]").GetAttribute("accept")),
+                () => Assert.Equal(FileRejectionReason.DisallowedType, Assert.Single(rejected!).Reason));
+        }
+
+        [Theory]
+        [InlineData("application/pdf")]
+        [InlineData(".pdf")]
+        [InlineData("image/png, .txt")]
+        [InlineData(".unknown")]
+        public void Should_refuse_a_type_that_isnt_an_image(string accept)
         {
             // Arrange
             using var ctx = new FormaImagePickerTests();
 
             // Act
-            var cut = ctx.Render(@<FormaImagePicker Options="@(new FilePickerOptions { Accept = "application/pdf" })" OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            var render = () => ctx.Render(@<FormaImagePicker Options="@(new FilePickerOptions { Accept = accept })" OnFilesSelected="@(_ => Task.CompletedTask)" />);
 
             // Assert
-            Assert.Equal("image/*", cut.Find("input").GetAttribute("accept"));
+            Assert.Equal("Options", Assert.Throws<ArgumentException>(render).ParamName);
         }
 
         [Fact]

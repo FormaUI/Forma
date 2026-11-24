@@ -8,7 +8,7 @@
      @attributes="AdditionalAttributes"
      @ref="RootElement">
     <FormaFilePicker @ref="FilePicker"
-                     Options="@(Options with { Accept = ImageAccept })"
+                     Options="@PickerOptions"
                      Prompt="@EffectivePrompt"
                      OnFilesRejected="HandleFilesRejectedAsync"
                      OnFilesSelected="HandleFilesSelectedAsync" />

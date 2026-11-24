@@ -3,12 +3,13 @@ namespace Forma.Blazor.Components.Files;
 using Forma.Framework.Browser.Interop.Behaviors;
 using Forma.Framework.Css;
 using Forma.Framework.Files;
+using Forma.Framework.Resources;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>A file picker for images, showing a thumbnail of each one accepted.</summary>
-/// <remarks>The picker passes its options on with <see cref="FilePickerOptions.Accept"/> set to every image type.</remarks>
+/// <remarks>The picker passes its options on with <see cref="FilePickerOptions.Accept"/> as the host names it, or every image type where it names none.</remarks>
 public sealed partial class FormaImagePicker : FormaElementBase
 {
     private const string ImageAccept = "image/*";
@@ -38,13 +39,23 @@ public sealed partial class FormaImagePicker : FormaElementBase
     private string EffectivePrompt
         => Prompt ?? L["Drop images here or click to browse"];
 
+    private FilePickerOptions PickerOptions
+        => string.IsNullOrWhiteSpace(Options.Accept) ? Options with { Accept = ImageAccept } : Options;
+
     /// <inheritdoc />
     protected override void OnInitialized()
         => _preview = new FilePreview(Context.JS);
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => ArgumentNullException.ThrowIfNull(Options);
+    {
+        ArgumentNullException.ThrowIfNull(Options);
+
+        if (!string.IsNullOrWhiteSpace(Options.Accept) && !IsImageAccept(Options.Accept))
+        {
+            throw new ArgumentException($"{nameof(FilePickerOptions.Accept)} ('{Options.Accept}') names a type that isn't an image, which an image picker can't take.", nameof(Options));
+        }
+    }
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -77,6 +88,12 @@ public sealed partial class FormaImagePicker : FormaElementBase
         await FilePicker.ClearAsync();
         StateHasChanged();
     }
+
+    // Every type the host names is an image's: a media type under image/, or the extension of an image a browser renders.
+    private static bool IsImageAccept(string accept)
+        => accept.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).All(pattern => pattern.StartsWith('.', StringComparison.Ordinal)
+            ? BrowserContentTypes.TryGetByExtension(pattern, out var contentType) && contentType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
+            : pattern.StartsWith("image/", StringComparison.OrdinalIgnoreCase));
 
     private async Task HandleFilesRejectedAsync(IReadOnlyList<RejectedFile> rejectedFiles)
     {
