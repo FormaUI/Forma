@@ -17,13 +17,14 @@ public sealed partial class FormaStepperPage
 
     [Inject] private CultureSwitcher Switcher { get; set; } = default!;
 
-    // The purchase step a completed step's link names, read from the address it leads to.
-    [SupplyParameterFromQuery(Name = "step")] private int? Step { get; set; }
+    // The purchase step a completed step's link names, read from the address it leads to as the text it is, since an address
+    // can carry anything there.
+    [SupplyParameterFromQuery(Name = "step")] private string? Step { get; set; }
 
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        if (Step is { } step)
+        if (int.TryParse(Step, NumberStyles.None, CultureInfo.InvariantCulture, out var step))
         {
             _purchaseIndex = Math.Clamp(step, 0, 3);
         }

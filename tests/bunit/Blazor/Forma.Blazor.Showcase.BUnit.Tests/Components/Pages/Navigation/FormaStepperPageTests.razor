@@ -1,0 +1,54 @@
+@inherits FormaBunitContext
+@using Forma.Blazor.Showcase.Components.Pages.Navigation
+@using Forma.Framework.Culture.Router
+
+@code {
+    // The Showcase's culture routing in English alone, with the page opened at the address given.
+    private static void OpenAt(FormaStepperPageTests ctx, string address)
+    {
+        ctx.Services.AddFormaCultureRouting(new CultureRouterOptions
+        {
+            DefaultCulture = "en",
+            Routes = [new() { Token = "en", UICulture = new("en") }]
+        });
+        ctx.Services.GetRequiredService<NavigationManager>().NavigateTo(address);
+    }
+
+    // Which step of the purchase flow, the page's first stepper, is current.
+    private static string?[] GetPurchaseSteps(IRenderedComponent<FormaStepperPage> cut)
+        => [.. cut.FindAll(".forma-stepper")[0].QuerySelectorAll("li").Select(step => step.GetAttribute("aria-current"))];
+
+    public sealed class Page
+    {
+        [Fact]
+        public void Should_open_at_the_purchase_step_its_address_names()
+        {
+            // Arrange
+            using var ctx = new FormaStepperPageTests();
+            OpenAt(ctx, "stepper?step=2");
+
+            // Act
+            var cut = ctx.Render<FormaStepperPage>();
+
+            // Assert
+            Assert.Equal([null, null, "step", null], GetPurchaseSteps(cut));
+        }
+
+        [Theory]
+        [InlineData("text")]
+        [InlineData("%00")]
+        [InlineData("99999999999")]
+        public void Should_open_at_the_second_purchase_step_when_its_address_names_no_step(string step)
+        {
+            // Arrange
+            using var ctx = new FormaStepperPageTests();
+            OpenAt(ctx, $"stepper?step={step}");
+
+            // Act
+            var cut = ctx.Render<FormaStepperPage>();
+
+            // Assert
+            Assert.Equal([null, "step", null, null], GetPurchaseSteps(cut));
+        }
+    }
+}

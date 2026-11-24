@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <ItemGroup>
+        <PackageReference Include="bunit" />
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\Blazor\Forma.Blazor.Showcase\Forma.Blazor.Showcase.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
+        <ProjectReference Include="..\..\..\support\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />
+    </ItemGroup>
+
+</Project>
