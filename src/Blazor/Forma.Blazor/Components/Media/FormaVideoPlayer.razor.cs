@@ -74,6 +74,10 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
     private bool ShowFacade
         => DeferLoading && !Autoplay && !_isActivated && Frame is EmbeddedPlayerFrame or HtmlPlayerFrame;
 
+    // The still shown before the player loads, which is none where an image doesn't allow its address.
+    private string? PlaceholderAddress
+        => string.IsNullOrWhiteSpace(Placeholder) ? null : Context.GetAllowedAddress(Placeholder, AddressKind.ImageSource);
+
     // The address a service's markup links to beside its player, for a reader its script leaves without one.
     private string? FallbackAddress
         => Context.GetAllowedAddress(Frame?.Source, AddressKind.Link);
@@ -135,12 +139,24 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
         {
             if (await provider.GetPlayerFrameAsync(Source, options, CancellationToken.None) is { } frame)
             {
-                return frame;
+                return GetAllowedFrame(frame);
             }
         }
 
         return null;
     }
+
+    // A frame loading what its kind of source doesn't allow loads nothing, so the player shows the video unavailable.
+    private PlayerFrame? GetAllowedFrame(PlayerFrame frame)
+        => frame switch
+        {
+            NativePlayerFrame native when Context.GetAllowedAddress(native.Source, AddressKind.VideoSource) is null => null,
+            EmbeddedPlayerFrame embedded when Context.GetAllowedAddress(embedded.Source, AddressKind.FrameSource) is null => null,
+            _ => frame,
+        };
+
+    private string? GetCaptionAddress(VideoCaptionTrack caption)
+        => Context.GetAllowedAddress(caption.Source, AddressKind.TrackSource);
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)

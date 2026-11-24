@@ -4,6 +4,7 @@ using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Css;
 using Forma.Framework.Emojis;
 using Forma.Framework.Emojis.Unicode;
+using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
@@ -45,7 +46,13 @@ public sealed partial class FormaEmoji(IEmojiProvider? emojiProvider = null) : F
             ?? emojiProvider
             ?? UnicodeEmojiProvider.Instance;
 
-        _artwork = provider.GetArtwork(Emoji);
+        // Artwork at an address an image doesn't allow draws the reader's font, as an emoji with no artwork does.
+        _artwork = provider.GetArtwork(Emoji) switch
+        {
+            EmojiImage { Url: var url } when Context.GetAllowedAddress(url, AddressKind.ImageSource) is null => EmojiArtwork.Unicode,
+            EmojiSprite { Sheet: var sheet } when Context.GetAllowedAddress(sheet, AddressKind.ImageSource) is null => EmojiArtwork.Unicode,
+            var artwork => artwork,
+        };
 
         // A static render runs no script to adopt a sheet's symbols, and the browser resolves a reference into a sheet of the page's own
         // origin alone; a sheet of another origin draws the reader's font.

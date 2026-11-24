@@ -101,6 +101,16 @@ public sealed partial class FormaFileViewer : FormaElementBase
     private string DisplayName
         => Resource?.Name ?? Source;
 
+    // The addresses the resource's preview fetches it from, each none where its kind doesn't allow the resource's source.
+    private string? ImageAddress
+        => Context.GetAllowedAddress(Resource?.Source, AddressKind.ImageSource);
+
+    private string? AudioAddress
+        => Context.GetAllowedAddress(Resource?.Source, AddressKind.AudioSource);
+
+    private string? DocumentAddress
+        => Context.GetAllowedAddress(Resource?.Source, AddressKind.FrameSource);
+
     // The address a document the browser can't show inline opens at in a new tab.
     private string? DocumentLinkAddress
         => Context.GetAllowedAddress(Resource?.Source, AddressKind.Link);

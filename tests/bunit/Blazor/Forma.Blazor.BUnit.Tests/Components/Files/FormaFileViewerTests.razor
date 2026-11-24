@@ -737,5 +737,75 @@
             Assert.False(link.HasAttribute("href"));
             Assert.Contains("Open", link.TextContent, StringComparison.Ordinal);
         }
+
+        public static TheoryData<string, string, string> HostileSources
+        {
+            get
+            {
+                var hostileSources = new TheoryData<string, string, string>();
+
+                foreach (var address in HostileAddresses.Scripts)
+                {
+                    hostileSources.Add($"{address}//cover.jpg", "img.forma-file-viewer-image", "src");
+                    hostileSources.Add($"{address}//track.mp3", ".forma-file-viewer-audio audio", "src");
+                    hostileSources.Add($"{address}//notes.html", "iframe.forma-file-viewer-document", "src");
+                    hostileSources.Add($"{address}//brief.pdf", "object.forma-file-viewer-document", "data");
+                }
+
+                return hostileSources;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HostileSources))]
+        public void Should_write_a_source_its_kind_refuses_inert(string address, string selector, string attribute)
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@address" />);
+
+            // Assert
+            var element = cut.Find(selector);
+            var entries = loggerFactory.GetAddressRefusals();
+            Assert.Multiple(
+                () => Assert.False(element.HasAttribute(attribute)),
+                () => Assert.NotEmpty(entries),
+                () => Assert.All(entries, entry => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"])),
+                () => Assert.All(entries, entry => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData("data:image/png;base64,iVBORw0KGgo=//cover.png", "img.forma-file-viewer-image", "src")]
+        [InlineData("blob:https://example.com/8f4b0c2e//cover.jpg", "img.forma-file-viewer-image", "src")]
+        [InlineData("blob:https://example.com/8f4b0c2e//brief.pdf", "object.forma-file-viewer-document", "data")]
+        public void Should_keep_a_source_its_kind_allows(string address, string selector, string attribute)
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@address" />);
+
+            // Assert
+            Assert.Equal(address, cut.Find(selector).GetAttribute(attribute));
+        }
+
+        [Fact]
+        public void Should_write_a_document_s_data_address_inert_since_a_frame_never_takes_one()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var address = "data:application/pdf;base64,JVBERi0=//brief.pdf";
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@address" />);
+
+            // Assert
+            Assert.False(cut.Find("object.forma-file-viewer-document").HasAttribute("data"));
+        }
     }
 }

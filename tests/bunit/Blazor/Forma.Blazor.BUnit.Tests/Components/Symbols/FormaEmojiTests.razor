@@ -1,5 +1,8 @@
 @inherits FormaBunitContext
+@using Forma.Blazor.Features.Emojis
 @using Forma.Framework.Emojis
+@using Forma.Tests.Sanitization
+@using Microsoft.Extensions.Logging
 @code {
     public sealed class Component
     {
@@ -153,6 +156,70 @@
 
             // Assert
             Assert.Equal("#grinning", cut.Find("svg use").GetAttribute("href"));
+        }
+
+        public static TheoryData<string> HostileArtwork
+            => [.. HostileAddresses.Scripts.Append("data:image/svg+xml,<svg onload=alert(1)>")];
+
+        [Theory]
+        [MemberData(nameof(HostileArtwork))]
+        public void Should_draw_an_emoji_whose_image_an_image_refuses_as_its_own_character(string address)
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var provider = new FakeEmojiProvider(new EmojiImage(address));
+            Emoji emoji = "😀";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" Provider="provider" />);
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.GetAddressRefusals());
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("img")),
+                () => Assert.Equal("😀", cut.Find("span").TextContent),
+                () => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"]),
+                () => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal));
+        }
+
+        [Theory]
+        [MemberData(nameof(HostileArtwork))]
+        public void Should_draw_an_emoji_whose_sheet_an_image_refuses_as_its_own_character_and_load_no_sheet(string address)
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            var loader = new FakeEmojiSpriteLoader();
+            ctx.Services.AddSingleton<IEmojiSpriteLoader>(loader);
+            var provider = new FakeEmojiProvider(new EmojiSprite("grinning", address));
+            Emoji emoji = "😀";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" Provider="provider" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("svg")),
+                () => Assert.Equal("😀", cut.Find("span").TextContent),
+                () => Assert.Empty(loader.Requested));
+        }
+
+        [Theory]
+        [InlineData("data:image/png;base64,iVBORw0KGgo=")]
+        [InlineData("blob:https://example.com/8f4b0c2e")]
+        public void Should_draw_an_emoji_from_an_image_an_image_allows(string address)
+        {
+            // Arrange
+            using var ctx = new FormaEmojiTests();
+            var provider = new FakeEmojiProvider(new EmojiImage(address));
+            Emoji emoji = "😀";
+
+            // Act
+            var cut = ctx.Render(@<FormaEmoji Emoji="emoji" Provider="provider" />);
+
+            // Assert
+            Assert.Equal(address, cut.Find("img").GetAttribute("src"));
         }
     }
 }

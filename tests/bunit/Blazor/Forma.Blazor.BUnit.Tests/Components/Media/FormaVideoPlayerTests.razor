@@ -864,5 +864,120 @@
                 () => Assert.All(entries, entry => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"])),
                 () => Assert.All(entries, entry => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal)));
         }
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_show_the_video_unavailable_where_a_host_s_file_frame_is_at_an_address_a_video_refuses(string address)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            ctx.Services.AddScoped<IPlayerProvider>(_ => new FakePlayerProvider("library:", source => new NativePlayerFrame(address)));
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="library:stage-4" Title="Stage 4" />);
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.GetAddressRefusals());
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("video")),
+                () => Assert.Equal("This video is unavailable.", cut.Find(".forma-video-player-unavailable").TextContent),
+                () => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"]),
+                () => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal));
+        }
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_show_the_video_unavailable_where_a_host_s_embedded_frame_is_at_an_address_a_frame_refuses(string address)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            ctx.Services.AddScoped<IPlayerProvider>(_ => new FakePlayerProvider("library:", source => new EmbeddedPlayerFrame(address)));
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="library:stage-4" Title="Stage 4" DeferLoading="false" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("iframe")),
+                () => Assert.Equal("This video is unavailable.", cut.Find(".forma-video-player-unavailable").TextContent));
+        }
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_play_no_file_at_an_address_a_video_refuses(string address)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@address" Title="Stage 4" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("video, iframe")),
+                () => Assert.Empty(ctx.JSInterop.Invocations["activate"]),
+                () => Assert.Equal("This video is unavailable.", cut.Find(".forma-video-player-unavailable").TextContent));
+        }
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_show_no_placeholder_at_an_address_an_image_refuses(string address)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+            // Act
+            var facade = ctx.Render(@<FormaVideoPlayer Source="https://youtu.be/dQw4w9WgXcQ" Title="A video" Placeholder="@address" />);
+            var file = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" Placeholder="@address" />);
+
+            // Assert
+            var entries = loggerFactory.GetAddressRefusals();
+            Assert.Multiple(
+                () => Assert.Empty(facade.FindAll("img")),
+                () => Assert.False(file.Find("video").HasAttribute("poster")),
+                () => Assert.NotEmpty(entries),
+                () => Assert.All(entries, entry => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"])));
+        }
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_write_a_caption_track_at_an_address_a_track_refuses_inert(string address)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            IReadOnlyList<VideoCaptionTrack> captions = [new("/media/stage-1.en.vtt", "en", "English"), new(address, "es", "Español")];
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" Captions="captions" />);
+
+            // Assert
+            var tracks = cut.FindAll("track");
+            Assert.Multiple(
+                () => Assert.Equal("/media/stage-1.en.vtt", tracks[0].GetAttribute("src")),
+                () => Assert.False(tracks[1].HasAttribute("src")),
+                () => Assert.Equal("Español", tracks[1].GetAttribute("label")));
+        }
+
+        [Theory]
+        [InlineData("data:image/png;base64,iVBORw0KGgo=")]
+        [InlineData("blob:https://example.com/8f4b0c2e")]
+        public void Should_keep_a_placeholder_and_a_track_at_addresses_their_kinds_allow(string placeholder)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            IReadOnlyList<VideoCaptionTrack> captions = [new("data:text/vtt,WEBVTT", "en", "English")];
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="/media/stage-1.mp4" Title="Stage 1" Placeholder="@placeholder" Captions="captions" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(placeholder, cut.Find("video").GetAttribute("poster")),
+                () => Assert.Equal("data:text/vtt,WEBVTT", cut.Find("track").GetAttribute("src")));
+        }
     }
 }

@@ -15,9 +15,9 @@
                 aria-describedby="@NoteId"
                 disabled="@(!RendererInfo.IsInteractive)"
                 @onclick="Activate">
-            @if (!string.IsNullOrWhiteSpace(Placeholder))
+            @if (PlaceholderAddress is { } placeholder)
             {
-                <img class="forma-video-player-facade-placeholder" src="@Placeholder" alt="" />
+                <img class="forma-video-player-facade-placeholder" src="@placeholder" alt="" />
             }
             <FormaIcon Icon="Glyph.TriangleRight" Size="IconSize.Display" Class="forma-video-player-facade-glyph" />
             <span id="@LabelId" class="forma-video-player-facade-label">@L["Play {Title}", Title]</span>
@@ -30,7 +30,7 @@
                class="forma-video-player-frame"
                src="@nativeFrame.Source"
                title="@Title"
-               poster="@Placeholder"
+               poster="@PlaceholderAddress"
                controls
                playsinline
                autoplay="@Autoplay"
@@ -38,7 +38,7 @@
             @foreach (var caption in Captions ?? [])
             {
                 <track kind="captions"
-                       src="@caption.Source"
+                       src="@GetCaptionAddress(caption)"
                        srclang="@caption.Language"
                        label="@caption.Label"
                        default="@caption.IsDefault" />

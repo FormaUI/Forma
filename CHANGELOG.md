@@ -40,6 +40,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `FormaStepper`, `FormaFileViewer`'s Open and Download, `FormaVideoPlayer`'s link to a service's page and
   `FormaComposer`'s attachments, where a link that downloads may also take a `blob:` or `data:` address. A component of
   a host's own holds an address to the same rule through `Context.GetAllowedAddress`.
+- A source a component fetches takes a relative, `http`, `https` or `blob:` address, or a `data:` address of its
+  element's own kind, and a frame's or an object's no `data:` address at all: `FormaFileViewer`'s picture, audio, page
+  and document, `FormaVideoPlayer`'s placeholder, captions and the frames a provider gives it, `FormaEmoji`'s image and
+  sheet, and `FormaExplorer`'s thumbnails. A source its kind doesn't allow is written inert, and where the component has
+  a state for having none it shows it: `FormaVideoPlayer` says the video is unavailable, `FormaEmoji` draws the emoji in
+  the reader's font, and a thumbnail draws its kind's glyph.
 
 ## `1.0.0-preview.16`
 

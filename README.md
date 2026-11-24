@@ -185,10 +185,16 @@ form without validating it.
   `FormaFileViewer`'s link to open a document and `FormaVideoPlayer`'s link to a service's own page.
 - A link that downloads, one carrying `download` such as `FormaShareMenu`'s and `FormaFileViewer`'s Download, may also
   take a `blob:` or `data:` address, which the download saves rather than opens.
+- A source takes a relative address or an `http`, `https` or `blob:` one, or a `data:` address of its element's own
+  kind: an image for `FormaFileViewer`'s picture, `FormaEmoji`'s image or sheet and `FormaVideoPlayer`'s placeholder,
+  a video for `FormaVideoPlayer`'s file, an audio for `FormaFileViewer`'s, and a WebVTT file for a caption track. A
+  frame's or an object's source, `FormaFileViewer`'s page or document and `FormaVideoPlayer`'s embedded player, takes
+  no `data:` address.
 
 **An address its kind doesn't allow is written inert.** The element keeps its text and takes no address, so a
 `javascript:` link reads as text that goes nowhere, and the component's log records the refusal at `Debug`, naming the
-address's scheme but never the address. [`Forma.Framework.Sanitization`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Sanitization/README.md#addresses)
+address's scheme but never the address. Where a component has a state for having no source, it shows that state:
+`FormaEmoji` draws the emoji in the reader's font, and `FormaVideoPlayer` says the video is unavailable. [`Forma.Framework.Sanitization`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Sanitization/README.md#addresses)
 sets out each kind's schemes. A component of the host's own, built on `FormaComponentBase`, holds an address to the
 same rule through `Context.GetAllowedAddress(address, kind)`.
 

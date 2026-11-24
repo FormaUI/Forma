@@ -179,6 +179,12 @@ set the order, by `Name`, `Size`, `Kind`, `DateAdded` or `DateModified`, and `Gr
 the items under collapsible headings by the same fields. `PageSize` sets the page, and
 `SearchPlaceholder` the search box's text.
 
+A thumbnail draws an item's `ThumbnailSource`, or an image's own source, only where an image
+allows the address, and a video's first frame only where a video allows its source, as
+[`Forma.Framework.Sanitization`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Sanitization/README.md#addresses)
+sets out. An item at any other address, `javascript:` among them, draws its kind's glyph, and the
+log records the refusal at `Debug` under `FormaExplorerThumbnail`.
+
 `Options` is an `ExplorerOptions`:
 
 | Option | What it does |

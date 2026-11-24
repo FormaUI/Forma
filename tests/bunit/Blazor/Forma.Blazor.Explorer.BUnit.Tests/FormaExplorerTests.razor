@@ -3,6 +3,8 @@
 @using Forma.Framework.Input.Keyboard
 @using Forma.Framework.Input.Pointer
 @using Forma.Framework.Resources
+@using Forma.Tests.Sanitization
+@using Microsoft.Extensions.Logging
 @using Forma.Blazor.Components.Buttons
 @using Forma.Blazor.Components.DataView
 @using Forma.Blazor.Components.DataView.Interop
@@ -2444,6 +2446,58 @@
             Assert.Multiple(
                 () => Assert.Contains("is-cell", thumbnail.Find(".forma-explorer-thumbnail-marked").ClassList),
                 () => Assert.Equal("https://example.com/finish.mp4", thumbnail.Find("video").GetAttribute("src")));
+        }
+
+        public static TheoryData<string> HostileScripts
+            => [.. HostileAddresses.Scripts];
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_draw_its_glyph_for_a_still_at_an_address_an_image_refuses(string address)
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            IReadOnlyList<ICatalogItem> items =
+            [
+                new CatalogItem { Key = "results", Name = "results.pdf", ThumbnailSource = address, Resource = new DocumentResourceInfo("https://example.com/results.pdf") },
+                new CatalogItem { Key = "cover", Name = "cover.jpg", Resource = new ImageResourceInfo(address) }
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" />);
+
+            // Assert
+            var document = GetThumbnail(cut, "results.pdf");
+            var image = GetThumbnail(cut, "cover.jpg");
+            var entries = loggerFactory.GetAddressRefusals();
+            Assert.Multiple(
+                () => Assert.Empty(document.FindAll("img")),
+                () => Assert.Equal([Glyph.FileText], GetGlyphs(document)),
+                () => Assert.Empty(image.FindAll("img")),
+                () => Assert.Equal([Glyph.Image], GetGlyphs(image)),
+                () => Assert.NotEmpty(entries),
+                () => Assert.All(entries, entry => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"])),
+                () => Assert.All(entries, entry => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_draw_no_frame_of_a_video_at_an_address_a_video_refuses(string address)
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ICatalogItem> items = [new CatalogItem { Key = "finish", Name = "finish.mp4", Capabilities = CatalogItemCapabilities.View, Resource = new VideoResourceInfo(address) }];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" />);
+
+            // Assert
+            var thumbnail = GetThumbnail(cut, "finish.mp4");
+            Assert.Multiple(
+                () => Assert.Empty(thumbnail.FindAll("video")),
+                () => Assert.Equal([Glyph.Video], GetGlyphs(thumbnail)));
         }
     }
 

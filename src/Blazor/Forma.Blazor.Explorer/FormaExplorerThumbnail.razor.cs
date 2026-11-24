@@ -4,6 +4,7 @@ using Forma.Framework.Catalog;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Icons;
 using Forma.Framework.Resources;
+using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
@@ -29,15 +30,10 @@ public sealed partial class FormaExplorerThumbnail : FormaComponentBase
             _ => "is-tile"
         };
 
-    private string? StillSource
-        => !string.IsNullOrWhiteSpace(Item.ThumbnailSource)
-            ? Item.ThumbnailSource
-            : (Item.Resource as ImageResourceInfo)?.Source;
+    // The still the item is drawn with and the video whose first frame it shows, each none where its kind doesn't allow the item's address.
+    private string? StillSource { get; set; }
 
-    private string? FrameSource
-        => Item.Resource is VideoResourceInfo video && Item.Capabilities.HasFlag(CatalogItemCapabilities.View)
-            ? video.Source
-            : null;
+    private string? FrameSource { get; set; }
 
     private bool IsMarked
         => Item.Resource is not ImageResourceInfo;
@@ -59,5 +55,15 @@ public sealed partial class FormaExplorerThumbnail : FormaComponentBase
 
     /// <inheritdoc />
     protected override void OnParametersSet()
-        => ArgumentNullException.ThrowIfNull(Item);
+    {
+        ArgumentNullException.ThrowIfNull(Item);
+
+        StillSource = Context.GetAllowedAddress(
+            !string.IsNullOrWhiteSpace(Item.ThumbnailSource) ? Item.ThumbnailSource : (Item.Resource as ImageResourceInfo)?.Source,
+            AddressKind.ImageSource);
+
+        FrameSource = Item.Resource is VideoResourceInfo video && Item.Capabilities.HasFlag(CatalogItemCapabilities.View)
+            ? Context.GetAllowedAddress(video.Source, AddressKind.VideoSource)
+            : null;
+    }
 }

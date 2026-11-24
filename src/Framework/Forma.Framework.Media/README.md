@@ -79,6 +79,14 @@ Every frame carries `Source`, the address it stands for.
 The player renders an `HtmlPlayerFrame`'s `Html` as trusted markup, so a provider encodes every
 part of the address it writes into it.
 
+The player loads a frame only from an address its kind allows, as
+[`Forma.Framework.Sanitization`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Sanitization/README.md#addresses)
+sets out: an `EmbeddedPlayerFrame`'s as a frame's source, which takes no `data:` address, and a
+`NativePlayerFrame`'s as a video's. A frame at an address its kind doesn't allow, a provider's
+`javascript:` among them, shows the video unavailable, and the player's log records the refusal
+at `Debug`. An `HtmlPlayerFrame`'s `Source` is written as a link to the service's own page, and is
+written inert where a link doesn't allow it.
+
 ## The bundled providers
 
 Asked in this order after every registered provider:

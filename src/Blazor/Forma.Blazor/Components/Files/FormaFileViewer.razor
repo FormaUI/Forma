@@ -24,7 +24,7 @@
                 @* A native image drag would fire dragstart and cancel the pointer mid-pan. *@
                 <img class="forma-file-viewer-image"
                      draggable="@(IsZoomedIn ? "false" : null)"
-                     src="@Resource.Source"
+                     src="@ImageAddress"
                      alt="@DisplayName"
                      style="@(IsZoomedIn ? $"inline-size: {ZoomPercent}%;" : null)" />
             </div>
@@ -45,7 +45,7 @@
         else if (Resource is AudioResourceInfo)
         {
             <div class="forma-file-viewer-audio" role="group" aria-label="@DisplayName">
-                <audio controls src="@Resource.Source"></audio>
+                <audio controls src="@AudioAddress"></audio>
             </div>
         }
         else if (Resource is DocumentResourceInfo { ContentType: not null } document)
@@ -54,14 +54,14 @@
             {
                 @* An uploaded page is untrusted, so it previews in an opaque origin with scripts, forms and navigation withheld. *@
                 <iframe class="forma-file-viewer-document"
-                        src="@document.Source"
+                        src="@DocumentAddress"
                         title="@DisplayName"
                         loading="lazy"
                         sandbox=""></iframe>
             }
             else
             {
-                <object class="forma-file-viewer-document" type="@document.ContentType" data="@document.Source" aria-label="@DisplayName">
+                <object class="forma-file-viewer-document" type="@document.ContentType" data="@DocumentAddress" aria-label="@DisplayName">
                     <a href="@DocumentLinkAddress" target="_blank" rel="noopener noreferrer">@L["Open {DisplayName} in a new tab.", DisplayName]</a>
                 </object>
             }
