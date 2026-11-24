@@ -1,6 +1,7 @@
 namespace Forma.Framework.Browser.Interop.Tests.Text;
 
 using System.Text;
+using System.Text.Json;
 
 using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop.Text;
@@ -334,6 +335,29 @@ public sealed class DomTextEditsTests
                 () => Assert.Equal(0, resend.Arguments[4]),
                 () => Assert.Equal(["Ada!"], texts),
                 () => Assert.Contains(loggerFactory.Entries, entry => entry.Message.Contains("was lost on its way", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task Should_have_the_field_send_its_whole_text_in_place_of_an_inserted_text_that_can_t_be_read()
+        {
+            // Arrange — an inserted text escaping half a surrogate pair, which no .NET string can be read from
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser((command, _) => command == "resend");
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            await using var edits = await FollowAsync(engine, "Ada", Live, _ => Task.CompletedTask);
+            var (receiver, token) = GetReceiver(browser);
+            using var inserted = JsonDocument.Parse("\"\\ud800\"");
+
+            // Act
+            await receiver.EditAsync(token, 1, 3, 0, new JSTransfer { Value = inserted.RootElement.Clone() }, isCommit: false);
+            await ReplaceAsync(browser, 1, "Ada\uFFFD");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(GetCommands(browser, "resend")),
+                () => Assert.Equal("Ada\uFFFD", edits.Text),
+                () => Assert.False(edits.IsFaulted));
         }
 
         [Fact]

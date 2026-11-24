@@ -621,6 +621,93 @@ public sealed class DomObservationTests
         }
     }
 
+    public sealed class Refusing
+    {
+        private static DomReceiver GetReceiver(RecordedCall attach)
+            => ((DotNetObjectReference<DomReceiver>)attach.Arguments[1]!).Value;
+
+        private static Task DeliverJsonAsync(RecordedCall attach, string json)
+        {
+            using var document = JsonDocument.Parse(json);
+
+            return GetReceiver(attach).NotifyAsync((string)FakeDomBrowser.GetRequestField(attach, "token")!, (int)FakeDomBrowser.GetRequestField(attach, "generation")!, new JSTransfer { Value = document.RootElement.Clone() });
+        }
+
+        [Theory]
+        [InlineData("null")]
+        [InlineData("\"scrolled\"")]
+        [InlineData("[true, true]")]
+        [InlineData("""{ "canScrollBack": "yes", "canScrollForward": true, "frozenExtent": 0, "cornerExtent": 0 }""")]
+        [InlineData("""{ "canScrollBack": true, "canScrollForward": true, "frozenExtent": 1e309, "cornerExtent": 0 }""")]
+        [InlineData("""{ "canScrollBack": true, "canScrollForward": true, "frozenExtent": 0, "cornerExtent": -1e309 }""")]
+        public async Task Should_refuse_and_log_a_state_that_is_not_one_it_measures_and_take_the_next(string json)
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            await using var watcher = CreateWatcher(browser, loggerFactory);
+            var handled = new List<ScrollState>();
+            await using var observation = await watcher.GetElement(Viewport).Scroll.WatchAsync(state => { handled.Add(state); return Task.CompletedTask; }, Inline);
+            var attach = GetAttaches(browser)[0];
+
+            // Act
+            await DeliverJsonAsync(attach, json);
+            await FakeDomBrowser.DeliverAsync(attach, End);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([Start, End], handled),
+                () => Assert.Equal(End, observation.Current),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("isn't one it measures", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task Should_refuse_and_log_a_report_naming_no_registration_or_carrying_no_value()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            await using var watcher = CreateWatcher(browser, loggerFactory);
+            var handled = new List<ScrollState>();
+            await using var observation = await watcher.GetElement(Viewport).Scroll.WatchAsync(state => { handled.Add(state); return Task.CompletedTask; }, Inline);
+            var attach = GetAttaches(browser)[0];
+            var receiver = GetReceiver(attach);
+            await using var stream = new FakeJSStreamReference([]);
+
+            // Act
+            await receiver.NotifyAsync(null!, 1, new JSTransfer { Stream = stream });
+            await receiver.NotifyAsync((string)FakeDomBrowser.GetRequestField(attach, "token")!, 1, null!);
+            await receiver.EditAsync(null!, 1, 0, 0, null!, isCommit: true);
+            await receiver.ReplaceAsync("1", 1, null!);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal([Start], handled),
+                () => Assert.True(stream.IsDisposed),
+                () => Assert.Equal(4, loggerFactory.Entries.Count(entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal))));
+        }
+
+        [Fact]
+        public async Task Should_discard_a_state_for_a_registration_it_no_longer_holds()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser();
+            await using var watcher = CreateWatcher(browser, loggerFactory);
+            await using var observation = await watcher.GetElement(Viewport).Scroll.WatchAsync(_ => Task.CompletedTask, Inline);
+            var receiver = GetReceiver(GetAttaches(browser)[0]);
+            await using var stream = new FakeJSStreamReference([]);
+
+            // Act
+            await receiver.NotifyAsync("no such registration", 1, new JSTransfer { Stream = stream });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(stream.IsDisposed),
+                () => Assert.Equal(Start, observation.Current));
+        }
+    }
+
     public sealed class Refreshing
     {
         [Fact]

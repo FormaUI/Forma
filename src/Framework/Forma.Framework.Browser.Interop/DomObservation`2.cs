@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
+using Forma.Framework.JavaScript.Interop;
+
 using Microsoft.AspNetCore.Components;
 
 /// <summary>An observation of an element's state, kept in step with the target and options its owner last gave it, which hands each state the browser measures to its handler.</summary>
@@ -147,12 +149,39 @@ public sealed class DomObservation<TOptions, [DynamicallyAccessedMembers(LinkerF
             return;
         }
 
-        var state = payload.Deserialize(_stateType)
-            ?? throw new JsonException($"The browser delivered no {typeof(TState).Name}.");
+        if (!TryReadState(payload, generation, out var state))
+        {
+            return;
+        }
 
         Current = state;
         Enqueue(state, generation);
         await _delivery;
+    }
+
+    // A state the browser sent that isn't one the observation measures, null or a number past what a double holds among them, is refused.
+    private bool TryReadState(JsonElement payload, int generation, [NotNullWhen(true)] out TState? state)
+    {
+        try
+        {
+            state = JSTransfer.Deserialize(payload, _stateType);
+        }
+        catch (JSTransferException ex)
+        {
+            DomLog.StateRefused(_session.Logger, ex, _registration.Token, generation, _session.RuntimeId);
+            state = null;
+
+            return false;
+        }
+
+        if (state is null)
+        {
+            DomLog.StateRefused(_session.Logger, null, _registration.Token, generation, _session.RuntimeId);
+
+            return false;
+        }
+
+        return true;
     }
 
     private void Enqueue(TState state, int generation)
