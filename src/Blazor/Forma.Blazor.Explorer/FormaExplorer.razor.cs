@@ -587,6 +587,18 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
                 $"{nameof(FormaExplorer)} requires exactly one of {nameof(Items)} or {nameof(ItemsProvider)}.");
         }
 
+        if (TotalCount is { } totalCount)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(totalCount, nameof(TotalCount));
+        }
+
+        if (TotalBytes is { } totalBytes)
+        {
+            ArgumentOutOfRangeException.ThrowIfNegative(totalBytes, nameof(TotalBytes));
+        }
+
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(PageSize);
+
         _folderTree = null;
         _breadcrumbs = null;
 

@@ -31,6 +31,22 @@
         }
 
         [Fact]
+        public void Should_refuse_an_earliest_date_after_its_latest()
+        {
+            // Arrange
+            using var ctx = new FormaDateRangePickerTests();
+            var model = new RangeModel();
+
+            // Act
+            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateRangePicker @bind-Value="model.Range" Label="Period" MinDate="@(new DateOnly(2025, 3, 20))" MaxDate="@(new DateOnly(2025, 3, 10))" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("MinDate", Assert.Throws<ArgumentOutOfRangeException>(render).ParamName);
+        }
+
+        [Fact]
         public void Should_open_two_months_with_presets()
         {
             // Arrange

@@ -5,6 +5,22 @@
 @using Forma.Tests.Interop
 
 @code {
+    public sealed class Parameters
+    {
+        [Fact]
+        public void Should_refuse_a_unit_that_spans_no_pixels()
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+
+            // Act
+            var render = () => ctx.Render(@<FormaSplitter Label="Sidebar" Min="10" Max="40" Value="20" PixelsPerUnit="0" />);
+
+            // Assert
+            Assert.Equal("PixelsPerUnit", Assert.Throws<ArgumentOutOfRangeException>(render).ParamName);
+        }
+    }
+
     public sealed class Attachment
     {
         [Fact]

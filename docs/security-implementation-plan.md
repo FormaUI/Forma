@@ -5,10 +5,20 @@ gate.
 
 ## Steps
 
-1. **The argument validation standard.** The design's two kinds of input written into the skills as the rule for
+1. ✅ **The argument validation standard.** The design's two kinds of input written into the skills as the rule for
    every new member, CA1511 and CA1512 added to the `.editorconfig` severity table, and the codebase brought to the
    standard in one pass: the hand-written argument exceptions, the components that check no parameters, and every
    public member of a service or a type.
+   - The two analyzers found nothing to change. Of the 93 hand-written argument exceptions, all but five state a rule
+     no helper does; those five, an earliest value after the latest, now throw through
+     `ArgumentOutOfRangeException.ThrowIfGreaterThan`, naming the earliest.
+   - Of the 67 numeric parameters a component takes, the host-set ones that carried an unchecked constraint are
+     checked now: the explorer's totals and page size, the splitter's pixels per unit, the cards' size and the date
+     and time picker's offset. A value the reader changes, a current page or a splitter's position, is clamped, as the
+     authoring standard now says.
+   - The numeric arguments of public members either clamp by design, as `ComposerText` does, fail through the .NET
+     member they index, as `UploadBatch` does, or are checked where they're used, as `CssLength` checks that a length
+     is finite; none needed a change. What a script sends back through a `[JSInvokable]` method is step 3's.
 2. **What Forma writes, tested against hostile input.** The test that finds every sink from the source, a test of each
    with hostile input, a `javascript:` link and a script element among them, and every sink brought to the design:
    markup sanitized or encoded, and an address outside the design's schemes written inert.
@@ -26,4 +36,4 @@ gate.
 
 ## Open
 
-- Every step is still to do; the work starts once the culture coordinator's request order lands.
+- Steps 2 to 7.

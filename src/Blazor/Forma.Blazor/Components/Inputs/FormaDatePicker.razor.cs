@@ -77,9 +77,9 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
-        if (MinDate.HasValue && MaxDate.HasValue && MinDate.Value > MaxDate.Value)
+        if (MinDate is { } minDate && MaxDate is { } maxDate)
         {
-            throw new ArgumentException($"{nameof(MinDate)} ({MinDate}) must not be greater than {nameof(MaxDate)} ({MaxDate}).");
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(minDate, maxDate, nameof(MinDate));
         }
 
         if (_isShownCleared && !EqualityComparer<TValue>.Default.Equals(Value, _valueWhenCleared))

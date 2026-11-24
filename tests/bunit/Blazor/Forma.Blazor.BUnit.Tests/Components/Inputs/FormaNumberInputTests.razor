@@ -374,6 +374,22 @@
         }
 
         [Fact]
+        public void Should_refuse_a_minimum_above_its_maximum()
+        {
+            // Arrange
+            using var ctx = new FormaNumberInputTests();
+            var model = new Stock();
+
+            // Act
+            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput @bind-Value="model.Count" Label="In stock" Min="8" Max="3" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("Min", Assert.Throws<ArgumentOutOfRangeException>(render).ParamName);
+        }
+
+        [Fact]
         public void Should_refuse_a_fractional_step_for_a_whole_number()
         {
             // Arrange

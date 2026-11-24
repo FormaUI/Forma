@@ -32,6 +32,22 @@
         }
 
         [Fact]
+        public void Should_refuse_a_card_of_no_size()
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+
+            // Act
+            var render = () => ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" CardSize="@CssLength.FromRem(0)" />
+                </FormaDataView>);
+
+            // Assert
+            Assert.Equal("CardSize", Assert.Throws<ArgumentOutOfRangeException>(render).ParamName);
+        }
+
+        [Fact]
         public void Should_mark_each_card_as_the_element_its_controls_belong_to()
         {
             // Arrange

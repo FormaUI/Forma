@@ -140,6 +140,45 @@
         }
 
         [Fact]
+        public void Should_refuse_a_negative_count_of_items()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+
+            // Act
+            var render = () => ctx.Render(@<FormaExplorer Items="[]" TotalCount="-1" />);
+
+            // Assert
+            Assert.Equal("TotalCount", Assert.Throws<ArgumentOutOfRangeException>(render).ParamName);
+        }
+
+        [Fact]
+        public void Should_refuse_a_negative_count_of_bytes()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+
+            // Act
+            var render = () => ctx.Render(@<FormaExplorer Items="[]" TotalBytes="-1" />);
+
+            // Assert
+            Assert.Equal("TotalBytes", Assert.Throws<ArgumentOutOfRangeException>(render).ParamName);
+        }
+
+        [Fact]
+        public void Should_refuse_a_page_of_no_items()
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+
+            // Act
+            var render = () => ctx.Render(@<FormaExplorer Items="[]" PageSize="0" />);
+
+            // Assert
+            Assert.Equal("PageSize", Assert.Throws<ArgumentOutOfRangeException>(render).ParamName);
+        }
+
+        [Fact]
         public void Should_render_folder_specific_empty_state_when_the_current_folder_has_no_resources()
         {
             // Arrange

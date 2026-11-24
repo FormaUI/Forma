@@ -21,6 +21,19 @@
             Assert.Equal("rtl", cut.Find(".forma-calendar-month").GetAttribute("dir"));
         }
 
+        [Fact]
+        public void Should_refuse_an_earliest_date_after_its_latest()
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+
+            // Act
+            var render = () => ctx.Render(@<FormaCalendar MinDate="@(new DateOnly(2025, 3, 20))" MaxDate="@(new DateOnly(2025, 3, 10))" />);
+
+            // Assert
+            Assert.Equal("MinDate", Assert.Throws<ArgumentOutOfRangeException>(render).ParamName);
+        }
+
         private static IElement FindDay<TComponent>(IRenderedComponent<TComponent> cut, string dayOfMonth)
             where TComponent : IComponent
             => cut.FindAll(".forma-calendar-day").First(day => day.TextContent.Trim() == dayOfMonth && !day.ClassList.Contains("empty"));

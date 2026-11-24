@@ -14,6 +14,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
   web view was starting could reach it in the other order and leave it in the earlier one's, laying a Hebrew page out
   left to right. A culture route page's interactive landings, reported while its runtime registers, keep their order
   the same way, where the earlier of two could decide the page's culture.
+- Components refuse a parameter they can't honor as soon as it's set, as [the security design](docs/security-design.md#two-kinds-of-input)
+  sets out: `FormaExplorer`'s negative `TotalCount` or `TotalBytes` and a `PageSize` below one, `FormaSplitter`'s
+  `PixelsPerUnit` and `FormaDataCards`' `CardSize` of zero or less, and `FormaDateTimePicker`'s `Offset` of a part of a
+  minute or more than fourteen hours, which a `DateTimeOffset` can't hold. An earliest date or value after the latest,
+  on `FormaCalendar`, `FormaDatePicker`, `FormaDateRangePicker`, `FormaDateTimePicker` and `FormaNumberInput`, throws
+  an `ArgumentOutOfRangeException` naming the earliest, where it threw an `ArgumentException` naming neither.
 
 ## `1.0.0-preview.16`
 

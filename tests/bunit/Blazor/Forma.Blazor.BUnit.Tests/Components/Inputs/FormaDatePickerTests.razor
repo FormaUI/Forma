@@ -22,6 +22,22 @@
         }
 
         [Fact]
+        public void Should_refuse_an_earliest_date_after_its_latest()
+        {
+            // Arrange
+            using var ctx = new FormaDatePickerTests();
+            var model = new FakeModel();
+
+            // Act
+            var render = () => ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker @bind-Value="model.Date" Label="Start date" MinDate="@(new DateOnly(2025, 3, 20))" MaxDate="@(new DateOnly(2025, 3, 10))" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("MinDate", Assert.Throws<ArgumentOutOfRangeException>(render).ParamName);
+        }
+
+        [Fact]
         public void Should_display_the_value_formatted_for_the_culture()
         {
             // Arrange

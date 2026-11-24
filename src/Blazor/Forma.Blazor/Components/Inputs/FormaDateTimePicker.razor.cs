@@ -199,6 +199,11 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(Label);
 
+        if (MinClock is { } min && MaxClock is { } max)
+        {
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(min, max, nameof(Min));
+        }
+
         if (Step is { } step)
         {
             ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(step, TimeSpan.Zero, nameof(Step));
@@ -216,10 +221,13 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
             }
         }
 
-        if (MinClock is { } min && MaxClock is { } max && min > max)
+        // A DateTimeOffset holds an offset of whole minutes, at most fourteen hours either side.
+        if (Offset.Ticks % TimeSpan.TicksPerMinute != 0)
         {
-            throw new ArgumentException($"{nameof(Min)} ({min}) must not be later than {nameof(Max)} ({max}).");
+            throw new ArgumentException($"{nameof(Offset)} ({Offset}) must be a whole number of minutes, as a time zone's offset is.", nameof(Offset));
         }
+
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(Offset.Duration(), TimeSpan.FromHours(14), nameof(Offset));
 
         if (!_hasEnteredValue || !EqualityComparer<TValue>.Default.Equals(Value, _enteredValue))
         {

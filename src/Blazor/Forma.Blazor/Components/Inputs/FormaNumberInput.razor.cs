@@ -201,9 +201,9 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             throw new ArgumentException($"{nameof(Step)} ({Step}) must be a whole number to step a {NumberType.Name}.", nameof(Step));
         }
 
-        if (Min.HasValue && Max.HasValue && Min.Value > Max.Value)
+        if (Min is { } min && Max is { } max)
         {
-            throw new ArgumentException($"{nameof(Min)} ({Min}) must not be greater than {nameof(Max)} ({Max}).");
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(min, max, nameof(Min));
         }
 
         ArgumentOutOfRangeException.ThrowIfNegative(MinDecimalPlaces);

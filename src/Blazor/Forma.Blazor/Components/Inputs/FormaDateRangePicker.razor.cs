@@ -70,9 +70,9 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
 
         _calendarMonthRange = CalendarMonthRange.Create(Culture, UseNonGregorianMonths, MinDate, MaxDate);
 
-        if (MinDate.HasValue && MaxDate.HasValue && MinDate.Value > MaxDate.Value)
+        if (MinDate is { } minDate && MaxDate is { } maxDate)
         {
-            throw new ArgumentException($"{nameof(MinDate)} ({MinDate}) must not be greater than {nameof(MaxDate)} ({MaxDate}).");
+            ArgumentOutOfRangeException.ThrowIfGreaterThan(minDate, maxDate, nameof(MinDate));
         }
     }
 

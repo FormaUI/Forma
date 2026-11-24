@@ -138,6 +138,8 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(CardSize.Value, nameof(CardSize));
+
         _collectionName = CollectionName.From(AdditionalAttributes);
         _isRefreshWanted |= IsVirtualizing && _rows.Update() && _virtualizer is not null;
     }

@@ -91,9 +91,10 @@ public sealed partial class FormaSplitter : FormaElementBase
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(Label);
-        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(Step, 0);
         ArgumentOutOfRangeException.ThrowIfGreaterThan(Min, Max);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(Step);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(PixelsPerUnit);
+        ArgumentException.ThrowIfNullOrWhiteSpace(Label);
     }
 
     // The orientation, and with it the keys and the axis the bar is dragged along, can change after the registration was made.
