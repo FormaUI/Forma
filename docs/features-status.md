@@ -28,7 +28,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Four components implemented, thirteen changes fixed |
-| [A security check](#a-security-check) | One standard for arguments and the dependency check in place; five steps open |
+| [A security check](#a-security-check) | Arguments, what Forma writes from data and the dependency check in place; four steps open |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -243,7 +243,7 @@ into a page from the data it's given, and the checks that hold it to both. [Its 
 carries it out in seven steps:
 
 1. ✅ One standard for validating arguments, applied across the codebase and enforced by the analyzers.
-2. Every place Forma writes markup or an address from data, found from the source and tested with hostile input, an
+2. ✅ Every place Forma writes markup or an address from data, found from the source and tested with hostile input, an
    address with a script-running scheme written inert.
 3. Malformed input from the browser refused, never thrown.
 4. A cap on every size Forma accepts from the browser, the uploader's 10 MB by default among them.

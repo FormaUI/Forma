@@ -19,9 +19,18 @@ gate.
    - The numeric arguments of public members either clamp by design, as `ComposerText` does, fail through the .NET
      member they index, as `UploadBatch` does, or are checked where they're used, as `CssLength` checks that a length
      is finite; none needed a change. What a script sends back through a `[JSInvokable]` method is step 3's.
-2. **What Forma writes, tested against hostile input.** The test that finds every sink from the source, a test of each
+2. ✅ **What Forma writes, tested against hostile input.** The test that finds every sink from the source, a test of each
    with hostile input, a `javascript:` link and a script element among them, and every sink brought to the design:
    markup sanitized or encoded, and an address outside the design's schemes written inert.
+   - One rule for both kinds, `AddressPolicy` and `AddressKind` in `Forma.Framework.Sanitization`, reading an address
+     as the browser does; the rich content policy, the file player and the composer's dialogs use it, and a component
+     writes through `Context.GetAllowedAddress`, logging a refusal by its scheme.
+   - Every link and source a component writes from data brought to it, each with a hostile test.
+   - The composer's conversion, history and template paths now sanitize, and pasted markup keeps an address only
+     where its element's kind allows it, which a control character or a tab inside a `javascript:` address slipped
+     past before.
+   - `SinkInventoryTests` reads the source for every markup and address sink and fails on one no hostile test covers
+     or no reason excuses.
 3. **Malformed input refused, never thrown.** Every method a script calls back into .NET, and every input that parses
    text, given a NUL character, a lone surrogate, text where a number belongs and a value far past any length, each
    ending neither a circuit nor an application.
@@ -40,4 +49,4 @@ gate.
 
 ## Open
 
-- Steps 2, 3, 4, 6 and 7.
+- Steps 3, 4, 6 and 7.
