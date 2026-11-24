@@ -1,5 +1,9 @@
 namespace Forma.Framework.Sanitization.Tests;
 
+using System.Text.Json;
+
+using Forma.Tests.Shared;
+
 using Xunit;
 
 public sealed class AddressPolicyTests
@@ -206,6 +210,38 @@ public sealed class AddressPolicyTests
 
             // Assert
             Assert.True(allowed);
+        }
+    }
+
+    public sealed class SharedVectors
+    {
+        // The kinds the script sanitizer judges too, by the name the shared file gives each.
+        private static readonly Dictionary<string, AddressKind> Kinds = new(StringComparer.Ordinal)
+        {
+            ["link"] = AddressKind.Link,
+            ["image"] = AddressKind.ImageSource,
+            ["video"] = AddressKind.VideoSource,
+            ["audio"] = AddressKind.AudioSource,
+        };
+
+        [Fact]
+        public void Should_judge_every_shared_address_as_the_script_sanitizer_does()
+        {
+            // Arrange
+            var path = Path.Combine(RepositoryFolder.Find(), "tests", "support", "address-vectors.json");
+            using var document = JsonDocument.Parse(File.ReadAllText(path));
+            var vectors = document.RootElement.GetProperty("vectors").EnumerateArray().ToList();
+
+            // Act
+            var wrongVerdicts = vectors
+                .Where(vector => AddressPolicy.Allows(vector.GetProperty("address").GetString(), Kinds[vector.GetProperty("kind").GetString()!]) != vector.GetProperty("allowed").GetBoolean())
+                .Select(vector => $"{vector.GetProperty("kind").GetString()}: {vector.GetProperty("address").GetString()}")
+                .ToList();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.NotEmpty(vectors),
+                () => Assert.True(wrongVerdicts.Count == 0, $"The policy judges these shared addresses otherwise than the file says:{Environment.NewLine}{string.Join(Environment.NewLine, wrongVerdicts)}"));
         }
     }
 

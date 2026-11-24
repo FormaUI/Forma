@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 
 import { sanitize } from '#core/Sanitizer.js';
 
+import addresses from '../../support/address-vectors.json';
+
 describe('Sanitizer', () => {
     it('keeps allowed elements and their formatting', () => {
         const result = sanitize('<p>Base <b>Bold bit</b> and <em>emphasis</em></p>');
@@ -104,4 +106,15 @@ describe('Sanitizer', () => {
         expect(sanitize('<audio src="data:audio/mpeg;base64,AAAA"></audio>')).toContain('src');
         expect(sanitize('<audio src="data:video/mp4;base64,AAAA"></audio>')).not.toContain('src');
     });
-});
+
+    // The addresses the C# address policy's tests read too, so the two rules judge each one alike.
+    it.each(addresses.vectors)('judges the $kind address $address as the shared addresses say', ({ kind, address, allowed }) => {
+        const attribute = kind === 'link' ? 'href' : 'src';
+        const element = document.createElement({ link: 'a', image: 'img', video: 'video', audio: 'audio' }[kind]);
+        element.setAttribute(attribute, address);
+        const template = document.createElement('template');
+
+        template.innerHTML = sanitize(element.outerHTML);
+
+        expect(template.content.firstElementChild.hasAttribute(attribute)).toBe(allowed);
+    });});
