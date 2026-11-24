@@ -2,7 +2,6 @@ namespace Forma.Blazor.Components.Composer.RichTextEditor;
 
 using System.Diagnostics;
 using System.Globalization;
-using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
 using Forma.Blazor.Components.Composer.Dialogs;
@@ -220,10 +219,17 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     }
 
     /// <summary>Reports the canvas's selection snapshot to the composer.</summary>
+    /// <remarks>A snapshot carrying no list of styles, or a style that is none, is refused and logged.</remarks>
     [JSInvokable]
     public async Task HandleSelectionChangedAsync(RichTextSelectionDto dto)
     {
-        if (Composer is null || Interaction is null || dto is null)
+        if (dto is null || dto.ActiveStyles is not { } styles || styles.Any(style => style is null))
+        {
+            RichTextEditorLog.SelectionRefused(Context.Logger, Context.RuntimeId);
+            return;
+        }
+
+        if (Composer is null || Interaction is null)
         {
             return;
         }
@@ -276,17 +282,26 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     }
 
     // The canvas has already selected the element whole, so confirming replaces it. What the element holds can be large, an image's
-    // data address among it, so it crosses through the transfer.
+    // data address among it, so it crosses through the transfer; values that aren't the dialog's are refused.
     private async Task ReopenAsync<TResult>(RichTextDialogKind kind, JSTransfer values, JsonTypeInfo<TResult> typeInfo)
         where TResult : ComposerDialogResult
     {
-        ArgumentNullException.ThrowIfNull(values);
+        if (values is null)
+        {
+            RichTextEditorLog.ActivationRefused(Context.Logger, null, kind.ToString(), Context.RuntimeId);
+            return;
+        }
 
-        JsonElement json;
+        TResult? result;
 
         try
         {
-            json = await values.ReadJsonAsync(Context.JS.TransferOptions.MaximumLength);
+            result = await values.ReadJsonAsync(typeInfo, Context.JS.TransferOptions.MaximumLength);
+        }
+        catch (JSTransferException ex) when (ex.IsRefused)
+        {
+            RichTextEditorLog.ActivationRefused(Context.Logger, ex, kind.ToString(), Context.RuntimeId);
+            return;
         }
         catch (JSTransferException ex)
         {
@@ -294,7 +309,13 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             return;
         }
 
-        if (Composer is null || Interaction is null || IsDisabled || IsReadOnly || json.Deserialize(typeInfo) is not { } result)
+        if (result is null)
+        {
+            RichTextEditorLog.ActivationRefused(Context.Logger, null, kind.ToString(), Context.RuntimeId);
+            return;
+        }
+
+        if (Composer is null || Interaction is null || IsDisabled || IsReadOnly)
         {
             return;
         }

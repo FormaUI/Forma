@@ -9,6 +9,7 @@
 @using Forma.Tests.Sanitization
 @using Microsoft.Extensions.Logging
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.Logging
 @inherits FormaBunitContext
 @code {
     private const string CanvasPath = "./_content/Forma.Blazor.Composer/scripts/RichTextEditor.js";
@@ -522,6 +523,74 @@
             Assert.Multiple(
                 () => Assert.Empty(cut.FindComponents<FormaComposerVideoDialog>()),
                 () => Assert.True(stream.IsDisposed));
+        }
+
+        [Theory]
+        [InlineData("none")]
+        [InlineData("no value")]
+        [InlineData("null")]
+        [InlineData("\"an image\"")]
+        [InlineData("""{ "source": 42 }""")]
+        [InlineData("""{ "source": "cat.png", "altText": "\ud800" }""")]
+        [InlineData("""{ "source": "cat.png", "width": 1e309 }""")]
+        public async Task Should_leave_the_dialog_closed_and_log_values_that_aren_t_an_image(string json)
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+            var editor = cut.FindComponent<FormaRichTextEditor>();
+            using var document = json is "none" or "no value" ? null : JsonDocument.Parse(json);
+            var values = json switch
+            {
+                "none" => null,
+                "no value" => new JSTransfer(),
+                _ => new JSTransfer { Value = document!.RootElement.Clone() },
+            };
+
+            // Act
+            await editor.InvokeAsync(() => editor.Instance.HandleImageActivatedAsync(values!));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindComponents<FormaComposerImageDialog>()),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("isn't what its dialog takes", StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData("none")]
+        [InlineData("no styles")]
+        [InlineData("a style that is none")]
+        public async Task Should_refuse_and_log_a_selection_carrying_no_list_of_styles_or_a_style_that_is_none(string malformation)
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+            var editor = cut.FindComponent<FormaRichTextEditor>();
+            await editor.InvokeAsync(() => editor.Instance.HandleSelectionChangedAsync(new RichTextSelectionDto { Start = 0, End = 4, BlockType = "p", ActiveStyles = ["bold"] }));
+            var selection = malformation switch
+            {
+                "none" => null,
+                "no styles" => new RichTextSelectionDto { Start = 0, End = 0, BlockType = "h1", ActiveStyles = null! },
+                _ => new RichTextSelectionDto { Start = 0, End = 0, BlockType = "h1", ActiveStyles = ["italic", null!] },
+            };
+
+            // Act
+            await editor.InvokeAsync(() => editor.Instance.HandleSelectionChangedAsync(selection!));
+
+            // Assert — the heading the refused selection stands in goes unannounced
+            Assert.Multiple(
+                () => Assert.DoesNotContain("Heading 1", cut.Find(".forma-composer-rich-text-announcer").TextContent, StringComparison.Ordinal),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal)));
         }
 
         [Fact]
