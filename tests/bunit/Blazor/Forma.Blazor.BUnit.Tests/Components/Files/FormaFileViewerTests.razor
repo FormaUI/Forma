@@ -807,25 +807,5 @@
             // Assert
             Assert.False(cut.Find("object.forma-file-viewer-document").HasAttribute("data"));
         }
-
-        [Fact]
-        public void Should_render_a_provider_s_markup_only_as_the_sanitizer_keeps_it()
-        {
-            // Arrange
-            using var ctx = new FormaFileViewerTests();
-            var html = "<p>Body</p><script>alert(1)</script><img src=x onerror=\"alert(1)\"><a href=\"javascript:alert(1)\">Results</a>";
-            ctx.Services.AddScoped<IResourceProvider>(_ => new FakeResourceProvider(".docx", source => new MarkupResourceInfo(source, html)));
-
-            // Act
-            var cut = ctx.Render(@<FormaFileViewer Source="/media/brief.docx" />);
-
-            // Assert
-            var page = cut.Find(".forma-file-viewer-html");
-            Assert.Multiple(
-                () => Assert.Equal("Body", page.QuerySelector("p")!.TextContent),
-                () => Assert.Empty(page.QuerySelectorAll("script")),
-                () => Assert.False(page.QuerySelector("img")!.HasAttribute("onerror")),
-                () => Assert.False(page.QuerySelector("a")!.HasAttribute("href")));
-        }
     }
 }

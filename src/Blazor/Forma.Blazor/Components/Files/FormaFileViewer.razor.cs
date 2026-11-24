@@ -60,8 +60,6 @@ public sealed partial class FormaFileViewer : FormaElementBase
 
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
-    [Inject] private IHtmlSanitizer Sanitizer { get; set; } = default!;
-
     private PanGesture _pan = default!;
 
     private Scroll _scroll = default!;
@@ -85,9 +83,6 @@ public sealed partial class FormaFileViewer : FormaElementBase
     private readonly ZoomScale _zoom = new(ZoomSteps);
 
     private bool _hasZoomChanged;
-
-    // The markup a provider converted, as the sanitizer kept it, beside the resource it was kept for.
-    private (MarkupResourceInfo Resource, string Html)? _sanitizedMarkup;
 
     private ResourceInfo? Resource { get; set; }
 
@@ -179,18 +174,6 @@ public sealed partial class FormaFileViewer : FormaElementBase
         catch (OperationCanceledException)
         {
         }
-    }
-
-    // A provider's markup is rendered as the host's sanitizer keeps it, whatever the provider did to it, once for each resource.
-    private string GetSanitizedHtml(MarkupResourceInfo markup)
-    {
-        if (_sanitizedMarkup is not { } sanitizedMarkup || !ReferenceEquals(sanitizedMarkup.Resource, markup))
-        {
-            sanitizedMarkup = (markup, Sanitizer.Sanitize(markup.Html));
-            _sanitizedMarkup = sanitizedMarkup;
-        }
-
-        return sanitizedMarkup.Html;
     }
 
     private CancellationToken StartResolving()

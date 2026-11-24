@@ -24,7 +24,7 @@ public sealed partial class SinkInventoryTests
     private static readonly Dictionary<string, string> CoveredSinks = new(StringComparer.Ordinal)
     {
         [$"{Components}/Buttons/FormaButton.razor | href=@LinkHref"] = $"{BlazorTests}/Buttons/FormaButtonTests.razor | Should_write_an_address_a_link_refuses_inert",
-        [$"{Components}/Files/FormaFileViewer.razor | (MarkupString)GetSanitizedHtml(markup)"] = $"{BlazorTests}/Files/FormaFileViewerTests.razor | Should_render_a_provider_s_markup_only_as_the_sanitizer_keeps_it",
+        [$"{Components}/Files/FormaFileViewer.razor | (MarkupString)markup.Html"] = "tests/unit/AddOns/Forma.AddOns.Resources.Markdown.Tests/MarkdownResourceProviderTests.cs | Should_drop_raw_html_a_document_embeds",
         [$"{Components}/Files/FormaFileViewer.razor | src=@ImageAddress"] = $"{BlazorTests}/Files/FormaFileViewerTests.razor | Should_write_a_source_its_kind_refuses_inert",
         [$"{Components}/Files/FormaFileViewer.razor | src=@AudioAddress"] = $"{BlazorTests}/Files/FormaFileViewerTests.razor | Should_write_a_source_its_kind_refuses_inert",
         [$"{Components}/Files/FormaFileViewer.razor | src=@DocumentAddress"] = $"{BlazorTests}/Files/FormaFileViewerTests.razor | Should_write_a_source_its_kind_refuses_inert",

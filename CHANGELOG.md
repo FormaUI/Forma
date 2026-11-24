@@ -46,9 +46,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   sheet, and `FormaExplorer`'s thumbnails. A source its kind doesn't allow is written inert, and where the component has
   a state for having none it shows it: `FormaVideoPlayer` says the video is unavailable, `FormaEmoji` draws the emoji in
   the reader's font, and a thumbnail draws its kind's glyph.
-- Markup a component renders from data passes the registered `IHtmlSanitizer` first: `FormaFileViewer` renders a
-  `MarkupResourceInfo` as the sanitizer keeps it, whatever its provider did, and `FormaComposer` sanitizes a document a
-  converter produced and one the host's `History` holds, and the markup a template or a plugin writes into its canvas.
+- `FormaComposer` sanitizes, through the registered `IHtmlSanitizer`, a document a converter produced and one the
+  host's `History` holds, and the markup a template or a plugin writes into its canvas.
   A stored file a plugin puts into `FormaComposer` at an address its element doesn't allow goes in as its name alone.
 - Markup pasted into `FormaComposer`'s canvas keeps a link or a source only at an address its element's kind allows,
   read as the browser reads it, so a `javascript:` address behind a control character or split by a tab no longer

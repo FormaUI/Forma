@@ -178,10 +178,12 @@ form without validating it.
 
 ### Markup and addresses from data
 
-**Markup a component renders from data passes the registered `IHtmlSanitizer` first.** `FormaFileViewer` renders a
-page a provider converted only as the sanitizer keeps it, and `FormaComposer` holds every document it shows to the
-sanitizer, as [its README](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Composer/README.md#saving-what-authors-write)
-sets out. `FormaVideoPlayer` renders a service's markup as its provider builds it, every part of the address encoded.
+**Markup a component renders from data has passed a sanitizer first.** `FormaComposer` holds every document it shows
+to the registered `IHtmlSanitizer`, as [its README](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Composer/README.md#saving-what-authors-write)
+sets out. `FormaFileViewer` renders a page as the provider that converted it sanitized it, as
+[`Forma.Framework.Resources`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Resources/README.md)
+sets out, and `FormaVideoPlayer` renders a service's markup as its provider builds it, every part of the address
+encoded.
 
 **A component writes an address only where its kind allows it**, whatever the host or a reader gave it:
 
