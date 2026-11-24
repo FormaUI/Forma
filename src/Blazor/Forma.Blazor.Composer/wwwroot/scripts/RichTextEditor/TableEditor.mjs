@@ -50,7 +50,7 @@ export class TableEditor {
         const addedRow = document.createElement('tr');
         for (let i = 0; i < row.children.length; i++) {
             const cell = document.createElement('td');
-            cell.innerHTML = '&nbsp;';
+            cell.textContent = '\u00a0';
             addedRow.appendChild(cell);
         }
 
@@ -88,7 +88,7 @@ export class TableEditor {
         for (const row of table.querySelectorAll('tr')) {
             const isHeader = row.parentElement?.tagName === 'THEAD';
             const addedCell = document.createElement(isHeader ? 'th' : 'td');
-            addedCell.innerHTML = '&nbsp;';
+            addedCell.textContent = '\u00a0';
             const at = row.children[cellIndex];
             if (at) {
                 if (before) {
@@ -136,7 +136,7 @@ export class TableEditor {
                 const body = table.querySelector('tbody') ?? table;
                 for (const th of [...headerRow.querySelectorAll('th')]) {
                     const td = document.createElement('td');
-                    td.innerHTML = th.innerHTML;
+                    td.append(...th.childNodes);
                     th.replaceWith(td);
                 }
                 body.prepend(headerRow);
@@ -148,7 +148,7 @@ export class TableEditor {
                 const addedHead = document.createElement('thead');
                 for (const cell of [...firstRow.querySelectorAll('td, th')]) {
                     const th = document.createElement('th');
-                    th.innerHTML = cell.innerHTML;
+                    th.append(...cell.childNodes);
                     cell.replaceWith(th);
                 }
                 addedHead.appendChild(firstRow);

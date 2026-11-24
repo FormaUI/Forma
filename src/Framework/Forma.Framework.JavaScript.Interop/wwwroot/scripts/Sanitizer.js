@@ -33,25 +33,58 @@ const TagAttributes = new Map([
 ]);
 
 const UrlAttributes = new Set(['href', 'src', 'poster']);
-const SafeSchemes = new Set(['http:', 'https:', 'mailto:', 'tel:', 'data:']);
 
-function isSafeUrl(value) {
-    const trimmedValue = value.trim();
+// Raster images alone, since an SVG document can carry script.
+const ImageMediaTypes = new Set([
+    'image/png', 'image/apng', 'image/jpeg', 'image/jpg', 'image/gif', 'image/webp', 'image/avif', 'image/bmp',
+    'image/x-icon', 'image/vnd.microsoft.icon',
+]);
 
-    if (trimmedValue === '' || trimmedValue.startsWith('#') || trimmedValue.startsWith('/')) {
-        return true;
+const isOfType = (mediaType, type) => mediaType.length > type.length && mediaType.startsWith(type);
+
+/** The schemes each kind of address allows beside a relative one, and the media a data address of it may carry. */
+const AddressKinds = {
+    link: { schemes: new Set(['http:', 'https:', 'mailto:', 'tel:']), allowsData: () => false },
+    image: { schemes: new Set(['http:', 'https:', 'blob:']), allowsData: mediaType => ImageMediaTypes.has(mediaType) },
+    video: { schemes: new Set(['http:', 'https:', 'blob:']), allowsData: mediaType => isOfType(mediaType, 'video/') },
+    audio: { schemes: new Set(['http:', 'https:', 'blob:']), allowsData: mediaType => isOfType(mediaType, 'audio/') },
+    media: { schemes: new Set(['http:', 'https:', 'blob:']), allowsData: mediaType => isOfType(mediaType, 'video/') || isOfType(mediaType, 'audio/') },
+    frame: { schemes: new Set(['http:', 'https:', 'blob:']), allowsData: () => false },
+};
+
+/** What an attribute's address is to its element: a link, or the source of what the element fetches. */
+function getAddressKind(tag, name) {
+    if (name === 'href') {
+        return AddressKinds.link;
     }
 
-    if (!/^[a-z][a-z0-9+.-]*:/i.test(trimmedValue)) {
-        return true;
+    if (name === 'poster' || tag === 'img') {
+        return AddressKinds.image;
     }
+
+    return { video: AddressKinds.video, audio: AddressKinds.audio, source: AddressKinds.media }[tag] ?? AddressKinds.frame;
+}
+
+/**
+ * Whether the kind allows the address, read as the browser reads it: the URL parser drops the control characters and
+ * spaces at either end and every tab and line break within, and a relative address resolves to the page's own scheme.
+ */
+function isAllowedAddress(value, kind) {
+    let address;
 
     try {
-        const scheme = new URL(trimmedValue, 'https://invalid.example').protocol;
-        return SafeSchemes.has(scheme) && !(scheme === 'data:' && !/^data:image\//i.test(trimmedValue));
+        address = new URL(value, 'https://invalid.example');
     } catch {
         return false;
     }
+
+    if (address.protocol === 'data:') {
+        const comma = address.pathname.indexOf(',');
+
+        return comma >= 0 && kind.allowsData(address.pathname.slice(0, comma).split(';')[0].trim().toLowerCase());
+    }
+
+    return kind.schemes.has(address.protocol);
 }
 
 function cleanAttributes(element) {
@@ -62,7 +95,7 @@ function cleanAttributes(element) {
         const name = attribute.name.toLowerCase();
         const isAllowed = GlobalAttributes.has(name) || (permittedAttributes?.has(name) ?? false);
 
-        if (!isAllowed || (UrlAttributes.has(name) && !isSafeUrl(attribute.value))) {
+        if (!isAllowed || (UrlAttributes.has(name) && !isAllowedAddress(attribute.value, getAddressKind(tag, name)))) {
             element.removeAttribute(attribute.name);
             continue;
         }

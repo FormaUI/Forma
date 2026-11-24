@@ -50,6 +50,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `MarkupResourceInfo` as the sanitizer keeps it, whatever its provider did, and `FormaComposer` sanitizes a document a
   converter produced and one the host's `History` holds, and the markup a template or a plugin writes into its canvas.
   A stored file a plugin puts into `FormaComposer` at an address its element doesn't allow goes in as its name alone.
+- Markup pasted into `FormaComposer`'s canvas keeps a link or a source only at an address its element's kind allows,
+  read as the browser reads it, so a `javascript:` address behind a control character or split by a tab no longer
+  stands in the canvas until the document is sanitized.
 
 ## `1.0.0-preview.16`
 
