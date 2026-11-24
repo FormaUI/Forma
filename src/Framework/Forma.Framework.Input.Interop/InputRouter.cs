@@ -2,6 +2,10 @@ namespace Forma.Framework.Input.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Input.Drop;
+using Forma.Framework.Input.Keyboard;
+using Forma.Framework.Input.Pointer;
+using Forma.Framework.Input.Wheel;
 using Forma.Framework.JavaScript.Interop;
 
 using Microsoft.AspNetCore.Components;
@@ -29,6 +33,10 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
         _options = options;
         _hostHandler = hostHandler;
     }
+
+    /// <summary>The environment the router and the scopes it registers log under.</summary>
+    internal IJSEnvironment Environment
+        => _environment;
 
     /// <summary>Registers <paramref name="profile"/> on <paramref name="element"/>'s scope, inside <paramref name="parent"/> and with the <paramref name="within"/> elements counted as inside it, for <paramref name="owner"/> to receive actions through <c>HandleInputActionAsync</c> and dismissals through <c>HandleDismissAsync</c>.</summary>
     public async ValueTask<InputScope?> RegisterAsync<TOwner>(ElementReference element, InputProfile profile, DotNetObjectReference<TOwner>? owner = null, ElementReference? parent = null, IReadOnlyList<ElementReference>? within = null)
@@ -62,9 +70,19 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
     }
 
     /// <summary>Performs a host route's action through the host's handler.</summary>
+    /// <remarks>An action no host route names, or one carrying an input that can't be read, is refused and logged rather than performed.</remarks>
     [JSInvokable]
     public Task HandleInputActionAsync(string action, InputInfo input)
-        => _hostHandler?.HandleAsync(action, input) ?? Task.CompletedTask;
+    {
+        if ((!IsDeclared(_options.Routes, action) && !IsDeclared(_options.PreemptiveRoutes, action)) || !IsWellFormed(input))
+        {
+            InputInteropLog.HostActionRefused(_environment.Logger, _environment.RuntimeId);
+
+            return Task.CompletedTask;
+        }
+
+        return _hostHandler?.HandleAsync(action, input) ?? Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     public async ValueTask DisposeAsync()
@@ -87,6 +105,22 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
     /// <summary>Releases the managed state alone.</summary>
     public void Dispose()
         => _selfReference?.Dispose();
+
+    /// <summary>Whether one of <paramref name="routes"/> names <paramref name="action"/>.</summary>
+    internal static bool IsDeclared(IReadOnlyList<InputRoute>? routes, string? action)
+        => action is not null && routes is not null && routes.Any(route => route.Action == action);
+
+    /// <summary>Whether <paramref name="input"/>, as the browser described it, is one an action can read: of a known family, with what its family carries, and every coordinate finite.</summary>
+    internal static bool IsWellFormed(InputInfo? input)
+        => input switch
+        {
+            null or { Type: null } => false,
+            InputKeyInfo key => key.Key is not null && key.Modifiers is not null && double.IsFinite(key.Timestamp),
+            InputPointerInfo pointer => pointer.Modifiers is not null && Enum.IsDefined(pointer.PointerType) && double.IsFinite(pointer.ClientX) && double.IsFinite(pointer.ClientY),
+            InputWheelInfo wheel => wheel.Modifiers is not null && double.IsFinite(wheel.DeltaX) && double.IsFinite(wheel.DeltaY),
+            InputDropInfo drop => drop.Data is not null && drop.Data.All(kind => kind is not null) && double.IsFinite(drop.ClientX) && double.IsFinite(drop.ClientY),
+            _ => false,
+        };
 
     private async Task<bool> PushAsync()
     {

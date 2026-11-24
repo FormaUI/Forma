@@ -2,8 +2,11 @@ namespace Forma.Framework.Input.Interop.Tests;
 
 using System.Diagnostics.CodeAnalysis;
 
+using Forma.Framework.Input.Drop;
 using Forma.Framework.Input.Interop.Tests.Support;
 using Forma.Framework.Input.Keyboard;
+using Forma.Framework.Input.Pointer;
+using Forma.Framework.Input.Wheel;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
@@ -310,6 +313,7 @@ public sealed class InputRegistrationTests
                 router,
                 (action, _) => { actions.Add(action); return Task.CompletedTask; },
                 (_, reason) => { dismissals.Add(reason); return Task.CompletedTask; });
+            await registration.SyncAsync(Element, Profile);
 
             // Act
             await registration.HandleInputActionAsync("test.next", new InputKeyInfo { Type = "keydown", Key = "ArrowDown" });
@@ -319,6 +323,133 @@ public sealed class InputRegistrationTests
             Assert.Multiple(
                 () => Assert.Equal(["test.next"], actions),
                 () => Assert.Equal([DismissReason.Escape], dismissals));
+        }
+    }
+
+    public sealed class Refusing
+    {
+        [Theory]
+        [InlineData("test.previous")]
+        [InlineData("")]
+        [InlineData(null)]
+        public async Task Should_refuse_and_log_an_action_no_route_of_its_names(string? action)
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var script = new RecordingScript();
+            var actions = new List<string>();
+            await using var router = CreateRouter(script, loggerFactory);
+            await using var registration = new InputRegistration(router, (performed, _) => { actions.Add(performed); return Task.CompletedTask; });
+            await registration.SyncAsync(Element, Profile);
+
+            // Act
+            await registration.HandleInputActionAsync(action!, new InputKeyInfo { Type = "keydown", Key = "ArrowDown" });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(actions),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData("none")]
+        [InlineData("no type")]
+        [InlineData("key without a key")]
+        [InlineData("key without modifiers")]
+        [InlineData("key at no time")]
+        [InlineData("pointer of no type")]
+        [InlineData("pointer past the viewport")]
+        [InlineData("wheel turned past any amount")]
+        [InlineData("drop carrying no kinds")]
+        [InlineData("drop carrying a missing kind")]
+        public async Task Should_refuse_and_log_an_action_carrying_an_input_that_can_t_be_read(string malformation)
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var script = new RecordingScript();
+            var actions = new List<string>();
+            await using var router = CreateRouter(script, loggerFactory);
+            await using var registration = new InputRegistration(router, (performed, _) => { actions.Add(performed); return Task.CompletedTask; });
+            await registration.SyncAsync(Element, Profile);
+
+            // Act
+            await registration.HandleInputActionAsync("test.next", CreateMalformedInput(malformation)!);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(actions),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task Should_refuse_and_log_a_dismissal_naming_a_behavior_or_a_reason_the_router_doesn_t_have()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var script = new RecordingScript();
+            var dismissals = new List<DismissReason>();
+            await using var router = CreateRouter(script, loggerFactory);
+            await using var registration = new InputRegistration(router, onDismiss: (_, reason) => { dismissals.Add(reason); return Task.CompletedTask; });
+            await registration.SyncAsync(Element, Profile);
+
+            // Act
+            await registration.HandleDismissAsync((DismissBehavior)7, DismissReason.Escape);
+            await registration.HandleDismissAsync(DismissBehavior.Dismiss, (DismissReason)9);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(dismissals),
+                () => Assert.Equal(2, loggerFactory.Entries.Count(entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal))));
+        }
+
+        [Fact]
+        public async Task Should_refuse_and_log_a_host_action_no_host_route_names()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var script = new RecordingScript();
+            var handler = new RecordingActionHandler();
+            var options = new InputRouterOptions { Routes = [new InputRoute("host.save", new KeyBinding("s"))] };
+            await using var router = new InputRouter(new FakeJSRuntime((identifier, _) => identifier == "import" ? script.Module : null), loggerFactory.CreateLogger<InputRouter>(), options, handler);
+
+            // Act
+            await router.HandleInputActionAsync("host.delete", new InputKeyInfo { Type = "keydown", Key = "Delete" });
+            await router.HandleInputActionAsync("host.save", null!);
+            await router.HandleInputActionAsync("host.save", new InputKeyInfo { Type = "keydown", Key = "s" });
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(["host.save"], handler.Actions),
+                () => Assert.Equal(2, loggerFactory.Entries.Count(entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal))));
+        }
+
+        private static InputInfo? CreateMalformedInput(string malformation)
+            => malformation switch
+            {
+                "none" => null,
+                "no type" => new InputKeyInfo { Type = null!, Key = "ArrowDown" },
+                "key without a key" => new InputKeyInfo { Type = "keydown", Key = null! },
+                "key without modifiers" => new InputKeyInfo { Type = "keydown", Key = "ArrowDown", Modifiers = null! },
+                "key at no time" => new InputKeyInfo { Type = "keydown", Key = "ArrowDown", Timestamp = double.PositiveInfinity },
+                "pointer of no type" => new InputPointerInfo { Type = "click", PointerType = (PointerType)42 },
+                "pointer past the viewport" => new InputPointerInfo { Type = "click", ClientX = double.PositiveInfinity },
+                "wheel turned past any amount" => new InputWheelInfo { Type = "wheel", DeltaY = double.NegativeInfinity },
+                "drop carrying no kinds" => new InputDropInfo { Type = "drop", Data = null! },
+                "drop carrying a missing kind" => new InputDropInfo { Type = "drop", Data = ["Files", null!] },
+                _ => throw new ArgumentOutOfRangeException(nameof(malformation), malformation, null),
+            };
+
+        /// <summary>A host's handler that records the actions it performs.</summary>
+        private sealed class RecordingActionHandler : IInputActionHandler
+        {
+            public List<string> Actions { get; } = [];
+
+            public Task HandleAsync(string action, InputInfo input)
+            {
+                Actions.Add(action);
+
+                return Task.CompletedTask;
+            }
         }
     }
 

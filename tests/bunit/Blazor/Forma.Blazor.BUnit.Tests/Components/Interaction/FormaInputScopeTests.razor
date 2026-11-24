@@ -49,6 +49,9 @@
 
     public sealed class Reports
     {
+        // The routes the scope declares, whose actions are the ones the router can resolve to it.
+        private static readonly InputProfile Routes = new() { InputRoutes = [new InputRoute("list.next", new KeyBinding("ArrowDown")), new InputRoute("form.save", new KeyBinding("s"))] };
+
         [Fact]
         public async Task Should_raise_OnAction_with_the_action_and_input_the_script_reports()
         {
@@ -56,7 +59,7 @@
             using var ctx = new FormaInputScopeTests();
             var router = new InputRouterProbe(ctx);
             InputAction? received = null;
-            var cut = ctx.Render(@<FormaInputScope OnAction="action => received = action"><p>Content</p></FormaInputScope>);
+            var cut = ctx.Render(@<FormaInputScope Profile="Routes" OnAction="action => received = action"><p>Content</p></FormaInputScope>);
 
             // Act
             await router.RouteAsync(cut.FindComponent<FormaInputScope>().Instance.RootElement, "list.next", "ArrowDown");
@@ -95,7 +98,7 @@
             string? saved = null;
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTextBox @bind-Value="model.Text" Label="Name" />
-                <FormaInputScope ReadsForm="true" OnAction="@(_ => saved = model.Text)"><p>Content</p></FormaInputScope>
+                <FormaInputScope Profile="Routes" ReadsForm="true" OnAction="@(_ => saved = model.Text)"><p>Content</p></FormaInputScope>
             </FakeFormHost>);
             var typing = fields.CommitHeld(cut.Find("input"), "Ada");
             var routing = router.RouteAsync(cut.FindComponent<FormaInputScope>().Instance.RootElement, "form.save", "s");
@@ -122,7 +125,7 @@
             InputAction? received = null;
             var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
                 <FormaTextBox @bind-Value="model.Text" Label="Name" Options="@(new TextBoxOptions { MaxLength = 2 })" />
-                <FormaInputScope OnAction="action => received = action"><p>Content</p></FormaInputScope>
+                <FormaInputScope Profile="Routes" OnAction="action => received = action"><p>Content</p></FormaInputScope>
             </FakeFormHost>);
             await fields.TypeAsync(cut.Find("input"), "Ada Lovelace");
 

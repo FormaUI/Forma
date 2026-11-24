@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using Forma.Blazor.Components.Interaction
+@using Forma.Framework.Input
 @using Forma.Framework.Input.Interop
 @using Forma.Framework.Input.Keyboard
 @code {
@@ -203,7 +204,7 @@
             using var ctx = new FormaPopoverTests();
             var router = new InputRouterProbe(ctx);
             InputAction? received = null;
-            var cut = ctx.Render(@<FormaPopover Anchor="default" OnInputAction="action => received = action"><p>Content</p></FormaPopover>);
+            var cut = ctx.Render(@<FormaPopover Anchor="default" InputRoutes="@([new InputRoute("list.next", new KeyBinding("ArrowDown"))])" OnInputAction="action => received = action"><p>Content</p></FormaPopover>);
             await cut.InvokeAsync(() => cut.FindComponent<FormaPopover>().Instance.OpenAsync(default));
 
             // Act

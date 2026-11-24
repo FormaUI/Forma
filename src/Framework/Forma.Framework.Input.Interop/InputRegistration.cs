@@ -54,14 +54,35 @@ public sealed class InputRegistration : IAsyncDisposable
     }
 
     /// <summary>Performs an action the router resolved to the element.</summary>
+    /// <remarks>An action no route of the registration names, or one carrying an input that can't be read, is refused and logged rather than performed.</remarks>
     [JSInvokable]
     public Task HandleInputActionAsync(string action, InputInfo input)
-        => _onAction?.Invoke(action, input) ?? Task.CompletedTask;
+    {
+        // A profile being updated names its routes before the router takes it.
+        if ((!InputRouter.IsDeclared(_registeredProfile?.InputRoutes, action) && !InputRouter.IsDeclared(_request?.Profile.InputRoutes, action)) || !InputRouter.IsWellFormed(input))
+        {
+            InputInteropLog.ActionRefused(_router.Environment.Logger, _router.Environment.RuntimeId);
+
+            return Task.CompletedTask;
+        }
+
+        return _onAction?.Invoke(action, input) ?? Task.CompletedTask;
+    }
 
     /// <summary>Performs a dismissal the router delivered to the element.</summary>
+    /// <remarks>A dismissal naming a behavior or a reason the router doesn't have is refused and logged rather than performed.</remarks>
     [JSInvokable]
     public Task HandleDismissAsync(DismissBehavior action, DismissReason reason)
-        => _onDismiss?.Invoke(action, reason) ?? Task.CompletedTask;
+    {
+        if (!Enum.IsDefined(action) || !Enum.IsDefined(reason))
+        {
+            InputInteropLog.DismissalRefused(_router.Environment.Logger, _router.Environment.RuntimeId);
+
+            return Task.CompletedTask;
+        }
+
+        return _onDismiss?.Invoke(action, reason) ?? Task.CompletedTask;
+    }
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()
