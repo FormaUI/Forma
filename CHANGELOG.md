@@ -56,6 +56,20 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Markup pasted into `FormaComposer`'s canvas keeps a link or a source only at an address its element's kind allows,
   read as the browser reads it, so a `javascript:` address behind a control character or split by a tab no longer
   stands in the canvas until the document is sanitized.
+- What the browser sends that can't be used is refused and logged at `Debug` under the component that received it, as
+  [the security design](docs/security-design.md#two-kinds-of-input) sets out, where it threw back at the browser or,
+  rendered, ended the circuit on the Server and the application in Blazor Hybrid. Among what ended it were a size past
+  any number in a `FormaFrame` placement, a `FormaSplitter` drag, a `FormaVirtualize` viewport, a `FormaFreezePane`
+  state or a `FormaDataGrid` column's width, and a year past any date in `FormaCalendar`'s dropdowns.
+- `InputRegistration` performs only an action a route of its profile names, carrying an input of a known family with
+  finite coordinates, and a dismissal only with a behavior and a reason the router has; the host's routes reach
+  `IInputActionHandler` the same way.
+- `JSTransfer.ReadJsonAsync<TValue>` reads what the browser sent through the transfer as a type of the receiver's own,
+  and `JSTransfer.Deserialize` reads JSON the browser sent otherwise. Each refuses a value that isn't the type, a
+  number past what a double holds among them, with a `JSTransferException` whose `IsRefused` is true, as a transfer
+  carrying no value and a text escaping half a surrogate pair are refused now too.
+- `FormaSlider` keeps its value where the browser sends one outside its bounds, which it took, or one it can't read,
+  for which it fell to `Min`. `FormaColorPicker`'s swatch shows the color the picker holds, never the text typed.
 
 ## `1.0.0-preview.16`
 
