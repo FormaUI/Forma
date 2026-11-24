@@ -70,6 +70,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   carrying no value and a text escaping half a surrogate pair are refused now too.
 - `FormaSlider` keeps its value where the browser sends one outside its bounds, which it took, or one it can't read,
   for which it fell to `Min`. `FormaColorPicker`'s swatch shows the color the picker holds, never the text typed.
+- `FormaFilePicker` leaves out a file the browser describes with no name, no type or a size no file has, and
+  `FormaFileUploader` fails one of such a size before reading it, where either threw.
 
 ## `1.0.0-preview.16`
 
