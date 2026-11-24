@@ -136,32 +136,43 @@ public sealed partial class FormaCalendar : FormaComponentBase
         }
     }
 
+    // A month the dropdown doesn't offer, as only a browser sending its own can name, is refused.
     private void OnMonthDropdownChange(int panelIndex, ChangeEventArgs args)
     {
-        if (int.TryParse(args.Value?.ToString(), out var month))
+        var panelYear = _calendarMonthRange.GetYear(GetPanelMonth(panelIndex));
+
+        if (!int.TryParse(args.Value?.ToString(), NumberStyles.None, CultureInfo.InvariantCulture, out var month) || month < 1 || month > _calendarMonthRange.GetMonthsInYear(panelYear))
         {
-            var panelMonth = GetPanelMonth(panelIndex);
-            SetPanelMonth(panelIndex, _calendarMonthRange.GetMonthStart(_calendarMonthRange.GetYear(panelMonth), month));
+            CalendarLog.SelectionRefused(Context.Logger, Context.RuntimeId);
+
+            return;
         }
+
+        SetPanelMonth(panelIndex, _calendarMonthRange.GetMonthStart(panelYear, month));
     }
 
+    // A year the dropdown doesn't offer, as only a browser sending its own can name, is refused.
     private void OnYearDropdownChange(int panelIndex, ChangeEventArgs args)
     {
-        if (int.TryParse(args.Value?.ToString(), out var gregorianYear))
+        if (!int.TryParse(args.Value?.ToString(), NumberStyles.None, CultureInfo.InvariantCulture, out var gregorianYear) || gregorianYear < _calendarMonthRange.MinYear || gregorianYear > _calendarMonthRange.MaxYear)
         {
-            var panelMonth = GetPanelMonth(panelIndex);
-            var calendarMonth = _calendarMonthRange.GetMonth(panelMonth);
-            // The year selector holds Gregorian years; the calendar year is the one in force at mid-year.
-            var midYear = new DateOnly(gregorianYear, 6, 1);
-            var targetCalendarYear = _calendarMonthRange.GetYear(midYear);
-            var maxMonth = _calendarMonthRange.GetMonthsInYear(targetCalendarYear);
-            if (calendarMonth > maxMonth)
-            {
-                calendarMonth = maxMonth;
-            }
+            CalendarLog.SelectionRefused(Context.Logger, Context.RuntimeId);
 
-            SetPanelMonth(panelIndex, _calendarMonthRange.GetMonthStart(targetCalendarYear, calendarMonth));
+            return;
         }
+
+        var panelMonth = GetPanelMonth(panelIndex);
+        var calendarMonth = _calendarMonthRange.GetMonth(panelMonth);
+        // The year selector holds Gregorian years; the calendar year is the one in force at mid-year.
+        var midYear = new DateOnly(gregorianYear, 6, 1);
+        var targetCalendarYear = _calendarMonthRange.GetYear(midYear);
+        var maxMonth = _calendarMonthRange.GetMonthsInYear(targetCalendarYear);
+        if (calendarMonth > maxMonth)
+        {
+            calendarMonth = maxMonth;
+        }
+
+        SetPanelMonth(panelIndex, _calendarMonthRange.GetMonthStart(targetCalendarYear, calendarMonth));
     }
 
     private void SetPanelMonth(int panelIndex, DateOnly month)

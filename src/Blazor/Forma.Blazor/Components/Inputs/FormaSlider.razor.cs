@@ -63,11 +63,20 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
     protected override void BuildRootClass(CssClassBuilder builder)
         => builder.Add("forma-slider");
 
-    // A range input always holds a valid number.
+    // A range input holds a number between its bounds, so a value outside them is refused and the slider keeps its own.
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
-        result = TValue.TryParse(value, CultureInfo.InvariantCulture, out var parsedValue) ? parsedValue : Min;
+        if (TValue.TryParse(value, CultureInfo.InvariantCulture, out var parsedValue) && TValue.IsFinite(parsedValue) && parsedValue >= Min && parsedValue <= Max)
+        {
+            result = parsedValue;
+        }
+        else
+        {
+            SliderLog.ValueRefused(Context.Logger, Context.RuntimeId);
+            result = CurrentValue;
+        }
+
         validationErrorMessage = null;
         return true;
     }

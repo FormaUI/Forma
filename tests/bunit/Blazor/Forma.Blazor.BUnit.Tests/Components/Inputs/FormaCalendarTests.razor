@@ -2,6 +2,7 @@
 @using Forma.Blazor.Models
 @using System.Globalization
 @using AngleSharp.Dom
+@using Microsoft.Extensions.Logging
 
 @code {
     public sealed class Component
@@ -52,6 +53,38 @@
             Assert.Multiple(
                 () => Assert.Single(cut.FindAll(".forma-calendar-month")),
                 () => Assert.Equal("3", cut.FindAll(".forma-calendar-select")[1].GetAttribute("value")));
+        }
+
+        [Theory]
+        [InlineData(0, "0")]
+        [InlineData(0, "10000")]
+        [InlineData(0, "1900")]
+        [InlineData(0, "-2025")]
+        [InlineData(0, "twenty")]
+        [InlineData(0, "20\025")]
+        [InlineData(0, "\ud800")]
+        [InlineData(1, "13")]
+        [InlineData(1, "0")]
+        [InlineData(1, "-1")]
+        [InlineData(1, "March")]
+        public void Should_refuse_and_log_a_year_or_month_its_dropdowns_don_t_offer(int selectIndex, string value)
+        {
+            // Arrange
+            using var ctx = new FormaCalendarTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var highlight = new DateRange(new DateOnly(2025, 3, 15), new DateOnly(2025, 3, 15));
+            var cut = ctx.Render(@<FormaCalendar Highlight="highlight" />);
+
+            // Act
+            cut.FindAll(".forma-calendar-select")[selectIndex].Change(value);
+
+            // Assert — the calendar stays on the month it showed
+            Assert.Multiple(
+                () => Assert.Equal("2025", cut.FindAll(".forma-calendar-select")[0].GetAttribute("value")),
+                () => Assert.Equal("3", cut.FindAll(".forma-calendar-select")[1].GetAttribute("value")),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was refused", StringComparison.Ordinal)));
         }
 
         [Fact]

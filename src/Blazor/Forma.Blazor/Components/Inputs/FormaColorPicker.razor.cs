@@ -39,9 +39,13 @@ public sealed partial class FormaColorPicker : FormaInputBase<string>
     private string FieldName
         => DisplayName ?? Label;
 
-    private int AlphaPercent => CurrentValueAsString?.Length == 9
-        ? (int)Math.Round(int.Parse(CurrentValueAsString.AsSpan(7, 2), NumberStyles.HexNumber, CultureInfo.InvariantCulture) / 255.0 * 100)
+    private int AlphaPercent => CurrentValueAsString?.Length == 9 && int.TryParse(CurrentValueAsString.AsSpan(7, 2), NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var alpha)
+        ? (int)Math.Round(alpha / 255.0 * 100)
         : 100;
+
+    // The swatch shows the color the picker holds, never text it couldn't read as one.
+    private string? SwatchStyle
+        => CurrentValue is { } color && IsValidHex(color) ? $"background-color: {color}" : null;
 
     /// <inheritdoc />
     protected override void OnInitialized()

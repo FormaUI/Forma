@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using System.Globalization
+@using Microsoft.Extensions.Logging
 @code {
     public sealed class Component
     {
@@ -183,6 +184,59 @@
 
             // Assert
             Assert.Equal(12, model.Number);
+        }
+
+        [Theory]
+        [InlineData("21")]
+        [InlineData("-1")]
+        [InlineData("twelve")]
+        [InlineData("1\02")]
+        [InlineData("\ud800")]
+        [InlineData("")]
+        public void Should_keep_its_value_for_a_whole_number_no_range_input_holds(string text)
+        {
+            // Arrange
+            using var ctx = new FormaSliderTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var model = new FakeModel { Number = 7 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSlider @bind-Value="model.Number" Label="Border radius" Min="0" Max="20" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-slider").Input(text);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(7, model.Number),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was refused", StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData("Infinity")]
+        [InlineData("-Infinity")]
+        [InlineData("NaN")]
+        [InlineData("1e308")]
+        [InlineData("0.5000000000000000000000000000000000000001e-400")]
+        public void Should_keep_its_value_for_a_fraction_no_range_input_holds(string text)
+        {
+            // Arrange
+            using var ctx = new FormaSliderTests();
+            var model = new FakeModel { Ratio = 0.25 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSlider @bind-Value="model.Ratio" Label="Opacity" Min="0.1" Max="1" Step="0.05" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-slider").Input(new string('9', 1024 * 1024));
+            cut.Find(".forma-slider").Input(text);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0.25, model.Ratio),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted));
         }
 
         [Fact]

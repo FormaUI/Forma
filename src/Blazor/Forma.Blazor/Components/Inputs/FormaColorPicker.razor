@@ -26,7 +26,7 @@
                        @bind:get="RgbHex"
                        @bind:set="HandleNativeInput"
                        @bind:event="oninput" />
-                <span class="forma-color-picker-swatch" style="background-color: @CurrentValueAsString" aria-hidden="true"></span>
+                <span class="forma-color-picker-swatch" style="@SwatchStyle" aria-hidden="true"></span>
             </span>
             @if (ShowAlpha)
             {
