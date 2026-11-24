@@ -212,6 +212,33 @@
         }
 
         [Theory]
+        [InlineData("1\0.50")]
+        [InlineData("$\ud8001")]
+        [InlineData("79228162514264337593543950336")]
+        [InlineData("one dollar")]
+        public async Task Should_keep_the_last_amount_and_report_text_that_can_t_be_one(string typed)
+        {
+            // Arrange
+            using var ctx = new FormaCurrencyInputTests();
+            var fields = new TextFieldProbe(ctx);
+            using var culture = new CultureFixture("en-US");
+            var model = new Product { Price = 1m };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCurrencyInput @bind-Value="model.Price" CurrencyCode="USD" Label="Price" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.ChangeAsync(cut.Find("input"), typed);
+            await fields.ChangeAsync(cut.Find("input"), new string('9', 1024 * 1024));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(1m, model.Price),
+                () => Assert.Equal("The Price field must be a number.", cut.Find(".forma-field-message").TextContent),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted));
+        }
+
+        [Theory]
         [InlineData("USD", "1.234", "The Price field must have no more than 2 decimal places.")]
         [InlineData("JPY", "1.5", "The Price field must be a whole number.")]
         public async Task Should_report_more_places_than_the_currency_s_minor_units(string currency, string typed, string message)

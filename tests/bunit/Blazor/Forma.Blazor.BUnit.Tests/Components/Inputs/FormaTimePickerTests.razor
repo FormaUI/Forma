@@ -161,6 +161,52 @@
                 () => Assert.Equal("The Ends field must be a time.", cut.Find(".forma-field-message").TextContent));
         }
 
+        [Theory]
+        [InlineData("17:\00")]
+        [InlineData("5\ud800 PM")]
+        [InlineData("25:00")]
+        [InlineData("17:00:00:00:00")]
+        public async Task Should_keep_text_that_can_t_be_a_time_and_report_it(string typed)
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new Shift { End = new TimeOnly(17, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.ChangeAsync(cut.Find("input"), typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new TimeOnly(17, 0), model.End),
+                () => Assert.Equal("The Ends field must be a time.", cut.Find(".forma-field-message").TextContent),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted));
+        }
+
+        [Fact]
+        public async Task Should_keep_the_last_time_and_report_a_text_far_past_any_time()
+        {
+            // Arrange
+            using var ctx = new FormaTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new Shift { End = new TimeOnly(17, 0) };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTimePicker @bind-Value="model.End" Label="Ends" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.ChangeAsync(cut.Find("input"), new string('1', 1024 * 1024));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(new TimeOnly(17, 0), model.End),
+                () => Assert.Equal("The Ends field must be a time.", cut.Find(".forma-field-message").TextContent),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted));
+        }
+
         [Fact]
         public async Task Should_run_its_form_s_actions_with_the_time_typed_once_it_arrives()
         {

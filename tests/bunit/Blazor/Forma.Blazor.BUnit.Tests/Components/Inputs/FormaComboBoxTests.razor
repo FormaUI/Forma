@@ -139,6 +139,32 @@
                 () => Assert.Equal(2, model.Status));
         }
 
+        [Theory]
+        [InlineData("Ma\0drid")]
+        [InlineData("Madrid\ud800")]
+        [InlineData("\0")]
+        [InlineData("far past any label")]
+        public async Task Should_narrow_by_any_text_typed_and_keep_the_value(string typed)
+        {
+            // Arrange
+            using var ctx = new FormaComboBoxTests();
+            var probe = new DomProbe<FocusState>(ctx);
+            var fields = new TextFieldProbe(ctx, probe.Engine);
+            var model = new FakeModel { Status = 2 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaComboBox TValue="int?" Id="zone" @bind-Value="model.Status" Options="Zones" Label="Time zone" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.TypeAsync(cut.Find("input"), typed == "far past any label" ? new string('M', 1024 * 1024) : typed);
+
+            // Assert — the culture's comparison passes over what no label carries, so a label can still be offered
+            Assert.Multiple(
+                () => Assert.All(GetEntries(cut), entry => Assert.Contains(entry, Zones.Select(zone => zone.Label))),
+                () => Assert.Equal(2, model.Status),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted));
+        }
+
         [Fact]
         public async Task Should_rank_a_label_starting_with_the_text_before_one_that_holds_it_later()
         {

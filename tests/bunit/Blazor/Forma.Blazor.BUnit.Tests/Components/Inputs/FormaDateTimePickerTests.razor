@@ -422,6 +422,32 @@
                 () => Assert.Equal("The Starts field must be a time.", cut.Find(".forma-field-message").TextContent));
         }
 
+        [Theory]
+        [InlineData("9:\030")]
+        [InlineData("9\ud800:30")]
+        [InlineData("99:99")]
+        [InlineData("far past any time")]
+        public async Task Should_keep_text_that_can_t_be_a_time_and_report_it(string typed)
+        {
+            // Arrange
+            using var ctx = new FormaDateTimePickerTests();
+            var fields = new TextFieldProbe(ctx);
+            var bound = new DateTime(2026, 3, 15, 9, 30, 0);
+            var model = new Booking { Starts = bound };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDateTimePicker @bind-Value="model.Starts" Label="Starts" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.ChangeAsync(GetTime(cut), typed == "far past any time" ? new string('9', 1024 * 1024) : typed);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(bound, model.Starts),
+                () => Assert.Equal("The Starts field must be a time.", cut.Find(".forma-field-message").TextContent),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted));
+        }
+
         [Fact]
         public async Task Should_run_its_form_s_actions_with_the_time_typed_once_it_arrives()
         {
