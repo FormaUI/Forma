@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.16`
 
-*Unreleased*
+*November 24, 2026*
 
 - A read-only `FormaComboBox` holding no value offers no option to choose on a statically rendered page, where it offered
   every option the browser's own list could post.
