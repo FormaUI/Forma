@@ -135,9 +135,10 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
 
         if (Files is not null)
         {
+            // A size no file has, which only a browser describing a file of its own can give, counts as nothing until the file fails.
             foreach (var file in Files)
             {
-                _batch.Add(file.Name, file.Size);
+                _batch.Add(file.Name, Math.Max(file.Size, 0));
             }
         }
 
@@ -422,6 +423,14 @@ public sealed partial class FormaFileUploader(IFileStore? registeredStore = null
         List<(int Index, ResourceInfo Resource)> stored,
         CancellationToken cancellationToken)
     {
+        if (file.Size < 0)
+        {
+            SetUploadState(index, UploadState.Failed);
+            failures.Add(new UploadFailure(file.Name, new InvalidDataException("The browser described the file with a size no file has.")));
+
+            return StoreOutcome.Failed;
+        }
+
         SetUploadState(index, UploadState.Uploading, 0);
 
         try

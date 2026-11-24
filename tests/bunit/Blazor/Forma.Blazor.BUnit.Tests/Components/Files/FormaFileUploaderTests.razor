@@ -271,6 +271,33 @@
         }
 
         [Fact]
+        public void Should_fail_a_file_the_browser_describes_with_a_size_no_file_has_before_reading_it()
+        {
+            // Arrange
+            using var ctx = new FormaFileUploaderTests();
+            var store = new FakeFileStore();
+            UploadFailure? failure = null;
+            var forged = new FakeBrowserFile("forged.txt", "first", size: -1);
+            IReadOnlyList<IBrowserFile> files = [forged, new FakeBrowserFile("good.txt", "second")];
+
+            // Act
+            var cut = ctx.Render(@<FormaFileUploader Store="store"
+                                                 Files="files"
+                                                 Options="FileUploaderOptions.Detailed"
+                                                 OnFailed="@(reported => { failure = reported; return Task.CompletedTask; })" />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(["good.txt"], store.Saved);
+                Assert.Null(forged.OpenedWith);
+                Assert.Equal("forged.txt", failure!.Name);
+                Assert.Equal("Failed", cut.FindAll(".forma-file-uploader-state")[0].TextContent);
+                Assert.False(ctx.Renderer.UnhandledException.IsCompleted);
+            });
+        }
+
+        [Fact]
         public void Should_say_why_the_store_refused_a_file_and_carry_on()
         {
             // Arrange

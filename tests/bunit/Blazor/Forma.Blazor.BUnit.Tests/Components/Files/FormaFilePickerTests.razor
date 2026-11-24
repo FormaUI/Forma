@@ -3,6 +3,7 @@
 @using Forma.Blazor.Components.Files
 @using Forma.Framework.Files
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.Extensions.Logging
 
 @code {
     public sealed class Component
@@ -64,6 +65,34 @@
 
             // Assert
             Assert.Equal("cover.jpg", Assert.Single(selected!).Name);
+        }
+
+        [Fact]
+        public async Task Should_leave_out_and_log_a_file_the_browser_describes_with_no_name_no_type_or_a_size_no_file_has()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            IReadOnlyList<IBrowserFile>? selected = null;
+            var cut = ctx.Render(@<FormaFilePicker Options="@(new FilePickerOptions { Accept = ".jpg", MaxFileSize = 1024 })" OnFilesSelected="@(files => { selected = files; return Task.CompletedTask; })" />);
+            var input = cut.FindComponent<InputFile>();
+            IReadOnlyList<IBrowserFile> files =
+            [
+                new FakeBrowserFile(null!, "nameless", "image/jpeg"),
+                new FakeBrowserFile("typeless.jpg", "typeless", null!),
+                new FakeBrowserFile("forged.jpg", "forged", "image/jpeg", size: -1),
+                new FakeBrowserFile("cover.jpg", "cover", "image/jpeg"),
+            ];
+
+            // Act
+            await cut.InvokeAsync(() => input.Instance.OnChange.InvokeAsync(new InputFileChangeEventArgs(files)));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("cover.jpg", Assert.Single(selected!).Name),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Equal(3, loggerFactory.Entries.Count(entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was left out", StringComparison.Ordinal))));
         }
 
         [Fact]

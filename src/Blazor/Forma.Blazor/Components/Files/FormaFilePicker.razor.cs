@@ -143,6 +143,13 @@ public sealed partial class FormaFilePicker : FormaElementBase
 
             foreach (var file in files)
             {
+                // A file the browser describes with no name, no type or a size no file has is one no host can read, so it is left out.
+                if (file.Name is null || file.ContentType is null || file.Size < 0)
+                {
+                    FilePickerLog.FileRefused(Context.Logger, Context.RuntimeId);
+                    continue;
+                }
+
                 var reason = GetRejection(file, acceptedFiles.Count, effectiveMax);
 
                 if (reason is { } rejectionReason)
