@@ -256,7 +256,7 @@ describe('CultureCoordinator', () => {
 
             // Act
             const registration = await coordinator.register('a', receiver);
-            await registration.request('fr-FR', 'fr-FR', 'ltr');
+            await registration.request('fr-FR', 'fr-FR', 'ltr', 1);
 
             // Assert
             expect(receiver.deliveries.map(describeDelivery)).toEqual([adopted, 'fr-FR/fr-FR #1']);
@@ -285,7 +285,7 @@ describe('CultureCoordinator', () => {
 
             // Act
             const registration = await coordinator.register('a', receiver, 'webassembly', startOf());
-            await registration.request('fr-FR', 'fr-FR', 'ltr');
+            await registration.request('fr-FR', 'fr-FR', 'ltr', 1);
 
             // Assert
             expect(receiver.deliveries.map(describeDelivery)).toEqual(['de-DE/he #0', 'fr-FR/fr-FR #1']);
@@ -312,7 +312,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', fakeReceiver(), 'webassembly', startOf({ policy }));
 
             // Act
-            await registration.request('fr-FR', 'fr-FR', 'ltr');
+            await registration.request('fr-FR', 'fr-FR', 'ltr', 1);
 
             // Assert
             expect(document.cookie).toContain(`${encodeURIComponent('.AspNetCore.Culture')}=${encodeURIComponent('c=fr-FR|uic=fr-FR')}`);
@@ -410,7 +410,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', receiver, 'webview', webViewStart());
 
             // Act
-            const switching = registration.request('he', 'he', 'rtl');
+            const switching = registration.request('he', 'he', 'rtl', 1);
             await settle();
             const navigations = [...window.Blazor.navigations];
             window.happyDOM.setURL('http://localhost/he/about');
@@ -648,7 +648,7 @@ describe('CultureCoordinator', () => {
 
             // Act
             const second = await coordinator.register('a', receiver);
-            await second.request('he', 'he', 'rtl');
+            await second.request('he', 'he', 'rtl', 1);
 
             // Assert
             expect(second).toBe(first);
@@ -659,7 +659,7 @@ describe('CultureCoordinator', () => {
             // Arrange
             const coordinator = await load();
             const other = await coordinator.register('b', fakeReceiver());
-            await other.request('he', 'he', 'rtl');
+            await other.request('he', 'he', 'rtl', 1);
             const receiver = fakeReceiver();
 
             // Act
@@ -680,8 +680,8 @@ describe('CultureCoordinator', () => {
             await coordinator.register('b', otherReceiver);
 
             // Act
-            await requester.request('de-DE', 'he', 'rtl');
-            await requester.request('fr-FR', 'fr-FR', 'ltr');
+            await requester.request('de-DE', 'he', 'rtl', 1);
+            await requester.request('fr-FR', 'fr-FR', 'ltr', 2);
 
             // Assert
             expect(requesterReceiver.deliveries.map(describeDelivery)).toEqual(['en-US/en-US #0', 'de-DE/he #1', 'fr-FR/fr-FR #2']);
@@ -695,7 +695,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', fakeReceiver());
 
             // Act
-            await registration.request('de-DE', 'he', 'rtl');
+            await registration.request('de-DE', 'he', 'rtl', 1);
 
             // Assert
             expect(readDocument()).toBe('he/rtl');
@@ -710,8 +710,8 @@ describe('CultureCoordinator', () => {
             slowReceiver.isHolding = true;
 
             // Act
-            const first = slow.request('de-DE', 'de-DE', 'ltr');
-            const second = fast.request('he', 'he', 'rtl');
+            const first = slow.request('de-DE', 'de-DE', 'ltr', 1);
+            const second = fast.request('he', 'he', 'rtl', 1);
             await settle();
             const isSecondAcceptedFirst = readDocument() === 'he/rtl';
             slowReceiver.held.forEach(resolve => resolve());
@@ -720,6 +720,25 @@ describe('CultureCoordinator', () => {
             // Assert
             expect(isSecondAcceptedFirst).toBe(false);
             expect(readDocument()).toBe('he/rtl');
+        });
+
+        it('completes a request its registration made before one already received as canceled, changing nothing', async () => {
+            // Arrange — the runtime requested German and then Hebrew, and the request for Hebrew reached the page first
+            const coordinator = await load();
+            const receiver = fakeReceiver();
+            const otherReceiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+            await coordinator.register('b', otherReceiver);
+            await registration.request('he', 'he', 'rtl', 2);
+
+            // Act
+            const switching = registration.request('de-DE', 'de-DE', 'ltr', 1);
+
+            // Assert
+            await expect(switching).resolves.toBe('canceled');
+            expect(readDocument()).toBe('he/rtl');
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en-US/en-US #0', 'he/he #1']);
+            expect(otherReceiver.deliveries.map(describeDelivery)).toEqual(['en-US/en-US #0', 'he/he #1']);
         });
 
         it('completes once the requesting state has applied the accepted pair', async () => {
@@ -731,7 +750,7 @@ describe('CultureCoordinator', () => {
             let isCompleted = false;
 
             // Act
-            const switching = registration.request('he', 'he', 'rtl').then(() => isCompleted = true);
+            const switching = registration.request('he', 'he', 'rtl', 1).then(() => isCompleted = true);
             await settle();
             const isCompletedBeforeApplied = isCompleted;
             receiver.held.forEach(resolve => resolve());
@@ -749,7 +768,7 @@ describe('CultureCoordinator', () => {
             registration.dispose();
 
             // Act
-            const switching = registration.request('he', 'he', 'rtl');
+            const switching = registration.request('he', 'he', 'rtl', 1);
 
             // Assert
             await expect(switching).rejects.toThrow(/no longer registered/);
@@ -760,7 +779,7 @@ describe('CultureCoordinator', () => {
             // Arrange
             const firstReceiver = fakeReceiver();
             const first = await load();
-            await (await first.register('a', firstReceiver)).request('he', 'he', 'rtl');
+            await (await first.register('a', firstReceiver)).request('he', 'he', 'rtl', 1);
             const secondReceiver = fakeReceiver();
 
             // Act
@@ -782,7 +801,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', fakeReceiver());
 
             // Act
-            await registration.request('de-DE', 'he', 'rtl');
+            await registration.request('de-DE', 'he', 'rtl', 1);
 
             // Assert
             expect(document.cookie).toContain(`${encodeURIComponent('.AspNetCore.Culture')}=${encodeURIComponent('c=de-DE|uic=he')}`);
@@ -796,12 +815,26 @@ describe('CultureCoordinator', () => {
             vi.spyOn(document, 'cookie', 'set').mockImplementation(() => {});
 
             // Act
-            const switching = registration.request('he', 'he', 'rtl');
+            const switching = registration.request('he', 'he', 'rtl', 1);
 
             // Assert
             await expect(switching).rejects.toThrow(/couldn't be read back/);
             expect(readDocument()).toBe('en-US/ltr');
             expect(receiver.deliveries.map(describeDelivery)).toEqual(['en-US/en-US #0']);
+        });
+
+        it('writes no cookie for a request its registration made before one already received', async () => {
+            // Arrange
+            const coordinator = await load({ policy: cookiePolicy });
+            const registration = await coordinator.register('a', fakeReceiver());
+            await registration.request('he', 'he', 'rtl', 2);
+
+            // Act
+            const switching = registration.request('de-DE', 'de-DE', 'ltr', 1);
+
+            // Assert
+            await expect(switching).resolves.toBe('canceled');
+            expect(document.cookie).toContain(`${encodeURIComponent('.AspNetCore.Culture')}=${encodeURIComponent('c=he|uic=he')}`);
         });
 
         it('writes no cookie under the policy of the state alone', async () => {
@@ -810,7 +843,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', fakeReceiver());
 
             // Act
-            await registration.request('he', 'he', 'rtl');
+            await registration.request('he', 'he', 'rtl', 1);
 
             // Assert
             expect(document.cookie).toBe('');
@@ -887,7 +920,7 @@ describe('CultureCoordinator', () => {
             const blazor = fakeBlazor();
             coordinator.track(blazor);
             const registration = await coordinator.register('a', fakeReceiver());
-            await registration.request('he', 'he', 'rtl');
+            await registration.request('he', 'he', 'rtl', 1);
 
             // Act
             setAttributes({ lang: 'en-US', dir: 'ltr' });
@@ -907,7 +940,7 @@ describe('CultureCoordinator', () => {
             blazor.raise('enhancednavigationstart');
 
             // Act
-            const switching = registration.request('fr-FR', 'fr-FR', 'ltr');
+            const switching = registration.request('fr-FR', 'fr-FR', 'ltr', 1);
             await settle();
             const deliveredDuringNavigation = receiver.deliveries.map(describeDelivery);
             setAttributes({ lang: 'he', dir: 'rtl' });
@@ -928,7 +961,7 @@ describe('CultureCoordinator', () => {
             coordinator.track(blazor);
             const registration = await coordinator.register('a', fakeReceiver());
             blazor.raise('enhancednavigationstart');
-            const switching = registration.request('he', 'he', 'rtl');
+            const switching = registration.request('he', 'he', 'rtl', 1);
 
             // Act
             blazor.raise('enhancednavigationend');
@@ -944,7 +977,7 @@ describe('CultureCoordinator', () => {
             // Arrange
             const coordinator = await load();
             const registration = await coordinator.register('a', fakeReceiver());
-            await registration.request('he', 'he', 'rtl');
+            await registration.request('he', 'he', 'rtl', 1);
 
             // Act
             registration.dispose();
@@ -1005,7 +1038,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', receiver);
 
             // Act
-            const switching = registration.request('fr', 'fr', 'ltr');
+            const switching = registration.request('fr', 'fr', 'ltr', 1);
 
             // Assert
             await expect(switching).rejects.toThrow(/No configured culture route represents the culture fr with the UI culture fr/);
@@ -1024,7 +1057,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', receiver);
 
             // Act
-            const switching = registration.request('he', 'he', 'rtl');
+            const switching = registration.request('he', 'he', 'rtl', 1);
             await settle();
             await registration.reportLanding('he', 1);
 
@@ -1045,7 +1078,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', receiver);
 
             // Act
-            const switching = registration.request('he', 'he', 'rtl');
+            const switching = registration.request('he', 'he', 'rtl', 1);
             await settle();
             navigate(blazor, { lang: 'he', dir: 'rtl', culture: 'he' });
 
@@ -1063,7 +1096,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', receiver);
 
             // Act
-            const switching = registration.request('he', 'he', 'rtl');
+            const switching = registration.request('he', 'he', 'rtl', 1);
             await settle();
             blazor.raise('enhancednavigationstart');
             blazor.raise('enhancednavigationend');
@@ -1081,11 +1114,11 @@ describe('CultureCoordinator', () => {
             coordinator.track(blazor);
             const receiver = fakeReceiver();
             const registration = await coordinator.register('a', receiver);
-            const first = registration.request('he', 'he', 'rtl');
+            const first = registration.request('he', 'he', 'rtl', 1);
             await settle();
 
             // Act
-            const second = registration.request('es', 'es', 'ltr');
+            const second = registration.request('es', 'es', 'ltr', 2);
             await settle();
             await registration.reportLanding('es', 1);
 
@@ -1096,6 +1129,28 @@ describe('CultureCoordinator', () => {
             expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'es/es #1']);
         });
 
+        it('navigates nowhere for a request its registration made before one already received, leaving the newer switch waiting', async () => {
+            // Arrange — the switch to Hebrew was requested after the one to Spanish, and reached the page first
+            const coordinator = await load({ culture: 'en', lang: 'en', policy: threeRoutePolicy() });
+            const blazor = fakeBlazor();
+            coordinator.track(blazor);
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver);
+            const newer = registration.request('he', 'he', 'rtl', 2);
+            await settle();
+
+            // Act
+            const older = registration.request('es', 'es', 'ltr', 1);
+            await settle();
+            await registration.reportLanding('he', 1);
+
+            // Assert
+            expect(blazor.navigations).toEqual(['http://localhost/he/about']);
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0', 'he/he #1']);
+            await expect(older).resolves.toBe('canceled');
+            await expect(newer).resolves.toBe('accepted');
+        });
+
         it('takes the page into the pair a superseded switch lands at late, leaving the newer switch waiting for its own', async () => {
             // Arrange
             const coordinator = await load({ culture: 'en', lang: 'en', policy: threeRoutePolicy() });
@@ -1103,10 +1158,10 @@ describe('CultureCoordinator', () => {
             coordinator.track(blazor);
             const receiver = fakeReceiver();
             const registration = await coordinator.register('a', receiver);
-            registration.request('he', 'he', 'rtl');
+            registration.request('he', 'he', 'rtl', 1);
             await settle();
             let secondOutcome = null;
-            const second = registration.request('es', 'es', 'ltr').then(outcome => secondOutcome = outcome);
+            const second = registration.request('es', 'es', 'ltr', 2).then(outcome => secondOutcome = outcome);
             await settle();
 
             // Act
@@ -1130,7 +1185,7 @@ describe('CultureCoordinator', () => {
             const receiver = fakeReceiver();
             const registration = await coordinator.register('a', receiver);
             let outcome = null;
-            const switching = registration.request('he', 'he', 'rtl').then(result => outcome = result);
+            const switching = registration.request('he', 'he', 'rtl', 1).then(result => outcome = result);
             await settle();
 
             // Act
@@ -1156,7 +1211,7 @@ describe('CultureCoordinator', () => {
             coordinator.track(blazor);
             const registration = await coordinator.register('a', fakeReceiver());
             let outcome = null;
-            const switching = registration.request('he', 'he', 'rtl').then(result => outcome = result);
+            const switching = registration.request('he', 'he', 'rtl', 1).then(result => outcome = result);
             await settle();
 
             // Act
@@ -1179,13 +1234,13 @@ describe('CultureCoordinator', () => {
             coordinator.track(blazor);
             const receiver = fakeReceiver();
             const registration = await coordinator.register('a', receiver);
-            const refused = registration.request('he', 'he', 'rtl');
+            const refused = registration.request('he', 'he', 'rtl', 1);
             await settle();
             vi.advanceTimersByTime(5000);
             await refused;
 
             // Act
-            const switching = registration.request('es', 'es', 'ltr');
+            const switching = registration.request('es', 'es', 'ltr', 2);
             await settle();
             await registration.reportLanding('es', 1);
 
@@ -1203,7 +1258,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', receiver);
 
             // Act
-            const switching = registration.request('en', 'en', 'ltr');
+            const switching = registration.request('en', 'en', 'ltr', 1);
             await settle();
             await registration.reportLanding('he', 1);
 
@@ -1221,7 +1276,7 @@ describe('CultureCoordinator', () => {
             const assign = vi.spyOn(window.location, 'assign').mockImplementation(() => {});
 
             // Act
-            registration.request('he', 'he', 'rtl');
+            registration.request('he', 'he', 'rtl', 1);
             await settle();
 
             // Assert
@@ -1308,7 +1363,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', receiver, 'server', null, true);
 
             // Act
-            const switching = registration.request('he', 'he', 'rtl');
+            const switching = registration.request('he', 'he', 'rtl', 1);
             await settle();
             await registration.reportLanding('he', 1);
 
@@ -1326,7 +1381,7 @@ describe('CultureCoordinator', () => {
             const assign = vi.spyOn(window.location, 'assign').mockImplementation(() => {});
 
             // Act
-            registration.request('he', 'he', 'rtl');
+            registration.request('he', 'he', 'rtl', 1);
             await settle();
 
             // Assert
@@ -1344,7 +1399,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', destinationReceiver(answer), 'server', null, true);
 
             // Act
-            registration.request('he', 'he', 'rtl');
+            registration.request('he', 'he', 'rtl', 1);
             await settle();
 
             // Assert
@@ -1360,7 +1415,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', receiver);
 
             // Act
-            registration.request('he', 'he', 'rtl');
+            registration.request('he', 'he', 'rtl', 1);
             await settle();
 
             // Assert

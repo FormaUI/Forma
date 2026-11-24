@@ -174,10 +174,14 @@ application never loops back into a request, and applying never navigates, write
 
 The document's culture coordinator orders every switch on the page. It is a service of the document, one
 per page, as the input router is, and each runtime's culture state registers with it. A runtime requests a
-switch from it; the coordinator accepts requests one at a time, in the order they reach it, gives each
-accepted switch the next number in the document's sequence, and sends the pair with its version to every
-registration. A culture version is the document's identity with that number, so it orders the switches of
-one document and marks where a new document begins:
+switch from it; the coordinator accepts requests one at a time, each runtime's in the order the runtime made
+them, gives each accepted switch the next number in the document's sequence, and sends the pair with its
+version to every registration. Each request carries its place among its registration's requests, taken as
+it is made, so one that reaches the coordinator after a later one from the same registration completes as
+canceled, accepting nothing; requests from different runtimes are accepted in the order they reach it.
+
+A culture version is the document's identity with that number, so it orders the switches of one document
+and marks where a new document begins:
 
 - **Within one document,** a registration ignores a version its state has applied already or an older
   one, so the order every runtime applies switches in is the coordinator's.
@@ -271,6 +275,9 @@ A switch that can't be accepted fails and changes nothing:
   navigation land after all, its landing is accepted as any landing is. A newer switch takes the place of
   one still waiting, which completes as canceled, and a late landing of the earlier switch's navigation
   is the page's culture without completing the newer switch.
+- **A later switch reached the coordinator first.** A switch that reaches the coordinator after a later
+  one its runtime requested, as two requested while the registration is under way can, is never accepted,
+  and its task completes as canceled.
 - **In a static render** there is no page to coordinate, so a switch throws `InvalidOperationException`;
   a static page switches with a request.
 
@@ -809,7 +816,7 @@ makes one call on each side and can still override any single service.
 | C10 | When is the document held through an enhanced navigation? | From every enhanced navigation's start until its landing, whose record the coordinator accepts from that navigation's own marker, or until the navigation ends without landing, as [the document](#the-document-follows-the-state) sets out |
 | C11 | How does the state follow interactive routing? | A culture route page reports its interactive landing with the address its router accepted before its interactive page lifecycle runs, where it renders interactively within `CultureRouteScope`, which the host places around its `Router`; the coordinator resolves the record through the published mapping, and the lifecycle runs once the state has applied it, as [culture addresses](#culture-addresses) sets out |
 | C12 | How many culture pairs does a page hold? | One, across every runtime on it: a switch is the application's, and every runtime converges on the pair it accepts, as [the switch](#one-switch-for-the-page) sets out |
-| C13 | Where are switches ordered? | In the document's culture coordinator, which numbers each accepted switch in the document's sequence and distributes it; a version is the document's identity with that number, and each state applies the pairs it receives locally, ignoring one it has applied or an older one, as [the coordinator](#the-coordinator) sets out; under Blazor Hybrid, in the application's coordinator, whose sequence is the application's run's |
+| C13 | Where are switches ordered? | In the document's culture coordinator, which accepts each runtime's requests in the order the runtime made them, completing one that reaches it after a later one as canceled, numbers each accepted switch in the document's sequence and distributes it; a version is the document's identity with that number, and each state applies the pairs it receives locally, ignoring one it has applied or an older one, as [the coordinator](#the-coordinator) sets out; under Blazor Hybrid, in the application's coordinator, whose sequence is the application's run's |
 | C14 | What does awaiting a switch guarantee? | That it was accepted, its policy's persistence or navigation completed, and the runtime that requested it applied that pair or a newer one; other runtimes converge without holding it back, as [awaiting a switch](#what-awaiting-a-switch-guarantees) sets out |
 | C15 | What does a switch do without coordination? | It fails, and never applies locally in its place; a local switch is a host's explicit choice and a test supplies its own, as [switches without the coordinator](#switches-without-the-coordinator) sets out |
 | C16 | What does a culture route name? | Its UI culture, and a formatting culture of its own or, naming none, the UI culture, so the address carries the whole pair; one mapping, defined in the neutral routing assembly and published to the page, reads it for every navigation, and it decides over the cookie, as [culture addresses](#culture-addresses) sets out |

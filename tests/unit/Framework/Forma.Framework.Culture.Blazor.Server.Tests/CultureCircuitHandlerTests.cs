@@ -141,6 +141,38 @@ public sealed class CultureCircuitHandlerTests
     }
 
     [Fact]
+    public async Task Should_leave_the_circuit_in_the_later_of_two_switches_made_while_a_later_connection_registers()
+    {
+        // Arrange — the first connection registered and dropped, and the browser holds its answer to the next registration, which
+        // both switches wait for
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser();
+        await using var provider = new ServiceCollection()
+            .AddSingleton<IJSRuntime>(browser.Runtime)
+            .AddFormaCultureServerIntegration()
+            .BuildServiceProvider();
+        await using var scope = provider.CreateAsyncScope();
+        await ConnectAsync(scope.ServiceProvider);
+        await DisconnectAsync(scope.ServiceProvider);
+        browser.HoldRegistrations();
+        await ConnectAsync(scope.ServiceProvider);
+        var cultureSwitch = scope.ServiceProvider.GetRequiredService<ICultureSwitch>();
+        var germanSwitch = cultureSwitch.SwitchAsync(German);
+        var hebrewSwitch = cultureSwitch.SwitchAsync(Hebrew);
+
+        // Act
+        browser.AnswerRegistrations();
+        var germanFailure = await Record.ExceptionAsync(() => germanSwitch);
+        await hebrewSwitch;
+
+        // Assert — whichever request reached the page first
+        Assert.Multiple(
+            () => Assert.Equal([("de-DE", "de-DE", 1), ("he-IL", "he-IL", 2)], browser.Requested.OrderBy(request => request.Order)),
+            () => Assert.True(germanFailure is null or OperationCanceledException, $"The earlier switch failed: {germanFailure}"),
+            () => Assert.Equal(Hebrew, scope.ServiceProvider.GetRequiredService<ICultureState>().UICulture));
+    }
+
+    [Fact]
     public async Task Should_register_again_on_a_later_connection_after_an_expected_failure()
     {
         // Arrange — the first connection drops while the module is imported

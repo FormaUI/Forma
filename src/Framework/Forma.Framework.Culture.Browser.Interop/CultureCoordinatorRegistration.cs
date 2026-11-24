@@ -28,6 +28,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     private readonly string _identity = Guid.CreateVersion7().ToString("N");
     private JSModule _module;
     private Task<IJSObjectReference>? _attempt;
+    private int _requestCount;
     private int _landingCount;
     private int _followCount;
     private IJSObjectReference? _registration;
@@ -114,16 +115,17 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     }
 
     /// <summary>Requests a switch to <paramref name="culture"/> and <paramref name="uiCulture"/> from the coordinator, completing once the coordinator accepted it and delivered it to this registration's state.</summary>
-    /// <remarks>Where culture addresses decide the culture, the switch is a navigation to the pair's address: a navigation canceled or replaced by another leaves it canceled, and one that didn't land within the culture routing's switch timeout, as one a navigation handler refused doesn't, leaves it timed out.</remarks>
+    /// <remarks>Where culture addresses decide the culture, the switch is a navigation to the pair's address: a navigation canceled or replaced by another leaves it canceled, and one that didn't land within the culture routing's switch timeout, as one a navigation handler refused doesn't, leaves it timed out. Each request carries its place among this registration's requests, taken as the request is made, before it waits for the registration, so a request reaching the coordinator after a later one leaves it canceled, changing nothing.</remarks>
     internal async Task RequestAsync(CultureInfo culture, CultureInfo uiCulture)
     {
+        var order = Interlocked.Increment(ref _requestCount);
         var registration = await GetRegistrationAsync().ConfigureAwait(false);
         var direction = uiCulture.TextInfo.IsRightToLeft ? "rtl" : "ltr";
-        var outcome = await registration.InvokeAsync<string>("request", culture.Name, uiCulture.Name, direction).ConfigureAwait(false);
+        var outcome = await registration.InvokeAsync<string>("request", culture.Name, uiCulture.Name, direction, order).ConfigureAwait(false);
 
         if (outcome == "canceled")
         {
-            throw new TaskCanceledException($"The switch to the culture '{culture.Name}' with the UI culture '{uiCulture.Name}' navigated, but the navigation didn't land.");
+            throw new TaskCanceledException($"The switch to the culture '{culture.Name}' with the UI culture '{uiCulture.Name}' changed nothing: a switch requested after it reached the page's culture coordinator first, or the navigation it made didn't land.");
         }
 
         if (outcome == "timed-out")

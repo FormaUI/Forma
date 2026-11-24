@@ -97,8 +97,9 @@ page the current one leads to in the route carrying the pair, its own address th
 document, which starts in the pair its address names; under `CultureSwitchMode.InPlace` it stays in the
 document, completing once its navigation's landing was accepted, as canceled where the navigation was
 canceled or replaced by another, and with `TimeoutException` where it didn't land within `SwitchTimeout`, as a
-navigation a handler refused doesn't. A newer switch takes the place of one still waiting, and the page follows a
-navigation that lands after its switch timed out. A pair no route carries throws `InvalidOperationException` before
+navigation a handler refused doesn't. A newer switch takes the place of one still waiting, a switch that reaches
+the page after a newer one from the same runtime completes as canceled, and the page follows a navigation that lands
+after its switch timed out. A pair no route carries throws `InvalidOperationException` before
 anything changes.
 
 | Member | What it does |

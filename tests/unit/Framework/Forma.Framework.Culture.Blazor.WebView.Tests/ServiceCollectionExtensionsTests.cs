@@ -574,6 +574,29 @@ public sealed class ServiceCollectionExtensionsTests
         }
 
         [Fact]
+        public async Task Should_leave_a_web_view_in_the_later_of_two_switches_made_as_it_starts()
+        {
+            // Arrange — the web view's document still registering, which both switches wait for
+            await using var provider = CreateServices();
+            var browser = FakeCultureCoordinatorBrowser.CreateWithoutMarker();
+            browser.HoldRegistrations();
+            await using var webView = OpenWebView(provider, browser);
+            var germanSwitch = SwitchAsync(webView, German, German);
+            var hebrewSwitch = SwitchAsync(webView, Hebrew, Hebrew);
+
+            // Act
+            browser.AnswerRegistrations();
+            var germanFailure = await Record.ExceptionAsync(() => germanSwitch);
+            await hebrewSwitch;
+
+            // Assert — whichever request reached the page first
+            Assert.Multiple(
+                () => Assert.Equal([("de-DE", "de-DE", 1), ("he", "he", 2)], browser.Requested.OrderBy(request => request.Order)),
+                () => Assert.True(germanFailure is null or OperationCanceledException, $"The earlier switch failed: {germanFailure}"),
+                () => Assert.Equal("he/he", Describe(webView)));
+        }
+
+        [Fact]
         public async Task Should_switch_a_web_view_alone_as_it_lands_at_another_culture_s_address()
         {
             // Arrange

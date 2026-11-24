@@ -11,10 +11,12 @@ public sealed class FakeCultureCoordinatorBrowser
     /// <summary>The culture coordinator's module.</summary>
     public const string ModulePath = "./_content/forma/culture/scripts/CultureCoordinator.js";
 
+    private readonly Lock _pageLock = new();
     private readonly Dictionary<string, Queue<Failure>> _failures = [];
     private readonly Dictionary<string, Registration> _registrations = new(StringComparer.Ordinal);
     private readonly Queue<string> _requestOutcomes = [];
     private readonly List<string> _routeCookies = [];
+    private readonly List<(string Culture, string UICulture, int Order)> _requested = [];
     private readonly List<(string Culture, string UICulture)> _followed = [];
     private (string Token, string Culture, string UICulture)[] _routes = [];
     private string? _defaultToken;
@@ -54,6 +56,10 @@ public sealed class FakeCultureCoordinatorBrowser
     /// <summary>The tokens the coordinator wrote to the culture-route cookie, one per interactive landing it accepted, in order.</summary>
     public IReadOnlyList<string> RouteCookies
         => _routeCookies;
+
+    /// <summary>The pairs requested of the coordinator, each with its place among its registration's requests, in the order the requests reached it.</summary>
+    public IReadOnlyList<(string Culture, string UICulture, int Order)> Requested
+        => _requested;
 
     /// <summary>The pairs an application's coordinator had the document follow, in order.</summary>
     public IReadOnlyList<(string Culture, string UICulture)> Followed
@@ -98,7 +104,16 @@ public sealed class FakeCultureCoordinatorBrowser
         => Answer(Module.Recorder.GetCalls("register")[index]);
 
     private void Answer(RecordedCall call)
-        => call.Complete(Register((string)call.Arguments[0]!, (DotNetObjectReference<CultureCoordinatorReceiver>)call.Arguments[1]!, (CultureCoordinatorStart?)call.Arguments[3]));
+    {
+        RecordingJSObjectReference registration;
+
+        lock (_pageLock)
+        {
+            registration = Register((string)call.Arguments[0]!, (DotNetObjectReference<CultureCoordinatorReceiver>)call.Arguments[1]!, (CultureCoordinatorStart?)call.Arguments[3]);
+        }
+
+        call.Complete(registration);
+    }
 
     /// <summary>Faults the next call to <paramref name="identifier"/> with <paramref name="exception"/> before it takes effect.</summary>
     public void FailNext(string identifier, Exception exception)
@@ -124,8 +139,14 @@ public sealed class FakeCultureCoordinatorBrowser
         failures.Enqueue(new Failure(exception));
     }
 
+    // The page takes one call at a time, as its script does on its one thread, though calls can arrive from several threads at once.
     private T Run<T>(string identifier, Func<T> effect)
-        => _failures.TryGetValue(identifier, out var failures) && failures.Count > 0 ? throw failures.Dequeue().Exception : effect();
+    {
+        lock (_pageLock)
+        {
+            return _failures.TryGetValue(identifier, out var failures) && failures.Count > 0 ? throw failures.Dequeue().Exception : effect();
+        }
+    }
 
     private RecordingJSObjectReference RespondToModule(string identifier, object?[] args)
         => identifier switch
@@ -165,15 +186,25 @@ public sealed class FakeCultureCoordinatorBrowser
     private object? RespondToRegistration(Registration registration, string identifier, object?[] args)
         => identifier switch
         {
-            "request" => Run(identifier, () => Request(registration, (string)args[0]!, (string)args[1]!)),
+            "request" => Run(identifier, () => Request(registration, (string)args[0]!, (string)args[1]!, (int)args[3]!)),
             "reportLanding" => Run(identifier, () => ReportLanding(registration, (string?)args[0], (int)args[1]!)),
             "follow" => Run(identifier, () => Follow(registration, (string)args[0]!, (string)args[1]!, (int)args[3]!)),
             "dispose" => Run(identifier, () => Dispose(registration)),
             _ => throw new JSException($"A registration has no '{identifier}'."),
         };
 
-    private string Request(Registration registration, string culture, string uiCulture)
+    // A request the registration made before one already received is obsolete, and completes as canceled, changing nothing.
+    private string Request(Registration registration, string culture, string uiCulture, int order)
     {
+        _requested.Add((culture, uiCulture, order));
+
+        if (order <= registration.LastRequest)
+        {
+            return "canceled";
+        }
+
+        registration.LastRequest = order;
+
         if (!_registrations.ContainsKey(registration.Identity))
         {
             throw new JSException("The culture state requesting the switch is no longer registered with the page.");
@@ -271,6 +302,8 @@ public sealed class FakeCultureCoordinatorBrowser
         public RecordingJSObjectReference Reference { get; set; } = default!;
 
         public DotNetObjectReference<CultureCoordinatorReceiver>? Receiver { get; set; }
+
+        public int LastRequest { get; set; }
 
         public int LastLanding { get; set; }
 

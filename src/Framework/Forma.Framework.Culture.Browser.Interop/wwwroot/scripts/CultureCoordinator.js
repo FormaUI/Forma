@@ -153,6 +153,7 @@ export function track(blazor) {
 class CultureCoordinatorRegistration {
     #identity;
     #runtime;
+    #lastRequest = 0;
     #lastLanding = 0;
     #lastFollow = 0;
     receiver = null;
@@ -174,9 +175,15 @@ class CultureCoordinatorRegistration {
     /**
      * Requests a switch to `culture` and `uiCulture`, written `direction`, completing with `accepted` once the switch was
      * accepted and this registration's state applied it, or with `canceled` where its navigation didn't land. Under the
-     * address policy a pair no route carries is refused before anything changes.
+     * address policy a pair no route carries is refused before anything changes. A request this registration made before
+     * one already received, by its place `order` among them, is obsolete: it completes with `canceled`, changing nothing.
      */
-    request(culture, uiCulture, direction) {
+    request(culture, uiCulture, direction, order) {
+        if (order <= this.#lastRequest) {
+            return Promise.resolve('canceled');
+        }
+
+        this.#lastRequest = order;
         const policy = getInitialization().policy;
         const route = policy?.kind === 'address' ? findRouteByPair(policy, culture, uiCulture) : null;
 

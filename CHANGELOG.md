@@ -14,6 +14,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   web view was starting could reach it in the other order and leave it in the earlier one's, laying a Hebrew page out
   left to right. A culture route page's interactive landings, reported while its runtime registers, keep their order
   the same way, where the earlier of two could decide the page's culture.
+- Of two switches a circuit, a WebAssembly runtime or a web view with a culture of its own requests while it
+  registers, the later decides the culture, as [the culture design](docs/culture-design.md#the-coordinator) sets out,
+  where the earlier could reach the page's culture coordinator last and be accepted after it. The earlier switch's
+  task then completes as canceled, changing nothing.
 - Components refuse a parameter they can't honor as soon as it's set, as [the security design](docs/security-design.md#two-kinds-of-input)
   sets out: `FormaExplorer`'s negative `TotalCount` or `TotalBytes` and a `PageSize` below one, `FormaSplitter`'s
   `PixelsPerUnit` and `FormaDataCards`' `CardSize` of zero or less, and `FormaDateTimePicker`'s `Offset` of a part of a

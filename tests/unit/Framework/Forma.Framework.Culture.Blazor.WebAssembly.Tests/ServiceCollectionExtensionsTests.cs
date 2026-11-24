@@ -190,6 +190,32 @@ public sealed class ServiceCollectionExtensionsTests
                 () => Assert.Equal(("de-DE", "he", 1), browser.Accepted),
                 () => Assert.Equal("de-DE/he", GetDefaults()));
         }
+
+        [Fact]
+        public async Task Should_leave_the_runtime_in_the_later_of_two_switches_made_while_it_starts()
+        {
+            // Arrange — the runtime's registration still under way, which both switches wait for
+            var browser = new FakeCultureCoordinatorBrowser();
+            browser.HoldRegistrations();
+            await using var provider = CreateServices(browser);
+            await using var scope = provider.CreateAsyncScope();
+            var starting = StartAsync(provider);
+            var cultureSwitch = scope.ServiceProvider.GetRequiredService<ICultureSwitch>();
+            var germanSwitch = cultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo("de-DE"));
+            var hebrewSwitch = cultureSwitch.SwitchAsync(CultureInfo.GetCultureInfo("he"));
+
+            // Act
+            browser.AnswerRegistrations();
+            await starting;
+            var germanFailure = await Record.ExceptionAsync(() => germanSwitch);
+            await hebrewSwitch;
+
+            // Assert — whichever request reached the page first
+            Assert.Multiple(
+                () => Assert.Equal([("de-DE", "de-DE", 1), ("he", "he", 2)], browser.Requested.OrderBy(request => request.Order)),
+                () => Assert.True(germanFailure is null or OperationCanceledException, $"The earlier switch failed: {germanFailure}"),
+                () => Assert.Equal("he/he", $"{browser.Accepted.Culture}/{browser.Accepted.UICulture}"));
+        }
     }
 
     public sealed class Independent : IDisposable

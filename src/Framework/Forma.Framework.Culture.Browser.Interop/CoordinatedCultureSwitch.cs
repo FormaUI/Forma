@@ -12,7 +12,8 @@ public sealed class CoordinatedCultureSwitch(CultureCoordinatorRegistration regi
     /// A switch requested while the registration is under way waits for it and fails with it; with no registration under way, or one
     /// unavailable, it fails at once with <see cref="InvalidOperationException"/>, as it does in a static render. Where culture
     /// addresses decide the culture, a pair no route carries fails at once with <see cref="InvalidOperationException"/>, before
-    /// anything changes, and a switch whose navigation didn't land completes as canceled.
+    /// anything changes, and a switch whose navigation didn't land completes as canceled. A switch the coordinator receives after a later
+    /// one requested through the same registration completes as canceled too, changing nothing.
     /// </remarks>
     public Task SwitchAsync(CultureInfo culture, CultureInfo? uiCulture = null)
     {

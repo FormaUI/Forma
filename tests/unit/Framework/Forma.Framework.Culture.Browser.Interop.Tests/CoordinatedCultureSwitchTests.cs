@@ -150,6 +150,35 @@ public sealed class CoordinatedCultureSwitchTests
     }
 
     [Fact]
+    public async Task Should_complete_as_canceled_where_a_switch_requested_after_it_reaches_the_page_first()
+    {
+        // Arrange — the switch to German waits for a registration that answers after a later one, which the switch to Hebrew
+        // requested after it waits for
+        using var fixture = new CultureFixture("en-US");
+        var browser = new FakeCultureCoordinatorBrowser();
+        await using var provider = CreateServices(browser);
+        await using var scope = provider.CreateAsyncScope();
+        var registration = GetRegistration(scope);
+        browser.HoldRegistrations();
+        _ = registration.RegisterAsync();
+        var germanSwitch = GetSwitch(scope).SwitchAsync(German);
+        _ = registration.RegisterAsync();
+        var hebrewSwitch = GetSwitch(scope).SwitchAsync(Hebrew);
+
+        // Act
+        browser.AnswerRegistration(1);
+        await hebrewSwitch;
+        browser.AnswerRegistration(0);
+        var exception = await Record.ExceptionAsync(() => germanSwitch);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([("he", "he", 2), ("de-DE", "de-DE", 1)], browser.Requested),
+            () => Assert.IsAssignableFrom<OperationCanceledException>(exception),
+            () => Assert.Equal("he/he #1", ReadPair(scope)));
+    }
+
+    [Fact]
     public async Task Should_fail_with_the_registration_it_waits_for()
     {
         // Arrange

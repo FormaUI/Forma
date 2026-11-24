@@ -51,7 +51,9 @@ address each switch by address navigates to, and each address a following docume
 source's `ResolveAsync`; a source that names none, or throws, leaves the page's own address in the route,
 and one that throws is logged as an error under `CultureCoordinatorRegistration`.
 
-A switch completes once its own runtime's state has applied the pair it accepted. An enhanced
+A switch completes once its own runtime's state has applied the pair it accepted. Each switch takes its
+place among its runtime's switches as it is made, so one that reaches the coordinator after a later one, as
+two made while the runtime registers can, completes as canceled and changes nothing. An enhanced
 navigation's landing changes the page's pair to the one its response was rendered in, and a switch
 requested while a navigation is in flight waits for it to land. The package's JavaScript initializer,
 which Blazor loads on its own, starts the coordinator and releases a circuit's registrations as the client
