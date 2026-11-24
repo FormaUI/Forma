@@ -74,8 +74,9 @@ picker checked before it.
 `FormaFileViewer` asks each registered `IResourceProvider` in registration order, and the first
 resource returned decides how the address is shown. `BrowserResourceProvider`, which recognizes
 the images, audio, video, PDF and text a browser renders itself, answers last without being
-registered. A provider that returns a `MarkupResourceInfo` sanitizes its `Html`, since the viewer
-renders it as markup.
+registered. The viewer renders a `MarkupResourceInfo`'s `Html` as markup once the registered
+`IHtmlSanitizer` has kept it, whatever the provider did to it. A provider that returns one sanitizes
+its `Html` too, for a host that renders it elsewhere.
 
 ## Register
 

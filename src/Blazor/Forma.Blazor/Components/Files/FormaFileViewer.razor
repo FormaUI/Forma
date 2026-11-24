@@ -15,7 +15,7 @@
         @if (Resource is MarkupResourceInfo markup)
         {
             <div class="forma-file-viewer-html" dir="auto" role="group" aria-label="@DisplayName">
-                @((MarkupString)markup.Html)
+                @((MarkupString)GetSanitizedHtml(markup))
             </div>
         }
         else if (Resource is ImageResourceInfo)

@@ -15,6 +15,7 @@ using Forma.Framework.Composer.Plugins;
 using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.JavaScript.Interop;
+using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -36,6 +37,11 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     /// <inheritdoc />
     protected override Type LocaleSourceType
         => typeof(FormaComposer);
+
+    private const string InsertTextCommand = "insertText";
+
+    // The commands whose text the canvas writes as markup.
+    private static readonly HashSet<string> MarkupCommands = [with(StringComparer.Ordinal), "insertHtml", "replaceContent"];
 
     // The canvas commits at its own pace, so each edit it sends is a commit.
     private static readonly TextEditOptions EditOptions = new();
@@ -430,12 +436,35 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
             await (value switch
             {
                 null => ExecuteCommandAsync(command),
-                string text => ExecuteCommandAsync(command, text),
+                string text => ExecuteCommandAsync(command, GetCommandText(command, text)),
                 int number => ExecuteCommandAsync(command, number),
+                ResourceInsertion resource when !IsAllowed(resource) => ExecuteCommandAsync(InsertTextCommand, resource.Name),
                 ComposerInsertion insertion => ExecuteCommandAsync(command, insertion),
                 _ => throw new UnreachableException($"The command '{command}' carries a {value.GetType()}."),
             });
         });
+    }
+
+    // Markup a plugin writes into the canvas passes the composer's sanitizer first, as what the canvas commits does.
+    private string GetCommandText(string command, string text)
+        => MarkupCommands.Contains(command) && Composer is { } composer ? composer.Sanitizer.Sanitize(text) : text;
+
+    // A stored file goes in as the canvas builds it: embedded by its own kind where it is embedded, and linked where it is
+    // linked or can't be embedded; one at an address any of those doesn't allow goes in as its name alone.
+    private bool IsAllowed(ResourceInsertion resource)
+    {
+        AddressKind? embeddedKind = !resource.Embed ? null : resource.Kind switch
+        {
+            _ when resource.Kind.Equals("image", StringComparison.OrdinalIgnoreCase) => AddressKind.ImageSource,
+            _ when resource.Kind.Equals("video", StringComparison.OrdinalIgnoreCase) => AddressKind.VideoSource,
+            _ when resource.Kind.Equals("audio", StringComparison.OrdinalIgnoreCase) => AddressKind.AudioSource,
+            _ => null,
+        };
+
+        var isLinked = resource.Link || embeddedKind is null;
+
+        return (embeddedKind is not { } kind || Context.GetAllowedAddress(resource.Source, kind) is not null)
+            && (!isLinked || Context.GetAllowedAddress(resource.Source, AddressKind.Link) is not null);
     }
 
     /// <summary>The formatting a command can turn on or off, by the style the canvas reports and the name it is announced by.</summary>

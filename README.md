@@ -176,7 +176,12 @@ waits for its Forma fields before it validates. A field whose text didn't arrive
 `ValidateAsync` waits the same way. `SettleEditsAsync` waits alone, for an action of the host's own that reads the
 form without validating it.
 
-### Addresses from data
+### Markup and addresses from data
+
+**Markup a component renders from data passes the registered `IHtmlSanitizer` first.** `FormaFileViewer` renders a
+page a provider converted only as the sanitizer keeps it, and `FormaComposer` holds every document it shows to the
+sanitizer, as [its README](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Composer/README.md#saving-what-authors-write)
+sets out. `FormaVideoPlayer` renders a service's markup as its provider builds it, every part of the address encoded.
 
 **A component writes an address only where its kind allows it**, whatever the host or a reader gave it:
 

@@ -146,7 +146,9 @@ editor.
 | `EmbedPlugin` | An embed placeholder the host resolves | |
 
 Double-clicking a link, image, video or embed reopens its dialog. Pasted markup passes through the
-sanitizer as typed content does.
+sanitizer as typed content does, and so does a template, markup a plugin writes into the canvas, a
+document a converter produces and a document the host's `History` holds. A stored file a plugin
+inserts at an address its element doesn't allow goes in as its name alone.
 
 The link and image dialogs refuse an address the sanitizer wouldn't keep on their element: a link
 takes a web, mail or telephone address or a path within the site, and an image a web address, a

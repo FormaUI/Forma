@@ -6,6 +6,8 @@
 @using Forma.Blazor.Components.Composer.RichTextEditor.Views
 @using Forma.Framework.JavaScript.Interop
 @using Forma.Tests.Interop
+@using Forma.Tests.Sanitization
+@using Microsoft.Extensions.Logging
 @using Microsoft.AspNetCore.Components.Web
 @inherits FormaBunitContext
 @code {
@@ -573,6 +575,115 @@
 
             // Assert
             Assert.Empty(cut.FindAll(".forma-composer-selection-bar"));
+        }
+
+        private const string HostileMarkup = "<p>Stage<script>alert(1)</script><img src=x onerror=\"alert(1)\"></p>";
+
+        // Puts a stored file at the address it was given into the document, as a host's file picker could.
+        private sealed class ResourceInsertingPlugin(string source) : IComposerFeaturePlugin
+        {
+            public string Id => "resources";
+
+            public IReadOnlyList<ComposerToolbarItem> Items =>
+            [
+                new(ComposerRows.Plugins, [new ToolbarCommand { Id = "insert-resource", Title = "Insert Results", Icon = Glyph.Plus, Command = "demo.insert-resource" }]),
+            ];
+
+            public ValueTask<bool> IsAvailableAsync(CancellationToken cancellationToken = default) => ValueTask.FromResult(true);
+
+            public async ValueTask ExecuteAsync(string command, ComposerContext context, IComposerInteraction interaction, CancellationToken cancellationToken = default)
+                => await interaction.TryInsertAsync(new ResourceInsertion { Source = source, Name = "results.pdf", Kind = "file", Embed = false, Link = true });
+        }
+
+        [Theory]
+        [InlineData(false, "insertHtml")]
+        [InlineData(true, "replaceContent")]
+        public async Task Should_write_a_template_into_the_canvas_only_as_the_sanitizer_keeps_it(bool replacesContent, string canvasCommand)
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor
+                .AddFeaturePlugin<TemplatePlugin, TemplatePluginOptions>(options =>
+                {
+                    options.Templates = [new("hostile", "Results", "A template a host keeps.", HostileMarkup)];
+                    options.ReplaceContent = replacesContent;
+                })));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => composer.HandleCommandAsync($"{TemplatePlugin.InsertTemplatePrefix}hostile"));
+
+            // Assert
+            var invocation = Assert.Single(ctx.JSInterop.Invocations["exec"], call => Equals(call.Arguments[0], canvasCommand));
+            Assert.Equal("<p>Stage<img src=\"x\" /></p>", invocation.Arguments[1]);
+        }
+
+        public static TheoryData<string> HostileScripts
+            => [.. HostileAddresses.Scripts];
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public async Task Should_put_in_a_stored_file_at_an_address_a_link_refuses_as_its_name_alone(string address)
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var model = new TestModel();
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor.AddFeaturePlugin(_ => new ResourceInsertingPlugin(address))));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => composer.HandleCommandAsync("demo.insert-resource"));
+
+            // Assert
+            var invocations = ctx.JSInterop.Invocations["exec"];
+            var entry = Assert.Single(loggerFactory.GetAddressRefusals());
+            Assert.Multiple(
+                () => Assert.DoesNotContain(invocations, call => Equals(call.Arguments[0], "insertResource")),
+                () => Assert.Equal("results.pdf", Assert.Single(invocations, call => Equals(call.Arguments[0], "insertText")).Arguments[1]),
+                () => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"]),
+                () => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_put_in_a_stored_file_at_an_address_a_link_allows()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            var model = new TestModel();
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor(editor => editor.AddFeaturePlugin(_ => new ResourceInsertingPlugin("/files/results.pdf"))));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => composer.HandleCommandAsync("demo.insert-resource"));
+
+            // Assert
+            Assert.Single(ctx.JSInterop.Invocations["exec"], call => Equals(call.Arguments[0], "insertResource"));
+        }
+
+        [Fact]
+        public void Should_show_a_hostile_document_only_as_the_sanitizer_keeps_it_under_a_static_render()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var model = new TestModel { Body = new(ComposerDocumentFormat.Html, HostileMarkup + "<p><a href=\"javascript:alert(1)\">Results</a></p>") };
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+
+            // Assert
+            var canvas = cut.Find(".forma-composer-rich-text-canvas");
+            Assert.Multiple(
+                () => Assert.Empty(canvas.QuerySelectorAll("script")),
+                () => Assert.False(canvas.QuerySelector("img")!.HasAttribute("onerror")),
+                () => Assert.False(canvas.QuerySelector("a")!.HasAttribute("href")),
+                () => Assert.Equal("Results", canvas.QuerySelector("a")!.TextContent));
         }
     }
 }

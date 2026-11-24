@@ -442,7 +442,7 @@ public sealed partial class FormaComposer(
             return false;
         }
 
-        var convertedDocument = new ComposerDocument(format, conversion.Content ?? string.Empty);
+        var convertedDocument = Sanitize(new ComposerDocument(format, conversion.Content ?? string.Empty));
         _history.Record(convertedDocument, _selection);
         CurrentValue = convertedDocument;
 
@@ -694,7 +694,7 @@ public sealed partial class FormaComposer(
 
         if (undoneDocument is not null)
         {
-            CurrentValue = undoneDocument;
+            CurrentValue = Sanitize(undoneDocument);
             StateHasChanged();
         }
 
@@ -707,7 +707,7 @@ public sealed partial class FormaComposer(
 
         if (redoneDocument is not null)
         {
-            CurrentValue = redoneDocument;
+            CurrentValue = Sanitize(redoneDocument);
             StateHasChanged();
         }
 

@@ -979,5 +979,26 @@
                 () => Assert.Equal(placeholder, cut.Find("video").GetAttribute("poster")),
                 () => Assert.Equal("data:text/vtt,WEBVTT", cut.Find("track").GetAttribute("src")));
         }
+
+        [Theory]
+        [InlineData("https://www.tiktok.com/@scout2015/video/6718335390845095173")]
+        [InlineData("https://www.instagram.com/p/fA9uwTtkSN/")]
+        [InlineData("https://www.facebook.com/FacebookDevelopers/videos/10152454700553553/")]
+        [InlineData("https://x.com/TwitterDev/status/1354143047324299264")]
+        public void Should_write_a_service_s_markup_with_no_part_of_a_hostile_address_as_markup(string address)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            var hostile = $"{address}\"><script>alert(1)</script><img src=x onerror=\"alert(1)\">";
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@hostile" Title="A post" DeferLoading="false" />);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("script")),
+                () => Assert.Empty(cut.FindAll("img")),
+                () => Assert.Empty(cut.FindAll("[onerror]")));
+        }
     }
 }

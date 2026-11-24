@@ -1062,6 +1062,95 @@
             });
         }
 
+        private const string HostileMarkup = "<p>Stage<script>alert(1)</script><img src=x onerror=\"alert(1)\"></p>";
+
+        // Converts plain text to HTML as a converter that passes raw markup through would.
+        private sealed class RawHtmlConverter : IComposerDocumentConverter
+        {
+            public ComposerDocumentFormat Source => ComposerDocumentFormat.PlainText;
+            public ComposerDocumentFormat Target => ComposerDocumentFormat.Html;
+            public ComposerConversionResult Convert(string content) => ComposerConversionResult.Success(content + HostileMarkup);
+        }
+
+        // Keeps every document the composer hands the host.
+        private sealed class RecordingModel
+        {
+            public List<ComposerDocument> Received { get; } = [];
+
+            public ComposerDocument Body
+            {
+                get;
+                set
+                {
+                    field = value;
+                    Received.Add(value);
+                }
+            } = new(ComposerDocumentFormat.PlainText, "Initial Content");
+        }
+
+        [Fact]
+        public void Should_hand_the_host_a_converted_document_only_as_the_sanitizer_keeps_it()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            ctx.Services.AddSingleton<IComposerDocumentConverter>(new RawHtmlConverter());
+            var model = new RecordingModel();
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<DummyEditorPlugin>().AddEditorPlugin<HtmlEditorPlugin>());
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Act
+            cut.FindComponent<FormaComposer>().Render(parameters => parameters.Add(p => p.ActiveEditorId, "html"));
+
+            // Assert
+            var converted = Assert.Single(model.Received, document => document.Format == ComposerDocumentFormat.Html);
+            Assert.Equal("Initial Content<p>Stage<img src=\"x\" /></p>", converted.Content);
+        }
+
+        [Fact]
+        public async Task Should_hand_the_host_a_document_its_own_history_holds_only_as_the_sanitizer_keeps_it()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var history = new ComposerHistory();
+            history.Record(new ComposerDocument(ComposerDocumentFormat.Html, HostileMarkup));
+            var model = new HtmlModel();
+            var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<HtmlEditorPlugin>());
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" History="history" />);
+            var composer = cut.FindComponent<FormaComposer>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => composer.HandleCommandAsync(ComposerCommands.Undo));
+
+            // Assert
+            Assert.Equal("<p>Stage<img src=\"x\" /></p>", model.Body.Content);
+        }
+
+        [Fact]
+        public void Should_preview_and_print_a_hostile_document_only_as_the_sanitizer_keeps_it()
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            var model = new HtmlModel { Body = new(ComposerDocumentFormat.Html, HostileMarkup + "<p><a href=\"javascript:alert(1)\">Results</a></p>") };
+            var plugins = ComposerDefinition.Create(composer => composer
+                .AddRichTextEditor(editor => editor.AddViewPlugin<RichTextPreviewViewPlugin>()));
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+            cut.FindAll("[role=tab]")[1].Click();
+            cut.WaitForAssertion(() => Assert.NotNull(cut.Find("button[aria-label='Print']")));
+
+            // Act
+            cut.Find("button[aria-label='Print']").Click();
+
+            // Assert
+            var page = cut.Find(".forma-composer-preview-page");
+            cut.WaitForAssertion(() => Assert.Single(ctx.JSInterop.Invocations["print"]));
+            var printed = ctx.JSInterop.Invocations["print"][0];
+            Assert.Multiple(
+                () => Assert.Empty(page.QuerySelectorAll("script")),
+                () => Assert.False(page.QuerySelector("img")!.HasAttribute("onerror")),
+                () => Assert.False(page.QuerySelector("a")!.HasAttribute("href")),
+                () => Assert.Equal("<p>Stage<img src=\"x\" /></p><p><a>Results</a></p>", printed.Arguments[0]));
+        }
+
         [Fact]
         public async Task Should_leave_a_non_markup_format_untouched()
         {
