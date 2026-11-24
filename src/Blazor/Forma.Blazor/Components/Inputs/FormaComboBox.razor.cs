@@ -239,14 +239,14 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
 
         await _edits.SyncAsync(RootElement, FieldText, EditOptions);
 
-        // Taken away while its text synced, it has no context left to watch the field through.
+        // The keys answer as soon as the field is drawn, before its focus is watched.
+        await _inputRegistration.SyncAsync(RootElement, IsOpen ? OpenProfile : _isEdited ? EditedClosedProfile : ClosedProfile);
+
+        // Taken away while its text synced or its keys registered, it has no context left to watch the field through.
         if (IsDisposed)
         {
             return;
         }
-
-        // The keys answer as soon as the field is drawn, before its focus is watched.
-        await _inputRegistration.SyncAsync(RootElement, IsOpen ? OpenProfile : _isEdited ? EditedClosedProfile : ClosedProfile);
 
         if (firstRender)
         {

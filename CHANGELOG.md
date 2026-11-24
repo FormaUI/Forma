@@ -11,6 +11,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 - A read-only `FormaComboBox` holding no value offers no option to choose on a statically rendered page, where it offered
   every option the browser's own list could post.
+- A `FormaComboBox` taken away while its first render still registers its keys goes without an error, where the error
+  ended the circuit on the Server and the application in Blazor Hybrid.
 - Under a coarse pointer, the text of `FormaComboBox`, `FormaTimeBox`, `FormaDateBox` and `FormaDateRangePicker` keeps
   clear of the button at the field's end, which grows to a touch target there.
 - A `LinkTab` stands at the strip's far end by `IsTrailing`, named as a data record's flags are. To migrate, set
