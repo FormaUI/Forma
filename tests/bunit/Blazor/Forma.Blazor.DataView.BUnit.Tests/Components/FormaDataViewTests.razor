@@ -1,9 +1,11 @@
 @inherits FormaBunitContext
 @using System.Globalization
 @using Forma.Framework.Browser
+@using Forma.Framework.JavaScript.Interop
 @using Microsoft.AspNetCore.Components
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Logging
 @using Microsoft.Extensions.Time.Testing
 
 @code {
@@ -654,6 +656,160 @@
 
             // Assert
             Assert.Equal((1, 3), LastFocus(ctx));
+        }
+
+        [Theory]
+        [InlineData("select-all")]
+        [InlineData("")]
+        [InlineData(null)]
+        [InlineData("sel\0ect")]
+        public async Task Should_move_the_focus_alone_and_log_a_mode_the_behavior_doesn_t_name(string? mode)
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var changes = 0;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> _) => changes++)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, isLast: true, mode!, null));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, changes),
+                () => Assert.Equal((1, 3), LastFocus(ctx)),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("moves the focus alone", StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData(-1)]
+        [InlineData(int.MinValue)]
+        public async Task Should_move_the_focus_alone_and_log_an_extend_from_an_anchor_below_the_first_position(int anchor)
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var changes = 0;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> _) => changes++)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleSeekAsync(1, isLast: true, "extend", anchor));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, changes),
+                () => Assert.Equal((1, 3), LastFocus(ctx)),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("moves the focus alone", StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData(-1, 2)]
+        [InlineData(2, -1)]
+        [InlineData(int.MinValue, int.MaxValue)]
+        public async Task Should_refuse_and_log_a_range_from_or_to_a_position_below_the_first(int fromPosition, int toPosition)
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var changes = 0;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> _) => changes++)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectByPositionAsync(fromPosition, toPosition, isAdditive: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, changes),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was refused", StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData(0, int.MaxValue)]
+        [InlineData(0, int.MaxValue - 1)]
+        [InlineData(1, 1_000_000_000)]
+        public async Task Should_ask_a_source_that_cannot_count_for_no_more_than_it_answered_for_a_range_past_the_set(int fromPosition, int toPosition)
+        {
+            // Arrange — the slice comes back shorter than asked for, which ends the set at four
+            using var ctx = new FormaDataViewTests();
+            var largestAsked = 0;
+            DataViewItemsProvider<Product> provider = request =>
+            {
+                largestAsked = Math.Max(largestAsked, request.StartIndex + (request.Count ?? 0));
+
+                return ValueTask.FromResult(new DataViewPage<Product>([.. CreateProducts().Skip(request.StartIndex).Take(request.Count ?? 4)], null));
+            };
+            IReadOnlyList<Product> selected = [];
+            var cut = ctx.Render(
+                @<FormaDataView ItemsProvider="provider" EnablePagination="false" Virtualize="true" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> items) => selected = items)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            largestAsked = 0;
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectByPositionAsync(fromPosition, toPosition, isAdditive: false));
+
+            // Assert — the range runs to the last item the source answered
+            Assert.Multiple(
+                () => Assert.InRange(largestAsked, 0, 4),
+                () => Assert.Equal(4 - fromPosition, selected.Count),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted));
+        }
+
+        [Theory]
+        [InlineData("none")]
+        [InlineData("no value")]
+        [InlineData("a text")]
+        public async Task Should_refuse_and_log_a_range_carrying_no_list_of_tokens(string malformation)
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var changes = 0;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" EnableItemSelection="true" ItemName="@(product => product.Name)" SelectedItemsChanged="@((IReadOnlyList<Product> _) => changes++)">
+                    <FormaDataList TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+            var engine = cut.FindComponent<FormaDataView<Product>>();
+            JSTransfer? tokens = malformation switch
+            {
+                "none" => null,
+                "no value" => new JSTransfer(),
+                _ => InlineTransfer.Of("Hammer"),
+            };
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleRangeSelectAsync(tokens!, isAdditive: false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, changes),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains(malformation == "no value" ? "was lost on its way" : "was refused", StringComparison.Ordinal)));
         }
 
         [Fact]

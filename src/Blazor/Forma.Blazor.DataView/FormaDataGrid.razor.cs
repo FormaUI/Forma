@@ -195,10 +195,16 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
     /// <summary>Takes the width the table has and the widths its columns want, and decides again which fit.</summary>
     /// <param name="report">The width the table has and the widths its columns want.</param>
+    /// <remarks>A report naming no column, or carrying a width past any number or below none, is refused and logged.</remarks>
     [JSInvokable]
     public Task HandleColumnFitAsync(ColumnFitReport report)
     {
-        ArgumentNullException.ThrowIfNull(report);
+        if (report is null || !IsFit(report))
+        {
+            DataViewLog.ColumnFitRefused(Context.Logger, Context.RuntimeId);
+
+            return Task.CompletedTask;
+        }
 
         var widthsChanged = false;
 
@@ -233,6 +239,13 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
         return InvokeAsync(StateHasChanged);
     }
+
+    // A fit the table can be laid out by: a width it has, and every column named with a width it wants.
+    private static bool IsFit(ColumnFitReport report)
+        => report.Columns is { } columns && IsWidth(report.AvailableWidth) && columns.All(column => column is { Key: not null } && IsWidth(column.Width));
+
+    private static bool IsWidth(double width)
+        => double.IsFinite(width) && width >= 0;
 
     // The frozen edge the reader drags sets how far the frozen region reaches; the last frozen column takes up the difference.
     private void HandleFrozenExtentChanged(double extent)

@@ -18,6 +18,9 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 {
     private const string ViewKey = "cards";
 
+    // More columns than any screen has pixels across, at the browser's smallest zoom.
+    private const int MaximumColumnCount = 1 << 16;
+
     // What the cards are given that is not their own: the host's attributes, which never change how a card is drawn.
     private static readonly string[] _parametersLeftOut = [nameof(Id), nameof(Class), nameof(Style)];
 
@@ -84,9 +87,17 @@ public sealed partial class FormaDataCards<TItem> : FormaElementBase, IDataViewV
 
     /// <summary>Lays the cards out in rows of <paramref name="count"/>, the columns the width holds at the card size.</summary>
     /// <param name="count">How many columns the pack lays out.</param>
+    /// <remarks>A count no pack lays out, below one or past the columns any screen holds, is refused and logged.</remarks>
     [JSInvokable]
     public Task HandleGridColumnsAsync(int count)
     {
+        if (count is < 1 or > MaximumColumnCount)
+        {
+            DataViewLog.ColumnsRefused(Context.Logger, Context.RuntimeId);
+
+            return Task.CompletedTask;
+        }
+
         _rows.ColumnCount = count;
         _isRefreshWanted |= _rows.Update() && _virtualizer is not null;
 

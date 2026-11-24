@@ -3,6 +3,7 @@
 @using Microsoft.AspNetCore.Components.Web
 @using AngleSharp.Dom
 @using Forma.Blazor.Components.Virtualization
+@using Microsoft.Extensions.Logging
 
 @code {
     public sealed class Component
@@ -263,6 +264,37 @@
                 () => Assert.Equal([2, 1], cut.FindAll(".forma-data-cards-row").Select(row => row.QuerySelectorAll(".forma-data-card").Length)),
                 () => Assert.Equal(["1", "2", "3"], cut.FindAll(".forma-data-card").Select(card => card.GetAttribute("aria-posinset"))),
                 () => Assert.All(cut.FindAll(".forma-data-card"), card => Assert.Equal("3", card.GetAttribute("aria-setsize"))));
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-3)]
+        [InlineData(int.MinValue)]
+        [InlineData(int.MaxValue)]
+        [InlineData(65_537)]
+        public async Task Should_refuse_and_log_a_column_count_no_pack_lays_out(int count)
+        {
+            // Arrange
+            using var ctx = new FormaDataCardsTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateProducts()" EnablePagination="false" Virtualize="true" ItemName="@(product => product.Name)">
+                    <FormaDataCards TItem="Product" />
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll(".forma-data-cards-ruler").Count == 1);
+            var cards = cut.FindComponent<FormaDataCards<Product>>();
+            await cards.InvokeAsync(() => cards.Instance.HandleGridColumnsAsync(2));
+            cut.WaitForState(() => cut.FindAll(".forma-data-card").Count == 3);
+
+            // Act
+            await cards.InvokeAsync(() => cards.Instance.HandleGridColumnsAsync(count));
+
+            // Assert — the rows stay laid out in the columns last reported
+            Assert.Multiple(
+                () => Assert.Equal([2, 1], cut.FindAll(".forma-data-cards-row").Select(row => row.QuerySelectorAll(".forma-data-card").Length)),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was refused", StringComparison.Ordinal)));
         }
 
         [Fact]

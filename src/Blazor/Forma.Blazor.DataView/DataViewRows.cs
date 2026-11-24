@@ -377,17 +377,19 @@ internal sealed class DataViewRows<TItem>(
     }
 
     /// <summary>The items the rows reach from <paramref name="from"/> to <paramref name="to"/> in the set, both included, a folded group's items left out.</summary>
+    /// <remarks>Of a source that cannot count, the items read are those it has answered, so a range past them asks it for no more.</remarks>
     /// <param name="from">The position of the first item.</param>
     /// <param name="to">The position of the last item.</param>
     /// <param name="cancellationToken">Canceled when the items are no longer wanted.</param>
     public async ValueTask<IReadOnlyList<TItem>> ReadAsync(int from, int to, CancellationToken cancellationToken)
     {
         List<TItem> items = [];
+        var end = _view.ItemCount is null && !_view.IsGrouped ? Math.Min((long)to + 1, _knownItemCount) : (long)to + 1;
 
         foreach (var segment in _segments.Where(segment => !segment.IsFolded))
         {
             var start = Math.Max(from, segment.FirstItem);
-            var stop = Math.Min(to + 1, segment.FirstItem + segment.ItemCount);
+            var stop = (int)Math.Min(end, segment.FirstItem + segment.ItemCount);
 
             if (stop > start && !cancellationToken.IsCancellationRequested)
             {

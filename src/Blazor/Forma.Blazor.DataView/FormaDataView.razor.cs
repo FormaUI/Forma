@@ -1542,10 +1542,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>Replaces or extends the selection with a contiguous range of items.</summary>
     /// <param name="itemTokens">The tokens of the items in the range, as the transfer carries them.</param>
     /// <param name="isAdditive">Whether the range extends the selection rather than replacing it.</param>
+    /// <remarks>A gesture carrying no list of tokens is refused and logged; a token naming no item the view holds names nothing to select.</remarks>
     [JSInvokable]
     public async Task HandleRangeSelectAsync(JSTransfer itemTokens, bool isAdditive)
     {
-        ArgumentNullException.ThrowIfNull(itemTokens);
+        if (itemTokens is null)
+        {
+            DataViewLog.RangeRefused(Context.Logger, Context.RuntimeId);
+            return;
+        }
 
         JsonElement tokens;
 
@@ -1561,6 +1566,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         if (tokens.ValueKind is not JsonValueKind.Array)
         {
+            DataViewLog.RangeRefused(Context.Logger, Context.RuntimeId);
             return;
         }
 
@@ -1581,11 +1587,18 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <param name="fromPosition">The position of the range's anchor.</param>
     /// <param name="toPosition">The position of the item the gesture landed on.</param>
     /// <param name="isAdditive">Whether the range extends the selection rather than replacing it.</param>
+    /// <remarks>A range from or to a position below the first is refused and logged; one reaching past the set selects the items in it.</remarks>
     [JSInvokable]
     public async Task HandleRangeSelectByPositionAsync(int fromPosition, int toPosition, bool isAdditive)
     {
         if (ActivePositions is not { } positions)
         {
+            return;
+        }
+
+        if (fromPosition < 0 || toPosition < 0)
+        {
+            DataViewLog.RangeRefused(Context.Logger, Context.RuntimeId);
             return;
         }
 
@@ -1605,6 +1618,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <param name="isLast">Whether the move reaches the last item rather than the first.</param>
     /// <param name="mode">How the move selects: <c>select</c> the item alone, <c>extend</c> the range from the anchor, or <c>focus</c> the item alone.</param>
     /// <param name="anchorPosition">The position of the range's anchor, for a move that extends.</param>
+    /// <remarks>A mode the behavior doesn't name, or an anchor below the first position, is logged and left unused, so the move lands the focus alone.</remarks>
     [JSInvokable]
     public async Task HandleSeekAsync(int request, bool isLast, string mode, int? anchorPosition)
     {
@@ -1625,6 +1639,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             if (ActivePositions is not { } positions || positions.GetEdgePosition(isLast) is not { } position)
             {
                 return;
+            }
+
+            if (mode is not (SeekSelect or SeekExtend or SeekFocus) || (mode == SeekExtend && anchorPosition < 0))
+            {
+                DataViewLog.SeekRefused(Context.Logger, Context.RuntimeId);
+                mode = SeekFocus;
             }
 
             if (mode == SeekSelect && await positions.ReadAsync(position, position, CancellationToken.None) is [var item] && IsCurrent())
@@ -1862,6 +1882,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private const string SeekSelect = "select";
 
     private const string SeekExtend = "extend";
+
+    private const string SeekFocus = "focus";
 
     private const string ControlSelector = "[" + ControlAttribute + "]";
 

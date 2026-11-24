@@ -10,6 +10,7 @@
 @using Forma.Blazor.Components.Virtualization
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.Extensions.Logging
 
 @code {
     private static IQueryable<GridItem> CreateItems(int count) => Enumerable.Range(1, count)
@@ -2788,6 +2789,61 @@
 
     public sealed class Columns
     {
+        private static ColumnFitReport? CreateMalformedReport(IRenderedComponent<IComponent> cut, string malformation)
+            => malformation switch
+            {
+                "none" => null,
+                "no columns" => CreateFitReport(cut, 50) with { Columns = null! },
+                "a missing column" => CreateFitReport(cut, 50) with { Columns = [.. CreateFitReport(cut, 50).Columns, null!] },
+                "a column with no key" => CreateFitReport(cut, 50) with { Columns = [new ColumnWidth { Key = null!, Width = 100 }] },
+                "a width past any number" => CreateFitReport(cut, 50, double.PositiveInfinity),
+                "a width below none" => CreateFitReport(cut, 50, -100),
+                "a width that is no number" => CreateFitReport(cut, 50, double.NaN),
+                "a table past any width" => CreateFitReport(cut, double.PositiveInfinity),
+                "a table below no width" => CreateFitReport(cut, -320),
+                _ => throw new ArgumentOutOfRangeException(nameof(malformation), malformation, null),
+            };
+
+        [Theory]
+        [InlineData("none")]
+        [InlineData("no columns")]
+        [InlineData("a missing column")]
+        [InlineData("a column with no key")]
+        [InlineData("a width past any number")]
+        [InlineData("a width below none")]
+        [InlineData("a width that is no number")]
+        [InlineData("a table past any width")]
+        [InlineData("a table below no width")]
+        public async Task Should_refuse_and_log_a_fit_naming_no_column_or_carrying_a_width_no_column_can_take(string malformation)
+        {
+            // Arrange — frozen columns, whose places the widths set
+            using var ctx = new FormaDataGridTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(3)" PageSize="10">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Id)" Priority="2" Frozen="true" />
+                            <FormaPropertyColumn Property="@(item => item.Title)" Priority="1" Frozen="true" />
+                            <FormaTemplateColumn Title="Note" Priority="0">-</FormaTemplateColumn>
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody tr").Count == 3);
+            await FitAsync(cut, availableWidth: 320);
+            var grid = cut.FindComponent<FormaDataGrid<GridItem>>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => grid.HandleColumnFitAsync(CreateMalformedReport(cut, malformation)!));
+
+            // Assert — the columns stand as the last fit left them
+            Assert.Multiple(
+                () => Assert.Equal(["Id", "Title"], GetHeaderTitles(cut)),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was refused", StringComparison.Ordinal)));
+        }
+
         [Fact]
         public async Task Should_drop_the_lowest_priority_columns_that_do_not_fit()
         {
