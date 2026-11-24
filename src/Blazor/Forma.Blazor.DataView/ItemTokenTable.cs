@@ -75,6 +75,10 @@ internal sealed class ItemTokenTable<TItem>
         return token;
     }
 
+    /// <summary>How many items the table holds a token for.</summary>
+    public int Count
+        => _itemsByToken.Count;
+
     /// <summary>Resolves a token back to its item.</summary>
     /// <param name="token">The token to resolve.</param>
     /// <param name="item">The item the token stands for.</param>

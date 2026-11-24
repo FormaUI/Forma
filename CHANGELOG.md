@@ -85,6 +85,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - `FormaVirtualize` draws no more than a screen shows, whatever the browser reports: a viewport taller than 30,720
   pixels, an 8K screen turned upright at the browser's smallest zoom, is taken at that height, and an item measured at
   less than a pixel leaves the size measured before.
+- `FormaDataView` reads a selection gesture's list of tokens up to the length naming each item it holds a token for
+  takes, where it read up to `JSTransferOptions.MaximumLength`, and a range past the items a source that can't count
+  has answered asks it for no more of them.
 - `FormaFilePicker` leaves out a file the browser describes with no name, no type or a size no file has, and
   `FormaFileUploader` fails one of such a size before reading it, where either threw.
 

@@ -2459,6 +2459,34 @@
         }
 
         [Fact]
+        public async Task Should_select_nothing_for_a_range_longer_than_naming_each_item_it_holds_a_token_for_once()
+        {
+            // Arrange — five rows' tokens fit in sixty-two bytes
+            using var ctx = new FormaDataGridTests();
+            IReadOnlyList<GridItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaDataView Items="CreateItems(5)" PageSize="10" EnableItemSelection="true" SelectedItemsChanged="@((IReadOnlyList<GridItem> selected) => changedTo = selected)">
+                    <FormaDataGrid>
+                        <Columns>
+                            <FormaPropertyColumn Property="@(item => item.Title)" />
+                        </Columns>
+                    </FormaDataGrid>
+                </FormaDataView>);
+            cut.WaitForState(() => cut.FindAll("tbody .forma-data-grid-row-marker").Count == 5);
+            var grid = cut.FindComponent<FormaDataView<GridItem>>().Instance;
+            await using var stream = new FakeJSStreamReference([], length: 1024);
+
+            // Act
+            await cut.InvokeAsync(() => grid.HandleRangeSelectAsync(new JSTransfer { Stream = stream }, isAdditive: false));
+
+            // Assert — refused before any of it is read
+            Assert.Multiple(
+                () => Assert.Null(changedTo),
+                () => Assert.Null(stream.OpenedWith),
+                () => Assert.True(stream.IsDisposed));
+        }
+
+        [Fact]
         public void Should_keep_row_tokens_stable_across_re_renders()
         {
             // Arrange

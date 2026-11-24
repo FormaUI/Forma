@@ -580,6 +580,10 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     Task IDataViewFooter.MoveToPageAsync(int page)
         => HandlePageChangedAsync(page);
 
+    // The JSON of a range naming every item the view holds a token for once: a bracket each side, and each token at most eleven characters and a comma.
+    private long RangeTokensLength
+        => 2 + (12L * _itemTokens.Count);
+
     private int StartIndex
         => EnablePagination && !IsAppending ? (_page - 1) * PageSize : 0;
 
@@ -1556,7 +1560,7 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         try
         {
-            tokens = await itemTokens.ReadJsonAsync(Context.JS.TransferOptions.MaximumLength);
+            tokens = await itemTokens.ReadJsonAsync(RangeTokensLength);
         }
         catch (JSTransferException ex)
         {
