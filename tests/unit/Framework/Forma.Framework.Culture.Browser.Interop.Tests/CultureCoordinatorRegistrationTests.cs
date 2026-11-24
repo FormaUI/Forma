@@ -234,6 +234,64 @@ public sealed class CultureCoordinatorRegistrationTests
         }
 
         [Fact]
+        public async Task Should_leave_the_page_on_the_later_landing_where_the_earlier_report_reaches_it_last()
+        {
+            // Arrange — the landing at Hebrew waits for a registration that answers after a later one, which the landing at the
+            // plain address made after it waits for
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser("en", "en");
+            browser.UseRoutes("en", ("en", "en", "en"), ("he", "he", "he"));
+            await using var provider = CreateServices(browser);
+            await using var scope = provider.CreateAsyncScope();
+            var registration = GetRegistration(scope);
+            browser.HoldRegistrations();
+            _ = registration.RegisterAsync();
+            var hebrew = registration.ReportLandingAsync("he");
+            _ = registration.RegisterAsync();
+            var plain = registration.ReportLandingAsync(null);
+
+            // Act
+            browser.AnswerRegistration(1);
+            await plain;
+            browser.AnswerRegistration(0);
+            await hebrew;
+
+            // Assert
+            Assert.Equal("en", GetCultureState(scope).UICulture.Name);
+        }
+
+        [Fact]
+        public async Task Should_leave_the_document_on_the_later_follow_where_the_earlier_one_reaches_it_last()
+        {
+            // Arrange — the follow into German waits for a registration that answers after a later one, which the follow into
+            // Hebrew made after it waits for
+            using var fixture = new CultureFixture("en-US");
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = CreateServices(browser);
+            await using var scope = provider.CreateAsyncScope();
+            var registration = GetRegistration(scope);
+            var german = CultureInfo.GetCultureInfo("de-DE");
+            var hebrew = CultureInfo.GetCultureInfo("he");
+            browser.HoldRegistrations();
+            _ = registration.RegisterAsync();
+            var germanFollow = registration.FollowAsync(german, german, TestContext.Current.CancellationToken);
+            _ = registration.RegisterAsync();
+            var hebrewFollow = registration.FollowAsync(hebrew, hebrew, TestContext.Current.CancellationToken);
+
+            // Act
+            browser.AnswerRegistration(1);
+            var isHebrewFollowed = await hebrewFollow;
+            browser.AnswerRegistration(0);
+            var isGermanFollowed = await germanFollow;
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isHebrewFollowed && isGermanFollowed),
+                () => Assert.Equal([("he", "he")], browser.Followed),
+                () => Assert.Equal(("he", "he"), (browser.Accepted.Culture, browser.Accepted.UICulture)));
+        }
+
+        [Fact]
         public async Task Should_release_once_disposed_where_the_runtime_canceled_the_release()
         {
             // Arrange — as the runtime cancels the calls of a circuit that ends while its scope is disposed

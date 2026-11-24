@@ -89,9 +89,16 @@ public sealed class FakeCultureCoordinatorBrowser
 
         foreach (var call in Module.Recorder.GetCalls("register").Where(call => call.IsHeld && !call.IsAnswered))
         {
-            call.Complete(Register((string)call.Arguments[0]!, (DotNetObjectReference<CultureCoordinatorReceiver>)call.Arguments[1]!, (CultureCoordinatorStart?)call.Arguments[3]));
+            Answer(call);
         }
     }
+
+    /// <summary>Answers the registration held open at <paramref name="index"/> among those asked for as the script does, delivering the accepted pair to it, leaving the others held open.</summary>
+    public void AnswerRegistration(int index)
+        => Answer(Module.Recorder.GetCalls("register")[index]);
+
+    private void Answer(RecordedCall call)
+        => call.Complete(Register((string)call.Arguments[0]!, (DotNetObjectReference<CultureCoordinatorReceiver>)call.Arguments[1]!, (CultureCoordinatorStart?)call.Arguments[3]));
 
     /// <summary>Faults the next call to <paramref name="identifier"/> with <paramref name="exception"/> before it takes effect.</summary>
     public void FailNext(string identifier, Exception exception)
@@ -160,7 +167,7 @@ public sealed class FakeCultureCoordinatorBrowser
         {
             "request" => Run(identifier, () => Request(registration, (string)args[0]!, (string)args[1]!)),
             "reportLanding" => Run(identifier, () => ReportLanding(registration, (string?)args[0], (int)args[1]!)),
-            "follow" => Run(identifier, () => Follow(registration, (string)args[0]!, (string)args[1]!)),
+            "follow" => Run(identifier, () => Follow(registration, (string)args[0]!, (string)args[1]!, (int)args[3]!)),
             "dispose" => Run(identifier, () => Dispose(registration)),
             _ => throw new JSException($"A registration has no '{identifier}'."),
         };
@@ -215,9 +222,16 @@ public sealed class FakeCultureCoordinatorBrowser
         return null;
     }
 
-    // The document takes the pair it follows, delivering it to every registration but the one that has it follow.
-    private object? Follow(Registration registration, string culture, string uiCulture)
+    // The document takes the pair it follows, delivering it to every registration but the one that has it follow; a follow
+    // the registration made before one already received takes nothing.
+    private object? Follow(Registration registration, string culture, string uiCulture, int order)
     {
+        if (order <= registration.LastFollow)
+        {
+            return null;
+        }
+
+        registration.LastFollow = order;
         _followed.Add((culture, uiCulture));
 
         if (culture != Accepted.Culture || uiCulture != Accepted.UICulture)
@@ -259,5 +273,7 @@ public sealed class FakeCultureCoordinatorBrowser
         public DotNetObjectReference<CultureCoordinatorReceiver>? Receiver { get; set; }
 
         public int LastLanding { get; set; }
+
+        public int LastFollow { get; set; }
     }
 }

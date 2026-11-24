@@ -656,7 +656,8 @@ An application whose native windows each show a culture of their own chooses
   reach it, numbers each accepted pair in the application's sequence, whose identity is the application's
   run, applies the pair to the state, and delivers it to every web view. Each web view's document
   coordinator follows what it delivers, keeping the document's language and direction, the web view's
-  landings and its address, and accepts no pair of its own.
+  landings and its address, and accepts no pair of its own. Each delivery carries its place in the order the
+  coordinator accepted the pairs, so a document an earlier pair reaches after a later one keeps the later.
 - **A switch is accepted at once.** Its task completes once the state has applied the pair; every web view's
   document and address follow it as the coordinator delivers it, and one web view that is slow or refuses
   doesn't hold the switch back.

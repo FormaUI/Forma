@@ -458,7 +458,7 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', receiver, 'webview', followingStart());
 
             // Act
-            registration.follow('he', 'he', 'rtl');
+            registration.follow('he', 'he', 'rtl', 1);
 
             // Assert
             expect(readDocument()).toBe('he/rtl');
@@ -473,11 +473,27 @@ describe('CultureCoordinator', () => {
             const registration = await coordinator.register('a', fakeReceiver(), 'webview', followingStart({ policy: { content: 'state' } }));
 
             // Act
-            registration.follow('he', 'he', 'rtl');
+            registration.follow('he', 'he', 'rtl', 1);
 
             // Assert
             expect(readDocument()).toBe('he/rtl');
             expect(window.Blazor.navigations).toEqual([]);
+        });
+
+        it('takes nothing from a follow its registration made before one already received', async () => {
+            // Arrange — the application accepted English and then Hebrew, and the follow into Hebrew reached the page first
+            const coordinator = await loadStandalone();
+            const receiver = fakeReceiver();
+            const registration = await coordinator.register('a', receiver, 'webview', followingStart());
+            registration.follow('he', 'he', 'rtl', 2);
+
+            // Act
+            registration.follow('en', 'en', 'ltr', 1);
+
+            // Assert
+            expect(readDocument()).toBe('he/rtl');
+            expect(window.Blazor.navigations).toEqual(['http://localhost/he/about#part']);
+            expect(receiver.deliveries.map(describeDelivery)).toEqual(['en/en #0']);
         });
 
         it('requests nothing for the landing its own replacement made', async () => {
@@ -485,7 +501,7 @@ describe('CultureCoordinator', () => {
             const coordinator = await loadStandalone();
             const receiver = fakeReceiver();
             const registration = await coordinator.register('a', receiver, 'webview', followingStart());
-            registration.follow('he', 'he', 'rtl');
+            registration.follow('he', 'he', 'rtl', 1);
             window.happyDOM.setURL('http://localhost/he/about#part');
 
             // Act
@@ -517,7 +533,7 @@ describe('CultureCoordinator', () => {
             const receiver = fakeReceiver();
             const registration = await coordinator.register('a', receiver, 'webview', followingStart());
             await registration.reportLanding(null, 1);
-            registration.follow('he', 'he', 'rtl');
+            registration.follow('he', 'he', 'rtl', 1);
             window.happyDOM.setURL('http://localhost/he/about#part');
             await registration.reportLanding('he', 2);
 
@@ -536,7 +552,7 @@ describe('CultureCoordinator', () => {
             // Arrange
             const coordinator = await loadStandalone();
             const registration = await coordinator.register('a', fakeReceiver(), 'webview', followingStart());
-            registration.follow('he', 'he', 'rtl');
+            registration.follow('he', 'he', 'rtl', 1);
             window.happyDOM.setURL('http://localhost/he/about#part');
             history.replaceState({ userState: coordinator.FollowMark, _index: 3 }, '');
 
@@ -563,8 +579,8 @@ describe('CultureCoordinator', () => {
             const receiver = fakeReceiver();
             const registration = await coordinator.register('a', receiver, 'webview', followingStart({ policy }));
             await registration.reportLanding(null, 1);
-            registration.follow('he', 'he', 'rtl');
-            registration.follow('es', 'es', 'ltr');
+            registration.follow('he', 'he', 'rtl', 1);
+            registration.follow('es', 'es', 'ltr', 2);
 
             // Act
             window.happyDOM.setURL('http://localhost/he/about#part');
@@ -1372,7 +1388,7 @@ describe('CultureCoordinator', () => {
                 const registration = await coordinator.register('a', receiver, 'webview', followingStart(), true);
 
                 // Act
-                registration.follow('he', 'he', 'rtl');
+                registration.follow('he', 'he', 'rtl', 1);
                 await settle();
 
                 // Assert
@@ -1387,8 +1403,8 @@ describe('CultureCoordinator', () => {
                 const answers = [];
                 const receiver = destinationReceiver(() => new Promise(resolve => answers.push(resolve)));
                 const registration = await coordinator.register('a', receiver, 'webview', followingStart(), true);
-                registration.follow('he', 'he', 'rtl');
-                registration.follow('en', 'en', 'ltr');
+                registration.follow('he', 'he', 'rtl', 1);
+                registration.follow('en', 'en', 'ltr', 2);
 
                 // Act
                 answers[1]('/news/the-final?page=2&last');

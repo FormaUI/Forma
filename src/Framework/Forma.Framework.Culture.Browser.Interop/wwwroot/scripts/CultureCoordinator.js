@@ -154,6 +154,7 @@ class CultureCoordinatorRegistration {
     #identity;
     #runtime;
     #lastLanding = 0;
+    #lastFollow = 0;
     receiver = null;
     resolvesDestinations = false;
 
@@ -274,9 +275,15 @@ class CultureCoordinatorRegistration {
     /**
      * Follows the pair `culture` and `uiCulture`, written `direction`, the application's coordinator accepted, on a page
      * whose document follows an application's coordinator: the document takes its language and direction, and under the
-     * address policy the page's address moves into the pair's route.
+     * address policy the page's address moves into the pair's route. A follow this registration made before one already
+     * received, by its place `order` among them, is obsolete and takes nothing.
      */
-    follow(culture, uiCulture, direction) {
+    follow(culture, uiCulture, direction, order) {
+        if (order <= this.#lastFollow) {
+            return;
+        }
+
+        this.#lastFollow = order;
         const policy = getInitialization().policy;
         const pair = { culture, uiCulture, direction };
 

@@ -29,6 +29,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     private JSModule _module;
     private Task<IJSObjectReference>? _attempt;
     private int _landingCount;
+    private int _followCount;
     private IJSObjectReference? _registration;
     private volatile bool _isUnavailable;
     private volatile bool _isDisposed;
@@ -154,7 +155,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     }
 
     /// <summary>Has the page's document follow the pair of <paramref name="culture"/> and <paramref name="uiCulture"/> an application's coordinator accepted, on a page whose document follows one, as a web view's does.</summary>
-    /// <remarks>The document takes the pair's language and direction, and under the address policy the page's address moves into the pair's route, in place of the current history entry and under the mark a navigation handler reads.</remarks>
+    /// <remarks>The document takes the pair's language and direction, and under the address policy the page's address moves into the pair's route, in place of the current history entry and under the mark a navigation handler reads. Each follow carries its place among this registration's follows, taken as the follow is made, before it waits for the registration, so a follow reaching the document after a later one takes nothing.</remarks>
     /// <param name="culture">The culture that formats dates, numbers and collation.</param>
     /// <param name="uiCulture">The culture that chooses strings and direction.</param>
     /// <param name="cancellationToken">Gives up on a document that doesn't answer.</param>
@@ -164,6 +165,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         ArgumentNullException.ThrowIfNull(culture);
         ArgumentNullException.ThrowIfNull(uiCulture);
 
+        var order = Interlocked.Increment(ref _followCount);
         IJSObjectReference registration;
 
         try
@@ -177,7 +179,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
 
         try
         {
-            await registration.InvokeVoidAsync("follow", cancellationToken, culture.Name, uiCulture.Name, uiCulture.TextInfo.IsRightToLeft ? "rtl" : "ltr").ConfigureAwait(false);
+            await registration.InvokeVoidAsync("follow", cancellationToken, culture.Name, uiCulture.Name, uiCulture.TextInfo.IsRightToLeft ? "rtl" : "ltr", order).ConfigureAwait(false);
 
             return true;
         }
@@ -198,11 +200,11 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     }
 
     /// <summary>Reports the interactive landing at the culture route <paramref name="token"/> names, or at a plain address where it is <see langword="null"/>, completing once the coordinator accepted it and this registration's state applied the page's pair.</summary>
-    /// <remarks>Each report carries its place among this registration's reports, so a report reaching the coordinator after a later one accepts nothing.</remarks>
+    /// <remarks>Each report carries its place among this registration's reports, taken as the report is made, before it waits for the registration, so a report reaching the coordinator after a later one accepts nothing.</remarks>
     public async Task ReportLandingAsync(string? token)
     {
-        var registration = await GetRegistrationAsync().ConfigureAwait(false);
         var order = Interlocked.Increment(ref _landingCount);
+        var registration = await GetRegistrationAsync().ConfigureAwait(false);
 
         await registration.InvokeVoidAsync("reportLanding", token, order).ConfigureAwait(false);
     }

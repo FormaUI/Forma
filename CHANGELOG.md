@@ -5,6 +5,16 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.17`
+
+*Unreleased*
+
+- In Blazor Hybrid, a web view's document takes the language and direction of the application's latest switch, as
+  [the culture design](docs/culture-design.md#one-culture-for-the-application) sets out. Two switches made while the
+  web view was starting could reach it in the other order and leave it in the earlier one's, laying a Hebrew page out
+  left to right. A culture route page's interactive landings, reported while its runtime registers, keep their order
+  the same way, where the earlier of two could decide the page's culture.
+
 ## `1.0.0-preview.16`
 
 *November 24, 2026*

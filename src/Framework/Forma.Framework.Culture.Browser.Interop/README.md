@@ -40,7 +40,8 @@ the same way, under a policy whose attributes `GetPolicyAttributes` gives:
 
 - A coordinated web view's document, given `follows: true, isWebView: true`, follows the pair an
   application's coordinator accepts, which `CultureCoordinatorRegistration.FollowAsync` hands it, rather than
-  accepting one of its own.
+  accepting one of its own. Each call takes its place as it is made, so the document keeps the pair of the
+  latest call, whatever order the calls reach it in.
 - The document of a web view holding a culture of its own, given `isWebView: true` alone, accepts its own
   switches.
 
