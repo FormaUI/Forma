@@ -23,12 +23,18 @@ public sealed class JSTransferException : Exception
     {
     }
 
-    /// <summary>Whether the value was refused for its size, rather than lost on its way.</summary>
+    /// <summary>Whether the value was refused, for its size or because it can't be read, rather than lost on its way.</summary>
     public bool IsRefused { get; private init; }
 
     /// <summary>The failure of a value larger than its receiver accepts.</summary>
     internal static JSTransferException Refused(long length, long maximumLength)
         => new($"The browser sent {length} bytes where {maximumLength} are accepted.") { IsRefused = true };
+
+    /// <summary>The failure of a value that can't be read: no value at all, a text that isn't one, or a value that isn't what its receiver reads it as.</summary>
+    internal static JSTransferException Malformed(Exception? cause = null)
+        => cause is null
+            ? new("The browser sent a value that can't be read.") { IsRefused = true }
+            : new("The browser sent a value that can't be read.", cause) { IsRefused = true };
 
     /// <summary>The failure of a stream that broke, stalled or ended short.</summary>
     internal static JSTransferException Broken(Exception cause)

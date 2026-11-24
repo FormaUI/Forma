@@ -2,6 +2,7 @@ namespace Forma.Framework.JavaScript.Interop.Tests;
 
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Interop;
@@ -12,11 +13,16 @@ public sealed class JSTransferTests
 {
     private const long Accepted = 1024;
 
+    private static readonly JsonTypeInfo<Extent> ExtentType = (JsonTypeInfo<Extent>)JsonSerializerOptions.Web.GetTypeInfo(typeof(Extent));
+
     private static JSTransfer CreateInline(string json)
         => JsonSerializer.Deserialize<JSTransfer>($$"""{ "value": {{json}} }""")!;
 
     private static JSTransfer CreateStreamed(FakeJSStreamReference stream, bool isText)
         => new() { Stream = stream, IsText = isText };
+
+    /// <summary>A value a receiver reads as a type of its own.</summary>
+    public sealed record Extent(string Name, double Width);
 
     public sealed class Text
     {
@@ -136,6 +142,36 @@ public sealed class JSTransferTests
             // Act & Assert
             await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () => await transfer.ReadTextAsync(-1, TestContext.Current.CancellationToken));
         }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Should_refuse_a_text_escaping_half_a_surrogate_pair(bool isStreamed)
+        {
+            // Arrange — a browser's JSON escapes a lone surrogate, which no .NET string can be read from
+            const string Json = "\"before \\ud800 after\"";
+            await using var stream = new FakeJSStreamReference(Encoding.UTF8.GetBytes(Json));
+            var transfer = isStreamed ? CreateStreamed(stream, isText: false) : CreateInline(Json);
+
+            // Act
+            var failure = await Assert.ThrowsAsync<JSTransferException>(async () => await transfer.ReadTextAsync(Accepted, TestContext.Current.CancellationToken));
+
+            // Assert
+            Assert.True(failure.IsRefused);
+        }
+
+        [Fact]
+        public async Task Should_read_a_transfer_carrying_no_value_as_null()
+        {
+            // Arrange
+            var transfer = JsonSerializer.Deserialize<JSTransfer>("{}")!;
+
+            // Act
+            var text = await transfer.ReadTextAsync(Accepted, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Null(text);
+        }
     }
 
     public sealed class Discarding
@@ -237,6 +273,84 @@ public sealed class JSTransferTests
 
             // Act
             var failure = await Assert.ThrowsAsync<JSTransferException>(async () => await transfer.ReadJsonAsync(Accepted, TestContext.Current.CancellationToken));
+
+            // Assert
+            Assert.True(failure.IsRefused);
+        }
+
+        [Fact]
+        public async Task Should_refuse_a_transfer_carrying_no_value()
+        {
+            // Arrange
+            var transfer = JsonSerializer.Deserialize<JSTransfer>("{}")!;
+
+            // Act
+            var failure = await Assert.ThrowsAsync<JSTransferException>(async () => await transfer.ReadJsonAsync(Accepted, TestContext.Current.CancellationToken));
+
+            // Assert
+            Assert.True(failure.IsRefused);
+        }
+    }
+
+    public sealed class Typed
+    {
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task Should_read_a_value_as_its_receiver_s_type(bool isStreamed)
+        {
+            // Arrange
+            const string Json = """{ "name": "column", "width": 120.5 }""";
+            await using var stream = new FakeJSStreamReference(Encoding.UTF8.GetBytes(Json));
+            var transfer = isStreamed ? CreateStreamed(stream, isText: false) : CreateInline(Json);
+
+            // Act
+            var extent = await transfer.ReadJsonAsync(ExtentType, Accepted, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Equal(new Extent("column", 120.5), extent);
+        }
+
+        [Fact]
+        public async Task Should_read_null_sent_as_null()
+        {
+            // Arrange
+            var transfer = CreateInline("null");
+
+            // Act
+            var extent = await transfer.ReadJsonAsync(ExtentType, Accepted, TestContext.Current.CancellationToken);
+
+            // Assert
+            Assert.Null(extent);
+        }
+
+        [Theory]
+        [InlineData("\"a text\"")]
+        [InlineData("[1, 2]")]
+        [InlineData("""{ "name": "column", "width": "wide" }""")]
+        [InlineData("""{ "name": "column", "width": 1e309 }""")]
+        [InlineData("""{ "name": "column", "width": -1e309 }""")]
+        [InlineData("""{ "name": "\ud800", "width": 1 }""")]
+        public async Task Should_refuse_a_value_that_is_not_its_receiver_s_type(string json)
+        {
+            // Arrange
+            var transfer = CreateInline(json);
+
+            // Act
+            var failure = await Assert.ThrowsAsync<JSTransferException>(async () => await transfer.ReadJsonAsync(ExtentType, Accepted, TestContext.Current.CancellationToken));
+
+            // Assert
+            Assert.True(failure.IsRefused);
+        }
+
+        [Fact]
+        public void Should_refuse_json_sent_otherwise_holding_a_number_past_what_a_double_holds()
+        {
+            // Arrange
+            using var document = JsonDocument.Parse("""{ "name": "column", "width": 1e400 }""");
+
+            // Act
+            var failure = Assert.Throws<JSTransferException>(() => JSTransfer.Deserialize(document.RootElement, ExtentType));
 
             // Assert
             Assert.True(failure.IsRefused);

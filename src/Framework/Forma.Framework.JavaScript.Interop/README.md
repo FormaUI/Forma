@@ -63,7 +63,9 @@ public ValueTask<string?> ComposeAsync(string html)
 The value travels inline while the call carrying it fits the transfer's budget, under Blazor Server's
 default message limit, and as a stream past it, which Blazor sends in chunks under any limit. A value
 larger than the wrapper accepts is refused before it is read, and the call answers `null` as a call
-that did not run does.
+that did not run does. So is a value that can't be read: a text escaping half a surrogate pair, or a
+value `JSTransfer.ReadJsonAsync` or `JSTransfer.Deserialize` reads as a type it doesn't fit, a number
+past what a double holds among them.
 
 A component builds a wrapper from its `Context.JS`, the environment carrying the component's logger
 and `RuntimeId`, attaches it from `OnAfterRenderAsync`, and disposes it from `DisposeAsyncCore`. An
@@ -84,8 +86,8 @@ _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());
 | `JSEnvironment` | An `IJSEnvironment` over an `IJSRuntime`. |
 | `JSInterop` | The base of a wrapper whose module attaches to an element: `AttachCoreAsync`, `InvokeAsync` on the attached instance and `InvokeJsonAsync` for what it answers through the transfer, `InvokeModuleAsync` on the module's exports, `DetachAsync`, `IsAttached`, and disposal as teardown. |
 | `JSModule` | A lazily imported module: `InvokeAsync` and `InvokeVoidAsync` throw on failure, `TryInvokeAsync` and `TryInvokeVoidAsync` return `default` or `false`, and `TryInvokeTextAsync` and `TryInvokeJsonAsync` read what an export answered through the transfer. |
-| `JSTransfer` | A value the browser sent .NET through the transfer, inline or streamed, which its receiver reads up to the size it accepts or discards. |
-| `JSTransferException` | A value refused for its size, or broken on its way. |
+| `JSTransfer` | A value the browser sent .NET through the transfer, inline or streamed, which its receiver reads up to the size it accepts, as text, JSON or a type of its own, or discards; `Deserialize` reads JSON the browser sent otherwise as a type of its own. |
+| `JSTransferException` | A value refused for its size or because it can't be read, or broken on its way. |
 | `JSTransferOptions` | The size a value with no maximum of its own may reach, which a host registers; 16 MiB by default. |
 | `UnavailableJSRuntime` | A runtime whose every call throws `JSRuntimeUnavailableException`, for a container with no runtime of its own. |
 | `ServiceProviderExtensions.GetJSRuntime` | The JS runtime the platform registered, or `UnavailableJSRuntime.Instance` where it registered none, so a service built on the runtime resolves in any registration order. |
