@@ -1,6 +1,6 @@
 ---
 name: forma-authoring-components
-description: The component authoring standard — the file set a component is and the category it lives in, the three bases and what a component takes from them, the root element and its host surface, the class shape and member order, when settings travel in an options record and when they stay parameters, the view and interaction contract pair, validation in the lifecycle, parent and child composition and disposal, how a component logs and what it logs at which level, how a service is shaped and registered, and the showcase page every component ships with, rendering every state it can enter. Use when creating a component, adding or changing a parameter or an options record, splitting a component into sub-components, adding a service a component depends on, adding a log message, or adding or extending a showcase page.
+description: The component authoring standard — the file set a component is and the category it lives in, the three bases and what a component takes from them, the root element and its host surface, the class shape and member order, when settings travel in an options record and when they stay parameters, the view and interaction contract pair, how a host's arguments are checked and what the browser sends is refused, validation in the lifecycle, parent and child composition and disposal, how a component logs and what it logs at which level, how a service is shaped and registered, and the showcase page every component ships with, rendering every state it can enter. Use when creating a component, adding or changing a parameter or an options record, splitting a component into sub-components, adding a service a component depends on, checking a member's arguments, adding a log message, or adding or extending a showcase page.
 ---
 
 # Components
@@ -105,10 +105,21 @@ Every component derives from one of three bases, and never from `ComponentBase` 
 - Don't create an options record merely to collect unrelated settings.
 - Don't force independent settings such as `EnablePagination`, `EnableCheckboxes`, and `Virtualize` into one record.
 
+## Arguments
+
+A host's arguments come from code, so a wrong one is a programming error and throws where it is found. What the browser sends is untrusted, since on the Server anyone can send anything over a circuit, so it is refused, never thrown.
+
+- Do check a public member's arguments, and a component's parameters in `OnParametersSet`, in the order they are declared, with the .NET throw helpers — `ArgumentNullException.ThrowIfNull`, `ArgumentException.ThrowIfNullOrWhiteSpace`, `ArgumentOutOfRangeException.ThrowIfNegative`, `ThrowIfGreaterThan` and their siblings — which the analyzers require wherever a helper states the rule.
+- Do check every constraint a host-set parameter carries, not only null: a count or a size that must be positive, a total that cannot be negative, a minimum that must not pass its maximum, so a component never renders from a value it cannot honor.
+- Do clamp a value the reader changes, such as a current page or a splitter's position, to what the component can show rather than refuse it, since what bounds it, a page count or a range, can change under it.
+- Do write `?? throw new ArgumentNullException(nameof(x))` only where the check must be an expression, as a primary constructor's field initializer is.
+- Do throw a hand-written `ArgumentException` only for a rule no helper states, naming the parameter and saying what was expected: `throw new ArgumentException($"{nameof(Min)} ({Min}) must not be greater than {nameof(Max)} ({Max}).", nameof(Min))`.
+- Do throw `InvalidOperationException` for an argument that is present but cannot be used, such as a relative address where an absolute one is needed, and from `OnInitialized` for structural misuse such as a child outside its required parent.
+- Do refuse what the browser sends that cannot be used — an argument of a `[JSInvokable]` method, text an input parses, a file a reader uploads — by leaving it unused and logging it at `Debug` under the component that received it; nothing the browser sends ends a circuit or an application.
+- Don't check again in a script what its wrapper hands it; the wrapper checks before the call, and a script checks only what it reads from the page.
+
 ## Validation and binding
 
-- Do validate parameters in `OnParametersSet` with throw helpers such as `ArgumentException.ThrowIfNullOrWhiteSpace`, `ArgumentOutOfRangeException.ThrowIfLessThan`, and `ArgumentNullException.ThrowIfNull`.
-- Do throw `InvalidOperationException` from `OnInitialized` for structural misuse such as a child outside its required parent.
 - Do derive form inputs from `FormaInputBase<TValue>`, write `class="@RootClass"` on the control so the field's validation class rides with the component's own, and implement `TryParseValueFromString`.
 - Do hand the field component the input's `FieldIdentifier` through `Field`, so the field renders the form's messages for it beneath the element; a bare control the library also places outside a form, as a grid places a checkbox, leaves the message to the host, since a message needs an `EditContext` to exist.
 - Do hand the field the input's `FieldElementIds` through `ElementIds` and its `Description` through `Description`, so the field's label, description and message container carry the ids the input's references point at, and write `aria-describedby="@DescribedBy"` on the element its label names, after the host's attributes, so a reader reaching the input hears its instructions and, once it is invalid, why; a part of the component's own that describes the element, such as a count or advice, adds its id in `BuildDescribedBy`, an input that draws no field in some state answers `HasFieldContainer` with that state, and one that draws no field at all draws its description itself, under `FieldElementIds.DescriptionId`.

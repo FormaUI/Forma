@@ -232,6 +232,8 @@ dotnet_diagnostic.CA2249.severity = error   # Use string.Contains instead of Ind
 
 # Task and exception handling
 dotnet_diagnostic.CA1510.severity = error   # Use ArgumentNullException throw helper
+dotnet_diagnostic.CA1511.severity = error   # Use ArgumentException throw helper
+dotnet_diagnostic.CA1512.severity = error   # Use ArgumentOutOfRangeException throw helper
 dotnet_diagnostic.CA1513.severity = error   # Use ObjectDisposedException throw helper
 dotnet_diagnostic.CA1838.severity = error   # Avoid StringBuilder parameters for P/Invokes
 dotnet_diagnostic.CA1842.severity = error   # Do not use 'WhenAll' with a single task

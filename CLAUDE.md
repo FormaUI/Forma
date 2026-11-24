@@ -12,7 +12,7 @@ Detailed standards live in `.claude/skills/` and load on demand. Read the matchi
 | `forma-checking-components` | Finishing or reviewing a component: the four gates it must pass, every render mode among them |
 | `forma-localizing` | Adding user-facing strings or locale files |
 | `forma-testing` | Writing component tests or script tests |
-| `forma-authoring-components` | Creating or changing a component: its files, parameters, options record, contracts, composition, disposal, logging, or a service it uses |
+| `forma-authoring-components` | Creating or changing a component: its files, parameters, options record, contracts, composition, disposal, logging, or a service it uses; checking any member's arguments |
 | `forma-styling` | Writing or changing a stylesheet or a token: regions on backdrops, spacing, type, radii, targets, and fitting a width |
 | `forma-verifying` | Building, testing, formatting, running the Showcase, checking in a browser, or adding a task script |
 | `forma-naming` | Naming anything: a type, member, variable, parameter, file, CSS class, script or test |
