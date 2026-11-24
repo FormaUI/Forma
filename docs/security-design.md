@@ -39,18 +39,27 @@ what it reads from the page itself: an event, an element, an attribute.
 Each place Forma writes markup or an address from data it's given is a sink. The sinks are found from the source, so
 a test fails on a new one that has no test with hostile input.
 
-- **Markup.** Markup written from data, through a `MarkupString` or a script's `innerHTML`, has passed the sanitizer's
-  policy first, or is Forma's own markup with every value in it encoded.
+- **Markup.** Markup written from data, through a `MarkupString` or a script's `innerHTML`, has passed a sanitizer
+  first, or is Forma's own markup with every value in it encoded. The sanitizer is the registered one, or for a page a
+  resource provider converted, such as a Markdown or an Office document, the provider's own, which keeps what its
+  format renders.
+- **The sanitizer's floor.** Under any markup policy, a host's own among them, the sanitizer drops an event handler
+  attribute and an address that can run script: `javascript:`, `vbscript:`, and a `data:` address of anything but a
+  raster image, a video, audio or captions. A policy narrows what's kept and never lets those through.
 - **Addresses.** Forma writes an address as one of two kinds, each allowing the schemes that can't run script where
   it's written. An address its kind doesn't allow, `javascript:` and `vbscript:` among them, is written inert: the
-  element keeps its text and takes no address, and the refusal is logged at `Debug`.
+  element keeps its text and takes no address, and the refusal is logged at `Debug`. A component writes every address
+  from data through its kind.
   - *A link* a reader follows, an `href`, is relative, or its scheme is `http`, `https`, `mailto` or `tel`. A link that
     downloads may also be a `blob:` or `data:` address, which a download saves rather than opens.
-  - *A source* an element fetches, a `src`, a `poster` or an object's `data`, is relative, or its scheme is `http`,
-    `https` or `blob:`, or it's a `data:` address of the element's own kind: an image for an image, a video for a
-    video. A frame's source is never a `data:` address.
+  - *A source* an element fetches, a `src` or a `poster`, is relative, or its scheme is `http`, `https` or `blob:`, or
+    it's a `data:` address of the element's own kind: a raster image for an image, since an SVG document can carry
+    script, a video for a video, audio for audio and captions for a track. A frame's source and an object's `data` are
+    never a `data:` address.
 - **The page's own addresses.** What the host configures for the page itself, its base address and its icon, is the
   host's, and a browser runs no script from either.
+- **Artwork.** An artwork pack, the sprite sheets a symbol component draws from, is trusted as a stylesheet is: the
+  host chose to ship it, so its symbols are adopted as they are.
 
 ## Limits
 

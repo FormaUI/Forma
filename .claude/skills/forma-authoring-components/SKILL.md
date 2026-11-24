@@ -116,6 +116,7 @@ A host's arguments come from code, so a wrong one is a programming error and thr
 - Do throw a hand-written `ArgumentException` only for a rule no helper states, naming the parameter and saying what was expected: `throw new ArgumentException($"{nameof(Min)} ({Min}) must not be greater than {nameof(Max)} ({Max}).", nameof(Min))`.
 - Do throw `InvalidOperationException` for an argument that is present but cannot be used, such as a relative address where an absolute one is needed, and from `OnInitialized` for structural misuse such as a child outside its required parent.
 - Do refuse what the browser sends that cannot be used — an argument of a `[JSInvokable]` method, text an input parses, a file a reader uploads — by leaving it unused and logging it at `Debug` under the component that received it; nothing the browser sends ends a circuit or an application.
+- Do write every address that comes from data, an `href`, a `src`, a `poster` or an object's `data`, through `Context.GetAllowedAddress` with the `AddressKind` it is to its element, so an address its kind doesn't allow is written inert, and render markup from data only as a sanitizer kept it; the sink inventory test fails a sink no hostile test covers.
 - Don't check again in a script what its wrapper hands it; the wrapper checks before the call, and a script checks only what it reads from the page.
 
 ## Validation and binding
