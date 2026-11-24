@@ -316,6 +316,55 @@ finally {
     Remove-Item -LiteralPath $nightly -Recurse -Force -ErrorAction SilentlyContinue
 }
 
+# The dependency check reads the advisories as they stand, so what runs here is the check of reports made for it: a
+# NuGet package with an advisory of its own, an npm package vulnerable through another, and reports that list none.
+$dependencies = Join-Path $repositoryRoot '.sandbox' 'tmp' "forma-dependencies-$([guid]::NewGuid().ToString('N'))"
+
+try {
+    $null = New-Item -ItemType Directory -Force -Path $dependencies
+    $vulnerableNuGet = Join-Path $dependencies 'nuget-vulnerable.json'
+    $cleanNuGet = Join-Path $dependencies 'nuget-clean.json'
+    $vulnerableNpm = Join-Path $dependencies 'npm-vulnerable.json'
+    $cleanNpm = Join-Path $dependencies 'npm-clean.json'
+
+    Set-Content -LiteralPath $vulnerableNuGet -Value @'
+{ "version": 1, "projects": [
+  { "path": "src/Probe/Probe.csproj", "frameworks": [
+    { "framework": "net11.0", "transitivePackages": [
+      { "id": "System.Text.Json", "resolvedVersion": "8.0.0", "vulnerabilities": [
+        { "severity": "High", "advisoryurl": "https://github.com/advisories/GHSA-hh2w-p6rv-4g7w" } ] } ] } ] },
+  { "path": "src/Clean/Clean.csproj" } ] }
+'@
+    Set-Content -LiteralPath $cleanNuGet -Value '{ "version": 1, "projects": [ { "path": "src/Clean/Clean.csproj" } ] }'
+    Set-Content -LiteralPath $vulnerableNpm -Value @'
+{ "auditReportVersion": 2, "vulnerabilities": {
+  "minimist": { "name": "minimist", "severity": "critical", "via": [
+    { "name": "minimist", "title": "Prototype Pollution in minimist", "url": "https://github.com/advisories/GHSA-xvch-5gv4-984h", "severity": "critical", "range": "<0.2.4" } ],
+    "range": "<=0.2.3" },
+  "mkdirp": { "name": "mkdirp", "severity": "critical", "via": [ "minimist" ], "range": "0.4.1 - 0.5.1" } } }
+'@
+    Set-Content -LiteralPath $cleanNpm -Value '{ "auditReportVersion": 2, "vulnerabilities": {} }'
+
+    Test-Case -Name 'the dependency check fails on a NuGet package with an advisory, transitive as it is' -Script 'Test-Dependencies.ps1' `
+        -Arguments @('-NuGetReport', $vulnerableNuGet, '-NpmReport', $cleanNpm) -Fails `
+        -Expect @('1 vulnerable package', 'System.Text.Json', '8.0.0', 'High', 'GHSA-hh2w-p6rv-4g7w')
+
+    Test-Case -Name 'the dependency check fails on an npm package, naming one vulnerable through another' -Script 'Test-Dependencies.ps1' `
+        -Arguments @('-NuGetReport', $cleanNuGet, '-NpmReport', $vulnerableNpm) -Fails `
+        -Expect @('2 vulnerable package', 'minimist', 'GHSA-xvch-5gv4-984h', 'mkdirp', 'through minimist')
+
+    Test-Case -Name 'the dependency check passes where no package has an advisory' -Script 'Test-Dependencies.ps1' `
+        -Arguments @('-NuGetReport', $cleanNuGet, '-NpmReport', $cleanNpm) -Expect @('No package the repository depends on has a known vulnerability')
+
+    Test-Case -Name 'the dependency check describes the packages it would check' -Script 'Test-Dependencies.ps1' `
+        -Arguments @('-WhatIf') -Expect @('every NuGet package', 'every npm package') -Reject @('vulnerable package')
+
+    Invoke-QueuedCase
+}
+finally {
+    Remove-Item -LiteralPath $dependencies -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 Invoke-QueuedCase
 
 # ── Report ───────────────────────────────────────────────────────────────────

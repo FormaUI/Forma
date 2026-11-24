@@ -1,6 +1,7 @@
 # Runs the full gate on every platform a release is held to: Linux's and Windows' gates,
 # WebView2 among Windows', and Android's checks on an emulator, the components in its web view and the MAUI example;
-# it builds the MAUI example for iOS and Mac Catalyst as well, and reports those builds without holding a release to them.
+# it builds the MAUI example for iOS and Mac Catalyst as well, and reports those builds without holding a release to them,
+# and it checks every package the repository depends on against the advisories as they stand when it runs.
 # A push to candidate runs it on the candidate, whose run a promotion to main and a release require to have passed for
 # the exact commit, and whose Linux gate keeps the packages it packed and checked, which the release publishes as they
 # are; the nightly run on dev surfaces an integration regression before a candidate is selected, checking one commit and
@@ -56,6 +57,49 @@ jobs:
           fi
           echo "sha=$sha" >> "$GITHUB_OUTPUT"
           echo "Checking $sha" >> "$GITHUB_STEP_SUMMARY"
+
+  # Every NuGet package the solution restores, transitive ones included, and every npm package of the script tests,
+  # checked for known vulnerabilities on every run, so an advisory published against a package that hasn't changed fails
+  # the next night's run.
+  dependencies:
+    name: dependencies
+    needs: commit
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ needs.commit.outputs.sha }}
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v6
+        with:
+          global-json-file: global.json
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: tests/scripts/package-lock.json
+
+      - name: Check every package for known vulnerabilities
+        run: pwsh ./scripts/Test-Dependencies.ps1
+
+      # A vulnerable package fails the job, which says so for the nightly report to file as a job failed outside its checks.
+      - name: Note the job's failure
+        if: failure() || cancelled()
+        shell: pwsh
+        run: New-Item -ItemType File -Force -Path 'artifacts/dependencies/job-failed' | Out-Null
+
+      - name: Keep the job's result
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: checks-dependencies-linux-1
+          path: artifacts/dependencies
+          if-no-files-found: ignore
+          retention-days: 14
 
   # The gate on each platform, and on the nightly run two more runs of its browser check, on runners of their own.
   gate:
@@ -321,7 +365,7 @@ jobs:
   # filed as an issue, an unreachable device as one, and a job that failed outside its checks as one of its own.
   report:
     name: report
-    needs: [commit, gate, mobile, android]
+    needs: [commit, dependencies, gate, mobile, android]
     # A run cancelled as a whole files nothing; a job of it that ran out of time is reported as failed.
     if: always() && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
     runs-on: ubuntu-latest

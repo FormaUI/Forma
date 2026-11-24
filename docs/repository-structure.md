@@ -652,7 +652,7 @@ other case lists a JS initializer twice and stops in its compression.
 | Workflow | Runs | When |
 |----------|------|------|
 | `fast.yml` | The fast gate, on Linux | Every push but `main`'s and `candidate`'s, and every pull request into `dev` |
-| `full.yml` | The full gate on Linux and on Windows; the MAUI example's build and smoke check on Android, and the components in Android's web view, both on an emulator of 1280 by 800 points; on the nightly run, the browser check twice more on Linux and on Windows, and a report that files each failing check as an issue | Every push to `candidate`, nightly on `dev`, and a run dispatched by hand |
+| `full.yml` | The full gate on Linux and on Windows; the MAUI example's build and smoke check on Android, and the components in Android's web view, both on an emulator of 1280 by 800 points; every package checked for known vulnerabilities; on the nightly run, the browser check twice more on Linux and on Windows, and a report that files each failing check as an issue | Every push to `candidate`, nightly on `dev`, and a run dispatched by hand |
 | `canary.yml` | The full gate on Linux against the newest preview SDK in place of the pinned one, then the list of packages with newer versions, as a report alone | Every Monday at 06:00 UTC, and a run dispatched by hand |
 
 The MAUI example's Apple builds, for iOS and Mac Catalyst, need a Mac whose Xcode is the one their workloads name,
@@ -767,6 +767,12 @@ beside them is the module the brand-artwork scripts share.
 **`Update-CheckIssue.ps1`** is the nightly run's report, which CI runs: it reads every run's results and files each
 failing check as an issue, as [the verification design](verification-design.md#branches-and-promotion) sets out.
 `-WhatIf` describes what it would file without reading or changing an issue.
+
+**`Test-Dependencies.ps1`** checks every NuGet package the solution restores, transitive ones included, and every npm
+package of the script tests against the advisories as they stand when it runs, failing on any vulnerability and naming
+each package, its version, the advisory and its severity. The full gate runs it on every run, the nightly one among
+them, as [the security design](security-design.md#dependencies) sets out. `-NuGetReport` and `-NpmReport` read a report
+already written in place of listing the packages.
 
 **`Stop-MsBuild.ps1` and `Stop-DotNet.ps1`** are for a build that fails to copy a file nothing appears to be using.
 MSBuild keeps its workers alive between builds, and they hold what they last built.

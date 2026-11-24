@@ -28,7 +28,11 @@ gate.
 4. **Limits.** `FileUploaderOptions.MaxFileSize` set to 10 MB by default, with the changelog saying how a host raises
    it; every other size Forma accepts from the browser found, capped and checked; and each package's README naming the
    framework limits a host sets.
-5. **Dependencies.** The full gate's job checking every NuGet and npm package for known vulnerabilities.
+5. ✅ **Dependencies.** The full gate's job checking every NuGet and npm package for known vulnerabilities.
+   - `scripts/Test-Dependencies.ps1` lists the solution's packages with `dotnet list package --vulnerable
+     --include-transitive` and audits the script tests' with `npm audit`; the task scripts' contract check runs it on
+     reports made for it. The first run found no vulnerable package.
+   - A failure leaves the job's marker for the nightly report, which files it as an issue.
 6. **A scan of the running Showcase.** `scripts/Invoke-SecurityScan.ps1` and OWASP ZAP in a container, a first scan,
    and each finding and logged error fixed or explained in the design.
 7. **A Content Security Policy.** The check pages served under a strict policy, what it blocks fixed, and the README's
@@ -36,4 +40,4 @@ gate.
 
 ## Open
 
-- Steps 2 to 7.
+- Steps 2, 3, 4, 6 and 7.
