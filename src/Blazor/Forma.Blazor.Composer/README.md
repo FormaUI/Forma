@@ -148,6 +148,10 @@ editor.
 Double-clicking a link, image, video or embed reopens its dialog. Pasted markup passes through the
 sanitizer as typed content does.
 
+The link and image dialogs refuse an address the sanitizer wouldn't keep on their element: a link
+takes a web, mail or telephone address or a path within the site, and an image a web address, a
+path within the site or an inline picture.
+
 ### Plugins for any editor
 
 In `Forma.Blazor.Components.Composer.Plugins`.
