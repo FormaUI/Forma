@@ -8,8 +8,8 @@ using System.Text;
 /// <remarks>
 /// Scans the document as spans in a single pass: an element, attribute or CSS declaration the policy
 /// refuses is dropped, an element whose content the policy refuses, such as <c>script</c> or <c>style</c>,
-/// is removed together with its content, an event handler attribute is always dropped, an address keeps
-/// only a URL the policy permits, and every attribute value is read with its character references resolved,
+/// is removed together with its content, an event handler attribute and an address that can run script are always
+/// dropped, an address keeps only a URL the policy permits, and every attribute value is read with its character references resolved,
 /// as the browser reads it, judged as read and escaped once as it is kept.
 /// </remarks>
 public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
@@ -356,7 +356,8 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
 
         if (UrlAttributeLookup.Contains(name))
         {
-            if (!MarkupPolicy.Allows(HtmlSubject.Url, value, tagName, out _))
+            // An address that can run script is dropped whatever the policy permits.
+            if (AddressPolicy.CanRunScript(value) || !MarkupPolicy.Allows(HtmlSubject.Url, value, tagName, out _))
             {
                 return;
             }

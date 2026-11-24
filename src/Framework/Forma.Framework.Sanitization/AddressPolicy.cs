@@ -57,6 +57,19 @@ public static class AddressPolicy
         return scheme.Equals("data", StringComparison.OrdinalIgnoreCase) && AllowsData(readAddress[(scheme.Length + 1)..], kind);
     }
 
+    /// <summary>Whether the address can run script where a page writes it: a <c>javascript:</c> or <c>vbscript:</c> address, or a <c>data:</c> address of anything but a raster image, a video, audio or captions.</summary>
+    /// <param name="address">The address to judge.</param>
+    public static bool CanRunScript(ReadOnlySpan<char> address)
+        => GetScheme(address) switch
+        {
+            "javascript" or "vbscript" => true,
+            "data" => !Allows(address, AddressKind.ImageSource)
+                && !Allows(address, AddressKind.VideoSource)
+                && !Allows(address, AddressKind.AudioSource)
+                && !Allows(address, AddressKind.TrackSource),
+            _ => false,
+        };
+
     /// <summary>The scheme of an address as the browser reads it, in lowercase, or null for a relative address.</summary>
     /// <param name="address">The address whose scheme is read.</param>
     public static string? GetScheme(ReadOnlySpan<char> address)

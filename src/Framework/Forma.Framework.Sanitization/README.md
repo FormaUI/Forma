@@ -29,6 +29,7 @@ host registered first is the one the sanitizer applies.
 | `IMarkupPolicy.Allows(subject, value, owner, out canonical)` | Whether a subject is permitted, and the spelling to write it in, or `null` to keep the one given. The owner is the element an attribute or an address belongs to. |
 | `HtmlSubject` | What a policy is asked about: `Element`, `ElementContent`, `Attribute`, `StyleProperty`, `StyleDeclaration` or `Url`. |
 | `AddressPolicy.Allows(address, kind)` | Whether an address of an `AddressKind` may be the given address. |
+| `AddressPolicy.CanRunScript(address)` | Whether an address can run script where a page writes it: `javascript:`, `vbscript:`, and `data:` of anything but a raster image, a video, audio or captions. |
 | `AddressPolicy.GetScheme(address)` | The address's scheme as the browser reads it, in lowercase, or `null` for a relative address. |
 
 `AllowlistHtmlSanitizer` can also be created directly: with no argument it applies
@@ -60,7 +61,8 @@ sanitizer.Sanitize("<P CLASS=\"lead\">Text<br></br></P>");
 ```
 
 Under any policy, the sanitizer drops event handler attributes, those whose name starts with
-`on`, along with comments, doctypes and processing instructions; removes an element whose content
+`on`, and every address that can run script, which `AddressPolicy.CanRunScript` tells, along with
+comments, doctypes and processing instructions; removes an element whose content
 the policy refuses together with that content; writes void elements such as `br` and `img`
 self-closed; and re-escapes every attribute value it keeps. A `style` attribute is kept while at
 least one of its declarations is permitted.

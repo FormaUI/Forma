@@ -46,6 +46,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   sheet, and `FormaExplorer`'s thumbnails. A source its kind doesn't allow is written inert, and where the component has
   a state for having none it shows it: `FormaVideoPlayer` says the video is unavailable, `FormaEmoji` draws the emoji in
   the reader's font, and a thumbnail draws its kind's glyph.
+- `AllowlistHtmlSanitizer` drops an address that can run script, `javascript:`, `vbscript:` and a `data:` address of
+  anything but a raster image, a video, audio or captions, under any markup policy, as it drops an event handler, so a
+  host's `IMarkupPolicy` narrows what's kept and never lets one through. `AddressPolicy.CanRunScript` tells such an
+  address.
 - `FormaComposer` sanitizes, through the registered `IHtmlSanitizer`, a document a converter produced and one the
   host's `History` holds, and the markup a template or a plugin writes into its canvas. A stored file a plugin puts
   into it at an address its element doesn't allow goes in as its name alone.

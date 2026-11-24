@@ -344,6 +344,50 @@ public sealed class AllowlistHtmlSanitizerTests
         }
     }
 
+    public sealed class UnderAnyPolicy
+    {
+        private readonly AllowlistHtmlSanitizer _sut = new(new PermittingPolicy());
+
+        [Theory]
+        [InlineData("<a href=\"javascript:alert(1)\">Stage</a>", "<a>Stage</a>")]
+        [InlineData("<a href=\" JaVaScRiPt:alert(1)\">Stage</a>", "<a>Stage</a>")]
+        [InlineData("<a href=\"java&#x09;script:alert(1)\">Stage</a>", "<a>Stage</a>")]
+        [InlineData("<a href=\"vbscript:msgbox(1)\">Stage</a>", "<a>Stage</a>")]
+        [InlineData("<a href=\"data:text/html,&lt;script&gt;alert(1)&lt;/script&gt;\">Stage</a>", "<a>Stage</a>")]
+        [InlineData("<img src=\"data:image/svg+xml,&lt;svg onload=alert(1)&gt;\" />", "<img />")]
+        public void Should_drop_an_address_that_can_run_script_though_the_policy_permits_it(string html, string expected)
+        {
+            // Act
+            var result = _sut.Sanitize(html);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Theory]
+        [InlineData("<a href=\"ftp://example.com/stage\">Stage</a>")]
+        [InlineData("<img src=\"data:image/png;base64,AAAA\" />")]
+        public void Should_keep_an_address_the_policy_permits_that_runs_no_script(string html)
+        {
+            // Act
+            var result = _sut.Sanitize(html);
+
+            // Assert
+            Assert.Equal(html, result);
+        }
+
+        // A host's policy permitting everything it's asked about.
+        private sealed class PermittingPolicy : IMarkupPolicy
+        {
+            public bool Allows(HtmlSubject subject, ReadOnlySpan<char> value, ReadOnlySpan<char> owner, out string? canonicalSpelling)
+            {
+                canonicalSpelling = null;
+
+                return true;
+            }
+        }
+    }
+
     // The library's policy, but keeping every style declaration and property as the document spells it.
     private sealed class KeepingStylesPolicy : IMarkupPolicy
     {

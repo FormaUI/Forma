@@ -209,6 +209,44 @@ public sealed class AddressPolicyTests
         }
     }
 
+    public sealed class CanRunScript
+    {
+        [Theory]
+        [InlineData("javascript:alert(1)")]
+        [InlineData("\u0001 java\tscript:alert(1)")]
+        [InlineData("VBScript:msgbox(1)")]
+        [InlineData("data:text/html,<script>alert(1)</script>")]
+        [InlineData("data:image/svg+xml,<svg onload=alert(1)>")]
+        [InlineData("data:application/javascript,alert(1)")]
+        public void Should_tell_an_address_that_can_run_script(string address)
+        {
+            // Act
+            var canRunScript = AddressPolicy.CanRunScript(address);
+
+            // Assert
+            Assert.True(canRunScript);
+        }
+
+        [Theory]
+        [InlineData("https://example.com/podium.png")]
+        [InlineData("/media/podium.png")]
+        [InlineData("ftp://example.com/podium.png")]
+        [InlineData("mailto:press@example.com")]
+        [InlineData("blob:https://example.com/8f4b0c2e")]
+        [InlineData("data:image/png;base64,AAAA")]
+        [InlineData("data:video/mp4;base64,AAAA")]
+        [InlineData("data:audio/mpeg;base64,AAAA")]
+        [InlineData("data:text/vtt,WEBVTT")]
+        public void Should_tell_an_address_that_runs_no_script(string address)
+        {
+            // Act
+            var canRunScript = AddressPolicy.CanRunScript(address);
+
+            // Assert
+            Assert.False(canRunScript);
+        }
+    }
+
     public sealed class GetScheme
     {
         [Theory]
