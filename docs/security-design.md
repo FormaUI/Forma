@@ -41,10 +41,16 @@ a test fails on a new one that has no test with hostile input.
 
 - **Markup.** Markup written from data, through a `MarkupString` or a script's `innerHTML`, has passed the sanitizer's
   policy first, or is Forma's own markup with every value in it encoded.
-- **Addresses.** Forma writes an address as a link only when it's relative or its scheme is `http`, `https`, `mailto`
-  or `tel`. Any other address, such as `javascript:`, `vbscript:` or a `data:` address of anything but an image, is
-  written inert: the item keeps its text and takes no `href`, and the address is logged at `Debug`. An image's source
-  may also be a `data:` image.
+- **Addresses.** Forma writes an address as one of two kinds, each allowing the schemes that can't run script where
+  it's written. An address its kind doesn't allow, `javascript:` and `vbscript:` among them, is written inert: the
+  element keeps its text and takes no address, and the refusal is logged at `Debug`.
+  - *A link* a reader follows, an `href`, is relative, or its scheme is `http`, `https`, `mailto` or `tel`. A link that
+    downloads may also be a `blob:` or `data:` address, which a download saves rather than opens.
+  - *A source* an element fetches, a `src`, a `poster` or an object's `data`, is relative, or its scheme is `http`,
+    `https` or `blob:`, or it's a `data:` address of the element's own kind: an image for an image, a video for a
+    video. A frame's source is never a `data:` address.
+- **The page's own addresses.** What the host configures for the page itself, its base address and its icon, is the
+  host's, and a browser runs no script from either.
 
 ## Limits
 
