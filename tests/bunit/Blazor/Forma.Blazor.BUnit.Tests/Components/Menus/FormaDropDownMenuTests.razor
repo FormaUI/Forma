@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Forma.Tests.Sanitization
+@using Microsoft.Extensions.Logging
 @using Bunit.Rendering
 @using Microsoft.AspNetCore.Components.Web
 @using Forma.Framework.Input
@@ -1023,6 +1025,56 @@
 
             // Assert
             Assert.Throws<InvalidOperationException>(act);
+        }
+
+        public static TheoryData<string> HostileScripts
+            => [.. HostileAddresses.Scripts];
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_write_an_address_a_link_refuses_inert_and_keep_the_item_in_the_tab_order(string address)
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent><FormaDropDownMenuItem Href="@address">Download invoice</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            var item = cut.Find(".forma-dropdown-menu-item");
+            var entries = loggerFactory.GetAddressRefusals();
+            Assert.Multiple(
+                () => Assert.False(item.HasAttribute("href")),
+                () => Assert.Equal("Download invoice", item.TextContent.Trim()),
+                () => Assert.Equal("0", item.GetAttribute("tabindex")),
+                () => Assert.NotEmpty(entries),
+                () => Assert.All(entries, entry => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"])),
+                () => Assert.All(entries, entry => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public void Should_keep_a_data_address_on_an_item_that_downloads()
+        {
+            // Arrange
+            using var ctx = new FormaDropDownMenuTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent><FormaDropDownMenuItem Href="data:text/csv,stage,rider" download="results.csv">Download results</FormaDropDownMenuItem></ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+
+            // Assert
+            Assert.Equal("data:text/csv,stage,rider", cut.Find(".forma-dropdown-menu-item").GetAttribute("href"));
         }
     }
 }

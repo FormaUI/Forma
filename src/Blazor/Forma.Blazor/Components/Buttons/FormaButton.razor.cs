@@ -52,6 +52,9 @@ public sealed partial class FormaButton : FormaElementBase
 
     [CascadingParameter] private EditContext? CascadedEditContext { get; set; }
 
+    // The address a link writes, which is none where its kind doesn't allow the one it was given.
+    private string? _linkAddress;
+
     private bool IsDisabled => Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive);
 
     // Busy is announced through aria-disabled, so the button keeps focus.
@@ -66,7 +69,7 @@ public sealed partial class FormaButton : FormaElementBase
 
     // A disabled or busy link names no address, so neither a press nor a middle click follows it, and it stays a link.
     private string? LinkHref
-        => Disabled || Busy ? null : Href;
+        => Disabled || Busy ? null : _linkAddress;
 
     private string? LinkRole
         => LinkHref is null ? "link" : null;
@@ -89,6 +92,8 @@ public sealed partial class FormaButton : FormaElementBase
         {
             throw new ArgumentException($"A {nameof(FormaButton)} given an {nameof(Href)} is a link, which neither submits, resets nor reads a form; leave {nameof(Type)} and {nameof(ReadsForm)} unset.", nameof(Href));
         }
+
+        _linkAddress = Context.GetAllowedAddress(Href, LinkAttributes.GetAddressKind(AdditionalAttributes));
     }
 
     // A click that reads its form, a submit button's among them, waits for the form's text fields to hold the reader's edits, and does

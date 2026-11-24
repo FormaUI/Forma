@@ -163,6 +163,11 @@ In `Forma.Blazor.Components.Composer.Plugins`.
 | `SelectionBarPlugin` | A toggle for the formatting bar that follows a selection. |
 | `ShortcutsPlugin` | A reference of every shortcut the surface answers, opened from the toolbar or with Ctrl+/. |
 
+An attachment opens in a new tab from its name in the list. One whose address a link doesn't allow,
+`javascript:` among them, is listed by its name alone, as
+[`Forma.Framework.Sanitization`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Sanitization/README.md#addresses)
+sets out.
+
 ### Views
 
 In `Forma.Blazor.Components.Composer.RichTextEditor.Views`, each registered under the rich text

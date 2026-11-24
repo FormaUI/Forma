@@ -23,7 +23,7 @@
                 @if (item.Url is not null)
                 {
                     <a class="forma-breadcrumb-item @(item.IsCurrent ? "is-current" : "")"
-                       href="@item.Url"
+                       href="@_itemAddresses[index]"
                        aria-current="@(item.IsCurrent ? "page" : null)"
                        @ondragover="HandleDragOver"
                        @ondragover:preventDefault="OnItemDrop.HasDelegate"

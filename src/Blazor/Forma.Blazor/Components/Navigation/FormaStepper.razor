@@ -14,9 +14,9 @@
             var isCurrent = index == CurrentIndex;
 
             <li class="@GetStepClass(step, isCurrent)" aria-current="@(isCurrent ? "step" : null)">
-                @if (step.Url is { } url && !isCurrent)
+                @if (_stepAddresses[index] is { } address && !isCurrent)
                 {
-                    <a class="forma-stepper-target" href="@url.OriginalString">
+                    <a class="forma-stepper-target" href="@address">
                         <span class="forma-stepper-marker" aria-hidden="true">
                             @if (step.IsCompleted)
                             {
@@ -64,7 +64,7 @@
                 var isCurrent = index == CurrentIndex;
 
                 <span class="@GetRulerStepClass(isCurrent)">
-                    <span class="@GetRulerTargetClass(Steps[index], isCurrent)">
+                    <span class="@GetRulerTargetClass(_stepAddresses[index], isCurrent)">
                         <span class="forma-stepper-marker"></span>
                         <span class="forma-stepper-label">@Steps[index].Label</span>
                     </span>

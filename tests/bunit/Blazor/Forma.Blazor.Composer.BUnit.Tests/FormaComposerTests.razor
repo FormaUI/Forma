@@ -16,6 +16,8 @@
 @using Forma.Framework.Localization.Json
 @using Forma.Tests.Interop
 @using Forma.Tests.Localization
+@using Forma.Tests.Sanitization
+@using Microsoft.Extensions.Logging
 @using Microsoft.AspNetCore.Components.Web
 @using Microsoft.Extensions.DependencyInjection
 
@@ -2040,6 +2042,35 @@
                 () => Assert.Equal(1, removals),
                 () => Assert.Empty(cut.FindAll("button[aria-label='Remove brief.pdf']")),
                 () => Assert.NotNull(cut.Find(".forma-composer-attachments")));
+        }
+
+        public static TheoryData<string> HostileScripts
+            => [.. HostileAddresses.Scripts];
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_write_an_attachment_s_address_a_link_refuses_inert(string address)
+        {
+            // Arrange
+            using var ctx = new FormaComposerTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var model = new HtmlModel();
+            model.Body = model.Body with { Attachments = [new ResourceInfo(address) { Name = "brief.pdf" }] };
+            var plugins = ComposerDefinition.Create(composer => composer.AddRichTextEditor());
+
+            // Act
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="plugins" />);
+
+            // Assert
+            var link = cut.Find(".forma-composer-attachment-name");
+            var entries = loggerFactory.GetAddressRefusals();
+            Assert.Multiple(
+                () => Assert.False(link.HasAttribute("href")),
+                () => Assert.Equal("brief.pdf", link.TextContent.Trim()),
+                () => Assert.NotEmpty(entries),
+                () => Assert.All(entries, entry => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"])),
+                () => Assert.All(entries, entry => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal)));
         }
 
         [Fact]

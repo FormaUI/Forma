@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Navigation;
 
 using Forma.Framework.Browser;
 using Forma.Framework.Css;
+using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
@@ -22,6 +23,9 @@ public sealed partial class FormaStepper : FormaElementBase
 
     /// <summary>The accessible name of the steps.</summary>
     [Parameter] public string? AriaLabel { get; set; }
+
+    // The address each step links to, which is none where a link doesn't allow the one it was given.
+    private string?[] _stepAddresses = [];
 
     private ElementReference _list;
     private ElementReference _ruler;
@@ -48,6 +52,8 @@ public sealed partial class FormaStepper : FormaElementBase
             ArgumentOutOfRangeException.ThrowIfNegative(CurrentIndex);
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(CurrentIndex, Steps.Count);
         }
+
+        _stepAddresses = [.. Steps.Select(step => Context.GetAllowedAddress(step.Url?.OriginalString, AddressKind.Link))];
 
         base.OnParametersSet();
     }
@@ -110,10 +116,10 @@ public sealed partial class FormaStepper : FormaElementBase
             .ToString();
 
     // A step the list draws as a link takes a link's least size in the ruler too.
-    private static string GetRulerTargetClass(StepperStep step, bool isCurrent)
+    private static string GetRulerTargetClass(string? address, bool isCurrent)
         => new CssClassBuilder()
             .Add("forma-stepper-target")
-            .Add("is-link", step.Url is not null && !isCurrent)
+            .Add("is-link", address is not null && !isCurrent)
             .ToString();
 
     /// <inheritdoc />

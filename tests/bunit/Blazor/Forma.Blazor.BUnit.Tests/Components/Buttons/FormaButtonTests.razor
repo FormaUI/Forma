@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Forma.Tests.Sanitization
+@using Microsoft.Extensions.Logging
 @code {
     public sealed class Component
     {
@@ -497,6 +499,59 @@
 
             // Assert
             Assert.Throws<ArgumentException>(Render);
+        }
+
+        public static TheoryData<string> HostileScripts
+            => [.. HostileAddresses.Scripts];
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_write_an_address_a_link_refuses_inert(string address)
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Href="@address">Results</FormaButton>);
+
+            // Assert
+            var link = cut.Find("a");
+            var entry = Assert.Single(loggerFactory.GetAddressRefusals());
+            Assert.Multiple(
+                () => Assert.False(link.HasAttribute("href")),
+                () => Assert.Equal("Results", link.TextContent.Trim()),
+                () => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"]),
+                () => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal));
+        }
+
+        [Theory]
+        [InlineData("blob:https://example.com/8f4b0c2e")]
+        [InlineData("data:text/csv,stage,rider")]
+        public void Should_keep_a_blob_or_data_address_on_a_link_that_downloads(string address)
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Href="@address" download="results.csv">Results</FormaButton>);
+
+            // Assert
+            Assert.Equal(address, cut.Find("a").GetAttribute("href"));
+        }
+
+        [Fact]
+        public void Should_write_a_blob_address_inert_on_a_link_a_reader_follows()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Href="blob:https://example.com/8f4b0c2e">Results</FormaButton>);
+
+            // Assert
+            Assert.False(cut.Find("a").HasAttribute("href"));
         }
     }
 }

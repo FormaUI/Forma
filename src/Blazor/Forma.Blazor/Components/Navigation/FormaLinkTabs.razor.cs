@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Navigation;
 
 using Forma.Blazor.Components.Layout;
 using Forma.Framework.Css;
+using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Routing;
@@ -24,6 +25,9 @@ public sealed partial class FormaLinkTabs : FormaElementBase
     private int _currentIndex = -1;
     private int _firstTrailingIndex = -1;
 
+    // The address each tab links to, which is none where a link doesn't allow the one it was given.
+    private string?[] _tabAddresses = [];
+
     private FreezePaneOptions StripOptions
         => FreezePaneOptions.Arrows with
         {
@@ -41,6 +45,7 @@ public sealed partial class FormaLinkTabs : FormaElementBase
     {
         ArgumentNullException.ThrowIfNull(Items);
 
+        _tabAddresses = [.. Items.Select(tab => Context.GetAllowedAddress(tab.Url, AddressKind.Link))];
         _currentIndex = FindCurrentIndex(Navigation.Uri);
         _firstTrailingIndex = FindFirstTrailingIndex();
     }

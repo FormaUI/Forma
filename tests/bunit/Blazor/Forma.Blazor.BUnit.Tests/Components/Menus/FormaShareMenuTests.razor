@@ -6,7 +6,9 @@
 @using Forma.Framework.Share
 @using Forma.Framework.Share.Targets
 @using Forma.Tests.Browser
+@using Forma.Tests.Sanitization
 @using Forma.Tests.Share
+@using Microsoft.Extensions.Logging
 @inherits FormaBunitContext
 @code {
     public sealed class Component
@@ -294,6 +296,130 @@
 
             // Assert 2
             Assert.Equal("demo.embed", raised);
+        }
+    }
+
+    public sealed class Addresses
+    {
+        // A target a host registered that opens at whatever address it was given.
+        private sealed class AddressedTarget(string address) : IShareTarget
+        {
+            public string Id => "addressed";
+            public string Title => "Addressed";
+            public Icon Icon => Glyph.Share;
+            public bool Supports(ShareItem item) => true;
+            public string? GetAddress(ShareItem item) => address;
+            public Task<bool> ShareAsync(ShareItem item, CancellationToken cancellationToken = default) => Task.FromResult(false);
+        }
+
+        public static TheoryData<string> HostileScripts
+            => [.. HostileAddresses.Scripts];
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_draw_a_target_whose_address_a_link_refuses_as_a_disabled_command_on_a_static_page(string address)
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            ctx.Services.AddSingleton<IShareTarget>(new AddressedTarget(address));
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var item = new ShareItem { Name = "Stage 12", Address = "https://example.com/news/stage-12" };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="item" />);
+
+            // Assert
+            var target = cut.FindAll(".forma-share-menu-sheet-item").Single(command => command.TextContent.Contains("Addressed", StringComparison.Ordinal));
+            var entry = Assert.Single(loggerFactory.GetAddressRefusals());
+            Assert.Multiple(
+                () => Assert.Equal("BUTTON", target.TagName),
+                () => Assert.True(target.HasAttribute("disabled")),
+                () => Assert.DoesNotContain(cut.FindAll("a"), link => link.GetAttribute("href") == address),
+                () => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"]),
+                () => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal));
+        }
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_write_a_target_address_a_link_refuses_inert_in_the_menu(string address)
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            ctx.Services.AddSingleton<IShareTarget>(new AddressedTarget(address));
+            var item = new ShareItem { Name = "Stage 12", Address = "https://example.com/news/stage-12" };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="item" />);
+            cut.Find(".forma-dropdown-menu-anchor button").Click();
+
+            // Assert
+            var target = cut.FindAll(".forma-share-menu-primary a").Single(link => link.TextContent.Contains("Addressed", StringComparison.Ordinal));
+            Assert.False(target.HasAttribute("href"));
+        }
+
+        [Theory]
+        [InlineData("javascript:alert(1)", false)]
+        [InlineData("JaVaScRiPt:alert(1)", false)]
+        [InlineData(" \u0001\u001fjavascript:alert(1)", false)]
+        [InlineData("vbscript:msgbox(1)", false)]
+        [InlineData("javascript:alert(1)", true)]
+        [InlineData("vbscript:msgbox(1)", true)]
+        public void Should_write_a_download_address_its_kind_refuses_inert(string address, bool isInteractive)
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            ctx.SetRendererInfo(new RendererInfo(isInteractive ? "Server" : "Static", isInteractive));
+            var file = new ShareItem { Kind = ShareItemKind.File, Name = "kit.zip", Resource = new ResourceInfo(address) { Name = "kit.zip" } };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="file" />);
+
+            if (isInteractive)
+            {
+                cut.Find(".forma-dropdown-menu-anchor button").Click();
+            }
+
+            // Assert
+            var download = cut.FindAll("a").Single(link => link.TextContent.Contains("Download", StringComparison.Ordinal));
+            Assert.False(download.HasAttribute("href"));
+            Assert.Equal("kit.zip", download.GetAttribute("download"));
+        }
+
+        [Fact]
+        public void Should_keep_a_data_address_a_download_allows()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var notes = new ShareItem { Kind = ShareItemKind.File, Name = "notes.txt", Resource = new ResourceInfo("data:text/plain,notes") { Name = "notes.txt" } };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="notes" />);
+
+            // Assert
+            var download = cut.FindAll("a").Single(link => link.TextContent.Contains("Download", StringComparison.Ordinal));
+            Assert.Equal("data:text/plain,notes", download.GetAttribute("href"));
+        }
+
+        [Fact]
+        public void Should_carry_a_hostile_name_and_address_in_the_mail_it_offers_as_text_alone()
+        {
+            // Arrange
+            using var ctx = new FormaShareMenuTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            var item = new ShareItem { Name = "\"><script>alert(1)</script>", Address = "javascript:alert(1)" };
+
+            // Act
+            var cut = ctx.Render(@<FormaShareMenu Item="item" />);
+
+            // Assert
+            var mail = cut.FindAll("a").Single(link => link.GetAttribute("href")?.StartsWith("mailto:", StringComparison.Ordinal) == true);
+            var address = mail.GetAttribute("href")!;
+            Assert.Multiple(
+                () => Assert.Equal("mailto:?subject=%22%3E%3Cscript%3Ealert%281%29%3C%2Fscript%3E&body=javascript%3Aalert%281%29", address),
+                () => Assert.Empty(cut.FindAll("script")));
         }
     }
 

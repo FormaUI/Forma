@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Navigation;
 
 using Forma.Framework.Css;
 using Forma.Framework.Icons;
+using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
@@ -24,8 +25,15 @@ public sealed partial class FormaBreadcrumb<TItem> : FormaElementBase
     /// <summary>Raised when something is dropped on a segment.</summary>
     [Parameter] public EventCallback<TItem?> OnItemDrop { get; set; }
 
+    // The address each item links to, which is none where a link doesn't allow the one it was given.
+    private string?[] _itemAddresses = [];
+
     private string EffectiveAriaLabel
         => AriaLabel ?? L["Breadcrumb"].Value;
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+        => _itemAddresses = [.. Items.Select(item => Context.GetAllowedAddress(item.Url, AddressKind.Link))];
 
     private static void HandleDragOver(DragEventArgs args)
         => args.DataTransfer.DropEffect = "move";

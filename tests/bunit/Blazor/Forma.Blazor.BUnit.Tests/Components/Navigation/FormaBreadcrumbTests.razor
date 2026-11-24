@@ -1,5 +1,7 @@
 @inherits FormaBunitContext
 @using Forma.Blazor.Components.Navigation
+@using Forma.Tests.Sanitization
+@using Microsoft.Extensions.Logging
 
 @code {
     public sealed class Component
@@ -325,6 +327,32 @@
 
             // Assert
             Assert.Equal("Folder Path", cut.Find("nav").GetAttribute("aria-label"));
+        }
+
+        public static TheoryData<string> HostileScripts
+            => [.. HostileAddresses.Scripts];
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_write_an_address_a_link_refuses_inert(string address)
+        {
+            // Arrange
+            using var ctx = new FormaBreadcrumbTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            BreadcrumbItem<string>[] items = [new("Home", "/"), new("Results", address)];
+
+            // Act
+            var cut = ctx.Render(@<FormaBreadcrumb Items="items" />);
+
+            // Assert
+            var links = cut.FindAll("a.forma-breadcrumb-item");
+            var entry = Assert.Single(loggerFactory.GetAddressRefusals());
+            Assert.Multiple(
+                () => Assert.Equal(["/", null], links.Select(link => link.GetAttribute("href"))),
+                () => Assert.Equal("Results", links[1].TextContent.Trim()),
+                () => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"]),
+                () => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal));
         }
     }
 }

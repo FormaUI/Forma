@@ -176,6 +176,22 @@ waits for its Forma fields before it validates. A field whose text didn't arrive
 `ValidateAsync` waits the same way. `SettleEditsAsync` waits alone, for an action of the host's own that reads the
 form without validating it.
 
+### Addresses from data
+
+**A component writes an address only where its kind allows it**, whatever the host or a reader gave it:
+
+- A link takes a relative address or an `http`, `https`, `mailto` or `tel` one: `FormaButton`'s `Href`,
+  `FormaDropDownMenuItem`'s, `FormaBreadcrumb`'s, `FormaLinkTabs`' and `FormaStepper`'s, `FormaShareMenu`'s networks,
+  `FormaFileViewer`'s link to open a document and `FormaVideoPlayer`'s link to a service's own page.
+- A link that downloads, one carrying `download` such as `FormaShareMenu`'s and `FormaFileViewer`'s Download, may also
+  take a `blob:` or `data:` address, which the download saves rather than opens.
+
+**An address its kind doesn't allow is written inert.** The element keeps its text and takes no address, so a
+`javascript:` link reads as text that goes nowhere, and the component's log records the refusal at `Debug`, naming the
+address's scheme but never the address. [`Forma.Framework.Sanitization`](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Sanitization/README.md#addresses)
+sets out each kind's schemes. A component of the host's own, built on `FormaComponentBase`, holds an address to the
+same rule through `Context.GetAllowedAddress(address, kind)`.
+
 ### Toasts and confirmation dialogs
 
 Toasts and confirmation dialogs are raised through a service and drawn by a component. Place the component once

@@ -4,6 +4,7 @@ using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Css;
 using Forma.Framework.Media;
 using Forma.Framework.Media.Providers;
+using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
@@ -72,6 +73,10 @@ public sealed partial class FormaVideoPlayer : FormaElementBase
 
     private bool ShowFacade
         => DeferLoading && !Autoplay && !_isActivated && Frame is EmbeddedPlayerFrame or HtmlPlayerFrame;
+
+    // The address a service's markup links to beside its player, for a reader its script leaves without one.
+    private string? FallbackAddress
+        => Context.GetAllowedAddress(Frame?.Source, AddressKind.Link);
 
     /// <inheritdoc />
     protected override void OnInitialized()

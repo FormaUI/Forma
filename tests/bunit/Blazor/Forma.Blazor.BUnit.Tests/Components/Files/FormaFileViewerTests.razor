@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Forma.Tests.Sanitization
+@using Microsoft.Extensions.Logging
 @using System.Globalization
 @using Forma.Blazor.Components.Files
 @using Forma.Framework.Files
@@ -671,6 +673,69 @@
 
             // Assert
             Assert.Equal("שקופית 1", cut.Find(".forma-file-viewer-html p").TextContent);
+        }
+    }
+
+    public sealed class Addresses
+    {
+        [Theory]
+        [InlineData("javascript:alert(1)")]
+        [InlineData("JaVaScRiPt:alert(1)")]
+        [InlineData(" \u0001\u001fjavascript:alert(1)")]
+        [InlineData("java\tscript:alert(1)")]
+        [InlineData("vbscript:msgbox(1)")]
+        public void Should_write_a_download_address_its_kind_refuses_inert(string address)
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@address" />);
+
+            // Assert
+            var download = cut.Find("a.forma-file-viewer-unsupported-download");
+            var entries = loggerFactory.GetAddressRefusals();
+            Assert.Multiple(
+                () => Assert.False(download.HasAttribute("href")),
+                () => Assert.StartsWith("Download", download.TextContent.Trim(), StringComparison.Ordinal),
+                () => Assert.NotEmpty(entries),
+                () => Assert.All(entries, entry => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"])),
+                () => Assert.All(entries, entry => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public void Should_keep_a_data_address_on_a_download_which_saves_it_rather_than_opening_it()
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+            var address = "data:text/html,<script>alert(1)</script>";
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@address" />);
+
+            // Assert
+            Assert.Equal(address, cut.Find("a.forma-file-viewer-unsupported-download").GetAttribute("href"));
+        }
+
+        public static TheoryData<string> HostileDocuments
+            => [.. HostileAddresses.Scripts.Select(address => $"{address}//brief.pdf")];
+
+        [Theory]
+        [MemberData(nameof(HostileDocuments))]
+        public void Should_write_a_document_s_link_an_address_a_link_refuses_inert(string address)
+        {
+            // Arrange
+            using var ctx = new FormaFileViewerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaFileViewer Source="@address" />);
+
+            // Assert
+            var link = cut.Find("object.forma-file-viewer-document a");
+            Assert.False(link.HasAttribute("href"));
+            Assert.Contains("Open", link.TextContent, StringComparison.Ordinal);
         }
     }
 }

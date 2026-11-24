@@ -3,7 +3,8 @@
 An allowlist HTML sanitizer for content people author, such as a rich text editor's output or a
 pasted document, so the application can render it as markup. It keeps what a markup policy
 permits and removes the rest, and it depends on nothing beyond .NET itself. Beside it stands
-`AddressPolicy`, the rule for the addresses written into a page, which the default policy applies.
+`AddressPolicy`, the rule for the addresses written into a page, which Forma's components and the
+default policy apply.
 
 ## Install and register
 
@@ -122,6 +123,10 @@ before the first colon where that is a letter followed by letters, digits, `+`, 
 case. A `data:` address is judged by the media type before its comma, and one without a comma
 carries nothing. An SVG image is left out of the image kind, since an SVG document can carry
 script.
+
+Forma's components write an address its kind doesn't allow inert: the element keeps its text and
+takes no address, and the refusal is logged at `Debug` under the component, naming the scheme
+rather than the address.
 
 ## Writing a policy
 

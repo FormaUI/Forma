@@ -30,11 +30,18 @@ public sealed partial class FormaDropDownMenuItem : FormaElementBase
     /// <summary>The content of the item.</summary>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
+    // The address the item links to, which is none where its kind doesn't allow the one it was given.
+    private string? _linkAddress;
+
     private string Role
         => IsSelected is null ? "menuitem" : "menuitemradio";
 
     private string? AriaChecked
         => IsSelected is null ? null : IsSelected.Value ? "true" : "false";
+
+    // A link written without its address keeps the place in the menu's focus order an address would give it.
+    private string? LinkTabIndex
+        => Disabled ? "-1" : _linkAddress is null ? "0" : null;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -46,6 +53,10 @@ public sealed partial class FormaDropDownMenuItem : FormaElementBase
 
         Menu.RegisterItem(this);
     }
+
+    /// <inheritdoc />
+    protected override void OnParametersSet()
+        => _linkAddress = Context.GetAllowedAddress(Href, LinkAttributes.GetAddressKind(AdditionalAttributes));
 
     internal ValueTask FocusAsync()
         => RootElement.FocusAsync();

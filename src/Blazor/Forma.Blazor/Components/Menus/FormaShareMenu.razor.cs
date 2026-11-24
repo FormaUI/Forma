@@ -4,6 +4,7 @@ using Forma.Blazor.Components.Buttons;
 using Forma.Framework.Browser;
 using Forma.Framework.Browser.Interop.Operations;
 using Forma.Framework.Icons;
+using Forma.Framework.Sanitization;
 using Forma.Framework.Share;
 
 using Microsoft.AspNetCore.Components;
@@ -72,6 +73,10 @@ public sealed partial class FormaShareMenu(IShareConnections? connections = null
     private string EmailAddress
         => $"mailto:?subject={Uri.EscapeDataString(Item?.Name ?? string.Empty)}&body={Uri.EscapeDataString(Item?.Address ?? string.Empty)}";
 
+    // The address a statically rendered sheet downloads the item's resource from.
+    private string? SheetResourceAddress
+        => Context.GetAllowedAddress(Item?.Resource?.Source, AddressKind.DownloadLink);
+
     private string SheetId
         => $"{ElementId}-sheet";
 
@@ -102,6 +107,10 @@ public sealed partial class FormaShareMenu(IShareConnections? connections = null
     /// <summary>Whether the target shares through an account the host reports the user has not connected.</summary>
     private bool NeedsConnection(IShareTarget target)
         => target.RequiresAccount && connections is { } knownConnections && !knownConnections.IsConnected(target.Id);
+
+    // The address a statically rendered sheet opens a target at.
+    private string? GetTargetAddress(IShareTarget target)
+        => Context.GetAllowedAddress(target.GetAddress(Item!), AddressKind.Link);
 
     private Task ConnectAsync(IShareTarget target)
         => connections!.ConnectAsync(target.Id);

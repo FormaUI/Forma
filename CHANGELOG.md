@@ -34,6 +34,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `blob:` address, its image no `mailto:` or `tel:` one, and its video or audio only a `data:` address of its own kind.
   `FormaComposer`'s link and image dialogs refuse an address their element doesn't allow, and `FilePlayerProvider` plays
   a `data:` address only of a video.
+- A component writes an address its kind doesn't allow, `javascript:` and `vbscript:` among them, inert: the element
+  keeps its text and takes no address, and the component's log records the refusal at `Debug` by the address's scheme.
+  Links hold to it in `FormaButton`, `FormaDropDownMenuItem`, `FormaShareMenu`, `FormaBreadcrumb`, `FormaLinkTabs`,
+  `FormaStepper`, `FormaFileViewer`'s Open and Download, `FormaVideoPlayer`'s link to a service's page and
+  `FormaComposer`'s attachments, where a link that downloads may also take a `blob:` or `data:` address. A component of
+  a host's own holds an address to the same rule through `Context.GetAllowedAddress`.
 
 ## `1.0.0-preview.16`
 

@@ -8,10 +8,10 @@
        style="@RootStyle"
        @attributes="AdditionalAttributes"
        @ref="RootElement"
-       href="@Href"
+       href="@_linkAddress"
        role="@Role"
        aria-checked="@AriaChecked"
-       tabindex="@(Disabled ? "-1" : null)"
+       tabindex="@LinkTabIndex"
        aria-disabled="@(Disabled ? "true" : null)"
        @onclick="HandleActivateAsync"
        @onclick:preventDefault="Disabled">

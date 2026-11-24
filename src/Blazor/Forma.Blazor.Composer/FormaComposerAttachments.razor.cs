@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Composer;
 
 using Forma.Framework.Composer.Editing;
 using Forma.Framework.Resources;
+using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 
@@ -30,6 +31,10 @@ public sealed partial class FormaComposerAttachments : FormaComponentBase
 
     private string TotalSize
         => ResourceFormatter.FromByteCount(Attachments.Sum(attachment => attachment.Size ?? 0), Context.CultureState.Culture);
+
+    // The address an attachment opens at, which is none where a link doesn't allow its source.
+    private string? GetAttachmentAddress(ResourceInfo attachment)
+        => Context.GetAllowedAddress(attachment.Source, AddressKind.Link);
 
     private async Task RemoveAsync(ResourceInfo attachment)
     {

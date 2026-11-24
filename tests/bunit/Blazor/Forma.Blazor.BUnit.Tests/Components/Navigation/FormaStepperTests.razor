@@ -1,5 +1,7 @@
 @inherits FormaBunitContext
 @using Forma.Blazor.Components.Navigation
+@using Forma.Tests.Sanitization
+@using Microsoft.Extensions.Logging
 @using Forma.Framework.Browser
 @using Forma.Framework.Icons
 
@@ -155,6 +157,34 @@
 
             // Assert
             Assert.Empty(cut.FindAll("li"));
+        }
+
+        public static TheoryData<string> HostileScripts
+            => [.. HostileAddresses.Scripts];
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_draw_a_step_whose_address_a_link_refuses_without_a_link(string address)
+        {
+            // Arrange
+            using var ctx = new FormaStepperTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            StepperStep[] steps = [new("Find your event") { Url = new Uri("/events", UriKind.Relative) }, new("Choose your photos") { Url = new Uri(address, UriKind.RelativeOrAbsolute) }, new("Pay")];
+
+            // Act
+            var cut = ctx.Render(@<FormaStepper Steps="steps" CurrentIndex="2" />);
+
+            // Assert
+            var targets = cut.FindAll(".forma-stepper-list .forma-stepper-target");
+            var entry = Assert.Single(loggerFactory.GetAddressRefusals());
+            Assert.Multiple(
+                () => Assert.Equal(["A", "SPAN", "SPAN"], targets.Select(target => target.TagName)),
+                () => Assert.Equal("/events", targets[0].GetAttribute("href")),
+                () => Assert.Equal("Choose your photos", targets[1].QuerySelector(".forma-stepper-label")!.TextContent),
+                () => Assert.DoesNotContain("is-link", cut.FindAll(".forma-stepper-ruler .forma-stepper-target")[1].ClassList),
+                () => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"]),
+                () => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal));
         }
     }
 

@@ -11,6 +11,7 @@ using Forma.Framework.Input.Interop;
 using Forma.Framework.Input.Keyboard;
 using Forma.Framework.Resources;
 using Forma.Framework.Resources.Extensions;
+using Forma.Framework.Sanitization;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -99,6 +100,14 @@ public sealed partial class FormaFileViewer : FormaElementBase
 
     private string DisplayName
         => Resource?.Name ?? Source;
+
+    // The address a document the browser can't show inline opens at in a new tab.
+    private string? DocumentLinkAddress
+        => Context.GetAllowedAddress(Resource?.Source, AddressKind.Link);
+
+    // The address an unsupported resource downloads from.
+    private string? DownloadAddress
+        => Context.GetAllowedAddress(Source, AddressKind.DownloadLink);
 
     /// <inheritdoc />
     protected override void OnInitialized()

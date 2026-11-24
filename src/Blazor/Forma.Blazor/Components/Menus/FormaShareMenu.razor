@@ -33,7 +33,7 @@
                 @foreach (var target in _supportedTargets)
                 {
                     <li @key="target.Id">
-                        @if (!NeedsConnection(target) && target.GetAddress(Item!) is { } address)
+                        @if (!NeedsConnection(target) && GetTargetAddress(target) is { } address)
                         {
                             <a class="forma-share-menu-sheet-item" href="@address" target="_blank" rel="noopener noreferrer"><FormaIcon Icon="target.Icon" Size="IconSize.Small" /><span>@target.Title</span></a>
                         }
@@ -45,7 +45,7 @@
                 }
                 @if (Item is { Resource: { } sheetResource })
                 {
-                    <li><a class="forma-share-menu-sheet-item" href="@sheetResource.Source" download="@sheetResource.Name"><FormaIcon Icon="Glyph.Download" Size="IconSize.Small" /><span>@L["Download"]</span></a></li>
+                    <li><a class="forma-share-menu-sheet-item" href="@SheetResourceAddress" download="@sheetResource.Name"><FormaIcon Icon="Glyph.Download" Size="IconSize.Small" /><span>@L["Download"]</span></a></li>
                 }
                 @if (OffersEmail)
                 {

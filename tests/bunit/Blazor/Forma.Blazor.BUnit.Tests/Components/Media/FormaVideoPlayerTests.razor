@@ -1,4 +1,6 @@
 @inherits FormaBunitContext
+@using Forma.Tests.Sanitization
+@using Microsoft.Extensions.Logging
 @using Forma.Blazor.Components.Media
 @using Microsoft.Extensions.DependencyInjection
 
@@ -831,6 +833,36 @@
             Assert.Multiple(
                 () => Assert.True(cut.Find("button.forma-video-player-facade").HasAttribute("disabled")),
                 () => Assert.Equal("Play A video", cut.Find(".forma-video-player-facade-label").TextContent));
+        }
+    }
+
+    public sealed class Addresses
+    {
+        public static TheoryData<string> HostileScripts
+            => [.. HostileAddresses.Scripts];
+
+        [Theory]
+        [MemberData(nameof(HostileScripts))]
+        public void Should_write_a_service_s_fallback_link_inert_where_a_link_refuses_its_address(string address)
+        {
+            // Arrange
+            using var ctx = new FormaVideoPlayerTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            ctx.Services.AddScoped<IPlayerProvider>(_ => new FakePlayerProvider(string.Empty, source => new HtmlPlayerFrame(source, "<blockquote class=\"post\"></blockquote>", "https://example.com/embed.js")));
+
+            // Act
+            var cut = ctx.Render(@<FormaVideoPlayer Source="@address" Title="A post" DeferLoading="false" />);
+
+            // Assert
+            var fallback = cut.Find("a.forma-video-player-fallback");
+            var entries = loggerFactory.GetAddressRefusals();
+            Assert.Multiple(
+                () => Assert.False(fallback.HasAttribute("href")),
+                () => Assert.Equal("Open this video on its own site.", fallback.TextContent.Trim()),
+                () => Assert.NotEmpty(entries),
+                () => Assert.All(entries, entry => Assert.Equal(AddressPolicy.GetScheme(address), entry.Fields["Scheme"])),
+                () => Assert.All(entries, entry => Assert.DoesNotContain(address.Trim(), entry.Message, StringComparison.Ordinal)));
         }
     }
 }

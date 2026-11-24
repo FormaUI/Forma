@@ -16,7 +16,7 @@
                 var isCurrent = index == _currentIndex;
 
                 <li class="@GetItemClass(index)">
-                    <a class="forma-link-tab" href="@tab.Url" aria-current="@(isCurrent ? "page" : null)">
+                    <a class="forma-link-tab" href="@_tabAddresses[index]" aria-current="@(isCurrent ? "page" : null)">
                         @if (tab.Icon is { } icon)
                         {
                             <FormaIcon Icon="icon" Size="IconSize.Small" />
