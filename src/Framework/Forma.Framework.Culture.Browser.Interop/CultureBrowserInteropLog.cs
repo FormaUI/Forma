@@ -25,4 +25,10 @@ internal static partial class CultureBrowserInteropLog
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "The culture state of {RuntimeId} couldn't register with the page's culture coordinator.")]
     public static partial void RegistrationFailed(ILogger logger, Exception exception, Guid runtimeId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "A pair the browser delivered to the culture state of {RuntimeId} names no culture or no place in its document's sequence, and was refused.")]
+    public static partial void PairRefused(ILogger logger, Guid runtimeId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "A destination the browser asked the destinations of {RuntimeId} for names no address or no route, and was refused.")]
+    public static partial void DestinationRefused(ILogger logger, Guid runtimeId);
 }

@@ -448,6 +448,109 @@ public sealed class CultureCoordinatorRegistrationTests
         }
     }
 
+    public sealed class Refusing
+    {
+        private static ServiceProvider CreateServices(FakeCultureCoordinatorBrowser browser, FakeLoggerFactory loggerFactory)
+            => new ServiceCollection()
+                .AddSingleton<IJSRuntime>(browser.Runtime)
+                .AddSingleton<ILoggerFactory>(loggerFactory)
+                .AddSingleton(typeof(ILogger<>), typeof(Logger<>))
+                .AddFormaCultureCoordination()
+                .BuildServiceProvider();
+
+        private static CultureCoordinatorReceiver GetReceiver(FakeCultureCoordinatorBrowser browser)
+            => ((DotNetObjectReference<CultureCoordinatorReceiver>)Assert.Single(browser.Module.Recorder.GetCalls("register")).Arguments[1]!).Value;
+
+        [Theory]
+        [InlineData(null, "he", "document", 1)]
+        [InlineData("de-DE", null, "document", 1)]
+        [InlineData("de\0DE", "he", "document", 1)]
+        [InlineData("de-DE", "h\ud800e", "document", 1)]
+        [InlineData("de-DE; Path=/", "he", "document", 1)]
+        [InlineData("zz-NOWHERE-of-no-kind", "he", "document", 1)]
+        [InlineData("de-DE", "he", null, 1)]
+        [InlineData("de-DE", "he", "document", -1)]
+        public async Task Should_refuse_and_log_a_pair_the_coordinator_couldn_t_have_delivered(string? culture, string? uiCulture, string? documentKey, int number)
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = CreateServices(browser, loggerFactory);
+            await using var scope = provider.CreateAsyncScope();
+            await GetRegistration(scope).RegisterAsync();
+
+            // Act
+            var exception = await Record.ExceptionAsync(() => GetReceiver(browser).ApplyAsync(culture!, uiCulture!, documentKey!, number));
+
+            // Assert
+            var state = GetCultureState(scope);
+            Assert.Multiple(
+                () => Assert.Null(exception),
+                () => Assert.Equal("en-US/en-US", $"{state.Culture.Name}/{state.UICulture.Name}"),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task Should_refuse_and_log_a_pair_naming_a_culture_longer_than_any_locale_name()
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = new FakeCultureCoordinatorBrowser();
+            await using var provider = CreateServices(browser, loggerFactory);
+            await using var scope = provider.CreateAsyncScope();
+            await GetRegistration(scope).RegisterAsync();
+
+            // Act
+            var exception = await Record.ExceptionAsync(() => GetReceiver(browser).ApplyAsync(new string('a', 1024 * 1024), "he", browser.DocumentKey, 1));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(exception),
+                () => Assert.Equal("en-US", GetCultureState(scope).Culture.Name),
+                () => Assert.DoesNotContain(loggerFactory.Entries, entry => entry.Message.Contains("aaaa", StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData(null, "he")]
+        [InlineData("news/the-final", null)]
+        public async Task Should_refuse_and_log_a_destination_naming_no_address_or_no_route(string? relativeAddress, string? token)
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = new FakeCultureCoordinatorBrowser();
+            var services = new ServiceCollection()
+                .AddSingleton<IJSRuntime>(browser.Runtime)
+                .AddSingleton<ILoggerFactory>(loggerFactory)
+                .AddSingleton(typeof(ILogger<>), typeof(Logger<>))
+                .AddSingleton<ICultureDestinationSource>(new ThrowingDestinationSource());
+            await using var provider = services.AddFormaCultureCoordination().BuildServiceProvider();
+            await using var scope = provider.CreateAsyncScope();
+            await GetRegistration(scope).RegisterAsync();
+
+            // Act
+            var destination = await GetReceiver(browser).ResolveDestinationAsync(relativeAddress!, token!);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(destination),
+                () => Assert.DoesNotContain(loggerFactory.Entries, entry => entry.Level > LogLevel.Debug),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal)));
+        }
+
+        // A source that throws on whatever it is asked, as one handed nothing to resolve would.
+        private sealed class ThrowingDestinationSource : ICultureDestinationSource
+        {
+            public bool ResolvesDestinations
+                => true;
+
+            public ValueTask<string?> ResolveAsync(string relativeAddress, string token, CancellationToken cancellationToken)
+                => throw new InvalidOperationException("The source was asked for nothing.");
+        }
+    }
+
     public sealed class Destinations
     {
         private static ServiceProvider CreateServices(FakeCultureCoordinatorBrowser browser, ICultureDestinationSource? source, FakeLoggerFactory? loggerFactory = null)

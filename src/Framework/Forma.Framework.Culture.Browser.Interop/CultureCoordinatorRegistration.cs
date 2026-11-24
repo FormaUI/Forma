@@ -20,6 +20,9 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
 {
     private const string ModulePath = "./_content/forma/culture/scripts/CultureCoordinator.js";
 
+    // The longest locale name the platforms hold, LOCALE_NAME_MAX_LENGTH.
+    private const int MaximumCultureNameLength = 85;
+
     private readonly ICultureStateIntegration _integration;
     private readonly ICultureProvider? _cultureProvider;
     private readonly ICultureDestinationSource? _destinationSource;
@@ -137,10 +140,17 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     /// <summary>The address, relative to the application's root and with its culture segment, the page at <paramref name="relativeAddress"/> leads to in the route <paramref name="token"/> names, or <see langword="null"/> for that page's own address there.</summary>
     /// <remarks>A source that throws leaves the page's own address in the route, so the switch still navigates.</remarks>
     [SuppressMessage("Design", "CA1031:Do not catch general exception types")]
-    internal async Task<string?> ResolveDestinationAsync(string relativeAddress, string token)
+    internal async Task<string?> ResolveDestinationAsync(string? relativeAddress, string? token)
     {
         if (_destinationSource is not { ResolvesDestinations: true } destinationSource)
         {
+            return null;
+        }
+
+        if (relativeAddress is null || token is null)
+        {
+            CultureBrowserInteropLog.DestinationRefused(_environment.Logger, _environment.RuntimeId);
+
             return null;
         }
 
@@ -211,13 +221,20 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         await registration.InvokeVoidAsync("reportLanding", token, order).ConfigureAwait(false);
     }
 
-    /// <summary>Applies the pair of the cultures <paramref name="cultureName"/> and <paramref name="uiCultureName"/> name, which the coordinator delivered under <paramref name="version"/>, completing once the state holds it.</summary>
-    /// <remarks>Each culture is the application's culture provider's for its name, or the platform's where there is no provider; a provider that fails the delivery is logged, since the coordinator hands the failure to the switch that requested the pair alone. The state's subscribers are notified after the delivery completes, so what waits on the delivery, a switch or a page's landing, goes on in the new pair as the rest of the page renders again; a notification that fails is logged.</remarks>
+    /// <summary>Applies the pair of the cultures <paramref name="cultureName"/> and <paramref name="uiCultureName"/> name, which the coordinator delivered as number <paramref name="number"/> of the document <paramref name="documentKey"/> names, completing once the state holds it.</summary>
+    /// <remarks>Each culture is the application's culture provider's for its name, or the platform's where there is no provider; a provider that fails the delivery is logged, since the coordinator hands the failure to the switch that requested the pair alone. A delivery the coordinator couldn't have made, naming no culture, a culture the platform doesn't have where there is no provider, or no place in its document's sequence, is refused and logged. The state's subscribers are notified after the delivery completes, so what waits on the delivery, a switch or a page's landing, goes on in the new pair as the rest of the page renders again; a notification that fails is logged.</remarks>
     /// <exception cref="InvalidOperationException">The culture provider returned no culture for a name, or a culture under another name.</exception>
-    internal Task ApplyAsync(string cultureName, string uiCultureName, CultureVersion version)
+    internal Task ApplyAsync(string? cultureName, string? uiCultureName, string? documentKey, int number)
     {
         if (_isDisposed)
         {
+            return Task.CompletedTask;
+        }
+
+        if (!IsCultureName(cultureName) || !IsCultureName(uiCultureName) || documentKey is null || number < 0)
+        {
+            CultureBrowserInteropLog.PairRefused(_environment.Logger, _environment.RuntimeId);
+
             return Task.CompletedTask;
         }
 
@@ -225,7 +242,13 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
 
         try
         {
-            acceptedCulture = new AcceptedCulture(CultureResolution.GetCulture(_cultureProvider, cultureName), CultureResolution.GetCulture(_cultureProvider, uiCultureName), version);
+            acceptedCulture = new AcceptedCulture(CultureResolution.GetCulture(_cultureProvider, cultureName), CultureResolution.GetCulture(_cultureProvider, uiCultureName), new CultureVersion(documentKey, number));
+        }
+        catch (CultureNotFoundException) when (_cultureProvider is null)
+        {
+            CultureBrowserInteropLog.PairRefused(_environment.Logger, _environment.RuntimeId);
+
+            return Task.CompletedTask;
         }
         catch (Exception ex) when (_cultureProvider is not null)
         {
@@ -238,6 +261,10 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
 
         return Task.CompletedTask;
     }
+
+    // A culture's name is ASCII letters, digits, hyphens and underscores, as BCP 47 tags and .NET's sort suffixes are, and no longer than a locale name.
+    private static bool IsCultureName([NotNullWhen(true)] string? name)
+        => name is { Length: <= MaximumCultureNameLength } && name.All(character => char.IsAsciiLetterOrDigit(character) || character is '-' or '_');
 
     private async Task ObserveAsync(Task notification, AcceptedCulture acceptedCulture)
     {
