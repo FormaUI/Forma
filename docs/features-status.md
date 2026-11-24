@@ -28,7 +28,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Four components built and in review, thirteen changes fixed |
-| [A security check](#a-security-check) | Planned, once the work under way is done |
+| [A security check](#a-security-check) | Designed, seven steps planned, starting once the culture coordinator's request order lands |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -238,23 +238,18 @@ here in the order they are taken, each with what the code does and its state.
 
 ## A security check
 
-A check of what Forma turns away, like the one a host ran on its own site, is planned once the work under way is done:
+[The security design](security-design.md) states what Forma accepts from a host and from the browser, what it writes
+into a page from the data it's given, and the checks that hold it to both. [Its implementation plan](security-implementation-plan.md)
+carries it out in seven steps, none landed yet:
 
-- **Every surface tested for what it turns away.** Each place a component writes markup or a link from data it's
-  given, a `MarkupString`, an `href` or a script setting `innerHTML`, is found from the source, so a new one is covered
-  as it's added, and tested with hostile input such as a `javascript:` link and a script element.
-- **Malformed input refused, never thrown.** Text a reader types or a host passes that no component expects, such as a
-  NUL character, a lone surrogate, text where a number belongs or a value far past any length, ends neither a circuit
-  nor an application.
-- **Limits.** The sizes a component accepts from the browser, a value reaching .NET in pieces and an upload among them,
-  are set and checked.
-- **Arguments validated one way everywhere.** One standard for checking arguments, stated in the working rules and
-  applied across the codebase: a component's parameters, every public member of a service or a type, each method a
-  script calls back into .NET with what the browser sends, which on the Server anyone can send, and each function a
-  script exports. The analyzers enforce what they can state, so a new member is held to it as it's added.
-- **Dependencies.** CI checks every package, the NuGet packages and the script tests' npm packages, for known
-  vulnerabilities on each scheduled run, even when nothing changed.
-- **A scan of the running Showcase.** An OWASP ZAP scan, rerun from a script, with every finding fixed or explained.
+1. One standard for validating arguments, applied across the codebase and enforced by the analyzers.
+2. Every place Forma writes markup or an address from data, found from the source and tested with hostile input, an
+   address with a script-running scheme written inert.
+3. Malformed input from the browser refused, never thrown.
+4. A cap on every size Forma accepts from the browser, the uploader's 10 MB by default among them.
+5. A job of the full gate failing on a known vulnerability in any NuGet or npm package.
+6. An OWASP ZAP scan of the running Showcase, rerun from a script.
+7. Forma under a strict Content Security Policy.
 
 <a id="deferred"></a>
 

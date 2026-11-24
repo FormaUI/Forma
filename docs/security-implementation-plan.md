@@ -1,0 +1,29 @@
+# Forma Security Implementation Plan
+
+The steps that carry out [the security design](security-design.md), in order, each landing with its tests and its
+gate.
+
+## Steps
+
+1. **The argument validation standard.** The design's two kinds of input written into the skills as the rule for
+   every new member, CA1511 and CA1512 added to the `.editorconfig` severity table, and the codebase brought to the
+   standard in one pass: the hand-written argument exceptions, the components that check no parameters, and every
+   public member of a service or a type.
+2. **What Forma writes, tested against hostile input.** The test that finds every sink from the source, a test of each
+   with hostile input, a `javascript:` link and a script element among them, and every sink brought to the design:
+   markup sanitized or encoded, and an address outside the design's schemes written inert.
+3. **Malformed input refused, never thrown.** Every method a script calls back into .NET, and every input that parses
+   text, given a NUL character, a lone surrogate, text where a number belongs and a value far past any length, each
+   ending neither a circuit nor an application.
+4. **Limits.** `FileUploaderOptions.MaxFileSize` set to 10 MB by default, with the changelog saying how a host raises
+   it; every other size Forma accepts from the browser found, capped and checked; and each package's README naming the
+   framework limits a host sets.
+5. **Dependencies.** The full gate's job checking every NuGet and npm package for known vulnerabilities.
+6. **A scan of the running Showcase.** `scripts/Invoke-SecurityScan.ps1` and OWASP ZAP in a container, a first scan,
+   and each finding and logged error fixed or explained in the design.
+7. **A Content Security Policy.** The check pages served under a strict policy, what it blocks fixed, and the README's
+   policy for a host.
+
+## Open
+
+- Every step is still to do; the work starts once the culture coordinator's request order lands.
