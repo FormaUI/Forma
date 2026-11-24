@@ -14,6 +14,7 @@ public sealed class Print(IJSEnvironment js, INativeOperations? nativeOperations
     private readonly JSModule _module = new(js, "./_content/forma/browser/scripts/operations/Print.js");
 
     /// <summary>Prints the markup by itself, dressed in the page's own stylesheets.</summary>
+    /// <remarks>The markup is written into a frame of the page's own origin as it is, so it is markup a sanitizer has kept or the caller's own.</remarks>
     public async ValueTask<bool> PrintAsync(string html, string title, string className)
     {
         ArgumentNullException.ThrowIfNull(title);

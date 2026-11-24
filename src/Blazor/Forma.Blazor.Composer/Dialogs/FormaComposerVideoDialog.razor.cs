@@ -18,7 +18,7 @@ public sealed partial class FormaComposerVideoDialog : ComposerDialogBase
             ? (video.Source, video.Title, video.Autoplay)
             : (null, null, false);
 
-    // The sanitizer keeps a video address only with the http or https scheme.
+    // A stored video plays from an absolute web address, so a website and a native app render the document alike.
     private static bool IsPlayable(string source)
         => Uri.TryCreate(source, UriKind.Absolute, out var address)
             && address.Scheme is "http" or "https";
