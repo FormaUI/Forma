@@ -3,6 +3,7 @@
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Keyboard
 @using Forma.Tests.Interop
+@using Microsoft.Extensions.Logging
 
 @code {
     public sealed class Parameters
@@ -373,6 +374,33 @@
             Assert.Multiple(
                 () => Assert.Equal(20d, reported),
                 () => Assert.Equal("20", cut.Find(".forma-splitter").GetAttribute("aria-valuenow")));
+        }
+
+        [Theory]
+        [InlineData(double.PositiveInfinity)]
+        [InlineData(double.NegativeInfinity)]
+        [InlineData(double.NaN)]
+        public async Task Should_refuse_and_log_travel_past_any_number_of_pixels(double travel)
+        {
+            // Arrange
+            using var ctx = new FormaSplitterTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var reported = new List<double>();
+            var cut = ctx.Render(@<FormaSplitter Label="Resize" Value="18" Min="10" Max="28" ValueChanged="v => reported.Add(v)" />);
+            var splitter = cut.FindComponent<FormaSplitter>().Instance;
+            await splitter.HandleResizeStartAsync();
+
+            // Act
+            await splitter.HandleResizeAsync(travel);
+            await splitter.HandleResizeAsync(32);
+
+            // Assert — the drag goes on from the travel it can take
+            Assert.Multiple(
+                () => Assert.Equal([20d], reported),
+                () => Assert.Equal("20", cut.Find(".forma-splitter").GetAttribute("aria-valuenow")),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Category == typeof(FormaSplitter).FullName && entry.Message.Contains("was refused", StringComparison.Ordinal)));
         }
 
         [Fact]

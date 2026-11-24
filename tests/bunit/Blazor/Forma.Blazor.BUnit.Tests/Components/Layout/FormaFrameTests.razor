@@ -1,5 +1,6 @@
 @inherits FormaBunitContext
 @using Forma.Blazor.Components.Layout
+@using Microsoft.Extensions.Logging
 
 @code {
     public sealed class Component
@@ -302,6 +303,35 @@
                 Assert.Equal([new(10, 20, 300, 200), new(15, 20, 300, 200)], reported);
                 Assert.Equal("left: 15px; top: 20px; width: 300px; height: 200px;", cut.Find(".forma-frame").GetAttribute("style"));
             });
+        }
+
+        [Theory]
+        [InlineData(double.PositiveInfinity, 20, 300, 200)]
+        [InlineData(10, double.NegativeInfinity, 300, 200)]
+        [InlineData(10, 20, double.NaN, 200)]
+        [InlineData(10, 20, 300, double.PositiveInfinity)]
+        [InlineData(10, 20, -1, 200)]
+        [InlineData(10, 20, 300, -200)]
+        public async Task Should_refuse_and_log_a_placement_no_box_can_take(double left, double top, double width, double height)
+        {
+            // Arrange
+            using var ctx = new FormaFrameTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var reported = new List<FramePlacement>();
+            var cut = ctx.Render(@<FormaFrame Placement="new(40, 30, 500, 300)" PlacementChanged="placement => reported.Add(placement)" />);
+            var frame = cut.FindComponent<FormaFrame>().Instance;
+
+            // Act
+            await frame.ReportPlacementAsync(left, top, width, height);
+            await frame.ReportPlacementAsync(15, 20, 300, 200);
+
+            // Assert — the frame goes on taking the placements it can
+            Assert.Multiple(
+                () => Assert.Equal([new(15, 20, 300, 200)], reported),
+                () => Assert.Equal("left: 15px; top: 20px; width: 300px; height: 200px;", cut.Find(".forma-frame").GetAttribute("style")),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Category == typeof(FormaFrame).FullName && entry.Message.Contains("was refused", StringComparison.Ordinal)));
         }
 
         [Fact]

@@ -158,10 +158,18 @@ public sealed partial class FormaFrame : FormaElementBase
     }
 
     /// <summary>Takes the box's placement as the browser reports it.</summary>
+    /// <remarks>A placement no box can take, at a distance or of a size past any number or of a negative size, is refused and logged.</remarks>
     [JSInvokable]
     public Task ReportPlacementAsync(double left, double top, double width, double height)
         => InvokeAsync(async () =>
         {
+            if (!double.IsFinite(left) || !double.IsFinite(top) || !double.IsFinite(width) || !double.IsFinite(height) || width < 0 || height < 0)
+            {
+                FrameLog.PlacementRefused(Context.Logger, Context.RuntimeId);
+
+                return;
+            }
+
             var placement = new FramePlacement(left, top, width, height);
 
             if (Box is FrameBox.Self)

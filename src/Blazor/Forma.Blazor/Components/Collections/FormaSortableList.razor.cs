@@ -105,12 +105,18 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
     }
 
     /// <summary>Moves the item at <paramref name="sourceIndex"/> before or after the item at <paramref name="targetIndex"/>.</summary>
+    /// <remarks>A move naming a place outside the list is refused and logged.</remarks>
     [JSInvokable]
     public Task HandleReorderAsync(int sourceIndex, int targetIndex, bool insertAfter)
     {
-        if (Disabled || sourceIndex == targetIndex
-            || sourceIndex < 0 || sourceIndex >= Items.Count
-            || targetIndex < 0 || targetIndex >= Items.Count)
+        if (sourceIndex < 0 || sourceIndex >= Items.Count || targetIndex < 0 || targetIndex >= Items.Count)
+        {
+            SortableListLog.ReorderRefused(Context.Logger, Context.RuntimeId);
+
+            return Task.CompletedTask;
+        }
+
+        if (Disabled || sourceIndex == targetIndex)
         {
             return Task.CompletedTask;
         }

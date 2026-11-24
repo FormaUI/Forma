@@ -6,6 +6,7 @@
 @using Forma.Framework.Localization
 @using Forma.Tests.Localization
 @using Microsoft.Extensions.DependencyInjection
+@using Microsoft.Extensions.Logging
 @code {
     private static InputDecision CreateRoutedDecision()
         => new()
@@ -122,6 +123,53 @@
                 () => Assert.Equal("nothing", cut.FindAll(".forma-input-inspector-decision dd")[0].TextContent),
                 () => Assert.Equal("none", cut.FindAll(".forma-input-inspector-decision dd")[1].TextContent),
                 () => Assert.Equal("Nothing active", cut.Find(".forma-input-inspector-empty-small").TextContent));
+        }
+    }
+
+    public sealed class Refusing
+    {
+        private static InputDecision? CreateMalformedDecision(string malformation)
+            => malformation switch
+            {
+                "none" => null,
+                "no input" => CreateRoutedDecision() with { Input = null! },
+                "input of no type" => CreateRoutedDecision() with { Input = new InputKeyInfo { Type = null!, Key = "ArrowDown" } },
+                "key without modifiers" => CreateRoutedDecision() with { Input = new InputKeyInfo { Type = "keydown", Key = "ArrowDown", Modifiers = null! } },
+                "wheel without modifiers" => CreateUnownedDecision() with { Input = new InputWheelInfo { Type = "wheel", Modifiers = null! } },
+                "no stack" => CreateRoutedDecision() with { Stack = null! },
+                "a missing layer" => CreateRoutedDecision() with { Stack = [new InputLayer { Element = "div#grid", Layer = 1, Reason = "first eligible" }, null!] },
+                _ => throw new ArgumentOutOfRangeException(nameof(malformation), malformation, null),
+            };
+
+        [Theory]
+        [InlineData("none")]
+        [InlineData("no input")]
+        [InlineData("input of no type")]
+        [InlineData("key without modifiers")]
+        [InlineData("wheel without modifiers")]
+        [InlineData("no stack")]
+        [InlineData("a missing layer")]
+        public async Task Should_refuse_and_log_a_decision_it_can_t_draw_and_show_the_next(string malformation)
+        {
+            // Arrange
+            using var ctx = new FormaInputInspectorTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var cut = ctx.Render(@<FormaInputInspector />);
+            var inspector = cut.FindComponent<FormaInputInspector>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => inspector.ReportAsync(CreateMalformedDecision(malformation)!));
+            var decisionAfterRefusal = inspector.Decision;
+            await cut.InvokeAsync(() => inspector.ReportAsync(CreateRoutedDecision()));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(decisionAfterRefusal),
+                () => Assert.Equal("list.extend", inspector.Decision?.Action),
+                () => Assert.Empty(cut.FindAll(".forma-input-inspector-history")),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was refused", StringComparison.Ordinal)));
         }
     }
 

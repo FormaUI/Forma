@@ -141,6 +141,13 @@ public sealed partial class FormaSplitter : FormaElementBase
                 return;
             }
 
+            if (!double.IsFinite(travel))
+            {
+                SplitterLog.TravelRefused(Context.Logger, Context.RuntimeId);
+
+                return;
+            }
+
             // The pane sits before the divider, so in a right-to-left layout it grows as the pointer moves the other way.
             var direction = IsVertical && Context.CultureState.IsRightToLeft ? -1 : 1;
 

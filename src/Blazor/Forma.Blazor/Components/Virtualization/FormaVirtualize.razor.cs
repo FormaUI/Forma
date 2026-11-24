@@ -185,9 +185,17 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     /// <param name="offset">How far the top of the viewport stands past the start of the list, in pixels.</param>
     /// <param name="viewport">How tall the viewport is, in pixels.</param>
     /// <param name="itemSize">The average room a drawn item takes, in pixels.</param>
+    /// <remarks>A report no list can stand at, at an offset or of a size past any number or of a negative size, is refused and logged.</remarks>
     [JSInvokable]
     public async Task HandleViewportAsync(double offset, double viewport, double itemSize)
     {
+        if (!double.IsFinite(offset) || !double.IsFinite(viewport) || !double.IsFinite(itemSize) || viewport < 0 || itemSize < 0)
+        {
+            VirtualizeLog.ViewportRefused(Context.Logger, Context.RuntimeId);
+
+            return;
+        }
+
         var range = GetRenderedRange();
         var size = CurrentItemSize;
         _offset = offset;

@@ -1,5 +1,6 @@
 namespace Forma.Blazor.Components.Debugging.InputInspector;
 
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 
 using Forma.Framework.Css;
@@ -35,10 +36,16 @@ public sealed partial class FormaInputInspector : FormaElementBase
         => _isPaused;
 
     /// <summary>Shows a decision the script reports.</summary>
+    /// <remarks>A decision the inspector can't draw, one carrying no input of a known family or no stack, is refused and logged.</remarks>
     [JSInvokable]
     public Task ReportAsync(InputDecision decision)
     {
-        ArgumentNullException.ThrowIfNull(decision);
+        if (!IsDrawable(decision))
+        {
+            InputInspectorLog.DecisionRefused(Context.Logger, Context.RuntimeId);
+
+            return Task.CompletedTask;
+        }
 
         if (_isPaused)
         {
@@ -91,6 +98,18 @@ public sealed partial class FormaInputInspector : FormaElementBase
 
         await base.DisposeAsyncCore();
     }
+
+    // What the inspector draws of a decision: an input of a known family, with the modifiers it carries, and the stack of layers.
+    private static bool IsDrawable([NotNullWhen(true)] InputDecision? decision)
+        => decision is { Input: { Type: not null } input, Stack: { } stack }
+        && stack.All(layer => layer is not null)
+        && input switch
+        {
+            InputKeyInfo key => key.Modifiers is not null,
+            InputWheelInfo wheel => wheel.Modifiers is not null,
+            InputPointerInfo pointer => pointer.Modifiers is not null,
+            _ => true,
+        };
 
     private static Icon GetFamilyIcon(InputInfo input)
         => input switch

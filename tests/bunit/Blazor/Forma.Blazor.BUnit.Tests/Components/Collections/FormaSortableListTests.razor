@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Microsoft.Extensions.Logging
 @code {
     public sealed class Component
     {
@@ -185,6 +186,37 @@
 
             // Assert
             Assert.Equal([1, 3, 2, 4], changedTo!.Select(i => i.Id));
+        }
+
+        [Theory]
+        [InlineData(-1, 1)]
+        [InlineData(4, 1)]
+        [InlineData(1, -1)]
+        [InlineData(1, 4)]
+        [InlineData(int.MinValue, int.MaxValue)]
+        public async Task Should_refuse_and_log_a_move_naming_a_place_outside_the_list(int sourceIndex, int targetIndex)
+        {
+            // Arrange
+            using var ctx = new FormaSortableListTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var items = CreateItems(4);
+            IReadOnlyList<SortableItem>? changedTo = null;
+            var cut = ctx.Render(
+                @<FormaSortableList Items="items" ItemKey="@(i => i.Id)"
+                                     ItemsChanged="@((IReadOnlyList<SortableItem> reordered) => changedTo = reordered)">
+                    <ItemTemplate Context="item">@item.Title</ItemTemplate>
+                </FormaSortableList>);
+            var list = cut.FindComponent<FormaSortableList<SortableItem>>().Instance;
+
+            // Act
+            await cut.InvokeAsync(() => list.HandleReorderAsync(sourceIndex, targetIndex, insertAfter: true));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(changedTo),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was refused", StringComparison.Ordinal)));
         }
 
         [Fact]

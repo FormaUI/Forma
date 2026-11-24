@@ -1,6 +1,7 @@
 @inherits FormaBunitContext
 @using AngleSharp.Dom
 @using Microsoft.AspNetCore.Components.Web.Virtualization
+@using Microsoft.Extensions.Logging
 
 @code {
     public sealed class Component
@@ -57,6 +58,40 @@
             Assert.Multiple(
                 () => Assert.Equal([.. Enumerable.Range(48, 14).Select(id => $"Row {id}")], Drawn(cut)),
                 () => Assert.Equal(["start 960px", "end 760px"], Spacers(cut)));
+        }
+
+        [Theory]
+        [InlineData(double.PositiveInfinity, 200, 20)]
+        [InlineData(double.NaN, 200, 20)]
+        [InlineData(1000, double.PositiveInfinity, 20)]
+        [InlineData(1000, -200, 20)]
+        [InlineData(1000, 200, double.NegativeInfinity)]
+        [InlineData(1000, 200, -20)]
+        public async Task Should_refuse_and_log_a_viewport_no_list_can_stand_at(double offset, double viewport, double itemSize)
+        {
+            // Arrange
+            using var ctx = new FormaVirtualizeTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(offset, viewport, itemSize));
+            var drawnAfterRefusal = Drawn(cut);
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(1000, 200, 20));
+
+            // Assert — the list stays where it stood, and goes on to the next viewport it can take
+            Assert.Multiple(
+                () => Assert.Equal(["Row 0", "Row 1", "Row 2", "Row 3", "Row 4"], drawnAfterRefusal),
+                () => Assert.Equal([.. Enumerable.Range(48, 14).Select(id => $"Row {id}")], Drawn(cut)),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was refused", StringComparison.Ordinal)));
         }
 
         [Fact]
