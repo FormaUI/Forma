@@ -53,7 +53,7 @@
         [Theory]
         [InlineData("javascript:alert(1)")]
         [InlineData("JaVaScRiPt:alert(1)")]
-        [InlineData("0001 javascript:alert(1)")]
+        [InlineData("\u0001 javascript:alert(1)")]
         [InlineData("vbscript:msgbox(1)")]
         [InlineData("data:text/html,<script>alert(1)</script>")]
         [InlineData("data:image/svg+xml,<svg onload=alert(1)>")]
