@@ -23,6 +23,15 @@ internal static partial class DomLog
     [LoggerMessage(Level = LogLevel.Debug, Message = "The edit of registration {Token} at revision {Revision} falls outside the text {RuntimeId} holds; its field sends its whole text in its place.")]
     public static partial void EditMisplaced(ILogger logger, string token, int revision, Guid runtimeId);
 
+    [LoggerMessage(Level = LogLevel.Debug, Message = "The edit of registration {Token} at revision {Revision} lengthens the text {RuntimeId} holds past its field's maximum length; its field sends its whole text in its place.")]
+    public static partial void EditTooLong(ILogger logger, string token, int revision, Guid runtimeId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "The whole text of registration {Token} at revision {Revision} is longer than its field's maximum length allows {RuntimeId}, and was refused.")]
+    public static partial void ReplacementTooLong(ILogger logger, string token, int revision, Guid runtimeId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "The edit of registration {Token} at revision {Revision} stands further ahead of the text {RuntimeId} holds than its field's edits reach; its field sends its whole text in its place.")]
+    public static partial void EditTooFarAhead(ILogger logger, string token, int revision, Guid runtimeId);
+
     [LoggerMessage(Level = LogLevel.Debug, Message = "A {Operation} report the browser sent {RuntimeId} named no registration or carried no value, and was refused.")]
     public static partial void ReportRefused(ILogger logger, string operation, Guid runtimeId);
 

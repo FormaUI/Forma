@@ -164,6 +164,29 @@
             Assert.Equal("280", cut.Find("textarea").GetAttribute("maxlength"));
         }
 
+        [Theory]
+        [InlineData(281)]
+        [InlineData(1024 * 1024)]
+        public async Task Should_take_no_text_past_its_maximum_length_that_a_browser_ignoring_the_attribute_sends(int length)
+        {
+            // Arrange
+            using var ctx = new FormaTextAreaTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel { Text = "Notes" };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextArea @bind-Value="model.Text" Label="Notes" MaxLength="280" />
+            </FakeFormHost>);
+
+            // Act
+            await fields.ChangeAsync(cut.Find("textarea"), new string('a', length));
+
+            // Assert — the field says its text didn't arrive, as for any text it can't follow
+            Assert.Multiple(
+                () => Assert.Equal("Notes", model.Text),
+                () => Assert.Equal("Your text didn't arrive in full. Edit it to try again.", cut.Find(".forma-field-message").TextContent),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted));
+        }
+
         [Fact]
         public void Should_splat_unmatched_attributes_onto_the_textarea()
         {

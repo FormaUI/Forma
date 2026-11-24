@@ -11,6 +11,7 @@ using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 
 using Xunit;
@@ -327,14 +328,99 @@ public sealed class DomTextEditsTests
 
             // Act
             await EditAsync(browser, 1, 3, 0, " Lovelace");
-            await ReplaceAsync(browser, 2, "Ada!");
+            await ReplaceAsync(browser, 2, "Ad");
 
             // Assert
             var resend = Assert.Single(GetCommands(browser, "resend"));
             Assert.Multiple(
                 () => Assert.Equal(0, resend.Arguments[4]),
-                () => Assert.Equal(["Ada!"], texts),
+                () => Assert.Equal(["Ad"], texts),
                 () => Assert.Contains(loggerFactory.Entries, entry => entry.Message.Contains("was lost on its way", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task Should_have_the_field_send_its_whole_text_in_place_of_an_edit_lengthening_it_past_its_maximum_length()
+        {
+            // Arrange — an edit within the bytes the field's maximum allows, but past its length, as only a browser ignoring the attribute sends
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser((command, _) => command == "resend");
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            await using var edits = await FollowAsync(engine, "Ada", Live with { MaxLength = 5 }, _ => Task.CompletedTask);
+
+            // Act
+            await EditAsync(browser, 1, 3, 0, " Lovelace");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Single(GetCommands(browser, "resend")),
+                () => Assert.Equal("Ada", edits.Text),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("past its field's maximum length", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task Should_take_an_edit_that_shortens_a_text_of_net_s_own_longer_than_its_maximum_length()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser((command, _) => command == "resend");
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            await using var edits = await FollowAsync(engine, "Ada Lovelace", Live with { MaxLength = 3 }, _ => Task.CompletedTask);
+
+            // Act — a letter replaced by another, and one removed
+            await EditAsync(browser, 1, 0, 1, "E");
+            await EditAsync(browser, 2, 11, 1, string.Empty);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(GetCommands(browser, "resend")),
+                () => Assert.Equal("Eda Lovelac", edits.Text));
+        }
+
+        [Fact]
+        public async Task Should_refuse_a_whole_text_longer_than_its_field_can_hold()
+        {
+            // Arrange — the field's whole text within the bytes it accepts, but past its length
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser((command, _) => command == "resend");
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            await using var edits = await FollowAsync(engine, "Ada", Live with { MaxLength = 3 }, _ => Task.CompletedTask);
+
+            // Act
+            await EditAsync(browser, 1, 9, 0, "x");
+            await ReplaceAsync(browser, 1, "Adam");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Ada", edits.Text),
+                () => Assert.True(edits.IsFaulted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("longer than its field's maximum length", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task Should_have_the_field_send_its_whole_text_in_place_of_an_edit_further_ahead_than_its_edits_reach()
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = CreateBrowser((command, _) => command == "resend");
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            await using var edits = await FollowAsync(engine, "Ada", Live, _ => Task.CompletedTask);
+            await using var stream = new FakeJSStreamReference("!"u8.ToArray());
+            var (receiver, token) = GetReceiver(browser);
+
+            // Act
+            await receiver.EditAsync(token, int.MaxValue, 3, 0, new JSTransfer { Stream = stream, IsText = true }, isCommit: false);
+
+            // Assert — the edit is released unread
+            Assert.Multiple(
+                () => Assert.Single(GetCommands(browser, "resend")),
+                () => Assert.Null(stream.OpenedWith),
+                () => Assert.True(stream.IsDisposed),
+                () => Assert.Equal("Ada", edits.Text),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("further ahead", StringComparison.Ordinal)));
         }
 
         [Fact]

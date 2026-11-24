@@ -10,7 +10,9 @@ using Microsoft.AspNetCore.Components;
 /// <remarks>
 /// The field numbers its edits by revision across every registration of it, and .NET applies them in that order: an edit arriving ahead of its
 /// predecessor waits for it, and one whose revision the text has already passed is dropped. An edit that cannot be applied, its inserted text
-/// refused or broken on its way or its range outside the text, has the field send its whole text in its place. A text of .NET's own is written
+/// refused or broken on its way, its range outside the text, its revision further ahead than a field's edits reach, or the text it leaves
+/// longer than the field's maximum length where it lengthens it, has the field send its whole text in its place, which is refused where it
+/// is longer than the field's maximum length and the text .NET holds. A text of .NET's own is written
 /// through the field, which answers the revision it then stands at; the edits arriving meanwhile wait, and those it supersedes are dropped,
 /// one lost or still being read among them, with what they committed. A
 /// write the field has not taken is made once it is attached, and again as the connection comes back. Each change is handed to the
@@ -21,6 +23,9 @@ using Microsoft.AspNetCore.Components;
 /// </remarks>
 public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEditOptions>
 {
+    // The most revisions an edit stands ahead of the text while the edits between are on their way, far more than a field sends at once.
+    private const int MaximumWaitingEdits = 256;
+
     private static readonly DomCapability<TextEditOptions> EditCapability = new(DomRoots.Engine, "edits", DescribeEdits);
 
     private readonly DomSession _session;
@@ -238,6 +243,16 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
     {
         var isPassed = arrival.IsReplacement ? arrival.Revision < _revision : arrival.Revision <= _revision;
 
+        // An edit further ahead than the field's edits reach is released unread, and the field sends its whole text in its place.
+        if (!IsDisposed && !isPassed && !arrival.IsReplacement && (long)arrival.Revision - _revision > MaximumWaitingEdits)
+        {
+            DomLog.EditTooFarAhead(_session.Logger, _registration.Token, arrival.Revision, _session.RuntimeId);
+            await arrival.Transfer.DiscardAsync();
+            MarkLost(arrival);
+            await ApplyAsync();
+            return;
+        }
+
         if (IsDisposed || isPassed || (!arrival.IsReplacement && !_arrivals.TryAdd(arrival.Revision, arrival)))
         {
             // A replacement the text has passed answers the request for it, as one taken does.
@@ -427,6 +442,16 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
             return;
         }
 
+        // The field's maximum length holds here as the browser holds it, so an edit may shorten a longer text of .NET's own but lengthen none past it.
+        var editedLength = _text.Length - edit.RemovedLength + insertedText.Length;
+
+        if (_options.MaxLength is { } maxLength && editedLength > maxLength && editedLength > _text.Length)
+        {
+            DomLog.EditTooLong(_session.Logger, _registration.Token, edit.Revision, _session.RuntimeId);
+            MarkLost(edit);
+            return;
+        }
+
         _text = string.Concat(_text.AsSpan(0, edit.StartIndex), insertedText, _text.AsSpan(edit.StartIndex + edit.RemovedLength));
         _revision = edit.Revision;
         await NotifyAsync(edit.IsCommit);
@@ -451,6 +476,13 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
         catch (JSTransferException ex)
         {
             DomLog.EditLost(_session.Logger, ex, _registration.Token, replacement.Revision, _session.RuntimeId);
+            text = null;
+        }
+
+        // A field's whole text is no longer than its maximum length allows, or than a longer text of .NET's own the reader shortens.
+        if (text is not null && _options.MaxLength is { } maxLength && text.Length > Math.Max(maxLength, _text.Length))
+        {
+            DomLog.ReplacementTooLong(_session.Logger, _registration.Token, replacement.Revision, _session.RuntimeId);
             text = null;
         }
 

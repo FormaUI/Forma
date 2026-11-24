@@ -78,6 +78,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   each refuses a larger file as it is picked. To migrate, a host storing larger files raises the cap:
   `new FileUploaderOptions { MaxFileSize = 100 * 1024 * 1024 }`, `CatalogConstraints.MaxFileBytes` for an explorer, or
   `FileUploadPluginOptions.Picker`'s `MaxFileSize` for the composer.
+- A text field's maximum length holds in .NET as it does in the browser: `FormaTextBox`, `FormaTextArea` and
+  `FormaColorPicker` take no edit that lengthens their text past it, nor a whole text longer than both it and the text
+  they hold, which only a browser ignoring the attribute sends, and the field says its text didn't arrive, as it does
+  for any text it can't follow. An edit standing more than 256 revisions ahead of the field's text is refused the same way.
 - `FormaFilePicker` leaves out a file the browser describes with no name, no type or a size no file has, and
   `FormaFileUploader` fails one of such a size before reading it, where either threw.
 
