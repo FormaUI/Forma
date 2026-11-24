@@ -163,7 +163,7 @@
 
         [Theory]
         [InlineData("17:\00")]
-        [InlineData("5\ud800 PM")]
+        [InlineData("5" + LoneSurrogate.Placeholder + " PM")]
         [InlineData("25:00")]
         [InlineData("17:00:00:00:00")]
         public async Task Should_keep_text_that_can_t_be_a_time_and_report_it(string typed)
@@ -177,7 +177,7 @@
             </FakeFormHost>);
 
             // Act
-            await fields.ChangeAsync(cut.Find("input"), typed);
+            await fields.ChangeAsync(cut.Find("input"), LoneSurrogate.Restore(typed));
 
             // Assert
             Assert.Multiple(

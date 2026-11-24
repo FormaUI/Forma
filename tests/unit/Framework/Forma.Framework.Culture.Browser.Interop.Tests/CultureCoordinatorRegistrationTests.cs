@@ -465,7 +465,7 @@ public sealed class CultureCoordinatorRegistrationTests
         [InlineData(null, "he", "document", 1)]
         [InlineData("de-DE", null, "document", 1)]
         [InlineData("de\0DE", "he", "document", 1)]
-        [InlineData("de-DE", "h\ud800e", "document", 1)]
+        [InlineData("de-DE", "h" + LoneSurrogate.Placeholder + "e", "document", 1)]
         [InlineData("de-DE; Path=/", "he", "document", 1)]
         [InlineData("zz-NOWHERE-of-no-kind", "he", "document", 1)]
         [InlineData("de-DE", "he", null, 1)]
@@ -481,7 +481,7 @@ public sealed class CultureCoordinatorRegistrationTests
             await GetRegistration(scope).RegisterAsync();
 
             // Act
-            var exception = await Record.ExceptionAsync(() => GetReceiver(browser).ApplyAsync(culture!, uiCulture!, documentKey!, number));
+            var exception = await Record.ExceptionAsync(() => GetReceiver(browser).ApplyAsync(culture!, uiCulture is null ? null! : LoneSurrogate.Restore(uiCulture), documentKey!, number));
 
             // Assert
             var state = GetCultureState(scope);

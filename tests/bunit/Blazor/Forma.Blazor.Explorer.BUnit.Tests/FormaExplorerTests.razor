@@ -1978,7 +1978,7 @@
         [InlineData("tiny")]
         [InlineData("COMPACT")]
         [InlineData("compact\0")]
-        [InlineData("\ud800")]
+        [InlineData(LoneSurrogate.Placeholder)]
         [InlineData(null)]
         public async Task Should_refuse_and_log_a_header_layout_the_stylesheet_doesn_t_name(string? layout)
         {
@@ -1992,7 +1992,7 @@
             await cut.InvokeAsync(() => area.HandleBreakpointAsync("compact"));
 
             // Act
-            await cut.InvokeAsync(() => area.HandleBreakpointAsync(layout!));
+            await cut.InvokeAsync(() => area.HandleBreakpointAsync(layout is null ? null! : LoneSurrogate.Restore(layout)));
 
             // Assert — the header keeps the layout last named
             Assert.Multiple(

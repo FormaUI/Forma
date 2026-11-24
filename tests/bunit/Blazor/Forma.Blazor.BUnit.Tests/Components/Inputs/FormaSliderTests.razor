@@ -191,7 +191,7 @@
         [InlineData("-1")]
         [InlineData("twelve")]
         [InlineData("1\02")]
-        [InlineData("\ud800")]
+        [InlineData(LoneSurrogate.Placeholder)]
         [InlineData("")]
         public void Should_keep_its_value_for_a_whole_number_no_range_input_holds(string text)
         {
@@ -205,7 +205,7 @@
             </FakeFormHost>);
 
             // Act
-            cut.Find(".forma-slider").Input(text);
+            cut.Find(".forma-slider").Input(LoneSurrogate.Restore(text));
 
             // Assert
             Assert.Multiple(

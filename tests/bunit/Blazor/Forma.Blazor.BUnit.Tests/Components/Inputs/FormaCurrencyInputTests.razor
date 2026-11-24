@@ -213,7 +213,7 @@
 
         [Theory]
         [InlineData("1\0.50")]
-        [InlineData("$\ud8001")]
+        [InlineData("$" + LoneSurrogate.Placeholder + "1")]
         [InlineData("79228162514264337593543950336")]
         [InlineData("one dollar")]
         public async Task Should_keep_the_last_amount_and_report_text_that_can_t_be_one(string typed)
@@ -228,7 +228,7 @@
             </FakeFormHost>);
 
             // Act
-            await fields.ChangeAsync(cut.Find("input"), typed);
+            await fields.ChangeAsync(cut.Find("input"), LoneSurrogate.Restore(typed));
             await fields.ChangeAsync(cut.Find("input"), new string('9', 1024 * 1024));
 
             // Assert

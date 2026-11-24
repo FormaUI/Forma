@@ -424,7 +424,7 @@
 
         [Theory]
         [InlineData("9:\030")]
-        [InlineData("9\ud800:30")]
+        [InlineData("9" + LoneSurrogate.Placeholder + ":30")]
         [InlineData("99:99")]
         [InlineData("far past any time")]
         public async Task Should_keep_text_that_can_t_be_a_time_and_report_it(string typed)
@@ -439,7 +439,7 @@
             </FakeFormHost>);
 
             // Act
-            await fields.ChangeAsync(GetTime(cut), typed == "far past any time" ? new string('9', 1024 * 1024) : typed);
+            await fields.ChangeAsync(GetTime(cut), typed == "far past any time" ? new string('9', 1024 * 1024) : LoneSurrogate.Restore(typed));
 
             // Assert
             Assert.Multiple(

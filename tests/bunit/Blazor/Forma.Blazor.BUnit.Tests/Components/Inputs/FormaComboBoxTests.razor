@@ -141,7 +141,7 @@
 
         [Theory]
         [InlineData("Ma\0drid")]
-        [InlineData("Madrid\ud800")]
+        [InlineData("Madrid" + LoneSurrogate.Placeholder)]
         [InlineData("\0")]
         [InlineData("far past any label")]
         public async Task Should_narrow_by_any_text_typed_and_keep_the_value(string typed)
@@ -156,7 +156,7 @@
             </FakeFormHost>);
 
             // Act
-            await fields.TypeAsync(cut.Find("input"), typed == "far past any label" ? new string('M', 1024 * 1024) : typed);
+            await fields.TypeAsync(cut.Find("input"), typed == "far past any label" ? new string('M', 1024 * 1024) : LoneSurrogate.Restore(typed));
 
             // Assert — the culture's comparison passes over what no label carries, so a label can still be offered
             Assert.Multiple(

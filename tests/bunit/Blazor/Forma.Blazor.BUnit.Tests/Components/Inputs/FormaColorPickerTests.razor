@@ -170,11 +170,11 @@
 
         [Theory]
         [InlineData(false, "#12345\0")]
-        [InlineData(false, "#1234\ud800")]
+        [InlineData(false, "#1234" + LoneSurrogate.Placeholder)]
         [InlineData(false, "red;a:b")]
         [InlineData(true, "#gggggggg")]
         [InlineData(true, "#FF5533\0\0")]
-        [InlineData(true, "#FF55\ud800zz")]
+        [InlineData(true, "#FF55" + LoneSurrogate.Placeholder + "zz")]
         [InlineData(true, "0;top:0")]
         public async Task Should_refuse_text_that_is_not_a_hex_color_and_keep_the_color_it_holds(bool showsAlpha, string text)
         {
@@ -187,7 +187,7 @@
             </FakeFormHost>);
 
             // Act
-            await fields.ChangeAsync(cut.Find(".forma-color-picker-hex-input"), text);
+            await fields.ChangeAsync(cut.Find(".forma-color-picker-hex-input"), LoneSurrogate.Restore(text));
 
             // Assert — the swatch shows the color held, never the text typed
             Assert.Multiple(

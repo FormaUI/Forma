@@ -161,8 +161,8 @@
         [Theory]
         [InlineData("1\02")]
         [InlineData("\05")]
-        [InlineData("5\ud800")]
-        [InlineData("\udc005")]
+        [InlineData("5" + LoneSurrogate.Placeholder)]
+        [InlineData(LoneSurrogate.Placeholder + "5")]
         [InlineData("99999999999")]
         [InlineData("a million")]
         public async Task Should_keep_the_last_number_and_report_text_that_can_t_be_one(string typed)
@@ -176,7 +176,7 @@
             </FakeFormHost>);
 
             // Act
-            await fields.ChangeAsync(cut.Find("input"), typed);
+            await fields.ChangeAsync(cut.Find("input"), LoneSurrogate.Restore(typed));
 
             // Assert
             Assert.Multiple(
