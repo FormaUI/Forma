@@ -69,6 +69,7 @@
     <Project Path="tests\bunit\Blazor\Forma.Blazor.Server.BUnit.Tests\Forma.Blazor.Server.BUnit.Tests.csproj" />
     <Project Path="tests\unit\Blazor\Forma.Blazor.Server.Tests\Forma.Blazor.Server.Tests.csproj" />
     <Project Path="tests\bunit\Blazor\Forma.Blazor.Showcase.BUnit.Tests\Forma.Blazor.Showcase.BUnit.Tests.csproj" />
+    <Project Path="tests\unit\Blazor\Forma.Blazor.Showcase.Tests\Forma.Blazor.Showcase.Tests.csproj" />
     <Project Path="tests\unit\Blazor\Forma.Blazor.WebAssembly.Tests\Forma.Blazor.WebAssembly.Tests.csproj" />
     <Project Path="tests\unit\Blazor\Forma.Blazor.WebView.Tests\Forma.Blazor.WebView.Tests.csproj" />
     <Project Path="tests\e2e\Clients\Forma.Blazor.Browser.Host\Forma.Blazor.Browser.Host.csproj" />

@@ -84,6 +84,9 @@ builder.Services.AddFormaCultureRouting(new CultureRouterOptions
 
 var app = builder.Build();
 
+// The framework builds each page's address from the request's Host header, so a request no address can be built for is
+// refused before it reaches a page.
+app.UseMiddleware<HostAddressMiddleware>();
 app.UseFormaCultureRouting();
 
 app.UseRouting();
