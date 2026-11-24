@@ -31,6 +31,12 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     // where the heights the reach measured moved it.
     private const int ScrollAttemptCount = 3;
 
+    // The tallest viewport a screen shows: an 8K screen turned upright, 7,680 pixels, at the browser's smallest zoom, a quarter.
+    private const double MaximumViewport = 7_680 / 0.25;
+
+    // The least room a drawn item takes that a measurement can name.
+    private const double MinimumItemSize = 1;
+
     /// <summary>The items the list holds.</summary>
     [Parameter] public IReadOnlyList<TItem>? Items { get; set; }
 
@@ -185,7 +191,11 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
     /// <param name="offset">How far the top of the viewport stands past the start of the list, in pixels.</param>
     /// <param name="viewport">How tall the viewport is, in pixels.</param>
     /// <param name="itemSize">The average room a drawn item takes, in pixels.</param>
-    /// <remarks>A report no list can stand at, at an offset or of a size past any number or of a negative size, is refused and logged.</remarks>
+    /// <remarks>
+    /// A report no list can stand at, at an offset or of a size past any number or of a negative size, is refused and logged. A viewport
+    /// taller than any screen shows is taken at that height, and an item measured at less than a pixel leaves the size measured before,
+    /// so what the list draws stays within what a screen can show whatever the browser reports.
+    /// </remarks>
     [JSInvokable]
     public async Task HandleViewportAsync(double offset, double viewport, double itemSize)
     {
@@ -196,12 +206,17 @@ public sealed partial class FormaVirtualize<TItem> : FormaComponentBase
             return;
         }
 
+        if (viewport > MaximumViewport || itemSize is > 0 and < MinimumItemSize)
+        {
+            VirtualizeLog.ViewportCapped(Context.Logger, Context.RuntimeId);
+        }
+
         var range = GetRenderedRange();
         var size = CurrentItemSize;
         _offset = offset;
-        _viewport = viewport;
+        _viewport = Math.Min(viewport, MaximumViewport);
 
-        if (itemSize > 0)
+        if (itemSize >= MinimumItemSize)
         {
             _measuredItemSize = itemSize;
         }

@@ -94,6 +94,34 @@
                 () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was refused", StringComparison.Ordinal)));
         }
 
+        [Theory]
+        [InlineData(0, 1e9, 20, 1540)]
+        [InlineData(0, 200, 0.001, 12)]
+        [InlineData(0, 1e9, 0.001, 1540)]
+        public async Task Should_draw_no_more_than_a_screen_shows_whatever_viewport_the_browser_reports(double offset, double viewport, double itemSize, int mostDrawn)
+        {
+            // Arrange — a hundred thousand rows of twenty pixels, two drawn beyond each edge
+            using var ctx = new FormaVirtualizeTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var cut = ctx.Render(
+                @<div>
+                    <FormaVirtualize TItem="Row" Items="CreateRows(100_000)" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
+                        <ItemContent Context="row"><div class="row">@row.Name</div></ItemContent>
+                    </FormaVirtualize>
+                </div>);
+            var virtualizer = Virtualizer(cut);
+
+            // Act
+            await virtualizer.InvokeAsync(() => virtualizer.Instance.HandleViewportAsync(offset, viewport, itemSize));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.InRange(Drawn(cut).Count, 1, mostDrawn),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("within those bounds", StringComparison.Ordinal)));
+        }
+
         [Fact]
         public async Task Should_size_the_spacers_by_the_average_room_a_drawn_item_takes()
         {
