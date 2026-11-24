@@ -47,8 +47,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   a state for having none it shows it: `FormaVideoPlayer` says the video is unavailable, `FormaEmoji` draws the emoji in
   the reader's font, and a thumbnail draws its kind's glyph.
 - `FormaComposer` sanitizes, through the registered `IHtmlSanitizer`, a document a converter produced and one the
-  host's `History` holds, and the markup a template or a plugin writes into its canvas.
-  A stored file a plugin puts into `FormaComposer` at an address its element doesn't allow goes in as its name alone.
+  host's `History` holds, and the markup a template or a plugin writes into its canvas. A stored file a plugin puts
+  into it at an address its element doesn't allow goes in as its name alone.
 - Markup pasted into `FormaComposer`'s canvas keeps a link or a source only at an address its element's kind allows,
   read as the browser reads it, so a `javascript:` address behind a control character or split by a tab no longer
   stands in the canvas until the document is sanitized.
