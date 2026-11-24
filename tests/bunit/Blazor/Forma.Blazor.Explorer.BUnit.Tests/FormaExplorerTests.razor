@@ -15,6 +15,7 @@
 @using Forma.Framework.Browser
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.AspNetCore.Components.Web
+@using Microsoft.Extensions.Logging
 @using Microsoft.Extensions.Time.Testing
 @using Bunit.Rendering
 
@@ -1926,6 +1927,51 @@
             Assert.Multiple(
                 () => Assert.NotNull(cut.Find(".forma-explorer-header-wide")),
                 () => Assert.Empty(cut.FindAll(".forma-explorer-header-compact")));
+        }
+
+        [Theory]
+        [InlineData("tiny")]
+        [InlineData("COMPACT")]
+        [InlineData("compact\0")]
+        [InlineData("\ud800")]
+        [InlineData(null)]
+        public async Task Should_refuse_and_log_a_header_layout_the_stylesheet_doesn_t_name(string? layout)
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
+            var area = cut.FindComponent<FormaExplorerCommandArea>().Instance;
+            await cut.InvokeAsync(() => area.HandleBreakpointAsync("compact"));
+
+            // Act
+            await cut.InvokeAsync(() => area.HandleBreakpointAsync(layout!));
+
+            // Assert — the header keeps the layout last named
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-explorer-header-wide")),
+                () => Assert.NotNull(cut.Find(".forma-explorer-header-compact")),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("was refused", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task Should_take_a_header_the_stylesheet_names_no_layout_for_as_wide()
+        {
+            // Arrange — a page whose stylesheet hasn't loaded names none
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ResourceInfo> resources = [new ImageResourceInfo("https://example.com/cover.jpg")];
+            var cut = ctx.Render(@<FormaExplorer Items="@(CatalogItem.ForAll(resources))" />);
+            var area = cut.FindComponent<FormaExplorerCommandArea>().Instance;
+            await cut.InvokeAsync(() => area.HandleBreakpointAsync("compact"));
+
+            // Act
+            await cut.InvokeAsync(() => area.HandleBreakpointAsync(string.Empty));
+
+            // Assert
+            Assert.NotNull(cut.Find(".forma-explorer-header-wide"));
         }
 
         [Fact]

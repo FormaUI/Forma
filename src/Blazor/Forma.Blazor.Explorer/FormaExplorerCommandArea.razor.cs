@@ -26,15 +26,24 @@ public sealed partial class FormaExplorerCommandArea : FormaComponentBase
         => View.Selection.Count > 0 ? L["{SelectedCount} selected", View.Selection.Count].Value : string.Empty;
 
     /// <summary>Takes the layout the stylesheet names for the header's width.</summary>
+    /// <remarks>A header the stylesheet names no layout for is wide; a name the stylesheet doesn't write is refused and logged.</remarks>
     [JSInvokable]
     public Task HandleBreakpointAsync(string layout)
     {
-        var nextLayout = layout switch
+        ExplorerHeaderLayout? nextLayout = layout switch
         {
             "compact" => ExplorerHeaderLayout.Compact,
             "medium" => ExplorerHeaderLayout.Medium,
-            _ => ExplorerHeaderLayout.Wide,
+            "wide" or "" => ExplorerHeaderLayout.Wide,
+            _ => null,
         };
+
+        if (nextLayout is null)
+        {
+            ExplorerLog.LayoutRefused(Context.Logger, Context.RuntimeId);
+
+            return Task.CompletedTask;
+        }
 
         if (_layout == nextLayout)
         {
