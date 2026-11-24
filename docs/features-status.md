@@ -248,6 +248,10 @@ A check of what Forma turns away, like the one a host ran on its own site, is pl
   nor an application.
 - **Limits.** The sizes a component accepts from the browser, a value reaching .NET in pieces and an upload among them,
   are set and checked.
+- **Arguments validated one way everywhere.** One standard for checking arguments, stated in the working rules and
+  applied across the codebase: a component's parameters, every public member of a service or a type, each method a
+  script calls back into .NET with what the browser sends, which on the Server anyone can send, and each function a
+  script exports. The analyzers enforce what they can state, so a new member is held to it as it's added.
 - **Dependencies.** CI checks every package, the NuGet packages and the script tests' npm packages, for known
   vulnerabilities on each scheduled run, even when nothing changed.
 - **A scan of the running Showcase.** An OWASP ZAP scan, rerun from a script, with every finding fixed or explained.
