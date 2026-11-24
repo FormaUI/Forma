@@ -18,6 +18,6 @@ public enum HtmlSubject
     /// <summary>A whole inline style declaration.</summary>
     StyleDeclaration,
 
-    /// <summary>An address an attribute carries.</summary>
+    /// <summary>An address an attribute carries, owned by the element naming the attribute.</summary>
     Url,
 }

@@ -34,9 +34,9 @@ public sealed partial class FormaComposerImageDialog : ComposerDialogBase
         var source = _source.Trim();
 
         // An address the sanitizer would strip is refused.
-        if (!MarkupPolicy.Allows(HtmlSubject.Url, source, default, out _))
+        if (!MarkupPolicy.Allows(HtmlSubject.Url, source, "img", out _))
         {
-            Messages.Add(L["An address has to be a web address, a mail or telephone link, a path within this site, or an inline picture."].Value);
+            Messages.Add(L["An address has to be a web address, a path within this site, or an inline picture."].Value);
 
             return;
         }

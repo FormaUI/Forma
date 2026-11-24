@@ -28,6 +28,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
   other image as a disallowed type, and every image type where it names none; it set `Accept` to `image/*` whatever
   the host gave. An `Accept` naming a type that isn't an image throws an `ArgumentException`, where the picker took
   every image in its place: to migrate, leave `Accept` unset on an image picker that took a type other than images.
+- `AddressPolicy` decides which addresses may be written where, by what each is to its element, a link or a source of
+  one kind, as [the security design](docs/security-design.md#what-forma-writes-into-a-page) sets out.
+  `RichContentMarkupPolicy` judges an address by the element it belongs to, so a document's link keeps no `data:` or
+  `blob:` address, its image no `mailto:` or `tel:` one, and its video or audio only a `data:` address of its own kind.
+  `FormaComposer`'s link and image dialogs refuse an address their element doesn't allow, and `FilePlayerProvider` plays
+  a `data:` address only of a video.
 
 ## `1.0.0-preview.16`
 

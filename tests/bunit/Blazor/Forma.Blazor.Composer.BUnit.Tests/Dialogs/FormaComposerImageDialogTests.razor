@@ -52,6 +52,12 @@
 
         [Theory]
         [InlineData("javascript:alert(1)")]
+        [InlineData("JaVaScRiPt:alert(1)")]
+        [InlineData("0001 javascript:alert(1)")]
+        [InlineData("vbscript:msgbox(1)")]
+        [InlineData("data:text/html,<script>alert(1)</script>")]
+        [InlineData("data:image/svg+xml,<svg onload=alert(1)>")]
+        [InlineData("mailto:editor@example.com")]
         [InlineData("ftp://files.example.com")]
         [InlineData("just some text")]
         public async Task Should_refuse_an_address_the_document_could_not_keep(string address)
@@ -69,7 +75,7 @@
             // Assert
             Assert.False(inserted);
             Assert.Equal(
-                "An address has to be a web address, a mail or telephone link, a path within this site, or an inline picture.",
+                "An address has to be a web address, a path within this site, or an inline picture.",
                 cut.Find(".forma-composer-dialog-error[role=alert]").TextContent.Trim());
         }
 

@@ -63,18 +63,6 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         "url(", "javascript:", "expression(", "@import", "behavior:"
     ];
 
-    private static readonly string[] UrlSchemes =
-    [
-        "http://", "https://", "mailto:", "tel:"
-    ];
-
-    // SVG is excluded because it can carry script.
-    private static readonly string[] DataUrlPrefixes =
-    [
-        "data:image/png", "data:image/jpeg", "data:image/jpg",
-        "data:image/gif", "data:image/webp", "data:image/avif"
-    ];
-
     // Each lookup hands back the allowlist's own spelling as the canonical name.
     private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> TagLookup = Tags.GetAlternateLookup<ReadOnlySpan<char>>();
     private static readonly HashSet<string>.AlternateLookup<ReadOnlySpan<char>> DiscardedLookup = DiscardedWithContent.GetAlternateLookup<ReadOnlySpan<char>>();
@@ -95,7 +83,7 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
             HtmlSubject.Attribute => AllowsAttribute(value, owner, out canonicalSpelling),
             HtmlSubject.StyleProperty => AllowsStyleProperty(value, out canonicalSpelling),
             HtmlSubject.StyleDeclaration => !IsDenied(value),
-            HtmlSubject.Url => IsAllowedUrl(value),
+            HtmlSubject.Url => IsAllowedUrl(value, owner),
             _ => false,
         };
     }
@@ -145,7 +133,7 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         return false;
     }
 
-    private static bool IsAllowedUrl(ReadOnlySpan<char> url)
+    private static bool IsAllowedUrl(ReadOnlySpan<char> url, ReadOnlySpan<char> owner)
     {
         var trimmedUrl = url.Trim();
 
@@ -162,30 +150,52 @@ public sealed class RichContentMarkupPolicy : IMarkupPolicy
         // A relative path takes the document's own scheme.
         if (trimmedUrl[0] == '/'
             || trimmedUrl.StartsWith("./", StringComparison.Ordinal)
-            || trimmedUrl.StartsWith("../", StringComparison.Ordinal)
-            || IsRelativePath(trimmedUrl))
+            || trimmedUrl.StartsWith("../", StringComparison.Ordinal))
         {
             return true;
         }
 
-        foreach (var scheme in UrlSchemes)
+        if (AddressPolicy.GetScheme(trimmedUrl) is null)
         {
-            if (trimmedUrl.StartsWith(scheme, StringComparison.OrdinalIgnoreCase))
-            {
-                return trimmedUrl.Length > scheme.Length;
-            }
+            return IsRelativePath(trimmedUrl);
         }
 
-        foreach (var prefix in DataUrlPrefixes)
+        // An absolute address names something past its scheme and the slashes before its host.
+        var schemeSpecificPart = trimmedUrl[(trimmedUrl.IndexOf(':') + 1)..];
+
+        if (schemeSpecificPart.StartsWith("//", StringComparison.Ordinal))
         {
-            if (trimmedUrl.StartsWith(prefix, StringComparison.OrdinalIgnoreCase))
-            {
-                // A data URL's bytes follow its comma.
-                return trimmedUrl.IndexOf(',') > 0;
-            }
+            schemeSpecificPart = schemeSpecificPart[2..];
         }
 
-        return false;
+        return !schemeSpecificPart.IsEmpty && IsAllowedFor(trimmedUrl, owner);
+    }
+
+    // An element's address is judged as the kinds of address the element writes: an image's as an image's source, a video's as its
+    // own source or its poster, a media source's as a video's or an audio's, and any other element's as a link.
+    private static bool IsAllowedFor(ReadOnlySpan<char> url, ReadOnlySpan<char> owner)
+    {
+        if (owner.Equals("img", StringComparison.OrdinalIgnoreCase))
+        {
+            return AddressPolicy.Allows(url, AddressKind.ImageSource);
+        }
+
+        if (owner.Equals("video", StringComparison.OrdinalIgnoreCase))
+        {
+            return AddressPolicy.Allows(url, AddressKind.VideoSource) || AddressPolicy.Allows(url, AddressKind.ImageSource);
+        }
+
+        if (owner.Equals("audio", StringComparison.OrdinalIgnoreCase))
+        {
+            return AddressPolicy.Allows(url, AddressKind.AudioSource);
+        }
+
+        if (owner.Equals("source", StringComparison.OrdinalIgnoreCase))
+        {
+            return AddressPolicy.Allows(url, AddressKind.VideoSource) || AddressPolicy.Allows(url, AddressKind.AudioSource);
+        }
+
+        return AddressPolicy.Allows(url, AddressKind.Link);
     }
 
     // A colon before the first separator would name a scheme, and no address holds whitespace or a control character.

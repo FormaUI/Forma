@@ -5,4 +5,8 @@
         <IsPackable>true</IsPackable>
     </PropertyGroup>
 
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
+    </ItemGroup>
+
 </Project>

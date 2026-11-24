@@ -356,7 +356,7 @@ public sealed class AllowlistHtmlSanitizer : IHtmlSanitizer
 
         if (UrlAttributeLookup.Contains(name))
         {
-            if (!MarkupPolicy.Allows(HtmlSubject.Url, value, default, out _))
+            if (!MarkupPolicy.Allows(HtmlSubject.Url, value, tagName, out _))
             {
                 return;
             }

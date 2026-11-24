@@ -52,9 +52,9 @@ public sealed partial class FormaComposerLinkDialog : ComposerDialogBase
         var href = _href.Trim();
 
         // An address the sanitizer would strip is refused.
-        if (!MarkupPolicy.Allows(HtmlSubject.Url, href, default, out _))
+        if (!MarkupPolicy.Allows(HtmlSubject.Url, href, "a", out _))
         {
-            Messages.Add(L["An address has to be a web address, a mail or telephone link, a path within this site, or an inline picture."].Value);
+            Messages.Add(L["An address has to be a web address, a mail or telephone link, or a path within this site."].Value);
 
             return;
         }

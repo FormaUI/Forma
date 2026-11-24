@@ -299,6 +299,49 @@ public sealed class AllowlistHtmlSanitizerTests
             // Assert
             Assert.Equal("<video src=\"/v.mp4\" controls=\"\"></video>", result);
         }
+
+        [Theory]
+        [InlineData("<a href=\"JaVaScRiPt:alert(1)\">Link</a>")]
+        [InlineData("<a href=\"&#x01;&#x20;javascript:alert(1)\">Link</a>")]
+        [InlineData("<a href=\"java&#x09;script:alert(1)\">Link</a>")]
+        [InlineData("<a href=\"vbscript:msgbox(1)\">Link</a>")]
+        [InlineData("<a href=\"data:text/html,&lt;script&gt;alert(1)&lt;/script&gt;\">Link</a>")]
+        [InlineData("<a href=\"data:image/png;base64,iVBORw0KGgo=\">Link</a>")]
+        public void Should_write_a_link_its_kind_refuses_inert(string html)
+        {
+            // Act
+            var result = _sut.Sanitize(html);
+
+            // Assert
+            Assert.Equal("<a>Link</a>", result);
+        }
+
+        [Theory]
+        [InlineData("<img src=\"data:image/png;base64,iVBORw0KGgo=\" />", "<img src=\"data:image/png;base64,iVBORw0KGgo=\" />")]
+        [InlineData("<img src=\"data:video/mp4;base64,AAAA\" />", "<img />")]
+        [InlineData("<img src=\"javascript:alert(1)\" />", "<img />")]
+        [InlineData("<video src=\"data:video/mp4;base64,AAAA\" poster=\"data:image/png;base64,iVBORw0KGgo=\"></video>", "<video src=\"data:video/mp4;base64,AAAA\" poster=\"data:image/png;base64,iVBORw0KGgo=\"></video>")]
+        [InlineData("<video src=\"data:text/html,x\"></video>", "<video></video>")]
+        [InlineData("<audio src=\"data:audio/mpeg;base64,AAAA\"></audio>", "<audio src=\"data:audio/mpeg;base64,AAAA\"></audio>")]
+        [InlineData("<audio src=\"data:image/png;base64,iVBORw0KGgo=\"></audio>", "<audio></audio>")]
+        public void Should_keep_a_source_only_of_its_elements_own_kind(string html, string expected)
+        {
+            // Act
+            var result = _sut.Sanitize(html);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void Should_drop_a_script_and_an_image_error_handler()
+        {
+            // Act
+            var result = _sut.Sanitize("<p>Stage<script>alert(1)</script><img src=x onerror=\"alert(1)\"></p>");
+
+            // Assert
+            Assert.Equal("<p>Stage<img src=\"x\" /></p>", result);
+        }
     }
 
     // The library's policy, but keeping every style declaration and property as the document spells it.

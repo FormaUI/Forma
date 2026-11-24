@@ -2,7 +2,8 @@
 
 An allowlist HTML sanitizer for content people author, such as a rich text editor's output or a
 pasted document, so the application can render it as markup. It keeps what a markup policy
-permits and removes the rest, and it depends on nothing beyond .NET itself.
+permits and removes the rest, and it depends on nothing beyond .NET itself. Beside it stands
+`AddressPolicy`, the rule for the addresses written into a page, which the default policy applies.
 
 ## Install and register
 
@@ -24,8 +25,10 @@ host registered first is the one the sanitizer applies.
 | --- | --- |
 | `IHtmlSanitizer.Sanitize(html)` | The HTML with everything its policy refuses removed; an empty string for blank input. |
 | `IHtmlSanitizer.MarkupPolicy` | The policy the sanitizer applies. |
-| `IMarkupPolicy.Allows(subject, value, owner, out canonical)` | Whether a subject is permitted, and the spelling to write it in, or `null` to keep the one given. |
+| `IMarkupPolicy.Allows(subject, value, owner, out canonical)` | Whether a subject is permitted, and the spelling to write it in, or `null` to keep the one given. The owner is the element an attribute or an address belongs to. |
 | `HtmlSubject` | What a policy is asked about: `Element`, `ElementContent`, `Attribute`, `StyleProperty`, `StyleDeclaration` or `Url`. |
+| `AddressPolicy.Allows(address, kind)` | Whether an address of an `AddressKind` may be the given address. |
+| `AddressPolicy.GetScheme(address)` | The address's scheme as the browser reads it, in lowercase, or `null` for a relative address. |
 
 `AllowlistHtmlSanitizer` can also be created directly: with no argument it applies
 `RichContentMarkupPolicy.Default`, and with an `IMarkupPolicy` it applies that one.
@@ -76,12 +79,49 @@ least one of its declarations is permitted.
 - **Inline styles**: color, font, text alignment and decoration, line height, margin, padding,
   border and size, and any custom property starting with `--forma-`. A declaration containing
   `url(`, `javascript:`, `expression(`, `@import` or `behavior:` is dropped.
-- **URLs**: `http`, `https`, `mailto` and `tel`; a path within the site, rooted at `/` or relative to the
-  document, whose first segment holds no colon and which holds no whitespace; a
-  fragment; and a `data:` URL carrying a PNG, JPEG, GIF, WebP or AVIF image.
+- **URLs**: what the address rule below allows for the element the address belongs to, judged as
+  a link on an `a`, as an image's source on an `img`, as a video's source or its poster on a
+  `video`, as an audio's source on an `audio`, and as a video's or an audio's on a `source`. The
+  address also has to name something: a path within the site, rooted at `/` or relative to the
+  document, whose first segment holds no colon and which holds no whitespace; a fragment past its
+  `#`; or something past a scheme's colon and the slashes before its host.
 
 Elements, attributes and style properties are written in lowercase; a `data-` attribute and a
 `--forma-` property keep the spelling they were written in.
+
+## Addresses
+
+`AddressPolicy` decides which addresses may be written where, so that none runs script where it
+stands. What an address is to its element is its `AddressKind`, and each kind allows the schemes
+in its row. A relative address takes the page's own scheme, and every kind allows it.
+
+| `AddressKind` | Written as | Allows |
+| --- | --- | --- |
+| `Link` | A link a reader follows, an anchor's `href` | `http`, `https`, `mailto`, `tel` |
+| `DownloadLink` | A link that downloads, an anchor carrying `download` | A link's schemes, `blob:` and any `data:` |
+| `ImageSource` | An image's `src`, a video's `poster` | `http`, `https`, `blob:`, and `data:` of a PNG, APNG, JPEG, GIF, WebP, AVIF, BMP or icon image |
+| `VideoSource` | A video's `src` | `http`, `https`, `blob:`, and `data:` of a video |
+| `AudioSource` | An audio's `src` | `http`, `https`, `blob:`, and `data:` of an audio |
+| `TrackSource` | A text track's `src`, such as a video's captions | `http`, `https`, `blob:`, and `data:` of WebVTT |
+| `FrameSource` | A frame's `src`, an object's `data` | `http`, `https`, `blob:` |
+
+```csharp
+using Forma.Framework.Sanitization;
+
+AddressPolicy.Allows("https://example.com/stage-12", AddressKind.Link);        // true
+AddressPolicy.Allows("JaVaScRiPt:alert(1)", AddressKind.Link);                 // false
+AddressPolicy.Allows("data:image/png;base64,iVBORw0KGgo=", AddressKind.ImageSource); // true
+AddressPolicy.Allows("data:image/png;base64,iVBORw0KGgo=", AddressKind.Link);  // false
+AddressPolicy.GetScheme("\u0001 java\tscript:alert(1)");                       // "javascript"
+```
+
+An address is judged as the browser reads it. The browser drops the control characters and spaces
+at either end of an address and every tab and line break within it, so `java&#9;script:` and a
+`javascript:` behind a control character are refused as `javascript:` is. Its scheme is what stands
+before the first colon where that is a letter followed by letters, digits, `+`, `-` or `.`, in any
+case. A `data:` address is judged by the media type before its comma, and one without a comma
+carries nothing. An SVG image is left out of the image kind, since an SVG document can carry
+script.
 
 ## Writing a policy
 

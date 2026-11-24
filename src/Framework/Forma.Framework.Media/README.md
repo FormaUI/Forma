@@ -92,7 +92,7 @@ Asked in this order after every registered provider:
 | `InstagramPlayerProvider` | A post, reel or video address, as markup plus Instagram's script. | `HtmlPlayerFrame` |
 | `FacebookPlayerProvider` | A video, watch or reel address, as markup plus Facebook's script. | `HtmlPlayerFrame` |
 | `TwitterPlayerProvider` | A post on X, as markup plus the widget script, with `data-dnt`. | `HtmlPlayerFrame` |
-| `FilePlayerProvider` | A relative address, or an absolute one under `http`, `https`, `data` or `blob`. | `NativePlayerFrame` |
+| `FilePlayerProvider` | An address `AddressPolicy` allows as a video's source: a relative address, or an absolute one under `http`, `https` or `blob`, or a `data:` address of a video. | `NativePlayerFrame` |
 
 A registered provider that claims a service's addresses answers before that service's bundled
 provider, so a host can serve its own copy of a video it keeps.

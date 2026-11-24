@@ -140,58 +140,95 @@ public sealed class RichContentMarkupPolicyTests
         }
 
         [Theory]
-        [InlineData("https://example.com/photo.jpg")]
-        [InlineData("http://example.com")]
-        [InlineData("mailto:editor@example.com")]
-        [InlineData("tel:+573001234567")]
-        [InlineData("/media/podium.png")]
-        [InlineData("./relative.png")]
-        [InlineData("../up.png")]
-        [InlineData("images/podium.png")]
-        [InlineData("podium.png")]
-        [InlineData("files/report.pdf?page=2")]
-        [InlineData("#section-2")]
-        [InlineData("data:image/png;base64,iVBORw0KGgo=")]
-        public void Should_permit_an_address_the_document_may_carry(string address)
+        [InlineData("a", "https://example.com/photo.jpg")]
+        [InlineData("a", "http://example.com")]
+        [InlineData("a", "mailto:editor@example.com")]
+        [InlineData("a", "tel:+573001234567")]
+        [InlineData("img", "/media/podium.png")]
+        [InlineData("img", "./relative.png")]
+        [InlineData("img", "../up.png")]
+        [InlineData("img", "images/podium.png")]
+        [InlineData("img", "podium.png")]
+        [InlineData("a", "files/report.pdf?page=2")]
+        [InlineData("a", "#section-2")]
+        [InlineData("img", "data:image/png;base64,iVBORw0KGgo=")]
+        [InlineData("img", "blob:https://example.com/8f4b0c2e")]
+        [InlineData("video", "data:video/mp4;base64,AAAA")]
+        [InlineData("video", "data:image/png;base64,iVBORw0KGgo=")]
+        [InlineData("audio", "data:audio/mpeg;base64,AAAA")]
+        [InlineData("source", "data:audio/ogg;base64,AAAA")]
+        [InlineData("source", "data:video/webm;base64,AAAA")]
+        public void Should_permit_an_address_the_document_may_carry(string element, string address)
         {
             // Act
-            var allowed = _sut.Allows(HtmlSubject.Url, address, default, out _);
+            var allowed = _sut.Allows(HtmlSubject.Url, address, element, out _);
 
             // Assert
             Assert.True(allowed);
         }
 
         [Theory]
-        [InlineData("javascript:alert(1)")]
-        [InlineData("ftp://files.example.com")]
-        [InlineData("data:text/html,<script>alert(1)</script>")]
-        [InlineData("data:image/svg+xml,<svg onload=alert(1)>")]
-        [InlineData("just some text")]
-        [InlineData("images/a podium.png")]
-        [InlineData("vbscript:msgbox(1)")]
-        [InlineData("java\tscript:alert(1)")]
-        [InlineData("")]
-        [InlineData("   ")]
-        [InlineData("http://")]
-        [InlineData("https://")]
-        [InlineData("mailto:")]
-        [InlineData("tel:")]
-        [InlineData("#")]
-        [InlineData("data:image/png")]
-        public void Should_refuse_an_address_the_document_may_not_carry(string address)
+        [InlineData("a", "javascript:alert(1)")]
+        [InlineData("a", "JaVaScRiPt:alert(1)")]
+        [InlineData("a", " \u0001javascript:alert(1)")]
+        [InlineData("img", "javascript:alert(1)")]
+        [InlineData("a", "ftp://files.example.com")]
+        [InlineData("a", "data:text/html,<script>alert(1)</script>")]
+        [InlineData("img", "data:image/svg+xml,<svg onload=alert(1)>")]
+        [InlineData("a", "just some text")]
+        [InlineData("img", "images/a podium.png")]
+        [InlineData("a", "vbscript:msgbox(1)")]
+        [InlineData("a", "java\tscript:alert(1)")]
+        [InlineData("a", "")]
+        [InlineData("a", "   ")]
+        [InlineData("a", "http://")]
+        [InlineData("a", "https://")]
+        [InlineData("a", "mailto:")]
+        [InlineData("a", "tel:")]
+        [InlineData("a", "#")]
+        [InlineData("img", "data:image/png")]
+        public void Should_refuse_an_address_the_document_may_not_carry(string element, string address)
         {
             // Act
-            var allowed = _sut.Allows(HtmlSubject.Url, address, default, out _);
+            var allowed = _sut.Allows(HtmlSubject.Url, address, element, out _);
+
+            // Assert
+            Assert.False(allowed);
+        }
+
+        [Theory]
+        [InlineData("a", "data:image/png;base64,iVBORw0KGgo=")]
+        [InlineData("a", "blob:https://example.com/8f4b0c2e")]
+        [InlineData("img", "mailto:editor@example.com")]
+        [InlineData("img", "data:video/mp4;base64,AAAA")]
+        [InlineData("audio", "data:video/mp4;base64,AAAA")]
+        [InlineData("source", "data:image/png;base64,iVBORw0KGgo=")]
+        public void Should_refuse_an_address_its_element_does_not_write(string element, string address)
+        {
+            // Act
+            var allowed = _sut.Allows(HtmlSubject.Url, address, element, out _);
 
             // Assert
             Assert.False(allowed);
         }
 
         [Fact]
+        public void Should_judge_an_address_of_no_element_as_a_link()
+        {
+            // Act
+            var isLinkAllowed = _sut.Allows(HtmlSubject.Url, "mailto:editor@example.com", default, out _);
+            var isImageAllowed = _sut.Allows(HtmlSubject.Url, "data:image/png;base64,iVBORw0KGgo=", default, out _);
+
+            // Assert
+            Assert.True(isLinkAllowed);
+            Assert.False(isImageAllowed);
+        }
+
+        [Fact]
         public void Should_judge_an_address_after_trimming_it()
         {
             // Act
-            var allowed = _sut.Allows(HtmlSubject.Url, "  https://example.com  ", default, out _);
+            var allowed = _sut.Allows(HtmlSubject.Url, "  https://example.com  ", "a", out _);
 
             // Assert
             Assert.True(allowed);
