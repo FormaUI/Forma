@@ -9,11 +9,13 @@
 }
 
 /* ---------- tags ---------- */
+/* Beneath the trigger inside the field's box, aligned with its text. */
 .forma-multi-select-tags {
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-2);
-    margin-block-start: var(--space-2);
+    padding-block-end: var(--space-2);
+    padding-inline: var(--space-3);
 }
 
 .forma-multi-select-tag {
@@ -39,7 +41,7 @@
     display: block;
 }
 
-/* The box comes from .forma-field-input. */
+/* The box comes from .forma-field-input, and the field's box draws its look and its hover. */
 .forma-multi-select-trigger {
     display: flex;
     align-items: center;
@@ -47,12 +49,6 @@
     text-align: start;
     cursor: pointer;
     touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-multi-select-trigger:hover:not(:disabled) {
-        border-color: var(--primary-ink-color);
-    }
 }
 
 .forma-multi-select-trigger:disabled {

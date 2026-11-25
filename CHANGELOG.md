@@ -137,6 +137,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   only once modified. Under a coarse pointer a field whose label floats stands its value on a row a touch target tall,
   which a button at its end fits, so the field stands taller there.
 - `FormaPasswordBox`'s toggle is a compact button, as every other button at a field's end is.
+- `FormaColorPicker`'s swatch stands in a target of 24 pixels, or 44 under a coarse pointer, and its alpha row stands
+  inside the field's box, as `FormaMultiSelect`'s tags do.
 
 ## `1.0.0-preview.16`
 

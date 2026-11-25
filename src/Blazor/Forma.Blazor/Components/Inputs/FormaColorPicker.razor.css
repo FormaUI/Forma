@@ -3,27 +3,33 @@
    row inside a FormaField.
    ============================================================ */
 
-/* ---------- wrapper ---------- */
-.forma-color-picker {
+/* ---------- value ---------- */
+/* The hex input's box, whose swatch stands in a target of the pointer's size. */
+.forma-color-picker-value {
+    --forma-color-picker-target-size: var(--target-size-sm);
+
     position: relative;
 }
 
 /* ---------- swatch wrapper (holds visual swatch + invisible native input) ---------- */
-/* Sits over the field box beside the hex text, offset from the top so the alpha row below cannot move it. */
+/* Sits over the hex input's box beside its text, centered on its line, the swatch centered in it. */
 .forma-color-picker-swatch-wrapper {
     position: absolute;
-    inset-block-start: var(--forma-field-padding-block-start);
-    inset-inline-start: var(--space-3);
-    width: 1.25rem;
-    height: 1.25rem;
-    flex-shrink: 0;
+    inset-block-start: 50%;
+    inset-inline-start: calc(var(--space-3) + (1.25rem - var(--forma-color-picker-target-size)) / 2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    inline-size: var(--forma-color-picker-target-size);
+    block-size: var(--forma-color-picker-target-size);
+    transform: translateY(-50%);
 }
 
 /* ---------- visual swatch ---------- */
 .forma-color-picker-swatch {
     display: block;
-    width: 100%;
-    height: 100%;
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
     border: 2px solid var(--forma-color-picker-border-color, var(--border-subtle-color));
     border-radius: var(--radius-sm);
     pointer-events: none;
@@ -57,18 +63,20 @@
 /* ---------- hex text input ---------- */
 /* The descendant selector outweighs .forma-field-input's padding-inline, so the gutter clears the swatch. */
 .forma-color-picker .forma-color-picker-hex-input {
-    /* The field's gutter, the swatch, and a gap. */
-    padding-inline-start: calc(var(--space-3) + 1.25rem + var(--space-1));
+    /* The field's gutter, the swatch's target, and a gap. */
+    padding-inline-start: calc(var(--space-3) + (1.25rem + var(--forma-color-picker-target-size)) / 2 + var(--space-1));
     font-family: var(--font-family-mono);
     touch-action: manipulation;
 }
 
 /* ---------- alpha row ---------- */
+/* Beneath the hex input inside the field's box, its text aligned with the input's. */
 .forma-color-picker-alpha-row {
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    margin-block-start: var(--space-2);
+    padding-block-end: var(--space-2);
+    padding-inline: var(--space-3);
     font-size: var(--font-size-xs);
 }
 
@@ -85,13 +93,8 @@
 }
 
 @media (pointer: coarse) {
-    .forma-color-picker-swatch-wrapper {
-        inline-size: var(--target-size-touch);
-        block-size: var(--target-size-touch);
-    }
-
-    .forma-color-picker-hex-input {
-        min-block-size: var(--target-size-touch);
+    .forma-color-picker-value {
+        --forma-color-picker-target-size: var(--target-size-touch);
     }
 
     .forma-color-picker-alpha {

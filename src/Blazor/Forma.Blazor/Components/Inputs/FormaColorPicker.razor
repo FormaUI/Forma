@@ -4,30 +4,33 @@
 <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Description="@Description" LabelMode="FieldLabelMode.Pinned">
     <ChildContent>
         <div class="forma-color-picker">
-            <input id="@ElementId"
-                   data-rid="@Context.RuntimeId"
-                   class="@RootClass"
-                   style="@RootStyle"
-                   @attributes="AdditionalAttributes"
-                   @ref="RootElement"
-                   name="@ControlName"
-                   aria-describedby="@DescribedBy"
-                   type="text"
-                   value="@ShownText"
-                   maxlength="@MaxLength"
-                   placeholder="@(ShowAlpha ? "#RRGGBBAA" : "#RRGGBB")"
-                   spellcheck="false"
-                   dir="ltr" />
-            @* The wrapper places the swatch and the native color input over the field box. *@
-            <span class="forma-color-picker-swatch-wrapper">
-                <input type="color"
-                       class="forma-color-picker-native"
-                       aria-label="@L["Choose Color"]"
-                       @bind:get="RgbHex"
-                       @bind:set="HandleNativeInput"
-                       @bind:event="oninput" />
-                <span class="forma-color-picker-swatch" style="@SwatchStyle" aria-hidden="true"></span>
-            </span>
+            @* The hex input's box, which the swatch centers on. *@
+            <div class="forma-color-picker-value">
+                <input id="@ElementId"
+                       data-rid="@Context.RuntimeId"
+                       class="@RootClass"
+                       style="@RootStyle"
+                       @attributes="AdditionalAttributes"
+                       @ref="RootElement"
+                       name="@ControlName"
+                       aria-describedby="@DescribedBy"
+                       type="text"
+                       value="@ShownText"
+                       maxlength="@MaxLength"
+                       placeholder="@(ShowAlpha ? "#RRGGBBAA" : "#RRGGBB")"
+                       spellcheck="false"
+                       dir="ltr" />
+                @* The wrapper places the swatch and the native color input over the field box. *@
+                <span class="forma-color-picker-swatch-wrapper">
+                    <input type="color"
+                           class="forma-color-picker-native"
+                           aria-label="@L["Choose Color"]"
+                           @bind:get="RgbHex"
+                           @bind:set="HandleNativeInput"
+                           @bind:event="oninput" />
+                    <span class="forma-color-picker-swatch" style="@SwatchStyle" aria-hidden="true"></span>
+                </span>
+            </div>
             @if (ShowAlpha)
             {
                 <div class="forma-color-picker-alpha-row">

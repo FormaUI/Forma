@@ -8,7 +8,7 @@
     display: block;
 }
 
-/* The box comes from .forma-field-input. */
+/* The box comes from .forma-field-input, and the field's box draws its look and its hover. */
 .forma-select-trigger {
     display: flex;
     align-items: center;
@@ -16,12 +16,6 @@
     text-align: start;
     cursor: pointer;
     touch-action: manipulation;
-}
-
-@media (hover: hover) {
-    .forma-select-trigger:hover:not(:disabled) {
-        border-color: var(--primary-ink-color);
-    }
 }
 
 .forma-select-trigger:disabled {

@@ -17,7 +17,7 @@
     display: block;
 }
 
-/* The box comes from .forma-field-input. */
+/* The box comes from .forma-field-input, and the field's box draws its look and its hover. */
 .forma-date-range-picker-trigger {
     display: flex;
     align-items: center;
@@ -31,12 +31,6 @@
 
 .forma-date-range-picker-trigger:disabled {
     cursor: default;
-}
-
-@media (hover: hover) {
-    .forma-date-range-picker-trigger:not(:disabled):hover {
-        border-color: var(--forma-date-range-picker-primary-color);
-    }
 }
 
 .forma-date-range-picker-arrow {
