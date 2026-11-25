@@ -258,8 +258,9 @@ td.forma-data-grid-menu-column {
     inline-size: auto;
 }
 
-/* A field in a cell keeps its label for assistive technology alone, since the header shows the column's title. */
-.forma-data-grid-cell ::deep .forma-field-label {
+/* A field in a cell keeps its label for assistive technology alone, since the header shows the column's title, and
+   keeps no room for it. */
+.forma-data-grid-cell ::deep .forma-field-box .forma-field-label {
     position: absolute;
     inline-size: 1px;
     block-size: 1px;
@@ -271,10 +272,13 @@ td.forma-data-grid-menu-column {
     border: 0;
 }
 
-/* A field in a cell stands on the medium step. */
-.forma-data-grid-cell ::deep .forma-field-input.forma-data-grid-editor {
-    min-block-size: var(--target-size-md);
-    padding-block: var(--space-1);
+.forma-data-grid-cell ::deep .forma-field-label-room {
+    display: none;
+}
+
+/* A field in a cell stands on the medium step, less its box's two hairlines. */
+.forma-data-grid-cell ::deep .forma-field {
+    --forma-field-value-block-size: calc(var(--target-size-md) - 2px);
 }
 
 /* ---------- column options ---------- */
