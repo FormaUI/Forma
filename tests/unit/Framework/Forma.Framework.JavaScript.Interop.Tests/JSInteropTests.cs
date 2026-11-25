@@ -1,6 +1,7 @@
 namespace Forma.Framework.JavaScript.Interop.Tests;
 
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Interop;
@@ -18,6 +19,11 @@ public sealed class JSInteropTests
     private const string Path = "./_content/forma/browser/scripts/behaviors/Probe.js";
 
     private static readonly Guid Owner = Guid.CreateVersion7();
+
+    private static readonly JsonTypeInfo<Named> NamedType = (JsonTypeInfo<Named>)JsonSerializerOptions.Web.GetTypeInfo(typeof(Named));
+
+    /// <summary>A value the attached instance answers.</summary>
+    public sealed record Named(string Name, double Width = 0);
 
     public sealed class Attachment
     {
@@ -213,7 +219,7 @@ public sealed class JSInteropTests
             var value = await probe.ReadAsync();
 
             // Assert
-            Assert.Equal("Ada", value?.GetProperty("name").GetString());
+            Assert.Equal("Ada", value?.Name);
         }
 
         [Fact]
@@ -232,7 +238,7 @@ public sealed class JSInteropTests
 
             // Assert
             Assert.Multiple(
-                () => Assert.Equal(name, value?.GetProperty("name").GetString()),
+                () => Assert.Equal(name, value?.Name),
                 () => Assert.True(stream.IsDisposed));
         }
 
@@ -257,6 +263,47 @@ public sealed class JSInteropTests
                 () => Assert.True(stream.IsDisposed),
                 () => Assert.Equal(LogLevel.Debug, entry.Level),
                 () => Assert.Contains("read", entry.Message, StringComparison.Ordinal));
+        }
+
+        [Fact]
+        public async Task Should_read_what_the_attached_instance_answers_as_its_caller_s_type()
+        {
+            // Arrange
+            await using var handle = new FakeJSObjectReference((identifier, _) => identifier == "name" ? new Named("Ada", 12) : null);
+            await using var moduleReference = new FakeJSObjectReference((identifier, _) => identifier == "attach" ? handle : null);
+            await using var probe = new Probe(CreateEnvironment(FakeJSRuntime.Importing(moduleReference)));
+            await probe.AttachAsync(default);
+
+            // Act
+            var value = await probe.NameAsync();
+
+            // Assert
+            Assert.Equal(new Named("Ada", 12), value);
+        }
+
+        [Theory]
+        [InlineData("""{ "name": "Ada", "width": 1e400 }""")]
+        [InlineData("""{ "name": "Ada", "width": "-Infinity" }""")]
+        [InlineData("""{ "name": 4 }""")]
+        public async Task Should_refuse_an_answer_that_is_not_its_caller_s_type_and_log_it_at_debug(string json)
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            await using var handle = new FakeJSObjectReference((identifier, _) => identifier == "name" ? InteropAnswer.Parse(json) : null);
+            await using var moduleReference = new FakeJSObjectReference((identifier, _) => identifier == "attach" ? handle : null);
+            await using var probe = new Probe(CreateEnvironment(FakeJSRuntime.Importing(moduleReference), loggerFactory));
+            await probe.AttachAsync(default);
+
+            // Act
+            var value = await probe.NameAsync();
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(
+                () => Assert.Null(value),
+                () => Assert.Equal(LogLevel.Debug, entry.Level),
+                () => Assert.Contains("was refused", entry.Message, StringComparison.Ordinal),
+                () => Assert.Contains("name", entry.Message, StringComparison.Ordinal));
         }
     }
 
@@ -351,7 +398,10 @@ public sealed class JSInteropTests
         public ValueTask<bool> MeasureAsync()
             => InvokeAsync("measure");
 
-        public ValueTask<JsonElement?> ReadAsync()
-            => InvokeJsonAsync("read");
+        public ValueTask<Named?> ReadAsync()
+            => InvokeJsonAsync("read", NamedType);
+
+        public ValueTask<Named?> NameAsync()
+            => InvokeAsync("name", NamedType);
     }
 }

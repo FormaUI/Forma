@@ -3,6 +3,7 @@ namespace Forma.Framework.Browser.Interop;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 using Forma.Framework.Browser.Interop.Text;
 using Forma.Framework.JavaScript.Interop;
@@ -140,15 +141,18 @@ internal sealed class DomSession
         await deliverAsync(generation, value);
     }
 
-    /// <summary>Invokes <paramref name="identifier"/> on <paramref name="root"/> and returns its result, where <see langword="default"/> means the call did not run.</summary>
+    /// <summary>Invokes <paramref name="identifier"/> on <paramref name="root"/> and reads what it answers as a <typeparamref name="TResult"/>, where <see langword="default"/> means the call did not run or its answer was refused.</summary>
     /// <param name="root">The entry the call is made through.</param>
     /// <param name="identifier">The entry's export.</param>
+    /// <param name="typeInfo">The JSON contract of <typeparamref name="TResult"/>.</param>
     /// <param name="operation">What the call does, as diagnostics name it.</param>
     /// <param name="isWanted">Whether the call is still wanted once the entry has been imported.</param>
     /// <param name="createsState">Whether the call can leave state in the browser that the owner's release has to reach.</param>
     /// <param name="args">The export's arguments.</param>
-    public async Task<TResult?> TryInvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TResult>(DomRoot root, string identifier, string operation, Func<bool> isWanted, bool createsState, params object?[] args)
+    public async Task<TResult?> TryInvokeAsync<TResult>(DomRoot root, string identifier, JsonTypeInfo<TResult> typeInfo, string operation, Func<bool> isWanted, bool createsState, params object?[] args)
     {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
         var module = await TryImportAsync(root, operation);
 
         if (module is null || IsReleased || !isWanted())
@@ -162,7 +166,7 @@ internal sealed class DomSession
             _sharedBridge?.Track(this);
         }
 
-        return await TryInvokeCoreAsync<TResult>(module, root, identifier, operation, args);
+        return ReadAnswer(await TryInvokeCoreAsync(module, root, identifier, operation, args), typeInfo, operation, root);
     }
 
     /// <summary>Releases every registration, then what the browser holds for the owner, in one call.</summary>
@@ -252,7 +256,7 @@ internal sealed class DomSession
             return;
         }
 
-        await TryInvokeCoreAsync<object>(module, root, identifier, operation, args);
+        await TryInvokeCoreAsync(module, root, identifier, operation, args);
     }
 
     private async Task<IJSObjectReference?> TryImportAsync(DomRoot root, string operation)
@@ -281,11 +285,31 @@ internal sealed class DomSession
         return null;
     }
 
-    private async Task<TResult?> TryInvokeCoreAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TResult>(IJSObjectReference module, DomRoot root, string identifier, string operation, object?[] args)
+    // A call that didn't run answers no JSON at all, which a browser's answer always is.
+    private TResult? ReadAnswer<TResult>(JsonElement answer, JsonTypeInfo<TResult> typeInfo, string operation, DomRoot root)
+    {
+        if (answer.ValueKind is JsonValueKind.Undefined)
+        {
+            return default;
+        }
+
+        try
+        {
+            return JSTransfer.Deserialize(answer, typeInfo);
+        }
+        catch (JSTransferException ex)
+        {
+            DomLog.AnswerRefused(_js.Logger, ex, operation, root.Name, _js.RuntimeId);
+            return default;
+        }
+    }
+
+    // What the browser answers is read as JSON alone, so a value that isn't what the call reads is refused as browser input rather than failing the call.
+    private async Task<JsonElement> TryInvokeCoreAsync(IJSObjectReference module, DomRoot root, string identifier, string operation, object?[] args)
     {
         try
         {
-            return await module.InvokeAsync<TResult>(identifier, args);
+            return await module.InvokeAsync<JsonElement>(identifier, args);
         }
         catch (JSDisconnectedException)
         {

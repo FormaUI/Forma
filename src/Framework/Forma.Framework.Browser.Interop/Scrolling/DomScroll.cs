@@ -67,7 +67,7 @@ public sealed class DomScroll : IDomScrollObservation
             return false;
         }
 
-        return await _watcher.Session.TryInvokeAsync<bool>(DomRoots.Engine, "run", "run scroll step", () => !engine.IsDisposed, createsState: false, "scroll", "step", _element, direction == ScrollDirection.Back ? -1 : 1, DescribeSteps(options));
+        return await _watcher.Session.TryInvokeAsync(DomRoots.Engine, "run", DomJsonContext.Default.Boolean, "run scroll step", () => !engine.IsDisposed, createsState: false, "scroll", "step", _element, direction == ScrollDirection.Back ? -1 : 1, DescribeSteps(options));
     }
 
     private DomEngine GetEngine()

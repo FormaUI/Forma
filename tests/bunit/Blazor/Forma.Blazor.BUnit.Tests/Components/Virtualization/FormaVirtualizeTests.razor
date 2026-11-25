@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using System.Text.Json
 @using AngleSharp.Dom
 @using Microsoft.AspNetCore.Components.Web.Virtualization
 @using Microsoft.Extensions.Logging
@@ -576,7 +577,7 @@
         {
             // Arrange
             using var ctx = new FormaVirtualizeTests();
-            ctx.JSInterop.Setup<bool>("reveal", _ => true).SetResult(true);
+            ctx.JSInterop.Setup<JsonElement>("reveal", _ => true).SetResult(InteropAnswer.Of(true));
             var cut = ctx.Render(
                 @<div>
                     <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
@@ -601,7 +602,7 @@
             using var ctx = new FormaVirtualizeTests();
             IReadOnlyList<string> drawnAtScroll = [];
             IRenderedComponent<IComponent> cut = default!;
-            ctx.JSInterop.Setup<bool>("reveal", _ => true).SetResult(true);
+            ctx.JSInterop.Setup<JsonElement>("reveal", _ => true).SetResult(InteropAnswer.Of(true));
             ctx.JSInterop.SetupVoid("scrollTo", _ =>
             {
                 drawnAtScroll = Drawn(cut);
@@ -648,7 +649,7 @@
         {
             // Arrange
             using var ctx = new FormaVirtualizeTests();
-            ctx.JSInterop.Setup<bool>("reveal", _ => true).SetResult(true);
+            ctx.JSInterop.Setup<JsonElement>("reveal", _ => true).SetResult(InteropAnswer.Of(true));
             var cut = ctx.Render(
                 @<div>
                     <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2">
@@ -786,7 +787,7 @@
         {
             // Arrange
             using var ctx = new FormaVirtualizeTests();
-            ctx.JSInterop.Setup<bool>("reveal", _ => true).SetResult(true);
+            ctx.JSInterop.Setup<JsonElement>("reveal", _ => true).SetResult(InteropAnswer.Of(true));
 
             // Act
             var cut = ctx.Render(
@@ -807,7 +808,7 @@
         {
             // Arrange — opens on item 50 by the estimated size of 20, before anything is measured
             using var ctx = new FormaVirtualizeTests();
-            ctx.JSInterop.Setup<bool>("reveal", _ => true).SetResult(true);
+            ctx.JSInterop.Setup<JsonElement>("reveal", _ => true).SetResult(InteropAnswer.Of(true));
             var cut = ctx.Render(
                 @<div>
                     <FormaVirtualize TItem="Row" Items="CreateRows()" ItemKey="@(row => row.Id)" ItemSize="20" OverscanCount="2" InitialItemIndex="50">

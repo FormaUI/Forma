@@ -2,7 +2,7 @@ namespace Forma.Framework.JavaScript.Interop;
 
 using Microsoft.Extensions.Logging;
 
-/// <summary>The log messages for interop failures at import, call and release.</summary>
+/// <summary>The log messages for interop failures at import, call and release, and for answers lost or refused.</summary>
 internal static partial class InteropLog
 {
     [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while importing {Module} for {RuntimeId}.")]
@@ -28,6 +28,9 @@ internal static partial class InteropLog
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "What {Identifier} in {Module} answered was lost on its way to {RuntimeId}.")]
     public static partial void AnswerLost(ILogger logger, Exception exception, string identifier, string module, Guid runtimeId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "What {Identifier} in {Module} answered {RuntimeId} was refused.")]
+    public static partial void AnswerRefused(ILogger logger, Exception exception, string identifier, string module, Guid runtimeId);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while releasing {Module} for {RuntimeId}.")]
     public static partial void CircuitDroppedWhileReleasing(ILogger logger, string module, Guid runtimeId);

@@ -25,11 +25,14 @@ The analyzers enforce what they can state: CA1062, CA1510, CA1511, CA1512, CA151
 `.editorconfig` severity table, so a new member is held to the standard as it's added.
 
 **What the browser sends** is untrusted. On the Server anyone can send anything over a circuit, whatever the page's
-own scripts would send. Every method a script calls back into .NET, every text an input parses, and every file a
-reader uploads is refused, never thrown:
+own scripts would send. Every method a script calls back into .NET, every answer a script gives a call .NET makes,
+every text an input parses, and every file a reader uploads is refused, never thrown:
 
 - What can't be used is ignored and logged at `Debug` under the component that received it.
 - Nothing a browser sends ends a circuit on the Server or the application in Blazor Hybrid.
+- A value the browser sends as JSON is read through a contract of Forma's own, never by the framework as a type, and
+  every number in it is a number: a browser's JSON writes no number as text, so a text such as `"Infinity"` is
+  refused as one, as a number past what a double holds is.
 
 A script trusts its C# wrapper. The wrapper checks what it hands the script before the call, so a script checks only
 what it reads from the page itself: an event, an element, an attribute.

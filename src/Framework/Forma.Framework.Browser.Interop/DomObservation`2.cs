@@ -71,7 +71,7 @@ public sealed class DomObservation<TOptions, [DynamicallyAccessedMembers(LinkerF
             return;
         }
 
-        await _registration.TryInvokeAsync<bool>("refresh", createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation);
+        await _registration.TryInvokeAsync("refresh", DomJsonContext.Default.Boolean, createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation);
     }
 
     /// <inheritdoc />
@@ -83,7 +83,7 @@ public sealed class DomObservation<TOptions, [DynamicallyAccessedMembers(LinkerF
     {
         var barrier = _barrier = new EstablishmentBarrier(generation);
         var capability = _registration.Capability;
-        var baseline = await _registration.TryInvokeAsync<TState>("attach", createsState: true, _session.RuntimeKey, _session.Receiver, new DomAttachRequest
+        var baseline = await _registration.TryInvokeAsync("attach", _stateType, createsState: true, _session.RuntimeKey, _session.Receiver, new DomAttachRequest
         {
             Token = _registration.Token,
             Generation = generation,

@@ -1,7 +1,6 @@
 namespace Forma.Blazor.Components.Composer.Interop;
 
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 
 using Forma.Blazor.Components.Composer.Dialogs;
 using Forma.Framework.Composer.Editing;
@@ -24,26 +23,24 @@ internal sealed class RichTextEditor(IJSEnvironment js)
         => InvokeAsync("commit");
 
     /// <summary>Freezes the selection a link dialog will act on, and reports what it covers.</summary>
-    public async ValueTask<RichTextLinkTargetDto?> BeginLinkDialogAsync(bool isAnchor)
-        => await InvokeJsonAsync("beginLinkDialog", isAnchor ? "a[name]" : "a[href]") is { } target
-            ? target.Deserialize(RichTextEditorJsonContext.Default.RichTextLinkTargetDto)
-            : null;
+    public ValueTask<RichTextLinkTargetDto?> BeginLinkDialogAsync(bool isAnchor)
+        => InvokeJsonAsync("beginLinkDialog", RichTextEditorJsonContext.Default.RichTextLinkTargetDto, isAnchor ? "a[name]" : "a[href]");
 
     /// <summary>Executes a rich text formatting command on the active selection.</summary>
     public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, string? value = null)
-        => InvokeAsync<RichTextCommandResult>("exec", command, value);
+        => InvokeAsync("exec", RichTextEditorJsonContext.Default.RichTextCommandResult, command, value);
 
     /// <summary>Executes a rich text command that takes a number on the active selection.</summary>
     public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, int value)
-        => InvokeAsync<RichTextCommandResult>("exec", command, value);
+        => InvokeAsync("exec", RichTextEditorJsonContext.Default.RichTextCommandResult, command, value);
 
     /// <summary>Executes the command a dialog collected <paramref name="result"/> for on the active selection.</summary>
     public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, ComposerDialogResult result)
-        => InvokeAsync<RichTextCommandResult>("exec", command, result);
+        => InvokeAsync("exec", RichTextEditorJsonContext.Default.RichTextCommandResult, command, result);
 
     /// <summary>Executes the command that puts <paramref name="insertion"/> into the document at the active selection.</summary>
     public ValueTask<RichTextCommandResult?> ExecuteCommandAsync(string command, ComposerInsertion insertion)
-        => InvokeAsync<RichTextCommandResult>("exec", command, insertion);
+        => InvokeAsync("exec", RichTextEditorJsonContext.Default.RichTextCommandResult, command, insertion);
 
     /// <summary>The options the script attaches with.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]

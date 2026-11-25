@@ -34,7 +34,7 @@ public sealed class Virtualize(IJSEnvironment js)
     /// <param name="start">Whether the item is aligned to the top of the viewport.</param>
     /// <returns>Whether the item is in view.</returns>
     public async ValueTask<bool> RevealAsync(int ordinal, bool start)
-        => await InvokeAsync<bool>("reveal", ordinal, start ? "start" : "nearest");
+        => await InvokeAsync("reveal", DomJsonContext.Default.Boolean, ordinal, start ? "start" : "nearest");
 
     /// <summary>The options the script attaches with.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]

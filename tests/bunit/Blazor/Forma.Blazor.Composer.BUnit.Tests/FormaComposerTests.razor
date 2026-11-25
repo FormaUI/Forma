@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using System.Text.Json
 @using Microsoft.AspNetCore.Components.Forms
 @using Bunit.Rendering
 @using Forma.Blazor.Components.Composer.Plugins
@@ -362,8 +363,8 @@
         private static BunitJSModuleInterop SetupAssets(FormaComposerTests ctx)
         {
             var assets = ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/Asset.js");
-            assets.Setup<bool>("loadModule", _ => true).SetResult(true);
-            assets.Setup<bool>("loadStyle", _ => true).SetResult(true);
+            assets.Setup<JsonElement>("loadModule", _ => true).SetResult(InteropAnswer.Of(true));
+            assets.Setup<JsonElement>("loadStyle", _ => true).SetResult(InteropAnswer.Of(true));
 
             return assets;
         }
@@ -1488,8 +1489,8 @@
             _ = new TextFieldProbe(ctx);
             var router = new InputRouterProbe(ctx);
             ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/TextEntry.js")
-                .Setup<TextRange?>("readSelection", _ => true)
-                .SetResult(new TextRange { Start = 2, End = 5 });
+                .Setup<JsonElement>("readSelection", _ => true)
+                .SetResult(InteropAnswer.Of(new TextRange { Start = 2, End = 5 }));
             var model = new TestModel();
             var plugin = new CommandPlugin();
             var plugins = ComposerDefinition.Create(composer => composer.AddEditorPlugin<PlainTextEditorPlugin>(editor => editor.AddFeaturePlugin(_ => plugin)));

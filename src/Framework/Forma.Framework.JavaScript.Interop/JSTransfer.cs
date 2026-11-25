@@ -1,6 +1,7 @@
 namespace Forma.Framework.JavaScript.Interop;
 
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -16,11 +17,16 @@ using Microsoft.JSInterop;
 /// stream's own default limit never applies. The stream's reference is released once its stream has been read, since
 /// WebAssembly pulls each chunk through it, and a stream refused or discarded is released unread. A value that can't be
 /// read is refused as one too large is: a transfer carrying no value, a text escaping half a surrogate pair, or a value
-/// that isn't what its receiver reads it as, a number past what a double holds among them.
+/// that isn't what its receiver reads it as, a number past what a double holds among them. A browser's JSON writes every
+/// number as a number, so a value is read with strict number handling whatever its receiver's contract allows, and a text
+/// such as <c>"Infinity"</c> never reads as a number.
 /// </remarks>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed class JSTransfer
 {
+    // The options of each contract a value is read through, with strict number handling.
+    private static readonly ConditionalWeakTable<JsonSerializerOptions, JsonSerializerOptions> StrictOptions = [];
+
     /// <summary>The value, where it travelled inline.</summary>
     [JsonPropertyName("value")]
     public JsonElement Value { get; init; }
@@ -38,7 +44,7 @@ public sealed class JSTransfer
     /// <param name="value">The JSON.</param>
     /// <param name="typeInfo">The JSON contract of <typeparamref name="TValue"/>.</param>
     /// <returns>The value, which is <see langword="null"/> where the browser sent null.</returns>
-    /// <exception cref="JSTransferException">The value isn't a <typeparamref name="TValue"/>, or holds a number past what a double holds.</exception>
+    /// <exception cref="JSTransferException">The value isn't a <typeparamref name="TValue"/>, holds a number past what a double holds, or holds a number as text.</exception>
     public static TValue? Deserialize<TValue>(JsonElement value, JsonTypeInfo<TValue> typeInfo)
     {
         ArgumentNullException.ThrowIfNull(typeInfo);
@@ -50,7 +56,7 @@ public sealed class JSTransfer
 
         try
         {
-            return value.Deserialize(typeInfo);
+            return value.Deserialize(GetStrictTypeInfo(typeInfo));
         }
         catch (Exception ex) when (ex is JsonException or ArgumentException or InvalidOperationException or NotSupportedException)
         {
@@ -148,6 +154,12 @@ public sealed class JSTransfer
             throw JSTransferException.Malformed(ex);
         }
     }
+
+    // A contract reading numbers from text, as the web's defaults do, reads "NaN" and "Infinity" as numbers no double can be used as.
+    private static JsonTypeInfo<TValue> GetStrictTypeInfo<TValue>(JsonTypeInfo<TValue> typeInfo)
+        => typeInfo.Options.NumberHandling is JsonNumberHandling.Strict
+            ? typeInfo
+            : (JsonTypeInfo<TValue>)StrictOptions.GetValue(typeInfo.Options, static options => new JsonSerializerOptions(options) { NumberHandling = JsonNumberHandling.Strict }).GetTypeInfo(typeof(TValue));
 
     // A browser's JSON writes no number a double can't hold, so one past it was written by something else.
     private static bool HasOnlyFiniteNumbers(JsonElement value)

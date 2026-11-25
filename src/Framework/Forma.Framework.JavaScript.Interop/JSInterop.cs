@@ -2,6 +2,7 @@ namespace Forma.Framework.JavaScript.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.JSInterop;
 using Microsoft.JSInterop.Infrastructure;
@@ -29,7 +30,7 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
     {
         var generation = ++_generation;
         await ReleaseAsync(TakeHandle());
-        var handle = await _module.TryInvokeAsync<IJSObjectReference>("attach", args);
+        var handle = await _module.TryInvokeReferenceAsync("attach", args);
 
         if (generation != _generation)
         {
@@ -82,8 +83,50 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
         }
     }
 
-    /// <summary>Invokes a method on the attached instance and returns its result, where <see langword="default"/> means the call did not run.</summary>
-    protected async ValueTask<TValue?> InvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, params object?[] args)
+    /// <summary>Invokes a method on the attached instance and reads what it answers as a <typeparamref name="TValue"/>, where <see langword="default"/> means the call did not run or its answer was refused.</summary>
+    /// <param name="identifier">The method.</param>
+    /// <param name="typeInfo">The JSON contract of <typeparamref name="TValue"/>.</param>
+    /// <param name="args">The method's arguments.</param>
+    /// <returns>The value, which is <see langword="default"/> where the script answered null.</returns>
+    protected async ValueTask<TValue?> InvokeAsync<TValue>(string identifier, JsonTypeInfo<TValue> typeInfo, params object?[] args)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        return JSModule.ReadAnswer(js, path, identifier, await InvokeCoreAsync<JsonElement>(identifier, args), typeInfo);
+    }
+
+    /// <summary>Invokes a method on the attached instance answering through the transfer, and reads the value it answers as a <typeparamref name="TValue"/>, at most the size the environment's transfer accepts.</summary>
+    /// <param name="identifier">The method.</param>
+    /// <param name="typeInfo">The JSON contract of <typeparamref name="TValue"/>.</param>
+    /// <param name="args">The method's arguments.</param>
+    /// <returns>The value, where <see langword="default"/> means the call did not run, its answer was lost or refused, or the script answered null.</returns>
+    protected async ValueTask<TValue?> InvokeJsonAsync<TValue>(string identifier, JsonTypeInfo<TValue> typeInfo, params object?[] args)
+    {
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        var transfer = await InvokeCoreAsync<JSTransfer>(identifier, args);
+
+        try
+        {
+            return transfer is null ? default : await transfer.ReadJsonAsync(typeInfo, js.TransferOptions.MaximumLength);
+        }
+        catch (JSTransferException ex)
+        {
+            JSModule.LogTransferFailure(js, path, identifier, ex);
+            return default;
+        }
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        await DetachAsync();
+        await _module.DisposeAsync();
+        GC.SuppressFinalize(this);
+    }
+
+    // What the runtime reads an answer as itself: the JSON of a value or a transfer.
+    private async ValueTask<TValue?> InvokeCoreAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, object?[] args)
     {
         if (_handle is null)
         {
@@ -105,31 +148,6 @@ public abstract class JSInterop(IJSEnvironment js, string path) : IAsyncDisposab
             LogCallFailure(identifier, ex);
             return default;
         }
-    }
-
-    /// <summary>Invokes a method on the attached instance answering through the transfer, and reads the value it answers as JSON, at most the size the environment's transfer accepts.</summary>
-    /// <returns>The value, where <see langword="null"/> means the call did not run or its answer was lost.</returns>
-    protected async ValueTask<JsonElement?> InvokeJsonAsync(string identifier, params object?[] args)
-    {
-        var transfer = await InvokeAsync<JSTransfer>(identifier, args);
-
-        try
-        {
-            return transfer is null ? null : await transfer.ReadJsonAsync(js.TransferOptions.MaximumLength);
-        }
-        catch (JSTransferException ex)
-        {
-            InteropLog.AnswerLost(js.Logger, ex, identifier, path, js.RuntimeId);
-            return null;
-        }
-    }
-
-    /// <inheritdoc />
-    public async ValueTask DisposeAsync()
-    {
-        await DetachAsync();
-        await _module.DisposeAsync();
-        GC.SuppressFinalize(this);
     }
 
     // The wait ends with the attachment while the call keeps the runtime's own timeout, and a fault arriving after the release is observed.

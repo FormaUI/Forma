@@ -5,9 +5,10 @@ using System.Text.Json.Serialization;
 
 using Forma.Blazor.Components.Composer.Dialogs;
 
-/// <summary>What the rich text editor's canvas sends through the transfer, read with the web's defaults through generated code rather than reflection.</summary>
+/// <summary>What the rich text editor's canvas sends and answers, read with the web's defaults through generated code rather than reflection.</summary>
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web)]
 [JsonSerializable(typeof(RichTextLinkTargetDto))]
+[JsonSerializable(typeof(RichTextCommandResult))]
 [JsonSerializable(typeof(ImageDialogResult))]
 [JsonSerializable(typeof(VideoDialogResult))]
 [JsonSerializable(typeof(EmbedDialogResult))]

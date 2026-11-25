@@ -51,6 +51,22 @@ public sealed class Clipboard(IJSEnvironment js) : IAsyncDisposable
 }
 ```
 
+What an export answers is what the browser sent, which on the Server anyone can send, so a wrapper
+reads a value through a JSON contract of its own, the `JsonTypeInfo<T>` a `JsonSerializerContext`
+generates. An answer that isn't the value asked for is refused and logged at `Debug`, and the call
+answers `default` as a call that did not run does:
+
+```csharp
+[JsonSerializable(typeof(bool))]
+internal sealed partial class ShareJsonContext : JsonSerializerContext;
+
+public ValueTask<bool> IsAvailableAsync()
+    => _module.TryInvokeAsync("isAvailable", ShareJsonContext.Default.Boolean);
+```
+
+An export that answers a JS object is read with `TryInvokeReferenceAsync`, which answers the object's
+reference.
+
 An export that answers with content a reader can make large, a text or a list of every item, answers
 through the transfer, `Transfer.of(value)`, and the wrapper reads it with `TryInvokeTextAsync` or
 `TryInvokeJsonAsync`, naming the size it accepts in bytes:
@@ -65,7 +81,7 @@ default message limit, and as a stream past it, which Blazor sends in chunks und
 larger than the wrapper accepts is refused before it is read, and the call answers `null` as a call
 that did not run does. So is a value that can't be read: a text escaping half a surrogate pair, or a
 value `JSTransfer.ReadJsonAsync` or `JSTransfer.Deserialize` reads as a type it doesn't fit, a number
-past what a double holds among them.
+past what a double holds or a number written as text among them.
 
 A component builds a wrapper from its `Context.JS`, the environment carrying the component's logger
 and `RuntimeId`, attaches it from `OnAfterRenderAsync`, and disposes it from `DisposeAsyncCore`. An
@@ -84,8 +100,8 @@ _environment = new JSEnvironment(js, logger, Guid.CreateVersion7());
 | --- | --- |
 | `IJSEnvironment` | A JS runtime carrying the `RuntimeId` and `Logger` of the owner whose interop it runs, and the `TransferOptions` that bound what the browser sends that owner through the transfer. |
 | `JSEnvironment` | An `IJSEnvironment` over an `IJSRuntime`. |
-| `JSInterop` | The base of a wrapper whose module attaches to an element: `AttachCoreAsync`, `InvokeAsync` on the attached instance and `InvokeJsonAsync` for what it answers through the transfer, `InvokeModuleAsync` on the module's exports, `DetachAsync`, `IsAttached`, and disposal as teardown. |
-| `JSModule` | A lazily imported module: `InvokeAsync` and `InvokeVoidAsync` throw on failure, `TryInvokeAsync` and `TryInvokeVoidAsync` return `default` or `false`, and `TryInvokeTextAsync` and `TryInvokeJsonAsync` read what an export answered through the transfer. |
+| `JSInterop` | The base of a wrapper whose module attaches to an element: `AttachCoreAsync`, `InvokeAsync` on the attached instance, reading what it answers through a contract, and `InvokeJsonAsync` for what it answers through the transfer, `InvokeModuleAsync` on the module's exports, `DetachAsync`, `IsAttached`, and disposal as teardown. |
+| `JSModule` | A lazily imported module: `InvokeAsync` and `InvokeVoidAsync` throw on failure, `TryInvokeAsync`, reading what an export answers through a contract, `TryInvokeReferenceAsync` and `TryInvokeVoidAsync` return `default` or `false`, and `TryInvokeTextAsync` and `TryInvokeJsonAsync` read what an export answered through the transfer. |
 | `JSTransfer` | A value the browser sent .NET through the transfer, inline or streamed, which its receiver reads up to the size it accepts, as text, JSON or a type of its own, or discards; `Deserialize` reads JSON the browser sent otherwise as a type of its own. |
 | `JSTransferException` | A value refused for its size or because it can't be read, or broken on its way. |
 | `JSTransferOptions` | The size a value with no maximum of its own may reach, which a host registers; 16 MiB by default. |

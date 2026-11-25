@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using System.Text.Json
 @using System.Globalization
 @using Forma.Tests.Browser
 
@@ -29,13 +30,13 @@
             using var ctx = new FormaTimeBoxTests();
             var engine = ctx.JSInterop.SetupModule(FakeDomBrowser.EnginePath);
             engine.Mode = JSRuntimeMode.Loose;
-            var attach = engine.Setup<bool>("attach", _ => true);
+            var attach = engine.Setup<JsonElement>("attach", _ => true);
             var cut = ctx.Render(@<FormaTimeBox ElementId="start" Text="1" Suggestions="[]" FormatTime="@(time => time.ToString("t", CultureInfo.InvariantCulture))" ListLabel="Times" />);
             var field = cut.FindComponent<FormaTimeBox>();
             var disposal = cut.InvokeAsync(() => field.Instance.DisposeAsync().AsTask());
 
             // Act
-            await cut.ReleaseAsync(() => attach.SetResult(true));
+            await cut.ReleaseAsync(() => attach.SetResult(InteropAnswer.Of(true)));
             await disposal;
 
             // Assert

@@ -1,6 +1,6 @@
 namespace Forma.Framework.Browser.Interop;
 
-using System.Diagnostics.CodeAnalysis;
+using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.AspNetCore.Components;
 
@@ -78,12 +78,12 @@ internal sealed class DomRegistration<TOptions> : IDomRegistration
     public Task RetryAsync()
         => _request is { } request ? SyncAsync(request.Element, request.Options, request.ShouldApply) : Task.CompletedTask;
 
-    /// <summary>Invokes <paramref name="identifier"/> on the registration's entry under its current generation and returns its result, where <see langword="default"/> means the call did not run.</summary>
-    public Task<TResult?> TryInvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TResult>(string identifier, bool createsState, params object?[] args)
+    /// <summary>Invokes <paramref name="identifier"/> on the registration's entry under its current generation and reads what it answers as a <typeparamref name="TResult"/>, where <see langword="default"/> means the call did not run or its answer was refused.</summary>
+    public Task<TResult?> TryInvokeAsync<TResult>(string identifier, JsonTypeInfo<TResult> typeInfo, bool createsState, params object?[] args)
     {
         var generation = Generation;
 
-        return _session.TryInvokeAsync<TResult>(Root, identifier, FormatOperation(identifier, generation), () => !IsDisposed && Generation == generation, createsState, args);
+        return _session.TryInvokeAsync(Root, identifier, typeInfo, FormatOperation(identifier, generation), () => !IsDisposed && Generation == generation, createsState, args);
     }
 
     /// <inheritdoc />

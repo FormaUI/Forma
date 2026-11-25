@@ -330,6 +330,10 @@ public sealed class JSTransferTests
         [InlineData("""{ "name": "column", "width": "wide" }""")]
         [InlineData("""{ "name": "column", "width": 1e309 }""")]
         [InlineData("""{ "name": "column", "width": -1e309 }""")]
+        [InlineData("""{ "name": "column", "width": "Infinity" }""")]
+        [InlineData("""{ "name": "column", "width": "-Infinity" }""")]
+        [InlineData("""{ "name": "column", "width": "NaN" }""")]
+        [InlineData("""{ "name": "column", "width": "120" }""")]
         [InlineData("""{ "name": "\ud800", "width": 1 }""")]
         public async Task Should_refuse_a_value_that_is_not_its_receiver_s_type(string json)
         {

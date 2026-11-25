@@ -141,7 +141,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
         var target = _revision;
 
         // What the reader typed before the edits listened went unsent, so the field commits it, ahead of answering the revision it stands at.
-        if (!wasAttached && await _registration.TryInvokeAsync<int?>("invoke", createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation, "flush") is { } flushedRevision)
+        if (!wasAttached && await _registration.TryInvokeAsync("invoke", DomJsonContext.Default.NullableInt32, createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation, "flush") is { } flushedRevision)
         {
             target = flushedRevision;
         }
@@ -214,7 +214,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
 
     /// <inheritdoc />
     async Task<bool> IDomRegistrationHost<TextEditOptions>.EstablishAsync(ElementReference element, TextEditOptions options, int generation)
-        => await _registration.TryInvokeAsync<bool>("attach", createsState: true, _session.RuntimeKey, _session.Receiver, new DomAttachRequest
+        => await _registration.TryInvokeAsync("attach", DomJsonContext.Default.Boolean, createsState: true, _session.RuntimeKey, _session.Receiver, new DomAttachRequest
         {
             Token = _registration.Token,
             Generation = generation,
@@ -298,7 +298,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
         {
             while (!IsDisposed && _registration.IsActive && _pendingText is { } text)
             {
-                var revision = await _registration.TryInvokeAsync<int?>("invoke", createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation, "write", text);
+                var revision = await _registration.TryInvokeAsync("invoke", DomJsonContext.Default.NullableInt32, createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation, "write", text);
 
                 if (revision is not { } writtenRevision)
                 {
@@ -331,7 +331,7 @@ public sealed class DomTextEdits : IAsyncDisposable, IDomRegistrationHost<TextEd
     {
         _isReplacementRequested = true;
 
-        var isSent = await _registration.TryInvokeAsync<bool>("invoke", createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation, "resend", _revision);
+        var isSent = await _registration.TryInvokeAsync("invoke", DomJsonContext.Default.Boolean, createsState: false, _session.RuntimeKey, _registration.Token, _registration.Generation, "resend", _revision);
 
         if (!isSent)
         {

@@ -49,7 +49,7 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
             return null;
         }
 
-        var handle = await _module.TryInvokeAsync<IJSObjectReference>("register", element, profile, owner, new ScopePlacement { Parent = parent, Within = within ?? [] });
+        var handle = await _module.TryInvokeReferenceAsync("register", element, profile, owner, new ScopePlacement { Parent = parent, Within = within ?? [] });
 
         return handle is null ? null : new InputScope(handle, _environment);
     }
@@ -140,7 +140,7 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
         }
 
         _selfReference ??= DotNetObjectReference.Create(this);
-        var handle = await _module.TryInvokeAsync<IJSObjectReference>("registerHost", new HostProfile { Routes = _options.Routes, PreemptiveRoutes = _options.PreemptiveRoutes }, _selfReference);
+        var handle = await _module.TryInvokeReferenceAsync("registerHost", new HostProfile { Routes = _options.Routes, PreemptiveRoutes = _options.PreemptiveRoutes }, _selfReference);
         _hostScope = handle is null ? null : new InputScope(handle, _environment);
 
         return handle is not null;

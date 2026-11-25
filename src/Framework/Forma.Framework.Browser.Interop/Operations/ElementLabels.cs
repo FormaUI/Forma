@@ -11,11 +11,25 @@ public sealed class ElementLabels(IJSEnvironment js) : IAsyncDisposable
 
     /// <summary>The label each of <paramref name="elements"/> is read by, in the order given: its own <c>aria-label</c>, or its text without what is hidden from assistive technology, and empty for one no longer in the document.</summary>
     /// <param name="elements">The elements.</param>
-    /// <returns>The labels, or <see langword="null"/> where the browser can't be asked.</returns>
+    /// <returns>The labels, or <see langword="null"/> where the browser can't be asked or answers labels that don't label each element.</returns>
     public async ValueTask<string[]?> ReadAsync(IReadOnlyList<ElementReference> elements)
-        => await _module.TryInvokeJsonAsync("read", js.TransferOptions.MaximumLength, elements) is { } labels
-            ? [.. labels.EnumerateArray().Select(label => label.GetString() ?? string.Empty)]
-            : null;
+    {
+        ArgumentNullException.ThrowIfNull(elements);
+
+        if (await _module.TryInvokeJsonAsync("read", DomJsonContext.Default.StringArray, js.TransferOptions.MaximumLength, elements) is not { } labels)
+        {
+            return null;
+        }
+
+        if (labels.Length != elements.Count)
+        {
+            DomLog.LabelsRefused(js.Logger, js.RuntimeId);
+
+            return null;
+        }
+
+        return [.. labels.Select(label => label ?? string.Empty)];
+    }
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()

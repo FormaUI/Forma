@@ -38,6 +38,15 @@ internal static partial class DomLog
     [LoggerMessage(Level = LogLevel.Debug, Message = "The state the browser sent registration {Token}.{Generation} of {RuntimeId} isn't one it measures, and was refused.")]
     public static partial void StateRefused(ILogger logger, Exception? exception, string token, int generation, Guid runtimeId);
 
+    [LoggerMessage(Level = LogLevel.Debug, Message = "What {Operation} answered in {Root} for {RuntimeId} isn't what the call reads, and was refused.")]
+    public static partial void AnswerRefused(ILogger logger, Exception exception, string operation, string root, Guid runtimeId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "The order the browser answered {RuntimeId} with doesn't place each element it was given once, and was refused.")]
+    public static partial void OrderRefused(ILogger logger, Guid runtimeId);
+
+    [LoggerMessage(Level = LogLevel.Debug, Message = "The labels the browser answered {RuntimeId} with don't label each element it was given, and were refused.")]
+    public static partial void LabelsRefused(ILogger logger, Guid runtimeId);
+
     [LoggerMessage(Level = LogLevel.Warning, Message = "{Root} could not be imported for {Operation} by {RuntimeId}.")]
     public static partial void ImportFailed(ILogger logger, Exception exception, string root, string operation, Guid runtimeId);
 

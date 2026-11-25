@@ -11,7 +11,7 @@ public sealed class Embedding(IJSEnvironment js) : IAsyncDisposable
 
     /// <summary>Loads the embed script and asks it to process the markup rendered since it last ran.</summary>
     public ValueTask<bool> ActivateAsync(string scriptUrl)
-        => _module.TryInvokeAsync<bool>("activate", scriptUrl);
+        => _module.TryInvokeAsync("activate", DomJsonContext.Default.Boolean, scriptUrl);
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()

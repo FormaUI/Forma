@@ -640,6 +640,8 @@ public sealed class DomObservationTests
         [InlineData("""{ "canScrollBack": "yes", "canScrollForward": true, "frozenExtent": 0, "cornerExtent": 0 }""")]
         [InlineData("""{ "canScrollBack": true, "canScrollForward": true, "frozenExtent": 1e309, "cornerExtent": 0 }""")]
         [InlineData("""{ "canScrollBack": true, "canScrollForward": true, "frozenExtent": 0, "cornerExtent": -1e309 }""")]
+        [InlineData("""{ "canScrollBack": true, "canScrollForward": true, "frozenExtent": "Infinity", "cornerExtent": 0 }""")]
+        [InlineData("""{ "canScrollBack": true, "canScrollForward": true, "frozenExtent": 0, "cornerExtent": "NaN" }""")]
         public async Task Should_refuse_and_log_a_state_that_is_not_one_it_measures_and_take_the_next(string json)
         {
             // Arrange
@@ -659,6 +661,37 @@ public sealed class DomObservationTests
                 () => Assert.Equal([Start, End], handled),
                 () => Assert.Equal(End, observation.Current),
                 () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("isn't one it measures", StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData("\"scrolled\"")]
+        [InlineData("""{ "canScrollBack": "yes", "canScrollForward": true, "frozenExtent": 0, "cornerExtent": 0 }""")]
+        [InlineData("""{ "canScrollBack": false, "canScrollForward": true, "frozenExtent": 1e400, "cornerExtent": 0 }""")]
+        [InlineData("""{ "canScrollBack": false, "canScrollForward": true, "frozenExtent": "Infinity", "cornerExtent": 0 }""")]
+        public async Task Should_refuse_and_log_a_first_state_that_is_not_one_it_measures_and_establish_on_the_next_sync(string json)
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            var isHostile = true;
+            var browser = CreateBrowser(() => isHostile ? InteropAnswer.Parse(json) : Start);
+            await using var watcher = CreateWatcher(browser, loggerFactory);
+            var handled = new List<ScrollState>();
+            await using var observation = await watcher.GetElement(Viewport).Scroll.WatchAsync(state => { handled.Add(state); return Task.CompletedTask; }, Inline);
+            var isRefused = !observation.IsActive && observation.Current is null && handled.Count == 0;
+
+            // Act
+            isHostile = false;
+            await observation.SyncAsync(Viewport, Inline);
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(
+                () => Assert.True(isRefused),
+                () => Assert.Equal(LogLevel.Debug, entry.Level),
+                () => Assert.Contains("attach scroll 1.1", entry.Message, StringComparison.Ordinal),
+                () => Assert.Contains("was refused", entry.Message, StringComparison.Ordinal),
+                () => Assert.True(observation.IsActive),
+                () => Assert.Equal([Start], handled));
         }
 
         [Fact]

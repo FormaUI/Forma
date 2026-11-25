@@ -2,7 +2,7 @@ namespace Forma.Tests.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 
-/// <summary>The calls a recording JS fake took, each answered through one function, or held open until the test answers it or the call's token cancels it where its identifier is held.</summary>
+/// <summary>The calls a recording JS fake took, each answered through one function, or held open until the test answers it or the call's token cancels it where its identifier is held, in JSON where the call reads JSON.</summary>
 /// <param name="respond">The function that answers a call from its identifier and arguments.</param>
 /// <remarks>A caller resumes where its context posts it, and a test's context posts to several threads at once, so two calls can arrive together; the records are kept under a lock, and each read is a snapshot of them.</remarks>
 public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
@@ -97,7 +97,7 @@ public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
 
         try
         {
-            return ValueTask.FromResult((TValue)respond(identifier, args ?? [])!);
+            return ValueTask.FromResult(InteropAnswer.As<TValue>(respond(identifier, args ?? [])));
         }
         catch (Exception ex)
         {
@@ -109,7 +109,7 @@ public sealed class JSCallRecorder(Func<string, object?[], object?> respond)
     // included, where an await leaving the context would queue it to the thread pool instead; a call its token cancels ends
     // canceled, as a runtime's call does.
     private static Task<TValue> AwaitAnswerAsync<TValue>(RecordedCall call, CancellationToken cancellationToken)
-        => call.Answer.Task.WaitAsync(cancellationToken).ContinueWith(answer => (TValue)answer.GetAwaiter().GetResult()!, cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+        => call.Answer.Task.WaitAsync(cancellationToken).ContinueWith(answer => InteropAnswer.As<TValue>(answer.GetAwaiter().GetResult()), cancellationToken, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
 
     // A test waiting for a call, resumed apart from the caller, so the test never runs inside the code that made the call.
     private sealed record CallWaiter(string Identifier, Func<RecordedCall, bool> Predicate)

@@ -1,10 +1,14 @@
 namespace Forma.Tests.Blazor;
 
+using System.Text.Json;
+
 using AngleSharp.Dom;
 
 using Bunit;
 
+using Forma.Framework.Browser;
 using Forma.Tests.Browser;
+using Forma.Tests.Interop;
 
 using Microsoft.AspNetCore.Components;
 
@@ -13,8 +17,19 @@ using Microsoft.AspNetCore.Components;
 public sealed class DomProbe<TState>
     where TState : class
 {
+    // The capability that measures each state, as the watcher's attach names it.
+    private static readonly Dictionary<Type, string> CapabilityNames = new()
+    {
+        [typeof(AutofillState)] = "autofill",
+        [typeof(FocusState)] = "focus",
+        [typeof(IntersectionState)] = "intersection",
+        [typeof(ScrollState)] = "scroll",
+        [typeof(SizeState)] = "size",
+        [typeof(TextSelection)] = "selection",
+    };
+
     private readonly BunitContext _context;
-    private readonly HeldAttach _heldAttach = new();
+    private readonly HeldAttach _heldAttach;
 
     /// <summary>Sets the watcher's and engine's modules up on the context's interop.</summary>
     public DomProbe(BunitContext context)
@@ -22,12 +37,13 @@ public sealed class DomProbe<TState>
         ArgumentNullException.ThrowIfNull(context);
 
         _context = context;
+        _heldAttach = new HeldAttach(CapabilityNames.TryGetValue(typeof(TState), out var capability) ? capability : throw new InvalidOperationException($"No capability the watcher observes measures a {typeof(TState).Name}."));
         Watcher = context.JSInterop.SetupModule(FakeDomBrowser.WatcherPath);
         Watcher.Mode = JSRuntimeMode.Loose;
         Watcher.AddInvocationHandler(_heldAttach);
         Engine = context.JSInterop.SetupModule(FakeDomBrowser.EnginePath);
         Engine.Mode = JSRuntimeMode.Loose;
-        Engine.Setup<bool>("attach", _ => true).SetResult(true);
+        Engine.Setup<JsonElement>("attach", _ => true).SetResult(InteropAnswer.Of(true));
     }
 
     /// <summary>The watcher's module on the context's interop.</summary>
@@ -56,6 +72,10 @@ public sealed class DomProbe<TState>
     public Task ReportAsync(TState state)
         => ReportAsync(_heldAttach.Attaches[^1], state);
 
+    /// <summary>Reports <paramref name="state"/>, the JSON the browser sent, for the last observation attached, on the renderer.</summary>
+    public Task ReportAsync(JsonElement state)
+        => ReportAsync(_heldAttach.Attaches[^1], state);
+
     /// <summary>Reports <paramref name="state"/> as the browser measured it for the last observation attached by the owner whose runtime identity is <paramref name="runtimeId"/>, on the renderer.</summary>
     public Task ReportAsync(string runtimeId, TState state)
         => ReportAsync(_heldAttach.Attaches.Last(attach => (string?)attach.Arguments[0] == runtimeId), state);
@@ -71,26 +91,26 @@ public sealed class DomProbe<TState>
     }
 
     // The state answers the attach where it still waits, and otherwise is the next the browser delivers.
-    private Task ReportAsync(JSRuntimeInvocation attach, TState state)
-        => _context.Renderer.Dispatcher.InvokeAsync(() => _heldAttach.TryAnswer(attach, state) ? Task.CompletedTask : FakeDomBrowser.DeliverAsync(attach.Arguments, state));
+    private Task ReportAsync(JSRuntimeInvocation attach, object state)
+        => _context.Renderer.Dispatcher.InvokeAsync(() => _heldAttach.TryAnswer(attach, InteropAnswer.Of(state)) ? Task.CompletedTask : FakeDomBrowser.DeliverAsync(attach.Arguments, state));
 
-    /// <summary>Holds each observation's attach until the test answers it.</summary>
-    private sealed class HeldAttach()
-        : JSRuntimeInvocationHandlerBase<TState>(invocation => invocation.Identifier == "attach", isCatchAllHandler: false)
+    /// <summary>Holds each attach of an observation of <paramref name="capability"/> until the test answers it with the JSON of the state.</summary>
+    private sealed class HeldAttach(string capability)
+        : JSRuntimeInvocationHandlerBase<JsonElement>(invocation => invocation.Identifier == "attach" && FakeDomBrowser.GetRequestField(invocation.Arguments, "capability") as string == capability, isCatchAllHandler: false)
     {
         // Plain, so the observation's continuation runs inline where the answer completes it.
-        private readonly List<(JSRuntimeInvocation Attach, TaskCompletionSource<TState> Answer)> _heldAttaches = [];
+        private readonly List<(JSRuntimeInvocation Attach, TaskCompletionSource<JsonElement> Answer)> _heldAttaches = [];
 
         public IReadOnlyList<JSRuntimeInvocation> Attaches
             => [.. _heldAttaches.Select(held => held.Attach)];
 
         // An invocation equals only itself, since each holds its own arguments.
-        public bool TryAnswer(JSRuntimeInvocation attach, TState state)
+        public bool TryAnswer(JSRuntimeInvocation attach, JsonElement state)
             => _heldAttaches.Single(held => held.Attach.Equals(attach)).Answer.TrySetResult(state);
 
-        protected override Task<TState> HandleAsync(JSRuntimeInvocation invocation)
+        protected override Task<JsonElement> HandleAsync(JSRuntimeInvocation invocation)
         {
-            var answer = new TaskCompletionSource<TState>();
+            var answer = new TaskCompletionSource<JsonElement>();
             _heldAttaches.Add((invocation, answer));
 
             return answer.Task;

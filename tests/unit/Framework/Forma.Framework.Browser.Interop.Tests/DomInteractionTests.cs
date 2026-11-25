@@ -8,6 +8,7 @@ using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
 using Microsoft.AspNetCore.Components;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using Xunit;
@@ -110,6 +111,34 @@ public sealed class DomInteractionTests
                 () => Assert.False(wasActive),
                 () => Assert.True(interaction.IsActive),
                 () => Assert.Equal(2, browser.Engine.Recorder.GetCalls("attach").Count));
+        }
+
+        [Theory]
+        [InlineData("\"attached\"")]
+        [InlineData("1")]
+        [InlineData("null")]
+        public async Task Should_refuse_an_attach_answer_that_is_not_a_bool_at_debug_and_try_again_on_the_next_sync(string json)
+        {
+            // Arrange
+            using var loggerFactory = new FakeLoggerFactory();
+            object answer = InteropAnswer.Parse(json);
+            var browser = new FakeDomBrowser((_, identifier, _) => identifier == "attach" ? answer : null);
+            await using var watcher = new DomWatcher(browser.CreateEnvironment(loggerFactory));
+            await using var engine = new DomEngine(watcher);
+            await using var interaction = await engine.GetElement(Viewport).Scroll.AttachAsync(Steps);
+            var wasActive = interaction.IsActive;
+
+            // Act
+            answer = true;
+            await interaction.SyncAsync(Viewport, Steps);
+
+            // Assert
+            var entry = Assert.Single(loggerFactory.Entries);
+            Assert.Multiple(
+                () => Assert.False(wasActive),
+                () => Assert.Equal(LogLevel.Debug, entry.Level),
+                () => Assert.Contains("was refused", entry.Message, StringComparison.Ordinal),
+                () => Assert.True(interaction.IsActive));
         }
     }
 

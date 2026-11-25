@@ -13,7 +13,7 @@ public sealed class Share(IJSEnvironment js, INativeOperations? nativeOperations
 
     /// <summary>Whether the host or the browser offers a native share surface.</summary>
     public async ValueTask<bool> IsAvailableAsync()
-        => nativeOperations is { CanShare: true } || await _module.TryInvokeAsync<bool>("isAvailable");
+        => nativeOperations is { CanShare: true } || await _module.TryInvokeAsync("isAvailable", DomJsonContext.Default.Boolean);
 
     /// <summary>Offers the subject to the platform's share surface.</summary>
     public async ValueTask<bool> ShareAsync(string title, string url)

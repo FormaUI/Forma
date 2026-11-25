@@ -12,7 +12,7 @@ public sealed class TextEntry(IJSEnvironment js) : IAsyncDisposable
 
     /// <summary>Reads the entry's current selected range.</summary>
     public ValueTask<TextRange?> ReadSelectionAsync(ElementReference input)
-        => _module.TryInvokeAsync<TextRange>("readSelection", input);
+        => _module.TryInvokeAsync("readSelection", DomJsonContext.Default.TextRange, input);
 
     /// <summary>Sets the entry's selection to the given range.</summary>
     public ValueTask<bool> TryWriteSelectionAsync(ElementReference input, int start, int end)

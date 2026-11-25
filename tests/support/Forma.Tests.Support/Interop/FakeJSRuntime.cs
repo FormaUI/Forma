@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.JSInterop;
 
-/// <summary>A JS runtime that answers every call through one function and faults the call with whatever the function throws.</summary>
+/// <summary>A JS runtime that answers every call through one function, in JSON where the call reads JSON, and faults the call with whatever the function throws.</summary>
 /// <param name="respond">The function that answers a call from its identifier and arguments.</param>
 public sealed class FakeJSRuntime(Func<string, object?[]?, object?> respond) : IJSRuntime
 {
@@ -22,7 +22,7 @@ public sealed class FakeJSRuntime(Func<string, object?[]?, object?> respond) : I
     {
         try
         {
-            return ValueTask.FromResult((TValue)respond(identifier, args)!);
+            return ValueTask.FromResult(InteropAnswer.As<TValue>(respond(identifier, args)));
         }
         catch (Exception ex)
         {

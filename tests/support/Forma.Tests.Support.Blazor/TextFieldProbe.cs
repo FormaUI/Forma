@@ -1,6 +1,7 @@
 namespace Forma.Tests.Blazor;
 
 using System.Text;
+using System.Text.Json;
 
 using AngleSharp.Dom;
 
@@ -121,7 +122,7 @@ public sealed class TextFieldProbe
 
         var engine = context.JSInterop.SetupModule(FakeDomBrowser.EnginePath);
         engine.Mode = JSRuntimeMode.Loose;
-        engine.Setup<bool>("attach", _ => true).SetResult(true);
+        engine.Setup<JsonElement>("attach", _ => true).SetResult(InteropAnswer.Of(true));
 
         return engine;
     }
@@ -256,9 +257,9 @@ public sealed class TextFieldProbe
 
     /// <summary>Attaches a field's edits, which go on from where its previous attach left them.</summary>
     private sealed class AttachHandler(TextFieldProbe probe)
-        : JSRuntimeInvocationHandlerBase<bool>(invocation => invocation.Identifier == "attach" && FakeDomBrowser.GetRequestField(invocation.Arguments, "capability") is "edits", isCatchAllHandler: false)
+        : JSRuntimeInvocationHandlerBase<JsonElement>(invocation => invocation.Identifier == "attach" && FakeDomBrowser.GetRequestField(invocation.Arguments, "capability") is "edits", isCatchAllHandler: false)
     {
-        protected override Task<bool> HandleAsync(JSRuntimeInvocation invocation)
+        protected override Task<JsonElement> HandleAsync(JSRuntimeInvocation invocation)
         {
             var runtimeKey = (string)invocation.Arguments[0]!;
             var token = (string)FakeDomBrowser.GetRequestField(invocation.Arguments, "token")!;
@@ -279,43 +280,43 @@ public sealed class TextFieldProbe
             field.ElementId = ((ElementReference)FakeDomBrowser.GetRequestField(invocation.Arguments, "target")!).Id;
             field.SendsOnInput = (bool)FakeDomBrowser.GetOption(invocation.Arguments, "sendsOnInput")!;
 
-            return Task.FromResult(true);
+            return Task.FromResult(InteropAnswer.Of(true));
         }
     }
 
     /// <summary>Writes a text of the owner's own into a field, answering the revision it then stands at.</summary>
     private sealed class WriteHandler(TextFieldProbe probe)
-        : JSRuntimeInvocationHandlerBase<int?>(invocation => invocation.Identifier == "invoke" && invocation.Arguments[3] is "write", isCatchAllHandler: false)
+        : JSRuntimeInvocationHandlerBase<JsonElement>(invocation => invocation.Identifier == "invoke" && invocation.Arguments[3] is "write", isCatchAllHandler: false)
     {
-        protected override Task<int?> HandleAsync(JSRuntimeInvocation invocation)
+        protected override Task<JsonElement> HandleAsync(JSRuntimeInvocation invocation)
         {
             if (probe.FindField(invocation.Arguments[0], invocation.Arguments[1]) is not { } field || field.RefusesWrites)
             {
-                return Task.FromResult<int?>(null);
+                return Task.FromResult(InteropAnswer.Of<int?>(null));
             }
 
             field.Value = field.Sent = (string)invocation.Arguments[4]!;
 
-            return Task.FromResult<int?>(++field.Revision);
+            return Task.FromResult(InteropAnswer.Of<int?>(++field.Revision));
         }
     }
 
     /// <summary>Sends the owner a field's whole text where the owner's copy stands at another revision, ahead of answering, as the browser's message does.</summary>
     private sealed class ResendHandler(TextFieldProbe probe)
-        : JSRuntimeInvocationHandlerBase<bool>(invocation => invocation.Identifier == "invoke" && invocation.Arguments[3] is "resend", isCatchAllHandler: false)
+        : JSRuntimeInvocationHandlerBase<JsonElement>(invocation => invocation.Identifier == "invoke" && invocation.Arguments[3] is "resend", isCatchAllHandler: false)
     {
-        protected override async Task<bool> HandleAsync(JSRuntimeInvocation invocation)
+        protected override async Task<JsonElement> HandleAsync(JSRuntimeInvocation invocation)
         {
             if (probe.FindField(invocation.Arguments[0], invocation.Arguments[1]) is not { } field || (int)invocation.Arguments[4]! == field.Revision)
             {
-                return false;
+                return InteropAnswer.Of(false);
             }
 
             var text = field.BreaksNextReplacement ? CreateBrokenTransfer(field.Sent) : InlineTransfer.Of(field.Sent);
             field.BreaksNextReplacement = false;
             await field.Receiver.ReplaceAsync(field.Token, field.Revision, text).ConfigureAwait(false);
 
-            return true;
+            return InteropAnswer.Of(true);
         }
     }
 }

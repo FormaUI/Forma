@@ -332,8 +332,8 @@
             // Arrange
             using var ctx = new FormaRichTextEditorTests();
             var canvas = ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
-            canvas.Setup<RichTextCommandResult>("exec", _ => true)
-                .SetResult(new RichTextCommandResult { Selection = new RichTextSelectionDto { Start = 0, End = 0, IsCollapsed = true, BlockType = "p", ActiveStyles = ["bold"] } });
+            canvas.Setup<JsonElement>("exec", _ => true)
+                .SetResult(InteropAnswer.Of(new RichTextCommandResult { Selection = new RichTextSelectionDto { Start = 0, End = 0, IsCollapsed = true, BlockType = "p", ActiveStyles = ["bold"] } }));
             var model = new TestModel();
             var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithFormatting" />);
 
@@ -611,6 +611,56 @@
             // Assert
             var reopened = Assert.IsType<LinkDialogResult>(cut.FindComponent<FormaComposerLinkDialog>().Instance.ReopeningResult);
             Assert.Equal(text, reopened.Name);
+        }
+
+        [Theory]
+        [InlineData("""{ "text": 4, "count": 0 }""")]
+        [InlineData("""{ "text": "Read more", "count": "1" }""")]
+        [InlineData("""["Read more"]""")]
+        public async Task Should_refuse_and_log_what_the_canvas_answers_for_a_link_dialog_and_open_it_empty(string json)
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var canvas = ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            canvas.Setup<JSTransfer>("beginLinkDialog", _ => true).SetResult(new JSTransfer { Value = InteropAnswer.Parse(json) });
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichText" />);
+            var plugin = Assert.IsType<RichTextEditorPlugin>(cut.FindComponent<FormaRichTextEditor>().Instance.Editor);
+
+            // Act
+            await cut.InvokeAsync(() => plugin.RequestLinkDialog());
+
+            // Assert
+            var reopened = Assert.IsType<LinkDialogResult>(cut.FindComponent<FormaComposerLinkDialog>().Instance.ReopeningResult);
+            Assert.Multiple(
+                () => Assert.Equal(string.Empty, reopened.Name),
+                () => Assert.Equal(string.Empty, reopened.Href),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Category == typeof(FormaRichTextEditor).FullName && entry.Message.Contains("beginLinkDialog", StringComparison.Ordinal) && entry.Message.Contains("was refused", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task Should_refuse_and_log_a_command_answer_that_is_not_one_and_leave_the_selection()
+        {
+            // Arrange
+            using var ctx = new FormaRichTextEditorTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var canvas = ctx.JSInterop.SetupModule(CanvasPath).SetupModule("attach", _ => true);
+            canvas.Setup<JsonElement>("exec", _ => true).SetResult(InteropAnswer.Parse("""{ "selection": { "start": "0", "end": 0, "activeStyles": ["bold"] } }"""));
+            var model = new TestModel();
+            var cut = ctx.Render(@<FormaComposer @bind-Value="model.Body" Plugins="RichTextWithFormatting" />);
+
+            // Act
+            await cut.Find("button[aria-label='Bold']").ClickAsync(new());
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(string.Empty, cut.Find(".forma-composer-rich-text-announcer").TextContent),
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Category == typeof(FormaRichTextEditor).FullName && entry.Message.Contains("exec", StringComparison.Ordinal) && entry.Message.Contains("was refused", StringComparison.Ordinal)));
         }
 
         [Fact]

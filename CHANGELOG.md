@@ -68,6 +68,18 @@ set out. What Forma gained before its first release, month by month, is in [the 
   and `JSTransfer.Deserialize` reads JSON the browser sent otherwise. Each refuses a value that isn't the type, a
   number past what a double holds among them, with a `JSTransferException` whose `IsRefused` is true, as a transfer
   carrying no value and a text escaping half a surrogate pair are refused now too.
+- What a script answers a call Forma makes is refused and logged at `Debug` where it isn't the value the call reads,
+  as [the security design](docs/security-design.md#two-kinds-of-input) sets out. A `FormaFreezePane` whose first state
+  carried a frozen extent past any number ended the circuit on the Server, and a malformed answer to the DOM watcher's
+  or engine's calls was logged as a `Warning`. `JSTransfer.Deserialize` and `ReadJsonAsync<TValue>` read every number
+  strictly, whatever the contract allows, so a text such as `"Infinity"`, which the web's defaults read as a number, is
+  refused too.
+- `JSModule`'s `TryInvokeAsync<TValue>` and `TryInvokeJsonAsync<TValue>`, and `JSInterop`'s `InvokeAsync<TValue>` and
+  `InvokeJsonAsync<TValue>`, read what a script answers through the `JsonTypeInfo<TValue>` the caller passes, refusing
+  an answer that isn't one, and `JSModule.TryInvokeReferenceAsync` answers a JS object's reference. To migrate, pass
+  the contract of the type a call reads, from a `JsonSerializerContext` of your own, and call `TryInvokeReferenceAsync`
+  where a call read an `IJSObjectReference`; `TryInvokeJsonAsync` and `InvokeJsonAsync`, which answered a
+  `JsonElement`, take the contract of the type they read in its place.
 - `FormaSlider` keeps its value where the browser sends one outside its bounds, which it took, or one it can't read,
   for which it fell to `Min`. `FormaColorPicker`'s swatch shows the color the picker holds, never the text typed.
 - `FormaFileUploader` reads a file up to `FileUploaderOptions.MaxFileSize`, 10 MiB unless a host sets another, as

@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using System.Text.Json
 @using Forma.Tests.Sanitization
 @using Microsoft.Extensions.Logging
 @using Forma.Blazor.Components.Media
@@ -348,8 +349,8 @@
             using var ctx = new FormaVideoPlayerTests();
             ctx.JSInterop
                 .SetupModule("./_content/forma/browser/scripts/operations/Embedding.js")
-                .Setup<bool>("activate", _ => true)
-                .SetResult(true);
+                .Setup<JsonElement>("activate", _ => true)
+                .SetResult(InteropAnswer.Of(true));
             var source = "https://www.tiktok.com/@scout2015/video/6718335390845095173";
             var cut = ctx.Render(@<FormaVideoPlayer Source="@source" Title="A clip" DeferLoading="false" />);
 

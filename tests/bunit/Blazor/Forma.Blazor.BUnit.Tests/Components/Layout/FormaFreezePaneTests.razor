@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Microsoft.Extensions.Logging
 @using Forma.Framework.Browser
 @using Forma.Framework.Input.Keyboard
 @code {
@@ -226,6 +227,52 @@
 
             // Assert
             Assert.Contains("is-measured", cut.Find(".forma-freeze-pane").ClassList);
+        }
+
+        [Theory]
+        [InlineData("""{ "canScrollBack": false, "canScrollForward": true, "frozenExtent": 1e400, "cornerExtent": 0 }""")]
+        [InlineData("""{ "canScrollBack": false, "canScrollForward": true, "frozenExtent": "Infinity", "cornerExtent": 0 }""")]
+        [InlineData("""{ "canScrollBack": false, "canScrollForward": true, "frozenExtent": 40, "cornerExtent": "NaN" }""")]
+        public async Task Should_refuse_and_log_a_first_state_no_pane_can_take(string json)
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var probe = new DomProbe<ScrollState>(ctx);
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+
+            // Act
+            await probe.ReportAsync(InteropAnswer.Parse(json));
+
+            // Assert — the pane stays as it rendered, unmeasured
+            var root = cut.Find(".forma-freeze-pane");
+            Assert.Multiple(
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.DoesNotContain("is-measured", root.ClassList),
+                () => Assert.DoesNotContain("has-frozen", root.ClassList),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Category == typeof(FormaFreezePane).FullName && entry.Message.Contains("was refused", StringComparison.Ordinal)));
+        }
+
+        [Fact]
+        public async Task Should_refuse_and_log_a_later_state_no_pane_can_take_and_keep_the_one_it_holds()
+        {
+            // Arrange
+            using var ctx = new FormaFreezePaneTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var probe = new DomProbe<ScrollState>(ctx);
+            var cut = ctx.Render(@<FormaFreezePane Options="FreezePaneOptions.Arrows"><button>One</button></FormaFreezePane>);
+            await Report(probe, canScrollBack: true, canScrollForward: true, frozenExtent: 120.5, cornerExtent: 32);
+
+            // Act
+            await probe.ReportAsync(InteropAnswer.Parse("""{ "canScrollBack": true, "canScrollForward": true, "frozenExtent": "Infinity", "cornerExtent": 32 }"""));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.False(ctx.Renderer.UnhandledException.IsCompleted),
+                () => Assert.Equal("--forma-freeze-pane-frozen-extent: 120.5px; --forma-freeze-pane-corner-extent: 32px;", cut.Find(".forma-freeze-pane").GetAttribute("style")),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Category == typeof(FormaFreezePane).FullName && entry.Message.Contains("was refused", StringComparison.Ordinal)));
         }
 
         [Fact]

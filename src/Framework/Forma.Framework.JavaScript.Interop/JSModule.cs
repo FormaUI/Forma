@@ -2,11 +2,16 @@ namespace Forma.Framework.JavaScript.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
+using System.Text.Json.Serialization.Metadata;
 
 using Microsoft.JSInterop;
 
 /// <summary>A lazily imported JS module.</summary>
-/// <remarks>The import task is held rather than its result, so concurrent callers share one import.</remarks>
+/// <remarks>
+/// The import task is held rather than its result, so concurrent callers share one import. What a script answers a
+/// <c>TryInvoke</c> call is what the browser sent, so it's read as JSON through the caller's contract, and an answer that
+/// isn't the value asked for is refused as the transfer refuses one.
+/// </remarks>
 public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
 {
     private Task<IJSObjectReference>? _import;
@@ -64,35 +69,26 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         }
     }
 
-    /// <summary>Tries to invoke an export and returns its result, where <see langword="default"/> means the call did not succeed.</summary>
-    public async ValueTask<TValue?> TryInvokeAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, params object?[] args)
+    /// <summary>Tries to invoke an export and reads what it answers as a <typeparamref name="TValue"/>, where <see langword="default"/> means the call did not succeed or its answer was refused.</summary>
+    /// <param name="identifier">The export.</param>
+    /// <param name="typeInfo">The JSON contract of <typeparamref name="TValue"/>.</param>
+    /// <param name="args">The export's arguments.</param>
+    /// <returns>The value, which is <see langword="default"/> where the script answered null.</returns>
+    public async ValueTask<TValue?> TryInvokeAsync<TValue>(string identifier, JsonTypeInfo<TValue> typeInfo, params object?[] args)
     {
-        var module = await TryImportAsync();
+        ArgumentNullException.ThrowIfNull(typeInfo);
 
-        if (module is null)
-        {
-            return default;
-        }
-
-        try
-        {
-            return await module.InvokeAsync<TValue>(identifier, args);
-        }
-        catch (Exception ex) when (IsInteropFailure(ex))
-        {
-            LogCallFailure(identifier, ex);
-            return default;
-        }
+        return ReadAnswer(js, path, identifier, await TryInvokeCoreAsync<JsonElement>(identifier, args), typeInfo);
     }
 
     /// <summary>Tries to invoke an export answering through the transfer, and reads the text it answers, at most <paramref name="maximumLength"/> bytes of it.</summary>
     /// <param name="identifier">The export.</param>
     /// <param name="maximumLength">The size the caller accepts, in bytes.</param>
     /// <param name="args">The export's arguments.</param>
-    /// <returns>The text, where <see langword="null"/> means the call didn't succeed or its answer was lost.</returns>
+    /// <returns>The text, where <see langword="null"/> means the call didn't succeed or its answer was lost or refused.</returns>
     public async ValueTask<string?> TryInvokeTextAsync(string identifier, long maximumLength, params object?[] args)
     {
-        var transfer = await TryInvokeAsync<JSTransfer>(identifier, args);
+        var transfer = await TryInvokeCoreAsync<JSTransfer>(identifier, args);
 
         try
         {
@@ -100,28 +96,69 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         }
         catch (JSTransferException ex)
         {
-            InteropLog.AnswerLost(js.Logger, ex, identifier, path, js.RuntimeId);
+            LogTransferFailure(js, path, identifier, ex);
             return null;
         }
     }
 
-    /// <summary>Tries to invoke an export answering through the transfer, and reads the value it answers as JSON, at most <paramref name="maximumLength"/> bytes of it.</summary>
+    /// <summary>Tries to invoke an export answering through the transfer, and reads the value it answers as a <typeparamref name="TValue"/>, at most <paramref name="maximumLength"/> bytes of its JSON.</summary>
     /// <param name="identifier">The export.</param>
+    /// <param name="typeInfo">The JSON contract of <typeparamref name="TValue"/>.</param>
     /// <param name="maximumLength">The size the caller accepts, in bytes.</param>
     /// <param name="args">The export's arguments.</param>
-    /// <returns>The value, where <see langword="null"/> means the call didn't succeed or its answer was lost.</returns>
-    public async ValueTask<JsonElement?> TryInvokeJsonAsync(string identifier, long maximumLength, params object?[] args)
+    /// <returns>The value, where <see langword="default"/> means the call didn't succeed, its answer was lost or refused, or the script answered null.</returns>
+    public async ValueTask<TValue?> TryInvokeJsonAsync<TValue>(string identifier, JsonTypeInfo<TValue> typeInfo, long maximumLength, params object?[] args)
     {
-        var transfer = await TryInvokeAsync<JSTransfer>(identifier, args);
+        ArgumentNullException.ThrowIfNull(typeInfo);
+
+        var transfer = await TryInvokeCoreAsync<JSTransfer>(identifier, args);
 
         try
         {
-            return transfer is null ? null : await transfer.ReadJsonAsync(maximumLength);
+            return transfer is null ? default : await transfer.ReadJsonAsync(typeInfo, maximumLength);
         }
         catch (JSTransferException ex)
         {
-            InteropLog.AnswerLost(js.Logger, ex, identifier, path, js.RuntimeId);
-            return null;
+            LogTransferFailure(js, path, identifier, ex);
+            return default;
+        }
+    }
+
+    /// <summary>Tries to invoke an export answering a JS object, and returns the reference to it, where <see langword="null"/> means the call did not succeed.</summary>
+    public ValueTask<IJSObjectReference?> TryInvokeReferenceAsync(string identifier, params object?[] args)
+        => TryInvokeCoreAsync<IJSObjectReference>(identifier, args);
+
+    /// <summary>Reads <paramref name="answer"/>, what <paramref name="identifier"/> in <paramref name="module"/> answered, as a <typeparamref name="TValue"/>, refusing what isn't one under <paramref name="js"/>'s owner.</summary>
+    /// <returns>The value, where <see langword="default"/> means the call answered nothing, null, or a value that was refused.</returns>
+    internal static TValue? ReadAnswer<TValue>(IJSEnvironment js, string module, string identifier, JsonElement answer, JsonTypeInfo<TValue> typeInfo)
+    {
+        // A call that didn't succeed answers no JSON at all, which a browser's answer always is.
+        if (answer.ValueKind is JsonValueKind.Undefined)
+        {
+            return default;
+        }
+
+        try
+        {
+            return JSTransfer.Deserialize(answer, typeInfo);
+        }
+        catch (JSTransferException ex)
+        {
+            InteropLog.AnswerRefused(js.Logger, ex, identifier, module, js.RuntimeId);
+            return default;
+        }
+    }
+
+    /// <summary>Logs a value <paramref name="identifier"/> in <paramref name="module"/> answered through the transfer that its caller applies nothing of, as refused or as lost on its way.</summary>
+    internal static void LogTransferFailure(IJSEnvironment js, string module, string identifier, JSTransferException exception)
+    {
+        if (exception.IsRefused)
+        {
+            InteropLog.AnswerRefused(js.Logger, exception, identifier, module, js.RuntimeId);
+        }
+        else
+        {
+            InteropLog.AnswerLost(js.Logger, exception, identifier, module, js.RuntimeId);
         }
     }
 
@@ -178,6 +215,27 @@ public sealed class JSModule(IJSEnvironment js, string path) : IAsyncDisposable
         {
             InteropLog.ImportFailed(js.Logger, ex, path, js.RuntimeId);
             return null;
+        }
+    }
+
+    // What the runtime reads an answer as itself: the JSON of a value, a transfer, or a JS object's reference.
+    private async ValueTask<TValue?> TryInvokeCoreAsync<[DynamicallyAccessedMembers(LinkerFlags.JsonSerialized)] TValue>(string identifier, object?[] args)
+    {
+        var module = await TryImportAsync();
+
+        if (module is null)
+        {
+            return default;
+        }
+
+        try
+        {
+            return await module.InvokeAsync<TValue>(identifier, args);
+        }
+        catch (Exception ex) when (IsInteropFailure(ex))
+        {
+            LogCallFailure(identifier, ex);
+            return default;
         }
     }
 

@@ -42,11 +42,19 @@ gate.
      message, each tested.
    - A token or a key that names nothing stays silent where it's a normal race, a data view's row redrawn or an
      explorer's drop.
-   - Open: what a script answers to .NET's own calls, an observation's first state among them, which the framework
-     reads as a typed value; a freeze pane's first state with an infinite extent still ends a circuit. A culture name
-     outside the application's cultures is to be refused at `Debug` before the culture provider is asked, and the
-     browser's token taken out of the provider's `Error` message. Input refusals are to log under the component that
-     owns the registration.
+   - What the first pass left:
+     - ✅ What a script answers to .NET's own calls, an observation's first state among them, which the framework read
+       as a typed value; a freeze pane's first state with an infinite extent ended a circuit.
+       - `JSModule`, `JSInterop` and the DOM watcher's and engine's session ask the framework for JSON alone and read it
+         through the caller's contract, refusing at `Debug` an answer that isn't the value asked for. A malformed
+         answer to a call of the watcher or the engine logged a `Warning` before, as a call that failed.
+       - The document order, the element labels and the composer's link dialog, which read their JSON by hand and
+         threw on what they couldn't, read it the same way; an order that doesn't place each element once is refused.
+       - `JSTransfer.Deserialize` reads numbers strictly whatever a contract allows. The web's defaults read the text
+         `"Infinity"` as a number, which let an infinite extent through a freeze pane's later states too.
+     - A culture name outside the application's cultures is to be refused at `Debug` before the culture provider is
+       asked, and the browser's token taken out of the provider's `Error` message.
+     - Input refusals are to log under the component that owns the registration.
 4. ✅ **Limits.** `FileUploaderOptions.MaxFileSize` set to 10 MB by default, with the changelog saying how a host raises
    it; every other size Forma accepts from the browser found, capped and checked; and each package's README naming the
    framework limits a host sets.
@@ -89,6 +97,9 @@ gate.
 
 ## Open
 
-- Step 3's answers, culture names and input logs, and step 7.
+- ✅ Step 3's answers.
+- Step 3's culture names.
+- Step 3's input logs.
+- Step 7.
 - Inline styles written from data join step 2's sinks: the inventory finds each, and each is a typed CSS value or a
   sink with a hostile test.

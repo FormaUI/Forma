@@ -4,7 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Microsoft.JSInterop;
 
-/// <summary>A JS object reference that answers every call through one function and faults the call with whatever the function throws.</summary>
+/// <summary>A JS object reference that answers every call through one function, in JSON where the call reads JSON, and faults the call with whatever the function throws.</summary>
 /// <param name="respond">The function that answers a call from its identifier and arguments.</param>
 /// <param name="releaseException">The exception the first release faults with, where <see langword="null"/> is a clean release.</param>
 public sealed class FakeJSObjectReference(Func<string, object?[]?, object?> respond, Exception? releaseException = null) : IJSObjectReference
@@ -24,7 +24,7 @@ public sealed class FakeJSObjectReference(Func<string, object?[]?, object?> resp
     {
         try
         {
-            return ValueTask.FromResult((TValue)respond(identifier, args)!);
+            return ValueTask.FromResult(InteropAnswer.As<TValue>(respond(identifier, args)));
         }
         catch (Exception ex)
         {

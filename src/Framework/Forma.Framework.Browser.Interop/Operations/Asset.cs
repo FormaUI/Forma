@@ -11,15 +11,15 @@ public sealed class Asset(IJSEnvironment js) : IAsyncDisposable
 
     /// <summary>Imports a JavaScript module, reporting whether it loaded.</summary>
     public ValueTask<bool> LoadModuleAsync(string url)
-        => _module.TryInvokeAsync<bool>("loadModule", url);
+        => _module.TryInvokeAsync("loadModule", DomJsonContext.Default.Boolean, url);
 
     /// <summary>Loads a stylesheet, reporting whether it loaded.</summary>
     public ValueTask<bool> LoadStyleAsync(string url)
-        => _module.TryInvokeAsync<bool>("loadStyle", url);
+        => _module.TryInvokeAsync("loadStyle", DomJsonContext.Default.Boolean, url);
 
     /// <summary>Adopts an SVG sprite's symbols into the document, reporting whether they arrived.</summary>
     public ValueTask<bool> LoadSpriteAsync(string url)
-        => _module.TryInvokeAsync<bool>("loadSprite", url);
+        => _module.TryInvokeAsync("loadSprite", DomJsonContext.Default.Boolean, url);
 
     /// <inheritdoc />
     public ValueTask DisposeAsync()
