@@ -187,7 +187,7 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             throw new InvalidOperationException($"{nameof(FormaNumberInput<TValue>)} binds an int, a long, a short, a float, a double or a decimal, or a nullable one, not a {typeof(TValue).Name}.");
         }
 
-        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
         base.OnInitialized();
     }
 

@@ -177,7 +177,7 @@ public sealed partial class FormaComposer(
     {
         JoinForm(SettleEditorAsync);
         _assetLoader = new JSComposerAssetLoader(Context.JS);
-        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
 
         _history = History ?? new ComposerHistory(Options.HistoryCapacity);
 

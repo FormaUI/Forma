@@ -94,7 +94,7 @@ public sealed partial class FormaRichTextEditor : FormaComponentBase
     protected override void OnInitialized()
     {
         _canvas = new RichTextEditor(Context.JS);
-        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
         _selfReference = DotNetObjectReference.Create(this);
 
         // The canvas attaches empty, and the document is written into it as a text of .NET's own.

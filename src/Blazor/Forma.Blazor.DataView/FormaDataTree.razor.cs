@@ -171,7 +171,7 @@ public sealed partial class FormaDataTree<TItem> : FormaElementBase, IDataViewVi
         }
 
         _isCompanion = SelectsCurrent;
-        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
         _dataViewRegistration = new DataViewRegistration(ViewKey, () => L["Tree"], Glyph.FolderTree, this) { IsCompanion = _isCompanion };
         Interaction.RegisterView(_dataViewRegistration);
         View.Subscribe(HandleViewChangedAsync);

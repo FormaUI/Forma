@@ -145,7 +145,7 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
         _edits = new DomTextEdits(Context.DomEngine, Text, HandleTextChangedAsync);
     }
 

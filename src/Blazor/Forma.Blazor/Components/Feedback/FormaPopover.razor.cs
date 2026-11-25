@@ -62,7 +62,7 @@ public sealed partial class FormaPopover : FormaElementBase
     protected override void OnInitialized()
     {
         _popup = new AnchoredPopover(Context.JS);
-        _inputRegistration = new InputRegistration(InputRouter, HandleInputActionAsync, HandleDismissAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleInputActionAsync, HandleDismissAsync);
     }
 
     /// <inheritdoc />

@@ -83,7 +83,7 @@ public sealed partial class FormaToolbar : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        => _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

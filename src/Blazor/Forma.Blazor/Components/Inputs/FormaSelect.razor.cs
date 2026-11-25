@@ -99,7 +99,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _trigger = new InputRegistration(InputRouter, HandleActionAsync);
+        => _trigger = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

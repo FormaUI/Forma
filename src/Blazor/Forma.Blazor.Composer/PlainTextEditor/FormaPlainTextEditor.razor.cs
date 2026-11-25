@@ -75,7 +75,7 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     {
         _edits = new DomTextEdits(Context.DomEngine, Content, HandleTextChangedAsync);
         _textEntry = new TextEntry(Context.JS);
-        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
 
         _editsRegistration = Interaction?.JoinEdits(SettleAsync);
         _focusRegistration = Interaction?.JoinFocus(FocusEditableAsync);

@@ -64,6 +64,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - `InputRegistration` performs only an action a route of its profile names, carrying an input of a known family with
   finite coordinates, and a dismissal only with a behavior and a reason the router has; the host's routes reach
   `IInputActionHandler` the same way.
+- An action or a dismissal an `InputRegistration` refuses is logged under the component that owns the registration,
+  its category and its identity, as [the security design](docs/security-design.md#two-kinds-of-input) sets out, where
+  it was logged under `InputRouter`. `InputRegistration` takes the owner's `IJSEnvironment` after the router: to
+  migrate, pass a component's `Context.JS`, or the environment a service builds for itself.
 - `JSTransfer.ReadJsonAsync<TValue>` reads what the browser sent through the transfer as a type of the receiver's own,
   and `JSTransfer.Deserialize` reads JSON the browser sent otherwise. Each refuses a value that isn't the type, a
   number past what a double holds among them, with a `JSTransferException` whose `IsRefused` is true, as a transfer

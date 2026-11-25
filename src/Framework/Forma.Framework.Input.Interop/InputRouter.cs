@@ -34,10 +34,6 @@ public sealed class InputRouter : IAsyncDisposable, IDisposable
         _hostHandler = hostHandler;
     }
 
-    /// <summary>The environment the router and the scopes it registers log under.</summary>
-    internal IJSEnvironment Environment
-        => _environment;
-
     /// <summary>Registers <paramref name="profile"/> on <paramref name="element"/>'s scope, inside <paramref name="parent"/> and with the <paramref name="within"/> elements counted as inside it, for <paramref name="owner"/> to receive actions through <c>HandleInputActionAsync</c> and dismissals through <c>HandleDismissAsync</c>.</summary>
     public async ValueTask<InputScope?> RegisterAsync<TOwner>(ElementReference element, InputProfile profile, DotNetObjectReference<TOwner>? owner = null, ElementReference? parent = null, IReadOnlyList<ElementReference>? within = null)
         where TOwner : class

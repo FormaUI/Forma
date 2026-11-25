@@ -89,7 +89,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _trigger = new InputRegistration(InputRouter, HandleActionAsync);
+        _trigger = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
         _documentOrder = new DocumentOrder(Context.JS);
         _elementLabels = new ElementLabels(Context.JS);
     }

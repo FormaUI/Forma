@@ -1,5 +1,7 @@
 namespace Forma.Framework.Input.Interop;
 
+using Forma.Framework.JavaScript.Interop;
+
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
@@ -8,6 +10,7 @@ using Microsoft.JSInterop;
 public sealed class InputRegistration : IAsyncDisposable
 {
     private readonly InputRouter _router;
+    private readonly IJSEnvironment _js;
     private readonly Func<string, InputInfo, Task>? _onAction;
     private readonly Func<DismissBehavior, DismissReason, Task>? _onDismiss;
     private readonly DotNetObjectReference<InputRegistration> _selfReference;
@@ -19,12 +22,15 @@ public sealed class InputRegistration : IAsyncDisposable
     private Task? _settle;
     private bool _isDisposed;
 
-    /// <summary>Creates a registration made through <paramref name="router"/>, performing actions through <paramref name="onAction"/> and dismissals through <paramref name="onDismiss"/>.</summary>
-    public InputRegistration(InputRouter router, Func<string, InputInfo, Task>? onAction = null, Func<DismissBehavior, DismissReason, Task>? onDismiss = null)
+    /// <summary>Creates a registration made through <paramref name="router"/> for the owner whose environment is <paramref name="js"/>, performing actions through <paramref name="onAction"/> and dismissals through <paramref name="onDismiss"/>.</summary>
+    /// <remarks>What the registration refuses of what the browser sends it is logged under the owner's logger and identity.</remarks>
+    public InputRegistration(InputRouter router, IJSEnvironment js, Func<string, InputInfo, Task>? onAction = null, Func<DismissBehavior, DismissReason, Task>? onDismiss = null)
     {
         ArgumentNullException.ThrowIfNull(router);
+        ArgumentNullException.ThrowIfNull(js);
 
         _router = router;
+        _js = js;
         _onAction = onAction;
         _onDismiss = onDismiss;
         _selfReference = DotNetObjectReference.Create(this);
@@ -61,7 +67,7 @@ public sealed class InputRegistration : IAsyncDisposable
         // A profile being updated names its routes before the router takes it.
         if ((!InputRouter.IsDeclared(_registeredProfile?.InputRoutes, action) && !InputRouter.IsDeclared(_request?.Profile.InputRoutes, action)) || !InputRouter.IsWellFormed(input))
         {
-            InputInteropLog.ActionRefused(_router.Environment.Logger, _router.Environment.RuntimeId);
+            InputInteropLog.ActionRefused(_js.Logger, _js.RuntimeId);
 
             return Task.CompletedTask;
         }
@@ -76,7 +82,7 @@ public sealed class InputRegistration : IAsyncDisposable
     {
         if (!Enum.IsDefined(action) || !Enum.IsDefined(reason))
         {
-            InputInteropLog.DismissalRefused(_router.Environment.Logger, _router.Environment.RuntimeId);
+            InputInteropLog.DismissalRefused(_js.Logger, _js.RuntimeId);
 
             return Task.CompletedTask;
         }

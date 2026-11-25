@@ -7,6 +7,7 @@ using Forma.Framework.Input.Interop.Tests.Support;
 using Forma.Framework.Input.Keyboard;
 using Forma.Framework.Input.Pointer;
 using Forma.Framework.Input.Wheel;
+using Forma.Framework.JavaScript.Interop;
 using Forma.Tests.Interop;
 using Forma.Tests.Shared;
 
@@ -18,9 +19,12 @@ using Xunit;
 
 public sealed class InputRegistrationTests
 {
+    private const string OwnerCategory = "Forma.Blazor.Components.Owner";
+
     private static readonly InputProfile Profile = new() { InputRoutes = [new InputRoute("test.next", new KeyBinding("ArrowDown"))] };
     private static readonly InputProfile OtherProfile = new() { InputRoutes = [new InputRoute("test.previous", new KeyBinding("ArrowUp"))] };
     private static readonly ElementReference Element = new("element");
+    private static readonly Guid OwnerId = Guid.CreateVersion7();
 
     public sealed class Registering
     {
@@ -31,7 +35,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript();
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
 
             // Act
             await registration.SyncAsync(Element, Profile);
@@ -51,7 +55,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript();
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
 
             // Act
             await registration.SyncAsync(default, Profile);
@@ -68,7 +72,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript();
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
             await registration.SyncAsync(Element, Profile);
 
             // Act
@@ -86,7 +90,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript();
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
             await registration.SyncAsync(Element, Profile);
 
             // Act
@@ -107,7 +111,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript();
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
             await registration.SyncAsync(Element, Profile, within: [new ElementReference("first-trigger")]);
 
             // Act — the same trigger again through another reference, then another trigger
@@ -128,7 +132,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript(refuses: true);
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
             await registration.SyncAsync(Element, Profile);
 
             // Act
@@ -149,7 +153,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript();
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
             await registration.SyncAsync(Element, Profile);
 
             // Act
@@ -168,7 +172,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript();
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
 
             // Act
             await registration.SyncAsync(Element, Profile, isActive: true);
@@ -192,7 +196,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript(holdsRegister: true);
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
             var pending = registration.SyncAsync(Element, Profile);
 
             // Act
@@ -213,7 +217,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript(holdsRegister: true);
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
             var pending = registration.SyncAsync(Element, Profile);
 
             // Act
@@ -234,7 +238,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript(holdsRegister: true);
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
             var first = registration.SyncAsync(Element, Profile);
 
             // Act
@@ -255,7 +259,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript(holdsRegister: true);
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router);
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory));
             var first = registration.SyncAsync(Element, Profile);
 
             // Act
@@ -278,7 +282,7 @@ public sealed class InputRegistrationTests
             using var loggerFactory = new FakeLoggerFactory();
             var script = new RecordingScript(holdsRegister: true);
             await using var router = CreateRouter(script, loggerFactory);
-            var registration = new InputRegistration(router);
+            var registration = new InputRegistration(router, CreateOwner(loggerFactory));
             var pending = registration.SyncAsync(Element, Profile);
 
             // Act
@@ -311,6 +315,7 @@ public sealed class InputRegistrationTests
             await using var router = CreateRouter(script, loggerFactory);
             await using var registration = new InputRegistration(
                 router,
+                CreateOwner(loggerFactory),
                 (action, _) => { actions.Add(action); return Task.CompletedTask; },
                 (_, reason) => { dismissals.Add(reason); return Task.CompletedTask; });
             await registration.SyncAsync(Element, Profile);
@@ -339,7 +344,7 @@ public sealed class InputRegistrationTests
             var script = new RecordingScript();
             var actions = new List<string>();
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router, (performed, _) => { actions.Add(performed); return Task.CompletedTask; });
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory), (performed, _) => { actions.Add(performed); return Task.CompletedTask; });
             await registration.SyncAsync(Element, Profile);
 
             // Act
@@ -348,7 +353,7 @@ public sealed class InputRegistrationTests
             // Assert
             Assert.Multiple(
                 () => Assert.Empty(actions),
-                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal)));
+                () => Assert.Contains(loggerFactory.Entries, IsOwnersRefusal));
         }
 
         [Theory]
@@ -369,7 +374,7 @@ public sealed class InputRegistrationTests
             var script = new RecordingScript();
             var actions = new List<string>();
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router, (performed, _) => { actions.Add(performed); return Task.CompletedTask; });
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory), (performed, _) => { actions.Add(performed); return Task.CompletedTask; });
             await registration.SyncAsync(Element, Profile);
 
             // Act
@@ -378,7 +383,7 @@ public sealed class InputRegistrationTests
             // Assert
             Assert.Multiple(
                 () => Assert.Empty(actions),
-                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal)));
+                () => Assert.Contains(loggerFactory.Entries, IsOwnersRefusal));
         }
 
         [Fact]
@@ -389,7 +394,7 @@ public sealed class InputRegistrationTests
             var script = new RecordingScript();
             var dismissals = new List<DismissReason>();
             await using var router = CreateRouter(script, loggerFactory);
-            await using var registration = new InputRegistration(router, onDismiss: (_, reason) => { dismissals.Add(reason); return Task.CompletedTask; });
+            await using var registration = new InputRegistration(router, CreateOwner(loggerFactory), onDismiss: (_, reason) => { dismissals.Add(reason); return Task.CompletedTask; });
             await registration.SyncAsync(Element, Profile);
 
             // Act
@@ -399,7 +404,7 @@ public sealed class InputRegistrationTests
             // Assert
             Assert.Multiple(
                 () => Assert.Empty(dismissals),
-                () => Assert.Equal(2, loggerFactory.Entries.Count(entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal))));
+                () => Assert.Equal(2, loggerFactory.Entries.Count(IsOwnersRefusal)));
         }
 
         [Fact]
@@ -420,7 +425,7 @@ public sealed class InputRegistrationTests
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(["host.save"], handler.Actions),
-                () => Assert.Equal(2, loggerFactory.Entries.Count(entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal))));
+                () => Assert.Equal(2, loggerFactory.Entries.Count(entry => entry.Level == LogLevel.Debug && entry.Category == typeof(InputRouter).FullName && entry.Message.Contains("and was refused", StringComparison.Ordinal))));
         }
 
         private static InputInfo? CreateMalformedInput(string malformation)
@@ -455,6 +460,17 @@ public sealed class InputRegistrationTests
 
     private static InputRouter CreateRouter(RecordingScript script, FakeLoggerFactory loggerFactory)
         => new(new FakeJSRuntime((identifier, _) => identifier == "import" ? script.Module : throw new JSException($"'{identifier}' is not an import.")), loggerFactory.CreateLogger<InputRouter>(), new InputRouterOptions());
+
+    // The environment of the component owning a registration, which logs under the component's own category and identity.
+    private static JSEnvironment CreateOwner(FakeLoggerFactory loggerFactory)
+        => new(new FakeJSRuntime((_, _) => null), loggerFactory.CreateLogger(OwnerCategory), OwnerId);
+
+    // Whether a log entry records a refusal under the owning component.
+    private static bool IsOwnersRefusal(FakeLogEntry entry)
+        => entry.Level == LogLevel.Debug
+        && entry.Category == OwnerCategory
+        && entry.Message.Contains(OwnerId.ToString(), StringComparison.Ordinal)
+        && entry.Message.Contains("and was refused", StringComparison.Ordinal);
 
     /// <summary>The router's script as the tests see it: a module answering configure and register, and the handle register hands back, each recording its calls.</summary>
     private sealed class RecordingScript

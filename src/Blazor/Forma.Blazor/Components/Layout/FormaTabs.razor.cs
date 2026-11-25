@@ -50,7 +50,7 @@ public sealed partial class FormaTabs : FormaElementBase
 
     /// <inheritdoc />
     protected override void OnInitialized()
-        => _inputRegistration = new InputRegistration(InputRouter, HandleStripActionAsync);
+        => _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleStripActionAsync);
 
     /// <inheritdoc />
     protected override void OnParametersSet()

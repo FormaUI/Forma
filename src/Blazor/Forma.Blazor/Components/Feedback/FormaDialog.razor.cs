@@ -81,7 +81,7 @@ public sealed partial class FormaDialog : FormaElementBase
     protected override void OnInitialized()
     {
         _dialog = new Dialog(Context.JS);
-        _inputRegistration = new InputRegistration(InputRouter, onDismiss: HandleDismissAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, onDismiss: HandleDismissAsync);
     }
 
     /// <inheritdoc />

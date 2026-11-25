@@ -33,7 +33,7 @@ public sealed partial class FormaSearchBox : FormaElementBase
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     protected override void OnInitialized()
-        => _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        => _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
 
     protected override Task OnAfterRenderAsync(bool firstRender)
         => _inputRegistration.SyncAsync(RootElement, SearchProfile);
@@ -63,7 +63,7 @@ registers its own element the same way.
 
 | Member | What it is |
 | --- | --- |
-| `InputRegistration(router, onAction, onDismiss)` | A registration a component holds on one of its elements, performing actions and dismissals through the functions it is given. |
+| `InputRegistration(router, js, onAction, onDismiss)` | A registration a component holds on one of its elements, performing actions and dismissals through the functions it is given, and logging what it refuses of what the browser sends under the component's environment, `js`. |
 | `InputRegistration.SyncAsync(element, profile, wanted, active, parent, within)` | Brings the registration in step: the element registered with the profile while `wanted`, held foremost while `active`, inside `parent`, with the `within` elements, such as the trigger that opened it, counted as inside it. |
 | `InputRegistration.IsRegistered`, `IsActive` | Whether the element is registered, and whether it is held active. |
 | `InputRouter.RegisterAsync(element, profile, owner, parent, within)` | Registers an element directly and returns its `InputScope`, whose `ActivateAsync`, `ReleaseAsync`, `UpdateAsync(profile)` and `DisposeAsync` drive it by hand. |

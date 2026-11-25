@@ -54,7 +54,9 @@ gate.
          `"Infinity"` as a number, which let an infinite extent through a freeze pane's later states too.
      - A culture name outside the application's cultures is to be refused at `Debug` before the culture provider is
        asked, and the browser's token taken out of the provider's `Error` message.
-     - Input refusals are to log under the component that owns the registration.
+     - ✅ Input refusals are to log under the component that owns the registration. `InputRegistration` takes its
+       owner's `IJSEnvironment`, which every component hands it from its context, and logs a refused action or
+       dismissal under the component's category and identity; the host's routes, which the router owns, log under it.
 4. ✅ **Limits.** `FileUploaderOptions.MaxFileSize` set to 10 MB by default, with the changelog saying how a host raises
    it; every other size Forma accepts from the browser found, capped and checked; and each package's README naming the
    framework limits a host sets.
@@ -99,7 +101,7 @@ gate.
 
 - ✅ Step 3's answers.
 - Step 3's culture names.
-- Step 3's input logs.
+- ✅ Step 3's input logs.
 - Step 7.
 - Inline styles written from data join step 2's sinks: the inventory finds each, and each is a typed CSS value or a
   sink with a hostile test.

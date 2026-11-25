@@ -66,7 +66,7 @@ public sealed partial class FormaSearchBox : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _inputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
         _edits = new DomTextEdits(Context.DomEngine, Value, HandleTextChangedAsync);
     }
 

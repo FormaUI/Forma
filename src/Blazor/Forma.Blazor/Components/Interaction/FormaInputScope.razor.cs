@@ -45,6 +45,7 @@ public sealed partial class FormaInputScope : FormaElementBase
     protected override void OnInitialized()
         => _inputRegistration = new InputRegistration(
             InputRouter,
+            Context.JS,
             HandleActionAsync,
             (action, reason) => OnDismiss.InvokeAsync(new InputDismissal(action, reason)));
 

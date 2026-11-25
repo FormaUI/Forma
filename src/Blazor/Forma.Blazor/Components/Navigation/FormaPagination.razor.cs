@@ -97,7 +97,7 @@ public sealed partial class FormaPagination : FormaElementBase
     /// <inheritdoc />
     protected override void OnInitialized()
     {
-        _navigationInputRegistration = new InputRegistration(InputRouter, HandleActionAsync);
+        _navigationInputRegistration = new InputRegistration(InputRouter, Context.JS, HandleActionAsync);
         _wheel = new Wheel(Context.JS);
         _textEntry = new TextEntry(Context.JS);
     }

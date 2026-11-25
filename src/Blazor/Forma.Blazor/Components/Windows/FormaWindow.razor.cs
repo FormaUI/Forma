@@ -260,7 +260,7 @@ public sealed partial class FormaWindow : FormaElementBase, IManagedWindow
     {
         _window = new Window(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
-        _inputRegistration = new InputRegistration(InputRouter, onDismiss: HandleDismissAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, onDismiss: HandleDismissAsync);
     }
 
     /// <inheritdoc />

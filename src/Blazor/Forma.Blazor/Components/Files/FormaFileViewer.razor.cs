@@ -125,7 +125,7 @@ public sealed partial class FormaFileViewer : FormaElementBase
         _pan = new PanGesture(Context.JS);
         _scroll = new Scroll(Context.JS);
         _wheel = new Wheel(Context.JS);
-        _navigation = new InputRegistration(InputRouter, HandleNavigationActionAsync);
+        _navigation = new InputRegistration(InputRouter, Context.JS, HandleNavigationActionAsync);
     }
 
     /// <inheritdoc />

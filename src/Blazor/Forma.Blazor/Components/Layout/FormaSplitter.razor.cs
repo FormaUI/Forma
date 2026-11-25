@@ -85,7 +85,7 @@ public sealed partial class FormaSplitter : FormaElementBase
     {
         _splitter = new Splitter(Context.JS);
         _selfReference = DotNetObjectReference.Create(this);
-        _inputRegistration = new InputRegistration(InputRouter, HandleBarActionAsync);
+        _inputRegistration = new InputRegistration(InputRouter, Context.JS, HandleBarActionAsync);
     }
 
     /// <inheritdoc />

@@ -1,4 +1,5 @@
 @inherits FormaBunitContext
+@using Microsoft.Extensions.Logging
 @using Forma.Blazor.Components.Interaction
 @using Forma.Framework.Input
 @using Forma.Framework.Input.Interop
@@ -215,6 +216,31 @@
             Assert.Multiple(
                 () => Assert.Equal("list.next", received.Action),
                 () => Assert.Equal("ArrowDown", Assert.IsType<InputKeyInfo>(received.Input).Key));
+        }
+
+        [Fact]
+        public async Task Should_log_a_refused_action_and_a_refused_dismissal_under_its_own_category_and_identity()
+        {
+            // Arrange
+            using var ctx = new FormaPopoverTests();
+            using var loggerFactory = new FakeLoggerFactory();
+            ctx.Services.AddSingleton<ILoggerFactory>(loggerFactory);
+            var router = new InputRouterProbe(ctx);
+            InputAction? received = null;
+            var cut = ctx.Render(@<FormaPopover Anchor="default" InputRoutes="@([new InputRoute("list.next", new KeyBinding("ArrowDown"))])" OnInputAction="action => received = action"><p>Content</p></FormaPopover>);
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+            await cut.InvokeAsync(() => popover.OpenAsync(default));
+            var runtimeId = cut.Find(".forma-popover").GetAttribute("data-rid")!;
+
+            // Act
+            await router.RouteAsync("list.next", new InputKeyInfo { Type = null!, Key = "ArrowDown" });
+            await router.DismissAsync(popover.RootElement, (DismissBehavior)7, DismissReason.Escape);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(received),
+                () => Assert.True(popover.IsOpen),
+                () => Assert.Equal(2, loggerFactory.Entries.Count(entry => entry.Level == LogLevel.Debug && entry.Category == typeof(FormaPopover).FullName && entry.Message.Contains(runtimeId, StringComparison.Ordinal) && entry.Message.Contains("and was refused", StringComparison.Ordinal))));
         }
 
         [Fact]
