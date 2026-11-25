@@ -59,7 +59,11 @@ function loadOnce(kind, url, start) {
 }
 
 export function loadModule(url) {
-    return loadOnce('module', url, () => import(url));
+    // A dynamic import resolves a relative address against this script's own, so it's read against the page's base first,
+    // as a script element's and a stylesheet link's are.
+    const address = new URL(url, document.baseURI).href;
+
+    return loadOnce('module', address, () => import(address));
 }
 
 export function loadScript(url) {
