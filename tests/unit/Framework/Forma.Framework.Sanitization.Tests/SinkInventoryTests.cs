@@ -78,7 +78,7 @@ public sealed partial class SinkInventoryTests
         ["src/Blazor/Forma.Blazor.Server/Components/Page/FormaPageHead.razor | href=@Assets[\"_content/Forma.Blazor/forma-prose.css\"]"] = "The library's own stylesheet",
         [$"{BrowserScripts}/behaviors/FilePreview.js | image.src = url"] = "A blob address the script makes of a file the reader picked",
         [$"{BrowserScripts}/operations/Download.js | link.href = url"] = "A blob address the script makes of the text it saves",
-        [$"{BrowserScripts}/operations/Asset.js | import(url)"] = "A module a composer plugin declares in its code",
+        [$"{BrowserScripts}/operations/Asset.js | import(address)"] = "A module a composer plugin declares in its code",
         [$"{BrowserScripts}/operations/Asset.js | script.src = url"] = "A script a player provider declares in its code",
         [$"{BrowserScripts}/operations/Asset.js | link.href = url"] = "A stylesheet a composer plugin declares in its code",
         [$"{BrowserScripts}/operations/Print.js | printedDocument.write(`<!DOCTYPE html><html lang=\"${{document.documentElement.lang}}\" dir=\"${{document.documentElement.dir}}\"><head><meta charset=\"utf-8\"><title></title></head><body><article></article></body></html>`)"] = "The library's own document, in the page's own language and direction",
