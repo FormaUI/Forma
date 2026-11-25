@@ -84,6 +84,11 @@ character set, viewport, title, base address and icon, the culture marker and sw
 culture coordinator starts from, Forma's stylesheets in their cascade order, and the framework's
 `ResourcePreloader`, `ImportMap` and `HeadOutlet`.
 
+A page served under a Content Security Policy gives `FormaPageHead` the request's nonce as `Nonce`, which the import
+map Blazor renders inline carries, so the policy allows no other inline script; the
+[library's README](https://github.com/FormaUI/Forma/blob/main/README.md#a-content-security-policy) sets out the policy
+a host serves and what Forma needs it to allow.
+
 The document has one title: the one a page sets with `PageTitle`, or `Title` where the page sets none. The
 `HeadOutlet` renders in `PageRenderMode`, the render mode the host gives `Routes`, so a page's title follows the
 page wherever it renders.

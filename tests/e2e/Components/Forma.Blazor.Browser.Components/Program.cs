@@ -1,6 +1,7 @@
 using System.Globalization;
 
 using Forma.Blazor;
+using Forma.Blazor.Browser.Components;
 using Forma.Blazor.Browser.Components.Checks;
 using Forma.Blazor.Browser.Components.Components;
 
@@ -19,6 +20,9 @@ builder.Services.AddCheckedComponents();
 builder.AddFormaServerIntegration(options => options.InputRouting = CheckServices.InputRouting);
 
 var app = builder.Build();
+
+// Every check page is served under a strict Content Security Policy, so what Forma emits that it would block fails a check.
+app.UseCheckContentSecurityPolicy();
 
 // A statically rendered check renders, and binds what its form posts, in the culture its address names in its culture query, so a
 // check can read a page in another culture; every other request stays in en-US.

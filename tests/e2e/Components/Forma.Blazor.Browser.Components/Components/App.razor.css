@@ -1,0 +1,15 @@
+/* ============================================================
+   App — CSS isolation
+   The page's own reconnection display, hidden until Blazor marks it shown.
+   ============================================================ */
+
+.check-reconnect {
+    display: none;
+}
+
+.check-reconnect.components-reconnect-show,
+.check-reconnect.components-reconnect-retrying,
+.check-reconnect.components-reconnect-failed,
+.check-reconnect.components-reconnect-rejected {
+    display: block;
+}

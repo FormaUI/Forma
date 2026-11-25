@@ -247,7 +247,9 @@ public sealed class TransferTests
             var download = await page.RunAndWaitForDownloadAsync(() => export.ClickAsync());
 
             // Assert — the page the browser composed, the document whole within it
-            var exported = await page.EvaluateAsync<int>("address => fetch(address).then(response => response.text()).then(text => text.split('zzzzzzzzz').length - 1)", download.Url);
+            await using var exportedStream = await download.CreateReadStreamAsync();
+            using var exportedReader = new StreamReader(exportedStream);
+            var exported = (await exportedReader.ReadToEndAsync(TestContext.Current.CancellationToken)).Split("zzzzzzzzz").Length - 1;
             Assert.Equal(Paragraphs * ParagraphWords, exported);
         }
 

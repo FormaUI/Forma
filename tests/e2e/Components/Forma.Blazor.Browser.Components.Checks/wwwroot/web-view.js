@@ -18,3 +18,10 @@ addEventListener('click', event => {
         formaOpenedExternally.push(link.href);
     }
 });
+
+// What the page's Content Security Policy blocked, every violation reaching the document, for the check to fail on as it ends.
+window.formaPolicyViolations = [];
+document.addEventListener('securitypolicyviolation', event => {
+    const sample = event.sample ? `: ${event.sample}` : '';
+    formaPolicyViolations.push(`${event.effectiveDirective} blocked ${event.blockedURI || 'inline'}${sample} at ${event.sourceFile || location.pathname}:${event.lineNumber}`);
+}, true);

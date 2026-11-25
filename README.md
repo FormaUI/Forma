@@ -940,6 +940,60 @@ holds once the list has arrived. A host expecting such selections raises the lim
 | `FileUploaderOptions.MaxFileSize` | 10 MiB | A file `FormaFileUploader` reads; a larger one is refused before any of it is read. `FormaExplorer` takes `CatalogConstraints.MaxFileBytes` in its place, and `FormaComposer` its picker's `MaxFileSize`. |
 | A text field's `MaxLength` | Unset | The text `FormaTextBox` and `FormaTextArea` take, and `FormaColorPicker`'s hex value, held in .NET as in the browser, so a browser ignoring the attribute can't pass it. |
 
+## A Content Security Policy
+
+Forma runs under a strict Content Security Policy: no inline script, no `eval`, and WebAssembly compiled only where
+it runs. A server host sends the policy as a header with a nonce of each request's own, and gives `FormaPageHead` the
+nonce, which the import map Blazor renders inline carries:
+
+```csharp
+using System.Security.Cryptography;
+
+app.Use((context, next) =>
+{
+    var nonce = Convert.ToBase64String(RandomNumberGenerator.GetBytes(16));
+    context.Items["nonce"] = nonce;
+    context.Response.Headers.ContentSecurityPolicy = string.Join("; ",
+        "default-src 'self'", "base-uri 'self'", "object-src 'none'", "frame-ancestors 'self'", "form-action 'self'",
+        $"script-src 'self' 'nonce-{nonce}' 'wasm-unsafe-eval'",
+        "style-src 'self'", "style-src-attr 'unsafe-inline'",
+        "img-src 'self' data: blob:", "media-src 'self' data: blob:", "font-src 'self'", "connect-src 'self'");
+
+    return next(context);
+});
+```
+
+```razor
+<FormaPageHead Title="My App" Nonce="@(HttpContext?.Items["nonce"] as string)" />
+
+@code {
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+}
+```
+
+What Forma needs the policy to allow:
+
+| Directive | What Forma needs |
+|-----------|------------------|
+| `script-src` | `'self'` for its scripts and Blazor's, the request's nonce for the import map, and `'wasm-unsafe-eval'` on a page that runs WebAssembly, under WebAssembly or Auto; a page rendered on the Server alone leaves it out. |
+| `style-src` | `'self'` for its stylesheets. |
+| `style-src-attr` | `'unsafe-inline'`: a component writes the sizes and places it measures, a window's, a frame's, a chart's bars, as a style attribute, even in a static render, and each from a typed value, so data can't add a declaration of its own. |
+| `img-src`, `media-src` | `'self'`, `blob:` for a file a reader picks, previewed before it uploads, and `data:` for an image a document embeds. |
+| `connect-src` | `'self'` for the circuit's connection and the scripts' requests. |
+
+Add the origins your own content loads from: an image or a video at another site, or the players `FormaVideoPlayer`
+embeds, whose frames and scripts come from their own sites. A Blazor Hybrid application writes the same policy, but
+for the nonce and `'wasm-unsafe-eval'`, as a `<meta http-equiv="Content-Security-Policy">` first in its `index.html`'s
+head.
+
+Two things under such a policy are the host's:
+
+- **Its reconnection display.** Blazor's own writes an inline style element, which `style-src` refuses, so a host
+  rendering interactively on the Server renders a display of its own, an element of the id
+  `components-reconnect-modal` styled from its stylesheet, as the .NET templates' `ReconnectModal` does.
+- **A composer plugin's assets.** A plugin's module and stylesheet load from an address the policy allows, the page's
+  own origin or one the host adds, never a `data:` address.
+
 ## More packages
 
 Each package's README covers installing, registering and using it.

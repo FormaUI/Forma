@@ -101,15 +101,22 @@ gate.
      the Content Security Policy, which is step 7's, the headers and the HTTPS a host's server gives, the culture cookie
      the page's script reads, a number in a sample video, and the antiforgery service, which logs a cookie it can't read
      at Error.
-7. **A Content Security Policy.** The check pages served under a strict policy, what it blocks fixed, and the README's
+7. ✅ **A Content Security Policy.** The check pages served under a strict policy, what it blocks fixed, and the README's
    policy for a host.
+   - The Server check host sends the policy as a header with a nonce of each request's own, which `FormaPageHead`'s new
+     `Nonce` gives the import map; the web view hosts write it as a meta element. A check fails on any violation its
+     pages report.
+   - Every browser check passes under it. What it found: a plugin's module at a relative address was read against
+     Forma's own script and not found, now read against the page's base; and, the checks' own, plugin assets declared as
+     `data:` addresses, downloads read back with `fetch(blob)`, and Blazor's default reconnection display, whose
+     inline style element a host replaces with a display of its own, as the README now says.
 
 ## Open
 
 - ✅ Step 3's answers.
 - ✅ Step 3's culture names.
 - ✅ Step 3's input logs.
-- Step 7.
+- ✅ Step 7.
 - ✅ Inline styles written from data join step 2's sinks: the inventory finds each, and each is a typed CSS value or a
   sink with a hostile test.
   - `SinkInventoryTests` finds every style attribute bound to data, every style a render tree writes, the declarations

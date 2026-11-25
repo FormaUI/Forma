@@ -120,6 +120,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   has answered asks it for no more of them.
 - `FormaFilePicker` leaves out a file the browser describes with no name, no type or a size no file has, and
   `FormaFileUploader` fails one of such a size before reading it, where either threw.
+- Forma runs under a strict Content Security Policy, as [the README](README.md#a-content-security-policy) sets out:
+  `FormaPageHead` takes the request's nonce as `Nonce`, which the import map Blazor renders inline carries, so a
+  policy allowing no other inline script and no `eval` serves every page.
 - A composer plugin's module declared at a relative address loads from the page's base, as its stylesheet does, where
   it was read against the address of Forma's own script and wasn't found.
 

@@ -49,6 +49,7 @@ public sealed class PlainFormTests(BrowserHost host)
     {
         // Arrange — the page rendered in de-DE and read in a browser of the same culture
         await using var context = await host.Browser.NewContextAsync(new() { BaseURL = (await host.GetComponentsAddressAsync()).ToString(), Locale = "de-DE" });
+        await PolicyViolations.WatchAsync(context);
         var page = await context.NewPageAsync();
         await page.GotoAsync("static/plain-form-values?culture=de-DE");
         await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync("Static False");

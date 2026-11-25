@@ -137,6 +137,7 @@ public sealed class BrowserHost : IAsyncLifetime
     public async Task<(IBrowserContext Context, IPage Page)> OpenPageAsync(Uri? address = null)
     {
         var context = await Browser.NewContextAsync(new() { BaseURL = (address ?? await GetAddressAsync().ConfigureAwait(false)).ToString() }).ConfigureAwait(false);
+        await PolicyViolations.WatchAsync(context).ConfigureAwait(false);
         var page = await context.NewPageAsync().ConfigureAwait(false);
         WatchConnectionFailures(page, "ERR_NO_BUFFER_SPACE");
 
@@ -151,6 +152,7 @@ public sealed class BrowserHost : IAsyncLifetime
         ArgumentNullException.ThrowIfNull(address);
 
         var context = await (await GetWebKitAsync().ConfigureAwait(false)).NewContextAsync(new() { BaseURL = address.ToString() }).ConfigureAwait(false);
+        await PolicyViolations.WatchAsync(context).ConfigureAwait(false);
         var page = await context.NewPageAsync().ConfigureAwait(false);
         WatchConnectionFailures(page, "Could not connect to server");
 

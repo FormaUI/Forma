@@ -2,12 +2,14 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-    <FormaPageHead Title="Forma Component Checks" IconHref="data:," PageRenderMode="PageRenderMode">
+    <FormaPageHead Title="Forma Component Checks" IconHref="data:," PageRenderMode="PageRenderMode" Nonce="@CheckContentSecurityPolicy.GetNonce(HttpContext)">
         <link rel="stylesheet" href="@Assets["Forma.Blazor.Browser.Components.styles.css"]" />
     </FormaPageHead>
 </head>
 <body>
     <Routes @rendermode="PageRenderMode" />
+    @* Blazor's own reconnection display writes an inline style element, so the page shows one of its own, as a host under a strict policy does. *@
+    <div id="components-reconnect-modal" class="check-reconnect" role="status">Reconnecting…</div>
     <script src="@Assets["_framework/blazor.web.js"]"></script>
 </body>
 </html>

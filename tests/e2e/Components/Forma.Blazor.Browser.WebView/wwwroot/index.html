@@ -2,6 +2,8 @@
 <html>
 <head>
     <meta charset="utf-8" />
+    <!-- The strict Content Security Policy every check page runs under, so a script or a style Forma emits that it blocks fails a check. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; base-uri 'self'; object-src 'none'; form-action 'self'; script-src 'self'; style-src 'self'; style-src-attr 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; font-src 'self'; connect-src 'self'" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Forma WebView Check</title>
     <base href="/" />

@@ -347,6 +347,11 @@ public static partial class ComponentChecks
                 {
                     if (!application.HasStopped)
                     {
+                        if (page is not null)
+                        {
+                            await PolicyViolations.CollectAsync(page).ConfigureAwait(false);
+                        }
+
                         await CloseAsync(page).ConfigureAwait(false);
                     }
                 }
@@ -412,6 +417,7 @@ public static partial class ComponentChecks
         var application = await host.GetAndroidApplicationAsync(build).ConfigureAwait(false);
         await host.AndroidTurn.WaitAsync().ConfigureAwait(false);
         IBrowser? browser = null;
+        IPage? checkPage = null;
         var hasEnded = 0;
 
         async Task EndAsync()
@@ -425,6 +431,11 @@ public static partial class ComponentChecks
             {
                 if (browser is not null)
                 {
+                    if (checkPage is not null)
+                    {
+                        await PolicyViolations.CollectAsync(checkPage).ConfigureAwait(false);
+                    }
+
                     await browser.CloseAsync().ConfigureAwait(false);
                 }
             }
@@ -437,6 +448,7 @@ public static partial class ComponentChecks
         try
         {
             (browser, var page) = await application.ConnectAsync().ConfigureAwait(false);
+            checkPage = page;
             var problems = WatchProblems(page);
             await page.SetViewportSizeAsync(1280, 720).ConfigureAwait(false);
 

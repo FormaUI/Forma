@@ -113,5 +113,8 @@ fuzzer's, reports what a response shows and fails nothing, and so does a kind th
 ## A Content Security Policy
 
 Forma runs under a strict Content Security Policy: no inline script and no `eval`, with `wasm-unsafe-eval` where
-WebAssembly runs. The check pages are served under it, so a script or style Forma emits that the policy would block
-fails a check. The README states the policy a host can set and what Forma needs it to allow.
+WebAssembly runs, and the import map Blazor renders inline allowed by the request's nonce, which `FormaPageHead`
+carries. Stylesheets come from the page's own origin alone. A style attribute is allowed through `style-src-attr`,
+since a component writes the sizes and places it measures as one, each from a typed value, so data can't add a
+declaration of its own. The check pages are served under the policy, so a script or style Forma emits that it would
+block fails a check. The README states the policy a host can set and what Forma needs it to allow.

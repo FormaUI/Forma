@@ -40,6 +40,9 @@ public sealed partial class FormaPageHead : FormaComponentBase
     /// <summary>Whether the runtime assets a WebAssembly render mode needs are preloaded.</summary>
     [Parameter] public bool PreloadAssets { get; set; } = true;
 
+    /// <summary>The nonce the page's Content Security Policy allows the page's inline scripts by, which the import map Blazor renders inline carries.</summary>
+    [Parameter] public string? Nonce { get; set; }
+
     [Inject] private CultureSwitchPolicy Policy { get; set; } = default!;
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;

@@ -41,8 +41,8 @@ public sealed class CheckComposerPlugin(RichTextEditorPlugin editor) : IComposer
     /// <inheritdoc />
     public IReadOnlyList<ComposerAsset> Assets =>
     [
-        new(ComposerAssetKind.Module, "data:text/javascript,window.formaCheckModule=1"),
-        new(ComposerAssetKind.Stylesheet, "data:text/css,.forma-check-style{}"),
+        new(ComposerAssetKind.Module, "_content/Forma.Blazor.Browser.Components.Checks/composer-plugin.js"),
+        new(ComposerAssetKind.Stylesheet, "_content/Forma.Blazor.Browser.Components.Checks/composer-plugin.css"),
     ];
 
     /// <inheritdoc />
