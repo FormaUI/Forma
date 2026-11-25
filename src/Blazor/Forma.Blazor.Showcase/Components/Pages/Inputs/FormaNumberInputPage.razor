@@ -90,6 +90,14 @@
     </div>
 
     <div class="demo-section">
+        <h2>@L["A Long Label"]</h2>
+        <p class="description">@L["A label longer than the field is wide wraps onto as many lines as it needs, whether it rests over the value or floats above it, and the field keeps room for every line, so it holds its height as the label floats."]</p>
+        <div class="demo-box">
+            <FormaNumberInput @bind-Value="Model.RetailPrice" Label="@L["Selling Price to the Public, Value Added Tax and Delivery Included"]" Min="0" />
+        </div>
+    </div>
+
+    <div class="demo-section">
         <h2>@L["Disabled and Read-Only"]</h2>
         <div class="demo-box">
             <div class="demo-stack">
@@ -132,6 +140,7 @@
         public int? Seats { get; set; }
         public int UsageLimit { get; set; }
         public decimal? Adjustment { get; set; }
+        public decimal? RetailPrice { get; set; }
         public decimal? Share { get; set; }
         public decimal? Weight { get; set; }
         public int? LockedValue { get; set; }
