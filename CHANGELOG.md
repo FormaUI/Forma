@@ -136,6 +136,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Every field shows itself invalid at once, as `FormaTextBox` and `FormaNumberInput` did, where the others showed it
   only once modified. Under a coarse pointer a field whose label floats stands its value on a row a touch target tall,
   which a button at its end fits, so the field stands taller there.
+- `FormaPasswordBox`'s toggle is a compact button, as every other button at a field's end is.
 
 ## `1.0.0-preview.16`
 

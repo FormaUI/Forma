@@ -1,7 +1,8 @@
 /* ============================================================
    FormaTextBox — CSS isolation
-   The text box's disabled, read-only and validation states; its
-   box comes from forma-input.css.
+   A bare text box's disabled, read-only and validation states,
+   which a labeled one's field draws; its box comes from
+   forma-input.css.
    ============================================================ */
 
 .forma-text-box:disabled {
@@ -21,7 +22,6 @@
     border-color: var(--forma-valid-color, var(--success-ink-color));
 }
 
-.forma-text-box.invalid,
-.forma-field-input.invalid {
+.forma-text-box.invalid {
     border-color: var(--forma-invalid-color, var(--danger-ink-color));
 }

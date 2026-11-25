@@ -60,9 +60,6 @@ public sealed partial class FormaSearchBox : FormaElementBase
     private bool HasLabel
         => !string.IsNullOrWhiteSpace(Label);
 
-    private string? WrapperClass
-        => new CssClassBuilder().Add("forma-search-box-wrapper").Add("has-label", HasLabel).ToStringOrNull();
-
     /// <inheritdoc />
     protected override void OnInitialized()
     {

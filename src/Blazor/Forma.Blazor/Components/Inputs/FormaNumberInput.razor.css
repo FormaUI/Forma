@@ -1,32 +1,33 @@
 /* ============================================================
    FormaNumberInput — CSS isolation
-   The number input's disabled, read-only and validation states,
-   its figures of even width, and the adornment standing in its box;
-   the box comes from forma-input.css.
+   The number input's figures of even width and the adornment
+   standing in its box, and a bare one's disabled, read-only and
+   validation states, which a labeled one's field draws; the box
+   comes from forma-input.css.
    ============================================================ */
 
 .forma-number-input {
     font-variant-numeric: tabular-nums;
 }
 
-.forma-number-input:disabled {
+.forma-text-box:disabled {
     color: var(--forma-input-disabled-color, var(--disabled-text-color));
     background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
     cursor: not-allowed;
 }
 
 /* The input draws its read-only state itself, since one with no label stands outside the field that draws it. */
-.forma-number-input[readonly]:not(:disabled) {
+.forma-text-box[readonly]:not(:disabled) {
     background-color: var(--forma-input-readonly-bg-color, var(--hover-bg-color));
 }
 
 /* Valid shows once the value is modified; invalid shows at once, since a submitted untouched
    field is invalid without being modified. */
-.forma-number-input.modified.valid {
+.forma-text-box.modified.valid {
     border-color: var(--forma-valid-color, var(--success-ink-color));
 }
 
-.forma-number-input.invalid {
+.forma-text-box.invalid {
     border-color: var(--forma-invalid-color, var(--danger-ink-color));
 }
 
@@ -36,14 +37,12 @@
     display: block;
 }
 
-/* The adornment takes the block room the number's text takes, so the two stand on one line. */
+/* The adornment stands on the line the number's text stands on, centered in the number's box as that text is. */
 .forma-number-input-adornment {
     position: absolute;
     inset-block: 0;
     display: flex;
     align-items: center;
-    padding-block: var(--forma-field-padding-block-start, var(--space-1)) var(--forma-field-padding-block-end, var(--space-1));
-    border-block: 1px solid transparent;
     font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
     color: var(--text-secondary-color);

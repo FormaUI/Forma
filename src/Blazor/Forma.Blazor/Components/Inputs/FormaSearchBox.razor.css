@@ -4,6 +4,7 @@
    its label pinned when it has one.
    ============================================================ */
 
+/* The glyph and the clear button center on the box's line, where its text stands. */
 .forma-search-box-wrapper {
     position: relative;
     display: flex;
@@ -34,7 +35,8 @@
     unicode-bidi: normal;
 }
 
-.forma-search-box:disabled {
+/* A labeled box's field draws its disabled fill. */
+.forma-search-box:not(.forma-field-input):disabled {
     color: var(--forma-input-disabled-color, var(--disabled-text-color));
     background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
     cursor: not-allowed;
@@ -50,15 +52,7 @@
     inset-inline-end: var(--space-2);
 }
 
-/* A field's value sits below its pinned label, so the glyph and the clear button center on the value's line. */
-.has-label .forma-search-box-icon,
-.has-label .forma-search-box-clear {
-    inset-block: var(--forma-field-padding-block-start) var(--forma-field-padding-block-end);
-    display: inline-flex;
-    align-items: center;
-}
-
-/* A field stands taller than a touch target already, so only the compact box grows under a coarse pointer. */
+/* A field's value row grows to a touch target on its own, so only the compact box grows here. */
 @media (pointer: coarse) {
     .forma-search-box:not(.forma-field-input) {
         min-block-size: var(--target-size-touch);
