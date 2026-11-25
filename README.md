@@ -926,6 +926,11 @@ A host that raises `MaximumReceiveMessageSize` for its own code lets every clien
 Forma doesn't need. A Blazor Hybrid application and a WebAssembly client have no hub, so no message limit applies
 there.
 
+Blazor's own `InputFile`, which `FormaFilePicker` draws, describes every file a reader chooses in one message, each
+file's name, size and type, so a selection of very many files, or of files with very long names, can pass
+`MaximumReceiveMessageSize` on the Server, which closes the circuit's connection, whatever the picker's `MaxFiles`, which
+holds once the list has arrived. A host expecting such selections raises the limit.
+
 **Forma's own limits hold what the browser sends**, whatever the framework allows, as
 [the security design](https://github.com/FormaUI/Forma/blob/main/docs/security-design.md#limits) sets out:
 

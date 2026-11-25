@@ -71,6 +71,9 @@ gate.
      selection's tokens no further than the items it holds tokens for.
    - The READMEs name SignalR's `MaximumReceiveMessageSize`, which Forma needs no host to raise, beside Forma's own
      limits.
+   - The READMEs name the one message Blazor's `InputFile` describes a whole selection in, which a very large one can
+     push past the hub's limit, and the Server's README a Host header no address can be built from, which a host
+     refuses itself.
 5. ✅ **Dependencies.** The full gate's job checking every NuGet and npm package for known vulnerabilities.
    - `scripts/Test-Dependencies.ps1` lists the solution's packages with `dotnet list package --vulnerable
      --include-transitive` and audits the script tests' with `npm audit`; the task scripts' contract check runs it on

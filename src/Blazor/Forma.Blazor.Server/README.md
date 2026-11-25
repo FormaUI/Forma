@@ -48,6 +48,15 @@ The hub's and the circuit's limits are the host's, and Forma runs on their defau
   keeps the default, or more where its own code needs it, which lets every client send messages that large.
 - **`CircuitOptions`**, and the hub's other options, need nothing changed: Forma brings a reconnecting circuit's
   text fields and observations back in step itself.
+- **Blazor's own `InputFile`**, which `FormaFilePicker` draws, describes every file a reader chooses in one message,
+  each file's name, size and type, so a selection of very many files, or of files with very long names, can pass
+  `MaximumReceiveMessageSize`, which closes the circuit's connection, whatever the picker's `MaxFiles`, which holds
+  once the list has arrived. A host expecting such selections raises the limit.
+- **A Host header no address can be built from**, such as an empty one or one with a port past 65535, which Kestrel
+  lets through, makes the framework throw as it builds the page's address, answering the request with a 500. A host
+  refuses such a request itself, ahead of its pipeline, with a 400, as the Showcase's
+  [`HostAddressMiddleware`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Showcase/HostAddressMiddleware.cs)
+  does.
 
 Forma holds what the browser sends to limits of its own: `JSTransferOptions.MaximumLength`, 16 MiB, for a value
 with no maximum of its own, `FileUploaderOptions.MaxFileSize`, 10 MiB, for an uploaded file, and a text field's
