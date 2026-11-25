@@ -34,9 +34,29 @@ gate.
 3. **Malformed input refused, never thrown.** Every method a script calls back into .NET, and every input that parses
    text, given a NUL character, a lone surrogate, text where a number belongs and a value far past any length, each
    ending neither a circuit nor an application.
-4. **Limits.** `FileUploaderOptions.MaxFileSize` set to 10 MB by default, with the changelog saying how a host raises
+   - Each of the 33 methods a script calls back into .NET refuses what it can't use, logged at `Debug`, each tested as
+     the browser would call it. Four could end a circuit before: an infinite number reaching a frame's placement, a
+     grid's column width or a freeze pane's state; a year past the calendar's range; the color picker's alpha from
+     text that isn't hex; and an upload the browser describes with a negative size.
+   - Every input parsing typed text refuses a NUL, a lone surrogate, a non-number and a megabyte as a validation
+     message, each tested.
+   - A token or a key that names nothing stays silent where it's a normal race, a data view's row redrawn or an
+     explorer's drop.
+   - Open: what a script answers to .NET's own calls, an observation's first state among them, which the framework
+     reads as a typed value; a freeze pane's first state with an infinite extent still ends a circuit. A culture name
+     outside the application's cultures is to be refused at `Debug` before the culture provider is asked, and the
+     browser's token taken out of the provider's `Error` message. Input refusals are to log under the component that
+     owns the registration.
+4. ✅ **Limits.** `FileUploaderOptions.MaxFileSize` set to 10 MB by default, with the changelog saying how a host raises
    it; every other size Forma accepts from the browser found, capped and checked; and each package's README naming the
    framework limits a host sets.
+   - The uploader reads up to its cap, 10 MiB by default, refusing a larger file before reading it and stopping a read
+     that runs past it; the explorer's and the composer's uploads take the same cap.
+   - A text field's `MaxLength` holds in .NET, and an edit waiting for its predecessors waits at most 256 revisions.
+   - A virtualized list draws at most a screen's worth whatever viewport the browser reports, and a data view reads a
+     selection's tokens no further than the items it holds tokens for.
+   - The READMEs name SignalR's `MaximumReceiveMessageSize`, which Forma needs no host to raise, beside Forma's own
+     limits.
 5. ✅ **Dependencies.** The full gate's job checking every NuGet and npm package for known vulnerabilities.
    - `scripts/Test-Dependencies.ps1` lists the solution's packages with `dotnet list package --vulnerable
      --include-transitive` and audits the script tests' with `npm audit`; the task scripts' contract check runs it on
@@ -69,4 +89,6 @@ gate.
 
 ## Open
 
-- Steps 3, 4 and 7.
+- Step 3's answers, culture names and input logs, and step 7.
+- Inline styles written from data join step 2's sinks: the inventory finds each, and each is a typed CSS value or a
+  sink with a hostile test.
