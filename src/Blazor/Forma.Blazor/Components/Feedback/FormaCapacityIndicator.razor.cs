@@ -97,7 +97,7 @@ public sealed partial class FormaCapacityIndicator : FormaElementBase
 
     /// <inheritdoc />
     protected override void BuildRootStyle(CssStyleBuilder builder)
-        => builder.Add("--forma-capacity-indicator-used-size", CssLength.FromPercent(UsedPercentage).ToString(), ShowBar);
+        => builder.Add("--forma-capacity-indicator-used-size", CssLength.FromPercent(UsedPercentage), ShowBar);
 
     private enum CapacityState
     {

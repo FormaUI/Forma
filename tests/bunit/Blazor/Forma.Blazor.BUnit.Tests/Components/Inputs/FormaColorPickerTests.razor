@@ -19,6 +19,28 @@
             Assert.Contains("background-color: #FF5533", swatch.GetAttribute("style"));
         }
 
+        [Theory]
+        [InlineData("#FF5533; background-image: url(https://example.com/track)")]
+        [InlineData("red")]
+        [InlineData("#FF5533\" onmouseover=\"alert(1)")]
+        public void Should_draw_no_swatch_for_a_value_that_is_not_a_hex_color(string value)
+        {
+            // Arrange
+            using var ctx = new FormaColorPickerTests();
+            var model = new FakeModel { Color = value };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaColorPicker @bind-Value="model.Color" Label="Brand color" />
+            </FakeFormHost>);
+
+            // Assert
+            var swatch = cut.Find(".forma-color-picker-swatch");
+            Assert.Multiple(
+                () => Assert.Null(swatch.GetAttribute("style")),
+                () => Assert.Null(swatch.GetAttribute("onmouseover")));
+        }
+
         [Fact]
         public void Should_render_hex_input_with_value()
         {

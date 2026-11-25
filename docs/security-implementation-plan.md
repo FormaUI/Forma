@@ -107,5 +107,14 @@ gate.
 - ✅ Step 3's culture names.
 - ✅ Step 3's input logs.
 - Step 7.
-- Inline styles written from data join step 2's sinks: the inventory finds each, and each is a typed CSS value or a
+- ✅ Inline styles written from data join step 2's sinks: the inventory finds each, and each is a typed CSS value or a
   sink with a hostile test.
+  - `SinkInventoryTests` finds every style attribute bound to data, every style a render tree writes, the declarations
+    a style builder adds as text and every style a script sets, 54 in all, and holds each to a hostile test, a typed
+    value or a reason no data reaches it.
+  - `CssStyleBuilder` takes a declaration's value as a `CssLength` or a `CssColorValue` alone, with the host's own text
+    added through `AddDeclarations`, and a toolbar option's swatch is a `CssColorValue`, where the toolbar wrote the
+    string it was given into its style.
+  - The typography plugin previews a font family only where it is a list of family names, so a hostile one can't
+    write a declaration of its own into the toolbar, and the color picker's swatch, the sanitizer's kept style and the
+    preview each have a hostile test.

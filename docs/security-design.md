@@ -39,8 +39,8 @@ what it reads from the page itself: an event, an element, an attribute.
 
 ## What Forma writes into a page
 
-Each place Forma writes markup or an address from data it's given is a sink. The sinks are found from the source, so
-a test fails on a new one that has no test with hostile input.
+Each place Forma writes markup, an address or a style from data it's given is a sink. The sinks are found from the
+source, so a test fails on a new one that has no test with hostile input and takes data other than as a typed value.
 
 - **Markup.** Markup written from data, through a `MarkupString` or a script's `innerHTML`, has passed a sanitizer
   first, or is Forma's own markup with every value in it encoded. The sanitizer is the registered one, or for a page a
@@ -59,6 +59,11 @@ a test fails on a new one that has no test with hostile input.
     it's a `data:` address of the element's own kind: a raster image for an image, since an SVG document can carry
     script, a video for a video, audio for audio and captions for a track. A frame's source and an object's `data` are
     never a `data:` address.
+- **Styles.** A style Forma writes from data takes it as a typed CSS value, a length, a color or a number Forma
+  formats itself, so data can't add a declaration of its own. A script sets a style one property at a time through
+  the element's declarations, which the browser parses for that property alone, and a style the sanitizer keeps has
+  lost every rule that fetches an address or runs an expression. A host's own style is the host's, as its class is,
+  and so is the preview style a host writes for a toolbar's option.
 - **The page's own addresses.** What the host configures for the page itself, its base address and its icon, is the
   host's, and a browser runs no script from either.
 - **Artwork.** An artwork pack, the sprite sheets a symbol component draws from, is trusted as a stylesheet is: the

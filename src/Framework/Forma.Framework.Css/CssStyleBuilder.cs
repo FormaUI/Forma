@@ -1,6 +1,11 @@
 namespace Forma.Framework.Css;
 
 /// <summary>Collects the declarations an element carries and renders them as one style attribute value.</summary>
+/// <remarks>
+/// A declaration takes its value as a typed CSS value, a length or a color, which renders as nothing but that value, so a
+/// value from data can't add a declaration of its own. Declarations written as CSS text, such as a host's own style, are
+/// added as they are written.
+/// </remarks>
 public sealed class CssStyleBuilder
 {
     private readonly List<string> _declarations = [];
@@ -9,29 +14,20 @@ public sealed class CssStyleBuilder
     public bool IsEmpty
         => _declarations.Count == 0;
 
-    /// <summary>Adds a declaration for a property.</summary>
-    public CssStyleBuilder Add(string property, string? value)
-    {
-        ArgumentException.ThrowIfNullOrWhiteSpace(property);
-
-        if (!string.IsNullOrWhiteSpace(value))
-        {
-            _declarations.Add($"{property}: {value.Trim()};");
-        }
-
-        return this;
-    }
-
-    /// <summary>Adds a declaration for a property when the condition holds.</summary>
-    public CssStyleBuilder Add(string property, string? value, bool condition)
-        => condition ? Add(property, value) : this;
-
     /// <summary>Adds a declaration for a property measured as a length.</summary>
     public CssStyleBuilder Add(string property, CssLength? length)
-        => Add(property, length?.ToString());
+        => AddDeclaration(property, length?.ToString());
+
+    /// <summary>Adds a declaration for a property measured as a length when the condition holds.</summary>
+    public CssStyleBuilder Add(string property, CssLength? length, bool condition)
+        => condition ? Add(property, length) : this;
+
+    /// <summary>Adds a declaration for a property taking a color.</summary>
+    public CssStyleBuilder Add(string property, CssColorValue? color)
+        => AddDeclaration(property, color?.ToString());
 
     /// <summary>Adds declarations written as CSS text.</summary>
-    public CssStyleBuilder Add(string? declarations)
+    public CssStyleBuilder AddDeclarations(string? declarations)
     {
         if (string.IsNullOrWhiteSpace(declarations))
         {
@@ -59,4 +55,16 @@ public sealed class CssStyleBuilder
     /// <summary>The declarations as one attribute value, or null when none was added.</summary>
     public string? ToStringOrNull()
         => IsEmpty ? null : ToString();
+
+    private CssStyleBuilder AddDeclaration(string property, string? value)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(property);
+
+        if (!string.IsNullOrWhiteSpace(value))
+        {
+            _declarations.Add($"{property}: {value};");
+        }
+
+        return this;
+    }
 }

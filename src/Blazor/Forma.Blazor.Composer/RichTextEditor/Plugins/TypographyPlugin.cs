@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Components.Composer.RichTextEditor.Plugins;
 
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 using Forma.Framework.Composer.Assets;
 using Forma.Framework.Composer.Editing;
@@ -10,7 +11,7 @@ using Forma.Framework.Plugins;
 using Forma.Framework.Toolbar;
 
 /// <summary>Contributes font family, font size, text color, highlight color, and line height operations.</summary>
-public sealed class TypographyPlugin(
+public sealed partial class TypographyPlugin(
     RichTextEditorPlugin editor,
     TypographyPluginOptions? options = null) : IComposerFeaturePlugin, IPluginConfigurable<TypographyPluginOptions>
 {
@@ -59,7 +60,7 @@ public sealed class TypographyPlugin(
                             Title = family,
                             IsTitleVerbatim = true,
                             Command = $"{FontFamilyCommand}:{family}",
-                            PreviewStyle = $"font-family:{family}",
+                            PreviewStyle = IsFontFamilyList(family) ? $"font-family:{family}" : null,
                         })],
                     },
                     new ToolbarMenu
@@ -106,7 +107,7 @@ public sealed class TypographyPlugin(
                             Id = $"text-color:{color.Color}",
                             Title = color.Name,
                             Command = $"{TextColorCommand}:{color.Color}",
-                            Swatch = color.Color.ToString(),
+                            Swatch = color.Color,
                         })],
                     },
                     new ToolbarMenu
@@ -119,7 +120,7 @@ public sealed class TypographyPlugin(
                             Id = $"highlight-color:{color.Color}",
                             Title = color.Name,
                             Command = $"{HighlightColorCommand}:{color.Color}",
-                            Swatch = color.Color.ToString(),
+                            Swatch = color.Color,
                         })],
                     },
                 ],
@@ -170,9 +171,16 @@ public sealed class TypographyPlugin(
         }
     }
 
+    // A font family list names each family as a CSS identifier sequence or a quoted string, so nothing in it can end its declaration.
+    private static bool IsFontFamilyList(string family)
+        => FontFamilyList().IsMatch(family);
+
     // A label is a pixel size at the default 16px root, so its rem is the label divided by 16.
     private string ToCssSize(string size)
         => Options.FontSizeUnit is ComposerFontSizeUnit.Points
             ? $"{size}pt"
             : FormattableString.Invariant($"{double.Parse(size, CultureInfo.InvariantCulture) / 16:0.####}rem");
+
+    [GeneratedRegex("""^\s*(?:[\p{L}\p{N}_-]+(?:\s+[\p{L}\p{N}_-]+)*|"[^"\\\r\n]*"|'[^'\\\r\n]*')(?:\s*,\s*(?:[\p{L}\p{N}_-]+(?:\s+[\p{L}\p{N}_-]+)*|"[^"\\\r\n]*"|'[^'\\\r\n]*'))*\s*$""")]
+    private static partial Regex FontFamilyList();
 }

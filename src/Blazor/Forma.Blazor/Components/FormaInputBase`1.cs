@@ -83,7 +83,7 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IHandleAfterRe
         {
             var builder = new CssStyleBuilder();
             BuildRootStyle(builder);
-            builder.Add(Style);
+            builder.AddDeclarations(Style);
 
             return builder.ToStringOrNull();
         }

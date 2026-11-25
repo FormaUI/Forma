@@ -164,7 +164,8 @@ Every item, through `ToolbarItem`:
 `Options`, each a `ToolbarOption` with its own `Id`, `Title`, `Icon` and `Command`, plus
 `IsActive` for the option matching the current state, `IsTitleVerbatim` for a title that is a value
 shown as written, such as a font's name or a size, `PreviewStyle`, inline CSS previewing the
-option on its own label, and `Swatch`, a CSS color drawn beside it. `ToolbarReadout` has `Value`
+option on its own label, which the host writes as its own CSS, as it writes a component's `Style`, and `Swatch`, a
+`CssColorValue` drawn beside it. `ToolbarReadout` has `Value`
 and `IsAnnounced`. `ToolbarCustomItem` has `Component`, the component type, and `Parameters`,
 handed to it as given. `ToolbarGroup` has `Items`.
 

@@ -2,6 +2,7 @@
 @attribute [ShowcasePage("FormaToolbar")]
 @rendermode InteractiveServer
 @using Forma.Blazor.Components.Bars
+@using Forma.Framework.Css
 
 <h1>FormaToolbar</h1>
 <p class="description">@L["A row of commands grouped by what they do, each a small record the toolbar draws as a button, a toggle, a menu or a readout. Describing the commands as data is what lets one list feed a keyboard shortcut, a tooltip and a screen reader at once."]</p>
@@ -231,8 +232,8 @@
                     Icon = Glyph.Palette,
                     Options =
                     [
-                        new() { Id = "black", Title = L["Black"], Command = "typography.text-color:#000000", IsActive = true, Swatch = "#000000" },
-                        new() { Id = "red", Title = L["Red"], Command = "typography.text-color:#d32f2f", Swatch = "#d32f2f" },
+                        new() { Id = "black", Title = L["Black"], Command = "typography.text-color:#000000", IsActive = true, Swatch = CssColor.FromHex(0x000000) },
+                        new() { Id = "red", Title = L["Red"], Command = "typography.text-color:#d32f2f", Swatch = CssColor.FromHex(0xd32f2f) },
                     ],
                 },
             ],

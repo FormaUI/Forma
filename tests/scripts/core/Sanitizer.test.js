@@ -50,6 +50,12 @@ describe('Sanitizer', () => {
         expect(result).toContain('Body');
     });
 
+    it('drops a style rule that fetches an address or runs an expression', () => {
+        const result = sanitize('<p style="color:red;background-image:url(https://example.com/track);width:expression(alert(1))">Body</p>');
+
+        expect(result).toBe('<p style="color:red;">Body</p>');
+    });
+
     it('removes a style attribute left empty after its unsafe rules are dropped', () => {
         const result = sanitize('<p style="mso-layout:none">Body</p>');
 

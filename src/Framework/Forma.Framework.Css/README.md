@@ -46,9 +46,11 @@ name. `ToStringOrNull` returns `null` when nothing was added, so Blazor omits th
 
 ## Styles
 
-`Add` takes a property with a string value, a property with a `CssLength`, or declarations already
-written as CSS text, and a conditional overload adds a declaration only while its condition holds.
-A blank value or a `null` length adds nothing, and every declaration is terminated with `;`.
+`Add` takes a property with a typed value, a `CssLength` or a `CssColorValue`, which renders as
+nothing but that value, so a value that came from data can't add a declaration of its own; a
+conditional overload adds a length only while its condition holds. `AddDeclarations` adds
+declarations already written as CSS text, such as a host's own style. A `null` value adds nothing,
+and every declaration is terminated with `;`.
 
 ```csharp
 using Forma.Framework.Css;
@@ -59,10 +61,11 @@ var isFloating = true;
 var style = new CssStyleBuilder()
     .Add("inline-size", CssLength.FromRem(18.5))
     .Add("block-size", height)
-    .Add("inset-inline-start", "40px", isFloating)
-    .Add("--app-accent: rebeccapurple");
+    .Add("inset-inline-start", CssLength.FromPx(40), isFloating)
+    .Add("color", CssColor.FromHex(0x663399))
+    .AddDeclarations("--app-accent: rebeccapurple");
 
-style.ToString();  // "inline-size: 18.5rem; inset-inline-start: 40px; --app-accent: rebeccapurple;"
+style.ToString();  // "inline-size: 18.5rem; inset-inline-start: 40px; color: #663399; --app-accent: rebeccapurple;"
 ```
 
 ## Lengths

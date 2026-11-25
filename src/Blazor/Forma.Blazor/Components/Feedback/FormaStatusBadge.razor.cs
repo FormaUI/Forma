@@ -49,12 +49,10 @@ public sealed partial class FormaStatusBadge : FormaElementBase
             .Add("--forma-status-badge-fg-color", foreground);
     }
 
-    private (string? Background, string? Foreground) ResolveColours()
+    private (CssColorValue? Background, CssColorValue? Foreground) ResolveColours()
     {
         var registeredStyle = RegisteredStyle;
-        var background = Background ?? registeredStyle?.Background;
-        var foreground = Foreground ?? registeredStyle?.Foreground;
 
-        return (background?.ToString(), foreground?.ToString());
+        return (Background ?? registeredStyle?.Background, Foreground ?? registeredStyle?.Foreground);
     }
 }

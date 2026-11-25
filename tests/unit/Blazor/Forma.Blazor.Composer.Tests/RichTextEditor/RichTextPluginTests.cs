@@ -281,7 +281,7 @@ public sealed class RichTextPluginTests
             Assert.Multiple(
                 () => Assert.Equal("Red", option.Title),
                 () => Assert.False(option.IsTitleVerbatim),
-                () => Assert.Equal("#d32f2f", option.Swatch),
+                () => Assert.Equal("#d32f2f", option.Swatch?.ToString()),
                 () => Assert.Equal($"{TypographyPlugin.TextColorCommand}:#d32f2f", option.Command));
         }
 
@@ -298,6 +298,30 @@ public sealed class RichTextPluginTests
 
             // Assert
             Assert.All(options, option => Assert.True(option.IsTitleVerbatim));
+        }
+
+        [Fact]
+        public void Should_preview_only_a_font_family_list_on_its_own_label()
+        {
+            // Arrange
+            var plugin = new TypographyPlugin(new RichTextEditorPlugin(), new TypographyPluginOptions
+            {
+                FontFamilies =
+                [
+                    "Times New Roman",
+                    "'Open Sans', \"Segoe UI\", sans-serif",
+                    "Arial;background-image:url(https://example.com/track)",
+                    "Arial\"; color: red; \"",
+                    "Arial} p { color: red",
+                    "Arial\\\";color:red",
+                ],
+            });
+
+            // Act
+            var previews = FindMenu(plugin.Items, "font-family").Options.Select(option => option.PreviewStyle).ToList();
+
+            // Assert
+            Assert.Equal(["font-family:Times New Roman", "font-family:'Open Sans', \"Segoe UI\", sans-serif", null, null, null, null], previews);
         }
     }
 

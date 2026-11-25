@@ -180,8 +180,9 @@ reads the base's `ElementId`.
 `CssClassBuilder` lives in `Forma.Framework.Css` beside `CssColor` and is the one place a
 class rule can live: a class is added outright or under a condition, and `ToString()`
 joins what was added. `CssStyleBuilder` sits beside it: a declaration the component
-composes is added as a property and a value, a string the host supplied is added whole,
-and `ToString()` terminates every declaration.
+composes is added as a property and a typed value, a length or a color, so data reaching it
+can't add a declaration of its own, a string the host supplied is added whole, and
+`ToString()` terminates every declaration.
 
 Each base composes its root's values in the getters themselves: it creates the builder,
 lets the component fill it, adds the host's value and, on the input tier, the field's

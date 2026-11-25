@@ -243,8 +243,8 @@ into a page from the data it's given, and the checks that hold it to both. [Its 
 carries it out in seven steps:
 
 1. ✅ One standard for validating arguments, applied across the codebase and enforced by the analyzers.
-2. ✅ Every place Forma writes markup or an address from data, found from the source and tested with hostile input, an
-   address with a script-running scheme written inert.
+2. ✅ Every place Forma writes markup, an address or a style from data, found from the source and tested with hostile
+   input or held to a typed value, an address with a script-running scheme written inert.
 3. ✅ Malformed input from the browser refused, never thrown.
 4. ✅ A cap on every size Forma accepts from the browser, the uploader's 10 MB by default among them.
 5. ✅ A job of the full gate failing on a known vulnerability in any NuGet or npm package.

@@ -48,7 +48,7 @@ public abstract class FormaElementBase : FormaComponentBase
         {
             var builder = new CssStyleBuilder();
             BuildRootStyle(builder);
-            builder.Add(Style);
+            builder.AddDeclarations(Style);
 
             return builder.ToStringOrNull();
         }

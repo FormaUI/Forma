@@ -7,9 +7,10 @@ using Forma.Tests.Shared;
 using Xunit;
 
 /// <summary>
-/// Every place the library writes markup or an address into a page, found from its source: an address attribute bound to
-/// data or a <c>MarkupString</c> in a component, and markup a script parses or writes or an address it sets, loads or
-/// navigates to. Each is covered by a test giving it hostile input, or writes what no data reaches.
+/// Every place the library writes markup, an address or a style into a page, found from its source: an address or a style
+/// attribute bound to data or a <c>MarkupString</c> in a component, a style a render tree writes or a style builder adds as
+/// text, and markup a script parses or writes, an address it sets, loads or navigates to, or a style it sets. Each is
+/// covered by a test giving it hostile input, takes data only as a typed value, or writes what no data reaches.
 /// </summary>
 public sealed partial class SinkInventoryTests
 {
@@ -19,6 +20,8 @@ public sealed partial class SinkInventoryTests
     private const string Components = "src/Blazor/Forma.Blazor/Components";
     private const string Composer = "src/Blazor/Forma.Blazor.Composer";
     private const string BrowserScripts = "src/Framework/Forma.Framework.Browser.Interop/wwwroot/scripts";
+    private const string DataView = "src/Blazor/Forma.Blazor.DataView";
+    private const string Charts = "src/Blazor/Forma.Blazor.Charts/FormaChartFrame.razor";
 
     // Each sink, as its file and what it writes, with the test that gives it hostile input, as its file and its name.
     private static readonly Dictionary<string, string> CoveredSinks = new(StringComparer.Ordinal)
@@ -58,6 +61,9 @@ public sealed partial class SinkInventoryTests
         [$"{BrowserScripts}/operations/Print.js | article.innerHTML = html"] = $"{ComposerTests}/FormaComposerTests.razor | Should_preview_and_print_a_hostile_document_only_as_the_sanitizer_keeps_it",
         [$"{BrowserScripts}/operations/Print.js | printedDocument.body.firstElementChild.innerHTML = html"] = $"{ComposerTests}/FormaComposerTests.razor | Should_preview_and_print_a_hostile_document_only_as_the_sanitizer_keeps_it",
         ["src/Framework/Forma.Framework.JavaScript.Interop/wwwroot/scripts/Sanitizer.js | template.innerHTML = html ?? ''"] = "tests/scripts/core/Sanitizer.test.js | drops a script and an image error handler from markup",
+        ["src/Framework/Forma.Framework.JavaScript.Interop/wwwroot/scripts/Sanitizer.js | setAttribute('style', `${keptDeclarations.join(';').trim()};`)"] = "tests/scripts/core/Sanitizer.test.js | drops a style rule that fetches an address or runs an expression",
+        [$"{Components}/Bars/FormaToolbar.razor | style=@option.PreviewStyle"] = "tests/unit/Blazor/Forma.Blazor.Composer.Tests/RichTextEditor/RichTextPluginTests.cs | Should_preview_only_a_font_family_list_on_its_own_label",
+        [$"{Components}/Inputs/FormaColorPicker.razor | style=@SwatchStyle"] = $"{BlazorTests}/Inputs/FormaColorPickerTests.razor | Should_draw_no_swatch_for_a_value_that_is_not_a_hex_color",
     };
 
     // The sinks no data reaches, each with what it writes.
@@ -78,6 +84,63 @@ public sealed partial class SinkInventoryTests
         [$"{BrowserScripts}/operations/Print.js | printedDocument.write(`<!DOCTYPE html><html lang=\"${{document.documentElement.lang}}\" dir=\"${{document.documentElement.dir}}\"><head><meta charset=\"utf-8\"><title></title></head><body><article></article></body></html>`)"] = "The library's own document, in the page's own language and direction",
         [$"{BrowserScripts}/operations/Print.js | link.href = href"] = "The page's own stylesheets",
         ["src/Framework/Forma.Framework.Culture.Browser.Interop/wwwroot/scripts/CultureCoordinator.js | location.assign(destination)"] = "The page's own address in another culture",
+        ["src/Blazor/Forma.Blazor/Components/FormaElementBase.cs | builder.AddDeclarations(Style);"] = "The host's own style, which is the host's as its Class is",
+        ["src/Blazor/Forma.Blazor/Components/FormaInputBase`1.cs | builder.AddDeclarations(Style);"] = "The host's own style, which is the host's as its Class is",
+        [$"{BrowserScripts}/operations/Asset.js | host.style.cssText = 'position:absolute;inline-size:0;block-size:0;overflow:hidden'"] = "The library's own declarations for the element holding the sprites it loads",
+        [$"{BrowserScripts}/operations/Print.js | frame.style.position = 'fixed'"] = "The library's own declarations for the frame it prints in",
+        [$"{BrowserScripts}/operations/Print.js | frame.style.inset = '0'"] = "The library's own declarations for the frame it prints in",
+        [$"{BrowserScripts}/operations/Print.js | frame.style.width = '0'"] = "The library's own declarations for the frame it prints in",
+        [$"{BrowserScripts}/operations/Print.js | frame.style.height = '0'"] = "The library's own declarations for the frame it prints in",
+        [$"{BrowserScripts}/operations/Print.js | frame.style.border = '0'"] = "The library's own declarations for the frame it prints in",
+        [$"{BrowserScripts}/operations/Print.js | frame.style.visibility = 'hidden'"] = "The library's own declarations for the frame it prints in",
+        ["src/Blazor/Forma.Blazor.DataView/wwwroot/scripts/HeightReservation.js | this.#target.style.minBlockSize = ''"] = "No height, which releases the one reserved",
+    };
+
+    // The style sinks data reaches only as a typed value, each with the value that carries it: a declaration whose value is a CSS length, a
+    // color or a number the library formats itself can't hold a declaration of its own, and a script setting one property through the
+    // element's declarations hands the browser a value it parses for that property alone.
+    private static readonly Dictionary<string, string> TypedSinks = new(StringComparer.Ordinal)
+    {
+        [Components + "/Bars/FormaToolbar.razor | style=@($\"background-color:{activeSwatch}\")"] = "An option's swatch, a CssColorValue",
+        [Components + "/Bars/FormaToolbar.razor | style=@($\"background-color:{swatch}\")"] = "An option's swatch, a CssColorValue",
+        [Components + "/Files/FormaFileViewer.razor | style=@(IsZoomedIn ? $\"inline-size: {ZoomPercent}%;\" : null)"] = "The zoom, a whole number of percent",
+        [$"{Components}/Inputs/FormaDateBox.razor | style=@TriggerStyle"] = "The root style of the date picker drawing the box, its own lengths and the host's style",
+        [$"{Components}/Inputs/FormaNumberInput.razor | style=@FieldStyle"] = "The input's width, a CssLength",
+        [$"{Components}/Inputs/FormaTextBox.razor | style=@FieldStyle"] = "The box's width, a CssLength",
+        [$"{Components}/Inputs/FormaTimeBox.razor | style=@InputStyle"] = "The root style of the time picker drawing the box, its own lengths and the host's style",
+        [$"{Components}/Virtualization/FormaVirtualize.razor.cs | builder.AddAttribute(3, \"style\", string.Create(CultureInfo.InvariantCulture, $\"block-size: {{drawn.Height:0.##}}px; flex-shrink: 0; overflow-anchor: none; --forma-virtualize-item-size: {{CurrentItemSize:0.##}}px\"));"] = "Heights the virtualizer measures, numbers it formats itself",
+        [$"{Charts} | style=@GetBarStyle(value)"] = "Fractions of the chart's scale, numbers it formats as percentages",
+        [$"{Charts} | style=@GetHeightStyle(threshold.Value)"] = "A fraction of the chart's scale, a number it formats as a percentage",
+        [$"{Charts} | style=@GetHeightStyle(tick)"] = "A fraction of the chart's scale, a number it formats as a percentage",
+        [$"{Charts} | style=@GetHeightStyle(value)"] = "A fraction of the chart's scale, a number it formats as a percentage",
+        [$"{Charts} | style=@GetPeriodStyle(periodIndex)"] = "Fractions of the chart's timeline, numbers it formats as percentages",
+        [$"{Charts} | style=@GetTimeLabelStyle(label)"] = "A fraction of the chart's timeline, a number it formats as a percentage",
+        [$"{Composer}/RichTextEditor/Views/FormaRichTextPreview.razor | style=@PageStyle"] = "The page's size and zoom, numbers the preview formats itself",
+        [$"{DataView}/FormaDataCards.razor | style=@PlaceholderStyle"] = "A row's height, a number the view formats itself",
+        [$"{DataView}/FormaDataGridRow.razor | style=@Grid.GetCellStyle(column)"] = "A frozen column's offset and width, each a CssLength",
+        [$"{DataView}/FormaDataGridTable.razor | style=@Grid.GetCellStyle(column)"] = "A frozen column's offset and width, each a CssLength",
+        [$"{DataView}/FormaDataGridTable.razor | style=@Grid.GetHeaderStyle(column)"] = "A column's width and a frozen column's offset, each a CssLength",
+        [$"{DataView}/FormaDataGridTable.razor | style=@Grid.PlaceholderStyle"] = "A row's height, a number the grid formats itself",
+        [$"{DataView}/FormaDataList.razor | style=@PlaceholderStyle"] = "A row's height, a number the view formats itself",
+        [$"{DataView}/FormaDataTreeNode.razor | style=@(FormaDataTree<TItem>.GetNodeStyle(Depth))"] = "A node's depth, a whole number",
+        ["src/Blazor/Forma.Blazor.Explorer/FormaExplorer.razor | style=@SidebarSizeStyle"] = "The sidebar's width, a CssLength",
+        ["src/Blazor/Forma.Blazor.Explorer/FormaExplorerSidebar.razor | style=@TreeSizeStyle"] = "The folder tree's height, a CssLength",
+        [$"{Composer}/wwwroot/scripts/BlockAlignment.js | row.style.insetBlockStart = `${{block.getBoundingClientRect().top - origin}}px`"] = "An offset the script measures, in pixels",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/BlockFormatter.mjs | block.style.lineHeight = value"] = "A line height a command carries, which the browser takes for that one property alone",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/BlockFormatter.mjs | block.style.textAlign = value"] = "An alignment a command carries, which the browser takes for that one property alone",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/InlineFormatter.mjs | pendingSpan.style.setProperty(property, value)"] = "A font, a size or a color a command carries, which the browser takes for that one property alone",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/InlineFormatter.mjs | span.style.setProperty(property, value)"] = "A font, a size or a color a command carries, which the browser takes for that one property alone",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/ListFormatter.mjs | block.style.marginInlineStart = `${{nextIndent}}px`"] = "An indent the script counts, in pixels",
+        [$"{Composer}/wwwroot/scripts/SelectionFollower.js | this.#target.style.left = `${{left}}px`"] = "A position the script measures, in pixels",
+        [$"{Composer}/wwwroot/scripts/SelectionFollower.js | this.#target.style.top = `${{top}}px`"] = "A position the script measures, in pixels",
+        [$"{DataView}/wwwroot/scripts/HeightReservation.js | this.#target.style.minBlockSize = `${{this.#reservedHeight}}px`"] = "A height the script measures, in pixels",
+        [$"{BrowserScripts}/behaviors/AnchoredPopover.js | this.#popover.style.left = `${{Math.round(inlineStart)}}px`"] = "A position the script measures, in pixels",
+        [$"{BrowserScripts}/behaviors/AnchoredPopover.js | this.#popover.style.top = `${{Math.round(blockStart)}}px`"] = "A position the script measures, in pixels",
+        [$"{BrowserScripts}/behaviors/AnchoredPopover.js | this.#popover.style.setProperty('--forma-popover-anchor-inline-size', `${{Math.round(anchor.width)}}px`)"] = "A width the script measures, in pixels",
+        [$"{BrowserScripts}/components/Frame.js | this.#box.style.left = `${{left}}px`"] = "A position the script measures, in pixels",
+        [$"{BrowserScripts}/components/Frame.js | this.#box.style.top = `${{top}}px`"] = "A position the script measures, in pixels",
+        [$"{BrowserScripts}/components/Frame.js | this.#box.style.width = `${{width}}px`"] = "A size the script measures, in pixels",
+        [$"{BrowserScripts}/components/Frame.js | this.#box.style.height = `${{height}}px`"] = "A size the script measures, in pixels",
     };
 
     [Fact]
@@ -85,14 +148,14 @@ public sealed partial class SinkInventoryTests
     {
         // Act
         var uncoveredSinks = FindSinks()
-            .Where(sink => !CoveredSinks.ContainsKey(sink) && !UnreachedSinks.ContainsKey(sink))
+            .Where(sink => !CoveredSinks.ContainsKey(sink) && !UnreachedSinks.ContainsKey(sink) && !TypedSinks.ContainsKey(sink))
             .Distinct(StringComparer.Ordinal)
             .ToList();
 
         // Assert
         Assert.True(
             uncoveredSinks.Count == 0,
-            $"These sinks write markup or an address with no test giving them hostile input:{Environment.NewLine}{string.Join(Environment.NewLine, uncoveredSinks)}");
+            $"These sinks write markup, an address or a style with no test giving them hostile input:{Environment.NewLine}{string.Join(Environment.NewLine, uncoveredSinks)}");
     }
 
     [Fact]
@@ -102,7 +165,7 @@ public sealed partial class SinkInventoryTests
         var sinks = FindSinks().ToHashSet(StringComparer.Ordinal);
 
         // Act
-        var staleSinks = CoveredSinks.Keys.Concat(UnreachedSinks.Keys).Where(sink => !sinks.Contains(sink)).ToList();
+        var staleSinks = CoveredSinks.Keys.Concat(UnreachedSinks.Keys).Concat(TypedSinks.Keys).Where(sink => !sinks.Contains(sink)).ToList();
 
         // Assert
         Assert.True(
@@ -144,11 +207,17 @@ public sealed partial class SinkInventoryTests
             {
                 yield return $"{GetRelativePath(root, file)} | (MarkupString){match.Groups["expression"].Value}";
             }
+
+            // A root's style is the component's own declarations, found where its builder adds them, and the host's Style.
+            foreach (Match match in BoundStyle().Matches(text).Where(match => match.Groups["expression"].Value != "RootStyle"))
+            {
+                yield return $"{GetRelativePath(root, file)} | style=@{match.Groups["expression"].Value}";
+            }
         }
 
         foreach (var file in EnumerateSourceFiles(sources, "*.cs"))
         {
-            foreach (var line in File.ReadLines(file).Select(line => line.Trim()).Where(line => CodeMarkup().IsMatch(line)))
+            foreach (var line in File.ReadLines(file).Select(line => line.Trim()).Where(line => CodeMarkup().IsMatch(line) || CodeStyle().IsMatch(line)))
             {
                 yield return $"{GetRelativePath(root, file)} | {line}";
             }
@@ -158,7 +227,7 @@ public sealed partial class SinkInventoryTests
         {
             foreach (var line in File.ReadLines(file).Select(line => line.Trim()).Where(line => !IsComment(line)))
             {
-                foreach (Match match in ScriptSink().Matches(line))
+                foreach (Match match in ScriptSink().Matches(line).Concat(ScriptStyle().Matches(line)))
                 {
                     yield return $"{GetRelativePath(root, file)} | {match.Value.TrimEnd(';', ' ')}";
                 }
@@ -198,6 +267,19 @@ public sealed partial class SinkInventoryTests
 
     [GeneratedRegex(@"MarkupString\(|\(MarkupString\)|AddMarkupContent\(|AddAttribute\([^)]*""(href|src|srcset|poster|action|formaction|data|srcdoc)""")]
     private static partial Regex CodeMarkup();
+
+    // A style attribute whose value is data, from its @ to its closing quote, an expression in parentheses taken whole.
+    [GeneratedRegex("""(?<![\w:-])style\s*=\s*"@(?<expression>\((?>[^()]+|\((?<open>)|\)(?<-open>))*(?(open)(?!))\)|[^"]*)"(?=[\s/>])""", RegexOptions.Singleline)]
+    private static partial Regex BoundStyle();
+
+    // A style a render tree writes, and declarations a style builder adds as CSS text.
+    [GeneratedRegex(@"AddAttribute\([^)]*""style""|\.AddDeclarations\(")]
+    private static partial Regex CodeStyle();
+
+    // A style a script sets through the element's declarations, or writes as an attribute, to the end of its statement's line,
+    // since the text it sets can hold a semicolon of its own.
+    [GeneratedRegex(@"[\w.#$\[\]]*\.style\.(?:setProperty\(|cssText\s*=(?!=)|[a-zA-Z]+\s*=(?!=)).*|setAttribute\(\s*['""]style['""].*")]
+    private static partial Regex ScriptStyle();
 
     // Markup a script parses or writes into a document, and an address it sets, loads or navigates to.
     [GeneratedRegex(@"[\w.#$\[\]]*\.(innerHTML|outerHTML|srcdoc|src|href|poster|srcset|action|formAction)\s*\+?=(?!=)[^;]*|[\w.]*\.(insertAdjacentHTML|createContextualFragment|parseFromString)\([^;]*|\w*[Dd]ocument\.(write|writeln)\([^;]*|setAttribute\(\s*['""](href|src|srcset|poster|action|formaction|data|srcdoc|xlink:href)['""][^;]*|\bimport\(\s*[^'""`\s)][^)]*\)|location\.(assign|replace)\([^;]*|window\.open\([^;]*")]

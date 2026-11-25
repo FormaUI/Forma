@@ -64,6 +64,14 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - `InputRegistration` performs only an action a route of its profile names, carrying an input of a known family with
   finite coordinates, and a dismissal only with a behavior and a reason the router has; the host's routes reach
   `IInputActionHandler` the same way.
+- Every style Forma writes from data takes it as a typed CSS value, as
+  [the security design](docs/security-design.md#what-forma-writes-into-a-page) sets out. `CssStyleBuilder.Add` takes a
+  declaration's value as a `CssLength` or a `CssColorValue`, conditionally for a length, and `AddDeclarations` adds
+  CSS text, which `Add` took as a string. `ToolbarOption.Swatch` is a `CssColorValue`, where `FormaToolbar` wrote the
+  string it was given into its style. To migrate, pass a length or a color to `Add`, call `AddDeclarations` for CSS
+  text, and give a swatch as a `CssColor` or a theme's property.
+- The typography plugin previews a font family on its own label only where the family is a list of family names, so
+  a family from a host's options that isn't one, such as one carrying a declaration of its own, is offered unpreviewed.
 - A culture name the page's culture coordinator delivers that the platform defines no culture by, such as `qq-ZZ`,
   is refused and logged at `Debug` before the application's `ICultureProvider` is asked for it, as
   [the culture design](docs/culture-design.md#the-applications-cultures) sets out, where the provider was asked and
