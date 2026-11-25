@@ -133,7 +133,8 @@ component, one line each.
 
 A field brings no space around itself; the layout that holds it does. A form whose fields stand one above another
 gives its container a gap. A row of fields lines up with flex or grid, where every field, and a `FormaSearchBox`
-given a `Label`, stands at one height:
+given a `Label`, stands at one height while its label fits one line; a longer label wraps, and its field grows to
+hold it:
 
 ```razor
 <div style="display: flex; flex-direction: column; gap: var(--space-4)">
@@ -145,7 +146,8 @@ given a `Label`, stands at one height:
 </div>
 ```
 
-Aligning a row at its top edge keeps the boxes level when a validation message shows under one of them.
+Aligning a row at its top edge keeps the boxes level when a validation message shows under one of them, or a label
+wraps in one.
 
 ### Forms and long text
 

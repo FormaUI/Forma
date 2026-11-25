@@ -1,5 +1,6 @@
 /*
-    forma-input.css — The one definition of a Forma input box, drawn by every input listed here.
+    forma-input.css — The one definition of a Forma input box, drawn by every input listed here, its look drawn
+    instead by the box of a field whose label floats, around the input it holds.
 */
 
 .forma-field-input,
@@ -14,12 +15,19 @@
     font-size: var(--font-size-sm);
     line-height: var(--line-height-prose);
     color: var(--forma-input-color, var(--text-primary-color));
+    outline: none;
+    touch-action: manipulation;
+}
+
+/* The look: fill, border and corner. */
+.forma-field-input,
+.forma-text-box,
+.forma-search-box,
+.forma-field-box-floating-label {
     background-color: var(--forma-input-bg-color, var(--input-bg-color));
     border: 1px solid var(--forma-input-border-color, var(--border-emphasis-color));
     border-radius: var(--radius-sm);
-    outline: none;
     box-sizing: border-box;
-    touch-action: manipulation;
     transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
 }
 
@@ -34,6 +42,11 @@
 .forma-text-box:focus,
 .forma-search-box:focus {
     outline: none;
+    box-shadow: var(--focus-ring);
+}
+
+/* A rule of its own, so a browser that can't read its selector still draws the inputs' ring. */
+.forma-field-box-floating-label:has(.forma-field-input:focus) {
     box-shadow: var(--focus-ring);
 }
 
@@ -71,6 +84,11 @@
     .forma-field-input:focus,
     .forma-text-box:focus,
     .forma-search-box:focus {
+        outline: 2px solid Highlight;
+        outline-offset: 1px;
+    }
+
+    .forma-field-box-floating-label:has(.forma-field-input:focus) {
         outline: 2px solid Highlight;
         outline-offset: 1px;
     }

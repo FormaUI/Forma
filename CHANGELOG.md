@@ -125,6 +125,17 @@ set out. What Forma gained before its first release, month by month, is in [the 
   policy allowing no other inline script and no `eval` serves every page.
 - A composer plugin's module declared at a relative address loads from the page's base, as its stylesheet does, where
   it was read against the address of Forma's own script and wasn't found.
+- A field's label wraps onto as many lines as it needs, where one longer than its field was cut off with an ellipsis,
+  as a long label at a phone's width was. [`FormaField`](docs/component-catalog.md#formafield) keeps room above the
+  value for every line of a floating or a pinned label, so the field grows to hold it and keeps its height as the label
+  floats. Its box draws what the input drew: the border, the fill, the focus ring, hover, the valid, invalid, disabled
+  and read-only states, and a value the browser filled in, tinted by `--forma-input-autofill-bg-color`. To migrate,
+  CSS that styled `.forma-field-input`'s border, fill or focus ring inside a field whose label floats targets the
+  field's box, `.forma-field-box-floating-label`, which reads the same `--forma-input-*` properties; an input standing
+  outside such a field draws its own as before.
+- Every field shows itself invalid at once, as `FormaTextBox` and `FormaNumberInput` did, where the others showed it
+  only once modified. Under a coarse pointer a field whose label floats stands its value on a row a touch target tall,
+  which a button at its end fits, so the field stands taller there.
 
 ## `1.0.0-preview.16`
 

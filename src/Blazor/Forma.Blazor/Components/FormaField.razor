@@ -9,19 +9,24 @@
      @ref="RootElement"
      role="@GroupRole"
      aria-labelledby="@GroupLabelId">
-    @* The element's box: the element, what overlays it, and its label. *@
-    <div class="forma-field-box">
+    @* The element's box: the label's room, the element, what overlays it, and its label. *@
+    <div class="@BoxClass">
+        @if (HasLabelRoom)
+        {
+            @* An unseen copy of the label, set as the floated label is, which holds the lines that label takes above the value. *@
+            <span class="forma-field-label-room" aria-hidden="true">@LabelRoomText</span>
+        }
         @ChildContent
         @if (HasLabel && Grouped)
         {
             <span id="@EffectiveElementIds.LabelId" class="forma-field-label">
-                @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}
+                <span class="forma-field-label-text">@Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}</span>
             </span>
         }
         else if (HasLabel)
         {
             <label id="@EffectiveElementIds.LabelId" for="@TargetId" class="forma-field-label">
-                @Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}
+                <span class="forma-field-label-text">@Label@if (Required) {<span class="forma-field-required" aria-hidden="true"> *</span>}</span>
             </label>
         }
     </div>

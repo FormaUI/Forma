@@ -3323,7 +3323,7 @@
 
             // Act
             var group = cut.Find("tbody [role=group]");
-            var groupName = cut.Find($"[id='{group.GetAttribute("aria-labelledby")}']").FirstChild!.TextContent.Trim();
+            var groupName = cut.Find($"[id='{group.GetAttribute("aria-labelledby")}'] .forma-field-label-text").FirstChild!.TextContent.Trim();
             var groupClass = group.ClassName;
             await fields.ChangeAsync(cut.Find("tbody input[role=combobox]"), "10:15");
             await cut.InvokeAsync(() => grid.Instance.SaveEditAsync());
@@ -3364,7 +3364,7 @@
             Assert.Multiple(
                 () => Assert.Equal(2, row.QuerySelectorAll(".forma-date-box").Length),
                 () => Assert.Contains("forma-data-grid-editor", row.QuerySelector("button.forma-date-picker-trigger")!.ClassName, StringComparison.Ordinal),
-                () => Assert.Equal("Hired", row.QuerySelector("label.forma-field-label")!.FirstChild!.TextContent.Trim()),
+                () => Assert.Equal("Hired", row.QuerySelector("label.forma-field-label .forma-field-label-text")!.FirstChild!.TextContent.Trim()),
                 () => Assert.NotNull(row.QuerySelector("label.forma-field-label .forma-field-required")),
                 () => Assert.Single(row.QuerySelectorAll("input[type=checkbox].forma-checkbox.forma-data-grid-editor")),
                 () => Assert.True(row.QuerySelector("input[type=checkbox]")!.HasAttribute("checked")));

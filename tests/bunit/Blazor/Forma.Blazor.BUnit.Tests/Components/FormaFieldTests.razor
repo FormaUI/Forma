@@ -3,7 +3,7 @@
     public sealed class Component
     {
         [Fact]
-        public void Should_render_the_input_before_the_label()
+        public void Should_render_the_label_s_room_then_the_input_then_the_label()
         {
             // Arrange
             using var ctx = new FormaFieldTests();
@@ -16,8 +16,104 @@
 
             // Assert
             var children = cut.Find(".forma-field-box").Children;
-            Assert.Equal("INPUT", children[0].TagName);
-            Assert.Equal("LABEL", children[1].TagName);
+            Assert.Multiple(
+                () => Assert.Contains("forma-field-label-room", children[0].ClassList),
+                () => Assert.Equal("INPUT", children[1].TagName),
+                () => Assert.Equal("LABEL", children[2].TagName));
+        }
+
+        [Theory]
+        [InlineData(FieldLabelMode.Floating)]
+        [InlineData(FieldLabelMode.Pinned)]
+        public void Should_keep_a_room_holding_the_label_s_text_where_the_label_floats(FieldLabelMode labelMode)
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Selling price to the public, tax included" TargetId="fld-1" Required="true" LabelMode="labelMode">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Selling price to the public, tax included *", cut.Find(".forma-field-label-room").TextContent),
+                () => Assert.Contains("forma-field-box-floating-label", cut.Find(".forma-field-box").ClassList));
+        }
+
+        [Theory]
+        [InlineData(FieldLabelMode.Floating)]
+        [InlineData(FieldLabelMode.Pinned)]
+        public void Should_hide_the_label_s_room_from_assistive_technology(FieldLabelMode labelMode)
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Name" TargetId="fld-1" LabelMode="labelMode">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Equal("true", cut.Find(".forma-field-label-room").GetAttribute("aria-hidden"));
+        }
+
+        [Fact]
+        public void Should_keep_the_label_s_room_for_a_label_naming_a_group()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Starts" Grouped="true" LabelMode="FieldLabelMode.Pinned">
+                    <ChildContent><button id="fld-8-date">Date</button><input id="fld-8-time" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal("Starts", cut.Find(".forma-field-label-room").TextContent),
+                () => Assert.Equal("true", cut.Find(".forma-field-label-room").GetAttribute("aria-hidden")));
+        }
+
+        [Theory]
+        [InlineData(FieldLabelMode.Above)]
+        [InlineData(FieldLabelMode.Inline)]
+        public void Should_keep_no_label_s_room_where_the_label_stands_beside_the_element(FieldLabelMode labelMode)
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Label="Volume" TargetId="fld-1" LabelMode="labelMode">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-field-label-room")),
+                () => Assert.DoesNotContain("forma-field-box-floating-label", cut.Find(".forma-field-box").ClassList));
+        }
+
+        [Fact]
+        public void Should_keep_no_label_s_room_without_a_label()
+        {
+            // Arrange
+            using var ctx = new FormaFieldTests();
+
+            // Act
+            var cut = ctx.Render(
+                @<FormaField Description="Digits only">
+                    <ChildContent><input class="forma-field-input" id="fld-1" /></ChildContent>
+                </FormaField>);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll(".forma-field-label-room")),
+                () => Assert.DoesNotContain("forma-field-box-floating-label", cut.Find(".forma-field-box").ClassList));
         }
 
         [Fact]

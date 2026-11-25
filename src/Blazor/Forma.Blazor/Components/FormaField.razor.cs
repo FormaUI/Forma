@@ -27,7 +27,7 @@ public sealed partial class FormaField : FormaElementBase
     [Parameter] public FieldLabelMode LabelMode { get; set; }
 
     /// <summary>The element the chrome wraps.</summary>
-    /// <remarks>An element carrying the forma-field-input class takes the field's box, with the label floating over its value.</remarks>
+    /// <remarks>An element carrying the forma-field-input class stands in the field's box; where the label floats, it stands beneath the room the label takes, and the box draws its border, fill and focus ring.</remarks>
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
     /// <summary>The instructions beneath the element, which the element names as its description.</summary>
@@ -55,6 +55,16 @@ public sealed partial class FormaField : FormaElementBase
 
     private string? GroupRole
         => Grouped ? "group" : null;
+
+    // A label floating over the element, as the floating and pinned labels do, keeps a room of its own above the value.
+    private bool HasLabelRoom
+        => HasLabel && LabelMode is FieldLabelMode.Floating or FieldLabelMode.Pinned;
+
+    private string BoxClass
+        => HasLabelRoom ? "forma-field-box forma-field-box-floating-label" : "forma-field-box";
+
+    private string? LabelRoomText
+        => Required ? $"{Label} *" : Label;
 
     private FieldElementIds EffectiveElementIds
         => ElementIds ?? (_ownElementIds ??= new FieldElementIds());

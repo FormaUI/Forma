@@ -194,12 +194,13 @@ public sealed partial class InputsTests
 
             await textArea.PressSequentiallyAsync("Six");
 
-            // Assert — the text scrolled, and what scrolls starts at or below the lower edge of the label, once it has floated
+            // Assert — the text scrolled, and what scrolls starts at or below the lower edge of the label's text, once it has floated
             var measures = await textArea.EvaluateAsync<double[]>("""
                 async area => {
                     const label = document.querySelector(`label[for="${area.id}"]`);
-                    await Promise.all(label.getAnimations().map(transition => transition.finished));
-                    return [area.scrollTop, area.getBoundingClientRect().top + area.clientTop - label.getBoundingClientRect().bottom];
+                    await Promise.all(label.getAnimations({ subtree: true }).map(transition => transition.finished));
+                    const text = label.querySelector('.forma-field-label-text');
+                    return [area.scrollTop, area.getBoundingClientRect().top + area.clientTop - text.getBoundingClientRect().bottom];
                 }
                 """);
             var (scrolled, clearance) = (measures[0], measures[1]);

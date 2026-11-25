@@ -4,15 +4,30 @@
    element the wrapping component renders, reached with ::deep, spaced from
    its neighbors by the layout that holds it, with one message line's room
    beneath the element wherever it shows a form's messages. The element and
-   its label share a box, which what overlays the element is placed in.
+   its label share a box, which what overlays the element is placed in. A box
+   whose label floats draws the element's look and its states, and keeps the
+   room that label takes above the value, so the label wraps onto as many
+   lines as it needs and the box keeps its height as the label floats.
    ============================================================ */
 
 /* ---------- wrapper ---------- */
 .forma-field {
-    /* The room a floated label takes above the value: its offset from the top and its line. */
+    /* A floated label's offset from the top of its box. */
     --forma-field-label-offset: var(--space-1);
-    --forma-field-padding-block-start: calc(var(--forma-field-label-offset) + var(--font-size-xs) * var(--line-height-target));
-    --forma-field-padding-block-end: var(--space-1);
+    /* The room a floated label of one line takes above the value: its offset and its line. */
+    --forma-field-label-room-block-size: calc(var(--forma-field-label-offset) + var(--font-size-xs) * var(--line-height-target));
+    /* The value's row: what the field's step leaves once a one-line label's room and the box's two hairlines are taken. */
+    --forma-field-value-block-size: calc(var(--target-size-xl) - var(--forma-field-label-room-block-size) - 2px);
+    /* A button standing at the value's end, as a password's toggle does. */
+    --forma-field-end-target-size: var(--target-size-sm);
+}
+
+/* The value's row is a touch target under a coarse pointer, as an input is, so what stands at its end fits it. */
+@media (pointer: coarse) {
+    .forma-field {
+        --forma-field-value-block-size: var(--target-size-touch);
+        --forma-field-end-target-size: var(--target-size-touch);
+    }
 }
 
 /* ---------- box ---------- */
@@ -21,82 +36,108 @@
 }
 
 /* ---------- input element ---------- */
-/* A field stands one step taller than an input, holding a label over its value. */
+/* A field stands one step taller than an input, its value beneath a label's room. */
 ::deep .forma-field-input {
     min-block-size: var(--target-size-xl);
-    padding-block: var(--forma-field-padding-block-start) var(--forma-field-padding-block-end);
+    padding-block: var(--forma-field-label-room-block-size) var(--space-1);
 }
 
-/* ---------- disabled ---------- */
+/* In a box holding a floating label, the element is the value's row, its value centered on it, and the box draws its look. */
+:where(.forma-field-box-floating-label) ::deep .forma-field-input {
+    min-block-size: var(--forma-field-value-block-size);
+    padding-block: 0;
+}
+
+.forma-field-box-floating-label ::deep .forma-field-input {
+    background-color: transparent;
+    border: 0;
+    box-shadow: none;
+    outline: none;
+}
+
+/* The fill the browser gives a value it filled in, held off while the page stays open, since the box draws it. */
+.forma-field-box-floating-label ::deep .forma-field-input:-webkit-autofill {
+    transition: background-color 0s 600000s, color 0s 600000s;
+}
+
+/* ---------- label's room ---------- */
+/* Set as the floated label is and as wide, so it takes exactly the lines that label takes. */
+.forma-field-label-room {
+    display: block;
+    padding-block-start: var(--forma-field-label-offset);
+    padding-inline: var(--space-3);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-target);
+    visibility: hidden;
+}
+
+/* ---------- states ---------- */
+/* A button standing in the box, as a select's trigger, answers a hover anywhere in the box, its label among it. */
+@media (hover: hover) {
+    .forma-field-box-floating-label:hover:has(:where(button.forma-field-input:not(:disabled))) {
+        border-color: var(--primary-ink-color);
+    }
+}
+
+.forma-field-box-floating-label:has(:where(button.forma-field-input:not(:disabled))) > .forma-field-label {
+    cursor: pointer;
+}
+
 ::deep .forma-field-input:disabled {
     color: var(--forma-input-disabled-color, var(--disabled-text-color));
-    background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
     cursor: not-allowed;
 }
 
-.forma-field:has(.forma-field-input:disabled) .forma-field-label {
-    color: var(--forma-label-disabled-color, var(--disabled-text-color));
+.forma-field-box-floating-label:has(.forma-field-input:disabled) {
+    background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
 }
 
-/* The borderless modes hold a bare input of their own. */
-.forma-field-label-above:has(input:disabled) .forma-field-label,
-.forma-field-label-inline:has(input:disabled) .forma-field-label {
-    color: var(--forma-label-disabled-color, var(--disabled-text-color));
-}
-
-/* ---------- read-only ---------- */
-::deep .forma-field-input[readonly]:not(:disabled) {
+.forma-field-box-floating-label:has(.forma-field-input[readonly]:not(:disabled)) {
     background-color: var(--forma-input-readonly-bg-color, var(--hover-bg-color));
 }
 
-/* Validation states */
-::deep .forma-field-input.modified.valid {
+.forma-field-box-floating-label:has(.forma-field-input:-webkit-autofill) {
+    --forma-field-autofill-bg-color: var(--forma-input-autofill-bg-color, var(--primary-subtle-color));
+    background-image: linear-gradient(var(--forma-field-autofill-bg-color), var(--forma-field-autofill-bg-color));
+}
+
+/* Valid shows once the value is modified; invalid shows at once, since a submitted untouched field is invalid without
+   being modified. */
+.forma-field-box-floating-label:has(.forma-field-input.modified.valid) {
     border-color: var(--forma-valid-color, var(--success-ink-color));
 }
 
-::deep .forma-field-input.modified.invalid {
+.forma-field-box-floating-label:has(.forma-field-input.invalid) {
+    border-color: var(--forma-invalid-color, var(--danger-ink-color));
+}
+
+/* A field whose label stands beside its element leaves the element to draw its own look. */
+.forma-field-box:not(.forma-field-box-floating-label) ::deep .forma-field-input:disabled {
+    background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
+}
+
+.forma-field-box:not(.forma-field-box-floating-label) ::deep .forma-field-input[readonly]:not(:disabled) {
+    background-color: var(--forma-input-readonly-bg-color, var(--hover-bg-color));
+}
+
+.forma-field-box:not(.forma-field-box-floating-label) ::deep .forma-field-input.modified.valid {
+    border-color: var(--forma-valid-color, var(--success-ink-color));
+}
+
+.forma-field-box:not(.forma-field-box-floating-label) ::deep .forma-field-input.invalid {
     border-color: var(--forma-invalid-color, var(--danger-ink-color));
 }
 
 /* ---------- label ---------- */
+/* Above and Inline: a label standing in the layout ahead of the element, wrapping onto as many lines as it needs, placed
+   first by order since the markup holds it after the element. */
 .forma-field-label {
-    position: absolute;
-    inset-block-start: 50%;
-    inset-inline-start: var(--space-3);
-    transform: translateY(-50%);
+    order: -1;
     font-size: var(--font-size-sm);
-    color: var(--forma-placeholder-color, var(--text-secondary-color));
-    pointer-events: none;
-    transition: inset-block-start 0.1s ease-in-out,
-                font-size 0.1s ease-in-out,
-                color 0.1s ease-in-out;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-inline-size: calc(100% - 2 * var(--space-3));
-}
-
-/* An input element taller than one line holds the label at its top. */
-.forma-field-multiline .forma-field-label {
-    inset-block-start: var(--space-4);
-    transform: none;
-}
-
-/* Float label: focused, holding a value (placeholder not shown, or has-value), or pinned.
-   A general sibling, so a button may sit between the input and the label. */
-::deep .forma-field-input:focus ~ .forma-field-label,
-::deep .forma-field-input:not(:placeholder-shown) ~ .forma-field-label,
-::deep .forma-field-input.has-value ~ .forma-field-label,
-.forma-field-label-pinned .forma-field-label {
-    inset-block-start: var(--forma-field-label-offset);
-    transform: none;
-    font-size: var(--font-size-xs);
-    line-height: var(--line-height-target);
+    font-weight: 500;
     color: var(--forma-label-color, var(--text-primary-color));
 }
 
-/* Above and Inline: a static label ahead of the element, placed first by order so the markup
-   keeps the floating modes' sibling selector. */
 .forma-field-label-above .forma-field-box {
     display: flex;
     flex-direction: column;
@@ -107,18 +148,6 @@
     flex-wrap: wrap;
     align-items: center;
     gap: var(--space-2);
-}
-
-.forma-field-label-above .forma-field-label,
-.forma-field-label-inline .forma-field-label {
-    position: static;
-    order: -1;
-    transform: none;
-    max-inline-size: none;
-    font-size: var(--font-size-sm);
-    font-weight: 500;
-    color: var(--forma-label-color, var(--text-primary-color));
-    pointer-events: auto;
 }
 
 .forma-field-label-above .forma-field-label {
@@ -135,6 +164,102 @@
     .forma-field-label-above ::deep .forma-field-input {
         min-block-size: var(--target-size-touch);
     }
+}
+
+/* Floating and Pinned: the label lies over the whole box and either rests over the value's row, its last line where the
+   value's line stands and the lines before it wrapping up into the room above, or floats into that room, lying exactly
+   over its copy. The room either side of its text moves it between the two, and a resting label too tall for the box
+   runs out at its top, never past its end. It lies beneath the element and what stands over it, which its text shows
+   through, so a press the element or a button doesn't take, in the room above the value among it, is the label's, and
+   reaches the element as a label's does. */
+.forma-field-box-floating-label {
+    isolation: isolate;
+}
+
+.forma-field-box-floating-label > .forma-field-label {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    /* A resting line centered on the value's row, which ends the box, and clear of a button at its end. */
+    padding-block-end: calc((var(--forma-field-value-block-size) - 1lh) / 2);
+    padding-inline-end: var(--forma-field-label-end-room);
+    font-size: var(--font-size-sm);
+    font-weight: inherit;
+    line-height: var(--line-height-target);
+    color: var(--forma-placeholder-color, var(--text-secondary-color));
+    transition: font-size 0.1s ease-in-out, color 0.1s ease-in-out;
+}
+
+/* A button besides the element stands at the value's end, as a password's toggle does. */
+.forma-field-box-floating-label:has(button:not(.forma-field-input)) {
+    --forma-field-label-end-room: calc(var(--space-1) + var(--forma-field-end-target-size));
+}
+
+.forma-field-box-floating-label > .forma-field-label::before,
+.forma-field-box-floating-label > .forma-field-label::after {
+    content: "";
+    flex: 1 1 0;
+    transition: flex-grow 0.1s ease-in-out;
+}
+
+.forma-field-box-floating-label > .forma-field-label::after {
+    flex-grow: 0;
+}
+
+.forma-field-box-floating-label > .forma-field-label > .forma-field-label-text {
+    padding-block-start: var(--forma-field-label-offset);
+    padding-inline: var(--space-3);
+    transition: padding-block-start 0.1s ease-in-out;
+}
+
+/* An element taller than one line holds the resting label over its first line, a step beneath the label's room. */
+.forma-field-multiline > .forma-field-box-floating-label > .forma-field-label::before {
+    flex-grow: 0;
+}
+
+.forma-field-multiline > .forma-field-box-floating-label > .forma-field-label::after {
+    flex-grow: 1;
+}
+
+.forma-field-multiline > .forma-field-box-floating-label > .forma-field-label > .forma-field-label-text {
+    padding-block-start: calc(var(--forma-field-label-room-block-size) + var(--space-1) + (var(--font-size-sm) * var(--line-height-prose) - 1lh) / 2);
+}
+
+/* Floated: the element focused, holding a value (its placeholder not shown, or has-value), or the label pinned. */
+.forma-field-box-floating-label:has(.forma-field-input:focus, .forma-field-input:not(:placeholder-shown), .forma-field-input.has-value) > .forma-field-label,
+.forma-field-label-pinned > .forma-field-box-floating-label > .forma-field-label {
+    padding-inline-end: 0;
+    font-size: var(--font-size-xs);
+    color: var(--forma-label-color, var(--text-primary-color));
+}
+
+.forma-field-box-floating-label:has(.forma-field-input:focus, .forma-field-input:not(:placeholder-shown), .forma-field-input.has-value) > .forma-field-label::before,
+.forma-field-label-pinned > .forma-field-box-floating-label > .forma-field-label::before {
+    flex-grow: 0;
+}
+
+.forma-field-box-floating-label:has(.forma-field-input:focus, .forma-field-input:not(:placeholder-shown), .forma-field-input.has-value) > .forma-field-label::after,
+.forma-field-label-pinned > .forma-field-box-floating-label > .forma-field-label::after {
+    flex-grow: 1;
+}
+
+.forma-field-box-floating-label:has(.forma-field-input:focus, .forma-field-input:not(:placeholder-shown), .forma-field-input.has-value) > .forma-field-label > .forma-field-label-text,
+.forma-field-label-pinned > .forma-field-box-floating-label > .forma-field-label > .forma-field-label-text {
+    padding-block-start: var(--forma-field-label-offset);
+}
+
+/* A disabled element's label is disabled with it, whatever its mode. */
+.forma-field:has(.forma-field-input:disabled) .forma-field-label {
+    color: var(--forma-label-disabled-color, var(--disabled-text-color));
+}
+
+/* The modes whose label stands beside the element hold a bare input of their own. */
+.forma-field-label-above:has(input:disabled) .forma-field-label,
+.forma-field-label-inline:has(input:disabled) .forma-field-label {
+    color: var(--forma-label-disabled-color, var(--disabled-text-color));
 }
 
 /* ---------- required asterisk ---------- */

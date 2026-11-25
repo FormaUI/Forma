@@ -46,7 +46,7 @@
                 () => Assert.Equal("none", input.GetAttribute("aria-autocomplete")),
                 () => Assert.Null(input.GetAttribute("aria-controls")),
                 () => Assert.Equal(FormatInEnglish("9:30 AM"), input.GetAttribute("value")),
-                () => Assert.Equal("Starts", cut.Find("label.forma-field-label").FirstChild!.TextContent.Trim()),
+                () => Assert.Equal("Starts", cut.Find("label.forma-field-label .forma-field-label-text").FirstChild!.TextContent.Trim()),
                 () => Assert.Equal("Choose a Time", cut.Find("button").GetAttribute("aria-label")),
                 () => Assert.Equal("-1", cut.Find("button").GetAttribute("tabindex")));
         }
