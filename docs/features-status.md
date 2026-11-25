@@ -28,7 +28,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Four components implemented, thirteen changes fixed |
-| [A security check](#a-security-check) | Arguments, what Forma writes from data and the dependency check in place; four steps open |
+| [A security check](#a-security-check) | Arguments, what Forma writes from data, the dependency check and the scan of the running Showcase in place; three steps open |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -248,7 +248,7 @@ carries it out in seven steps:
 3. Malformed input from the browser refused, never thrown.
 4. A cap on every size Forma accepts from the browser, the uploader's 10 MB by default among them.
 5. ✅ A job of the full gate failing on a known vulnerability in any NuGet or npm package.
-6. An OWASP ZAP scan of the running Showcase, rerun from a script.
+6. ✅ An OWASP ZAP scan of the running Showcase, rerun from a script.
 7. Forma under a strict Content Security Policy.
 
 <a id="deferred"></a>

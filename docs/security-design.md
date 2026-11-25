@@ -82,8 +82,25 @@ so an advisory published one day doesn't fail unrelated work.
 ## A scan of the running Showcase
 
 `scripts/Invoke-SecurityScan.ps1` starts the Showcase and runs OWASP ZAP against it in a container, keeping ZAP's report
-and the Showcase's own log. Every finding, and every error the log records while the scan runs, is fixed or explained
-here; a malformed request is refused, never answered with a 500.
+and the Showcase's own log. ZAP's spider reaches every page in every culture. Requests made for the scan carry a NUL
+character and a lone surrogate in a path, a query and a cookie, and a post names no form and carries no antiforgery
+token. ZAP's active scan then attacks every query, form field, path segment, header and cookie it found, and its DOM
+XSS rule loads every page's address in a browser, but the video player's, whose embedded players load other sites.
+
+A malformed request is refused, never answered with a 500. The scan fails on an alert of Low risk or above, a response
+of 500 or above, or an entry at Error or above in the Showcase's log. An Informational alert, such as ZAP's user agent
+fuzzer's, reports what a response shows and fails nothing, and so does a kind this section explains:
+
+| Kind | Why it's no defect of Forma |
+|------|-----------------------------|
+| No Content Security Policy, or one without the directives ZAP asks for (ZAP's rules 10038 and 10055) | The policy is [step 7's](#a-content-security-policy) |
+| No anti-clickjacking header on a static file (10020) | Whether a page may be framed is the host's to say |
+| No `X-Content-Type-Options` header (10021) | The headers a response carries are the host server's |
+| The site served over HTTP alone (10106) | Whether a site is served over HTTPS is the host's to say |
+| The culture cookie without `HttpOnly` (10010) | The page's culture coordinator reads and writes it, and it holds a culture's token alone |
+| A Unix timestamp disclosed (10096) | It's a number inside the Showcase's sample video |
+| The antiforgery service's error for an antiforgery cookie it can't read | The framework logs it at Error and issues a new cookie |
+| A Host header no address can be built from, such as an empty one or a port past 65535 | The framework builds each page's address from it and throws, so a host refuses such a request first, as the Showcase does |
 
 ## A Content Security Policy
 

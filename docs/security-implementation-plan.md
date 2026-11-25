@@ -42,11 +42,31 @@ gate.
      --include-transitive` and audits the script tests' with `npm audit`; the task scripts' contract check runs it on
      reports made for it. The first run found no vulnerable package.
    - A failure leaves the job's marker for the nightly report, which files it as an issue.
-6. **A scan of the running Showcase.** `scripts/Invoke-SecurityScan.ps1` and OWASP ZAP in a container, a first scan,
+6. ✅ **A scan of the running Showcase.** `scripts/Invoke-SecurityScan.ps1` and OWASP ZAP in a container, a first scan,
    and each finding and logged error fixed or explained in the design.
+   - The script runs ZAP 2.17.0's automation plan, `scripts/zap/ScanShowcase.yaml`: the plain spider, which reaches all
+     74 of the Showcase's pages in its four cultures, since each is rendered on the server first; the malformed requests
+     the design names; the passive scan; the active scan of every query, form field, path segment, header and cookie;
+     and the DOM XSS rule on each address's query and fragment, on eight threads. ZAP's recorder notes each server
+     error as it comes. The task scripts' contract check runs the script on runs made for it.
+   - The first scan found two defects, both the Showcase's, and none of the library's. The Stepper page answered any
+     `step` in its query that wasn't a number with a 500, since it bound the query to an `int?`; it reads the step as
+     text now and takes only a number. A Host header no address can be built from, which Kestrel lets through, made
+     the framework throw as it built the page's address; the Showcase refuses such a request with a 400 ahead of its
+     pipeline now. The Showcase's first suites, a bUnit one and a unit one, hold the two. The first scan's 38 SQL
+     injection alerts, against a Showcase with no database, didn't recur once the Stepper page stopped answering with a
+     500.
+   - The first scan stopped at the DOM XSS rule, which, run with the other rules on every input, drove a browser on
+     each of 32 threads past 12 GB; it runs in a pass of its own on the address alone since. The second scan ran for
+     three and a half hours, two and a quarter of them that pass, whose browsers started a process for each site the
+     video player's embedded players load; the pass has left that page out since.
+   - The second scan answered no request with a 500. Every alert and logged error it raised is explained in the design:
+     the Content Security Policy, which is step 7's, the headers and the HTTPS a host's server gives, the culture cookie
+     the page's script reads, a number in a sample video, and the antiforgery service, which logs a cookie it can't read
+     at Error.
 7. **A Content Security Policy.** The check pages served under a strict policy, what it blocks fixed, and the README's
    policy for a host.
 
 ## Open
 
-- Steps 3, 4, 6 and 7.
+- Steps 3, 4 and 7.
