@@ -59,5 +59,6 @@ A component is handed a width, never a device: it sits in a phone's full column,
 - Do let a flex item shrink: an input has an intrinsic width, and a flex child defaults to `min-inline-size: auto`, so either pushes its parent wider than the page unless told `min-inline-size: 0`.
 - Do give a wheel or a gesture to the nearest thing that can answer it; a popover inside a scrolling bar takes the wheel before the bar does.
 - Do check every component at a phone's width and a tablet's before review, in a real browser and by looking, because a page can pass a width measurement while wrapping, clipping, or hiding what a reader needs.
+- Don't cut a label, or any other text a reader needs, short with an ellipsis: it wraps onto as many lines as it needs and its container grows to hold it, since a width that hides part of it fails reflow for every sighted reader whatever its accessible name says. Truncation is right only for an item's name in a dense list, a row or a tile among many, whose whole text its accessible name or a tooltip carries.
 - Don't size a component against `100vw`; the viewport is not the space it was given.
 - Don't set a fixed `inline-size` on a control row or a floor wider than a phone; `min(…, 100%)` keeps a floor without pushing the page.
