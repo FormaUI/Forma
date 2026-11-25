@@ -5,8 +5,81 @@ using static Forma.Blazor.Browser.Tests.ComponentChecks;
 /// <summary>The components at the library's root, the field and the visibility, in every runtime.</summary>
 public sealed class RootTests
 {
+    // What keeps the label of the field around the input id names from showing whole: a label or its text wider than it shows,
+    // ending in an ellipsis, or text standing outside the field's box.
+    private const string ReadLabelProblems = """
+        id => {
+            const box = document.getElementById(id).closest('.forma-field-box');
+            const label = box.querySelector(':scope > .forma-field-label');
+            const text = label.querySelector('.forma-field-label-text');
+            const range = document.createRange();
+            range.selectNodeContents(text);
+            const shown = range.getBoundingClientRect();
+            const bounds = box.getBoundingClientRect();
+            const problems = [label, text].flatMap(element => [
+                ...(element.scrollWidth > element.clientWidth ? [`${element.className} is ${element.scrollWidth - element.clientWidth}px wider than it shows`] : []),
+                ...(getComputedStyle(element).textOverflow === 'ellipsis' ? [`${element.className} ends in an ellipsis`] : []),
+            ]);
+            if (shown.top < bounds.top - 0.5 || shown.bottom > bounds.bottom + 0.5 || shown.left < bounds.left - 0.5 || shown.right > bounds.right + 0.5) {
+                problems.push(`the text stands at ${shown.top},${shown.left} to ${shown.bottom},${shown.right}, outside the box at ${bounds.top},${bounds.left} to ${bounds.bottom},${bounds.right}`);
+            }
+            return problems;
+        }
+        """;
+
+    // Whether the label's text of the field around the input id names lies exactly over the copy holding its room, as a floated
+    // label does once it has settled.
+    private const string IsLabelOverItsRoom = """
+        id => {
+            const box = document.getElementById(id).closest('.forma-field-box');
+            const read = element => { const range = document.createRange(); range.selectNodeContents(element); return range.getBoundingClientRect(); };
+            const text = read(box.querySelector(':scope > .forma-field-label .forma-field-label-text'));
+            const room = read(box.querySelector(':scope > .forma-field-label-room'));
+            return ['top', 'left', 'width', 'height'].every(side => Math.abs(text[side] - room[side]) < 0.5);
+        }
+        """;
+
+    private const string ReadBoxHeight = "id => document.getElementById(id).closest('.forma-field-box').getBoundingClientRect().height";
+
     public sealed class Field(BrowserHost host)
     {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_show_a_long_label_whole_at_a_phone_s_width_and_keep_its_height_as_the_label_floats(string runtime)
+        {
+            // Arrange — a phone's width, a field in each direction resting
+            var (context, page) = await OpenAsync(host, runtime, "field-label");
+            await using var _ = context;
+            await page.SetViewportSizeAsync(360, page.ViewportSize!.Height);
+            var restingProblems = new List<string>();
+            var restingHeights = new Dictionary<string, double>();
+
+            foreach (var id in (string[])["ltr", "rtl"])
+            {
+                restingProblems.AddRange((await page.EvaluateAsync<string[]>(ReadLabelProblems, id)).Select(problem => $"{id} resting: {problem}"));
+                restingHeights[id] = await page.EvaluateAsync<double>(ReadBoxHeight, id);
+            }
+
+            // Act — each input focused in turn, its label floated over its room once it settles
+            var floatedProblems = new List<string>();
+            var floatedHeights = new Dictionary<string, double>();
+
+            foreach (var id in (string[])["ltr", "rtl"])
+            {
+                await page.Locator($"#{id}").FocusAsync();
+                await page.WaitForFunctionAsync(IsLabelOverItsRoom, id);
+                floatedProblems.AddRange((await page.EvaluateAsync<string[]>(ReadLabelProblems, id)).Select(problem => $"{id} floated: {problem}"));
+                floatedHeights[id] = await page.EvaluateAsync<double>(ReadBoxHeight, id);
+            }
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(restingProblems),
+                () => Assert.Empty(floatedProblems),
+                () => Assert.Equal(restingHeights["ltr"], floatedHeights["ltr"], 0.5),
+                () => Assert.Equal(restingHeights["rtl"], floatedHeights["rtl"], 0.5));
+        }
+
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_name_its_input_by_its_label(string runtime)

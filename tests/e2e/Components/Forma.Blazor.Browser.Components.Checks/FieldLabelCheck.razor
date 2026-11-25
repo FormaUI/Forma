@@ -1,0 +1,15 @@
+@page "/{Runtime}/field-label"
+
+@* A number input in each direction, each labeled at more length than a phone's width holds on one line, its label resting
+   until the input takes the focus. *@
+<div dir="ltr">
+    <FormaNumberInput TValue="decimal?" Id="ltr" Label="Selling price to the public, value added tax, delivery and every other charge the store collects included" @bind-Value="_ltrPrice" />
+</div>
+<div dir="rtl">
+    <FormaNumberInput TValue="decimal?" Id="rtl" Label="מחיר המכירה לציבור, כולל מס ערך מוסף, דמי משלוח וכל תשלום אחר שהחנות גובה מן הקונה" @bind-Value="_rtlPrice" />
+</div>
+
+@code {
+    private decimal? _ltrPrice;
+    private decimal? _rtlPrice;
+}
