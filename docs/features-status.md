@@ -27,7 +27,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests, a faster gate, builds in processes of their own and the examples' locale lint; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Four components implemented, fourteen changes fixed; the multi-select's search, a disabled control's reason and a path per culture open |
+| [A host's requests](#a-hosts-requests) | Four components implemented, fourteen changes fixed; a row removed after a confirmation, the multi-select's search, a disabled control's reason and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -226,7 +226,7 @@ here in the order they are taken, each with what the code does and its state.
 | A badge's colors from a theme | `StatusBadgeStyle` took its colors as `CssColor` values. It takes `CssColorValue`s, a literal color or a custom property a theme defines, rendered as `var(--name)` | Fixed |
 | The canvas under a dark scale | `--backdrop-canvas-bg-color` is a step toward ink on the gray scale, so a theme reversing the scale drew the canvas lighter than the backdrops laid on it. The theme contract, in the README and the token stylesheet, names the canvas among what a dark theme sets, since its scale holds no step below the paper, and the emphasis of each role it uses whose emphasis mixes toward black | Fixed |
 | The explorer's toolbar in a bounded height | The header keeps its height in an explorer held short, but an open upload panel kept its full height and pushed the media out of the explorer. The media now give way first, and the panel then scrolls what it holds | Fixed |
-| A row removed under the focus | A command removing the row it was run from, as a row's menu deleting the row does, left the focus on the page's body. The data view hands it to the item after it, else the one before, else the first control of its empty state | Fixed |
+| A row removed under the focus | A command removing the row it was run from, as a row's menu deleting the row does, left the focus on the page's body. The data view hands it to the item after it, else the one before, else the first control of its empty state. A command that confirms first still leaves it there: the focus is in the dialog as the row goes, and the dialog hands it back to the row's trigger, which is gone | Open where a dialog confirms first |
 | Sharing from a static page | `FormaShareMenu`'s trigger was disabled on a page rendered statically. It opens the browser's own popover there, its networks, email and download links and the commands a script runs disabled | Fixed |
 | A role's color as text in a dark theme | A role's `-emphasis-color` was both the hover fill under white text and the role's color as text on the paper, which no one dark value serves. Each role now has an `-ink-color` for text, the emphasis in the light theme, which a dark theme sets apart | Fixed |
 | The share menu's commands on a static page | Copy Link, Print and the device's share were drawn disabled on a page rendered statically. The page's script enables each the browser can run and runs it | Fixed |
