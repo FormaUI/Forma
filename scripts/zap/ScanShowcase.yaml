@@ -1,0 +1,121 @@
+# The ZAP automation plan Invoke-SecurityScan.ps1 runs against the Showcase. TARGET is the Showcase's address as the
+# container reaches it, without a trailing slash; the plan's folder is mounted at /zap/plan, and what the run keeps is
+# written to /zap/wrk.
+env:
+  contexts:
+    - name: showcase
+      urls:
+        - ${TARGET}/
+  parameters:
+    failOnError: true
+    failOnWarning: false
+    progressToStdout: true
+
+jobs:
+  # Every response of 500 or above, whichever part of ZAP sent its request.
+  - type: script
+    parameters:
+      action: add
+      type: httpsender
+      name: server-error-recorder
+      source: /zap/plan/ServerErrorRecorder.js
+
+  # Every page is rendered on the server before its circuit starts, so its links are in the markup the spider reads.
+  - type: spider
+    parameters:
+      maxDuration: 10
+
+  # The malformed input the security design names that no scan rule sends: a NUL character and the bytes of a lone
+  # surrogate in a path, a query and a cookie, and a post naming no form and carrying no antiforgery token.
+  - type: requestor
+    requests:
+      - name: A NUL character in the path
+        url: ${TARGET}/%00
+      - name: A lone surrogate in the path
+        url: ${TARGET}/%ED%A0%80
+      - name: Text, a NUL character and a lone surrogate in the query
+        url: ${TARGET}/?number=text&nul=%00&surrogate=%ED%A0%80
+      - name: A NUL character and a lone surrogate in the culture cookie
+        url: ${TARGET}/
+        headers:
+          - "Cookie: forma-culture-route=%00%ED%A0%80"
+      - name: A post naming no form and carrying no antiforgery token
+        url: ${TARGET}/
+        method: POST
+        headers:
+          - "Content-Type: application/x-www-form-urlencoded"
+        data: "_handler=none&number=text"
+
+  # The baseline: what the responses so far show without an attack.
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 10
+
+  # Every query, form field, path segment, header and cookie of every request found, the culture router reading the
+  # path and the cookie among them, by every rule but DOM XSS.
+  - type: activeScan-config
+    inputVectors:
+      urlQueryStringAndDataDrivenNodes:
+        enabled: true
+      postData:
+        enabled: true
+      urlPath: true
+      httpHeaders:
+        enabled: true
+      cookieData:
+        enabled: true
+
+  - type: activeScan
+    parameters:
+      context: showcase
+    policyDefinition:
+      rules:
+        - id: 40026
+          name: Cross Site Scripting (DOM Based)
+          threshold: "Off"
+
+  # The DOM XSS rule drives a browser on each thread, and a browser carries only what a page's address holds, so it
+  # attacks each address's query and fragment, on eight threads, which keeps its browsers within the memory a Docker
+  # machine has. The video player's page is left out: its players load other sites in frames, a browser process for
+  # each.
+  - type: activeScan-config
+    excludePaths:
+      - ".*/video-player([?#].*)?"
+    inputVectors:
+      urlQueryStringAndDataDrivenNodes:
+        enabled: true
+      postData:
+        enabled: false
+      urlPath: false
+      httpHeaders:
+        enabled: false
+      cookieData:
+        enabled: false
+
+  - type: activeScan
+    parameters:
+      context: showcase
+      threadPerHost: 8
+    policyDefinition:
+      defaultThreshold: "Off"
+      rules:
+        - id: 40026
+          name: Cross Site Scripting (DOM Based)
+          threshold: Medium
+
+  - type: passiveScan-wait
+    parameters:
+      maxDuration: 10
+
+  - type: report
+    parameters:
+      template: traditional-html
+      reportDir: /zap/wrk
+      reportFile: zap-report.html
+      reportTitle: The Showcase scanned by ZAP
+
+  - type: report
+    parameters:
+      template: traditional-json
+      reportDir: /zap/wrk
+      reportFile: zap-report.json

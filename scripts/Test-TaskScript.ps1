@@ -365,6 +365,85 @@ finally {
     Remove-Item -LiteralPath $dependencies -Recurse -Force -ErrorAction SilentlyContinue
 }
 
+# The security scan runs ZAP against a Showcase it starts, so what runs here is the run it describes, what it refuses,
+# and its judgment of runs made for it: one whose every alert and logged error is explained, and one each with an alert
+# the design doesn't explain, a server error, an error the Showcase logged, and no record of server errors at all.
+$security = Join-Path $repositoryRoot '.sandbox' 'tmp' "forma-security-$([guid]::NewGuid().ToString('N'))"
+
+try {
+    $explainedReport = @'
+{ "@programName": "ZAP", "@version": "2.17.0", "site": [ { "@name": "http://host.docker.internal:5080", "alerts": [
+  { "pluginid": "10038", "alertRef": "10038-1", "name": "Content Security Policy (CSP) Header Not Set", "riskcode": "2", "confidence": "3", "count": "1" },
+  { "pluginid": "10109", "alertRef": "10109", "name": "Modern Web Application", "riskcode": "0", "confidence": "2", "count": "5" } ] } ] }
+'@
+    $unexplainedReport = @'
+{ "@programName": "ZAP", "@version": "2.17.0", "site": [ { "@name": "http://host.docker.internal:5080", "alerts": [
+  { "pluginid": "40012", "alertRef": "40012", "name": "Cross Site Scripting (Reflected)", "riskcode": "3", "confidence": "2", "count": "2" } ] } ] }
+'@
+    # The build's output before the Showcase starts, its first entry, and an antiforgery cookie it couldn't read.
+    $explainedLog = @'
+Building...
+{"EventId":14,"LogLevel":"Information","Category":"Microsoft.Hosting.Lifetime","Message":"Now listening on: http://localhost:5080","State":{},"Scopes":[]}
+{"EventId":7,"LogLevel":"Error","Category":"Microsoft.AspNetCore.Antiforgery.DefaultAntiforgery","Message":"An exception was thrown while deserializing the token.","Exception":"Microsoft.AspNetCore.Antiforgery.AntiforgeryValidationException: The antiforgery token could not be decrypted.","State":{},"Scopes":[{"Message":"RequestPath:/button RequestId:0HN:00000002","RequestId":"0HN:00000002","RequestPath":"/button"}]}
+'@
+    $failingLog = $explainedLog + [Environment]::NewLine + @'
+{"EventId":1,"LogLevel":"Error","Category":"Microsoft.AspNetCore.Diagnostics.DeveloperExceptionPageMiddleware","Message":"An unhandled exception has occurred while executing the request.","Exception":"System.InvalidOperationException: Cannot parse the value 'text' for 'step'.\r\n   at Microsoft.AspNetCore.Components.Routing.QueryParameterValueSupplier.GetQueryParameterValue()","State":{},"Scopes":[{"Message":"RequestPath:/stepper RequestId:0HN:00000003","RequestId":"0HN:00000003","RequestPath":"/stepper"}]}
+'@
+
+    function New-ScanRun {
+        param(
+            [Parameter(Mandatory)] [string] $Name,
+            [string] $Report = $explainedReport,
+            [string] $ServerErrors = '',
+            [string] $Log = $explainedLog,
+            [switch] $WithoutServerErrors
+        )
+
+        $folder = Join-Path $security $Name
+        $null = New-Item -ItemType Directory -Force -Path $folder
+        Set-Content -LiteralPath (Join-Path $folder 'zap-report.json') -Value $Report
+        Set-Content -LiteralPath (Join-Path $folder 'showcase.log') -Value $Log
+        if (-not $WithoutServerErrors) {
+            Set-Content -LiteralPath (Join-Path $folder 'server-errors.txt') -Value $ServerErrors
+        }
+
+        $folder
+    }
+
+    Test-Case -Name 'the security scan passes a run whose every alert and logged error is explained' -Script 'Invoke-SecurityScan.ps1' `
+        -Arguments @('-Results', (New-ScanRun -Name 'explained')) `
+        -Expect @('10038', 'explained: the Content Security Policy', 'DefaultAntiforgery[7], explained', 'The scan passed')
+
+    Test-Case -Name 'the security scan fails on an alert the design does not explain' -Script 'Invoke-SecurityScan.ps1' `
+        -Arguments @('-Results', (New-ScanRun -Name 'unexplained-alert' -Report $unexplainedReport)) -Fails `
+        -Expect @('40012', 'Cross Site Scripting (Reflected)', 'NOT EXPLAINED', 'The scan failed')
+
+    Test-Case -Name 'the security scan fails on a server error' -Script 'Invoke-SecurityScan.ps1' `
+        -Arguments @('-Results', (New-ScanRun -Name 'server-error' -ServerErrors '500 GET http://host.docker.internal:5080/stepper?step=text')) -Fails `
+        -Expect @('500 GET http://host.docker.internal:5080/stepper?step=text', 'The scan failed')
+
+    Test-Case -Name 'the security scan fails on an error the Showcase logged' -Script 'Invoke-SecurityScan.ps1' `
+        -Arguments @('-Results', (New-ScanRun -Name 'logged-error' -Log $failingLog)) -Fails `
+        -Expect @('DeveloperExceptionPageMiddleware[1] at /stepper', 'Cannot parse the value', 'The scan failed')
+
+    Test-Case -Name 'the security scan refuses a run that kept no record of server errors' -Script 'Invoke-SecurityScan.ps1' `
+        -Arguments @('-Results', (New-ScanRun -Name 'no-record' -WithoutServerErrors)) -Fails -Expect @('server-errors.txt')
+
+    Test-Case -Name 'the security scan describes the Showcase it would start and the scans it would run' -Script 'Invoke-SecurityScan.ps1' `
+        -Arguments @('-Port', "$freePort", '-WhatIf') -Expect @("the Showcase on port $freePort", 'a baseline scan and an active scan') -Reject @('Waiting for the Showcase')
+
+    Test-Case -Name 'a security scan port outside the range is refused' -Script 'Invoke-SecurityScan.ps1' `
+        -Arguments @('-Port', '70000', '-WhatIf') -Fails
+
+    Test-Case -Name 'a security scan given a port and a run to judge is refused' -Script 'Invoke-SecurityScan.ps1' `
+        -Arguments @('-Results', (Join-Path $security 'explained'), '-Port', "$freePort") -Fails
+
+    Invoke-QueuedCase
+}
+finally {
+    Remove-Item -LiteralPath $security -Recurse -Force -ErrorAction SilentlyContinue
+}
+
 Invoke-QueuedCase
 
 # ── Report ───────────────────────────────────────────────────────────────────

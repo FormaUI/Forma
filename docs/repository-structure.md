@@ -774,6 +774,18 @@ each package, its version, the advisory and its severity. The full gate runs it 
 them, as [the security design](security-design.md#dependencies) sets out. `-NuGetReport` and `-NpmReport` read a report
 already written in place of listing the packages.
 
+**`Invoke-SecurityScan.ps1`** scans the running Showcase with OWASP ZAP, as
+[the security design](security-design.md#a-scan-of-the-running-showcase) sets out. It's a check made by hand, which
+needs Docker and runs for hours:
+
+- It starts the Showcase through `Start-Showcase.ps1`, on port 5080 unless `-Port` names another, and runs ZAP's
+  automation plan `zap/ScanShowcase.yaml` against it in a container of ZAP's official image, pinned by version and
+  digest.
+- It keeps under `artifacts/security/` ZAP's report in HTML and JSON, ZAP's own log, the server errors ZAP's recorder
+  `zap/ServerErrorRecorder.js` noted as they came, and the Showcase's log and error output.
+- It fails on an alert of Low risk or above, a response of 500 or above, or an error the Showcase logged, unless the
+  design explains its kind. `-Results` judges a run already kept in place of scanning.
+
 **`Stop-MsBuild.ps1` and `Stop-DotNet.ps1`** are for a build that fails to copy a file nothing appears to be using.
 MSBuild keeps its workers alive between builds, and they hold what they last built.
 
