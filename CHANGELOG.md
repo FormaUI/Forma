@@ -64,6 +64,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - `InputRegistration` performs only an action a route of its profile names, carrying an input of a known family with
   finite coordinates, and a dismissal only with a behavior and a reason the router has; the host's routes reach
   `IInputActionHandler` the same way.
+- A culture name the page's culture coordinator delivers that the platform defines no culture by, such as `qq-ZZ`,
+  is refused and logged at `Debug` before the application's `ICultureProvider` is asked for it, as
+  [the culture design](docs/culture-design.md#the-applications-cultures) sets out, where the provider was asked and
+  its failure logged at `Error`, and where, with no provider, the platform made a culture up for the name. No message
+  the culture coordination or culture routing logs above `Debug` names a culture, a route's token or an address the
+  browser sent.
 - An action or a dismissal an `InputRegistration` refuses is logged under the component that owns the registration,
   its category and its identity, as [the security design](docs/security-design.md#two-kinds-of-input) sets out, where
   it was logged under `InputRouter`. `InputRegistration` takes the owner's `IJSEnvironment` after the router: to

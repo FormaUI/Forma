@@ -138,7 +138,12 @@ public interface ICultureProvider
 - The provider returns a culture carrying the name it is asked for, since the document's language, the
   culture addresses and the coordinator name a culture by its name. A culture under another name is
   rejected with `InvalidOperationException` and changes nothing, and a delivery the provider fails is
-  logged, since the coordinator hands that failure to the switch that requested the pair alone.
+  logged at `Error`, since the coordinator hands that failure to the switch that requested the pair alone.
+- The application's cultures are among those the platform defines, since each keeps its platform name. A
+  pair the coordinator delivers is what the browser sent, so a name the platform defines no culture by,
+  one the platform would make up, such as `qq-ZZ`, is refused and logged at `Debug` before the provider is
+  asked for it, and with no provider it is refused the same way. No message above `Debug` names a culture,
+  a route's token or an address the browser sent.
 - The provider takes a lifetime the state reading it can resolve: on a server, scoped where its cultures
   differ by user scope; under WebAssembly, whose runtime is one user scope, and for a Blazor Hybrid
   application's culture, whose state is the application's, a singleton.

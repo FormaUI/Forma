@@ -283,6 +283,7 @@ public sealed class CultureRoutePageTests
 
             Assert.Multiple(
                 () => Assert.Equal(LogLevel.Error, entry.Level),
+                () => Assert.Equal("The landing a culture route page reported failed, so the page renders in the culture state as it stands.", entry.Message),
                 () => Assert.Equal(["initialized he en en", "parameters set he en en"], lifecycle),
                 () => Assert.Empty(renderer.Exceptions));
         }

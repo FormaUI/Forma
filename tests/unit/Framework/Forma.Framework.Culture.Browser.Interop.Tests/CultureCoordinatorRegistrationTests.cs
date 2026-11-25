@@ -201,12 +201,13 @@ public sealed class CultureCoordinatorRegistrationTests
             GetCultureState(scope).Subscribe(() => Task.FromException(new InvalidOperationException("A subscriber failed.")));
 
             // Act — the subscribers hear of the landing once the delivery has returned, and the failure is logged then
-            await browser.LandAsync("he", "he");
+            await browser.LandAsync("es-419", "es-419");
             var entry = await loggerFactory.WaitForEntryAsync(written => written.Level == LogLevel.Error);
 
             // Assert
             Assert.Multiple(
                 () => Assert.Equal(typeof(CultureCoordinatorRegistration).FullName, entry.Category),
+                () => Assert.DoesNotContain("es-419", entry.Message, StringComparison.Ordinal),
                 () => Assert.Single(loggerFactory.Entries));
         }
 
@@ -439,11 +440,12 @@ public sealed class CultureCoordinatorRegistrationTests
             // Act
             var exception = await Record.ExceptionAsync(() => browser.LandAsync("de-DE", "he"));
 
-            // Assert
+            // Assert — a culture the application offers that its provider fails on is the provider's fault, logged without the names the browser sent
             var entry = Assert.Single(loggerFactory.Entries);
             Assert.Multiple(
                 () => Assert.IsType<InvalidOperationException>(exception),
                 () => Assert.Equal(LogLevel.Error, entry.Level),
+                () => Assert.DoesNotContain("de-DE", entry.Message, StringComparison.Ordinal),
                 () => Assert.Single(((FakeCultureState)GetCultureState(scope)).AppliedCultures));
         }
     }
@@ -468,6 +470,10 @@ public sealed class CultureCoordinatorRegistrationTests
         [InlineData("de-DE", "h" + LoneSurrogate.Placeholder + "e", "document", 1)]
         [InlineData("de-DE; Path=/", "he", "document", 1)]
         [InlineData("zz-NOWHERE-of-no-kind", "he", "document", 1)]
+        [InlineData("qq-ZZ", "he", "document", 1)]
+        [InlineData("de-DE", "xyz", "document", 1)]
+        [InlineData("de-DE_phoneb", "he", "document", 1)]
+        [InlineData("x-hostile", "he", "document", 1)]
         [InlineData("de-DE", "he", null, 1)]
         [InlineData("de-DE", "he", "document", -1)]
         public async Task Should_refuse_and_log_a_pair_the_coordinator_couldn_t_have_delivered(string? culture, string? uiCulture, string? documentKey, int number)
@@ -489,6 +495,40 @@ public sealed class CultureCoordinatorRegistrationTests
                 () => Assert.Null(exception),
                 () => Assert.Equal("en-US/en-US", $"{state.Culture.Name}/{state.UICulture.Name}"),
                 () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("and was refused", StringComparison.Ordinal)));
+        }
+
+        [Theory]
+        [InlineData("qq-ZZ", "he")]
+        [InlineData("de-DE", "xyz")]
+        [InlineData("x-hostile", "he")]
+        public async Task Should_refuse_and_log_a_culture_outside_the_application_s_cultures_before_the_provider_is_asked(string culture, string uiCulture)
+        {
+            // Arrange
+            using var fixture = new CultureFixture("en-US");
+            using var loggerFactory = new FakeLoggerFactory();
+            var browser = new FakeCultureCoordinatorBrowser();
+            var cultureProvider = new FakeCultureProvider();
+            await using var provider = new ServiceCollection()
+                .AddSingleton<IJSRuntime>(browser.Runtime)
+                .AddSingleton<ILoggerFactory>(loggerFactory)
+                .AddSingleton(typeof(ILogger<>), typeof(Logger<>))
+                .AddSingleton<ICultureProvider>(cultureProvider)
+                .AddFormaCultureCoordination()
+                .BuildServiceProvider();
+            await using var scope = provider.CreateAsyncScope();
+            await GetRegistration(scope).RegisterAsync();
+            var requestedCount = cultureProvider.RequestedNames.Count;
+
+            // Act
+            var exception = await Record.ExceptionAsync(() => GetReceiver(browser).ApplyAsync(culture, uiCulture, browser.DocumentKey, 1));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Null(exception),
+                () => Assert.Equal(requestedCount, cultureProvider.RequestedNames.Count),
+                () => Assert.Equal("en-US", GetCultureState(scope).Culture.Name),
+                () => Assert.DoesNotContain(loggerFactory.Entries, entry => entry.Level > LogLevel.Debug),
+                () => Assert.Contains(loggerFactory.Entries, entry => entry.Level == LogLevel.Debug && entry.Message.Contains("outside the application's cultures", StringComparison.Ordinal)));
         }
 
         [Fact]
@@ -638,13 +678,15 @@ public sealed class CultureCoordinatorRegistrationTests
             await GetRegistration(scope).RegisterAsync();
 
             // Act
-            var destination = await GetReceiver(browser).ResolveDestinationAsync("news/the-final", "he");
+            var destination = await GetReceiver(browser).ResolveDestinationAsync("news/the-final", "hostile-token");
 
-            // Assert
+            // Assert — the source's failure is the host's, logged without the token or the address the browser sent
             var entry = Assert.Single(loggerFactory.Entries);
             Assert.Multiple(
                 () => Assert.Null(destination),
-                () => Assert.Equal(LogLevel.Error, entry.Level));
+                () => Assert.Equal(LogLevel.Error, entry.Level),
+                () => Assert.DoesNotContain("hostile-token", entry.Message, StringComparison.Ordinal),
+                () => Assert.DoesNotContain("news/the-final", entry.Message, StringComparison.Ordinal));
         }
 
         // A source that names destinations through `Answer`.

@@ -160,7 +160,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
         }
         catch (Exception ex)
         {
-            CultureBrowserInteropLog.DestinationNotResolved(_environment.Logger, ex, token, _environment.RuntimeId);
+            CultureBrowserInteropLog.DestinationNotResolved(_environment.Logger, ex, _environment.RuntimeId);
 
             return null;
         }
@@ -222,7 +222,7 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     }
 
     /// <summary>Applies the pair of the cultures <paramref name="cultureName"/> and <paramref name="uiCultureName"/> name, which the coordinator delivered as number <paramref name="number"/> of the document <paramref name="documentKey"/> names, completing once the state holds it.</summary>
-    /// <remarks>Each culture is the application's culture provider's for its name, or the platform's where there is no provider; a provider that fails the delivery is logged, since the coordinator hands the failure to the switch that requested the pair alone. A delivery the coordinator couldn't have made, naming no culture, a culture the platform doesn't have where there is no provider, or no place in its document's sequence, is refused and logged. The state's subscribers are notified after the delivery completes, so what waits on the delivery, a switch or a page's landing, goes on in the new pair as the rest of the page renders again; a notification that fails is logged.</remarks>
+    /// <remarks>Each culture is the application's culture provider's for its name, or the platform's where there is no provider; a provider that fails the delivery is logged, since the coordinator hands the failure to the switch that requested the pair alone. A delivery the coordinator couldn't have made, naming no culture, a culture outside the application's cultures or no place in its document's sequence, is refused and logged, a culture outside them before the provider is asked for it. The state's subscribers are notified after the delivery completes, so what waits on the delivery, a switch or a page's landing, goes on in the new pair as the rest of the page renders again; a notification that fails is logged.</remarks>
     /// <exception cref="InvalidOperationException">The culture provider returned no culture for a name, or a culture under another name.</exception>
     internal Task ApplyAsync(string? cultureName, string? uiCultureName, string? documentKey, int number)
     {
@@ -238,26 +238,27 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
             return Task.CompletedTask;
         }
 
+        if (!IsApplicationCulture(cultureName) || !IsApplicationCulture(uiCultureName))
+        {
+            CultureBrowserInteropLog.CultureRefused(_environment.Logger, _environment.RuntimeId);
+
+            return Task.CompletedTask;
+        }
+
         AcceptedCulture acceptedCulture;
 
         try
         {
             acceptedCulture = new AcceptedCulture(CultureResolution.GetCulture(_cultureProvider, cultureName), CultureResolution.GetCulture(_cultureProvider, uiCultureName), new CultureVersion(documentKey, number));
         }
-        catch (CultureNotFoundException) when (_cultureProvider is null)
-        {
-            CultureBrowserInteropLog.PairRefused(_environment.Logger, _environment.RuntimeId);
-
-            return Task.CompletedTask;
-        }
         catch (Exception ex) when (_cultureProvider is not null)
         {
-            CultureBrowserInteropLog.CultureNotProvided(_environment.Logger, ex, cultureName, uiCultureName, _environment.RuntimeId);
+            CultureBrowserInteropLog.CultureNotProvided(_environment.Logger, ex, _environment.RuntimeId);
 
             throw;
         }
 
-        _ = ObserveAsync(_integration.ApplyAsync(acceptedCulture), acceptedCulture);
+        _ = ObserveAsync(_integration.ApplyAsync(acceptedCulture));
 
         return Task.CompletedTask;
     }
@@ -266,13 +267,27 @@ public sealed class CultureCoordinatorRegistration : IAsyncDisposable, IDisposab
     private static bool IsCultureName([NotNullWhen(true)] string? name)
         => name is { Length: <= MaximumCultureNameLength } && name.All(character => char.IsAsciiLetterOrDigit(character) || character is '-' or '_');
 
-    private async Task ObserveAsync(Task notification, AcceptedCulture acceptedCulture)
+    // Every culture an application uses keeps the name of a culture the platform defines, so a name the platform defines no culture by, one
+    // it would make up, is outside the application's cultures.
+    private static bool IsApplicationCulture(string name)
+    {
+        try
+        {
+            return string.Equals(CultureInfo.GetCultureInfo(name, predefinedOnly: true).Name, name, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (CultureNotFoundException)
+        {
+            return false;
+        }
+    }
+
+    private async Task ObserveAsync(Task notification)
     {
         await notification.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
 
         if (notification.Exception?.InnerException is { } exception)
         {
-            CultureBrowserInteropLog.NotificationFailed(_environment.Logger, exception, acceptedCulture.UICulture.Name, _environment.RuntimeId);
+            CultureBrowserInteropLog.NotificationFailed(_environment.Logger, exception, _environment.RuntimeId);
         }
     }
 

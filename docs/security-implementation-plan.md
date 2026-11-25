@@ -31,7 +31,7 @@ gate.
      past before.
    - `SinkInventoryTests` reads the source for every markup and address sink and fails on one no hostile test covers
      or no reason excuses.
-3. **Malformed input refused, never thrown.** Every method a script calls back into .NET, and every input that parses
+3. ✅ **Malformed input refused, never thrown.** Every method a script calls back into .NET, and every input that parses
    text, given a NUL character, a lone surrogate, text where a number belongs and a value far past any length, each
    ending neither a circuit nor an application.
    - Each of the 33 methods a script calls back into .NET refuses what it can't use, logged at `Debug`, each tested as
@@ -52,8 +52,12 @@ gate.
          threw on what they couldn't, read it the same way; an order that doesn't place each element once is refused.
        - `JSTransfer.Deserialize` reads numbers strictly whatever a contract allows. The web's defaults read the text
          `"Infinity"` as a number, which let an infinite extent through a freeze pane's later states too.
-     - A culture name outside the application's cultures is to be refused at `Debug` before the culture provider is
-       asked, and the browser's token taken out of the provider's `Error` message.
+     - ✅ A culture name outside the application's cultures is to be refused at `Debug` before the culture provider is
+       asked, and the browser's token taken out of the provider's `Error` message. The application's cultures are
+       those the platform defines, whose names every culture an application uses keeps, so a name the platform would
+       make up, `qq-ZZ` among them, is refused before the provider is asked, and with no provider the platform no
+       longer makes a culture up for it. No message the culture coordination or culture routing logs above `Debug`
+       names a culture, a route's token or an address the browser sent.
      - ✅ Input refusals are to log under the component that owns the registration. `InputRegistration` takes its
        owner's `IJSEnvironment`, which every component hands it from its context, and logs a refused action or
        dismissal under the component's category and identity; the host's routes, which the router owns, log under it.
@@ -100,7 +104,7 @@ gate.
 ## Open
 
 - ✅ Step 3's answers.
-- Step 3's culture names.
+- ✅ Step 3's culture names.
 - ✅ Step 3's input logs.
 - Step 7.
 - Inline styles written from data join step 2's sinks: the inventory finds each, and each is a typed CSS value or a

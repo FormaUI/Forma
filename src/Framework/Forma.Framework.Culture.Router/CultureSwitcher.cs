@@ -143,7 +143,7 @@ public sealed class CultureSwitcher
         }
         catch (Exception exception) when (exception is InvalidOperationException or JSException or JSDisconnectedException or TaskCanceledException)
         {
-            CultureRouterLog.LandingFailed(_logger, exception, token ?? "/");
+            CultureRouterLog.LandingFailed(_logger, exception);
         }
 
         return true;
