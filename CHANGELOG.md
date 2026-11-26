@@ -21,6 +21,17 @@ set out. What Forma gained before its first release, month by month, is in [the 
   saying why where it can't, which `OnSelectionCommand` runs on the selected items. A swipe toward a row's inline
   start shows the row's own actions, which the keyboard's focus on the row shows too. `FormaExplorer`'s selection
   mode starts selecting.
+- Under a coarse pointer a strip that scrolls behind arrows, `FormaTabs`' and `FormaLinkTabs`' among them, scrolls by a
+  swipe, its arrows left to a fine pointer, and fades the end its content continues past rather than cutting a title
+  under an arrow.
+- `FormaSelect`, `FormaMultiSelect`, `FormaDateBox` and `FormaDateRangePicker` mark their trigger with the chevron icon
+  `FormaComboBox` draws, where they drew a "▾" character.
+- `FormaFilePicker` and `FormaImagePicker` take `TouchPrompt`, the prompt a coarse pointer reads, which speaks of
+  choosing alone, "Tap to choose files" or "Tap to choose images" unless a host gives another.
+- `FormaTextArea` draws no resize grip under a coarse pointer, which a finger can't drag.
+- Under a coarse pointer `FormaToggleSwitch` stands at its row's end, its label at the start, so a column of switches
+  lines up.
+- `FormaDataView`'s Load More is a secondary button, drawn as one, where a ghost button read as text.
 
 ## `1.0.0-preview.17`
 
