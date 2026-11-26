@@ -505,7 +505,8 @@ scrolls, through the freeze pane the grid composes; the pane's arrows and its dr
 frozen edge come with it. The rows scroll in that one box both ways, since a header stuck
 inside a box that scrolled sideways alone would stick to nothing. The grid never sizes against the viewport; its fit is measured by
 script, since a stylesheet cannot tell what a column wants, and the only media queries are
-for the reader.
+for the reader. A grid holding the parts a narrow row is drawn from turns narrow where it would
+drop a column, as [a narrow width](#at-a-narrow-width) sets out.
 
 **Header and rows.** The header row sticks to the top of the scroll region and paints over
 the rows in the header tone, its cells on the same gutters as the cells beneath them; the
@@ -538,7 +539,8 @@ number; anything else needs an edit template.
 ### The list
 
 `FormaDataList` draws the items down the height, each row the item's thumbnail where the
-caller templates one, its name, and the secondary text the caller's `ItemTemplate` adds,
+caller templates one, its name, the secondary text the caller's `ItemTemplate` adds, and the
+actions its `ActionsTemplate` gives,
 flowing on into
 further columns when the height runs out and the width allows. It has no header; its sort comes from the sort menu the page composes. Its rows
 stand on the small target step, with `Dense` tightening them further for names alone. A
@@ -607,6 +609,60 @@ draws the items the engine hands it, and reports its selection gestures through 
 interaction. Everything the
 engine does, the source, the selection, the address, the states and the footer, comes with
 it, and it takes part in `TabOrder` by marking its items as the built-in views mark theirs.
+
+### At a narrow width
+
+A view is handed a phone's column as readily as a desktop's pane, and neither is read through
+crushed cells or a standing column of boxes and menus. At a narrow width a row is at most two
+lines, and what stood beside an item comes when a gesture, a command or the focus asks for it.
+
+**Two lines a row.** In the grid and the list, a narrow row holds the item's thumbnail at its
+start, spanning both lines, its name, `ItemName`, on the first line, and its detail, the view's
+`ItemTemplate`, on the line beneath. Each line keeps to one line of text, cut short with an
+ellipsis rather than wrapped, so a row is never taller than two lines; a view with no thumbnail
+starts with the name. The cards stay cards, a thumbnail and its name, and the tree keeps its
+nodes.
+
+**The same parts in every view.** The list and the cards take these parts already, and the list
+gains `ActionsTemplate` beside the cards' own. The grid takes them too, `ThumbnailTemplate`,
+`ItemTemplate` and `ActionsTemplate`, and draws its narrow rows from them and from `ItemName`;
+its columns are drawn as columns while it is wide. A grid given no parts keeps its columns at
+every width, giving way by priority as it does today.
+
+**When a view turns narrow.** A grid holding its parts draws its narrow rows once its visible
+columns no longer fit side by side, each at its content's least width, which is where a grid
+with no parts drops a column by its priority; the width is the grid's own, measured as it fits
+its columns, so a grid in a sidebar turns narrow as one on a phone does. It draws its columns
+again once its width holds the columns it measured when it turned narrow. The list and the
+cards turn narrow below `36rem` of their own width, which their own container query decides:
+a thumbnail of `3rem`, a name of twenty characters, about `12rem`, a detail of twelve, about
+`8rem`, and the selection and actions targets of `2.75rem` each, with their gutters, come to
+`33rem`, and the rest keeps a name from meeting its detail.
+
+**No actions column.** A narrow row's actions, the view's `ActionsTemplate`, stand at its end
+only while it shows them; a card keeps its actions bar. A swipe toward the row's inline start,
+leftward in a left-to-right page, slides the row aside to show them, and a swipe back, a press
+elsewhere or Escape slides it home, as one row at a time shows its actions. The keyboard reaches
+them as it does today, Shift+F10 and the Menu key opening the item's actions, and a row holding
+the keyboard's focus shows its actions' button at its end, which Tab reaches, so a keyboard and
+a screen reader meet the same command a swipe shows.
+
+**Selection on demand.** A narrow view draws no standing boxes. A long press on an item starts
+selecting with that item checked, and while the view is selecting each item draws its box: a
+row's at its start, pushing the row's content toward its end, and a card's on its thumbnail, as
+a gallery marks a picture. The view stops selecting once nothing is checked, or on Escape.
+`Selecting`, with `SelectingChanged`, is that state, so a host's own command, a Select button,
+starts it, as the explorer's selection mode does; Space on a focused item starts it from the
+keyboard, checking that item. A long press waits for the platform's hold, and a press that
+travels first is the page's scroll, never a selection.
+
+**Wide again.** Given its width back, a view draws its columns, its standing boxes while checked
+selection is on, and its actions where its columns place them, and the selection is kept.
+
+Every gesture has a command beside it, so nothing is reached by a gesture alone: the swipe by
+the actions' button and Shift+F10, the long press by Space and the host's command. The gestures
+are routes on the input router, as every press is, and a swipe that turns vertical first is
+the page's scroll.
 
 ## Extending the data view
 
