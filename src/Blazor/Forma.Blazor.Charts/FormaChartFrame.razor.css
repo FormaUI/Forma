@@ -122,6 +122,14 @@
     margin-block-start: calc(var(--font-size-xs) * var(--line-height-target));
 }
 
+/* The drawing and its periods stand past the value labels' gutter, the gridlines running on across the whole plot beneath the
+   labels they carry. */
+.forma-chart-area {
+    position: absolute;
+    inset-block: 0;
+    inset-inline: var(--forma-chart-value-gutter) 0;
+}
+
 .forma-chart-gridline,
 .forma-chart-threshold {
     position: absolute;
@@ -142,7 +150,8 @@
     border-block-start: 1px dashed var(--chart-threshold-color);
 }
 
-/* A label stands over the marks, on a backing of the surface, so a bar or a line beneath it leaves it legible. */
+/* A value label stands in the plot's gutter, clear of the marks; a threshold's label stands over them, on a backing of the surface,
+   so a bar or a line beneath it leaves it legible. */
 .forma-chart-value-label,
 .forma-chart-threshold-label {
     position: absolute;
@@ -437,11 +446,13 @@
 
 /* ---- Time axis ---- */
 
+/* The axis stands past the value labels' gutter, as the drawing does, in the chart's own type, so the gutter's width
+   resolves the same in both; its labels take the smaller type. */
 .forma-chart-time-axis {
     position: relative;
+    margin-inline-start: var(--forma-chart-value-gutter);
     block-size: calc(var(--font-size-xs) * var(--line-height-target));
     color: var(--text-secondary-color);
-    font-size: var(--font-size-xs);
     white-space: nowrap;
 }
 
@@ -455,6 +466,7 @@
     display: flex;
     justify-content: center;
     inline-size: 0;
+    font-size: var(--font-size-xs);
 }
 
 .forma-chart-time-label.is-near-start {

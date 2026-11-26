@@ -61,7 +61,8 @@ question for a reader who can't see it.
   beneath the chart, for every reader to open.
 - **Fits the width it's given.** The plot is laid out in fractions of its width, so a chart fits a phone's column,
   a dialog or a dashboard's tile without measuring it, and renders the same statically. The value axis labels its
-  steps inside the plot, above each gridline, so no column is spent on it. The time axis labels the periods it can
+  steps above their gridlines in a gutter at the plot's inline start, as wide as its longest label, and the marks and
+  the time axis stand past the gutter, so no label covers a mark at any width. The time axis labels the periods it can
   fit, and more as its container widens, by container queries whose widths come from the labels they show.
 - **Direction.** The time axis runs from the inline start, so in a right-to-left culture time runs right to left.
   The text is laid out by logical properties, and the drawing of lines and bands is mirrored as a whole.
@@ -78,7 +79,7 @@ question for a reader who can't see it.
 | --- | --- |
 | Caption | The chart's `Title`, which names the figure and its table |
 | Legend | One key per series, for two or more |
-| Plot | The gridlines with their value labels, the threshold, the band and the fills, the marks, and one column per period or moment |
+| Plot | The gridlines across its width with their value labels in its gutter, the threshold, the band and the fills, the marks, and one column per period or moment past the gutter |
 | Readout | The period's values, shown over its column on hover or as the keyboard reaches it |
 | Time axis | The period labels beneath the plot |
 | Table | A row per period or moment and a column per series, visually hidden or behind a toggle |

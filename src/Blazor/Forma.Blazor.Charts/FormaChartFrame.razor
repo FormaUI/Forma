@@ -35,7 +35,7 @@
     }
 
     @* The drawing is hidden from assistive technology, which reads the table and the range control. *@
-    <div class="forma-chart-figure" aria-hidden="true">
+    <div class="forma-chart-figure" style="@ValueGutterStyle" aria-hidden="true">
         <div class="forma-chart-plot">
             @foreach (var tick in Layout.Scale.Ticks)
             {
@@ -51,88 +51,91 @@
                 </div>
             }
 
-            @if (Kind is ChartKind.Line)
-            {
-                <svg class="forma-chart-lines" viewBox="0 0 1000 1000" preserveAspectRatio="none" focusable="false">
-                    @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
-                    {
-                        var fillIndex = seriesIndex;
-
-                        @if (Series[fillIndex].IsFilled)
+            @* The drawing stands clear of the value labels, in the plot past its gutter, so no label covers a series. *@
+            <div class="forma-chart-area">
+                @if (Kind is ChartKind.Line)
+                {
+                    <svg class="forma-chart-lines" viewBox="0 0 1000 1000" preserveAspectRatio="none" focusable="false">
+                        @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
                         {
-                            @foreach (var (first, last) in Layout.GetLineRuns(fillIndex))
+                            var fillIndex = seriesIndex;
+
+                            @if (Series[fillIndex].IsFilled)
                             {
-                                <polygon class="forma-chart-fill @GetSeriesClass(fillIndex)" points="@GetFillPoints(fillIndex, first, last)" />
+                                @foreach (var (first, last) in Layout.GetLineRuns(fillIndex))
+                                {
+                                    <polygon class="forma-chart-fill @GetSeriesClass(fillIndex)" points="@GetFillPoints(fillIndex, first, last)" />
+                                }
                             }
                         }
-                    }
-                    @if (Band is { } band)
-                    {
-                        @foreach (var (first, last) in Layout.GetBandRuns(band.LowerSeriesIndex, band.UpperSeriesIndex))
+                        @if (Band is { } band)
                         {
-                            <polygon class="forma-chart-band @GetSeriesClass(band.UpperSeriesIndex)" points="@GetBandPoints(band, first, last)" />
+                            @foreach (var (first, last) in Layout.GetBandRuns(band.LowerSeriesIndex, band.UpperSeriesIndex))
+                            {
+                                <polygon class="forma-chart-band @GetSeriesClass(band.UpperSeriesIndex)" points="@GetBandPoints(band, first, last)" />
+                            }
                         }
-                    }
-                    @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
-                    {
-                        var lineIndex = seriesIndex;
-
-                        @foreach (var (first, last) in Layout.GetLineRuns(lineIndex))
+                        @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
                         {
-                            <polyline class="forma-chart-line @GetSeriesClass(lineIndex)" points="@GetLinePoints(lineIndex, first, last)" />
+                            var lineIndex = seriesIndex;
+
+                            @foreach (var (first, last) in Layout.GetLineRuns(lineIndex))
+                            {
+                                <polyline class="forma-chart-line @GetSeriesClass(lineIndex)" points="@GetLinePoints(lineIndex, first, last)" />
+                            }
                         }
-                    }
-                </svg>
-            }
+                    </svg>
+                }
 
-            @for (var index = 0; index < Layout.Timeline.Count; index++)
-            {
-                var periodIndex = index;
+                @for (var index = 0; index < Layout.Timeline.Count; index++)
+                {
+                    var periodIndex = index;
 
-                <div class="@GetPeriodClass(periodIndex)" style="@GetPeriodStyle(periodIndex)">
-                    @if (Kind is ChartKind.Bar)
-                    {
-                        <span class="forma-chart-bars">
+                    <div class="@GetPeriodClass(periodIndex)" style="@GetPeriodStyle(periodIndex)">
+                        @if (Kind is ChartKind.Bar)
+                        {
+                            <span class="forma-chart-bars">
+                                @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
+                                {
+                                    <span class="forma-chart-bar-slot">
+                                        @if (Layout.Values[seriesIndex][periodIndex] is { } value)
+                                        {
+                                            <span class="@GetBarClass(seriesIndex, value)" style="@GetBarStyle(value)"></span>
+                                        }
+                                    </span>
+                                }
+                            </span>
+                        }
+                        else
+                        {
+                            <span class="forma-chart-crosshair"></span>
                             @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
                             {
-                                <span class="forma-chart-bar-slot">
-                                    @if (Layout.Values[seriesIndex][periodIndex] is { } value)
-                                    {
-                                        <span class="@GetBarClass(seriesIndex, value)" style="@GetBarStyle(value)"></span>
-                                    }
-                                </span>
-                            }
-                        </span>
-                    }
-                    else
-                    {
-                        <span class="forma-chart-crosshair"></span>
-                        @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
-                        {
-                            @if (Layout.Values[seriesIndex][periodIndex] is { } value)
-                            {
-                                <span class="@GetMarkerClass(seriesIndex, periodIndex)" style="@GetHeightStyle(value)"></span>
+                                @if (Layout.Values[seriesIndex][periodIndex] is { } value)
+                                {
+                                    <span class="@GetMarkerClass(seriesIndex, periodIndex)" style="@GetHeightStyle(value)"></span>
+                                }
                             }
                         }
-                    }
 
-                    <div class="@GetReadoutClass(periodIndex)">
-                        <span class="forma-chart-readout-period">@Layout.PeriodTexts[periodIndex]</span>
-                        @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
-                        {
-                            <span class="forma-chart-readout-row @GetSeriesClass(seriesIndex)">
-                                <span class="forma-chart-key"></span>
-                                <span class="forma-chart-readout-value"><bdi>@GetValueText(seriesIndex, periodIndex)</bdi></span>
-                                <span class="forma-chart-readout-name">@Series[seriesIndex].Name</span>
-                            </span>
-                            @if (GetPointNote(seriesIndex, periodIndex) is { } note)
+                        <div class="@GetReadoutClass(periodIndex)">
+                            <span class="forma-chart-readout-period">@Layout.PeriodTexts[periodIndex]</span>
+                            @for (var seriesIndex = 0; seriesIndex < Series.Count; seriesIndex++)
                             {
-                                <span class="forma-chart-readout-note">@note</span>
+                                <span class="forma-chart-readout-row @GetSeriesClass(seriesIndex)">
+                                    <span class="forma-chart-key"></span>
+                                    <span class="forma-chart-readout-value"><bdi>@GetValueText(seriesIndex, periodIndex)</bdi></span>
+                                    <span class="forma-chart-readout-name">@Series[seriesIndex].Name</span>
+                                </span>
+                                @if (GetPointNote(seriesIndex, periodIndex) is { } note)
+                                {
+                                    <span class="forma-chart-readout-note">@note</span>
+                                }
                             }
-                        }
+                        </div>
                     </div>
-                </div>
-            }
+                }
+            </div>
 
             @if (!Layout.HasData)
             {

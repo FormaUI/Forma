@@ -17,6 +17,18 @@ public sealed class ChartsTests
         }
         """;
 
+    // The value labels of a chart that reach into its drawing, each with how far.
+    private const string ReadLabelsOverDrawing = """
+        id => {
+            const chart = document.getElementById(id);
+            const area = chart.querySelector('.forma-chart-area').getBoundingClientRect();
+            return [...chart.querySelectorAll('.forma-chart-value-label')]
+                .map(label => ({ text: label.textContent.trim(), box: label.getBoundingClientRect() }))
+                .filter(({ box }) => box.right > area.left + 1 && box.left < area.right - 1)
+                .map(({ text, box }) => `"${text}" reaches ${Math.round(Math.min(box.right - area.left, area.right - box.left))}px into the drawing`);
+        }
+        """;
+
     public sealed class LineChart(BrowserHost host)
     {
         [Theory]
@@ -112,6 +124,25 @@ public sealed class ChartsTests
 
             // Assert
             Assert.Empty(await page.EvaluateAsync<string[]>(ReadOverflow, "check"));
+        }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_stand_its_value_labels_clear_of_its_drawing_at_a_phone_s_width_in_either_direction(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "line-chart");
+            await using var _ = context;
+
+            // Act
+            await page.SetViewportSizeAsync(360, page.ViewportSize!.Height);
+            var labelsOverDrawing = await page.EvaluateAsync<string[]>(ReadLabelsOverDrawing, "check");
+            var rightToLeftLabelsOverDrawing = await page.EvaluateAsync<string[]>(ReadLabelsOverDrawing, "rtl-chart");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Empty(labelsOverDrawing),
+                () => Assert.Empty(rightToLeftLabelsOverDrawing));
         }
 
         [Theory]

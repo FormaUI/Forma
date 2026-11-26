@@ -94,6 +94,13 @@ public sealed partial class FormaChartFrame : FormaElementBase
     private int ReadIndex
         => _readIndex >= 0 && _readIndex < Layout.Timeline.Count ? _readIndex : Layout.Timeline.Count - 1;
 
+    // The gutter at the plot's inline start that the value labels stand in, as wide as the longest of them with room around it,
+    // which the drawing and the time axis stand clear of.
+    private string ValueGutterStyle
+        => new CssStyleBuilder()
+            .Add("--forma-chart-value-gutter", CssLength.FromCh(Layout.Scale.Ticks.Select(tick => Layout.FormatValue(tick).Length).DefaultIfEmpty(0).Max() + 2))
+            .ToString();
+
     /// <inheritdoc />
     protected override void OnParametersSet()
     {
