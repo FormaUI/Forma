@@ -155,7 +155,10 @@ A change with no UI, a service's or a script's that nothing renders, runs no bro
   reads a coordinator, a published host or a shared build property that may have moved beneath it. The fast gate runs on every push in CI besides.
 - **An authoritative gate runs on an immutable snapshot,** an export or a worktree of the commit, with its own build
   output and its own resources where they'd collide, never on the tree being edited, so the next change is made while
-  it runs. The machine's one Android emulator is never shared by two runs.
+  it runs. One gate worktree is kept for it and moved to each commit a gate closes, so its build is incremental rather
+  than the whole solution's from nothing, and the gate runs the steps its change set reaches: the build, the tests of
+  the affected projects, the format check where C# changed, the locale lint where strings changed, the build's own
+  tests where a build script changed and the task programs' tests where a task program did. The machine's one Android emulator is never shared by two runs.
 - **A failure outside the change is recorded and investigated independently,** preferably by another agent in a
   worktree of its own, and blocks the work only where it invalidates the change's verification.
 

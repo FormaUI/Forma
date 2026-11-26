@@ -48,6 +48,11 @@ beside it, as the repository's build documentation sets out with every command a
 - Do close a change set with its development gate: the cumulative affected checks of every commit in it, run
   against the exact commit being closed, on an immutable snapshot, an export or a worktree with its own build
   output, while work goes on in the tree; a set isn't finished until it passes.
+- Do keep one gate worktree, `.sandbox/worktrees/gate`, and move it to each commit a gate closes, so its build is
+  incremental; run there the steps the set reaches, `compile.ps1`, `test.ps1 DotNet -Project <name> -NoBuild` for
+  each affected project, `format.ps1` where C# changed, the locale lint where strings changed, the build's own tests
+  where a build script changed and `tasks.ps1` where a task program did, rather than every step of `build.ps1
+  DotNet`.
 - Do count an earlier pass only where it can be tied to the same inputs, the built artifacts and the relevant
   configuration among them, and rerun the check wherever that can't be established: a check whose own code is
   unchanged still reads a coordinator, a published host or a shared build property that may have moved beneath it.
