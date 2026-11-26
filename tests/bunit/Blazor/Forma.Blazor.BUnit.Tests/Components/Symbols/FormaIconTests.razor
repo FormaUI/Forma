@@ -113,6 +113,22 @@
         }
 
         [Fact]
+        public void Should_stand_at_its_text_s_size_before_its_stylesheet_sizes_it_a_host_s_size_winning()
+        {
+            // Arrange
+            using var ctx = new FormaIconTests();
+
+            // Act
+            var own = ctx.Render(@<FormaIcon Icon="Glyph.ChevronDown" />);
+            var hosts = ctx.Render(@<FormaIcon Icon="Glyph.ChevronDown" width="24" height="24" />);
+
+            // Assert — an icon whose stylesheet hasn't loaded fills no box larger than a letter
+            Assert.Multiple(
+                () => Assert.Equal(["1em", "1em"], [own.Find("svg").GetAttribute("width"), own.Find("svg").GetAttribute("height")]),
+                () => Assert.Equal(["24", "24"], [hosts.Find("svg").GetAttribute("width"), hosts.Find("svg").GetAttribute("height")]));
+        }
+
+        [Fact]
         public void Should_render_the_supplied_class_beside_its_own()
         {
             // Arrange
