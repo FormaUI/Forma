@@ -18,6 +18,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - [`FormaLineChart` and `FormaBarChart`](docs/charts-design.md) label their values in a gutter at the plot's inline
   start, as wide as the longest label, their marks and time axis standing past it, where the labels stood over the
   marks and covered a line's start on a phone.
+- [`FormaVirtualize`](docs/virtualization-design.md#sizes-and-measurement) follows the nearest ancestor that scrolls its
+  list now, or the page where none does, chosen again as it measures, where it took the nearest ancestor that could
+  scroll and, in a container that grew with its content, drew every item.
 
 ## `1.0.0-preview.18`
 

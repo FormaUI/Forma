@@ -4,6 +4,7 @@
  */
 
 import { tell } from '../../../core/scripts/Owner.js';
+import { Scrolling } from '../../../core/scripts/Scrolling.js';
 
 /**
  * @param {HTMLElement} start The spacer that opens the list.
@@ -33,18 +34,15 @@ class Virtualize {
         this.#start = start;
         this.#owner = owner;
         this.#spacerAttribute = spacerAttribute;
-        this.#scroller = Virtualize.#scrollerOf(start.parentElement);
-
-        const signal = this.#listenerAbort.signal;
-        (this.#scroller ?? window).addEventListener('scroll', () => this.#schedule(), { passive: true, signal });
-        window.addEventListener('resize', () => this.#schedule(), { signal });
-
         this.#resizes = new ResizeObserver(() => this.#schedule());
         this.#resizes.observe(start.parentElement);
+        this.#chooseScroller();
 
-        if (this.#scroller) {
-            this.#resizes.observe(this.#scroller);
-        }
+        // What scrolls the list is chosen as it reports, so the page's scroll and every element's are heard, and those that move
+        // the list are answered.
+        const signal = this.#listenerAbort.signal;
+        document.addEventListener('scroll', event => this.#handleScroll(event), { capture: true, passive: true, signal });
+        window.addEventListener('resize', () => this.#schedule(), { signal });
 
         this.#drawings = new MutationObserver(() => this.#schedule());
         this.#drawings.observe(start.parentElement, { childList: true });
@@ -63,6 +61,7 @@ class Virtualize {
      * @param {number} offset
      */
     scrollTo(offset) {
+        this.#chooseScroller();
         const change = offset - this.#offset();
 
         // Instant whatever the page's scroll-behavior, so the range the scroll reaches is the one the owner draws next.
@@ -88,8 +87,37 @@ class Virtualize {
 
         // Instant whatever the page's scroll-behavior, so whether the item is in view is known on return.
         item.scrollIntoView({ block: alignment === 'start' ? 'start' : 'nearest', inline: 'nearest', behavior: 'instant' });
+        this.#chooseScroller();
 
         return this.#isInView(item);
+    }
+
+    // The page's scroll, or an ancestor's, moves the list; another element's leaves it where it stands.
+    #handleScroll(event) {
+        if (event.target instanceof Node && event.target.contains(this.#start)) {
+            this.#schedule();
+        }
+    }
+
+    // What scrolls the list: the nearest ancestor that scrolls it now, or the page where none does, so a container that grows with
+    // its content, as one a narrow page lets grow does, leaves the list to the page rather than standing as a viewport the whole list
+    // fits in. A container that bounds the list is watched for its size, since its height is the viewport's.
+    #chooseScroller() {
+        const scroller = Scrolling.nearestScroller(this.#start.parentElement, document.body);
+
+        if (scroller === this.#scroller) {
+            return;
+        }
+
+        if (this.#scroller) {
+            this.#resizes.unobserve(this.#scroller);
+        }
+
+        if (scroller) {
+            this.#resizes.observe(scroller);
+        }
+
+        this.#scroller = scroller;
     }
 
     #schedule() {
@@ -107,6 +135,7 @@ class Virtualize {
             return;
         }
 
+        this.#chooseScroller();
         const offset = Math.round(this.#offset());
         const viewport = Math.round(this.#viewport());
         const measuredItemSize = this.#measure(offset);
@@ -191,18 +220,5 @@ class Virtualize {
         const bottom = top + this.#viewport();
 
         return box.bottom > top && box.top < bottom;
-    }
-
-    // The nearest ancestor that scrolls its content vertically, or null where the page itself scrolls.
-    static #scrollerOf(element) {
-        for (let node = element; node && node !== document.body && node !== document.documentElement; node = node.parentElement) {
-            const { overflowY } = getComputedStyle(node);
-
-            if (overflowY === 'auto' || overflowY === 'scroll') {
-                return node;
-            }
-        }
-
-        return null;
     }
 }

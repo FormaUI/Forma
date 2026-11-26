@@ -25,7 +25,7 @@ describe('Virtualize', () => {
         return handle;
     };
 
-    // The scroller stands 100px down the page with a 300px viewport, scrolled 400px into a list whose start it has passed.
+    // The scroller stands 100px down the page with a 300px viewport onto 2,000px of list, scrolled 400px into it, past its start.
     const place = (element, top, height) => {
         element.getBoundingClientRect = () => ({ top, bottom: top + height, height, left: 0, right: 200, width: 200, x: 0, y: top });
     };
@@ -48,7 +48,7 @@ describe('Virtualize', () => {
             </div>`;
         scroller = document.querySelector('#scroller');
         start = document.querySelector('#start');
-        sizeScroller(scroller, { clientHeight: 300, clientTop: 0, scrollTop: 400 });
+        sizeScroller(scroller, { clientHeight: 300, scrollHeight: 2000, clientTop: 0, scrollTop: 400 });
         place(scroller, 100, 300);
         place(start, -300, 0);
         place(document.querySelector('#first'), -300, 20);
@@ -223,6 +223,51 @@ describe('Virtualize', () => {
         frames.flush();
 
         expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleViewportAsync', 120, window.innerHeight, 20);
+    });
+
+    it('stands in the page where the container around the list grows with it, as one a narrow page lets grow does', () => {
+        sizeScroller(scroller, { clientHeight: 2000, scrollHeight: 2000 });
+        place(start, -120, 0);
+
+        attachList();
+        frames.flush();
+
+        expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleViewportAsync', 120, window.innerHeight, 20);
+    });
+
+    it('follows the list to the page once its container stops bounding it, and back once it bounds it again', () => {
+        attachList();
+        frames.flush();
+
+        sizeScroller(scroller, { clientHeight: 2000, scrollHeight: 2000 });
+        place(start, -150, 0);
+        document.dispatchEvent(new Event('scroll'));
+        frames.flush();
+        const inPage = owner.invokeMethodAsync.mock.lastCall;
+
+        sizeScroller(scroller, { clientHeight: 300, scrollHeight: 2000 });
+        resizes.latest().deliver([]);
+        frames.flush();
+
+        expect(inPage).toEqual(['HandleViewportAsync', 150, window.innerHeight, 20]);
+        expect(owner.invokeMethodAsync).toHaveBeenLastCalledWith('HandleViewportAsync', 250, 300, 20);
+    });
+
+    it("answers a scroll of the page and of what holds the list, and leaves another element's to it", () => {
+        const other = document.createElement('div');
+        document.body.append(other);
+        attachList();
+        frames.flush();
+
+        place(start, -350, 0);
+        other.dispatchEvent(new Event('scroll'));
+        frames.flush();
+        const callsAfterOther = owner.invokeMethodAsync.mock.calls.length;
+        scroller.dispatchEvent(new Event('scroll'));
+        frames.flush();
+
+        expect(callsAfterOther).toBe(1);
+        expect(owner.invokeMethodAsync).toHaveBeenCalledTimes(2);
     });
 
     it('stops reporting once disposed', () => {
