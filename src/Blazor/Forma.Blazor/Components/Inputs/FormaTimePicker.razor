@@ -19,8 +19,9 @@
                    min="@FormValue.FormatTime(Min, HasSeconds)"
                    max="@FormValue.FormatTime(Max, HasSeconds)"
                    step="@FormValue.FormatStep(Step)"
-                   disabled="@Disabled"
-                   readonly="@ReadOnly"
+                   disabled="@(Disabled && !ShowsDisabledReason)"
+                   readonly="@(ReadOnly || ShowsDisabledReason)"
+                   aria-disabled="@AriaDisabled"
                    required="@IsRequired" />
         }
         else
@@ -39,11 +40,13 @@
                           OnTextFaultChanged="HandleTextFaultChanged"
                           Required="@IsRequired"
                           Disabled="@Disabled"
+                          DisabledReason="@DisabledReason"
                           ReadOnly="@ReadOnly"
                           InputClass="@RootClass"
                           InputStyle="@RootStyle"
                           InputAttributes="AdditionalAttributes"
                           InputDescribedBy="@DescribedBy" />
         }
+        @DisabledReasonTooltip
     </ChildContent>
 </FormaField>

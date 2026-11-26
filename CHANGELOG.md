@@ -147,6 +147,18 @@ set out. What Forma gained before its first release, month by month, is in [the 
   first control, where the command was confirmed in a dialog first, as [the data view design](docs/data-view-design.md)
   sets out: the dialog handed the focus back to the control that opened it, which had gone with its item, and left it
   on the page's body. A popover whose trigger went the same way hands the focus on as well.
+- [`FormaTooltip`](docs/tooltip-design.md) is a short text describing a control, shown beside it on hover, focus and
+  tap, which the control names in its `aria-describedby`. The browser interop's initializer shows it on every page, a
+  statically rendered one and a web view's among them; Escape and a press elsewhere hide it.
+- A control disabled with a reason stays reachable and says why, as [the tooltip design](docs/tooltip-design.md) sets
+  out: `FormaButton`, `FormaToggleButton`, `FormaCloseButton`, `FormaEyeButton`, every input that takes `Disabled`, the
+  drop-down and overflow menus and their items, `FormaToolbar` and `FormaStatusStrip`, `FormaSortableList` and
+  `FormaComposer` with its bars and presets take a `DisabledReason`, and `ToolbarItem`, `SelectOption` and `ShareAction`
+  carry one beside `IsDisabled`. Such a control writes `aria-disabled` in place of `disabled`, does nothing when
+  pressed or typed into, shows its reason as its tooltip and is described by it; an input keeps its value, posted as a
+  read-only one's is. A button showing its reason drops a host's `title`, so the reason is the one tooltip it shows.
+- `FormaDropDownMenu` takes `Disabled`, where only a `disabled` attribute passed to its trigger disabled it; the
+  attribute still does.
 
 ## `1.0.0-preview.16`
 

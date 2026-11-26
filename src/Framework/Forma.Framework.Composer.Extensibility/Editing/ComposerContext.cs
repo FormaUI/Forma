@@ -24,6 +24,9 @@ public sealed record ComposerContext
     /// <summary>Whether the composer is disabled.</summary>
     public bool IsDisabled { get; init; }
 
+    /// <summary>Why the composer is disabled, which it shows as its tooltip.</summary>
+    public string? DisabledReason { get; init; }
+
     /// <summary>Whether the document is read-only.</summary>
     public bool IsReadOnly { get; init; }
 

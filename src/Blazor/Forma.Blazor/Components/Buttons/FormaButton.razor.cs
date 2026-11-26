@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A button with a visual variant, a size, and a busy state, or a link drawn as one.</summary>
 /// <remarks>A button with a click handler is disabled until its renderer is interactive; a link keeps its address under a static render, as the browser follows it.</remarks>
-public sealed partial class FormaButton : FormaElementBase
+public sealed partial class FormaButton : FormaElementBase, IDisableable
 {
     /// <summary>The visual weight the button is drawn with.</summary>
     [Parameter] public ButtonVariant Variant { get; set; } = ButtonVariant.Secondary;
@@ -35,6 +35,9 @@ public sealed partial class FormaButton : FormaElementBase
     /// <summary>Whether the button is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the button is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>Raised when the button is clicked.</summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
@@ -55,10 +58,32 @@ public sealed partial class FormaButton : FormaElementBase
     // The address a link writes, which is none where its kind doesn't allow the one it was given.
     private string? _linkAddress;
 
-    private bool IsDisabled => Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive);
+    bool IDisableable.IsDisabled
+        => Disabled;
 
-    // Busy is announced through aria-disabled, so the button keeps focus.
-    private string? AriaDisabled => Busy ? "true" : null;
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
+    private bool ShowsDisabledReason
+        => DisabledReasons.IsShown(this);
+
+    private string DisabledReasonId
+        => DisabledReasons.GetTooltipId(ElementId);
+
+    // A button disabled with a reason stays reachable, so its reader can learn why.
+    private bool HasDisabledAttribute
+        => !ShowsDisabledReason && (Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive));
+
+    // Busy and a reason are announced through aria-disabled, so the button keeps focus.
+    private string? AriaDisabled
+        => Busy || ShowsDisabledReason ? "true" : null;
+
+    private string? AriaDescribedBy
+        => DisabledReasons.AddTooltipId(this, ElementId, AdditionalAttributes?.GetValueOrDefault("aria-describedby")?.ToString());
+
+    // A button showing its reason drops a host's title, so the reason is the one tooltip it shows.
+    private string? Title
+        => ShowsDisabledReason ? null : AdditionalAttributes?.GetValueOrDefault("title")?.ToString();
 
     private string? AriaBusy => Busy ? "true" : null;
 
@@ -77,9 +102,9 @@ public sealed partial class FormaButton : FormaElementBase
     private string? LinkAriaDisabled
         => Disabled || Busy ? "true" : null;
 
-    // A busy link keeps the focus a reader pressed it with, as a busy button does.
+    // A busy link keeps the focus a reader pressed it with, as a busy button does, and one disabled with a reason stays reachable.
     private string? LinkTabIndex
-        => Busy && !Disabled ? "0" : null;
+        => (Busy && !Disabled) || ShowsDisabledReason ? "0" : null;
 
     // A button no one handles a click of leaves its clicks in the browser, and a disabled link takes none, having no disabled state of its own.
     private EventCallback<MouseEventArgs> ClickCallback
@@ -100,7 +125,7 @@ public sealed partial class FormaButton : FormaElementBase
     // nothing where one can't; any other click acts at once, whatever a field of the form holds.
     private async Task HandleClickAsync(MouseEventArgs args)
     {
-        if (Busy || ((ReadsForm || Type == ButtonType.Submit) && CascadedEditContext is { } form && !await form.SettleEditsAsync()))
+        if (Busy || ShowsDisabledReason || ((ReadsForm || Type == ButtonType.Submit) && CascadedEditContext is { } form && !await form.SettleEditsAsync()))
         {
             return;
         }
@@ -131,5 +156,5 @@ public sealed partial class FormaButton : FormaElementBase
             .Add(VariantClass)
             .Add("forma-button-mini", Size is ButtonSize.Mini)
             .Add("forma-button-icon", IconOnly)
-            .Add("is-disabled", IsLink && Disabled);
+            .Add("is-disabled", (IsLink && Disabled) || ShowsDisabledReason);
 }

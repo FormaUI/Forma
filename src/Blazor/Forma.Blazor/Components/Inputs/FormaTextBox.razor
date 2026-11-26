@@ -15,8 +15,9 @@
                 type="@TypeValue"
                 placeholder="@EffectivePlaceholder"
                 value="@ShownText"
-                disabled="@Disabled"
-                readonly="@ReadOnly"
+                disabled="@(Disabled && !ShowsDisabledReason)"
+                readonly="@(ReadOnly || ShowsDisabledReason)"
+                aria-disabled="@AriaDisabled"
                 minlength="@Options.MinLength"
                 maxlength="@Options.MaxLength"
                 pattern="@Options.Pattern"
@@ -33,10 +34,12 @@
     <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Description="@Description" Required="@Required" style="@FieldStyle">
         <ChildContent>
             @box
+            @DisabledReasonTooltip
         </ChildContent>
     </FormaField>
 }
 else
 {
     @box
+    @DisabledReasonTooltip
 }

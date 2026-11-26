@@ -12,11 +12,12 @@
                                    type="checkbox"
                                    value="true"
                                    checked="@CurrentValue"
-                                   disabled="@IsDisabled"
+                                   disabled="@HasDisabledAttribute"
+                                   aria-disabled="@AriaDisabled"
                                    aria-describedby="@DescribedBy"
                                    @onchange="HandleChange"
                                    @onclick="HandleClickAsync"
-                                   @onclick:preventDefault="@PreventDefault" />;
+                                   @onclick:preventDefault="@(PreventDefault || ShowsDisabledReason)" />;
 }
 
 @if (ChildContent is null)
@@ -30,6 +31,7 @@ else
         @ChildContent
     </label>
 }
+@DisabledReasonTooltip
 @if (HasDescription)
 {
     <div id="@FieldElementIds.DescriptionId" class="forma-checkbox-description">@Description</div>

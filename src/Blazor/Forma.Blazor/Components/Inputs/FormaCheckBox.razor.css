@@ -47,7 +47,7 @@
 }
 
 @media (hover: hover) {
-    .forma-checkbox:not(:disabled, :checked, :indeterminate):hover {
+    .forma-checkbox:not(:disabled, [aria-disabled="true"], :checked, :indeterminate):hover {
         border-color: var(--forma-checkbox-checked-bg-color, var(--primary-color));
     }
 }
@@ -76,7 +76,7 @@
     }
 }
 
-.forma-checkbox:disabled {
+.forma-checkbox:is(:disabled, [aria-disabled="true"]) {
     opacity: 0.6;
     cursor: not-allowed;
 }
@@ -89,7 +89,7 @@
     cursor: pointer;
 }
 
-.forma-checkbox-label:has(.forma-checkbox:disabled) {
+.forma-checkbox-label:has(.forma-checkbox:is(:disabled, [aria-disabled="true"])) {
     color: var(--disabled-text-color);
     cursor: not-allowed;
 }

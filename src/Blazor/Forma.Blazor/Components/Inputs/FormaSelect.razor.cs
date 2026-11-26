@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A single-select field: a trigger button opening an anchored, keyboard-navigable option list.</summary>
 /// <typeparam name="TValue">The type of the selected value, where a nullable type holds null for no selection.</typeparam>
-public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
+public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>, IDisableable
 {
     private const string OpenAction = "select.open";
     private const string NextAction = "select.next";
@@ -65,6 +65,9 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the field is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private int _focusedIndex = -1;
@@ -84,6 +87,12 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
     private bool IsNative
         => !RendererInfo.IsInteractive && IsPostable;
 
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
     private bool IsOpen
         => Popover is { IsOpen: true };
 
@@ -95,7 +104,7 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -165,6 +174,17 @@ public sealed partial class FormaSelect<TValue> : FormaInputBase<TValue>
 
     private bool IsSelected(SelectOption<TValue> option)
         => EqualityComparer<TValue>.Default.Equals(option.Value, Value);
+
+    private string GetOptionReasonId(int index)
+        => DisabledReasons.GetTooltipId($"{ElementId}-option-{index}");
+
+    // The ids an option is described by: its icon's label, then the tooltip giving the reason it can't be chosen.
+    private string? GetOptionDescribedBy(SelectOption<TValue> option, int index)
+    {
+        var iconLabelId = option.IconLabel is null ? null : GetOptionIconLabelId(index);
+
+        return option.ShowsDisabledReason ? string.Join(' ', new[] { iconLabelId, GetOptionReasonId(index) }.OfType<string>()) : iconLabelId;
+    }
 
     private string GetOptionIconLabelId(int index)
         => $"{ElementId}-option-{index}-icon-label";

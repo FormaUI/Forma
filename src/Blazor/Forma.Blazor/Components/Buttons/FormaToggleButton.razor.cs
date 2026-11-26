@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A ghost button with a glyph, a label or both, which can carry a toggle's pressed state.</summary>
-public sealed partial class FormaToggleButton : FormaElementBase
+public sealed partial class FormaToggleButton : FormaElementBase, IDisableable
 {
     /// <summary>The glyph the button shows.</summary>
     [Parameter] public Icon? Icon { get; set; }
@@ -24,10 +24,19 @@ public sealed partial class FormaToggleButton : FormaElementBase
     /// <summary>Whether the button is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the button is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>Raised when the button is clicked.</summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     private FormaButton Button { get; set; } = default!;
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     /// <inheritdoc />
     public override ElementReference RootElement

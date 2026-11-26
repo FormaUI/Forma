@@ -20,11 +20,13 @@ const Gap = 4;
  * @param {{
  *   anchor: HTMLElement,
  *   keepsFocus?: boolean,
- *   align?: 'auto' | 'start' | 'end'
+ *   side?: 'below' | 'above',
+ *   align?: 'auto' | 'start' | 'end' | 'center'
  * }} options
- *   The element the popover hangs from, whether Tab moves between the popover's own controls, and which
- *   inline edge of the anchor the popover lines up with: its reading-start edge, its reading-end edge, or
- *   the edge away from the nearer side of the viewport.
+ *   The element the popover hangs from, whether Tab moves between the popover's own controls, the side of the
+ *   anchor the popover takes where there is room, flipping to the other where there isn't, and which inline edge
+ *   of the anchor the popover lines up with: its reading-start edge, its reading-end edge, the edge away from the
+ *   nearer side of the viewport, or the anchor's middle.
  */
 export function attach(target, options) {
     return new AnchoredPopover(target, options);
@@ -34,6 +36,7 @@ class AnchoredPopover {
     #popover;
     #anchor;
     #keepsFocus;
+    #side;
     #align;
     #trigger = null;
     #placement = null;
@@ -41,10 +44,11 @@ class AnchoredPopover {
     #directionObserver = null;
     #scheduler = new FrameScheduler();
 
-    constructor(popover, { anchor, keepsFocus = false, align = 'auto' }) {
+    constructor(popover, { anchor, keepsFocus = false, side = 'below', align = 'auto' }) {
         this.#popover = popover;
         this.#anchor = anchor;
         this.#keepsFocus = keepsFocus;
+        this.#side = side;
         this.#align = align;
     }
 
@@ -121,12 +125,18 @@ class AnchoredPopover {
         const width = this.#popover.offsetWidth;
         const height = this.#popover.offsetHeight;
 
-        const preferredInlineStart = this.#hangsFromLeftEdge(anchor, Direction.isRightToLeft(this.#anchor)) ? anchor.left : anchor.right - width;
+        const preferredInlineStart = this.#align === 'center'
+            ? anchor.left + (anchor.width - width) / 2
+            : this.#hangsFromLeftEdge(anchor, Direction.isRightToLeft(this.#anchor)) ? anchor.left : anchor.right - width;
         const inlineStart = Math.max(Gap, Math.min(preferredInlineStart, innerWidth - width - Gap));
 
         const below = anchor.bottom + Gap;
         const above = anchor.top - height - Gap;
-        const blockStart = below + height <= innerHeight || above < Gap ? below : above;
+        const fitsBelow = below + height <= innerHeight;
+        const fitsAbove = above >= Gap;
+        const blockStart = this.#side === 'above'
+            ? fitsAbove || !fitsBelow ? above : below
+            : fitsBelow || !fitsAbove ? below : above;
 
         this.#popover.style.left = `${Math.round(inlineStart)}px`;
         this.#popover.style.top = `${Math.round(blockStart)}px`;

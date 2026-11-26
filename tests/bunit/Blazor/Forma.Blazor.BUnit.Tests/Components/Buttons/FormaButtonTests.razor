@@ -554,4 +554,101 @@
             Assert.False(cut.Find("a").HasAttribute("href"));
         }
     }
+
+    public sealed class DisabledWithAReason
+    {
+        [Fact]
+        public void Should_stay_reachable_and_describe_itself_by_its_reason()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Id="save" Disabled="true" DisabledReason="Give the draft a title first" OnClick="() => { }">Save</FormaButton>);
+            var button = cut.Find("#save");
+
+            // Assert
+            Assert.False(button.HasAttribute("disabled"));
+            Assert.Equal("true", button.GetAttribute("aria-disabled"));
+            Assert.Equal("save-disabled-reason", button.GetAttribute("aria-describedby"));
+            Assert.Contains("is-disabled", button.ClassList);
+            Assert.Equal("Give the draft a title first", cut.Find("#save-disabled-reason[role=tooltip]").TextContent);
+        }
+
+        [Fact]
+        public void Should_run_no_click_while_disabled_with_a_reason()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            var clicks = 0;
+            var cut = ctx.Render(@<FormaButton Disabled="true" DisabledReason="Give the draft a title first" OnClick="() => clicks++">Save</FormaButton>);
+
+            // Act
+            cut.Find(".forma-button").Click();
+
+            // Assert
+            Assert.Equal(0, clicks);
+        }
+
+        [Fact]
+        public void Should_keep_its_host_s_description_beside_its_reason()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Id="save" Disabled="true" DisabledReason="Give the draft a title first" aria-describedby="save-hint">Save</FormaButton>);
+
+            // Assert
+            Assert.Equal("save-hint save-disabled-reason", cut.Find("#save").GetAttribute("aria-describedby"));
+        }
+
+        [Fact]
+        public void Should_stay_reachable_with_a_reason_before_the_renderer_is_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Disabled="true" DisabledReason="Give the draft a title first" OnClick="() => { }">Save</FormaButton>);
+
+            // Assert
+            Assert.False(cut.Find(".forma-button").HasAttribute("disabled"));
+            Assert.Single(cut.FindAll("[role=tooltip]"));
+        }
+
+        [Fact]
+        public void Should_show_no_reason_while_enabled()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton DisabledReason="Give the draft a title first" aria-describedby="save-hint">Save</FormaButton>);
+            var button = cut.Find(".forma-button");
+
+            // Assert
+            Assert.Empty(cut.FindAll("[role=tooltip]"));
+            Assert.False(button.HasAttribute("aria-disabled"));
+            Assert.Equal("save-hint", button.GetAttribute("aria-describedby"));
+        }
+
+        [Fact]
+        public void Should_keep_a_link_disabled_with_a_reason_in_the_tab_order()
+        {
+            // Arrange
+            using var ctx = new FormaButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaButton Id="report" Href="/reports/2026" Disabled="true" DisabledReason="The report is still being written">Report</FormaButton>);
+            var link = cut.Find("#report");
+
+            // Assert
+            Assert.False(link.HasAttribute("href"));
+            Assert.Equal("0", link.GetAttribute("tabindex"));
+            Assert.Equal("true", link.GetAttribute("aria-disabled"));
+            Assert.Equal("report-disabled-reason", link.GetAttribute("aria-describedby"));
+        }
+    }
 }

@@ -13,7 +13,7 @@ using Forma.Framework.Input.Keyboard;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A trigger button that opens an anchored menu of commands.</summary>
-public sealed partial class FormaDropDownMenu : FormaElementBase
+public sealed partial class FormaDropDownMenu : FormaElementBase, IDisableable
 {
     private const string OpenFirstAction = "menu.open-first";
     private const string OpenLastAction = "menu.open-last";
@@ -56,6 +56,12 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     /// <summary>The inline edge of the trigger the menu lines up with.</summary>
     [Parameter] public PopoverAlignment Alignment { get; set; }
 
+    /// <summary>Whether the menu's trigger is disabled.</summary>
+    [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the menu's trigger is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private readonly List<FormaDropDownMenuItem> _items = [];
@@ -67,6 +73,12 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     private bool _openAtLastItem;
     private ElementReference _anchorElement;
     private FormaButton TriggerButton { get; set; } = default!;
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
     private FormaPopover Popover { get; set; } = default!;
     private InputRegistration _trigger = default!;
 
@@ -129,6 +141,11 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
 
     private Task ToggleAsync()
     {
+        if (Disabled)
+        {
+            return Task.CompletedTask;
+        }
+
         _openAtLastItem = false;
 
         return Popover.ToggleAsync(TriggerButton.RootElement);
@@ -137,6 +154,11 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
     // Items register while the popover renders, so the item to focus is found once it has opened.
     private async Task OpenAsync(bool atLastItem)
     {
+        if (Disabled)
+        {
+            return;
+        }
+
         _openAtLastItem = atLastItem;
         await Popover.OpenAsync(TriggerButton.RootElement);
     }
@@ -172,7 +194,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
 
         var current = _focusedItem is null ? -1 : items.IndexOf(_focusedItem);
 
-        if (_typeAhead.Find(key, labels, current, Context.CultureState.Culture, index => !items[index].Disabled) is { } index)
+        if (_typeAhead.Find(key, labels, current, Context.CultureState.Culture, index => items[index].IsReachable) is { } index)
         {
             await FocusAsync(items[index]);
         }
@@ -196,7 +218,7 @@ public sealed partial class FormaDropDownMenu : FormaElementBase
         {
             var index = ((start + visitedCount * step) % items.Count + items.Count) % items.Count;
 
-            if (!items[index].Disabled)
+            if (items[index].IsReachable)
             {
                 return items[index];
             }

@@ -25,7 +25,7 @@ using Microsoft.AspNetCore.Components;
 /// restores the committed value's label, and leaving on no text clears a value that can be empty. A value bound from outside while the
 /// reader edits replaces the edit.
 /// </remarks>
-public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
+public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>, IDisableable
 {
     private const string NextAction = "combobox.next";
     private const string PreviousAction = "combobox.previous";
@@ -86,6 +86,9 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the field is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>Whether the field is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
@@ -128,6 +131,12 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
     private FormaPopover Popover { get; set; } = default!;
 
     private FormaVirtualize<ListEntry>? Virtualizer { get; set; }
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     private bool IsOpen
         => Popover is { IsOpen: true };
@@ -193,7 +202,7 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -300,6 +309,17 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
 
     private string GetEntryId(int index)
         => $"{ElementId}-option-{index}";
+
+    private string GetEntryReasonId(int index)
+        => DisabledReasons.GetTooltipId(GetEntryId(index));
+
+    // The ids an entry is described by: its option's icon label, then the tooltip giving the reason it can't be chosen.
+    private string? GetEntryDescribedBy(ListEntry entry)
+    {
+        var iconLabelId = entry.Option?.IconLabel is null ? null : GetEntryIconLabelId(entry.Index);
+
+        return entry.Option is { ShowsDisabledReason: true } ? string.Join(' ', new[] { iconLabelId, GetEntryReasonId(entry.Index) }.OfType<string>()) : iconLabelId;
+    }
 
     private string GetEntryIconLabelId(int index)
         => $"{ElementId}-option-{index}-icon-label";

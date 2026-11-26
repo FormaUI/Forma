@@ -9,7 +9,8 @@
                    Alignment="Alignment"
                    HeaderContent="HeaderContent"
                    aria-label="@Label"
-                   disabled="@(Disabled ? true : null)">
+                   Disabled="Disabled"
+                   DisabledReason="@DisabledReason">
     <Trigger>
         <FormaIcon Icon="@(Orientation == MenuOrientation.Vertical ? Glyph.MoreVertical : Glyph.More)" Size="IconSize.Small" />
     </Trigger>

@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Components.Forms;
 
 /// <summary>A field for a date with its time, the date picked from a calendar and the time typed or chosen from a list of suggested times, under one label.</summary>
 /// <typeparam name="TValue">The value the field binds, a <see cref="DateTime"/> or a <see cref="DateTimeOffset"/>, or a nullable one.</typeparam>
-public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
+public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>, IDisableable
 {
     // The form an entry takes between the controls and the base's parsing: the date, a separator and the time, the same in every
     // culture and to the tick, either half empty while the reader has not entered it.
@@ -30,6 +30,9 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
 
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the field is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>Whether the field is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
@@ -81,6 +84,12 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
     private FormaDateBox? DateBox { get; set; }
 
     private FormaTimeBox? TimeBox { get; set; }
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     /// <inheritdoc />
     public override ElementReference RootElement
@@ -178,7 +187,7 @@ public sealed partial class FormaDateTimePicker<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnInitialized()

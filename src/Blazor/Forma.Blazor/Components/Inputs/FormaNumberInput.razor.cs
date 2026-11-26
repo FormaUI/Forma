@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Components;
 
 /// <summary>A field that edits a number, typed as the formatting culture writes it and stepped with the vertical arrows.</summary>
 /// <typeparam name="TValue">The number the field binds: an <see cref="int"/>, a <see cref="long"/>, a <see cref="short"/>, a <see cref="float"/>, a <see cref="double"/> or a <see cref="decimal"/>, or a nullable one.</typeparam>
-public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
+public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>, IDisableable
 {
     private const string IncreaseAction = "number-input.increase";
     private const string DecreaseAction = "number-input.decrease";
@@ -44,6 +44,9 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
 
     /// <summary>Whether the input is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the input is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>Whether the input is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
@@ -169,13 +172,19 @@ public sealed partial class FormaNumberInput<TValue> : FormaInputBase<TValue>
             : MaxDecimalPlaces is { } places ? $"0.{new string('0', places - 1)}1"
             : "any";
 
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
     // A labeled input's width sizes the field wrapper, which is what occupies the row.
     private string? FieldStyle
         => HasLabel && Width is { } width ? $"inline-size: {width}" : null;
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnInitialized()

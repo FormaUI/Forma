@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Components;
 
 /// <summary>A field for picking a range of dates from two months side by side, with presets for the usual spans.</summary>
 /// <remarks>The range is one value, committed once both ends are picked.</remarks>
-public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
+public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>, IDisableable
 {
     // The rolling spans the Last7Days and Last30Days presets cover, ending today.
     private const int ShortRangeDays = 7;
@@ -22,6 +22,9 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
 
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the field is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>The earliest selectable date.</summary>
     [Parameter] public DateOnly? MinDate { get; set; }
@@ -43,6 +46,12 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
     private readonly DateRangeDraft _draft = new();
     private CalendarMonthRange _calendarMonthRange = default!;
 
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
     private bool IsOpen
         => Popover is { IsOpen: true };
 
@@ -61,7 +70,7 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -84,6 +93,11 @@ public sealed partial class FormaDateRangePicker : FormaInputBase<DateRange?>
         if (IsOpen)
         {
             await Popover.CloseAsync();
+            return;
+        }
+
+        if (Disabled)
+        {
             return;
         }
 

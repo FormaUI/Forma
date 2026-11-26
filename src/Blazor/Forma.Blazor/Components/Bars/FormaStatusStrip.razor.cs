@@ -6,7 +6,7 @@ using Forma.Framework.Toolbar;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A quiet strip of toolbar items, such as status readouts and commands.</summary>
-public sealed partial class FormaStatusStrip : FormaElementBase
+public sealed partial class FormaStatusStrip : FormaElementBase, IDisableable
 {
     /// <summary>The accessible name of the strip.</summary>
     [Parameter] public string? Label { get; set; }
@@ -20,6 +20,9 @@ public sealed partial class FormaStatusStrip : FormaElementBase
     /// <summary>Whether the strip's items are disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the strip's items are disabled, which each shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>What the strip renders while it has no items.</summary>
     [Parameter] public StatusStripEmptyMode EmptyMode { get; set; }
 
@@ -28,6 +31,12 @@ public sealed partial class FormaStatusStrip : FormaElementBase
 
     /// <summary>Whether the strip animates between hidden and shown.</summary>
     [Parameter] public bool Animated { get; set; }
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     /// <inheritdoc />
     protected override void OnParametersSet()

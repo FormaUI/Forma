@@ -30,7 +30,7 @@ using Microsoft.AspNetCore.Components;
 public sealed partial class FormaComposer(
     IComposerSyntaxHighlighter? syntaxHighlighter = null,
     ComposerDefinition? definition = null)
-    : FormaInputBase<ComposerDocument>, IComposerInteraction, IComposerDialogInteraction
+    : FormaInputBase<ComposerDocument>, IComposerInteraction, IComposerDialogInteraction, IDisableable
 {
     private readonly ComposerDefinition? _definition = definition;
     private PluginScope<IComposerPlugin> _ownPlugins = PluginScope<IComposerPlugin>.Empty;
@@ -85,6 +85,9 @@ public sealed partial class FormaComposer(
 
     /// <summary>Whether the composer is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the composer is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>Whether the composer is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
@@ -148,6 +151,12 @@ public sealed partial class FormaComposer(
         }
     }
 
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
     private ComposerContext BuildComposer()
         => new()
         {
@@ -156,6 +165,7 @@ public sealed partial class FormaComposer(
             Document = CurrentDocument,
             Selection = _selection,
             IsDisabled = Disabled,
+            DisabledReason = DisabledReason,
             IsReadOnly = ReadOnly,
             IsMaximized = _chrome.IsMaximized,
             IsSelectionBarShown = _chrome.IsSelectionBarShown,
@@ -170,7 +180,7 @@ public sealed partial class FormaComposer(
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override async Task OnInitializedAsync()

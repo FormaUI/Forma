@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A checkbox bound to a Boolean, with an indeterminate state and a checked state the caller can take over.</summary>
-public sealed partial class FormaCheckBox : FormaInputBase<bool>
+public sealed partial class FormaCheckBox : FormaInputBase<bool>, IDisableable
 {
     /// <summary>Whether the checkbox shows the "some but not all" state.</summary>
     /// <remarks>The state has no content attribute, so it is set on the element through script after render; a checkbox that never becomes indeterminate never calls the script.</remarks>
@@ -17,6 +17,9 @@ public sealed partial class FormaCheckBox : FormaInputBase<bool>
 
     /// <summary>Whether the checkbox is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the checkbox is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>Raised when the checkbox is clicked.</summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
@@ -32,8 +35,15 @@ public sealed partial class FormaCheckBox : FormaInputBase<bool>
     // Starts at the element's own default, so a checkbox never made indeterminate never calls the script.
     private bool _isIndeterminateApplied;
 
-    private bool IsDisabled
-        => Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive);
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
+    // A checkbox disabled with a reason stays reachable, so its reader can learn why.
+    private bool HasDisabledAttribute
+        => !ShowsDisabledReason && (Disabled || (OnClick.HasDelegate && !RendererInfo.IsInteractive));
 
     /// <inheritdoc />
     protected override bool HasFieldContainer
@@ -41,19 +51,29 @@ public sealed partial class FormaCheckBox : FormaInputBase<bool>
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnInitialized()
         => _checkBox = new CheckBox(Context.JS);
 
     private void HandleChange(ChangeEventArgs args)
-        => CurrentValue = args.Value is true;
+    {
+        if (!ShowsDisabledReason)
+        {
+            CurrentValue = args.Value is true;
+        }
+    }
 
     // The browser undoes a prevented click's toggle once the click ends, so the caller is told after it: a state drawn inside the click,
     // as WebAssembly draws it, would be undone with the toggle while the component still holds it.
     private async Task HandleClickAsync(MouseEventArgs args)
     {
+        if (ShowsDisabledReason)
+        {
+            return;
+        }
+
         if (PreventDefault)
         {
             await Task.Yield();

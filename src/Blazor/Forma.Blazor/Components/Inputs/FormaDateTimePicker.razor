@@ -29,10 +29,11 @@
                    min="@FormValue.FormatClock(MinClock, HasSeconds)"
                    max="@FormValue.FormatClock(MaxClock, HasSeconds)"
                    step="@FormValue.FormatStep(Step)"
-                   disabled="@(Disabled || HasOffset)"
-                   readonly="@ReadOnly"
+                   disabled="@((Disabled && !ShowsDisabledReason) || HasOffset)"
+                   readonly="@(ReadOnly || ShowsDisabledReason)"
+                   aria-disabled="@AriaDisabled"
                    required="@IsRequired" />
-            @if (HasOffset && !Disabled && ControlName is { } name)
+            @if (HasOffset && (!Disabled || ShowsDisabledReason) && ControlName is { } name)
             {
                 <input type="hidden" name="@name" value="@FormValue.Format(CurrentValue)" />
             }
@@ -52,6 +53,7 @@
                               OnClear="HandleClearDate"
                               Required="@IsRequired"
                               Disabled="@Disabled"
+                              DisabledReason="@DisabledReason"
                               ReadOnly="@ReadOnly"
                               NameId="@DateNameId"
                               TriggerClass="@ControlClass"
@@ -71,11 +73,13 @@
                               OnTextFaultChanged="HandleTextFaultChanged"
                               Required="@IsRequired"
                               Disabled="@Disabled"
+                              DisabledReason="@DisabledReason"
                               ReadOnly="@ReadOnly"
                               InputClass="@ControlClass"
                               InputAttributes="TimeAttributes"
                               InputDescribedBy="@DescribedBy" />
             </div>
         }
+        @DisabledReasonTooltip
     </ChildContent>
 </FormaField>

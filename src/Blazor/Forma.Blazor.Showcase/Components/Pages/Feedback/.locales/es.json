@@ -182,5 +182,21 @@
     "First toast": "Primer toast",
     "Second toast": "Segundo toast",
     "Third toast": "Tercer toast"
+  },
+  "FormaTooltipPage": {
+    "A short text describing a control, shown beside it on hover, focus and tap. The control names the tooltip in its aria-describedby, so a screen reader hears the text as the control's description.": "Un texto breve que describe un control y se muestra junto a él al pasar el puntero, al recibir el foco y al tocarlo. El control nombra el tooltip en su aria-describedby, así que un lector de pantalla oye el texto como la descripción del control.",
+    "On a Control": "En un Control",
+    "Rest the pointer on the button, tab to it or tap it. Escape hides the tooltip, and the pointer can move onto it without it hiding.": "Deja el puntero sobre el botón, llega a él con Tab o tócalo. Escape oculta el tooltip, y el puntero puede pasar a él sin que se oculte.",
+    "Save Draft": "Guardar Borrador",
+    "Saved drafts are kept for thirty days.": "Los borradores guardados se conservan treinta días.",
+    "Disabled with a Reason": "Deshabilitado con un Motivo",
+    "A button disabled with a DisabledReason stays in the tab order and the pointer's reach, does nothing when pressed, and shows its reason as its tooltip. One disabled without a reason, as Archive is, leaves the tab order.": "Un botón deshabilitado con un DisabledReason sigue en el orden de tabulación y al alcance del puntero, no hace nada al pulsarlo y muestra su motivo como su tooltip. Uno deshabilitado sin motivo, como Archivar, sale del orden de tabulación.",
+    "Give the draft a title before you publish it.": "Dale un título al borrador antes de publicarlo.",
+    "Publish": "Publicar",
+    "Archive": "Archivar",
+    "Long Text": "Texto Largo",
+    "A longer text wraps at a readable width and stays inside the viewport.": "Un texto más largo se ajusta a un ancho legible y queda dentro de la ventana gráfica.",
+    "Export": "Exportar",
+    "Exports every row the current filters show, its columns in the order they stand, as a file a spreadsheet opens.": "Exporta cada fila que muestran los filtros actuales, con sus columnas en el orden en que están, como un archivo que abre una hoja de cálculo."
   }
 }

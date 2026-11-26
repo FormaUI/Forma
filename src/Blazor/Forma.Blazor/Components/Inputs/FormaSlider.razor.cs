@@ -9,7 +9,7 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A bounded numeric input rendered as a native range slider, with its current value shown beside the label.</summary>
-public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where TValue : struct, INumber<TValue>
+public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue>, IDisableable where TValue : struct, INumber<TValue>
 {
     /// <summary>The slider's label.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -29,6 +29,15 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
     /// <summary>Whether the slider is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the slider is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
     // The visible reading, hidden from assistive technology, which hears the input's own value text.
     private string DisplayValue
         => Unit is null
@@ -41,7 +50,7 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnParametersSet()
@@ -67,6 +76,14 @@ public sealed partial class FormaSlider<TValue> : FormaInputBase<TValue> where T
     /// <inheritdoc />
     protected override bool TryParseValueFromString(string? value, out TValue result, [NotNullWhen(false)] out string? validationErrorMessage)
     {
+        // A slider disabled with a reason stays reachable, and keeps its value whatever reaches it.
+        if (ShowsDisabledReason)
+        {
+            result = CurrentValue;
+            validationErrorMessage = null;
+            return true;
+        }
+
         if (TValue.TryParse(value, CultureInfo.InvariantCulture, out var parsedValue) && TValue.IsFinite(parsedValue) && parsedValue >= Min && parsedValue <= Max)
         {
             result = parsedValue;

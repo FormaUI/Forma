@@ -19,4 +19,7 @@ public abstract record ToolbarItem
 
     /// <summary>Whether the item is disabled.</summary>
     public bool IsDisabled { get; init; }
+
+    /// <summary>Why the item is disabled, which the toolbar shows as its tooltip.</summary>
+    public string? DisabledReason { get; init; }
 }

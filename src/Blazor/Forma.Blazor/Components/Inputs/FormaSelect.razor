@@ -40,7 +40,8 @@
                         @ref="RootElement"
                         aria-describedby="@DescribedBy"
                         type="button"
-                        disabled="@IsTriggerDisabled"
+                        disabled="@(IsTriggerDisabled && !ShowsDisabledReason)"
+                        aria-disabled="@AriaDisabled"
                         aria-haspopup="listbox"
                         aria-expanded="@(IsOpen ? "true" : "false")"
                         aria-controls="@(IsOpen ? PopoverId : null)"
@@ -80,7 +81,7 @@
                                 tabindex="-1"
                                 aria-selected="@(isSelected ? "true" : "false")"
                                 aria-disabled="@(option.IsDisabled ? "true" : null)"
-                                aria-describedby="@(option.IconLabel is null ? null : GetOptionIconLabelId(optionIndex))"
+                                aria-describedby="@GetOptionDescribedBy(option, optionIndex)"
                                 @ref="_optionElements[optionIndex]"
                                 @onclick="() => SelectAsync(option)">
                             @if (option.Icon is { } icon)
@@ -103,7 +104,15 @@
                         <div class="forma-select-empty">@L["No options available yet"]</div>
                     }
                 </div>
+                @for (var i = 0; i < Options.Count; i++)
+                {
+                    if (Options[i].ShowsDisabledReason)
+                    {
+                        <FormaTooltip Id="@GetOptionReasonId(i)" Text="@(Options[i].DisabledReason!)" />
+                    }
+                }
             </FormaPopover>
         }
+        @DisabledReasonTooltip
     </ChildContent>
 </FormaField>

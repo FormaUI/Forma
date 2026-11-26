@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Web;
 
 /// <summary>A ghost icon button drawing the dismiss glyph.</summary>
-public sealed partial class FormaCloseButton : FormaElementBase
+public sealed partial class FormaCloseButton : FormaElementBase, IDisableable
 {
     /// <summary>The accessible name of the button.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -15,10 +15,19 @@ public sealed partial class FormaCloseButton : FormaElementBase
     /// <summary>Whether the button is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the button is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>Raised when the button is clicked.</summary>
     [Parameter] public EventCallback<MouseEventArgs> OnClick { get; set; }
 
     private FormaButton Button { get; set; } = default!;
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     /// <inheritdoc />
     public override ElementReference RootElement

@@ -9,7 +9,7 @@ using Forma.Framework.Composer.Plugins;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>Compact rich text editor preset providing typography, basic formatting, alignment, and links.</summary>
-public sealed partial class FormaCompactRichTextEditor : FormaInputBase<ComposerDocument>
+public sealed partial class FormaCompactRichTextEditor : FormaInputBase<ComposerDocument>, IDisableable
 {
     // A definition, from which each composer rendering this preset builds its own plugins.
     private static readonly ComposerDefinition Preset = ComposerDefinition.Create(composer => composer
@@ -25,8 +25,17 @@ public sealed partial class FormaCompactRichTextEditor : FormaInputBase<Composer
     /// <summary>Whether the editor is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the editor is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>Whether the editor is in a read-only state.</summary>
     [Parameter] public bool ReadOnly { get; set; }
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     private FormaComposer Composer { get; set; } = default!;
 
@@ -36,7 +45,7 @@ public sealed partial class FormaCompactRichTextEditor : FormaInputBase<Composer
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || DisabledReasons.IsShown(this)) && base.CanFocus;
 
     /// <inheritdoc />
     protected override ValueTask<bool> FocusControlAsync(bool preventScroll)

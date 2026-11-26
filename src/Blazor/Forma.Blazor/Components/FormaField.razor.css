@@ -76,25 +76,25 @@
 /* ---------- states ---------- */
 /* A button standing in the box, as a select's trigger, answers a hover anywhere in the box, its label among it. */
 @media (hover: hover) {
-    .forma-field-box-floating-label:hover:has(:where(button.forma-field-input:not(:disabled))) {
+    .forma-field-box-floating-label:hover:has(:where(button.forma-field-input:not(:disabled, [aria-disabled="true"]))) {
         border-color: var(--primary-ink-color);
     }
 }
 
-.forma-field-box-floating-label:has(:where(button.forma-field-input:not(:disabled))) > .forma-field-label {
+.forma-field-box-floating-label:has(:where(button.forma-field-input:not(:disabled, [aria-disabled="true"]))) > .forma-field-label {
     cursor: pointer;
 }
 
-::deep .forma-field-input:disabled {
+::deep .forma-field-input:is(:disabled, [aria-disabled="true"]) {
     color: var(--forma-input-disabled-color, var(--disabled-text-color));
     cursor: not-allowed;
 }
 
-.forma-field-box-floating-label:has(.forma-field-input:disabled) {
+.forma-field-box-floating-label:has(.forma-field-input:is(:disabled, [aria-disabled="true"])) {
     background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
 }
 
-.forma-field-box-floating-label:has(.forma-field-input[readonly]:not(:disabled)) {
+.forma-field-box-floating-label:has(.forma-field-input[readonly]:not(:disabled, [aria-disabled="true"])) {
     background-color: var(--forma-input-readonly-bg-color, var(--hover-bg-color));
 }
 
@@ -114,11 +114,11 @@
 }
 
 /* A field whose label stands beside its element leaves the element to draw its own look. */
-.forma-field-box:not(.forma-field-box-floating-label) ::deep .forma-field-input:disabled {
+.forma-field-box:not(.forma-field-box-floating-label) ::deep .forma-field-input:is(:disabled, [aria-disabled="true"]) {
     background-color: var(--forma-input-disabled-bg-color, var(--hover-bg-color));
 }
 
-.forma-field-box:not(.forma-field-box-floating-label) ::deep .forma-field-input[readonly]:not(:disabled) {
+.forma-field-box:not(.forma-field-box-floating-label) ::deep .forma-field-input[readonly]:not(:disabled, [aria-disabled="true"]) {
     background-color: var(--forma-input-readonly-bg-color, var(--hover-bg-color));
 }
 
@@ -261,14 +261,14 @@
     padding-block-start: var(--forma-field-label-offset);
 }
 
-/* A disabled element's label is disabled with it, whatever its mode. */
-.forma-field:has(.forma-field-input:disabled) .forma-field-label {
+/* A disabled element's label is disabled with it, whatever its mode, one disabled with a reason among them. */
+.forma-field:has(.forma-field-input:is(:disabled, [aria-disabled="true"])) .forma-field-label {
     color: var(--forma-label-disabled-color, var(--disabled-text-color));
 }
 
 /* The modes whose label stands beside the element hold a bare input of their own. */
-.forma-field-label-above:has(input:disabled) .forma-field-label,
-.forma-field-label-inline:has(input:disabled) .forma-field-label {
+.forma-field-label-above:has(input:is(:disabled, [aria-disabled="true"])) .forma-field-label,
+.forma-field-label-inline:has(input:is(:disabled, [aria-disabled="true"])) .forma-field-label {
     color: var(--forma-label-disabled-color, var(--disabled-text-color));
 }
 

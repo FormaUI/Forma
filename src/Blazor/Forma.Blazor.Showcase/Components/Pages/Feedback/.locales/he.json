@@ -181,5 +181,21 @@
     "First toast": "התראה ראשונה",
     "Second toast": "התראה שנייה",
     "Third toast": "התראה שלישית"
+  },
+  "FormaTooltipPage": {
+    "A short text describing a control, shown beside it on hover, focus and tap. The control names the tooltip in its aria-describedby, so a screen reader hears the text as the control's description.": "טקסט קצר שמתאר פקד, ומוצג לצידו בריחוף, במיקוד ובהקשה. הפקד מציין את תיאור הכלי ב־aria-describedby שלו, כך שקורא מסך שומע את הטקסט כתיאור של הפקד.",
+    "On a Control": "על פקד",
+    "Rest the pointer on the button, tab to it or tap it. Escape hides the tooltip, and the pointer can move onto it without it hiding.": "השאירו את הסמן על הכפתור, הגיעו אליו ב־Tab או הקישו עליו. Escape מסתיר את תיאור הכלי, והסמן יכול לעבור אליו בלי שייעלם.",
+    "Save Draft": "שמור טיוטה",
+    "Saved drafts are kept for thirty days.": "טיוטות שמורות נשמרות שלושים יום.",
+    "Disabled with a Reason": "מושבת עם סיבה",
+    "A button disabled with a DisabledReason stays in the tab order and the pointer's reach, does nothing when pressed, and shows its reason as its tooltip. One disabled without a reason, as Archive is, leaves the tab order.": "כפתור שמושבת עם DisabledReason נשאר בסדר המעבר ב־Tab ובהישג הסמן, לא עושה דבר כשלוחצים עליו, ומציג את הסיבה שלו כתיאור הכלי שלו. כפתור שמושבת בלי סיבה, כמו העבר לארכיון, יוצא מסדר המעבר.",
+    "Give the draft a title before you publish it.": "תנו לטיוטה כותרת לפני שתפרסמו אותה.",
+    "Publish": "פרסם",
+    "Archive": "העבר לארכיון",
+    "Long Text": "טקסט ארוך",
+    "A longer text wraps at a readable width and stays inside the viewport.": "טקסט ארוך יותר נשבר לשורות ברוחב קריא ונשאר בתוך אזור התצוגה.",
+    "Export": "ייצא",
+    "Exports every row the current filters show, its columns in the order they stand, as a file a spreadsheet opens.": "מייצא כל שורה שהמסננים הנוכחיים מציגים, עם העמודות שלה בסדר שבו הן עומדות, כקובץ שגיליון אלקטרוני פותח."
   }
 }

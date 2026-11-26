@@ -58,8 +58,9 @@
                        autocomplete="off"
                        placeholder="@Placeholder"
                        value="@ShownText"
-                       disabled="@IsFieldDisabled"
-                       readonly="@ReadOnly" />
+                       disabled="@(IsFieldDisabled && !ShowsDisabledReason)"
+                       readonly="@(ReadOnly || ShowsDisabledReason)"
+                       aria-disabled="@AriaDisabled" />
                 @if (CommittedOption?.IconLabel is { } committedIconLabel && !_isEdited)
                 {
                     <span id="@CommittedIconLabelId" hidden>@committedIconLabel</span>
@@ -94,7 +95,7 @@
                                          aria-posinset="@(entry.Index + 1)"
                                          aria-selected="@(entry.Index == _activeIndex ? "true" : "false")"
                                          aria-disabled="@(entry.Option is { IsDisabled: true } || (entry.AddsText is not null && _isAdding) ? "true" : null)"
-                                         aria-describedby="@(entry.Option?.IconLabel is null ? null : GetEntryIconLabelId(entry.Index))"
+                                         aria-describedby="@GetEntryDescribedBy(entry)"
                                          @onclick="() => TakeEntryAsync(entry)">
                                         @if (entry.Option is { } option)
                                         {
@@ -122,9 +123,17 @@
                             </FormaVirtualize>
                         }
                     </div>
+                    @foreach (var entry in Entries)
+                    {
+                        if (entry.Option is { ShowsDisabledReason: true } option)
+                        {
+                            <FormaTooltip Id="@GetEntryReasonId(entry.Index)" Text="@(option.DisabledReason!)" />
+                        }
+                    }
                 </FormaPopover>
                 <div class="forma-combo-box-status" role="status">@_announcement</div>
             </div>
         }
+        @DisabledReasonTooltip
     </ChildContent>
 </FormaField>

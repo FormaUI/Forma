@@ -5,7 +5,7 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A single command inside a <see cref="FormaDropDownMenu"/>.</summary>
-public sealed partial class FormaDropDownMenuItem : FormaElementBase
+public sealed partial class FormaDropDownMenuItem : FormaElementBase, IDisableable
 {
     [CascadingParameter] private FormaDropDownMenu Menu { get; set; } = default!;
 
@@ -14,6 +14,9 @@ public sealed partial class FormaDropDownMenuItem : FormaElementBase
 
     /// <summary>Whether the item is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the item is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>Whether the item's command destroys data.</summary>
     [Parameter] public bool IsDestructive { get; set; }
@@ -32,6 +35,22 @@ public sealed partial class FormaDropDownMenuItem : FormaElementBase
 
     // The address the item links to, which is none where its kind doesn't allow the one it was given.
     private string? _linkAddress;
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
+    /// <summary>Whether the menu's keys reach the item: an enabled one, or one disabled with the reason it shows.</summary>
+    internal bool IsReachable
+        => !Disabled || ShowsDisabledReason;
+
+    private bool ShowsDisabledReason
+        => DisabledReasons.IsShown(this);
+
+    private string? AriaDescribedBy
+        => DisabledReasons.AddTooltipId(this, ElementId, AdditionalAttributes?.GetValueOrDefault("aria-describedby")?.ToString());
 
     private string Role
         => IsSelected is null ? "menuitem" : "menuitemradio";

@@ -108,6 +108,21 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IHandleAfterRe
     protected string? ControlName
         => string.IsNullOrEmpty(NameAttributeValue) ? null : NameAttributeValue;
 
+    /// <summary>Whether the input is disabled with a reason, which it shows as its tooltip and stays reachable for.</summary>
+    /// <remarks>An input shows one where it is an <see cref="IDisableable"/> disabled with a reason: it writes <c>aria-disabled</c> and
+    /// <c>readonly</c> in place of <c>disabled</c>, so its value posts as a read-only one's does, and draws <see cref="DisabledReasonTooltip"/>
+    /// beside its control, which <see cref="DescribedBy"/> names.</remarks>
+    protected bool ShowsDisabledReason
+        => this is IDisableable disableable && DisabledReasons.IsShown(disableable);
+
+    /// <summary>The aria-disabled the input's control writes: true while it shows its reason, else the host's own.</summary>
+    protected object? AriaDisabled
+        => ShowsDisabledReason ? "true" : AdditionalAttributes?.GetValueOrDefault("aria-disabled");
+
+    /// <summary>The tooltip showing the input's reason for being disabled, which the input draws beside its control.</summary>
+    protected RenderFragment? DisabledReasonTooltip
+        => this is IDisableable { DisabledReason: { } reason } && ShowsDisabledReason ? RenderDisabledReasonTooltip(reason) : null;
+
     /// <summary>The space-separated element IDs used for the input's aria-describedby attribute.</summary>
     protected string? DescribedBy
     {
@@ -126,6 +141,11 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IHandleAfterRe
             }
 
             BuildDescribedBy(ids);
+
+            if (ShowsDisabledReason)
+            {
+                ids.Add(DisabledReasons.GetTooltipId(ElementId));
+            }
 
             if (HasFieldContainer && EditContext is { } editContext && editContext.GetValidationMessages(FieldIdentifier).Any())
             {
@@ -279,6 +299,15 @@ public abstract class FormaInputBase<TValue> : InputBase<TValue>, IHandleAfterRe
 
         form.NotifyValidationStateChanged();
     }
+
+    private RenderFragment RenderDisabledReasonTooltip(string reason)
+        => builder =>
+        {
+            builder.OpenComponent<Feedback.FormaTooltip>(0);
+            builder.AddComponentParameter(1, nameof(Feedback.FormaTooltip.Id), DisabledReasons.GetTooltipId(ElementId));
+            builder.AddComponentParameter(2, nameof(Feedback.FormaTooltip.Text), reason);
+            builder.CloseComponent();
+        };
 
     /// <summary>Adds the IDs of elements rendered by this component that describe the input.</summary>
     protected virtual void BuildDescribedBy(ICollection<string> ids)

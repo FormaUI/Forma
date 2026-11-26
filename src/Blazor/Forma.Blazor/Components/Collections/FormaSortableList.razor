@@ -22,6 +22,7 @@
                              IconOnly="true"
                              class="forma-sortable-list-handle"
                              Disabled="@(Disabled || !RendererInfo.IsInteractive)"
+                             DisabledReason="@(Disabled ? DisabledReason : null)"
                              aria-label="@HandleLabel(index)">
                     <FormaIcon Icon="Glyph.DragHandle" />
                 </FormaButton>

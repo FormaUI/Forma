@@ -27,5 +27,21 @@
             // Assert
             Assert.Equal("GitHub", cut.Find("button").GetAttribute("aria-label"));
         }
+
+        [Fact]
+        public void Should_show_its_reason_for_being_disabled_as_its_tooltip()
+        {
+            // Arrange
+            using var ctx = new FormaToggleButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaToggleButton Id="bold" Label="Bold" Disabled="true" DisabledReason="Select some text first" OnClick="() => { }" />);
+            var button = cut.Find("button");
+
+            // Assert
+            Assert.False(button.HasAttribute("disabled"));
+            Assert.Equal("true", button.GetAttribute("aria-disabled"));
+            Assert.Equal("Select some text first", cut.Find($"#{button.GetAttribute("aria-describedby")}").TextContent);
+        }
     }
 }

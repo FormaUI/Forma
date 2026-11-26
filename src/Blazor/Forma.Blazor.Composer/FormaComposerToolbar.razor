@@ -9,6 +9,7 @@
             Items="bar.Items"
             ShowHistory="index == 0 && View is null"
             Disabled="Disabled"
+            DisabledReason="@DisabledReason"
             KeyBindings="KeyBindings"
             PluginStates="Owner.ActiveStates"
             OnCommand="OnCommand">
@@ -18,6 +19,7 @@
                     <FormaButton Variant="ButtonVariant.Ghost"
                                  IconOnly="true"
                                  Disabled="Disabled"
+                                 DisabledReason="@DisabledReason"
                                  OnClick="TogglePlugins"
                                  aria-expanded="@(_arePluginsShown ? "true" : "false")"
                                  aria-controls="@PluginsId"
@@ -36,6 +38,7 @@
             Id="@PluginsId"
             Items="PluginItems"
             Disabled="Disabled"
+            DisabledReason="@DisabledReason"
             KeyBindings="KeyBindings"
             OnCommand="OnCommand"
             Hidden="!_arePluginsShown"

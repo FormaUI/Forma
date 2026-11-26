@@ -1,0 +1,33 @@
+@page "/{Runtime}/tooltip"
+
+@* A plain button its tooltip describes, a button disabled with the reason its tooltip gives, and a text box, a select, a check
+   box and a slider each disabled with a reason, between a button before and one after them; whether the disabled button ran
+   its command is written where the check reads it. *@
+<button id="before" type="button" data-check-scaffold>Before</button>
+<button id="save" type="button" data-check-scaffold aria-describedby="save-tip">Save Draft</button>
+<FormaTooltip Id="save-tip" Text="Saved drafts are kept for thirty days." />
+<FormaButton Id="publish" Disabled="true" DisabledReason="Give the draft a title before you publish it." OnClick="Publish">Publish</FormaButton>
+<FormaTextBox Id="club-name" Label="Club Name" @bind-Value="_clubName" Disabled="true" DisabledReason="Club names are set by the federation." />
+<FormaSelect TValue="int?" Id="plan" Label="Plan" Options="Plans" @bind-Value="_plan" Disabled="true" DisabledReason="Plans change at renewal." />
+<FormaCheckBox Id="newsletter" @bind-Value="_newsletter" Disabled="true" DisabledReason="Newsletters are paused this month.">Newsletter</FormaCheckBox>
+<FormaSlider TValue="int" Id="seats" Label="Seats" Min="1" Max="10" @bind-Value="_seats" Disabled="true" DisabledReason="Seats are counted at the door." />
+<button id="after" type="button" data-check-scaffold>After</button>
+@* A button in a right-to-left region, in the middle of the page so no edge holds its tooltip off its middle. *@
+<div dir="rtl" style="text-align: center">
+    <button id="rtl-save" type="button" data-check-scaffold aria-describedby="rtl-save-tip">שמור טיוטה</button>
+    <FormaTooltip Id="rtl-save-tip" Text="טיוטות שמורות נשמרות שלושים יום." />
+</div>
+<output id="result">@_result</output>
+
+@code {
+    private static readonly List<SelectOption<int?>> Plans = [new(1, "Monthly"), new(2, "Yearly")];
+
+    private string? _result;
+    private string? _clubName = "Harbor FC";
+    private int? _plan = 1;
+    private bool _newsletter;
+    private int _seats = 4;
+
+    private void Publish()
+        => _result = "Published";
+}

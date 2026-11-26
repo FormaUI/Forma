@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Components;
 
 /// <summary>A field for an amount of money in a currency the application names, typed as the formatting culture writes a number beside the symbol it writes the currency with.</summary>
 /// <typeparam name="TValue">The amount the field binds, a <see cref="decimal"/> or a nullable one.</typeparam>
-public sealed partial class FormaCurrencyInput<TValue> : FormaElementBase
+public sealed partial class FormaCurrencyInput<TValue> : FormaElementBase, IDisableable
 {
     /// <summary>The amount.</summary>
     [Parameter] public TValue? Value { get; set; }
@@ -42,6 +42,9 @@ public sealed partial class FormaCurrencyInput<TValue> : FormaElementBase
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the input is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>Whether the field is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
@@ -64,6 +67,12 @@ public sealed partial class FormaCurrencyInput<TValue> : FormaElementBase
     private int _minDecimalPlaces;
 
     private FormaNumberInput<TValue>? NumberInput { get; set; }
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     // The culture's currency pattern puts the symbol before the number, $n or $ n, or after it, n$ or n $.
     private NumberAdornment Adornment

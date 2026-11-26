@@ -267,4 +267,165 @@ public sealed class FeedbackTests
             await page.WaitForFunctionAsync("() => window.formaToastStates.join(' ') === 'shown gone'", null, new() { Timeout = 10000 });
         }
     }
+
+    public sealed class Tooltip(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_show_a_control_s_tooltip_as_the_keyboard_reaches_it_and_hide_it_on_escape_leaving_the_focus(string runtime)
+        {
+            // Arrange — the keyboard on the button before
+            var (context, page) = await OpenAsync(host, runtime, "tooltip");
+            await using var _ = context;
+            var save = page.Locator("#save");
+            var tooltip = page.Locator("#save-tip");
+            await page.Locator("#before").FocusAsync();
+
+            // Act — Tab to the button its tooltip describes, then Escape
+            await page.Keyboard.PressAsync("Tab");
+            await Assertions.Expect(save).ToBeFocusedAsync();
+            await Assertions.Expect(tooltip).ToBeVisibleAsync();
+            await page.Keyboard.PressAsync("Escape");
+
+            // Assert
+            await Assertions.Expect(tooltip).ToBeHiddenAsync();
+            await Assertions.Expect(save).ToBeFocusedAsync();
+            await Assertions.Expect(save).ToHaveAccessibleDescriptionAsync("Saved drafts are kept for thirty days.");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_show_a_control_s_tooltip_once_the_pointer_rests_on_it_and_keep_it_while_the_pointer_moves_onto_it(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "tooltip");
+            await using var _ = context;
+            var tooltip = page.Locator("#save-tip");
+
+            // Act — the pointer resting on the button, then moving onto the tooltip
+            await page.Locator("#save").HoverAsync();
+            await Assertions.Expect(tooltip).ToBeVisibleAsync();
+            await tooltip.HoverAsync();
+            await Assertions.Expect(tooltip).ToBeVisibleAsync();
+            await page.Locator("#after").HoverAsync();
+
+            // Assert — gone once the pointer has left both
+            await Assertions.Expect(tooltip).ToBeHiddenAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_show_a_control_s_tooltip_on_a_tap_and_hide_it_on_a_tap_elsewhere(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "tooltip");
+            await using var _ = context;
+            var tooltip = page.Locator("#save-tip");
+            var tap = new { pointerType = "touch", isPrimary = true, bubbles = true, composed = true };
+
+            // Act — a finger's press on the button, then on the button after
+            await page.Locator("#save").DispatchEventAsync("pointerdown", tap);
+            await Assertions.Expect(tooltip).ToBeVisibleAsync();
+            await page.Locator("#after").DispatchEventAsync("pointerdown", tap);
+
+            // Assert
+            await Assertions.Expect(tooltip).ToBeHiddenAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_hang_a_tooltip_centered_on_its_control_reading_right_to_left_in_a_right_to_left_region(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "tooltip");
+            await using var _ = context;
+            var control = page.Locator("#rtl-save");
+            var tooltip = page.Locator("#rtl-save-tip");
+
+            // Act
+            await control.HoverAsync();
+            await Assertions.Expect(tooltip).ToBeVisibleAsync();
+
+            // Assert — its middle over the control's, its text right to left
+            var controlBox = (await control.BoundingBoxAsync())!;
+            var tooltipBox = (await tooltip.BoundingBoxAsync())!;
+            Assert.Equal(controlBox.X + (controlBox.Width / 2), tooltipBox.X + (tooltipBox.Width / 2), 1.0);
+            Assert.Equal("rtl", await tooltip.EvaluateAsync<string>("tooltip => getComputedStyle(tooltip).direction"));
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_keep_a_button_disabled_with_a_reason_in_reach_and_inert_showing_its_reason(string runtime)
+        {
+            // Arrange — the keyboard on the button before
+            var (context, page) = await OpenAsync(host, runtime, "tooltip");
+            await using var _ = context;
+            var publish = page.Locator("#publish");
+            await page.Locator("#save").FocusAsync();
+
+            // Act — Tab to Publish, press it from the keyboard and with the pointer
+            await page.Keyboard.PressAsync("Tab");
+            await Assertions.Expect(publish).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator("#publish-disabled-reason")).ToBeVisibleAsync();
+            await page.Keyboard.PressAsync("Enter");
+            await publish.ClickAsync(new() { Force = true });
+
+            // Assert — nothing ran, and its reason describes it
+            await Assertions.Expect(publish).ToHaveAttributeAsync("aria-disabled", "true");
+            await Assertions.Expect(publish).ToHaveAccessibleDescriptionAsync("Give the draft a title before you publish it.");
+            await Assertions.Expect(page.Locator("#result")).ToBeEmptyAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_show_each_input_s_reason_as_the_keyboard_reaches_it_and_keep_the_input_from_changing(string runtime)
+        {
+            // Arrange — the keyboard on the button disabled with a reason, before the inputs
+            var (context, page) = await OpenAsync(host, runtime, "tooltip");
+            await using var _ = context;
+            await page.Locator("#publish").FocusAsync();
+
+            // Act — Tab to each input, its reason shown, then the keys that would change it pressed
+            foreach (var id in (string[])["club-name", "plan", "newsletter", "seats"])
+            {
+                await page.Keyboard.PressAsync("Tab");
+                await Assertions.Expect(page.Locator($"#{id}")).ToBeFocusedAsync();
+                await Assertions.Expect(page.Locator($"#{id}-disabled-reason")).ToBeVisibleAsync();
+            }
+
+            await page.Locator("#club-name").FocusAsync();
+            await page.Keyboard.TypeAsync("x");
+            await page.Locator("#plan").PressAsync("Enter");
+            await page.Locator("#newsletter").PressAsync("Space");
+            await page.Locator("#seats").PressAsync("ArrowRight");
+
+            // Assert — each as it was, and the select's list never opened
+            await Assertions.Expect(page.Locator("#club-name")).ToHaveValueAsync("Harbor FC");
+            await Assertions.Expect(page.GetByRole(AriaRole.Listbox)).ToHaveCountAsync(0);
+            await Assertions.Expect(page.Locator("#newsletter")).Not.ToBeCheckedAsync();
+            await Assertions.Expect(page.Locator("#seats")).ToHaveValueAsync("4");
+            await Assertions.Expect(page.Locator("#club-name")).ToHaveAccessibleDescriptionAsync("Club names are set by the federation.");
+        }
+
+        [Fact]
+        public async Task Should_show_a_button_s_reason_for_being_disabled_as_the_keyboard_reaches_it_on_a_static_page()
+        {
+            // Arrange — the page rendered statically, the keyboard on the button before
+            var (context, page) = await host.OpenPageAsync(await host.GetComponentsAddressAsync());
+            await using var _ = context;
+            await page.GotoAsync("static/tooltip");
+            await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync("Static False");
+            var publish = page.Locator("#publish");
+            await page.Locator("#save").FocusAsync();
+
+            // Act — the page's script shows the reason no renderer draws
+            await page.Keyboard.PressAsync("Tab");
+
+            // Assert
+            await Assertions.Expect(publish).ToBeFocusedAsync();
+            await Assertions.Expect(page.Locator("#publish-disabled-reason")).ToBeVisibleAsync();
+            await page.Keyboard.PressAsync("Escape");
+            await Assertions.Expect(page.Locator("#publish-disabled-reason")).ToBeHiddenAsync();
+        }
+    }
 }

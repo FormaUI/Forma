@@ -10,7 +10,7 @@ using Forma.Framework.Toolbar;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The toolbar of an editor or a view over it, with rows for its own commands and its plugins' commands.</summary>
-public sealed partial class FormaComposerToolbar : FormaComponentBase
+public sealed partial class FormaComposerToolbar : FormaComponentBase, IDisableable
 {
     /// <summary>The most commands one bar carries.</summary>
     public const int CommandsPerBar = 12;
@@ -27,6 +27,9 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     /// <summary>Whether every control on the toolbar is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the toolbar's commands are disabled, which each shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>The key bindings each action's shortcut is read from.</summary>
     [Parameter] public ComposerKeyBindingCatalog KeyBindings { get; set; } = ComposerKeyBindingCatalog.Empty;
 
@@ -34,6 +37,12 @@ public sealed partial class FormaComposerToolbar : FormaComponentBase
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     /// <inheritdoc />
     protected override Type LocaleSourceType

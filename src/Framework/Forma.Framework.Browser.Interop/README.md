@@ -216,6 +216,18 @@ sheet's Copy Link, Print and device share where the browser can run each, and ru
 measures a stepper whose names may not fit. Each finds its components again after every enhanced update. A host
 needs nothing to set them up.
 
+## A control's tooltip
+
+The same initializer installs `Tooltip.js` on every page, in a Web App and in a Blazor Hybrid web view alike. It shows
+the `FormaTooltip` a control names in its `aria-describedby` beside the control:
+
+- after the pointer rests on the control a moment, at once when the keyboard's focus reaches it, and on a tap;
+- while the pointer stays on the control or the tooltip, or the control keeps the focus;
+- until Escape or a press elsewhere hides it, Escape going to the tooltip ahead of a dialog around it.
+
+A control disabled with the reason its tooltip gives does nothing when pressed, its keys changing nothing, on a page
+no renderer handles too. A host needs nothing to set it up.
+
 ## License
 
 Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).

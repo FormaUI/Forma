@@ -20,7 +20,8 @@
                    aria-required="@(Required ? "true" : null)"
                    aria-labelledby="@NameId"
                    aria-describedby="@TriggerDescribedBy"
-                   disabled="@Disabled" />
+                   disabled="@(Disabled && !ShowsDisabledReason)"
+                   aria-disabled="@(ShowsDisabledReason ? "true" : TriggerAttributes?.GetValueOrDefault("aria-disabled"))" />
         }
         else
         {
@@ -35,7 +36,8 @@
                     aria-required="@(Required ? "true" : null)"
                     aria-labelledby="@LabelledBy"
                     aria-describedby="@TriggerDescribedBy"
-                    disabled="@IsTriggerDisabled"
+                    disabled="@(IsTriggerDisabled && !ShowsDisabledReason)"
+                    aria-disabled="@(ShowsDisabledReason ? "true" : TriggerAttributes?.GetValueOrDefault("aria-disabled"))"
                     @onclick="ToggleAsync">
                 <span class="forma-date-box-arrow" aria-hidden="true">&#9662;</span>
                 <span id="@ValueId" class="forma-date-box-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : L["Select Date"])</span>

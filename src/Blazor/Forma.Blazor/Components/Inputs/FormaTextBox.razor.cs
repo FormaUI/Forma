@@ -10,7 +10,7 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A single-line text input, bare or inside a labeled field.</summary>
-public sealed partial class FormaTextBox : FormaInputBase<string?>
+public sealed partial class FormaTextBox : FormaInputBase<string?>, IDisableable
 {
     private static readonly AutofillWatchOptions AutofillOptions = new();
 
@@ -29,6 +29,9 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
 
     /// <summary>Whether the text box is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the text box is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>Whether the text box is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
@@ -107,6 +110,12 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
         => Options.SpellCheck is { } spellCheck ? (spellCheck ? "true" : "false") : null;
 
     // A labeled box's width sizes the field wrapper, which is what occupies the row.
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
     private string? FieldStyle
         => HasLabel ? WidthDeclaration : null;
 
@@ -115,7 +124,7 @@ public sealed partial class FormaTextBox : FormaInputBase<string?>
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnParametersSet()

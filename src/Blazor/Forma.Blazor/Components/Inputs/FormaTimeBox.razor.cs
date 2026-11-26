@@ -13,7 +13,7 @@ using Forma.Framework.Input.Keyboard;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A field for typing a time of day, with a list of suggested times that opens beneath it, as an editable combobox.</summary>
-public sealed partial class FormaTimeBox : FormaComponentBase
+public sealed partial class FormaTimeBox : FormaComponentBase, IDisableable
 {
     private const string NextAction = "time-box.next";
     private const string PreviousAction = "time-box.previous";
@@ -82,6 +82,9 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the field is disabled, which its owner shows as its tooltip and names in <see cref="InputDescribedBy"/>.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>Whether the field is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
@@ -124,6 +127,16 @@ public sealed partial class FormaTimeBox : FormaComponentBase
     private FormaPopover Popover { get; set; } = default!;
 
     private FormaVirtualize<TimeOption>? Virtualizer { get; set; }
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
+    // A field disabled with a reason stays reachable, read-only, so its reader can learn why.
+    private bool ShowsDisabledReason
+        => DisabledReasons.IsShown(this);
 
     private bool IsOpen
         => Popover is { IsOpen: true };

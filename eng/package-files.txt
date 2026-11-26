@@ -238,6 +238,7 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/components/ShareMenu.js
     staticwebassets/scripts/components/Splitter.js
     staticwebassets/scripts/components/Stepper.js
+    staticwebassets/scripts/components/Tooltip.js
     staticwebassets/scripts/components/Virtualize.js
     staticwebassets/scripts/components/Window.js
     staticwebassets/scripts/DomElement.mjs

@@ -20,7 +20,7 @@
     touch-action: manipulation;
 }
 
-.forma-slider:disabled {
+.forma-slider:is(:disabled, [aria-disabled="true"]) {
     accent-color: var(--forma-slider-disabled-accent-color, var(--disabled-text-color));
     opacity: 0.65;
     cursor: not-allowed;

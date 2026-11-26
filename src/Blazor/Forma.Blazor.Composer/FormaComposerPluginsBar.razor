@@ -12,6 +12,7 @@
             Label="@L["Plugin Commands"]"
             Items="_visibleItems"
             Disabled="Disabled"
+            DisabledReason="@DisabledReason"
             KeyBindings="KeyBindings"
             OnCommand="OnCommand">
             <TrailingContent>
@@ -20,6 +21,7 @@
                     <FormaOverflowMenu Orientation="MenuOrientation.Vertical"
                                        TriggerOptions="ButtonOptions.MiniGhostIcon"
                                        Disabled="Disabled"
+                                       DisabledReason="@DisabledReason"
                                        Label="@L["More Plugin Commands"]">
                         @foreach (var action in _overflowingActions)
                         {

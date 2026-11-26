@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 
 /// <summary>A field for a time of day, typed as the formatting culture writes it or chosen from a list of suggested times.</summary>
 /// <typeparam name="TValue">The time the field binds, a <see cref="TimeOnly"/> or a nullable one.</typeparam>
-public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
+public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>, IDisableable
 {
     // The form a chosen time takes between the list and the base's parsing, the same in every culture and to the tick.
     private const string RoundTripFormat = "HH:mm:ss.FFFFFFF";
@@ -24,6 +24,9 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
 
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the field is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>Whether the field is read-only.</summary>
     [Parameter] public bool ReadOnly { get; set; }
@@ -50,6 +53,12 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
     private TValue? _valueWhenDrafted;
 
     private FormaTimeBox? Box { get; set; }
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     /// <inheritdoc />
     public override ElementReference RootElement
@@ -78,7 +87,7 @@ public sealed partial class FormaTimePicker<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnInitialized()

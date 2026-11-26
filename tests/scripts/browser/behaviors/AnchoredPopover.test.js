@@ -56,6 +56,32 @@ describe('AnchoredPopover', () => {
         expect(popover.style.top).toBe('134px');
     });
 
+    it('places the popover above the anchor where asked and it fits', () => {
+        setAnchorRect({ top: 400, bottom: 430, left: 50, right: 90, width: 40, height: 30 });
+        const handle = attach(popover, { anchor, side: 'above' });
+
+        handle.open();
+
+        expect(popover.style.top).toBe('246px');
+    });
+
+    it('places a popover asked above below the anchor where there is no room above', () => {
+        const handle = attach(popover, { anchor, side: 'above' });
+
+        handle.open();
+
+        expect(popover.style.top).toBe('134px');
+    });
+
+    it('centers the popover on the anchor where asked', () => {
+        setAnchorRect({ top: 400, bottom: 430, left: 300, right: 340, width: 40, height: 30 });
+        const handle = attach(popover, { anchor, align: 'center' });
+
+        handle.open();
+
+        expect(popover.style.left).toBe('220px');
+    });
+
     it('publishes the anchor\'s inline size on the popover, again as the anchor widens', () => {
         const handle = attach(popover, { anchor });
         handle.open();

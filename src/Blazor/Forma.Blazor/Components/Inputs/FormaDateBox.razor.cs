@@ -9,7 +9,7 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A trigger showing a date, with a calendar that opens beneath it for picking one.</summary>
-public sealed partial class FormaDateBox : FormaComponentBase
+public sealed partial class FormaDateBox : FormaComponentBase, IDisableable
 {
     /// <summary>The id of the trigger, which a label names.</summary>
     [Parameter, EditorRequired] public string ElementId { get; set; } = default!;
@@ -41,6 +41,9 @@ public sealed partial class FormaDateBox : FormaComponentBase
     /// <summary>Whether the trigger is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the field is disabled, which its owner shows as its tooltip and names in <see cref="TriggerDescribedBy"/>.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>Whether the date is shown without a way to change it.</summary>
     [Parameter] public bool ReadOnly { get; set; }
 
@@ -65,6 +68,16 @@ public sealed partial class FormaDateBox : FormaComponentBase
     public ElementReference TriggerElement { get; private set; }
 
     private FormaPopover Popover { get; set; } = default!;
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
+    // A field disabled with a reason stays reachable, so its reader can learn why.
+    private bool ShowsDisabledReason
+        => DisabledReasons.IsShown(this);
 
     private bool IsOpen
         => Popover is { IsOpen: true };
@@ -99,6 +112,11 @@ public sealed partial class FormaDateBox : FormaComponentBase
         if (IsOpen)
         {
             await Popover.CloseAsync();
+            return;
+        }
+
+        if (Disabled)
+        {
             return;
         }
 

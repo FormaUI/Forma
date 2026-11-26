@@ -137,5 +137,21 @@
             // Assert
             Assert.Throws<ArgumentException>(act);
         }
+
+        [Fact]
+        public void Should_show_its_reason_for_being_disabled_as_its_tooltip()
+        {
+            // Arrange
+            using var ctx = new FormaEyeButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaEyeButton Id="bold" Label="Show Password" Disabled="true" DisabledReason="Select some text first" OnClick="() => { }" />);
+            var button = cut.Find("button");
+
+            // Assert
+            Assert.False(button.HasAttribute("disabled"));
+            Assert.Equal("true", button.GetAttribute("aria-disabled"));
+            Assert.Equal("Select some text first", cut.Find($"#{button.GetAttribute("aria-describedby")}").TextContent);
+        }
     }
 }

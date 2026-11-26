@@ -9,7 +9,8 @@
               placeholder="@L["Edit Content"]"
               aria-label="@L["Plain Text"]"
               aria-describedby="@Composer?.DescribedBy"
-              disabled="@IsDisabled"
-              readonly="@IsReadOnly"
+              disabled="@(IsDisabled && !ShowsDisabledReason)"
+              readonly="@(IsReadOnly || ShowsDisabledReason)"
+              aria-disabled="@(ShowsDisabledReason ? "true" : null)"
               spellcheck="false"></textarea>
 </div>

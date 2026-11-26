@@ -27,6 +27,8 @@
        tabindex="@LinkTabIndex"
        data-busy="@DataBusy"
        aria-disabled="@LinkAriaDisabled"
+       aria-describedby="@AriaDescribedBy"
+       title="@Title"
        aria-busy="@AriaBusy"
        @onclick="ClickCallback">@content</a>
 }
@@ -39,10 +41,17 @@ else
             @attributes="AdditionalAttributes"
             @ref="RootElement"
             type="@TypeAttribute"
-            disabled="@IsDisabled"
+            disabled="@HasDisabledAttribute"
             data-busy="@DataBusy"
             aria-disabled="@AriaDisabled"
+            aria-describedby="@AriaDescribedBy"
+            title="@Title"
             aria-busy="@AriaBusy"
             @onclick="ClickCallback"
-            @onclick:preventDefault="Busy">@content</button>
+            @onclick:preventDefault="Busy || ShowsDisabledReason">@content</button>
+}
+
+@if (ShowsDisabledReason)
+{
+    <FormaTooltip Id="@DisabledReasonId" Text="@(DisabledReason!)" />
 }

@@ -1,0 +1,38 @@
+/* ============================================================
+   FormaTooltip — CSS isolation
+   A short text on an inverse surface in the top layer, placed by
+   the page's tooltip script through left/top beside the control
+   that names it, wrapping at a readable width, with the UA's own
+   inset and margin cleared.
+   ============================================================ */
+
+.forma-tooltip {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: var(--space-1) var(--space-2);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background-color: var(--forma-tooltip-bg-color, var(--text-primary-color));
+    color: var(--forma-tooltip-color, var(--gray-0));
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-target);
+    /* A readable measure, never wider than the viewport the top layer lays it out against. */
+    max-inline-size: min(32ch, calc(100vw - var(--space-4)));
+    overflow-wrap: anywhere;
+    z-index: var(--z-index-popover);
+}
+
+/* Without popover support the element is never display:none to begin with, so it is hidden while closed here. */
+@supports not selector(:popover-open) {
+    .forma-tooltip {
+        display: none;
+    }
+}
+
+/* Forced colors draws no fill, so the tooltip keeps an outline of its own. */
+@media (forced-colors: active) {
+    .forma-tooltip {
+        border: 1px solid CanvasText;
+    }
+}

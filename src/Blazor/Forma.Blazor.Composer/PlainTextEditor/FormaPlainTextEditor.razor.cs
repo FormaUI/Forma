@@ -57,6 +57,10 @@ public sealed partial class FormaPlainTextEditor : FormaComponentBase
     private bool IsDisabled
         => Composer?.IsDisabled ?? false;
 
+    // A composer disabled with a reason keeps its text reachable, read-only, so its reader can learn why.
+    private bool ShowsDisabledReason
+        => IsDisabled && !string.IsNullOrWhiteSpace(Composer?.DisabledReason);
+
     private bool IsReadOnly
         => Composer?.IsReadOnly ?? false;
 

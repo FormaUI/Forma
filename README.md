@@ -208,6 +208,28 @@ address's scheme but never the address. Where a component has a state for having
 sets out each kind's schemes. A component of the host's own, built on `FormaComponentBase`, holds an address to the
 same rule through `Context.GetAllowedAddress(address, kind)`.
 
+### Why a control is disabled
+
+Every control that takes `Disabled`, a button, an input, a menu or a toolbar, also takes `DisabledReason`, and so do a
+toolbar's items, a select's options and a share menu's actions beside their `IsDisabled`. A control disabled with a
+reason stays in the tab order and the pointer's reach, does nothing when pressed, and shows the reason as its tooltip
+on hover, focus and tap; screen readers hear it as the control's description. An input disabled with a reason keeps
+its value, posted as a read-only one's is. One disabled without a reason leaves the tab order, as the browser disables
+it:
+
+```razor
+<FormaButton Disabled="!HasTitle" DisabledReason="Give the draft a title before you publish it." OnClick="PublishAsync">
+    Publish
+</FormaButton>
+```
+
+`FormaTooltip` gives any control a tooltip of its own: the control names it in its `aria-describedby`.
+
+```razor
+<FormaButton aria-describedby="save-tip">Save Draft</FormaButton>
+<FormaTooltip Id="save-tip" Text="Saved drafts are kept for thirty days." />
+```
+
 ### Toasts and confirmation dialogs
 
 Toasts and confirmation dialogs are raised through a service and drawn by a component. Place the component once

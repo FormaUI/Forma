@@ -1,0 +1,33 @@
+@page "/tooltip"
+@attribute [ShowcasePage("FormaTooltip")]
+@using Forma.Blazor.Components.Feedback
+
+<h1>FormaTooltip</h1>
+<p class="description">@L["A short text describing a control, shown beside it on hover, focus and tap. The control names the tooltip in its aria-describedby, so a screen reader hears the text as the control's description."]</p>
+
+<div class="demo-section">
+    <h2>@L["On a Control"]</h2>
+    <p class="description">@L["Rest the pointer on the button, tab to it or tap it. Escape hides the tooltip, and the pointer can move onto it without it hiding."]</p>
+    <div class="demo-box demo-row">
+        <FormaButton aria-describedby="tooltip-save">@L["Save Draft"]</FormaButton>
+        <FormaTooltip Id="tooltip-save" Text="@L["Saved drafts are kept for thirty days."]" />
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Disabled with a Reason"]</h2>
+    <p class="description">@L["A button disabled with a DisabledReason stays in the tab order and the pointer's reach, does nothing when pressed, and shows its reason as its tooltip. One disabled without a reason, as Archive is, leaves the tab order."]</p>
+    <div class="demo-box demo-row">
+        <FormaButton Variant="ButtonVariant.Primary" Disabled="true" DisabledReason="@L["Give the draft a title before you publish it."]">@L["Publish"]</FormaButton>
+        <FormaButton Disabled="true">@L["Archive"]</FormaButton>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Long Text"]</h2>
+    <p class="description">@L["A longer text wraps at a readable width and stays inside the viewport."]</p>
+    <div class="demo-box demo-row">
+        <FormaButton aria-describedby="tooltip-export">@L["Export"]</FormaButton>
+        <FormaTooltip Id="tooltip-export" Text="@L["Exports every row the current filters show, its columns in the order they stand, as a file a spreadsheet opens."]" />
+    </div>
+</div>

@@ -139,5 +139,21 @@
                 Assert.Equal(cut.FindComponent<FormaButton>().Instance.RootElement.Id, cut.Instance.RootElement.Id);
             });
         }
+
+        [Fact]
+        public void Should_show_its_reason_for_being_disabled_as_its_tooltip()
+        {
+            // Arrange
+            using var ctx = new FormaCloseButtonTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaCloseButton Id="bold" Label="Close" Disabled="true" DisabledReason="Select some text first" OnClick="() => { }" />);
+            var button = cut.Find("button");
+
+            // Assert
+            Assert.False(button.HasAttribute("disabled"));
+            Assert.Equal("true", button.GetAttribute("aria-disabled"));
+            Assert.Equal("Select some text first", cut.Find($"#{button.GetAttribute("aria-describedby")}").TextContent);
+        }
     }
 }

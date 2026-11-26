@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**81 components implemented, none in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**81 components implemented, one in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -24,14 +24,15 @@ Forma.Blazor/Components/
 │   └── ✅ FormaSortableList
 ├── (1 / 1) Debugging/InputInspector/
 │   └── ✅ FormaInputInspector
-├── (7 / 7) Feedback/
+├── (7 / 8) Feedback/
 │   ├── ✅ FormaCapacityIndicator
 │   ├── ✅ FormaConfirmDialog
 │   ├── ✅ FormaDialog
 │   ├── ✅ FormaPopover
 │   ├── ✅ FormaSpinner
 │   ├── ✅ FormaStatusBadge
-│   └── ✅ FormaToastContainer
+│   ├── ✅ FormaToastContainer
+│   └── ◐ FormaTooltip
 ├── (4 / 4) Files/
 │   ├── ✅ FormaFilePicker
 │   ├── ✅ FormaFileUploader

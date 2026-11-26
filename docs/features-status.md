@@ -27,7 +27,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests, a faster gate, builds in processes of their own and the examples' locale lint; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Four components implemented, fifteen changes fixed; a disabled control's reason and a path per culture open |
+| [A host's requests](#a-hosts-requests) | Four components implemented, fifteen changes fixed; a disabled control's reason under way and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -235,7 +235,7 @@ here in the order they are taken, each with what the code does and its state.
 | A stepper's current marker apart from its marks | `FormaStepper` filled its current marker in the active color its completed steps' marks take, and no one shade fills the marker deep enough for its number and draws the marks light enough on a dark band. The current marker takes its fill from `--forma-stepper-current-marker-bg-color`, the active color where it's unset | Fixed |
 | An image picker's types | `FormaImagePicker` set `Accept` to `image/*` whatever the host gave. It takes the image types the host names, and every image type where it names none | Fixed |
 | A multi-select's search by every word, without accents | `FormaMultiSelect` matched the text typed by case alone. It finds an option by every word typed, ignoring case, accents and width, ranks the options as `FormaComboBox` does, and offers to add the text only where no option holds that name | Fixed |
-| A disabled control's reason | A disabled control leaves the tab order and the pointer's reach, so a reason attached to it is never met. [The tooltip design](tooltip-design.md) adds `FormaTooltip`, and `IDisableable`, which every component that can be disabled implements, showing its `DisabledReason` as its tooltip | Planned |
+| A disabled control's reason | A disabled control left the tab order and the pointer's reach, so a reason attached to it was never met. [The tooltip design](tooltip-design.md) adds `FormaTooltip`, and `IDisableable`, which the buttons, the inputs, the menus, the toolbars, the sortable list and the composer implement, each showing its `DisabledReason` as its tooltip; the frame, the chrome, the window and the explorer's catalog items wait on where a region's reason shows | Under way |
 | A path per culture | The culture router gives a page one path in every culture. A route of one identity with a path in each culture, `/es/noticias` and `/en/news`, which links, alternate addresses and the switch all read, with a page to lead to where a culture has no counterpart, is planned; a host routes such pages itself until then, as it does today | Planned, not under way |
 
 <a id="a-security-check"></a>

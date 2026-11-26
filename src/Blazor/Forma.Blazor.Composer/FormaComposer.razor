@@ -26,6 +26,7 @@
                                 Plugins="_surfacePlugins"
                                 ShowToolbar="ShowToolbar"
                                 Disabled="Disabled"
+                                DisabledReason="@DisabledReason"
                                 KeyBindings="_keyBindingCatalog"
                                 OnCommand="HandleCommandAsync" />
                         }
@@ -42,6 +43,7 @@
                                 Plugins="_surfacePlugins"
                                 ShowToolbar="ShowToolbar"
                                 Disabled="Disabled"
+                                DisabledReason="@DisabledReason"
                                 KeyBindings="_keyBindingCatalog"
                                 OnCommand="HandleCommandAsync" />
                         }
@@ -57,6 +59,7 @@
                 Plugins="_surfacePlugins"
                 ShowToolbar="ShowToolbar"
                 Disabled="Disabled"
+                DisabledReason="@DisabledReason"
                 KeyBindings="_keyBindingCatalog"
                 OnCommand="HandleCommandAsync" />
         }
@@ -112,6 +115,7 @@
             }
         </FormaComposerDialog>
     }
+    @DisabledReasonTooltip
 </CascadingValue>
 </CascadingValue>
 </CascadingValue>

@@ -14,7 +14,7 @@ using Forma.Framework.Toolbar;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A toolbar of items and groups of items.</summary>
-public sealed partial class FormaToolbar : FormaElementBase
+public sealed partial class FormaToolbar : FormaElementBase, IDisableable
 {
     private static readonly ButtonOptions MenuTriggerOptions =
         new() { Variant = ButtonVariant.Ghost, Size = ButtonSize.Mini };
@@ -37,6 +37,9 @@ public sealed partial class FormaToolbar : FormaElementBase
 
     /// <summary>Whether every control in the toolbar is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the toolbar is disabled, which each of its items shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>Whether an item with an icon also shows its label.</summary>
     [Parameter] public bool ShowLabels { get; set; }
@@ -235,6 +238,16 @@ public sealed partial class FormaToolbar : FormaElementBase
     /// <summary>Whether a menu option is the chosen one, because it says so itself or because the host reports its id active.</summary>
     private bool IsOptionActive(ToolbarOption option)
         => option.IsActive || ActiveStates.Contains(option.Id);
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
+    // The reason a disabled item shows: the toolbar's own where the whole toolbar is disabled, else the item's.
+    private string? GetDisabledReason(ToolbarItem item)
+        => Disabled ? DisabledReason : item.DisabledReason;
 
     /// <summary>Whether an action cannot be run, because it is disabled outright or the state it needs is absent.</summary>
     private bool IsUnavailable(ToolbarAction action)

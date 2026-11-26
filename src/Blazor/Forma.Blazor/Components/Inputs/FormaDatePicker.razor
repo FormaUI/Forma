@@ -18,7 +18,9 @@
                    value="@FormValue.FormatDate(Date)"
                    min="@FormValue.FormatDate(MinDate)"
                    max="@FormValue.FormatDate(MaxDate)"
-                   disabled="@Disabled"
+                   disabled="@(Disabled && !ShowsDisabledReason)"
+                   readonly="@ShowsDisabledReason"
+                   aria-disabled="@AriaDisabled"
                    required="@IsRequired" />
         }
         else
@@ -34,11 +36,13 @@
                           OnClear="HandleClear"
                           Required="@IsRequired"
                           Disabled="@Disabled"
+                          DisabledReason="@DisabledReason"
                           NameId="@FieldElementIds.LabelId"
                           TriggerClass="@RootClass"
                           TriggerStyle="@RootStyle"
                           TriggerAttributes="AdditionalAttributes"
                           TriggerDescribedBy="@DescribedBy" />
         }
+        @DisabledReasonTooltip
     </ChildContent>
 </FormaField>

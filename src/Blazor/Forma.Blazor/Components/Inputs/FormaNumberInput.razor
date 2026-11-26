@@ -21,8 +21,9 @@
                 min="@FormatLimit(Min)"
                 max="@FormatLimit(Max)"
                 step="@PostedStep"
-                disabled="@Disabled"
-                readonly="@ReadOnly"
+                disabled="@(Disabled && !ShowsDisabledReason)"
+                readonly="@(ReadOnly || ShowsDisabledReason)"
+                aria-disabled="@AriaDisabled"
                 required="@IsRequired" />;
 
     RenderFragment number = !RendererInfo.IsInteractive ? postedInput :
@@ -39,8 +40,9 @@
                 inputmode="@InputModeValue"
                 placeholder="@EffectivePlaceholder"
                 value="@ShownText"
-                disabled="@Disabled"
-                readonly="@ReadOnly"
+                disabled="@(Disabled && !ShowsDisabledReason)"
+                readonly="@(ReadOnly || ShowsDisabledReason)"
+                aria-disabled="@AriaDisabled"
                 aria-required="@(IsRequired ? "true" : null)"
                 aria-valuenow="@ValueNow"
                 aria-valuetext="@ValueText"
@@ -73,10 +75,12 @@
     <FormaField Label="@Label" TargetId="@ElementId" Field="@FieldIdentifier" ElementIds="FieldElementIds" Description="@Description" Required="@IsRequired" LabelMode="LabelMode" style="@FieldStyle">
         <ChildContent>
             @box
+            @DisabledReasonTooltip
         </ChildContent>
     </FormaField>
 }
 else
 {
     @box
+    @DisabledReasonTooltip
 }

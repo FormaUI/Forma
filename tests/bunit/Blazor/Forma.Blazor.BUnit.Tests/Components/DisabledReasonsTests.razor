@@ -1,0 +1,316 @@
+@inherits FormaBunitContext
+@code {
+    private const string Reason = "Set by the club's administrators";
+
+    public sealed class Helper
+    {
+        [Theory]
+        [InlineData(true, "Set by the club", true)]
+        [InlineData(true, null, false)]
+        [InlineData(true, "   ", false)]
+        [InlineData(false, "Set by the club", false)]
+        public void Should_show_a_reason_only_on_a_component_disabled_with_one(bool isDisabled, string? reason, bool expected)
+        {
+            // Arrange
+            var component = new Disableable(isDisabled, reason);
+
+            // Act
+            var isShown = DisabledReasons.IsShown(component);
+
+            // Assert
+            Assert.Equal(expected, isShown);
+        }
+
+        [Fact]
+        public void Should_add_the_reason_s_tooltip_to_what_describes_an_element()
+        {
+            // Arrange
+            var component = new Disableable(true, "Set by the club");
+
+            // Act
+            var describedBy = DisabledReasons.AddTooltipId(component, "name", "name-hint");
+
+            // Assert
+            Assert.Equal("name-hint name-disabled-reason", describedBy);
+        }
+
+        private sealed record Disableable(bool IsDisabled, string? DisabledReason) : IDisableable;
+    }
+
+    public sealed class TypedInput
+    {
+        [Fact]
+        public void Should_stay_reachable_read_only_and_described_by_its_reason()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var model = new FakeModel { Text = "Ada" };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox Id="name" @bind-Value="model.Text" Label="Name" Disabled="true" DisabledReason="@Reason" />
+            </FakeFormHost>);
+            var input = cut.Find("#name");
+
+            // Assert
+            Assert.False(input.HasAttribute("disabled"));
+            Assert.True(input.HasAttribute("readonly"));
+            Assert.Equal("true", input.GetAttribute("aria-disabled"));
+            Assert.Contains("name-disabled-reason", input.GetAttribute("aria-describedby"), StringComparison.Ordinal);
+            Assert.Equal(Reason, cut.Find("#name-disabled-reason[role=tooltip]").TextContent);
+        }
+
+        [Fact]
+        public void Should_keep_a_number_s_value_read_only_with_its_reason()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var model = new FakeModel { Number = 12 };
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaNumberInput TValue="int" Id="seats" @bind-Value="model.Number" Label="Seats" Disabled="true" DisabledReason="@Reason" />
+            </FakeFormHost>);
+            var input = cut.Find("#seats");
+
+            // Assert
+            Assert.False(input.HasAttribute("disabled"));
+            Assert.True(input.HasAttribute("readonly"));
+            Assert.Equal(Reason, cut.Find("#seats-disabled-reason").TextContent);
+        }
+
+        [Fact]
+        public void Should_be_disabled_by_the_browser_without_a_reason()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaTextBox Id="name" @bind-Value="model.Text" Label="Name" Disabled="true" />
+            </FakeFormHost>);
+
+            // Assert
+            Assert.True(cut.Find("#name").HasAttribute("disabled"));
+            Assert.Empty(cut.FindAll("[role=tooltip]"));
+        }
+    }
+
+    public sealed class Trigger
+    {
+        private static readonly List<SelectOption<int?>> Plans = [new(1, "Monthly"), new(2, "Yearly")];
+
+        [Fact]
+        public void Should_keep_a_select_s_trigger_reachable_and_open_nothing()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" Id="plan" @bind-Value="model.Status" Options="Plans" Label="Plan" Disabled="true" DisabledReason="@Reason" />
+            </FakeFormHost>);
+            var trigger = cut.Find("#plan");
+
+            // Act
+            trigger.Click();
+
+            // Assert
+            Assert.False(trigger.HasAttribute("disabled"));
+            Assert.Equal("true", trigger.GetAttribute("aria-disabled"));
+            Assert.Empty(cut.FindAll(".forma-select-popover"));
+            Assert.Equal(Reason, cut.Find("#plan-disabled-reason").TextContent);
+        }
+
+        [Fact]
+        public void Should_keep_a_date_picker_s_trigger_reachable_and_open_no_calendar()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaDatePicker Id="renewal" @bind-Value="model.Date" Label="Renewal" Disabled="true" DisabledReason="@Reason" />
+            </FakeFormHost>);
+            var trigger = cut.Find(".forma-date-picker-trigger");
+
+            // Act
+            trigger.Click();
+
+            // Assert
+            Assert.False(trigger.HasAttribute("disabled"));
+            Assert.Equal("true", trigger.GetAttribute("aria-disabled"));
+            Assert.Empty(cut.FindAll(".forma-calendar-month"));
+            Assert.Equal(Reason, cut.Find("#renewal-disabled-reason").TextContent);
+        }
+    }
+
+    public sealed class Choice
+    {
+        [Fact]
+        public void Should_keep_a_check_box_disabled_with_a_reason_from_changing()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox Id="newsletter" @bind-Value="model.Toggle" Disabled="true" DisabledReason="@Reason">Newsletter</FormaCheckBox>
+            </FakeFormHost>);
+            var box = cut.Find("#newsletter");
+
+            // Act
+            box.Change(true);
+
+            // Assert
+            Assert.False(model.Toggle);
+            Assert.False(box.HasAttribute("disabled"));
+            Assert.Equal("true", box.GetAttribute("aria-disabled"));
+        }
+
+        [Fact]
+        public void Should_keep_a_host_s_own_aria_disabled_where_it_shows_no_reason()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaCheckBox Id="locked" @bind-Value="model.Toggle" aria-disabled="true">Locked</FormaCheckBox>
+            </FakeFormHost>);
+
+            // Assert
+            Assert.Equal("true", cut.Find("#locked").GetAttribute("aria-disabled"));
+        }
+
+        [Fact]
+        public void Should_keep_a_slider_disabled_with_a_reason_at_its_value()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var model = new FakeModel { Ratio = 1 };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSlider Id="speed" @bind-Value="model.Ratio" Label="Speed" Min="0.5" Max="5" Step="0.5" Disabled="true" DisabledReason="@Reason" />
+            </FakeFormHost>);
+            var slider = cut.Find("#speed");
+
+            // Act
+            slider.Input("3");
+
+            // Assert
+            Assert.Equal(1, model.Ratio);
+            Assert.False(slider.HasAttribute("disabled"));
+            Assert.Equal(Reason, cut.Find("#speed-disabled-reason").TextContent);
+        }
+    }
+
+    public sealed class Menu
+    {
+        [Fact]
+        public void Should_keep_an_item_disabled_with_a_reason_among_the_items()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Actions</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuItem Id="archive" Disabled="true" DisabledReason="@Reason">Archive</FormaDropDownMenuItem>
+                    </ChildContent>
+                </FormaDropDownMenu>);
+
+            // Act
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+            var item = cut.Find("#archive");
+
+            // Assert
+            Assert.False(item.HasAttribute("disabled"));
+            Assert.Equal("true", item.GetAttribute("aria-disabled"));
+            Assert.Equal(Reason, cut.Find("#archive-disabled-reason").TextContent);
+        }
+
+        [Fact]
+        public void Should_open_no_menu_from_a_trigger_disabled_with_a_reason()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var cut = ctx.Render(
+                @<FormaDropDownMenu Id="actions" Disabled="true" DisabledReason="@Reason">
+                    <Trigger>Actions</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuItem>Archive</FormaDropDownMenuItem>
+                    </ChildContent>
+                </FormaDropDownMenu>);
+            var trigger = cut.Find("#actions");
+
+            // Act
+            trigger.Click();
+
+            // Assert
+            Assert.Equal("true", trigger.GetAttribute("aria-disabled"));
+            Assert.Empty(cut.FindAll("[role=menu] [role=menuitem]"));
+        }
+    }
+
+    public sealed class Toolbar
+    {
+        private static IReadOnlyList<ToolbarItem> Group(params ToolbarItem[] items)
+            => [new ToolbarGroup { Id = "group", Title = "Group", Items = items }];
+
+        [Fact]
+        public void Should_show_an_item_s_own_reason_as_its_tooltip()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var groups = Group(new ToolbarCommand { Id = "publish", Title = "Publish", Command = "publish", IsDisabled = true, DisabledReason = Reason });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Document" Items="groups" />);
+            var button = cut.Find("button");
+
+            // Assert
+            Assert.Equal("true", button.GetAttribute("aria-disabled"));
+            Assert.Null(button.GetAttribute("title"));
+            Assert.Equal(Reason, cut.Find($"#{button.GetAttribute("aria-describedby")}").TextContent);
+        }
+
+        [Fact]
+        public void Should_show_the_toolbar_s_reason_on_every_item_while_the_toolbar_is_disabled()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var groups = Group(
+                new ToolbarCommand { Id = "bold", Title = "Bold", Command = "bold" },
+                new ToolbarCommand { Id = "italic", Title = "Italic", Command = "italic" });
+
+            // Act
+            var cut = ctx.Render(@<FormaToolbar Label="Formatting" Items="groups" Disabled="true" DisabledReason="@Reason" />);
+
+            // Assert
+            Assert.All(cut.FindAll("button"), button => Assert.Equal(Reason, cut.Find($"#{button.GetAttribute("aria-describedby")}").TextContent));
+        }
+    }
+
+    public sealed class Option
+    {
+        private static readonly List<SelectOption<int?>> Plans = [new(1, "Monthly"), new(2, "Yearly") { IsDisabled = true, DisabledReason = "Yearly plans open in January" }];
+
+        [Fact]
+        public void Should_describe_a_select_s_option_by_the_reason_it_can_t_be_chosen()
+        {
+            // Arrange
+            using var ctx = new DisabledReasonsTests();
+            var model = new FakeModel();
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" Id="plan" @bind-Value="model.Status" Options="Plans" Label="Plan" />
+            </FakeFormHost>);
+
+            // Act
+            cut.Find(".forma-select-trigger").Click();
+            var yearly = cut.FindAll("[role=option]")[1];
+
+            // Assert
+            Assert.Equal("true", yearly.GetAttribute("aria-disabled"));
+            Assert.Equal("Yearly plans open in January", cut.Find($"#{yearly.GetAttribute("aria-describedby")}").TextContent);
+        }
+    }
+}

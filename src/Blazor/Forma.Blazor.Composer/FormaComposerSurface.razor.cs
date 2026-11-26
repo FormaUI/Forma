@@ -9,7 +9,7 @@ using Forma.Framework.Localization;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The region one editor, or one view over it, occupies: its toolbar together with its canvas.</summary>
-public sealed partial class FormaComposerSurface : FormaComponentBase
+public sealed partial class FormaComposerSurface : FormaComponentBase, IDisableable
 {
     /// <summary>The editor whose component fills this surface's canvas, or whose document the view shows.</summary>
     [Parameter, EditorRequired] public IComposerEditorPlugin Editor { get; set; } = default!;
@@ -26,6 +26,9 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     /// <summary>Whether the toolbar's controls are disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the surface's commands are disabled, which each shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>The key bindings each action's shortcut is read from.</summary>
     [Parameter] public ComposerKeyBindingCatalog KeyBindings { get; set; } = ComposerKeyBindingCatalog.Empty;
 
@@ -33,6 +36,12 @@ public sealed partial class FormaComposerSurface : FormaComponentBase
     [Parameter] public EventCallback<string> OnCommand { get; set; }
 
     [Inject] private IServiceProvider Services { get; set; } = default!;
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     /// <inheritdoc />
     protected override Type LocaleSourceType

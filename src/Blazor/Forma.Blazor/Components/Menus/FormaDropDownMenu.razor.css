@@ -98,15 +98,15 @@
 }
 
 @media (hover: hover) {
-    ::deep .forma-dropdown-menu-item:hover:not(:disabled) {
+    ::deep .forma-dropdown-menu-item:hover:not(:disabled, [aria-disabled="true"]) {
         background: var(--hover-bg-color);
     }
 
-    ::deep .forma-dropdown-menu-item:hover:not(:disabled) .forma-icon {
+    ::deep .forma-dropdown-menu-item:hover:not(:disabled, [aria-disabled="true"]) .forma-icon {
         color: inherit;
     }
 
-    ::deep .forma-dropdown-menu-item.is-destructive:hover:not(:disabled) {
+    ::deep .forma-dropdown-menu-item.is-destructive:hover:not(:disabled, [aria-disabled="true"]) {
         background: var(--forma-dropdown-menu-destructive-bg-color, var(--danger-subtle-color));
         color: var(--forma-dropdown-menu-destructive-color, var(--danger-ink-color));
     }

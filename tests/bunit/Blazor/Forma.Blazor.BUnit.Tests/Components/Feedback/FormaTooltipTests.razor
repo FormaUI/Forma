@@ -1,0 +1,49 @@
+@inherits FormaBunitContext
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_render_its_text_as_a_tooltip_the_page_shows()
+        {
+            // Arrange
+            using var ctx = new FormaTooltipTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaTooltip Id="save-tip" Text="Saved drafts are kept for a month" />);
+
+            // Assert
+            var tooltip = cut.Find("#save-tip");
+            Assert.Equal("tooltip", tooltip.GetAttribute("role"));
+            Assert.Equal("manual", tooltip.GetAttribute("popover"));
+            Assert.Contains("forma-tooltip", tooltip.ClassList);
+            Assert.Equal("Saved drafts are kept for a month", tooltip.TextContent);
+        }
+
+        [Fact]
+        public void Should_carry_an_id_of_its_own_where_its_host_names_none()
+        {
+            // Arrange
+            using var ctx = new FormaTooltipTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaTooltip Text="Saved drafts are kept for a month" />);
+
+            // Assert
+            Assert.False(string.IsNullOrWhiteSpace(cut.Find(".forma-tooltip").GetAttribute("id")));
+        }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Should_refuse_a_text_that_says_nothing(string? text)
+        {
+            // Arrange
+            using var ctx = new FormaTooltipTests();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => ctx.Render<FormaTooltip>(p => p
+                .Add(tooltip => tooltip.Text, text!)));
+        }
+    }
+}

@@ -1,0 +1,12 @@
+@namespace Forma.Blazor.Components.Feedback
+@inherits FormaElementBase
+
+@* Manual, since the page's tooltip script shows it for the control that names it in its description. *@
+<span id="@ElementId"
+      data-rid="@Context.RuntimeId"
+      class="@RootClass"
+      style="@RootStyle"
+      @attributes="AdditionalAttributes"
+      @ref="RootElement"
+      role="tooltip"
+      popover="manual">@Text</span>

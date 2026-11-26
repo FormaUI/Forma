@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
 
 /// <summary>A list whose items can be reordered by dragging a handle or moving a focused item with the keyboard.</summary>
-public sealed partial class FormaSortableList<TItem> : FormaElementBase
+public sealed partial class FormaSortableList<TItem> : FormaElementBase, IDisableable
     where TItem : notnull
 {
     /// <summary>The items the list renders, in their current order.</summary>
@@ -27,6 +27,9 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
     /// <summary>Whether reordering is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why reordering is disabled, which each row's handle shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>Where on a row a drag may start.</summary>
     [Parameter] public SortableDragFrom DragFrom { get; set; }
 
@@ -39,6 +42,12 @@ public sealed partial class FormaSortableList<TItem> : FormaElementBase
     private SortableDragFrom _attachedDragFrom;
     private string? _announcement;
     private bool _padsAnnouncement;
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     /// <inheritdoc />
     protected override void OnInitialized()

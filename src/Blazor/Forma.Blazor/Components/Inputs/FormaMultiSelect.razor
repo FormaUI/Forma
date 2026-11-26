@@ -41,7 +41,8 @@
                             @ref="RootElement"
                             aria-describedby="@DescribedBy"
                             type="button"
-                            disabled="@IsTriggerDisabled"
+                            disabled="@(IsTriggerDisabled && !ShowsDisabledReason)"
+                            aria-disabled="@AriaDisabled"
                             aria-haspopup="dialog"
                             aria-expanded="@(IsOpen ? "true" : "false")"
                             aria-controls="@(IsOpen ? PopoverId : null)"
@@ -75,6 +76,7 @@
                                                ValueChanged="_ => ToggleOption(option)"
                                                ValueExpression="() => OptionSelection"
                                                Disabled="@(option.IsDisabled && !IsSelected(option))"
+                                               DisabledReason="@option.DisabledReason"
                                                aria-describedby="@(option.IconLabel is null ? null : iconLabelId)">
                                     @if (option.Icon is { } icon)
                                     {
@@ -130,5 +132,6 @@
                 }
             </div>
         }
+        @DisabledReasonTooltip
     </ChildContent>
 </FormaField>

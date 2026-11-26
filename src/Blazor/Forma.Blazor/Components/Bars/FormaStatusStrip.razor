@@ -12,7 +12,7 @@
              @ref="RootElement">
             @if (Items.Count > 0)
             {
-                <FormaToolbar Class="forma-status-strip-items" Label="@Label" Items="Items" Disabled="Disabled" OnCommand="OnCommand" />
+                <FormaToolbar Class="forma-status-strip-items" Label="@Label" Items="Items" Disabled="Disabled" DisabledReason="@DisabledReason" OnCommand="OnCommand" />
             }
         </div>
     </FormaVisibility>

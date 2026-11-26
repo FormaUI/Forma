@@ -19,4 +19,7 @@ public sealed record ShareAction
 
     /// <summary>Whether the action shows but cannot be chosen.</summary>
     public bool IsDisabled { get; init; }
+
+    /// <summary>Why the action cannot be chosen, which the menu shows as its tooltip.</summary>
+    public string? DisabledReason { get; init; }
 }

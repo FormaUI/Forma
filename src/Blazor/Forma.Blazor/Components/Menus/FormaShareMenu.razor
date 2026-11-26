@@ -129,7 +129,7 @@ else
                 <FormaDropDownMenuDivider />
                 @foreach (var action in Actions)
                 {
-                    <FormaDropDownMenuItem @key="action.Id" Disabled="action.IsDisabled" OnClick="() => OnCommand.InvokeAsync(action.Command)">
+                    <FormaDropDownMenuItem @key="action.Id" Disabled="action.IsDisabled" DisabledReason="@action.DisabledReason" OnClick="() => OnCommand.InvokeAsync(action.Command)">
                         @if (action.Icon is { } icon)
                         {
                             <FormaIcon Icon="icon" Size="IconSize.Small" />

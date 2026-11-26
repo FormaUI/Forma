@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Components;
 
 /// <summary>A field for picking one date from a calendar that opens under it.</summary>
 /// <typeparam name="TValue">The date the field binds, a <see cref="DateOnly"/> or a nullable one.</typeparam>
-public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
+public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>, IDisableable
 {
     // The form a date takes between the picker and the base's parsing, the same in every culture.
     private const string RoundTripFormat = "yyyy-MM-dd";
@@ -22,6 +22,9 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
 
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the field is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>The earliest selectable date.</summary>
     [Parameter] public DateOnly? MinDate { get; set; }
@@ -43,6 +46,12 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
 
     private FormaDateBox? Box { get; set; }
 
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
     /// <inheritdoc />
     public override ElementReference RootElement
     {
@@ -59,7 +68,7 @@ public sealed partial class FormaDatePicker<TValue> : FormaInputBase<TValue>
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnInitialized()

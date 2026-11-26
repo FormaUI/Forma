@@ -20,7 +20,9 @@
                step="@FormatInvariant(Step)"
                @bind="CurrentValueAsString"
                @bind:event="oninput"
-               disabled="@Disabled"
+               disabled="@(Disabled && !ShowsDisabledReason)"
+               aria-disabled="@AriaDisabled"
                aria-valuetext="@AriaValueText" />
+        @DisabledReasonTooltip
     </ChildContent>
 </FormaField>

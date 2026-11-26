@@ -7,7 +7,7 @@ using Forma.Framework.Toolbar;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>The bar of the commands of the plugins a host registered, with an overflow menu.</summary>
-public sealed partial class FormaComposerPluginsBar : FormaElementBase
+public sealed partial class FormaComposerPluginsBar : FormaElementBase, IDisableable
 {
     /// <summary>The number of commands shown before the rest move into the overflow menu.</summary>
     public const int InlineLimit = 8;
@@ -17,6 +17,9 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
 
     /// <summary>Whether every control on the bar is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
+
+    /// <summary>Why the bar's commands are disabled, which each shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
 
     /// <summary>The key bindings each command's shortcut is read from.</summary>
     [Parameter] public ComposerKeyBindingCatalog KeyBindings { get; set; } = ComposerKeyBindingCatalog.Empty;
@@ -29,6 +32,12 @@ public sealed partial class FormaComposerPluginsBar : FormaElementBase
 
     /// <summary>Whether hiding and showing the bar is animated.</summary>
     [Parameter] public bool Animated { get; set; }
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     /// <inheritdoc />
     protected override Type LocaleSourceType

@@ -6,7 +6,7 @@ using Forma.Framework.Browser;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A dropdown menu preset with an ellipsis trigger button.</summary>
-public sealed partial class FormaOverflowMenu : FormaElementBase
+public sealed partial class FormaOverflowMenu : FormaElementBase, IDisableable
 {
     /// <summary>The accessible name of the trigger button.</summary>
     [Parameter, EditorRequired] public string Label { get; set; } = default!;
@@ -23,6 +23,9 @@ public sealed partial class FormaOverflowMenu : FormaElementBase
     /// <summary>Whether the trigger button is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the trigger button is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     /// <summary>The non-interactive content above the items, such as the name of what the menu acts on.</summary>
     [Parameter] public RenderFragment? HeaderContent { get; set; }
 
@@ -30,6 +33,12 @@ public sealed partial class FormaOverflowMenu : FormaElementBase
     [Parameter, EditorRequired] public RenderFragment ChildContent { get; set; } = default!;
 
     private FormaDropDownMenu Menu { get; set; } = default!;
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     /// <inheritdoc />
     public override ElementReference RootElement

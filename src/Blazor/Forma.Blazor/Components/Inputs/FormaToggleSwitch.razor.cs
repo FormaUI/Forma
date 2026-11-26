@@ -7,7 +7,7 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>An iOS-style switch for a boolean value.</summary>
-public sealed partial class FormaToggleSwitch : FormaInputBase<bool>
+public sealed partial class FormaToggleSwitch : FormaInputBase<bool>, IDisableable
 {
     /// <summary>The name shown before the switch.</summary>
     [Parameter] public string? Label { get; set; }
@@ -21,11 +21,26 @@ public sealed partial class FormaToggleSwitch : FormaInputBase<bool>
     /// <summary>Whether the switch is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
-    private void HandleChange(ChangeEventArgs args) => CurrentValue = args.Value is true;
+    /// <summary>Why the switch is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
+
+    private void HandleChange(ChangeEventArgs args)
+    {
+        if (!ShowsDisabledReason)
+        {
+            CurrentValue = args.Value is true;
+        }
+    }
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void BuildRootClass(CssClassBuilder builder)

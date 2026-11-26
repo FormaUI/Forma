@@ -9,7 +9,7 @@ using Forma.Framework.Css;
 using Microsoft.AspNetCore.Components;
 
 /// <summary>A field for picking several values from a searchable checkbox list, showing the chosen values as removable tags under it.</summary>
-public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValue>>
+public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValue>>, IDisableable
     where TValue : notnull
 {
     /// <summary>The options offered in the dropdown.</summary>
@@ -33,6 +33,9 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     /// <summary>Whether the field is disabled.</summary>
     [Parameter] public bool Disabled { get; set; }
 
+    /// <summary>Why the field is disabled, which it shows as its tooltip.</summary>
+    [Parameter] public string? DisabledReason { get; set; }
+
     // Whether a value posts as text the server's form binding reads back, which a statically rendered page's own list needs.
     private static readonly bool IsPostable = FormValue.IsPostable<TValue>();
 
@@ -46,6 +49,12 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
 
     private string PopoverId
         => $"{ElementId}-popover";
+
+    bool IDisableable.IsDisabled
+        => Disabled;
+
+    string? IDisableable.DisabledReason
+        => DisabledReason;
 
     private bool IsOpen
         => Popover is { IsOpen: true };
@@ -82,7 +91,7 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
 
     /// <inheritdoc />
     protected override bool CanFocus
-        => !Disabled && base.CanFocus;
+        => (!Disabled || ShowsDisabledReason) && base.CanFocus;
 
     /// <inheritdoc />
     protected override void OnParametersSet()

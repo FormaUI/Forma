@@ -22,7 +22,9 @@
                        value="true"
                        checked="@CurrentValue"
                        @onchange="HandleChange"
-                       disabled="@Disabled" />
+                       @onclick:preventDefault="ShowsDisabledReason"
+                       disabled="@(Disabled && !ShowsDisabledReason)"
+                       aria-disabled="@AriaDisabled" />
                 <span class="forma-toggle-switch-track" aria-hidden="true">
                     @* The mark shows on and off apart from the track color. *@
                     <span class="forma-toggle-switch-mark"><FormaIcon Icon="@(CurrentValue ? Glyph.Check : Glyph.Cross)" /></span>
@@ -34,5 +36,6 @@
                 <span class="forma-toggle-switch-label forma-toggle-switch-on-label">@OnLabel</span>
             }
         </div>
+        @DisabledReasonTooltip
     </ChildContent>
 </FormaField>
