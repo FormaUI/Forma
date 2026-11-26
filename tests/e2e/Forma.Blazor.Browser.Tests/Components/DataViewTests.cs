@@ -617,6 +617,10 @@ public sealed class DataViewTests
             var menu = page.GetByRole(AriaRole.Menu);
             await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
 
+            // The menu focuses its first item once it has opened, as a reader meets it, so the command is pressed after that focus lands
+            // rather than racing it.
+            await Assertions.Expect(menu.GetByRole(AriaRole.Menuitem).First).ToBeFocusedAsync();
+
             // Act
             await menu.GetByRole(AriaRole.Menuitem, new() { Name = command, Exact = true }).PressAsync("Enter");
 
