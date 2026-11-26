@@ -19,7 +19,7 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
 
     private IDomObservation<AutofillWatchOptions, AutofillState>? _autofillState;
     private bool _isAutofilled;
-    private ValidationMessageStore _messages = default!;
+    private ValidationMessageStore? _messages;
     private IReadOnlyList<string> _advice = [];
     private bool _hasForbiddenTerm;
     private bool _isRevealed;
@@ -204,8 +204,12 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     {
         _edits = new DomTextEdits(Context.DomEngine, CurrentValueAsString, HandleTextChangedAsync);
         JoinForm(_edits.SettleAsync);
-        _messages = new ValidationMessageStore(EditContext);
-        EditContext.OnValidationRequested += HandleValidationRequested;
+
+        if (EditContext is { } form)
+        {
+            _messages = new ValidationMessageStore(form);
+            form.OnValidationRequested += HandleValidationRequested;
+        }
     }
 
     /// <inheritdoc />
@@ -249,14 +253,20 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
         }
 
         _hasForbiddenTerm = forbidden;
-        _messages.Clear(FieldIdentifier);
+
+        if (EditContext is not { } form || _messages is not { } messages)
+        {
+            return;
+        }
+
+        messages.Clear(FieldIdentifier);
 
         if (forbidden)
         {
-            _messages.Add(FieldIdentifier, L["The password must not contain your other details."]);
+            messages.Add(FieldIdentifier, L["The password must not contain your other details."]);
         }
 
-        EditContext.NotifyValidationStateChanged();
+        form.NotifyValidationStateChanged();
     }
 
     private bool ContainsForbiddenTerm()
@@ -356,15 +366,15 @@ public sealed partial class FormaPasswordBox : FormaInputBase<string?>
     /// <inheritdoc />
     protected override void Dispose(bool disposing)
     {
-        if (disposing)
+        if (disposing && EditContext is { } form)
         {
-            EditContext.OnValidationRequested -= HandleValidationRequested;
+            form.OnValidationRequested -= HandleValidationRequested;
 
             // A box that leaves takes its refusal of a forbidden term out of the form, which would otherwise keep the form from validating.
-            if (_hasForbiddenTerm)
+            if (_hasForbiddenTerm && _messages is { } messages)
             {
-                _messages.Clear();
-                EditContext.NotifyValidationStateChanged();
+                messages.Clear();
+                form.NotifyValidationStateChanged();
             }
         }
 
