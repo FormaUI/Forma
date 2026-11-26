@@ -27,7 +27,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests, a faster gate, builds in processes of their own and the examples' locale lint; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Four components implemented, sixteen changes fixed; the data view on a phone planned and a path per culture open |
+| [A host's requests](#a-hosts-requests) | Four components implemented, sixteen changes fixed; the data view on a phone first and nine more changes for a phone planned, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -215,7 +215,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 
 A host's list of what it needs from Forma named four components Forma lacked, `FormaComboBox`, `FormaLinkTabs`,
 `FormaLineChart` and `FormaBarChart`, all now implemented, as [the catalog](component-catalog.md) lists them, and a
-search of its commands, which `FormaCommandPalette` is. It also named eighteen changes to components that exist, listed
+search of its commands, which `FormaCommandPalette` is. It also named twenty-seven changes to components that exist, listed
 here in the order they are taken, each with what the code does and its state.
 
 | Request | What the code does | State |
@@ -237,7 +237,16 @@ here in the order they are taken, each with what the code does and its state.
 | A multi-select's search by every word, without accents | `FormaMultiSelect` matched the text typed by case alone. It finds an option by every word typed, ignoring case, accents and width, ranks the options as `FormaComboBox` does, and offers to add the text only where no option holds that name | Fixed |
 | A disabled control's reason | A disabled control left the tab order and the pointer's reach, so a reason attached to it was never met. [The tooltip design](tooltip-design.md) adds `FormaTooltip`, and `IDisableable`, which the buttons, the inputs, the menus, the toolbars, the sortable list and the composer implement, each showing its `DisabledReason` as its tooltip; the data view's items show theirs through `ItemDisabledReason`, the explorer's catalog items among them, and a region, the frame, the chrome and the window, makes its content inert whole, its content's controls saying why | Fixed |
 | A path per culture | The culture router gives a page one path in every culture. A route of one identity with a path in each culture, `/es/noticias` and `/en/news`, which links, alternate addresses and the switch all read, with a page to lead to where a culture has no counterpart, is planned; a host routes such pages itself until then, as it does today | Planned, not under way |
-| The data view on a phone | At a phone's width a grid keeps every column its priority holds, its check box and actions columns among them, so a cell is left a few letters wide and its text wraps a letter or two a line. Planned, in [the data view design](data-view-design.md) before it is built: a cell keeps its content's least width and the grid gives way by priority, then by scrolling sideways or reflowing its rows; under a coarse pointer at a narrow width a row's actions come from a swipe toward its start and checked selection from a long press, each with a command a keyboard and a screen reader reach; the list and the cards alike | Planned |
+| The data view on a phone | At a phone's width a grid keeps every column its priority holds, its check box and actions columns among them, so a cell is left a few letters wide and its text wraps a letter or two a line. Planned, in [the data view design](data-view-design.md) before it is built, as the maintainer set it out: at a narrow width a row is at most two lines, the item's picture at its start spanning both, its name and one line of detail beneath, each cut short rather than wrapped, and no other columns; no actions column, a row's actions coming from a swipe toward its inline start and from a command the keyboard and a screen reader reach; and selection on demand, from a long press or a command, a row's box appearing at its start and pushing its content toward its end, and a card's mark on its thumbnail | Planned |
+| Tabs on a phone | `FormaTabs` and `FormaLinkTabs` scroll sideways behind arrows at every pointer, so at a phone's width a title is cut mid-word under an arrow. Planned: under a coarse pointer the strip scrolls by a swipe alone, a title cut at an edge fading out, and the arrows stay with a fine pointer | Planned |
+| One mark on a field that opens a list | `FormaSelect`, `FormaMultiSelect`, `FormaDateBox` and `FormaDateRangePicker` draw a `▾` character at the extra-small type size, where `FormaComboBox` draws the chevron icon in a button, so two fields side by side carry two marks. Planned: every field that opens a list draws the one chevron | Planned |
+| A picker's prompt under touch | `FormaFilePicker` and `FormaImagePicker` take one `Prompt`, "Drop files here or click to browse" unless a host gives another, so a phone is told to drop where nothing can be dropped. Planned: a prompt for a coarse pointer that speaks of choosing alone, the library's own and a host's | Planned |
+| The composer's toolbar on a phone | At a phone's width the composer's bars wrap into rows, each with an overflow of its own. Planned: one row, the commands that don't fit gathered behind one menu | Planned |
+| A text area's grip under touch | `FormaTextArea` keeps `resize: vertical` under a coarse pointer, whose grip a finger can't drag. Planned: no grip under a coarse pointer, the area growing with its text as it does | Planned |
+| Switches in a column | `FormaToggleSwitch` stands right after its label, so a column of switches is ragged. Planned: at a narrow width under a coarse pointer the switch stands at its row's end, its label at the start | Planned |
+| The explorer on a phone | `FormaExplorer` is a box of `40rem` at most that scrolls inside the page. Planned: at a phone's width the explorer's items are the page's own list, scrolled with the page | Planned |
+| A line chart's axis on a phone | At a phone's width `FormaLineChart` draws its value axis's labels over the series they measure. Planned: the labels keep a gutter of their own at every width | Planned |
+| The data view's Load More | `FormaDataViewMore`'s Load More is a ghost button, which reads as text. Planned: a button drawn as one | Planned |
 
 <a id="a-security-check"></a>
 
