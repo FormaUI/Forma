@@ -115,6 +115,7 @@ public sealed partial class SinkInventoryTests
         [$"{Charts} | style=@GetHeightStyle(value)"] = "A fraction of the chart's scale, a number it formats as a percentage",
         [$"{Charts} | style=@GetPeriodStyle(periodIndex)"] = "Fractions of the chart's timeline, numbers it formats as percentages",
         [$"{Charts} | style=@GetTimeLabelStyle(label)"] = "A fraction of the chart's timeline, a number it formats as a percentage",
+        [$"{Charts} | style=@ValueGutterStyle"] = "The value labels' gutter, a CssLength",
         [$"{Composer}/RichTextEditor/Views/FormaRichTextPreview.razor | style=@PageStyle"] = "The page's size and zoom, numbers the preview formats itself",
         [$"{DataView}/FormaDataCards.razor | style=@PlaceholderStyle"] = "A row's height, a number the view formats itself",
         [$"{DataView}/FormaDataGridRow.razor | style=@Grid.GetCellStyle(column)"] = "A frozen column's offset and width, each a CssLength",
