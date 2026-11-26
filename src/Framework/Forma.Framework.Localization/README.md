@@ -368,7 +368,7 @@ and referencing this package, whose build does the rest:
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="formaui-net.Framework.Localization" Version="1.0.0-preview.16" />
+        <PackageReference Include="formaui-net.Framework.Localization" Version="1.0.0-preview.17" />
     </ItemGroup>
 
 </Project>

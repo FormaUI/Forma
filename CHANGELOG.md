@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.17`
 
-*Unreleased*
+*November 26, 2026*
 
 - In Blazor Hybrid, a web view's document takes the language and direction of the application's latest switch, as
   [the culture design](docs/culture-design.md#one-culture-for-the-application) sets out. Two switches made while the
