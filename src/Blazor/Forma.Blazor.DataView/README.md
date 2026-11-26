@@ -114,6 +114,34 @@ holds them:
 </FormaDataView>
 ```
 
+At a narrow width a data view draws no standing boxes and no actions column. A swipe toward a row's
+inline start shows the row's own `ActionsTemplate`, as the keyboard's focus on the row does. A long
+press on an item checks it and starts selecting, `Selecting`, which draws every item's box. A menu
+of three dots at the view's head offers Select, Stop Selecting and Select All, and the commands the
+host gives in `SelectionCommands`. Each command is enabled where it can act on every selected item,
+`AppliesTo` and `TakesMany` deciding which, and says why where it can't. `OnSelectionCommand` runs it
+on the selected items:
+
+```razor
+<FormaDataView Items="_files" ItemName="@(file => file.Name)" EnableCheckedSelection="true"
+               @bind-Selecting="_selecting" SelectionCommands="_commands" OnSelectionCommand="RunAsync">
+    ...
+</FormaDataView>
+
+@code {
+    private bool _selecting;
+
+    private readonly IReadOnlyList<DataViewCommand<FileEntry>> _commands =
+    [
+        new() { Id = "edit", Title = "Edit", AppliesTo = file => !file.IsLocked },
+        new() { Id = "delete", Title = "Delete", TakesMany = true },
+    ];
+
+    private Task RunAsync(DataViewCommandInvocation<FileEntry> invocation)
+        => invocation.Command.Id == "edit" ? EditAsync(invocation.Items[0]) : DeleteAsync(invocation.Items);
+}
+```
+
 ## Several views
 
 The views are declared inside the data view, and `FormaDataViewSwitch` and `FormaDataSortMenu`
