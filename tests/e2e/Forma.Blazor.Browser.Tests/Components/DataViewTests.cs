@@ -524,7 +524,7 @@ public sealed class DataViewTests
             var (context, page) = await OpenAsync(host, runtime, "data-view-tab-order");
             await using var _ = context;
             var items = page.Locator($"#{view} [data-item-root]");
-            await Assertions.Expect(items).ToHaveCountAsync(200);
+            await WaitForItemCountAsync(page, $"#{view} [data-item-root]", 200);
             await WaitForInputScopeAsync(page, $"#{view} .forma-data-view-region");
 
             if (view == "tree")
@@ -586,6 +586,10 @@ public sealed class DataViewTests
         // Read in the page, since an assertion that finds another text describes the whole page, eight hundred items here, and holds it from drawing the answer it waits for.
         private static async Task WaitForCommandAsync(IPage page, string command)
             => await page.WaitForFunctionAsync("command => document.getElementById('result')?.textContent === command", command);
+
+        // Counted in the page for the same reason, an assertion that finds another count describing the whole page as it draws.
+        private static async Task WaitForItemCountAsync(IPage page, string selector, int count)
+            => await page.WaitForFunctionAsync("([selector, count]) => document.querySelectorAll(selector).length === count", new object[] { selector, count });
     }
 
     public sealed class DataViewRemoval(BrowserHost host)
