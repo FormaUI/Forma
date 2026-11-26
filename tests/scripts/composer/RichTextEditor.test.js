@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach } from '#composer/RichTextEditor.js';
-import { TextSources } from '#browser/text/TextSources.mjs';
+import { TextSources } from '#browser/text/TextSources.js';
 import { fakeOwner } from '#support/owner.js';
 
 describe('RichTextEditor', () => {

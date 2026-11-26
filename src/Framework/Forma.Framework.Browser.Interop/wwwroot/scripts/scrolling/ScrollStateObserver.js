@@ -3,10 +3,10 @@
  */
 
 import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
-import { ResizeObserverPool } from '../ResizeObserverPool.mjs';
-import { ScrollContainer } from './ScrollContainer.mjs';
+import { ResizeObserverPool } from '../ResizeObserverPool.js';
+import { ScrollContainer } from './ScrollContainer.js';
 
-/** @typedef {import('./ScrollContainer.mjs').ScrollState} ScrollState */
+/** @typedef {import('./ScrollContainer.js').ScrollState} ScrollState */
 
 export class ScrollStateObserver {
     #track;

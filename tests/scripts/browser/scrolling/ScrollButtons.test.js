@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ScrollButtons } from '#browser/scrolling/ScrollButtons.mjs';
+import { ScrollButtons } from '#browser/scrolling/ScrollButtons.js';
 import { configure, describe as describeScope, resolve } from '#input/InputRouter.js';
 import { stubMutationObserver } from '#support/platform.js';
 

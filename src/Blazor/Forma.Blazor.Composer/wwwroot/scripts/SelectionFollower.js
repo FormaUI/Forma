@@ -7,8 +7,8 @@
  */
 
 import { attach as attachDragGesture } from '../../forma/browser/scripts/behaviors/DragGesture.js';
-import { FocusSurface } from '../../forma/browser/scripts/focus/FocusSurface.mjs';
-import { TabOrder } from '../../forma/browser/scripts/focus/TabOrder.mjs';
+import { FocusSurface } from '../../forma/browser/scripts/focus/FocusSurface.js';
+import { TabOrder } from '../../forma/browser/scripts/focus/TabOrder.js';
 import { FrameScheduler } from '../../forma/core/scripts/FrameScheduler.js';
 import { register } from '../../forma/input/scripts/InputRouter.js';
 

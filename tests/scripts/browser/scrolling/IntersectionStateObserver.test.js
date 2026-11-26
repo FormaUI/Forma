@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { IntersectionStateObserver } from '#browser/scrolling/IntersectionStateObserver.mjs';
+import { IntersectionStateObserver } from '#browser/scrolling/IntersectionStateObserver.js';
 import { stubIntersectionObserver } from '#support/platform.js';
 
 describe('IntersectionStateObserver', () => {

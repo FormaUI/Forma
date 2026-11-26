@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { DomElement } from '#browser/DomElement.mjs';
+import { DomElement } from '#browser/DomElement.js';
 import { stubAnimationFrames, stubResizeObserver } from '#support/platform.js';
 
 describe('DomElement', () => {

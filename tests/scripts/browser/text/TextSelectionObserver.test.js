@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { TextSelectionObserver } from '#browser/text/TextSelectionObserver.mjs';
+import { TextSelectionObserver } from '#browser/text/TextSelectionObserver.js';
 
 describe('TextSelectionObserver', () => {
     /** @type {HTMLTextAreaElement} */

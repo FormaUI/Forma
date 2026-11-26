@@ -159,6 +159,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   read-only one's is. A button showing its reason drops a host's `title`, so the reason is the one tooltip it shows.
 - `FormaDropDownMenu` takes `Disabled`, where only a `disabled` attribute passed to its trigger disabled it; the
   attribute still does.
+- Every script Forma ships is a `.js` file, where 42 of its modules were `.mjs` files, which a MAUI application's file
+  server on Windows serves as a download a browser won't run as a module, so a popover, a select, a menu and every
+  component built on the DOM watcher and engine work in a MAUI application on Windows.
 
 ## `1.0.0-preview.16`
 

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach } from '#browser/behaviors/AnchoredPopover.js';
-import { FocusHeirs } from '#browser/focus/FocusHeirs.mjs';
+import { FocusHeirs } from '#browser/focus/FocusHeirs.js';
 import { stubAnimationFrames, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 
 describe('AnchoredPopover', () => {

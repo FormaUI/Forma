@@ -5,8 +5,8 @@
  */
 
 import { tell } from '../../../core/scripts/Owner.js';
-import { FocusSurface } from '../focus/FocusSurface.mjs';
-import { TabOrder } from '../focus/TabOrder.mjs';
+import { FocusSurface } from '../focus/FocusSurface.js';
+import { TabOrder } from '../focus/TabOrder.js';
 
 /**
  * @param {HTMLElement} target The window element, a manual popover.

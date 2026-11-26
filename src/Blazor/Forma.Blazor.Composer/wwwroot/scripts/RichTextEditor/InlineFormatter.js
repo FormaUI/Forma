@@ -5,8 +5,8 @@
  * Extraction splits any element the selection only partly covers.
  */
 
-import { Canvas } from './Canvas.mjs';
-import { Fragments } from './Fragments.mjs';
+import { Canvas } from './Canvas.js';
+import { Fragments } from './Fragments.js';
 
 export class InlineFormatter {
     /** The zero-width space carrying a pending format at a collapsed caret until something is typed into it. */

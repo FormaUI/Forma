@@ -2,7 +2,7 @@
  * ContentWriter — putting new content into the canvas at the selection the author last made.
  */
 
-import { Canvas } from './Canvas.mjs';
+import { Canvas } from './Canvas.js';
 
 export class ContentWriter {
     #canvas;

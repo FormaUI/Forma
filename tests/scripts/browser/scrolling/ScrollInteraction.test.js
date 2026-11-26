@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ScrollInteraction } from '#browser/scrolling/ScrollInteraction.mjs';
+import { ScrollInteraction } from '#browser/scrolling/ScrollInteraction.js';
 import { configure, describe as describeScope, register, resolve } from '#input/InputRouter.js';
 import { sizeScroller, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 

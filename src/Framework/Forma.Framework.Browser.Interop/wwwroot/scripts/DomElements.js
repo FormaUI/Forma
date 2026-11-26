@@ -2,7 +2,7 @@
  * DomElements — an owner's DomElements, one for each native element it registers on
  */
 
-import { DomElement } from './DomElement.mjs';
+import { DomElement } from './DomElement.js';
 
 export class DomElements {
     /** @type {Map<Element, DomElement>} */

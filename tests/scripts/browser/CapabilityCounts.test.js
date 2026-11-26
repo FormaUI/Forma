@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { CapabilityCounts } from '#browser/CapabilityCounts.mjs';
+import { CapabilityCounts } from '#browser/CapabilityCounts.js';
 
 describe('CapabilityCounts', () => {
     /** @type {CapabilityCounts} */

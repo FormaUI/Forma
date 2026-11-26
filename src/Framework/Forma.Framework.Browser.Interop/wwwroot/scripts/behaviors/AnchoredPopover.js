@@ -6,9 +6,9 @@
  * popover as --forma-popover-anchor-inline-size.
  */
 
-import { FocusHeirs } from '../focus/FocusHeirs.mjs';
-import { FocusSurface } from '../focus/FocusSurface.mjs';
-import { TabOrder } from '../focus/TabOrder.mjs';
+import { FocusHeirs } from '../focus/FocusHeirs.js';
+import { FocusSurface } from '../focus/FocusSurface.js';
+import { TabOrder } from '../focus/TabOrder.js';
 import { Direction } from '../../../core/scripts/Direction.js';
 import { FrameScheduler } from '../../../core/scripts/FrameScheduler.js';
 

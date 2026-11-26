@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ResizeObserverPool } from '#browser/ResizeObserverPool.mjs';
+import { ResizeObserverPool } from '#browser/ResizeObserverPool.js';
 import { stubResizeObserver } from '#support/platform.js';
 
 describe('ResizeObserverPool', () => {

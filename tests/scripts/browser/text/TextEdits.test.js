@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { TextEdits } from '#browser/text/TextEdits.mjs';
-import { TextSources } from '#browser/text/TextSources.mjs';
+import { TextEdits } from '#browser/text/TextEdits.js';
+import { TextSources } from '#browser/text/TextSources.js';
 
 const edits = [];
 

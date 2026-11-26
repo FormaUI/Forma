@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { ScrollStateObserver } from '#browser/scrolling/ScrollStateObserver.mjs';
+import { ScrollStateObserver } from '#browser/scrolling/ScrollStateObserver.js';
 import { sizeScroller, stubAnimationFrames, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 
 describe('ScrollStateObserver', () => {

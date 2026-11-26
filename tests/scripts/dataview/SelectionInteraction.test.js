@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { attach } from '#dataview/SelectionInteraction.js';
-import { FocusHeirs } from '#browser/focus/FocusHeirs.mjs';
+import { FocusHeirs } from '#browser/focus/FocusHeirs.js';
 import { configure, register, resolve } from '#input/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
 

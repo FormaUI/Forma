@@ -3,9 +3,9 @@
  */
 
 import { register } from '../../../input/scripts/InputRouter.js';
-import { ResizeObserverPool } from '../ResizeObserverPool.mjs';
-import { ScrollButtons } from './ScrollButtons.mjs';
-import { ScrollContainer } from './ScrollContainer.mjs';
+import { ResizeObserverPool } from '../ResizeObserverPool.js';
+import { ScrollButtons } from './ScrollButtons.js';
+import { ScrollContainer } from './ScrollContainer.js';
 
 /** Pixels in one line of a wheel turn. */
 const LineHeight = 16;
@@ -14,7 +14,7 @@ const LineHeight = 16;
  * @typedef {{
  *   axis?: 'inline' | 'block', stops?: string | null, frozenSelector?: string | null,
  *   wheel?: string | null,
- *   buttons?: { container: HTMLElement } & import('./ScrollButtons.mjs').ScrollButtonOptions | null,
+ *   buttons?: { container: HTMLElement } & import('./ScrollButtons.js').ScrollButtonOptions | null,
  *   current?: string | null,
  * }} ScrollInteractionOptions
  *   The axis the container moves along, the selectors of its stops and frozen parts, the action a wheel turn

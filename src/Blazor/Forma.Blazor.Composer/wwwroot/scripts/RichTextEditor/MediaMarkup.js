@@ -2,7 +2,7 @@
  * MediaMarkup — the markup image, resource, video, and embed requests build.
  */
 
-import { Escape } from './Markup.mjs';
+import { Escape } from './Markup.js';
 
 export class MediaMarkup {
     /** The markup an image request builds, where null means there is nothing to insert. */

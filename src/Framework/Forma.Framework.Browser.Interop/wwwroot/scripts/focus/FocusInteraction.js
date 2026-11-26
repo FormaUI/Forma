@@ -2,10 +2,10 @@
  * FocusInteraction — where the focus goes inside a surface
  */
 
-import { FocusRecovery } from './FocusRecovery.mjs';
-import { FocusSurface } from './FocusSurface.mjs';
-import { RovingFocus } from './RovingFocus.mjs';
-import { TabOrder } from './TabOrder.mjs';
+import { FocusRecovery } from './FocusRecovery.js';
+import { FocusSurface } from './FocusSurface.js';
+import { RovingFocus } from './RovingFocus.js';
+import { TabOrder } from './TabOrder.js';
 
 /**
  * @typedef {{ wrap?: boolean, order?: string[], rovingOrientation?: 'horizontal' | 'vertical' | null, heir?: string | null }} FocusInteractionOptions

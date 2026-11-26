@@ -2,7 +2,7 @@
  * IntersectionStateObserver — watches whether a target is in view of a root and publishes each change
  */
 
-import { IntersectionObserverPool } from '../IntersectionObserverPool.mjs';
+import { IntersectionObserverPool } from '../IntersectionObserverPool.js';
 
 /** @typedef {{ isIntersecting: boolean }} IntersectionState */
 

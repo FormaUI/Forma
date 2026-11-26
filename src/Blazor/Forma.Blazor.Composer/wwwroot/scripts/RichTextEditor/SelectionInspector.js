@@ -3,8 +3,8 @@
  * read from the markup itself.
  */
 
-import { Canvas } from './Canvas.mjs';
-import { CssColor } from './Markup.mjs';
+import { Canvas } from './Canvas.js';
+import { CssColor } from './Markup.js';
 
 export class SelectionInspector {
     /** Which marks light which toolbar states. */

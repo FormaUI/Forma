@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { FocusStateObserver } from '#browser/focus/FocusStateObserver.mjs';
+import { FocusStateObserver } from '#browser/focus/FocusStateObserver.js';
 
 describe('FocusStateObserver', () => {
     /** @type {HTMLElement} */

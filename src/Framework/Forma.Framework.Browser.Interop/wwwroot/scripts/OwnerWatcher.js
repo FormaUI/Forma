@@ -1,13 +1,13 @@
 /**
- * DomWatcher — what an owner observes of its elements
+ * OwnerWatcher — what an owner observes of its elements
  */
 
 import { Transfer } from '../../core/scripts/Transfer.js';
-import { CapabilityCounts } from './CapabilityCounts.mjs';
-import { RegistrationTable } from './RegistrationTable.mjs';
-import { StateDelivery } from './StateDelivery.mjs';
+import { CapabilityCounts } from './CapabilityCounts.js';
+import { RegistrationTable } from './RegistrationTable.js';
+import { StateDelivery } from './StateDelivery.js';
 
-/** @typedef {import('./DomElements.mjs').DomElements} DomElements */
+/** @typedef {import('./DomElements.js').DomElements} DomElements */
 /** @typedef {{ invokeMethodAsync: (name: string, ...args: unknown[]) => Promise<unknown> }} Receiver */
 /** @typedef {{ token: string, generation: number, capability: string, target: Element, options: object }} Request */
 
@@ -24,15 +24,15 @@ export function describeObserved(target) {
 
 /** The observer each capability observes through. */
 const Observers = {
-    scroll: () => import('./scrolling/ScrollStateObserver.mjs').then(module => module.ScrollStateObserver),
-    intersection: () => import('./scrolling/IntersectionStateObserver.mjs').then(module => module.IntersectionStateObserver),
-    size: () => import('./geometry/SizeObserver.mjs').then(module => module.SizeObserver),
-    focus: () => import('./focus/FocusStateObserver.mjs').then(module => module.FocusStateObserver),
-    selection: () => import('./text/TextSelectionObserver.mjs').then(module => module.TextSelectionObserver),
-    autofill: () => import('./text/AutofillObserver.mjs').then(module => module.AutofillObserver),
+    scroll: () => import('./scrolling/ScrollStateObserver.js').then(module => module.ScrollStateObserver),
+    intersection: () => import('./scrolling/IntersectionStateObserver.js').then(module => module.IntersectionStateObserver),
+    size: () => import('./geometry/SizeObserver.js').then(module => module.SizeObserver),
+    focus: () => import('./focus/FocusStateObserver.js').then(module => module.FocusStateObserver),
+    selection: () => import('./text/TextSelectionObserver.js').then(module => module.TextSelectionObserver),
+    autofill: () => import('./text/AutofillObserver.js').then(module => module.AutofillObserver),
 };
 
-export class DomWatcher {
+export class OwnerWatcher {
     #runtimeKey;
     #elements;
     #registrations = new RegistrationTable();

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Canvas } from '#composer/RichTextEditor/Canvas.mjs';
-import { TableEditor } from '#composer/RichTextEditor/TableEditor.mjs';
+import { Canvas } from '#composer/RichTextEditor/Canvas.js';
+import { TableEditor } from '#composer/RichTextEditor/TableEditor.js';
 
 const NoBreakSpace = String.fromCharCode(0xa0);
 

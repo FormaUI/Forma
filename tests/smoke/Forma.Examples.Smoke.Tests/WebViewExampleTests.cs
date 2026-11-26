@@ -28,6 +28,34 @@ public sealed class WebViewExampleTests(ExampleHosts hosts)
 
     [Theory]
     [MemberData(nameof(Examples))]
+    public async Task Should_serve_every_script_the_library_publishes_as_JavaScript(string example)
+    {
+        // Arrange — a browser runs a module only when it is served as JavaScript, which a host's file server decides by
+        // the file's extension
+        await using var application = await hosts.StartApplicationAsync(example);
+        var page = await application.GetOtherWebViewAsync([], Runtime);
+        var root = Path.Combine(hosts.ExamplesFolder, example, "wwwroot");
+        var scripts = Directory.EnumerateFiles(Path.Combine(root, "_content"), "*", SearchOption.AllDirectories)
+            .Where(file => file.EndsWith(".js", StringComparison.OrdinalIgnoreCase) || file.EndsWith(".mjs", StringComparison.OrdinalIgnoreCase))
+            .Select(file => Path.GetRelativePath(root, file).Replace('\\', '/'))
+            .ToArray();
+
+        // Act
+        var refused = await page.EvaluateAsync<string[]>("""
+            async scripts => (await Promise.all(scripts.map(async script => {
+                const type = (await fetch(script)).headers.get('content-type') ?? '';
+                return /^(text|application)\/javascript\b/.test(type) ? null : `${script}: ${type}`;
+            }))).filter(script => script !== null)
+            """, scripts);
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.NotEmpty(scripts),
+            () => Assert.True(refused.Length == 0, $"The host served scripts as something other than JavaScript:{Environment.NewLine}{string.Join(Environment.NewLine, refused)}"));
+    }
+
+    [Theory]
+    [MemberData(nameof(Examples))]
     public async Task Should_turn_a_page_of_the_library_s_pagination(string example)
     {
         // Arrange

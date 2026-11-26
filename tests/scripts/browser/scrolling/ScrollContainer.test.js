@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ScrollContainer } from '#browser/scrolling/ScrollContainer.mjs';
+import { ScrollContainer } from '#browser/scrolling/ScrollContainer.js';
 import { sizeScroller } from '#support/platform.js';
 
 describe('ScrollContainer', () => {

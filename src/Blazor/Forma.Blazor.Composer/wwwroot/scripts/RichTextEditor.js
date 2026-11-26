@@ -5,17 +5,17 @@
 
 import { sanitize } from '../../forma/core/scripts/Sanitizer.js';
 import { Transfer } from '../../forma/core/scripts/Transfer.js';
-import { TextSources } from '../../forma/browser/scripts/text/TextSources.mjs';
-import { Canvas } from './RichTextEditor/Canvas.mjs';
-import { SelectionMemory } from './RichTextEditor/SelectionMemory.mjs';
-import { InlineFormatter } from './RichTextEditor/InlineFormatter.mjs';
-import { BlockFormatter } from './RichTextEditor/BlockFormatter.mjs';
-import { ListFormatter } from './RichTextEditor/ListFormatter.mjs';
-import { Links } from './RichTextEditor/Links.mjs';
-import { TableEditor } from './RichTextEditor/TableEditor.mjs';
-import { MediaMarkup } from './RichTextEditor/MediaMarkup.mjs';
-import { ContentWriter } from './RichTextEditor/ContentWriter.mjs';
-import { SelectionInspector } from './RichTextEditor/SelectionInspector.mjs';
+import { TextSources } from '../../forma/browser/scripts/text/TextSources.js';
+import { Canvas } from './RichTextEditor/Canvas.js';
+import { SelectionMemory } from './RichTextEditor/SelectionMemory.js';
+import { InlineFormatter } from './RichTextEditor/InlineFormatter.js';
+import { BlockFormatter } from './RichTextEditor/BlockFormatter.js';
+import { ListFormatter } from './RichTextEditor/ListFormatter.js';
+import { Links } from './RichTextEditor/Links.js';
+import { TableEditor } from './RichTextEditor/TableEditor.js';
+import { MediaMarkup } from './RichTextEditor/MediaMarkup.js';
+import { ContentWriter } from './RichTextEditor/ContentWriter.js';
+import { SelectionInspector } from './RichTextEditor/SelectionInspector.js';
 
 export function attach(target, options = {}) {
     return new RichTextEditor(target, options);

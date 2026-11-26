@@ -49,7 +49,7 @@
  * the marker the item draws now.
  */
 
-import { FocusHeirs } from '../../forma/browser/scripts/focus/FocusHeirs.mjs';
+import { FocusHeirs } from '../../forma/browser/scripts/focus/FocusHeirs.js';
 import { Controls } from '../../forma/core/scripts/Controls.js';
 import { tell } from '../../forma/core/scripts/Owner.js';
 import { Transfer } from '../../forma/core/scripts/Transfer.js';

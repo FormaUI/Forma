@@ -26,7 +26,7 @@ export class RovingFocus {
     #parkedControls = new Map();
 
     /**
-     * @param {import('./FocusSurface.mjs').FocusSurface} surface The surface.
+     * @param {import('./FocusSurface.js').FocusSurface} surface The surface.
      * @param {'horizontal' | 'vertical'} axis The axis the arrow keys move the stop along.
      */
     constructor(surface, axis) {

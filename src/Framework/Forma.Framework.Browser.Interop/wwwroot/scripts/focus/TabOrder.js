@@ -16,7 +16,7 @@ export class TabOrder {
     #registration;
 
     /**
-     * @param {import('./FocusSurface.mjs').FocusSurface} surface The surface.
+     * @param {import('./FocusSurface.js').FocusSurface} surface The surface.
      * @param {{ wrap?: boolean }} options Whether Tab wraps among the surface's controls.
      */
     constructor(surface, { wrap = false } = {}) {

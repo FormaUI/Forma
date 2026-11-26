@@ -2,7 +2,7 @@
  * Links — the anchors a selection touches: finding them, removing them, and building new ones.
  */
 
-import { Escape } from './Markup.mjs';
+import { Escape } from './Markup.js';
 
 export class Links {
     #canvas;

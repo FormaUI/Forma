@@ -2,15 +2,15 @@
  * DomEngine — the surface an owner's .NET side calls to act on its elements
  */
 
-import { DomEngine, describeInstalled } from './DomEngine.mjs';
-import { DomSessionRegistry } from './DomSessionRegistry.mjs';
+import { OwnerEngine, describeInstalled } from './OwnerEngine.js';
+import { DomSessionRegistry } from './DomSessionRegistry.js';
 
-/** @typedef {import('./DomEngine.mjs').Request} Request */
-/** @typedef {import('./DomWatcher.mjs').Receiver} Receiver */
+/** @typedef {import('./OwnerEngine.js').Request} Request */
+/** @typedef {import('./OwnerWatcher.js').Receiver} Receiver */
 
 /** The commands each capability runs by name. */
 const Commands = {
-    scroll: () => import('./scrolling/ScrollContainer.mjs').then(({ ScrollContainer }) => ({
+    scroll: () => import('./scrolling/ScrollContainer.js').then(({ ScrollContainer }) => ({
         step: (target, direction, { axis, ...options } = {}) => new ScrollContainer(target, axis).step(direction, options),
     })),
 };
@@ -45,7 +45,7 @@ export async function run(capability, command, target, ...args) {
  * @param {Request} request
  */
 export function attach(runtimeKey, receiver, request) {
-    return DomSessionRegistry.open(runtimeKey).openEngine(DomEngine).attach(request, receiver);
+    return DomSessionRegistry.open(runtimeKey).openEngine(OwnerEngine).attach(request, receiver);
 }
 
 /**

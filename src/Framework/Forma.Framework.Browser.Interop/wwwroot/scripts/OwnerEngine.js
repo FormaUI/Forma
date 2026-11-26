@@ -1,12 +1,12 @@
 /**
- * DomEngine — what an owner does to its elements
+ * OwnerEngine — what an owner does to its elements
  */
 
-import { CapabilityCounts } from './CapabilityCounts.mjs';
-import { RegistrationTable } from './RegistrationTable.mjs';
+import { CapabilityCounts } from './CapabilityCounts.js';
+import { RegistrationTable } from './RegistrationTable.js';
 
-/** @typedef {import('./DomElements.mjs').DomElements} DomElements */
-/** @typedef {import('./DomWatcher.mjs').Receiver} Receiver */
+/** @typedef {import('./DomElements.js').DomElements} DomElements */
+/** @typedef {import('./OwnerWatcher.js').Receiver} Receiver */
 /** @typedef {{ token: string, generation: number, capability: string, target: Element, options: object }} Request */
 
 // The capabilities whose interactions are installed on each element, across every owner.
@@ -22,12 +22,12 @@ export function describeInstalled(target) {
 
 /** The interaction each capability attaches. */
 const Interactions = {
-    scroll: () => import('./scrolling/ScrollInteraction.mjs').then(module => module.ScrollInteraction),
-    focus: () => import('./focus/FocusInteraction.mjs').then(module => module.FocusInteraction),
-    edits: () => import('./text/TextEdits.mjs').then(module => module.TextEdits),
+    scroll: () => import('./scrolling/ScrollInteraction.js').then(module => module.ScrollInteraction),
+    focus: () => import('./focus/FocusInteraction.js').then(module => module.FocusInteraction),
+    edits: () => import('./text/TextEdits.js').then(module => module.TextEdits),
 };
 
-export class DomEngine {
+export class OwnerEngine {
     #runtimeKey;
     #elements;
     #registrations = new RegistrationTable();

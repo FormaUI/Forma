@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { FocusInteraction } from '#browser/focus/FocusInteraction.mjs';
-import { FocusSurface } from '#browser/focus/FocusSurface.mjs';
+import { FocusInteraction } from '#browser/focus/FocusInteraction.js';
+import { FocusSurface } from '#browser/focus/FocusSurface.js';
 import { configure, resolve } from '#input/InputRouter.js';
 
 function tab(shiftKey = false) {

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { CharacterCount } from '#browser/text/CharacterCount.mjs';
+import { CharacterCount } from '#browser/text/CharacterCount.js';
 
 const counts = [];
 

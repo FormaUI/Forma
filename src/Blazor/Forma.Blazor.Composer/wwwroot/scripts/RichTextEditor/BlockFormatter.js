@@ -3,7 +3,7 @@
  * and the rule that splits one in two.
  */
 
-import { Canvas } from './Canvas.mjs';
+import { Canvas } from './Canvas.js';
 
 export class BlockFormatter {
     #canvas;

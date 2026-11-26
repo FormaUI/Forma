@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { SubmissionHold } from '#browser/text/SubmissionHold.mjs';
-import { TextEdits } from '#browser/text/TextEdits.mjs';
+import { SubmissionHold } from '#browser/text/SubmissionHold.js';
+import { TextEdits } from '#browser/text/TextEdits.js';
 
 describe('SubmissionHold', () => {
     /** @type {HTMLFormElement} */

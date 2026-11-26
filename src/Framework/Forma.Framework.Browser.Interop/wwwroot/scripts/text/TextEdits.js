@@ -3,9 +3,9 @@
  */
 
 import { Transfer } from '../../../core/scripts/Transfer.js';
-import { CharacterCount } from './CharacterCount.mjs';
-import { SubmissionHold } from './SubmissionHold.mjs';
-import { TextSources } from './TextSources.mjs';
+import { CharacterCount } from './CharacterCount.js';
+import { SubmissionHold } from './SubmissionHold.js';
+import { TextSources } from './TextSources.js';
 
 /** @typedef {(method: string, ...args: unknown[]) => Promise<unknown>} Report */
 /** @typedef {{ name: string, report: Report, predecessor: TextEdits | null }} Owner */
@@ -15,7 +15,7 @@ export class TextEdits {
     static commands = new Set(['write', 'resend', 'flush']);
 
     #element;
-    /** @type {import('./TextSources.mjs').TextSource} */
+    /** @type {import('./TextSources.js').TextSource} */
     #source;
     #sendsOnInput;
     #name;

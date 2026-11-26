@@ -2,11 +2,11 @@
  * DomWatcher — the surface an owner's .NET side calls to observe its elements
  */
 
-import { DomSessionRegistry } from './DomSessionRegistry.mjs';
-import { describeObserved } from './DomWatcher.mjs';
+import { DomSessionRegistry } from './DomSessionRegistry.js';
+import { describeObserved } from './OwnerWatcher.js';
 
-/** @typedef {import('./DomWatcher.mjs').Receiver} Receiver */
-/** @typedef {import('./DomWatcher.mjs').Request} Request */
+/** @typedef {import('./OwnerWatcher.js').Receiver} Receiver */
+/** @typedef {import('./OwnerWatcher.js').Request} Request */
 
 /**
  * Starts an observation for the owner and returns its first state.

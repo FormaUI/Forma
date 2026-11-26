@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { IntersectionObserverPool } from '#browser/IntersectionObserverPool.mjs';
+import { IntersectionObserverPool } from '#browser/IntersectionObserverPool.js';
 import { stubIntersectionObserver } from '#support/platform.js';
 
 describe('IntersectionObserverPool', () => {

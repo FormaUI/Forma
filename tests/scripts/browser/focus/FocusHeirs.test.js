@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { FocusHeirs } from '#browser/focus/FocusHeirs.mjs';
+import { FocusHeirs } from '#browser/focus/FocusHeirs.js';
 
 describe('FocusHeirs', () => {
     // The registrations made in a test, disposed after it so the next starts with none.

@@ -53,8 +53,8 @@ public sealed partial class SinkInventoryTests
         [$"{Composer}/FormaComposerAttachments.razor | href=@GetAttachmentAddress(attachment)"] = $"{ComposerTests}/FormaComposerTests.razor | Should_write_an_attachment_s_address_a_link_refuses_inert",
         [$"{Composer}/RichTextEditor/FormaRichTextEditor.razor | (MarkupString)_canvasText"] = $"{ComposerTests}/RichTextEditor/FormaRichTextEditorTests.razor | Should_show_a_hostile_document_only_as_the_sanitizer_keeps_it_under_a_static_render",
         [$"{Composer}/RichTextEditor/Views/FormaRichTextPreview.razor | (MarkupString)Content"] = $"{ComposerTests}/FormaComposerTests.razor | Should_preview_and_print_a_hostile_document_only_as_the_sanitizer_keeps_it",
-        [$"{Composer}/wwwroot/scripts/RichTextEditor/Canvas.mjs | this.#element.innerHTML = value"] = $"{ComposerTests}/RichTextEditor/FormaRichTextEditorTests.razor | Should_write_a_template_into_the_canvas_only_as_the_sanitizer_keeps_it",
-        [$"{Composer}/wwwroot/scripts/RichTextEditor/ContentWriter.mjs | template.innerHTML = html"] = $"{ComposerTests}/RichTextEditor/FormaRichTextEditorTests.razor | Should_write_a_template_into_the_canvas_only_as_the_sanitizer_keeps_it",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/Canvas.js | this.#element.innerHTML = value"] = $"{ComposerTests}/RichTextEditor/FormaRichTextEditorTests.razor | Should_write_a_template_into_the_canvas_only_as_the_sanitizer_keeps_it",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/ContentWriter.js | template.innerHTML = html"] = $"{ComposerTests}/RichTextEditor/FormaRichTextEditorTests.razor | Should_write_a_template_into_the_canvas_only_as_the_sanitizer_keeps_it",
         ["src/Blazor/Forma.Blazor.Explorer/FormaExplorerThumbnail.razor | src=@still"] = $"{ExplorerTests} | Should_draw_its_glyph_for_a_still_at_an_address_an_image_refuses",
         ["src/Blazor/Forma.Blazor.Explorer/FormaExplorerThumbnail.razor | src=@frame"] = $"{ExplorerTests} | Should_draw_no_frame_of_a_video_at_an_address_a_video_refuses",
         [$"{BrowserScripts}/operations/Asset.js | .parseFromString(await response.text(), 'image/svg+xml')"] = $"{BlazorTests}/Symbols/FormaEmojiTests.razor | Should_draw_an_emoji_whose_sheet_an_image_refuses_as_its_own_character_and_load_no_sheet",
@@ -126,11 +126,11 @@ public sealed partial class SinkInventoryTests
         ["src/Blazor/Forma.Blazor.Explorer/FormaExplorer.razor | style=@SidebarSizeStyle"] = "The sidebar's width, a CssLength",
         ["src/Blazor/Forma.Blazor.Explorer/FormaExplorerSidebar.razor | style=@TreeSizeStyle"] = "The folder tree's height, a CssLength",
         [$"{Composer}/wwwroot/scripts/BlockAlignment.js | row.style.insetBlockStart = `${{block.getBoundingClientRect().top - origin}}px`"] = "An offset the script measures, in pixels",
-        [$"{Composer}/wwwroot/scripts/RichTextEditor/BlockFormatter.mjs | block.style.lineHeight = value"] = "A line height a command carries, which the browser takes for that one property alone",
-        [$"{Composer}/wwwroot/scripts/RichTextEditor/BlockFormatter.mjs | block.style.textAlign = value"] = "An alignment a command carries, which the browser takes for that one property alone",
-        [$"{Composer}/wwwroot/scripts/RichTextEditor/InlineFormatter.mjs | pendingSpan.style.setProperty(property, value)"] = "A font, a size or a color a command carries, which the browser takes for that one property alone",
-        [$"{Composer}/wwwroot/scripts/RichTextEditor/InlineFormatter.mjs | span.style.setProperty(property, value)"] = "A font, a size or a color a command carries, which the browser takes for that one property alone",
-        [$"{Composer}/wwwroot/scripts/RichTextEditor/ListFormatter.mjs | block.style.marginInlineStart = `${{nextIndent}}px`"] = "An indent the script counts, in pixels",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/BlockFormatter.js | block.style.lineHeight = value"] = "A line height a command carries, which the browser takes for that one property alone",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/BlockFormatter.js | block.style.textAlign = value"] = "An alignment a command carries, which the browser takes for that one property alone",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/InlineFormatter.js | pendingSpan.style.setProperty(property, value)"] = "A font, a size or a color a command carries, which the browser takes for that one property alone",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/InlineFormatter.js | span.style.setProperty(property, value)"] = "A font, a size or a color a command carries, which the browser takes for that one property alone",
+        [$"{Composer}/wwwroot/scripts/RichTextEditor/ListFormatter.js | block.style.marginInlineStart = `${{nextIndent}}px`"] = "An indent the script counts, in pixels",
         [$"{Composer}/wwwroot/scripts/SelectionFollower.js | this.#target.style.left = `${{left}}px`"] = "A position the script measures, in pixels",
         [$"{Composer}/wwwroot/scripts/SelectionFollower.js | this.#target.style.top = `${{top}}px`"] = "A position the script measures, in pixels",
         [$"{DataView}/wwwroot/scripts/HeightReservation.js | this.#target.style.minBlockSize = `${{this.#reservedHeight}}px`"] = "A height the script measures, in pixels",
@@ -223,7 +223,7 @@ public sealed partial class SinkInventoryTests
             }
         }
 
-        foreach (var file in EnumerateSourceFiles(sources, "*.js").Concat(EnumerateSourceFiles(sources, "*.mjs")))
+        foreach (var file in EnumerateSourceFiles(sources, "*.js"))
         {
             foreach (var line in File.ReadLines(file).Select(line => line.Trim()).Where(line => !IsComment(line)))
             {

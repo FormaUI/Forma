@@ -64,7 +64,7 @@ Each converted consumer is held to the design's principles, with the specialized
 - **Improvements taken and recorded.** A directly related missing edge case, redundant listener or observer, or unnecessary crossing is corrected and recorded in the step's landed note. Broader product changes are recorded as separate work with a reason, so a conversion remains reviewable.
 - **Crossings counted.** The interop crossings and notifications of each defined scenario are counted before and after, and a conversion never adds one without recording why.
 - **Scale checked.** Each scenario is also run with many instances on one page, and resource counts distinguish native observer instances, observed targets, listeners and managed subscriptions. Equivalent subscribers share compatible sources; distinct targets retain their necessary bookkeeping. Releasing the last subscriber returns shared resources to their baseline.
-- **Modules reviewed.** Each module holds a cohesive concept and receives its collaborators explicitly. Behavioral tests cover the concept and integration tests cover composition; entry modules compose without accumulating capability mechanics. Published `.mjs` imports and cold-load requests are checked in the browser.
+- **Modules reviewed.** Each module holds a cohesive concept and receives its collaborators explicitly. Behavioral tests cover the concept and integration tests cover composition; entry modules compose without accumulating capability mechanics. Published module imports and cold-load requests are checked in the browser.
 
 ## The first slice
 
@@ -170,7 +170,7 @@ The first slice has the browser defer a registration's first sample until a task
 | Owner release | Several settled registrations release in one owner-resource call. Disposal racing attachment rejects stale results and releases late resources, counting any compensating calls. Disposing one owner preserves another's session and shared imports. Count object-reference bookkeeping separately. |
 | Caching | Each cache, parsed definitions and prepared execution state among them, states what keeps an entry valid and when it is released and keeps each query's requested field spelling, and a measurement shows the work it saves. Parsed definitions and prepared state are cached apart, so sharing a definition shares no owner's bindings, subscriptions or resources. |
 | Diagnostics | Failures and lifecycle problems are logged with the owner, capability, registration and operation they concern. With detailed diagnostics disabled, a frequent path does no diagnostic formatting, constructs no diagnostic payload and makes no diagnostic allocation, behind a cheap check of whether they are enabled, and required failures are still reported. |
-| Loading and allocation | Direct commands load their capability without requiring an interaction first. Published `.mjs` assets load with the correct MIME type; cold-fetch counts and hot-path allocations are measured. |
+| Loading and allocation | Direct commands load their capability without requiring an interaction first. Published modules load with the correct MIME type; cold-fetch counts and hot-path allocations are measured. |
 
 Lifecycle and script tests and component tests cover the contracts, and real browsers cover layout, routing, cleanup and RTL. The repository's build gate applies to the implemented code.
 
@@ -218,7 +218,7 @@ The survey of the code this plan rests on covered the browser scripts and their 
 | `Window.js` defers raising a pressed window and remembers focus. | Deferred top-layer writes and focus memory move into presentation and focus objects. |
 | `DragGesture.js` already owns threshold, hold, capture, edge scrolling and an active input registration. | Its algorithm sits behind a shared gesture object, with its raw-listener path reconciled through the router API when it migrates. |
 | `Virtualize.js` reports changed viewport measurements, and C# may find the rendered range unchanged. | That is a separate potential optimization, excluded from this work. |
-| The composer's rich-text editor composes concept classes in `.mjs` modules behind one entry, each taking its collaborators once, with listener lifetimes released through `AbortController`. | It is the model for the watcher's and the engine's module structure. |
+| The composer's rich-text editor composes concept classes in modules behind one entry, each taking its collaborators once, with listener lifetimes released through `AbortController`. | It is the model for the watcher's and the engine's module structure. |
 | `InputRouter.js` installs document listeners on first registration, decides in the browser, and names its rules in constant tables, with several routing concerns in one entry file. | Those practices carry over; its single-file shape is the one the new modules avoid. |
 | `Owner.js` discards callback rejections. | The new notification transport surfaces failures and bounds pending work; legacy reporting is left as it is. |
 | `Embedding.js` holds named third-party SDK integrations. | Those integrations stay outside the generic DOM engine and may consume the asset object. |

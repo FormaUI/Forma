@@ -6,7 +6,7 @@
  * so a size a transform scaled is corrected as the measurement arrives.
  */
 
-import { ResizeObserverPool } from '../ResizeObserverPool.mjs';
+import { ResizeObserverPool } from '../ResizeObserverPool.js';
 
 /** @typedef {{ inlineSize: number, blockSize: number }} SizeState */
 

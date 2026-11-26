@@ -3,7 +3,7 @@
  */
 
 import { FrameScheduler } from '../../core/scripts/FrameScheduler.js';
-import { ResizeObserverPool } from './ResizeObserverPool.mjs';
+import { ResizeObserverPool } from './ResizeObserverPool.js';
 
 export class DomElement {
     #element;

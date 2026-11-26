@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { StateDelivery } from '#browser/StateDelivery.mjs';
+import { StateDelivery } from '#browser/StateDelivery.js';
 
 describe('StateDelivery', () => {
     /** @type {Array<{ state: unknown, resolve: () => void, reject: (error: unknown) => void }>} */

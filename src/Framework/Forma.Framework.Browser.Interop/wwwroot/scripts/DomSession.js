@@ -2,8 +2,8 @@
  * DomSession — an owner's watcher, its engine, and the elements they share
  */
 
-import { DomElements } from './DomElements.mjs';
-import { DomWatcher } from './DomWatcher.mjs';
+import { DomElements } from './DomElements.js';
+import { OwnerWatcher } from './OwnerWatcher.js';
 
 /** @typedef {{ dispose(): void }} Part */
 /** @typedef {new (elements: DomElements, runtimeKey: string) => Part} EngineClass */
@@ -11,7 +11,7 @@ import { DomWatcher } from './DomWatcher.mjs';
 export class DomSession {
     #runtimeKey;
     #elements = new DomElements();
-    /** @type {DomWatcher | null} */
+    /** @type {OwnerWatcher | null} */
     #watcher = null;
     /** @type {Part | null} */
     #engine = null;
@@ -35,7 +35,7 @@ export class DomSession {
 
     /** Opens the owner's watcher. */
     openWatcher() {
-        return this.#watcher ??= new DomWatcher(this.#runtimeKey, this.#elements);
+        return this.#watcher ??= new OwnerWatcher(this.#runtimeKey, this.#elements);
     }
 
     /**

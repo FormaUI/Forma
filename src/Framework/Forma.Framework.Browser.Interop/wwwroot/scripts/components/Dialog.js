@@ -8,8 +8,8 @@
  * a list removing the item a command confirmed in the dialog, to the heir that surface names.
  */
 
-import { FocusHeirs } from '../focus/FocusHeirs.mjs';
-import { FocusSurface } from '../focus/FocusSurface.mjs';
+import { FocusHeirs } from '../focus/FocusHeirs.js';
+import { FocusSurface } from '../focus/FocusSurface.js';
 
 /**
  * @param {HTMLDialogElement} target

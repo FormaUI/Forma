@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { SizeObserver } from '#browser/geometry/SizeObserver.mjs';
+import { SizeObserver } from '#browser/geometry/SizeObserver.js';
 import { stubResizeObserver } from '#support/platform.js';
 
 describe('SizeObserver', () => {

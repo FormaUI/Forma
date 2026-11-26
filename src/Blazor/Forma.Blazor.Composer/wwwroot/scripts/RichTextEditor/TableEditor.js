@@ -2,7 +2,7 @@
  * TableEditor — building a table and reshaping the one the caret sits in.
  */
 
-import { Escape } from './Markup.mjs';
+import { Escape } from './Markup.js';
 
 export class TableEditor {
     #canvas;

@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { RegistrationTable } from '#browser/RegistrationTable.mjs';
+import { RegistrationTable } from '#browser/RegistrationTable.js';
 
 describe('RegistrationTable', () => {
     /** @type {RegistrationTable} */

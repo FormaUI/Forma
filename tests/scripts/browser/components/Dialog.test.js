@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { attach } from '#browser/components/Dialog.js';
-import { FocusHeirs } from '#browser/focus/FocusHeirs.mjs';
+import { FocusHeirs } from '#browser/focus/FocusHeirs.js';
 
 describe('Dialog', () => {
     /** @type {HTMLDialogElement} */

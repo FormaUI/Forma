@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { AutofillObserver } from '#browser/text/AutofillObserver.mjs';
+import { AutofillObserver } from '#browser/text/AutofillObserver.js';
 
 describe('AutofillObserver', () => {
     /** @type {HTMLInputElement} */

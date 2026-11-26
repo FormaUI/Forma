@@ -2,7 +2,7 @@
  * DomSessionRegistry — the owners' sessions, by runtime key
  */
 
-import { DomSession } from './DomSession.mjs';
+import { DomSession } from './DomSession.js';
 
 /** @type {Map<string, DomSession>} */
 const sessions = new Map();

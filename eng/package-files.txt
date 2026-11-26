@@ -125,18 +125,18 @@ formaui-net.Blazor.Composer
     staticwebassets/formaui-net.Blazor.Composer.{fingerprint}.bundle.scp.css
     staticwebassets/scripts/BlockAlignment.js
     staticwebassets/scripts/RichTextEditor.js
-    staticwebassets/scripts/RichTextEditor/BlockFormatter.mjs
-    staticwebassets/scripts/RichTextEditor/Canvas.mjs
-    staticwebassets/scripts/RichTextEditor/ContentWriter.mjs
-    staticwebassets/scripts/RichTextEditor/Fragments.mjs
-    staticwebassets/scripts/RichTextEditor/InlineFormatter.mjs
-    staticwebassets/scripts/RichTextEditor/Links.mjs
-    staticwebassets/scripts/RichTextEditor/ListFormatter.mjs
-    staticwebassets/scripts/RichTextEditor/Markup.mjs
-    staticwebassets/scripts/RichTextEditor/MediaMarkup.mjs
-    staticwebassets/scripts/RichTextEditor/SelectionInspector.mjs
-    staticwebassets/scripts/RichTextEditor/SelectionMemory.mjs
-    staticwebassets/scripts/RichTextEditor/TableEditor.mjs
+    staticwebassets/scripts/RichTextEditor/BlockFormatter.js
+    staticwebassets/scripts/RichTextEditor/Canvas.js
+    staticwebassets/scripts/RichTextEditor/ContentWriter.js
+    staticwebassets/scripts/RichTextEditor/Fragments.js
+    staticwebassets/scripts/RichTextEditor/InlineFormatter.js
+    staticwebassets/scripts/RichTextEditor/Links.js
+    staticwebassets/scripts/RichTextEditor/ListFormatter.js
+    staticwebassets/scripts/RichTextEditor/Markup.js
+    staticwebassets/scripts/RichTextEditor/MediaMarkup.js
+    staticwebassets/scripts/RichTextEditor/SelectionInspector.js
+    staticwebassets/scripts/RichTextEditor/SelectionMemory.js
+    staticwebassets/scripts/RichTextEditor/TableEditor.js
     staticwebassets/scripts/SelectionFollower.js
 
 formaui-net.Blazor.DataView
@@ -232,7 +232,7 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/behaviors/ReorderInteraction.js
     staticwebassets/scripts/behaviors/Scroll.js
     staticwebassets/scripts/behaviors/Wheel.js
-    staticwebassets/scripts/CapabilityCounts.mjs
+    staticwebassets/scripts/CapabilityCounts.js
     staticwebassets/scripts/components/Dialog.js
     staticwebassets/scripts/components/Frame.js
     staticwebassets/scripts/components/ShareMenu.js
@@ -241,23 +241,21 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/components/Tooltip.js
     staticwebassets/scripts/components/Virtualize.js
     staticwebassets/scripts/components/Window.js
-    staticwebassets/scripts/DomElement.mjs
-    staticwebassets/scripts/DomElements.mjs
+    staticwebassets/scripts/DomElement.js
+    staticwebassets/scripts/DomElements.js
     staticwebassets/scripts/DomEngine.js
-    staticwebassets/scripts/DomEngine.mjs
-    staticwebassets/scripts/DomSession.mjs
-    staticwebassets/scripts/DomSessionRegistry.mjs
+    staticwebassets/scripts/DomSession.js
+    staticwebassets/scripts/DomSessionRegistry.js
     staticwebassets/scripts/DomWatcher.js
-    staticwebassets/scripts/DomWatcher.mjs
-    staticwebassets/scripts/focus/FocusHeirs.mjs
-    staticwebassets/scripts/focus/FocusInteraction.mjs
-    staticwebassets/scripts/focus/FocusRecovery.mjs
-    staticwebassets/scripts/focus/FocusStateObserver.mjs
-    staticwebassets/scripts/focus/FocusSurface.mjs
-    staticwebassets/scripts/focus/RovingFocus.mjs
-    staticwebassets/scripts/focus/TabOrder.mjs
-    staticwebassets/scripts/geometry/SizeObserver.mjs
-    staticwebassets/scripts/IntersectionObserverPool.mjs
+    staticwebassets/scripts/focus/FocusHeirs.js
+    staticwebassets/scripts/focus/FocusInteraction.js
+    staticwebassets/scripts/focus/FocusRecovery.js
+    staticwebassets/scripts/focus/FocusStateObserver.js
+    staticwebassets/scripts/focus/FocusSurface.js
+    staticwebassets/scripts/focus/RovingFocus.js
+    staticwebassets/scripts/focus/TabOrder.js
+    staticwebassets/scripts/geometry/SizeObserver.js
+    staticwebassets/scripts/IntersectionObserverPool.js
     staticwebassets/scripts/operations/Asset.js
     staticwebassets/scripts/operations/CheckBox.js
     staticwebassets/scripts/operations/Clipboard.js
@@ -270,20 +268,22 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/operations/Print.js
     staticwebassets/scripts/operations/Share.js
     staticwebassets/scripts/operations/TextEntry.js
-    staticwebassets/scripts/RegistrationTable.mjs
-    staticwebassets/scripts/ResizeObserverPool.mjs
-    staticwebassets/scripts/scrolling/IntersectionStateObserver.mjs
-    staticwebassets/scripts/scrolling/ScrollButtons.mjs
-    staticwebassets/scripts/scrolling/ScrollContainer.mjs
-    staticwebassets/scripts/scrolling/ScrollInteraction.mjs
-    staticwebassets/scripts/scrolling/ScrollStateObserver.mjs
-    staticwebassets/scripts/StateDelivery.mjs
-    staticwebassets/scripts/text/AutofillObserver.mjs
-    staticwebassets/scripts/text/CharacterCount.mjs
-    staticwebassets/scripts/text/SubmissionHold.mjs
-    staticwebassets/scripts/text/TextEdits.mjs
-    staticwebassets/scripts/text/TextSelectionObserver.mjs
-    staticwebassets/scripts/text/TextSources.mjs
+    staticwebassets/scripts/OwnerEngine.js
+    staticwebassets/scripts/OwnerWatcher.js
+    staticwebassets/scripts/RegistrationTable.js
+    staticwebassets/scripts/ResizeObserverPool.js
+    staticwebassets/scripts/scrolling/IntersectionStateObserver.js
+    staticwebassets/scripts/scrolling/ScrollButtons.js
+    staticwebassets/scripts/scrolling/ScrollContainer.js
+    staticwebassets/scripts/scrolling/ScrollInteraction.js
+    staticwebassets/scripts/scrolling/ScrollStateObserver.js
+    staticwebassets/scripts/StateDelivery.js
+    staticwebassets/scripts/text/AutofillObserver.js
+    staticwebassets/scripts/text/CharacterCount.js
+    staticwebassets/scripts/text/SubmissionHold.js
+    staticwebassets/scripts/text/TextEdits.js
+    staticwebassets/scripts/text/TextSelectionObserver.js
+    staticwebassets/scripts/text/TextSources.js
 
 formaui-net.Framework.Browser.Maui
     lib/net11.0/Forma.Framework.Browser.Maui.dll
