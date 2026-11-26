@@ -10,6 +10,10 @@ using Forma.Framework.Culture.Router;
 using Forma.Framework.Culture.Router.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Started from its build output, as a filtered browser run starts it, the host serves every library's static files from where
+// the build left them, which the manifest beside it maps; a published host has no such manifest, and this does nothing there.
+builder.WebHost.UseStaticWebAssets();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();

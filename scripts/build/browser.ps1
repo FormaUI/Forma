@@ -3,7 +3,7 @@
 
 <#
 .SYNOPSIS
-Publish the browser check's host and its full client, and drive them in a browser.
+Build the browser checks and their hosts once, and drive them in a browser.
 
 .DESCRIPTION
 Inner-loop wrapper that runs the browser check by delegating to the Forma.Build module. This is the same step
@@ -19,12 +19,13 @@ Opens a visible browser window rather than a headless one.
 .PARAMETER Filter
 Narrows the examples' smoke checks and the browser checks, as dotnet test takes a filter, Runtime=server among its
 terms narrowing them to one runtime. A filter that selects no check is refused before anything is published, and a
-filtered run builds only what the checks it selects read: the example hosts for the smoke checks and the Blazor
-Hybrid examples' checks, the WebView check host for checks in the web view, and the check hosts again into the
-folders the last run left, emptied first only for a download check.
+filtered run starts the host and the components host from the one build the run makes, publishing only what the
+checks it selects read as published files: the full client for the culture checks, every host, into emptied
+folders, for a download check, the example hosts for the smoke checks and the Blazor Hybrid examples' checks, and
+the WebView check host for checks in the web view.
 
 .PARAMETER Times
-Repeats the checks on the hosts published once, continuing past a failure, and lists each check that failed with how
+Repeats the checks on the hosts the run built or published once, continuing past a failure, and lists each check that failed with how
 many of the runs that ran it failed it.
 
 .PARAMETER LoadWith

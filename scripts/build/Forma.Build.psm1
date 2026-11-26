@@ -1724,7 +1724,8 @@ function Test-BrowserCheck {
     $temporaryFolder = $Context.TemporaryFolder
     $getBrowserCheckOutcome = ${function:Get-BrowserCheckOutcome}
     $runs = $Times
-    $description = 'dotnet publish the host, the full client and the components host'
+    $description = 'dotnet build the browser checks, the examples'' smoke checks and the hosts they start, once, through a solution filter, then '
+    $description += if ($Filter) { 'start the host and the components host from that build, dotnet publish the full client where a check selected serves it as files, and every host where a download check counts their files' } else { 'dotnet publish the host and the components host from that build, and the full client' }
 
     if ($isWebViewPublished) {
         $description += ', and the WebView check host'
@@ -1777,6 +1778,18 @@ function Test-BrowserCheck {
             }
         }
 
+        # The checks, the smoke checks and the hosts they start are built once, through a solution filter of the run's own,
+        # so the listing, the publishes and the runs read that one build rather than each building again.
+        $buildFilter = Join-Path $temporaryFolder 'browser.slnf'
+        $null = New-Item -ItemType Directory -Path $temporaryFolder -Force
+        $builtProjects = @($checks, $exampleChecks, $hostProject, $componentsProject | ForEach-Object { [System.IO.Path]::GetRelativePath((Split-Path -Parent $solution), $_) })
+        [ordered]@{ solution = [ordered]@{ path = $solution; projects = $builtProjects } } | ConvertTo-Json -Depth 4 | Set-Content -LiteralPath $buildFilter
+        dotnet build $buildFilter -c Release --nologo -v:q
+
+        if ($LASTEXITCODE -ne 0) {
+            return
+        }
+
         # The checks a filter selects are listed before anything is published, so a filter that selects none is refused
         # at once rather than after minutes of publishing, and a filtered run builds what the checks it selects read.
         $runsSmokeChecks = $true
@@ -1789,7 +1802,7 @@ function Test-BrowserCheck {
             $selectedChecks = @{}
 
             foreach ($project in @($exampleChecks, $checks)) {
-                $listedChecks = @(dotnet run --project $project -c Release -- -list tests -preEnumerateTheories -filterVSTest $Filter 2>&1 | ForEach-Object { "$_" })
+                $listedChecks = @(dotnet run --project $project -c Release --no-build -- -list tests -preEnumerateTheories -filterVSTest $Filter 2>&1 | ForEach-Object { "$_" })
 
                 if ($LASTEXITCODE -ne 0) {
                     $listedChecks | Write-Host
@@ -1816,27 +1829,48 @@ function Test-BrowserCheck {
             $clearsOutputs = [bool]($selectedChecks -match '\.DownloadTests\b')
         }
 
+        # A filtered run starts the host and the components host from the build, which serves every library's static files
+        # through the endpoints it records, and publishes the full client alone, which the culture checks serve as files;
+        # a download check counts a published client's files, so it publishes every host, and the gate publishes them all.
+        $isStartedFromBuild = $Filter -and -not $clearsOutputs
+        $needsFullClient = -not $isStartedFromBuild -or [bool]($selectedChecks -match '\.WebAssemblyCultureTests\b')
+
         # Asked before anything is published, since the step publishes for minutes before it reaches the MAUI example host.
         if ($needsExamples -and $isWebViewPublished -and -not (dotnet workload list | Select-String -Pattern '^\s*maui-windows\s' -Quiet)) {
             throw 'The MAUI example host needs the maui-windows workload: dotnet workload install maui-windows'
         }
 
-        $publishes = @(if ($runsChecks) { , @($hostProject, $hostOutput); , @($fullProject, $fullOutput); , @($componentsProject, $componentsOutput) })
+        $publishes = @(if ($runsChecks) {
+                if (-not $isStartedFromBuild) {
+                    @{ Project = $hostProject; Output = $hostOutput; IsBuilt = $true }
+                    @{ Project = $componentsProject; Output = $componentsOutput; IsBuilt = $true }
+                }
 
-        if ($runsChecks -and $needsWebView) {
-            $publishes += , @($webViewProject, $webViewOutput)
-        }
+                if ($needsFullClient) {
+                    @{ Project = $fullProject; Output = $fullOutput; IsBuilt = $false }
+                }
+
+                if ($needsWebView) {
+                    @{ Project = $webViewProject; Output = $webViewOutput; IsBuilt = $false }
+                }
+            })
 
         foreach ($publish in $publishes) {
-            if ($clearsOutputs -and (Test-Path -LiteralPath $publish[1])) {
-                Remove-Item -LiteralPath $publish[1] -Recurse -Force
+            if ($clearsOutputs -and (Test-Path -LiteralPath $publish.Output)) {
+                Remove-Item -LiteralPath $publish.Output -Recurse -Force
             }
 
-            dotnet publish $publish[0] -c Release -o $publish[1] --nologo -v:q
+            $noBuild = @(if ($publish.IsBuilt) { '--no-build' })
+            dotnet publish $publish.Project -c Release -o $publish.Output @noBuild --nologo -v:q
 
             if ($LASTEXITCODE -ne 0) {
                 return
             }
+        }
+
+        if ($runsChecks -and $isStartedFromBuild) {
+            $hostOutput = "$(dotnet msbuild $hostProject -getProperty:TargetDir -p:Configuration=Release)".Trim()
+            $componentsOutput = "$(dotnet msbuild $componentsProject -getProperty:TargetDir -p:Configuration=Release)".Trim()
         }
 
         $androidBuild = $null
@@ -1934,12 +1968,6 @@ function Test-BrowserCheck {
         # The components are checked in WebKit too, Playwright's own build of it, which a machine installs once; a Linux CI
         # machine takes the libraries WebKit needs with it.
         if ($runsChecks) {
-            dotnet build $checks -c Release --nologo -v:q
-
-            if ($LASTEXITCODE -ne 0) {
-                return
-            }
-
             $installer = Get-ChildItem -LiteralPath (Join-Path (Split-Path -Parent $checks) 'bin' 'Release') -Recurse -Filter 'playwright.ps1' | Select-Object -First 1
             $withDependencies = @(if ($IsLinux -and $env:CI) { '--with-deps' })
             pwsh -NoProfile -File $installer.FullName install @withDependencies webkit
@@ -1977,7 +2005,7 @@ function Test-BrowserCheck {
 
                 $runResults = Join-Path $resultsOutput "run-$run"
                 $null = New-Item -ItemType Directory -Path $runResults -Force
-                $build = @(if ($run -gt 1) { '--no-build' })
+                $build = @('--no-build')
                 $env:FORMA_BROWSER_ANDROID_CHECKS = $null
                 $isFailed = $false
 

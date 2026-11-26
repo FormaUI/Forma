@@ -407,8 +407,8 @@ features that own them.
   under a root its own locale config declares, which is what the JSON localization tests read.
 - **`tests/support/Forma.Tests.Support.Hosts`** holds the operations a host's lifecycle needs, which the smoke and E2E
   suites share, each keeping its own fixtures and assertions:
-  - `WebHostProcess` starts a published web host on a free port, waits until it answers and stops it, cleaning up
-    after a start that failed.
+  - `WebHostProcess` starts a web host, published or from its build output, on a free port, waits until it answers
+    and stops it, cleaning up after a start that failed.
   - `WebViewApplication` starts a Blazor Hybrid application from its publish with WebView2's DevTools port open and
     connects to its web views.
   - `AndroidDevice` reads the build a run checks, installs, starts and reads an application on the Android device or
@@ -611,11 +611,15 @@ dotnet run --project src/Blazor/Forma.Blazor.Showcase
 [The verification design](verification-design.md#gates) sets out which gates a change runs before its commit, and
 what it leaves to the full runs in CI.
 
-**A filtered browser run builds what the checks it selects read.** `browser.ps1 -Filter` packs the solution and
-publishes the example hosts only where it selects a smoke check or a check of the Blazor Hybrid examples, publishes
-the WebView check host only for a check in the web view, and publishes the check hosts into the folders the last
-run left, emptying them first only for a download check, which counts a client's files. `Runtime=server` in the
-filter narrows the checks to one runtime. An unfiltered run, which the gate makes, builds all of it afresh.
+**The browser step builds its checks and hosts once.** It builds the browser checks, the examples' smoke checks
+and the host and the components host they start in one build, through a solution filter of the run's own, and the
+listing, the publishes and the runs read that build. A filtered run, `browser.ps1 -Filter`, starts the host and the
+components host from that build, each serving the libraries' static files from where the build left them, and
+publishes only what the checks it selects read as published files: the full client for the culture checks, which
+serve it as files, every host into emptied folders for a download check, which counts a client's files, the example
+hosts where it selects a smoke check or a check of the Blazor Hybrid examples, which it packs the solution for, and
+the WebView check host for a check in the web view. `Runtime=server` in the filter narrows the checks to one runtime.
+An unfiltered run, which the gate makes, publishes every host from that build.
 
 **The fast gate** builds the solution and every task program, so a change that breaks the Showcase, a check host or
 a task program fails it, and runs the unit and bUnit suites from that build, through a solution filter it writes under
@@ -669,7 +673,7 @@ needs one project's tests doesn't wait for the whole gate:
 | `test.ps1` | Runs the tests: the solution's, the script tests, or both |
 | `format.ps1` | Verifies formatting |
 | `tasks.ps1` | Builds the task programs written in C# |
-| `browser.ps1` | Publishes the browser check's hosts and drives them in a browser; `-Visible` in a window a person can watch, and `-Android` on the Android check host's web view too, on the Android environment's emulator |
+| `browser.ps1` | Builds the browser checks and their hosts once and drives them in a browser; `-Visible` in a window a person can watch, and `-Android` on the Android check host's web view too, on the Android environment's emulator |
 | `mobile.ps1` | Builds the MAUI example host from the packed packages for `-Platform` `Android`, `iOS` or `MacCatalyst`, and drives the Android build on the Android environment's emulator, where the environment is installed |
 | `clean.ps1` | Deletes build output and the runs' temporary folders |
 
@@ -695,7 +699,7 @@ ran it failed it:
 | Parameter | Does |
 |-----------|------|
 | `-Filter` | Narrows the examples' smoke checks and the browser checks, as `dotnet test` takes a filter; a filter that selects no check is refused before anything is published |
-| `-Times` | Repeats the checks on the hosts published once, continuing past a failure |
+| `-Times` | Repeats the checks on the hosts the run built or published once, continuing past a failure |
 | `-LoadWith` | Runs test projects over and over beside the checks, from the output already on disk, to load the machine |
 
 **Each script is a wrapper.** What an action does lives in `scripts/build/Forma.Build.psm1`, so the gate and a single

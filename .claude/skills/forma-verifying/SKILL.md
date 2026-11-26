@@ -64,8 +64,9 @@ beside it, as the repository's build documentation sets out with every command a
   beside it to load the machine, so a race a busy machine exposes shows here too, and record the waits made
   with diagnostics to list which found their state only after waiting for it.
 - Do hunt a browser check that fails sometimes the same way, filtered, repeated and under load, on hosts
-  published once, so the run ends with each failing check's rate, and run the check with the others it runs
-  beside in the gate, since some checks fail only after their neighbors have run.
+  built once, so the run ends with each failing check's rate, and run the check with the others it runs
+  beside in the gate, since some checks fail only after their neighbors have run; a failure that shows only in a
+  published host, such as one trimming causes, is reproduced by the unfiltered run, which publishes them.
 - Do name a build script for its action in lowercase, since it is a command someone types; the functions
   in the module take `Verb-Noun` with an approved verb, as PowerShell requires of anything a module
   exports.
