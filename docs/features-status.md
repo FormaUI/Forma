@@ -30,6 +30,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [A host's requests](#a-hosts-requests) | Four components implemented, twenty-six changes fixed, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
 | [Themes](#themes) | Planned, thirteen steps open, the switch coordinator and the themes first |
+| [The Showcase's review modes](#the-showcases-review-modes) | Planned, seven steps open, the last three waiting on themes |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -115,7 +116,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | The gate and CI on Linux and Windows | [Build and verification](repository-structure.md#build-and-verification) | Implemented, Android's checks in [the environment the repository declares](repository-structure.md#the-android-environment), its JDK and its emulator, on every machine and in CI alike | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | The browser check | [Tests](repository-structure.md#tests) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
-| The Showcase's review modes: a page in each device, pointer, theme, scheme and direction, and side by side | [Showcase design](showcase-design.md) | Designed, every decision taken; the implementation plan next | — |
+| The Showcase's review modes: a page in each device, pointer, theme, scheme and direction, and side by side | [Showcase design](showcase-design.md) | [Planned](#the-showcases-review-modes) | — |
 | The screen reader check | [Screen reader checks design](screen-reader-checks-design.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Releases | [Build and verification](repository-structure.md#build-and-verification) | Implemented: each release published from its signed tag on `main` to nuget.org and the organization's GitHub feed, and proven against what it published: a consumer outside the repository reading a locale pack it restored from a feed into an empty cache, and a project outside it declaring `IsLocalePack` packing as a pack | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 
@@ -281,6 +282,15 @@ thirteen steps and four parts:
 - Blazor Hybrid, once each platform's document-start script is proven.
 
 The first two parts are independent of each other. None of the steps has landed.
+
+<a id="the-showcases-review-modes"></a>
+
+## The Showcase's review modes
+
+[The Showcase implementation plan](showcase-implementation-plan.md) carries out [the Showcase design](showcase-design.md)
+in seven steps: the review bar, the device view, touch emulation, and direction and comparison first, then the
+themes in a view, the window's theme picker and the Themes page, each waiting on the theme plan's steps it
+names. None of the steps has landed.
 
 <a id="deferred"></a>
 

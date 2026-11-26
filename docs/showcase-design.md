@@ -4,7 +4,8 @@ The Showcase is where a Forma component is reviewed: its page renders the compon
 enter. This design states how a page is reviewed beyond the reader's own window: in each theme and color
 scheme, in a desktop's, a tablet's and a phone's viewport with the pointer each one has, in either writing
 direction, and side by side. How a page is written, and what it must render, are the Showcase's README's
-and the repository's component authoring guide's.
+and the repository's component authoring guide's. [The implementation plan](showcase-implementation-plan.md)
+holds the steps that carry it out.
 
 ## Purpose
 
