@@ -152,8 +152,10 @@ than a box that scrolls inside the page. A phone is a viewport under 40rem wide,
 40rem tall beneath a coarse pointer, too short for a box of 40rem beside the page around it.
 An infinite scroll appends each page as the page nears the list's end, and its header stays at
 the top of what scrolls them, `--forma-explorer-header-inset-block-start` below a host's own
-bar, so its commands stay in reach. A height the host gives it, `--forma-explorer-block-size`,
-keeps it a box at every width.
+bar, so its commands stay in reach; the items pass beneath it, nothing an item raises standing
+over it. A height the host gives it, `--forma-explorer-block-size`, keeps it a box at every
+width. Both are set on the explorer's own element, which declares their defaults, so a value an
+ancestor sets doesn't reach it.
 
 Three surfaces stay on `FormaExplorer` rather than on the region they appear over, because
 each is reached from more than one of them: the preview lightbox, which activation, the

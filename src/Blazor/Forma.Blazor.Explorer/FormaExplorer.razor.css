@@ -57,6 +57,12 @@
         inset-block-start: var(--forma-explorer-header-inset-block-start);
         z-index: 1;
     }
+
+    /* The items stack within the data view alone, so nothing an item raises, as a card's actions are, stands over the header
+       they pass beneath. */
+    .forma-explorer ::deep .forma-explorer-data-view {
+        isolation: isolate;
+    }
 }
 
 .forma-explorer.is-resizable {

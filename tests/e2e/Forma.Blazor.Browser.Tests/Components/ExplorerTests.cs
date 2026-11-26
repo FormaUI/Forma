@@ -503,6 +503,21 @@ public sealed class ExplorerTests
 
     public sealed class ExplorerPage(BrowserHost host)
     {
+        // Scrolls an item's actions button until its top stands just inside the stuck header's bottom edge, and names what stands
+        // there over the header, which an item passing beneath it must not.
+        private const string ReadOverHeader = """
+            async () => {
+                const header = document.querySelector('#check .forma-explorer-header-backdrop');
+                const actions = document.querySelectorAll('#check .forma-explorer-card-actions button')[4];
+                const height = header.getBoundingClientRect().height;
+                window.scrollTo({ top: actions.getBoundingClientRect().top + scrollY - height + 6, behavior: 'instant' });
+                await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+                const button = actions.getBoundingClientRect();
+                const element = document.elementFromPoint(button.left + (button.width / 2), header.getBoundingClientRect().bottom - 3);
+                return element === null || header.contains(element) ? [] : [`${element.localName}.${[...element.classList].join('.')}`];
+            }
+            """;
+
         // How the explorer stands in the page: how far its media overflow the list inside it, how far the page scrolls past its
         // viewport, and where its header stands in the viewport.
         private const string ReadPlacement = """
@@ -542,13 +557,15 @@ public sealed class ExplorerTests
                 null,
                 new() { PollingInterval = 200 });
             var after = await page.EvaluateAsync<double[]>(ReadPlacement);
+            var overHeader = await page.EvaluateAsync<string[]>(ReadOverHeader);
 
             // Assert — the page scrolls the items, not the explorer, and the header stands at the viewport's top once the page has
             // scrolled past it
             Assert.Multiple(
                 () => Assert.True(before[0] <= 1 && after[0] <= 1, $"The explorer's media scroll {before[0]}px and then {after[0]}px inside it."),
                 () => Assert.True(before[1] > 640, $"The page scrolls {before[1]}px past its viewport on its first page."),
-                () => Assert.True(Math.Abs(after[2]) <= 1, $"The explorer's header stands {after[2]}px from the viewport's top."));
+                () => Assert.True(Math.Abs(after[2]) <= 1, $"The explorer's header stands {after[2]}px from the viewport's top."),
+                () => Assert.True(overHeader.Length == 0, $"Standing over the header's bottom edge: {string.Join(", ", overHeader)}"));
             await Assertions.Expect(page.Locator("#check .forma-data-card-name")).ToHaveCountAsync(200);
         }
     }

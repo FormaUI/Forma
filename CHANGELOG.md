@@ -5,6 +5,13 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.20`
+
+*Unreleased*
+
+- [`FormaExplorer`](docs/explorer-design.md#the-parts)'s items pass beneath its header on a phone, where a card's
+  actions stood over the header as the card scrolled under it.
+
 ## `1.0.0-preview.19`
 
 *November 26, 2026*
