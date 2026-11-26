@@ -612,16 +612,19 @@ it, and it takes part in `TabOrder` by marking its items as the built-in views m
 
 ### At a narrow width
 
-A view is handed a phone's column as readily as a desktop's pane, and neither is read through
-crushed cells or a standing column of boxes and menus. At a narrow width a row is at most two
-lines, and what stood beside an item comes when a gesture, a command or the focus asks for it.
+A view is handed a phone's column as readily as a desktop's pane, and space there is too
+scarce for columns, crushed cells or a standing column of boxes and menus. At a narrow width an
+item is stacked into a few readable lines, and what stood beside it comes when a gesture, a
+command or the focus asks for it.
 
-**Two lines a row.** In the grid and the list, a narrow row holds the item's thumbnail at its
-start, spanning both lines, its name, `ItemName`, on the first line, and its detail, the view's
-`ItemTemplate`, on the line beneath. Each line keeps to one line of text, cut short with an
-ellipsis rather than wrapped, so a row is never taller than two lines; a view with no thumbnail
-starts with the name. The cards stay cards, a thumbnail and its name, and the tree keeps its
-nodes.
+**Two lines a row, three where its detail needs them.** In the grid and the list, a narrow row
+holds the item's thumbnail at its start, where it has one, spanning the row's lines; its name,
+`ItemName`, on the first line; and its detail, the view's `ItemTemplate`, beneath. The name
+keeps to one line and the detail to two at most, each cut short with an ellipsis, so a row is
+two lines where its detail fits one, as a file's name above its date is, and three where it
+needs another; a detail drawn as two blocks, a date and a size, stands as two lines. A view with
+no thumbnail starts with the name. The cards stay cards, a thumbnail and its name, and the tree
+keeps its nodes.
 
 **The same parts in every view.** The list and the cards take these parts already, and the list
 gains `ActionsTemplate` beside the cards' own. The grid takes them too, `ThumbnailTemplate`,
@@ -639,28 +642,48 @@ a thumbnail of `3rem`, a name of twenty characters, about `12rem`, a detail of t
 `8rem`, and the selection and actions targets of `2.75rem` each, with their gutters, come to
 `33rem`, and the rest keeps a name from meeting its detail.
 
-**No actions column.** A narrow row's actions, the view's `ActionsTemplate`, stand at its end
-only while it shows them; a card keeps its actions bar. A swipe toward the row's inline start,
-leftward in a left-to-right page, slides the row aside to show them, and a swipe back, a press
-elsewhere or Escape slides it home, as one row at a time shows its actions. The keyboard reaches
-them as it does today, Shift+F10 and the Menu key opening the item's actions, and a row holding
-the keyboard's focus shows its actions' button at its end, which Tab reaches, so a keyboard and
-a screen reader meet the same command a swipe shows.
+**One menu in place of the actions column.** A narrow view draws no actions column. Its head
+holds one button of three horizontal dots, which opens the view's menu: Select, which starts
+selecting as a long press does, and the commands the host gives in `SelectionCommands`, Edit and
+Delete among them, each acting on the selected items and enabled only where it can act on them:
+
+- nothing selected leaves every command disabled;
+- a command that takes one item, as Edit does, is enabled with one item selected, and one that
+  takes several, as Delete does, with any number, `TakesMany` saying which;
+- a selected item the command doesn't apply to, by its `AppliesTo`, an item that can't be
+  edited for Edit, leaves it disabled however many of the others it applies to;
+- and the host disables a command where its context doesn't allow it, by its `IsDisabled`.
+
+A disabled command says why through its tooltip, as [the tooltip design](tooltip-design.md)
+sets out: the library's own reason for the first three, and the host's `DisabledReason` for the
+last. A command the reader runs calls `OnSelectionCommand` with the command and the selected
+items. A command record, `DataViewCommand<TItem>`, carries its `Id`, its `Title`, its `Icon`,
+`AppliesTo`, `TakesMany`, `IsDisabled` and `DisabledReason`, as a toolbar's items do. Without a
+touch screen, the menu is how a reader selects and acts on items.
+
+**A row's own actions by a swipe.** A narrow row's own actions, the view's `ActionsTemplate`,
+stand at its end only while it shows them; a card keeps its actions bar. A swipe toward the
+row's inline start, leftward in a left-to-right page, slides the row aside to show them, and a
+swipe back, a press elsewhere or Escape slides it home, as one row at a time shows its actions.
+The keyboard reaches them as it does today, Shift+F10 and the Menu key opening the item's
+actions, and a row holding the keyboard's focus shows its actions' button at its end, which Tab
+reaches, so a keyboard and a screen reader meet the same command a swipe shows.
 
 **Selection on demand.** A narrow view draws no standing boxes. A long press on an item starts
 selecting with that item checked, and while the view is selecting each item draws its box: a
 row's at its start, pushing the row's content toward its end, and a card's on its thumbnail, as
 a gallery marks a picture. The view stops selecting once nothing is checked, or on Escape.
-`Selecting`, with `SelectingChanged`, is that state, so a host's own command, a Select button,
-starts it, as the explorer's selection mode does; Space on a focused item starts it from the
-keyboard, checking that item. A long press waits for the platform's hold, and a press that
+`Selecting`, with `SelectingChanged`, is that state, which the view's menu's Select starts, and
+so does a host's own command, as the explorer's selection mode does; Space on a focused item
+starts it from the keyboard, checking that item. A long press waits for the platform's hold, and a press that
 travels first is the page's scroll, never a selection.
 
 **Wide again.** Given its width back, a view draws its columns, its standing boxes while checked
 selection is on, and its actions where its columns place them, and the selection is kept.
 
 Every gesture has a command beside it, so nothing is reached by a gesture alone: the swipe by
-the actions' button and Shift+F10, the long press by Space and the host's command. The gestures
+the actions' button and Shift+F10, the long press by the menu's Select, Space and the host's
+command. The gestures
 are routes on the input router, as every press is, and a swipe that turns vertical first is
 the page's scroll.
 
