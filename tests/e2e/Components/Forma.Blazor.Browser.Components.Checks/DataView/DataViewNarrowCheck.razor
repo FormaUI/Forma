@@ -22,6 +22,20 @@
     </div>
 }
 
+@* The same grid at a tablet's width, which holds its columns, so it draws them. *@
+<div id="tablet-box" style="inline-size: 48rem">
+    <FormaDataView Id="tablet-grid" TItem="Document" Items="_documents" ItemKey="@(document => document.Id)" ItemName="@(document => document.Name)" EnablePagination="false">
+        <FormaDataGrid TItem="Document">
+            <ItemTemplate Context="document">@document.Owner</ItemTemplate>
+            <Columns>
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Owner)" Title="Owner" />
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Size)" Title="Size" />
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Updated)" Title="Updated" />
+            </Columns>
+        </FormaDataGrid>
+    </FormaDataView>
+</div>
+
 @* The same grid checking its items on demand: a hold or the menu's Select starts selecting, a row's actions come from a swipe, and
    the menu runs Delete on the selected items, which is written where the check reads it. *@
 <div id="selecting-box" style="inline-size: 22rem">

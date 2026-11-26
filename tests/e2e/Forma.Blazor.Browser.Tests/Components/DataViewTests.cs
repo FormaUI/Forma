@@ -141,6 +141,22 @@ public sealed class DataViewTests
             }
         }
 
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_keep_its_columns_at_a_tablet_s_width_that_holds_them(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-narrow");
+            await using var _ = context;
+
+            // Act — the phone-width grids turned narrow, so the widths have been reported
+            await Assertions.Expect(page.Locator("#ltr-box td.forma-data-grid-narrow-cell")).ToHaveCountAsync(3, new() { Timeout = 30_000 });
+
+            // Assert
+            await Assertions.Expect(page.Locator("#tablet-grid td.forma-data-grid-narrow-cell")).ToHaveCountAsync(0);
+            await Assertions.Expect(page.Locator("#tablet-grid").GetByRole(AriaRole.Columnheader, new() { Name = "Updated", Exact = true })).ToBeVisibleAsync();
+        }
+
         // A finger's press at the middle of an element, and its travel by the pixels given.
         private static async Task TouchAsync(ILocator element, string type, double across = 0)
         {
