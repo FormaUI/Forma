@@ -64,6 +64,33 @@
     display: none;
 }
 
+/* Under a coarse pointer the arrow form scrolls by a finger's swipe, leaving its arrows to a fine pointer, and fades the end
+   its content continues past rather than cutting a word under an arrow. */
+@media (pointer: coarse) {
+    .forma-freeze-pane-arrows > ::deep .forma-freeze-pane-arrow {
+        display: none;
+    }
+
+    .forma-freeze-pane-arrows.forma-freeze-pane-inline > .forma-freeze-pane-viewport {
+        --forma-freeze-pane-fade-start: 0px;
+        --forma-freeze-pane-fade-end: 0px;
+        mask-image: linear-gradient(to right, transparent, #000 var(--forma-freeze-pane-fade-start), #000 calc(100% - var(--forma-freeze-pane-fade-end)), transparent);
+    }
+
+    /* The gradient runs across the screen, so a right-to-left pane starts it from the other side. */
+    .forma-freeze-pane-arrows.forma-freeze-pane-inline > .forma-freeze-pane-viewport:dir(rtl) {
+        mask-image: linear-gradient(to left, transparent, #000 var(--forma-freeze-pane-fade-start), #000 calc(100% - var(--forma-freeze-pane-fade-end)), transparent);
+    }
+
+    .forma-freeze-pane-arrows.is-scrolled > .forma-freeze-pane-viewport {
+        --forma-freeze-pane-fade-start: var(--space-6);
+    }
+
+    .forma-freeze-pane-arrows.can-scroll-forward > .forma-freeze-pane-viewport {
+        --forma-freeze-pane-fade-end: var(--space-6);
+    }
+}
+
 /* A frozen part sticks to the start of the axis, drawn over the content sliding beneath it; a part standing behind
    another frozen part carries its distance from the start in --forma-freeze-pane-frozen-offset. */
 .forma-freeze-pane-viewport ::deep .forma-freeze-pane-frozen {

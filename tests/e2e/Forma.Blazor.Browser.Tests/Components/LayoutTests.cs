@@ -188,13 +188,22 @@ public sealed class LayoutTests
             await using var _ = context;
             var viewport = page.Locator("#freeze-pane .forma-freeze-pane-viewport");
             await WaitForInputScopeAsync(page, "#freeze-pane .forma-freeze-pane-arrow-forward");
+            var isCoarse = await page.EvaluateAsync<bool>("() => matchMedia('(pointer: coarse)').matches");
 
-            // Act
-            await page.Locator("#freeze-pane .forma-freeze-pane-arrow-forward").ClickAsync();
+            // Act — a pointer presses the forward arrow; a finger, which has no arrows, swipes the viewport along
+            if (isCoarse)
+            {
+                await viewport.EvaluateAsync("viewport => viewport.scrollBy({ left: 200 })");
+            }
+            else
+            {
+                await page.Locator("#freeze-pane .forma-freeze-pane-arrow-forward").ClickAsync();
+            }
 
             // Assert
             await Assertions.Expect(viewport).Not.ToHaveJSPropertyAsync("scrollLeft", 0);
-            await Assertions.Expect(page.Locator("#freeze-pane .forma-freeze-pane-arrow-back")).ToBeVisibleAsync();
+            var backArrow = page.Locator("#freeze-pane .forma-freeze-pane-arrow-back");
+            await (isCoarse ? Assertions.Expect(backArrow).ToBeHiddenAsync() : Assertions.Expect(backArrow).ToBeVisibleAsync());
             var viewportBox = await viewport.BoundingBoxAsync();
             var frozenBox = await page.Locator("#frozen").BoundingBoxAsync();
             Assert.NotNull(viewportBox);
@@ -388,6 +397,31 @@ public sealed class LayoutTests
             // Assert — the strip scrolls rather than the tab standing past its end
             await WaitForInStripViewAsync(page, "#tab-audit");
             await Assertions.Expect(page.Locator("#tab-overview")).Not.ToBeInViewportAsync(new() { Ratio = 1 });
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_leave_its_arrows_to_a_fine_pointer_and_fade_the_end_its_tabs_continue_past_under_a_coarse_one(string runtime)
+        {
+            // Arrange — the narrow strip scrolled to its last tab, so its tabs continue past its start
+            var (context, page) = await OpenAsync(host, runtime, "tabs");
+            await using var _ = context;
+            await WaitForInStripViewAsync(page, "#tab-audit");
+            var strip = page.Locator("#narrow-tabs .forma-freeze-pane");
+            await Assertions.Expect(page.Locator("#narrow-tabs .forma-freeze-pane.is-scrolled")).ToHaveCountAsync(1);
+
+            // Act
+            var drawn = await strip.EvaluateAsync<string>("""
+                strip => {
+                    const pointer = matchMedia('(pointer: coarse)').matches ? 'coarse' : 'fine';
+                    const arrows = [...strip.querySelectorAll(':scope > .forma-freeze-pane-arrow')].filter(arrow => getComputedStyle(arrow).display !== 'none').length;
+                    const mask = getComputedStyle(strip.querySelector(':scope > .forma-freeze-pane-viewport')).maskImage;
+                    return `${pointer} ${arrows > 0 ? 'arrows' : 'no arrows'} ${mask.includes('gradient') ? 'faded' : 'unfaded'}`;
+                }
+                """);
+
+            // Assert — a finger swipes the strip, whose cut end fades; a pointer has its arrows
+            Assert.True(drawn is "fine arrows unfaded" or "coarse no arrows faded", drawn);
         }
 
         [Theory]

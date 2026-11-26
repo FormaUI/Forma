@@ -159,7 +159,8 @@ public sealed partial class FormaFreezePane : FormaElementBase
             .Add("forma-freeze-pane-cross-axis", Options.ScrollsCrossAxis)
             .Add("is-measured", IsMeasured)
             .Add("has-frozen", FrozenExtent > 0)
-            .Add("is-scrolled", CanScrollBack);
+            .Add("is-scrolled", CanScrollBack)
+            .Add("can-scroll-forward", CanScrollForward);
 
     /// <inheritdoc />
     protected override void BuildRootStyle(CssStyleBuilder builder)
