@@ -231,7 +231,10 @@ toolbar above the data view, which the page composes.
 Each item answers four rules the host gives, `IsItemDisabled`, `CanSelectItem`,
 `CanActivateItem` and `CanFocusItem`, so a picker can let a reader open a folder it will not
 let them choose. A disabled item is drawn muted and is neither selected nor activated, and
-an item that takes the focus with no selection on is announced disabled. An
+an item that takes the focus with no selection on is announced disabled. A disabled item
+gives the reason `ItemDisabledReason` returns for it as a control disabled with a reason does,
+[the tooltip design](tooltip-design.md#disabled-with-a-reason) sets out: its element and its
+selection box are described by the tooltip it holds, shown on hover, focus and tap. An
 item that cannot be selected keeps every other state: it activates, takes the focus and is
 drawn as it is, its box unable to act and nothing said of whether it is selected, so it is
 never announced as an unchosen choice. Every path applies the rules: a press, a key, a range,

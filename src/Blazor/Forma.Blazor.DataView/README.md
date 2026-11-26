@@ -266,11 +266,14 @@ item that cannot be selected activating it, and the switch keeps the focus on th
 Four rules, each a function of the item, say what an item may do. `IsItemDisabled` mutes an item and
 takes it out of every selection and activation, `CanSelectItem` keeps an item from being selected
 while it still activates, `CanActivateItem` keeps it from activating or becoming the current node,
-and `CanFocusItem` draws it without a marker, so the keys pass over it:
+and `CanFocusItem` draws it without a marker, so the keys pass over it. `ItemDisabledReason` says
+why a disabled item is disabled, which the item shows as its tooltip on hover, focus and tap and is
+described by:
 
 ```razor
 <FormaDataView Items="_entries" EnableItemSelection="true" ItemKey="@(entry => entry.Id)"
                IsItemDisabled="@(entry => entry.IsLocked)"
+               ItemDisabledReason="@(entry => $"Locked by {entry.LockedBy}")"
                CanSelectItem="@(entry => !entry.IsFolder)">
     <FormaDataList />
 </FormaDataView>

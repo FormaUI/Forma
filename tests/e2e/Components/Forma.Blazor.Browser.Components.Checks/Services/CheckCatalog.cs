@@ -56,6 +56,6 @@ public sealed class CheckCatalog : ICatalogProvider
     {
         var picture = CreatePicture(name);
 
-        return new CatalogItem { Key = picture.Key, Name = picture.Name, Capabilities = picture.Capabilities, Resource = picture.Resource, IsDisabled = true };
+        return new CatalogItem { Key = picture.Key, Name = picture.Name, Capabilities = picture.Capabilities, Resource = picture.Resource, IsDisabled = true, DisabledReason = "Kept for the archive" };
     }
 }

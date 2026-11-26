@@ -83,4 +83,8 @@ public sealed partial class FormaDataGridRow<TItem> : FormaComponentBase
     private int GetState()
         => DataViewItemGate.GetState(View, Item) | (Grid.IsEditing(Item) ? 1 << DataViewItemGate.SharedBitCount : 0);
 
+    // A row holds nothing but cells, so the tooltip giving a disabled row's reason stands in its first column's cell.
+    private bool HoldsDisabledReason(FormaColumnBase<TItem> column)
+        => ReferenceEquals(column, Grid.ShownColumns.FirstOrDefault());
+
 }

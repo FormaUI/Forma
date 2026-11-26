@@ -157,6 +157,8 @@ set out. What Forma gained before its first release, month by month, is in [the 
   carry one beside `IsDisabled`. Such a control writes `aria-disabled` in place of `disabled`, does nothing when
   pressed or typed into, shows its reason as its tooltip and is described by it; an input keeps its value, posted as a
   read-only one's is. A button showing its reason drops a host's `title`, so the reason is the one tooltip it shows.
+  `FormaDataView` takes `ItemDisabledReason`, a disabled item in any of its views showing its reason as such a
+  control does, and `ICatalogItem` and `CatalogItem` carry a `DisabledReason` the explorer shows.
 - `FormaDropDownMenu` takes `Disabled`, where only a `disabled` attribute passed to its trigger disabled it; the
   attribute still does.
 - Every script Forma ships is a `.js` file, where 42 of its modules were `.mjs` files, which a MAUI application's file

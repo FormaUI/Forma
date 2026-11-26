@@ -38,6 +38,9 @@ public class CatalogItem : ICatalogItem
     public bool IsDisabled { get; init; }
 
     /// <inheritdoc />
+    public string? DisabledReason { get; init; }
+
+    /// <inheritdoc />
     public DateTimeOffset? CreatedAt { get; init; }
 
     /// <inheritdoc />

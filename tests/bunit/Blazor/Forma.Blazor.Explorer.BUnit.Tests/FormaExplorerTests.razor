@@ -1554,6 +1554,38 @@
                 () => Assert.Contains("is-disabled", disabledRow.ClassList),
                 () => Assert.Null(disabledRow.QuerySelector(".forma-explorer-action-bar")));
         }
+
+        [Theory]
+        [InlineData(ExplorerViewMode.Thumbnails)]
+        [InlineData(ExplorerViewMode.Details)]
+        public void Should_give_a_disabled_item_s_reason_as_its_tooltip(ExplorerViewMode viewMode)
+        {
+            // Arrange
+            using var ctx = new FormaExplorerTests();
+            IReadOnlyList<ICatalogItem> items =
+            [
+                CatalogItem.For(new ImageResourceInfo("https://example.com/cover.jpg")),
+                new CatalogItem
+                {
+                    Key = "locked",
+                    Name = "locked.jpg",
+                    IsDisabled = true,
+                    DisabledReason = "Kept for the archive",
+                    Capabilities = CatalogItemCapabilities.Open | CatalogItemCapabilities.View,
+                    Resource = new ImageResourceInfo("https://example.com/locked.jpg")
+                }
+            ];
+
+            // Act
+            var cut = ctx.Render(@<FormaExplorer Items="items" ViewMode="viewMode" />);
+
+            // Assert
+            var item = viewMode == ExplorerViewMode.Details ? GetDetailsRow(cut, "locked.jpg") : ItemNamed(cut, "locked.jpg");
+            var tooltip = Assert.Single(item.QuerySelectorAll("[role=tooltip]"));
+            Assert.Multiple(
+                () => Assert.Equal("Kept for the archive", tooltip.TextContent),
+                () => Assert.Contains(tooltip.Id, (item.GetAttribute("aria-describedby") ?? string.Empty).Split(' ')));
+        }
     }
 
     public sealed class Capabilities

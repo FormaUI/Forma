@@ -1067,6 +1067,91 @@
             Assert.Equal([null, "true"], items.Take(2).Select(item => item.GetAttribute("aria-disabled")));
         }
 
+        private static IRenderedComponent<IComponent> RenderGivingReasons(FormaDataViewTests ctx, RenderFragment view, bool isChecked = false, Func<Entry, IReadOnlyDictionary<string, object>?>? itemAttributes = null)
+            => ctx.Render(
+                @<FormaDataView Items="Entries.AsQueryable()" EnablePagination="false" EnableItemFocus="true" EnableCheckedSelection="isChecked"
+                                ItemKey="@(entry => entry.Id)" ParentKey="@(entry => entry.ParentId)" ItemName="@(entry => entry.Name)" HasChildren="@(entry => entry.Kind == "folder")"
+                                IsItemDisabled="@(entry => entry.Kind == "locked")" ItemDisabledReason="@(entry => $"{entry.Name} is kept for the archive")"
+                                ItemAttributes="itemAttributes">
+                    @view
+                </FormaDataView>);
+
+        [Fact]
+        public void Should_give_a_disabled_item_s_reason_as_its_tooltip_and_describe_it_by_the_tooltip_in_every_view()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+
+            // Act — a list, cards, a grid and a tree, each giving every item a reason and disabling the second
+            var list = RenderGivingReasons(ctx, @<FormaDataList TItem="Entry" />);
+            var cards = RenderGivingReasons(ctx, @<FormaDataCards TItem="Entry" />);
+            var grid = RenderGivingReasons(ctx,
+                @<FormaDataGrid TItem="Entry">
+                    <Columns>
+                        <FormaPropertyColumn TItem="Entry" TValue="string" Property="@(entry => entry.Name)" />
+                    </Columns>
+                </FormaDataGrid>);
+            var tree = RenderGivingReasons(ctx, @<FormaDataTree TItem="Entry" />);
+            list.WaitForState(() => list.FindAll("[role=listitem]").Count == 4);
+            cards.WaitForState(() => cards.FindAll(".forma-data-card").Count == 4);
+            grid.WaitForState(() => grid.FindAll("tbody tr.forma-data-grid-row").Count == 4);
+            tree.WaitForState(() => tree.FindAll("[role=treeitem]").Count == 4);
+
+            // Assert — Locked, the second, described by the tooltip it holds, and Archive, the first, enabled and described by none
+            Assert.Multiple(
+                () => AssertReasonSecond(list.FindAll("[role=listitem]")),
+                () => AssertReasonSecond(cards.FindAll(".forma-data-card")),
+                () => AssertReasonSecond(grid.FindAll("tbody tr.forma-data-grid-row")),
+                () => AssertReasonSecond(tree.FindAll("[role=treeitem]")),
+                () => Assert.Single(grid.FindAll("tbody tr.forma-data-grid-row")[1].Children[0].QuerySelectorAll("[role=tooltip]")));
+        }
+
+        private static void AssertReasonSecond(IReadOnlyList<AngleSharp.Dom.IElement> items)
+        {
+            Assert.Null(items[0].GetAttribute("aria-describedby"));
+            Assert.Empty(items[0].QuerySelectorAll("[role=tooltip]"));
+
+            var tooltip = Assert.Single(items[1].QuerySelectorAll("[role=tooltip]"));
+            Assert.Equal(tooltip.Id, items[1].GetAttribute("aria-describedby"));
+            Assert.Equal("Locked is kept for the archive", tooltip.TextContent);
+        }
+
+        [Fact]
+        public void Should_describe_a_disabled_item_s_selection_box_by_its_reason()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+
+            // Act
+            var cut = RenderGivingReasons(ctx, @<FormaDataList TItem="Entry" />, isChecked: true);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+
+            // Assert — Locked's box is described by Locked's tooltip, and Archive's by none
+            var items = cut.FindAll("[role=listitem]");
+            var tooltip = items[1].QuerySelector("[role=tooltip]")!;
+            Assert.Multiple(
+                () => Assert.Null(items[0].QuerySelector("input[type=checkbox]")!.GetAttribute("aria-describedby")),
+                () => Assert.Equal(tooltip.Id, items[1].QuerySelector("input[type=checkbox]")!.GetAttribute("aria-describedby")));
+        }
+
+        [Fact]
+        public void Should_keep_the_description_a_host_gives_an_item_beside_its_reason()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+
+            // Act
+            var cut = RenderGivingReasons(ctx, @<FormaDataList TItem="Entry" />, itemAttributes: _ => new Dictionary<string, object> { ["aria-describedby"] = "entry-note" });
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 4);
+
+            // Assert — Archive keeps the host's description, and Locked adds its reason's tooltip after it
+            var items = cut.FindAll("[role=listitem]");
+            var tooltip = items[1].QuerySelector("[role=tooltip]")!;
+            Assert.Multiple(
+                () => Assert.Equal("entry-note", items[0].GetAttribute("aria-describedby")),
+                () => Assert.Equal($"entry-note {tooltip.Id}", items[1].GetAttribute("aria-describedby")));
+        }
+
         [Fact]
         public void Should_draw_no_marker_for_an_item_that_cannot_take_the_focus()
         {

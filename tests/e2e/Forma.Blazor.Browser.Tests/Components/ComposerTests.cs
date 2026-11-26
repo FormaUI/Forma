@@ -458,7 +458,8 @@ public sealed class ComposerTests
             var (context, page, dialog) = await OpenPickerAsync(host, runtime);
             await using var _ = context;
 
-            // Act — first.svg chosen, second.svg in its place, and the disabled locked.svg pressed
+            // Act — first.svg chosen, second.svg in its place, and the disabled locked.svg pressed, the pointer resting on it
+            // showing why it is disabled
             await GetName(dialog, "first.svg").ClickAsync();
             await Assertions.Expect(GetBox(dialog, "first.svg")).ToBeCheckedAsync();
             await GetName(dialog, "second.svg").ClickAsync();
@@ -467,6 +468,14 @@ public sealed class ComposerTests
             await GetName(dialog, "locked.svg").ClickAsync();
             await Assertions.Expect(GetBox(dialog, "locked.svg")).Not.ToBeCheckedAsync();
             await Assertions.Expect(GetBox(dialog, "second.svg")).ToBeCheckedAsync();
+            var reason = dialog.Page.GetByRole(AriaRole.Tooltip).Filter(new() { HasText = "Kept for the archive" });
+            await Assertions.Expect(reason).ToBeVisibleAsync();
+            await Assertions.Expect(GetBox(dialog, "locked.svg")).ToHaveAccessibleDescriptionAsync("Kept for the archive");
+
+            // Act — Escape hides the reason, which hangs over the item above, ahead of the dialog around it
+            await dialog.Page.Keyboard.PressAsync("Escape");
+            await Assertions.Expect(dialog.Page.Locator("[role=tooltip]:popover-open")).ToHaveCountAsync(0);
+            await Assertions.Expect(dialog).ToBeVisibleAsync();
 
             // Act — a press on Ceremonies, whose box can't be checked, enters it, and its picture is chosen and inserted
             await Assertions.Expect(GetBox(dialog, "Ceremonies")).ToHaveAttributeAsync("aria-disabled", "true");

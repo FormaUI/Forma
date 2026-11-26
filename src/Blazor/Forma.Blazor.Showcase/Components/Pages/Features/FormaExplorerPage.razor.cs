@@ -169,6 +169,7 @@ public sealed partial class FormaExplorerPage
                 Name = "disabled.svg",
                 Capabilities = everyMediaCapability,
                 IsDisabled = true,
+                DisabledReason = "Held for review",
                 Resource = new ImageResourceInfo("/media/sample-poster.svg?state=disabled") { Name = "disabled.svg", Size = 8200, CreatedAt = seedDate.AddDays(-3), ModifiedAt = seedDate.AddDays(-3) }
             },
             new CatalogItem
@@ -240,6 +241,7 @@ public sealed partial class FormaExplorerPage
                 Name = "Disabled",
                 Capabilities = everyFolderCapability,
                 IsDisabled = true,
+                DisabledReason = "Archived",
                 Resource = new FolderResourceInfo("state-disabled-folder") { Name = "Disabled", Count = 0 }
             }
         ];

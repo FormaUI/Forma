@@ -13,6 +13,7 @@
      data-row-key="@(View.FocusesItems && View.CanFocus(Item) ? Token : null)"
      aria-label="@(View.FocusesItems && View.CanFocus(Item) ? View.ItemName(Item) : null)"
      aria-disabled="@(View.FocusesItems && View.CanFocus(Item) && View.IsDisabled(Item) ? "true" : null)"
+     aria-describedby="@View.GetItemDescribedBy(Item)"
      data-item-root
      @onfocusin="@(View.FocusesItems ? List.GetFocusHandler(Item) : default)">
     @if (List.HasSelection)
@@ -26,6 +27,7 @@
                                    data-row-key="@Token"
                                    aria-label="@L["Select {Name}", View.ItemName(Item)]"
                                    aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
+                                   aria-describedby="@View.GetDisabledReasonId(Item)"
                                    Value="@View.IsSelected(Item)"
                                    PreventDefault="true"
                                    OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
@@ -50,4 +52,5 @@
             <span class="forma-data-list-item-detail">@detail(Item)</span>
         }
     </span>
+    @View.RenderDisabledReasonTooltip(Item)
 </div>

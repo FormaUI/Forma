@@ -25,6 +25,7 @@ class library. Its types are used directly, without registration.
 | `Capabilities` | The operations the item supports, as `CatalogItemCapabilities` flags: `Open`, `View`, `Drag`, `Drop`, `Move`, `Rename`, `Delete`, `Create` and more. |
 | `Visibility` | `Visible`, `Hidden` (left out of the listing and its counts), or `Invisible` (keeps its place, undrawn). |
 | `IsDisabled` | Whether the item is listed with its operations unavailable. |
+| `DisabledReason` | Why the item is disabled, which the explorer shows as its tooltip while it is; null unless an implementation gives one. |
 | `CreatedAt`, `ModifiedAt` | When the item was created and last changed. |
 | `ThumbnailSource` | The address of the item's thumbnail. |
 | `Resource` | The `ResourceInfo` the item wraps, which a thumbnail, a preview and the kind and size read. |
@@ -64,6 +65,8 @@ public sealed class PhotoItem(Photo photo) : ICatalogItem
     public CatalogItemVisibility Visibility => CatalogItemVisibility.Visible;
 
     public bool IsDisabled => photo.IsProcessing;
+
+    public string? DisabledReason => photo.IsProcessing ? "Still processing" : null;
 
     public DateTimeOffset? CreatedAt => photo.UploadedAt;
 

@@ -195,6 +195,18 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <param name="item">The item to judge.</param>
     bool IsDisabled(TItem item);
 
+    /// <summary>The id of the tooltip showing why <paramref name="item"/> is disabled, while it is and its host gives a reason; otherwise null.</summary>
+    /// <param name="item">The item to judge.</param>
+    string? GetDisabledReasonId(TItem item);
+
+    /// <summary>The ids <paramref name="item"/>'s element is described by: its host's, then the tooltip showing why it is disabled.</summary>
+    /// <param name="item">The item to judge.</param>
+    string? GetItemDescribedBy(TItem item);
+
+    /// <summary>The tooltip showing why <paramref name="item"/> is disabled, while it is and its host gives a reason; otherwise null.</summary>
+    /// <param name="item">The item to judge.</param>
+    RenderFragment? RenderDisabledReasonTooltip(TItem item);
+
     /// <summary>Whether <paramref name="item"/> can be selected: it is not disabled, and the host lets it be.</summary>
     /// <param name="item">The item to judge.</param>
     bool IsSelectable(TItem item);

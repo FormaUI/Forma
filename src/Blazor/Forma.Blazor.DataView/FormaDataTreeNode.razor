@@ -21,6 +21,7 @@
      aria-expanded="@(canOpen ? isOpen ? "true" : "false" : null)"
      aria-selected="@Tree.GetAriaSelected(Item)"
      aria-disabled="@(!RendererInfo.IsInteractive || View.IsDisabled(Item) ? "true" : null)"
+     aria-describedby="@View.GetItemDescribedBy(Item)"
      aria-labelledby="@nameId"
      aria-owns="@OwnsId"
      tabindex="@(View.CanFocus(Item) ? Tree.GetNodeTabIndex(key) : null)"
@@ -57,6 +58,7 @@
                                data-focus-heir="@Tree.GetHeirMark(key, marker: true)"
                                aria-label="@L["Select {Name}", View.ItemName(Item)]"
                                aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
+                               aria-describedby="@View.GetDisabledReasonId(Item)"
                                Value="@View.IsSelected(Item)"
                                PreventDefault="true"
                                OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
@@ -74,4 +76,5 @@
     {
         <span class="forma-data-tree-node-detail">@detail(Item)</span>
     }
+    @View.RenderDisabledReasonTooltip(Item)
 </div>

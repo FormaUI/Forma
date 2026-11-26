@@ -150,6 +150,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <summary>Whether an item is disabled: drawn muted, and neither selected nor activated by any gesture or method.</summary>
     [Parameter] public Func<TItem, bool>? IsItemDisabled { get; set; }
 
+    /// <summary>Why an item is disabled, which a disabled item names in its description and shows as its tooltip on hover, focus and tap.</summary>
+    [Parameter] public Func<TItem, string?>? ItemDisabledReason { get; set; }
+
     /// <summary>Whether an item can be selected, where null lets every item that is not disabled be.</summary>
     /// <remarks>An item that cannot be selected keeps every other state: it activates, takes the focus and is drawn as it is.</remarks>
     [Parameter] public Func<TItem, bool>? CanSelectItem { get; set; }
@@ -1165,6 +1168,45 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     public bool IsDisabled(TItem item)
         => IsItemDisabled?.Invoke(item) ?? false;
+
+    private string? GetDisabledReason(TItem item)
+        => IsDisabled(item) && ItemDisabledReason?.Invoke(item) is { } reason && !string.IsNullOrWhiteSpace(reason) ? reason : null;
+
+    /// <inheritdoc />
+    public string? GetDisabledReasonId(TItem item)
+        => GetDisabledReason(item) is null ? null : DisabledReasons.GetTooltipId($"{ElementId}-item-{GetItemToken(item)}");
+
+    /// <inheritdoc />
+    public string? GetItemDescribedBy(TItem item)
+    {
+        var describedBy = ItemAttributes?.Invoke(item)?.GetValueOrDefault("aria-describedby")?.ToString();
+
+        if (GetDisabledReasonId(item) is not { } reasonId)
+        {
+            return describedBy;
+        }
+
+        return string.IsNullOrWhiteSpace(describedBy) ? reasonId : $"{describedBy} {reasonId}";
+    }
+
+    /// <inheritdoc />
+    public RenderFragment? RenderDisabledReasonTooltip(TItem item)
+    {
+        if (GetDisabledReason(item) is not { } reason)
+        {
+            return null;
+        }
+
+        var tooltipId = GetDisabledReasonId(item);
+
+        return builder =>
+        {
+            builder.OpenComponent<FormaTooltip>(0);
+            builder.AddComponentParameter(1, nameof(FormaTooltip.Id), tooltipId);
+            builder.AddComponentParameter(2, nameof(FormaTooltip.Text), reason);
+            builder.CloseComponent();
+        };
+    }
 
     /// <inheritdoc />
     public bool IsSelectable(TItem item)

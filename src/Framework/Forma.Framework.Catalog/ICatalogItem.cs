@@ -20,6 +20,10 @@ public interface ICatalogItem
     /// <summary>Whether the item is disabled, listed with its operations unavailable.</summary>
     bool IsDisabled { get; }
 
+    /// <summary>Why the item is disabled, which the explorer shows as its tooltip while it is.</summary>
+    string? DisabledReason
+        => null;
+
     /// <summary>When the item was created.</summary>
     DateTimeOffset? CreatedAt { get; }
 

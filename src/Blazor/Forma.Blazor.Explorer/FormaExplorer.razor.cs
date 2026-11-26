@@ -215,6 +215,9 @@ public sealed partial class FormaExplorer : FormaElementBase, IExplorerView, IEx
     // A disabled item is drawn muted and cannot be chosen, the same delegate on every render.
     private static readonly Func<ICatalogItem, bool> IsItemDisabled = static item => item.IsDisabled;
 
+    // Why a disabled item is disabled, which it shows as its tooltip, the same delegate on every render.
+    private static readonly Func<ICatalogItem, string?> ItemDisabledReason = static item => item.DisabledReason;
+
     // The classes an item's row carries for its state.
     private static readonly Func<ICatalogItem, string?> GetItemClass = static item => item.GetStateClasses();
 
