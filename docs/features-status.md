@@ -77,6 +77,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | The component bases and the component context | [Component foundations design](component-foundations-design.md) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | Design tokens, backdrops and theming | [Styling and theming](../README.md#styling-and-theming) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
+| Themes: named themes in a light and a dark scheme, the reader's choice kept and switched in place | [Theme design](theme-design.md) | Designed, every decision taken; the implementation plan next | — |
 | The culture state and the switch | [Culture design](culture-design.md) | Implemented, coordinated across a page's circuits and WebAssembly runtimes, in an application's own cultures where it provides them | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Culture addresses | [Culture addresses](culture-design.md#culture-addresses) | Implemented, in coordination, in every runtime | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Localization and locale packs | [Localization design](localization-design.md) | Implemented: every locale file, in whatever layout its project chose, read into one entry, a culture, an assembly, a type and a key with its text, and embedded by the build from its entry; the text chosen by culture, then source; a conflict within a source logged by the runtime and reported by the locale lint as an error; a WebAssembly client and a Web App's server reading the host's strings; code written against Microsoft's `IStringLocalizer` reading the same strings through `Forma.Framework.Localization.StringLocalizerAdapter` | [March 2026](../FEATURE-HISTORY.md#2026-03) |
@@ -275,3 +276,4 @@ Each waits for the trigger named beside it before its design or its implementati
 | --- | --- | --- |
 | Observing the document's child list | No consumer needs it, and its cost is unmeasured | A consumer with a measured cost |
 | Growing the DOM watcher and engine's design beyond its plan | Its plan's steps come first | Those steps landed |
+| A System preference following the device's `prefers-contrast` | Forma High Contrast is chosen explicitly first, as [the theme design](theme-design.md#light-dark-and-high-contrast) sets out | The theme system in use |

@@ -27,10 +27,11 @@ The theme system is that machinery, in Forma, so a host writes its themes' value
 
 | Term | What it is |
 | --- | --- |
-| **Theme** | A named palette a host offers: its gray scale and role solids, and the values the contract can't derive, for each color scheme it supports. Forma ships its own; a host adds its brand's. |
+| **Theme** | A named palette a host offers: its base tokens, and any other token it sets, for each color scheme it supports. Forma ships its own; a host adds its brand's. |
 | **Color scheme** | Light or dark, the two ways a theme is drawn, named as CSS names them. Every theme has a light scheme; a dark one is its own choice. |
 | **Theme choice** | What the reader chose: a theme, and a scheme preference of System, Light or Dark. System follows the device. |
-| **Theme scope** | An element whose subtree draws in a theme and scheme of its own, whatever the page's. |
+| **Theme scope** | An element whose subtree draws in a theme or a scheme of its own, whatever its surroundings'. |
+| **Theme coordinator** | The service of a document, or of a Blazor Hybrid application, that orders every switch and keeps every runtime and every document on the accepted choice. |
 
 A choice is resolved where it's drawn: the theme by the attribute the document or a scope carries, and a
 System preference by the browser itself, from the device's setting, so no server and no script needs to know
@@ -38,38 +39,72 @@ the device's scheme.
 
 ## What a theme defines
 
-A theme is a stylesheet rule that sets the **base tokens** for each scheme, and a registration that names
-the theme for the reader. The base tokens are the ones the contract can't derive:
+A theme is a CSS rule, `[data-forma-theme="its-name"]`, that sets tokens, and a registration that names the
+theme for the reader. Themes are written in CSS alone, so a theme works as it ships in every runtime, a
+standalone WebAssembly app and Blazor Hybrid among them, with nothing generated from C#.
+
+### The base tokens
+
+Every theme sets the **base tokens**, the values nothing else derives:
 
 - the gray scale, `--gray-0` to `--gray-800`, paper to ink;
 - the six role solids, `--primary-color` to `--info-color`;
 - the canvas, `--backdrop-canvas-bg-color`, which a scale running from dark paper to light ink holds no step
   for;
-- each role's `-ink-color`, its color as text on the paper, which on dark paper wants a lighter shade than
-  the fill under white text does, and an `-emphasis-color` where mixing the solid toward black fails;
 - the four chart series, `--chart-series-1-color` to `--chart-series-4-color`, validated as a set against
   each scheme's paper.
 
-Each base token is written once, as `light-dark(light, dark)`. The browser picks the side by the element's
-`color-scheme`, at the element that draws with it, so a token derived from a base token by `color-mix()` or
-by name follows the scheme too:
+### The tokens a theme may set
+
+Every other token derives from the base tokens by default, and a theme may set any of them: the default
+applies wherever the theme leaves a token unset. A theme sets a token where its default would miss a
+[contrast target](#contrast) or where the theme's look differs from the derivation. These are the tokens
+whose defaults a theme most often replaces:
+
+| Tokens | Default |
+| --- | --- |
+| A role's `-fg-color`, its text and marks on the solid | White; a dark constant for warning, whose solid is light |
+| A role's `-ink-color`, its text on the paper and on its subtle tint | The role's `-emphasis-color` |
+| A role's `-emphasis-color`, the fill hover and pressed are cut from | The solid mixed toward black |
+| A role's `-subtle-color`, the tint behind a selected row, an active tab or a badge | The solid at 10% over what's behind it |
+| `--focus-color`, the band of the focus ring | The primary solid, opaque |
+| `--border-emphasis-color`, the border that marks a field | An opaque step of the gray scale |
+| The state fills: `--hover-bg-color`, `--loading-bg-color` and the quiet button's hover and pressed fills | Translucent tints of the scale |
+
+A default cut from the scale serves both schemes, since the scale runs the other way in a dark one. A role's
+`-fg-color` and `--focus-color` aren't cut from it: a dark scheme's ink is light, while the fg on a light
+warning solid stays dark. A theme whose dark solids are light, as most dark schemes' are, sets each role's
+`-fg-color` for its dark scheme.
+
+### How a theme is written
+
+Each value that differs by scheme is written once, as `light-dark(light, dark)`. The browser picks the side
+by the element's `color-scheme`, at the element that draws with it, so a token derived from a base token by
+`color-mix()` or by name follows the scheme too:
 
 ```css
 [data-forma-theme="harbor"] {
     --gray-0: light-dark(#ffffff, #14171c);
     --gray-800: light-dark(#1b2330, #eef1f5);
     --primary-color: light-dark(#0b5cad, #4d9be6);
+    --primary-fg-color: light-dark(#ffffff, #0c1520);
     --primary-ink-color: light-dark(var(--primary-emphasis-color), #8ec2f2);
     --backdrop-canvas-bg-color: light-dark(var(--gray-100), #0c0e12);
-    /* … the rest of the scale, the other solids, inks and series */
+    /* … the rest of the scale, the other solids, any token it sets, and the series */
 }
 ```
 
-A theme with a light scheme alone writes plain values and declares `color-scheme: light` in its rule, so the
-reader's Dark preference draws it light. A value that differs by scheme and isn't a color, which `light-dark()`
-can't carry, is set in the theme's scheme rules described under [the scopes](#how-the-tokens-are-scoped).
+**What differs by scheme is a color.** A value that isn't a color, a radius, an opacity or a shadow's offset,
+is the same in both schemes; a shadow differs by its color, written with `light-dark()` inside it. So no
+token is chosen by a selector on the scheme, and every token resolves where it's drawn, by the scheme in force
+there.
 
-The registration names the theme, its schemes and its stylesheet:
+A theme with a light scheme alone writes plain values, and its registration says so: wherever it's drawn,
+the theme system draws it light whatever the reader's preference, which it keeps for the next theme.
+
+### The registration
+
+The registration names each theme, its schemes and its stylesheet, and the choice a reader starts in:
 
 ```csharp
 builder.Services.AddFormaThemes(themes =>
@@ -79,15 +114,24 @@ builder.Services.AddFormaThemes(themes =>
 });
 ```
 
+The default choice is Forma's theme in the System preference, so a reader's device decides until they choose.
+A host sets another default: a theme of its own, or Light where its pages aren't ready for dark.
+
 ### Forma's own themes
 
 Forma ships two themes, each with both schemes:
 
-- **Forma**, the library's look, in `forma-tokens.css`: today's light values, with a dark side for each base
-  token, the chart series among them, which the charts' README already lists for a dark surface.
-- **Forma High Contrast**, for readers who need more contrast than the defaults give: every text past 7:1 on
-  its backdrop, every border and focus ring past 3:1, and state shown by solid fills rather than translucent
-  tints.
+- **Forma**, the library's look, in `forma-tokens.css`, with a dark side for each base token, the chart series
+  among them, which the charts' README already lists for a dark surface. Its light scheme is held to the
+  [targets](#contrast), and where a current light value misses one, the theme's value is raised to meet it:
+  - white on the success and info solids;
+  - the success and warning inks on the paper;
+  - secondary text on the inset and the canvas, and quiet text on the canvas;
+  - a field's border;
+  - the focus ring.
+- **Forma High Contrast**, for readers who need more contrast than the defaults give: every text and each
+  role's ink and fg past 7:1, every border and the focus ring past 3:1, and state shown by solid fills, which
+  it sets in place of the translucent tints.
 
 A host keeps Forma's themes, adds to them, or replaces them with its own.
 
@@ -102,31 +146,41 @@ High contrast is two different things, and each has its own answer:
 - **Forced colors**, the operating system's high contrast mode, replaces a page's colors with the system's.
   It belongs to the system: Forma's components answer it already through `@media (forced-colors: active)`,
   and the theme system leaves it alone.
-- **More contrast within a theme's own look** is a theme, such as Forma High Contrast, chosen like any other.
+- **More contrast within a theme's own look** is a theme, such as Forma High Contrast, which the reader
+  chooses like any other. The device's `prefers-contrast` preference chooses no theme.
 
 ## How the tokens are scoped
 
-A theme applies wherever an element carries its name, the document's root or a scope inside it. Three rules
-in Forma's token stylesheet make that work.
+A theme applies wherever an element carries its name, the document's root or a scope inside it. Four rules
+in Forma's token stylesheet make that work:
 
-- **Every token is declared on every scope.** The base tokens are declared by each theme's rule, and the
-  derived tokens, the hover fills, inks, borders and every other token, by a rule matching `:root` and
-  `[data-forma-theme]` alike. A custom property that names another is resolved where it's declared and
-  inherited as a value, so a derived token declared on `:root` alone would carry the root's theme into a
-  scope that redefined only the base tokens.
+- **The base tokens are the theme's rule's.** A theme's rule sets them on every element carrying its name.
+- **Every other token is declared again on every theme.** Forma declares each under
+  `:where(:root, [data-forma-theme])`. A custom property that names another is resolved where it's declared
+  and inherited as a value, so a derived token declared on `:root` alone would carry the root's theme into a
+  scope that redefined only the base tokens. The selector's specificity is zero, so a theme's own value for
+  any token wins wherever the theme applies, whichever stylesheet loads first, and a scope in another theme
+  starts from the defaults rather than from the value a theme around it set.
 - **The scheme is the element's `color-scheme`.** `[data-forma-scheme="light"]` sets `color-scheme: light`,
   `[data-forma-scheme="dark"]` sets `dark`, and `[data-forma-scheme="system"]` sets `light dark`, which the
   browser resolves from the device. `color-scheme` is inherited, so a scope's scheme reaches everything
   inside it, and the browser's own form controls and scrollbars follow it as well.
-- **A value that isn't a color** and differs by scheme is set under `[data-forma-scheme="dark"]`, and again
-  under `@media (prefers-color-scheme: dark)` for `[data-forma-scheme="system"]`.
+- **No token is registered as a color.** A custom property registered with `@property` and a color syntax
+  resolves `light-dark()` where it's declared, and would carry that scheme into a scope of the other.
+
+Only colors differ by scheme, and every color resolves `light-dark()` by the `color-scheme` where it's drawn,
+so a scheme boundary needs no rule of its own:
+
+- a light scope inside a dark scope inside a light page draws light, dark and light;
+- a System scope inside a Dark page draws the device's scheme;
+- a scope that fixes only its scheme draws its surroundings' theme in it.
 
 A page with no theme system registered carries neither attribute, and draws Forma's theme in its light
 scheme, as every page draws today.
 
 ## The choice and where it's kept
 
-A choice is a theme's name and a scheme preference, and the theme system keeps it per reader:
+A choice is a theme's name and a scheme preference:
 
 ```csharp
 public sealed record ThemeChoice(string Theme, ColorSchemePreference Scheme);
@@ -134,108 +188,303 @@ public sealed record ThemeChoice(string Theme, ColorSchemePreference Scheme);
 public enum ColorSchemePreference { System, Light, Dark }
 ```
 
-The choice a request starts in is the first of these that holds a theme the host registered:
+A choice is kept in up to two places: in the browser, for whoever uses it, and in the host's store, for the
+signed-in reader on every device.
 
-1. the signed-in reader's, from the host's store, where the host registers one;
-2. the browser's, from the choice cookie;
-3. the host's default.
+### The host's store
 
 A host that keeps the choice on its readers' profiles implements the store, the one contract the theme system
 asks of it, and registers it in each runtime that switches:
 
 ```csharp
+public sealed record ThemePreference(ThemeChoice Choice, long Revision);
+
 public interface IThemePreferenceStore
 {
-    ValueTask<ThemeChoice?> ReadAsync(CancellationToken cancellationToken);
-    ValueTask WriteAsync(ThemeChoice choice, CancellationToken cancellationToken);
+    ValueTask<ThemePreference?> ReadAsync(CancellationToken cancellationToken);
+    ValueTask<long> WriteAsync(ThemeChoice choice, CancellationToken cancellationToken);
 }
 ```
 
-Every switch writes the cookie, so a browser keeps the choice whether or not anyone is signed in, and writes
-the store where one is registered. A reader signing in on a browser without the cookie gets the store's
-choice, which the next response writes into the cookie. The cookie is a `__Host-` cookie, so only the page's
-own origin over HTTPS sets it.
+The store numbers what it keeps: each write it completes keeps the choice under a revision greater than any
+it returned before for that reader, and returns it, as a row version or an entity tag does. The revision is
+how a browser knows whether the store changed since it last agreed with it, so no clock is compared.
 
-Without a server, a standalone WebAssembly application and a Blazor Hybrid application keep the choice in the
-browser's local storage, the web view's under Blazor Hybrid, and the host's store, where one is registered,
-behind it.
+### The browser's record
 
-A page a host caches for readers who aren't signed in is cached once per resolved choice, since the choice
-is written into the page: the theme system gives the host's output cache policy that variation to add.
+The browser keeps a record of the choice and the store's revision it last agreed with. A Web App keeps it
+in the choice cookie, a `__Host-` cookie, so only the page's own origin over HTTPS sets it. A standalone
+WebAssembly app keeps it in local storage, since no server reads a cookie.
+
+### The choice a request starts in
+
+A request starts in the first of these that names a registered theme:
+
+1. the store's choice, where its revision is greater than the one the browser's record agreed with, or the
+   browser has no record: the reader changed it on another device, or signed in on this one;
+2. the browser's record;
+3. the host's default.
+
+A choice naming a theme that isn't registered, or whose stylesheet didn't load, starts in the default theme
+and keeps its scheme preference. A response that starts in the store's choice writes it into the cookie with
+the store's revision.
+
+A page a host caches for readers who aren't signed in is cached once per resolved choice, since the choice is
+written into the page: the theme system gives the host's output cache policy that variation to add.
+
+### A Blazor Hybrid application's choice
+
+A Blazor Hybrid application's choice is the application's, across every web view, as its culture is, and
+it's kept in the application's store alone. The application reads the store once, at startup, before its
+first web view opens, and every web view then takes the application's choice. No web view keeps a record of
+its own, so a newly opened web view never brings back a choice the application has since replaced. Without a
+store, the choice lasts the application's run.
+
+## The themes' stylesheets
+
+Every registered theme's stylesheet is in every document from its first paint, linked in its head:
+
+- on a server-rendered page, by `FormaPageHead`, beside Forma's own stylesheets;
+- on a standalone WebAssembly app's or a Blazor Hybrid application's host page, by the host page's own links,
+  as it links Forma's stylesheets.
+
+A theme's stylesheet is a set of tokens, small enough that loading every one costs less than the wait a
+switch would have on loading one, and a scope can then stand in any registered theme at once. So a switch
+changes attributes alone, and nothing is loaded on demand.
+
+A theme is selectable once its stylesheet has loaded, which the coordinator confirms for every registered
+theme as it starts. A stylesheet missing from a host page, or one that failed to load, makes its theme
+unselectable:
+
+- the picker leaves the theme out;
+- a switch to it fails before it's accepted;
+- a choice naming it starts in the default theme.
+
+The coordinator logs each such theme at `Warning`, with the stylesheet's address.
 
 ## The first paint
 
-The first paint is in the chosen theme and scheme, with no flash of the other, in every render mode.
+Everything the document draws, from its first paint on, draws in the chosen theme and scheme, in every
+render mode. What a native web view draws before its document exists is the platform's.
 
-- **A server-rendered page.** The server resolves the choice for the request, and the host's `App` component,
-  which renders the `<html>` element, writes it there as `data-forma-theme` and `data-forma-scheme`, as it
-  already writes `lang` and `dir` from the culture state. The stylesheets have the theme before anything
-  paints. A System preference is written as `system`, and the browser draws the device's scheme from the
-  start.
-- **A standalone WebAssembly application and Blazor Hybrid.** No server writes the document, so the theme
-  system's JavaScript initializer reads the kept choice from local storage and sets both attributes before
-  Blazor starts and before the first render.
+### A server-rendered page
+
+The server resolves the choice for the request, and the host's `App` component, which renders the `<html>`
+element, writes it there as `data-forma-theme` and `data-forma-scheme`, as it already writes `lang` and `dir`
+from the culture state. The stylesheets have the theme before anything paints, and a System preference is
+written as `system`, so the browser draws the device's scheme from the start.
+
+`FormaPageHead` also publishes the **theme marker** in the head: the choice the server resolved, with the
+store's revision it rests on, which the coordinator reads as the document loads.
+
+### A standalone WebAssembly app
+
+No server writes the document, so the theme system's **bootstrap** sets the attributes before any of the
+body is parsed. It is a small classic script, the one script of the theme system that runs before .NET,
+which the host page loads in its head after the theme stylesheets:
+
+```html
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-tokens.css" data-forma-theme-stylesheet="forma" />
+<link rel="stylesheet" href="css/harbor-theme.css" data-forma-theme-stylesheet="harbor" />
+<script src="_content/Forma.Framework.Themes.Browser.Interop/scripts/ThemeBootstrap.js"
+        data-default-theme="harbor" data-default-scheme="system"></script>
+```
+
+Everything it needs is in the host page, with nothing started: the themes are the stylesheets the head links,
+and the default choice is on its own element. A browser runs a script in the head only once the stylesheets
+before it have loaded, so the bootstrap knows which loaded. It applies the browser's record as follows:
+
+- a record naming a loaded theme is applied;
+- a record naming a theme the head doesn't link, or one whose stylesheet failed, applies the default theme
+  in the record's scheme preference;
+- an empty or unreadable record applies the default choice, and so does storage the browser refuses to open,
+  as a private window's can, where the choice then lasts the document's life;
+- the bootstrap never writes the record, which the next accepted switch replaces.
+
+When .NET starts, the coordinator starts from the choice the bootstrap applied. The store's choice replaces it
+where the store's revision is greater than the record's, a change the reader sees once, after start.
+
+A host page whose themes or default differ from the registration fails the theme system's start with
+`InvalidOperationException` naming each difference. The mismatch shows as the host is developed, never as a
+page that starts in one theme and switches to another.
+
+### A Blazor Hybrid web view
+
+The application's choice is known before any web view opens, so the integration hands it to each web view
+through the platform's document-start script, which a web view runs as each document is created, before the
+host page's own content:
+
+- WebView2's `AddScriptToExecuteOnDocumentCreatedAsync`, under WPF, Windows Forms and MAUI on Windows;
+- a `WKUserScript` injected at document start, on iOS and Mac Catalyst;
+- `addDocumentStartJavaScript`, on Android, where the system's web view supports it.
+
+The integration replaces the script with each accepted choice, so a document created later, a reload or a
+web view opened afterwards, starts in the choice in force. An Android web view without document-start scripts
+starts in the host page's default and takes the application's choice as its document's coordinator starts,
+the one case in which a first paint can show the default.
 
 ## Switching in place
 
-A reader's switch applies at once, in place, in every runtime on the page, with no load. The design follows
-the culture's, which solved the same problem first, as [the culture design](culture-design.md#one-switch-for-the-page)
-sets out.
+A reader's switch applies at once, in place, in every runtime on the page, with no load. Switching changes
+nothing but attributes, so a switch keeps the reader's place, what they typed and what they opened, under
+every render mode.
 
 - **One state per user scope.** Each circuit, WebAssembly runtime and Blazor Hybrid application holds a
   theme state, the choice in force, which a picker and any component that reads the theme follows through
   `INotifyStateChanged`.
 - **One switch for the page.** A host or a picker calls the switch, `IThemeSwitch.SwitchAsync(choice)`, in
-  any runtime. The document's **theme coordinator** accepts the switch, sets the document's two attributes,
-  writes the cookie or local storage, and sends the choice to every runtime registered with it, so islands of
-  Server and WebAssembly on one page never disagree. The store is written by the runtime that switched.
-- **Enhanced navigation.** A response patches `<html>`'s attributes with the server's choice, which is the
-  accepted one, since the switch wrote the cookie before the next request. The coordinator sets the accepted
-  choice again after each page update, as the culture's does, so a streaming update never undoes a switch.
-- **Blazor Hybrid.** The choice is the application's: a switch in one web view reaches every web view of the
-  application, each document's attributes set by its own integration.
+  any runtime, and the document's theme coordinator accepts it.
 
-Switching changes nothing but two attributes, so a switch keeps the reader's place, what they typed and what
-they opened, under every render mode.
+### The coordinator
+
+The theme coordinator takes the culture coordinator's ordering whole, as
+[the culture design](culture-design.md#the-coordinator) states it:
+
+- it accepts requests one at a time, each runtime's in the order the runtime made them, and one that reaches
+  it after a later one from the same runtime completes as canceled;
+- each accepted switch takes the next number in the document's sequence, and a version is the document's
+  identity with that number;
+- a runtime ignores a version it has applied already or an older one, so a late delivery never takes its
+  state back;
+- each full load starts a new document, with a new identity and a new sequence, and a runtime presenting a
+  version from another document adopts the current choice whatever its number;
+- registering, reconnecting and starting are never switches: a runtime receives the accepted choice and never
+  replaces it with the one its own startup chose;
+- the accepted choice outlives every registration, and a runtime registering later adopts it.
+
+A switch is accepted once the browser's record holds it: the coordinator writes the cookie, or local storage,
+and reads it back, in one step, as the culture's cookie policy does. It then sets the document's attributes
+and sends the choice with its version to every registration.
+
+### The store's writes
+
+A switch writes the store after it's accepted, so the page changes at once, and the writes follow the
+coordinator's order:
+
+- **In version order.** The coordinator asks one runtime at a time to write: the runtime that requested the
+  switch, or, where that one has gone, another registered with a store. A write starts once the version
+  before it has written.
+- **The latest waits.** A newer accepted switch takes the place of a write that hasn't started, which is never
+  made, so two runtimes switching at once can't leave the store on the older choice.
+- **The record follows the store.** Each completed write's revision is written into the browser's record
+  beside its choice, so the next request agrees with the store.
+
+Across documents and devices, the store keeps the write it completes last, and every browser takes it at its
+next request, by the revision. A navigation that starts before a write completes still lands in the switched
+choice: the browser's record holds it, and the store's revision isn't greater than the record's.
+
+### Landings and page updates
+
+A document follows two kinds of page update differently, as
+[the culture design](culture-design.md#the-document-follows-the-state) sets out for its own attributes:
+
+- **A landing** is the first page update after an enhanced navigation's start, the response to a request
+  the browser made after the last accepted switch. Its marker's choice is the server's for that request,
+  which can be newer than the page's, a change made on another device or in another tab. The coordinator
+  accepts it as the next switch, unless it is the accepted choice already.
+- **Any other page update,** a streaming update's, carries no choice. Where it sets the document's
+  attributes, the coordinator sets the accepted choice again after it, so a response obsolete before it
+  arrived never undoes a switch.
+
+A switch requested while an enhanced navigation is in flight waits for the navigation to land or end, as a
+culture switch does, so a landing never undoes it either.
+
+### What awaiting a switch guarantees
+
+A switch's task completes successfully once all of these hold:
+
+- the switch was accepted;
+- the browser's record holds it;
+- the runtime that requested it has applied it or a newer one;
+- the store holds it or a newer choice, where a store is registered.
+
+The other registrations receive the choice and converge on it, and one that is unavailable adopts the current
+choice when it registers again.
+
+A switch that can't be accepted fails and changes nothing:
+
+- one naming a theme that isn't selectable throws `InvalidOperationException`;
+- a record the coordinator can't read back fails the switch;
+- a runtime without a registration, or a static render, fails it as a culture switch fails, since a static
+  page switches with a request.
+
+A store's write that fails after the switch was accepted fails the switch's task with the store's exception.
+The choice stays accepted on the page and in the browser's record, and the store keeps its earlier choice,
+so the reader's other devices keep theirs; the next switch writes the store again. A switch whose write a
+newer switch took the place of completes once the newer write does.
+
+### Blazor Hybrid
+
+A Blazor Hybrid application has one theme coordinator, the application's, as it has one culture coordinator:
+
+- it orders every switch, from any web view or the application's native code, numbers each in the
+  application's sequence, applies it to the one state and delivers it to every web view;
+- each web view's document follows what it delivers and accepts no choice of its own, and an earlier choice
+  reaching a document after a later one leaves the later;
+- a web view taking part receives the accepted choice, so its startup never replaces it;
+- a switch's task completes once the state has applied the choice and the store holds it, and fails on a
+  store's failure as above.
 
 ## The picker
 
-`FormaThemePicker` offers the reader the registered themes and the three scheme preferences. It lists a
-theme's name in the reader's culture, and leaves the theme list out where the host registered one theme.
+`FormaThemePicker` offers the reader the registered themes that are selectable and the three scheme
+preferences. It lists a theme's name in the reader's culture, and leaves the theme list out where the host
+registered one theme.
 
 - **Interactive,** it calls the switch, and the page changes in place.
 - **Statically rendered,** it is a plain form that posts the choice to an endpoint the server maps,
-  `MapFormaThemes()`, which writes the cookie and the store and redirects back to the page, so a reader with
-  no script running still switches.
+  `MapFormaThemes()`. The endpoint writes the store first, then the cookie with the store's revision, and
+  redirects back to the page, so a reader with no script running still switches. A store that fails leaves
+  the cookie holding the choice beside the earlier revision, so the browser draws the new choice and the
+  store keeps its earlier one.
 
 ## A part in a theme of its own
 
-`FormaThemeScope` draws its content in a theme and a scheme of its own, whatever the page's: a footer standing
-in a brand's navy in both of the page's schemes, or a preview showing a theme beside the one in force. It
-renders an element carrying `data-forma-theme` and `data-forma-scheme` with `display: contents`, so its
-content lays out as though the scope weren't there.
+`FormaThemeScope` draws its content in a theme, a scheme, or both, of its own, whatever its surroundings':
+a footer standing in a brand's navy in both of the page's schemes, or a preview showing a theme beside the
+one in force. It renders an element carrying `data-forma-theme`, `data-forma-scheme` or both, with
+`display: contents`, so its content lays out as though the scope weren't there.
 
-A scope that fixes only the scheme leaves the theme to the page's: the content follows a change of theme and
-keeps its scheme.
+What a scope leaves out it takes from its surroundings. A scope that fixes only its scheme draws its
+surroundings' theme, and follows a change of it; one that fixes only its theme draws its surroundings'
+scheme. Every registered theme's stylesheet is loaded, so a scope can name any theme the host registered.
 
 ## Contrast
 
 A theme is held to one set of contrast targets in each of its schemes. The targets are pairs of tokens with
-a minimum ratio:
+a minimum ratio, each measured on every backdrop, the canvas, flat, inset and raised:
 
 | Pair | Target |
 | --- | --- |
-| Primary text and quiet text on every backdrop | 7:1 |
-| Secondary text on every backdrop | 4.5:1 |
-| Each role's ink on the paper and on its subtle tint | 4.5:1 |
-| Each role's fg on its solid and on its emphasis | 4.5:1 |
-| Borders that mark a field, and the focus ring, on the backdrop | 3:1 |
+| Primary text and quiet text on each backdrop | 7:1 |
+| Secondary text on each backdrop | 4.5:1 |
+| Each role's ink on each backdrop and on its subtle tint | 4.5:1 |
+| Each role's fg on its solid, its hover fill and its pressed fill | 4.5:1 |
+| A field's border, and the focus ring, on each backdrop | 3:1 |
 | Adjacent chart series, as the charts' validation reads them | The charts design's |
 
 Forma's checks hold each of its themes to these in both schemes, by computing every pair's colors in a
 browser, where `color-mix()` and `light-dark()` resolve as they draw. A host holds its own themes to the same
-targets with the same check, which the theme system ships for a host's tests, and a theme can be held to
-higher targets than these, such as AAA for its solids' text.
+targets with the same check, and a theme can be held to higher targets than these, such as AAA for its
+solids' text.
+
+The check ships for a host's tests in a testing package of its own, `Forma.Framework.Themes.Testing`, so the
+browser it drives is a dependency of a host's tests alone, never of an application that only draws themes.
+
+## Verification
+
+The checks that prove the theme system cover each case its rules decide, in every engine the browser checks
+run:
+
+- **Scopes:** Light inside Dark inside Light, Dark then System under each device preference, a scope that
+  fixes only its theme or only its scheme, and a theme scope inside another theme's, each token compared
+  where it's drawn with its scheme's value.
+- **Persistence:** a navigation started before a store's write completes, two runtimes switching at once, a
+  store's write that fails, a store changed on another device, and a sign-in on a browser without a record.
+- **First paint:** a server-rendered page; a standalone app's bootstrap with a record, without one, with a
+  removed theme and without storage; and a Blazor Hybrid web view opened after a switch.
+- **Stylesheets:** a theme whose stylesheet is missing or fails, left out of the picker and refused by the
+  switch.
 
 ## Migration
 
@@ -243,33 +492,35 @@ A host that redefines Forma's tokens on `:root` keeps working unchanged. Its rul
 and still overrides the values the page draws, in Forma's theme's light scheme, which is the scheme a page
 without the theme system draws.
 
-To adopt the theme system, the host moves its values into a theme rule, `[data-forma-theme="its-name"]`,
-writes each one as `light-dark(light, dark)` where it has a dark scheme, registers the theme, and removes its
-own selection, persistence, picker and first-paint code. A token it redefined that the contract derives, a
-hover fill or a border, it drops, since the theme system derives it per scope.
+To adopt the theme system, the host takes these steps:
+
+1. It moves its values into a theme rule, `[data-forma-theme="its-name"]`.
+2. It writes each value that differs by scheme as `light-dark(light, dark)`, where it has a dark scheme.
+3. It registers the theme.
+4. It removes its own selection, persistence, picker and first-paint code.
+
+Every token it set keeps its meaning in the rule, a role's fg, a focus or border color or a state fill among
+them, since a theme may set any token. One that only restated its default can go, and the contrast check
+shows which values miss a target.
 
 ## Assemblies and registration
 
-- **The theme contracts,** `ThemeDefinition`, `ThemeChoice`, `IThemeState`, `IThemeSwitch`,
-  `IThemePreferenceStore` and the registrar, `AddFormaThemes`, live in a Framework assembly of their own,
-  `Forma.Framework.Themes`.
-- **The theme coordinator and the initializer** are a script of its own, in an interop assembly of its own,
-  `Forma.Framework.Themes.Browser.Interop`, as the culture's coordinator is.
-- **The server's half,** resolving a request's choice, the cookie, the endpoint and the output cache
-  variation, lives in the server's render-mode half, `Forma.Blazor.Server`, which the aggregate registrar
-  adds.
+The theme system's assemblies follow the culture's, a contract assembly and a half for each place it runs:
+
+- **The theme contracts,** `ThemeDefinition`, `ThemeChoice`, `ThemePreference`, `IThemeState`,
+  `IThemeSwitch`, `IThemePreferenceStore` and the registrar, `AddFormaThemes`, live in a Framework assembly
+  of their own, `Forma.Framework.Themes`.
+- **The coordinator and the bootstrap** are scripts in an interop assembly of their own,
+  `Forma.Framework.Themes.Browser.Interop`.
+- **The server's half,** resolving a request's choice, the cookie, the marker, the endpoint and the output
+  cache variation, is `Forma.Framework.Themes.Blazor.Server`.
+- **The WebAssembly half,** registering the runtime's state and its store's writes with the coordinator, is
+  `Forma.Framework.Themes.Blazor.WebAssembly`.
+- **The Blazor Hybrid half,** the application's coordinator, its startup read of the store and the
+  document-start script, is `Forma.Framework.Themes.Blazor.WebView`.
+- **The contrast check** is `Forma.Framework.Themes.Testing`, for a host's tests.
 - **The picker and the scope** are components of the component library.
 - **Forma's themes** are static assets of the component library, Forma's own in the token stylesheet.
 
-## Decisions for the maintainer
-
-- **How a theme's values are written.** Proposed: in CSS, a rule per theme with `light-dark()` values, as
-  above, since a stylesheet works in every runtime as it ships, a standalone WebAssembly app and Blazor
-  Hybrid among them, with nothing to generate. The alternative, a typed C# definition Forma turns into CSS,
-  would validate contrast without a browser, but needs the CSS generated where no server runs.
-- **The default scheme of a host that registers themes.** Proposed: System, so a reader's device decides
-  until they choose; a host sets Light where its pages aren't ready for dark.
-- **High contrast from the device.** Proposed: `prefers-contrast: more` chooses nothing on its own at first;
-  Forma High Contrast is chosen like any theme. A later step can let a System preference follow it.
-- **Where the contrast check ships.** Proposed: in the theme system's assembly, as a check a host's browser
-  tests call with its themes, since a host writes themes and needs the same proof Forma's own get.
+Each half is registered by the aggregate registrar of its render-mode half, so a host makes the one call on
+each side it makes today, and adds its themes with `AddFormaThemes`.
