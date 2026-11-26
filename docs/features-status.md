@@ -114,6 +114,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | The gate and CI on Linux and Windows | [Build and verification](repository-structure.md#build-and-verification) | Implemented, Android's checks in [the environment the repository declares](repository-structure.md#the-android-environment), its JDK and its emulator, on every machine and in CI alike | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | The browser check | [Tests](repository-structure.md#tests) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
+| The Showcase's review modes: a page in each device, pointer, theme, scheme and direction, and side by side | [Showcase design](showcase-design.md) | Designed, every decision taken; the implementation plan next | — |
 | The screen reader check | [Screen reader checks design](screen-reader-checks-design.md) | Implemented | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Releases | [Build and verification](repository-structure.md#build-and-verification) | Implemented: each release published from its signed tag on `main` to nuget.org and the organization's GitHub feed, and proven against what it published: a consumer outside the repository reading a locale pack it restored from a feed into an empty cache, and a project outside it declaring `IsLocalePack` packing as a pack | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 
@@ -277,3 +278,4 @@ Each waits for the trigger named beside it before its design or its implementati
 | Observing the document's child list | No consumer needs it, and its cost is unmeasured | A consumer with a measured cost |
 | Growing the DOM watcher and engine's design beyond its plan | Its plan's steps come first | Those steps landed |
 | A System preference following the device's `prefers-contrast` | Forma High Contrast is chosen explicitly first, as [the theme design](theme-design.md#light-dark-and-high-contrast) sets out | The theme system in use |
+| The device view as a component for hosts | It serves the Showcase's review alone, as [the Showcase design](showcase-design.md#where-the-parts-live) sets out | A host's concrete need |

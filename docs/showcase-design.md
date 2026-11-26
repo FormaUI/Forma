@@ -52,9 +52,12 @@ answers a box answers the boxes inside it.
 | Tablet | 820 × 1180 | Touch |
 | Phone | 390 × 844 | Touch |
 
-Landscape swaps the two sides. A view larger than the room the page has is scaled down as a whole to fit,
-its own viewport unchanged, so a tablet's 1180 pixels stand inside a laptop's window, and a reviewer still
-presses and types in it as in any page.
+The three are the Showcase's presets: a common laptop, the most common tablet in portrait and the most common
+phone, each in CSS pixels. Landscape swaps the two sides.
+
+A view larger than the room the page has is scaled down as a whole to fit, its own viewport unchanged, so a
+tablet's 1180 pixels stand inside a laptop's window, and a reviewer still presses and types in it as in any
+page.
 
 A view's page is a document of its own: it starts its own circuit, so it renders and behaves as a reader's
 page does, and it keeps no state the reviewer's window has.
@@ -87,8 +90,10 @@ The Showcase registers Forma's themes and a sample host theme, written as a host
 
 - **The reviewer's window** follows the theme picker in the sidebar, beside the culture switcher, which keeps
   the reviewer's choice as any host's reader's choice is kept.
-- **A device view** takes its theme and scheme from its address and keeps nothing, so a view in Dark never
-  changes the window's choice, and two views side by side stand in two themes at once.
+- **A device view** takes its theme and scheme from its address: its layout draws the page inside a
+  [theme scope](theme-design.md#a-part-in-a-theme-of-its-own) naming them, on a canvas of its own, and the
+  view never switches. So a view in Dark never changes the window's choice, which the view's document shares
+  through the cookie, and two views side by side stand in two themes at once.
 - **The Themes page** shows each registered theme's palette, its base tokens and the tokens derived from them,
   in each of its schemes, with its contrast report, so a theme's values are reviewed as a component is.
 
@@ -108,21 +113,16 @@ Compare draws one axis side by side, the page in each of its values, every other
 - **Directions:** a left-to-right and a right-to-left view.
 
 Each view in a comparison is scaled to share the stage's width, and each is a page of its own, so the views
-never interfere. One axis at a time keeps a comparison to a handful of views; reviewing a combination, a
-phone in the host's dark theme in Hebrew, is a single view with those choices.
+never interfere. A comparison draws one axis at a time:
+
+- what differs between its views is that axis alone, so the comparison shows what the axis changes;
+- it stays to a handful of views, each a circuit and a page of its own, where two axes would multiply them
+  past what a stage shows legibly.
+
+Reviewing a combination, a phone in the host's dark theme in Hebrew, is a single view with those choices.
 
 ## Where the parts live
 
-The device view and the touch emulation are the Showcase's own, a component and a script with no dependency
-on the rest of the Showcase, so they can move into a package of their own if a host wants to review its own
-pages the same way. The theme picker and the theme scope they use are the theme system's, which any host
-has.
-
-## Decisions for the maintainer
-
-- **The devices' sizes.** Proposed: the table above, a common laptop, the most common tablet in portrait and
-  the most common phone, each in CSS pixels. A host's own sizes are a later addition.
-- **A host's reuse.** Proposed: the device view stays in the Showcase until a host asks for it; its parts are
-  written so the move is a move, not a rewrite.
-- **Compare across two axes.** Proposed: one axis at a time, as above, since every view is a circuit and a
-  page of its own, and two axes multiply them past what a stage shows legibly.
+The device view and the touch emulation are the Showcase's own, a component and a script that depend on
+nothing else in the Showcase. The theme picker and the theme scope they use are the theme system's, which
+any host has.
