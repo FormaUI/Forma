@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.19`
 
-*Unreleased*
+*November 26, 2026*
 
 - `FormaPopover` opens with the focus on the first or the last of its controls, `OpenAsync(trigger, PopoverFocus)` and
   `ToggleAsync(trigger, PopoverFocus)`, `FocusSelector` naming which, landed by the browser as the popover shows, so no
