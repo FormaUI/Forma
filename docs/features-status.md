@@ -27,7 +27,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests, a faster gate, builds in processes of their own and the examples' locale lint; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Four components implemented, fifteen changes fixed; a disabled control's reason under way and a path per culture open |
+| [A host's requests](#a-hosts-requests) | Four components implemented, fifteen changes fixed; a disabled control's reason under way, the data view on a phone planned and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -215,7 +215,7 @@ Reviewing a host's integration against Forma's source turned up fifteen findings
 
 A host's list of what it needs from Forma named four components Forma lacked, `FormaComboBox`, `FormaLinkTabs`,
 `FormaLineChart` and `FormaBarChart`, all now implemented, as [the catalog](component-catalog.md) lists them, and a
-search of its commands, which `FormaCommandPalette` is. It also named seventeen changes to components that exist, listed
+search of its commands, which `FormaCommandPalette` is. It also named eighteen changes to components that exist, listed
 here in the order they are taken, each with what the code does and its state.
 
 | Request | What the code does | State |
@@ -237,6 +237,7 @@ here in the order they are taken, each with what the code does and its state.
 | A multi-select's search by every word, without accents | `FormaMultiSelect` matched the text typed by case alone. It finds an option by every word typed, ignoring case, accents and width, ranks the options as `FormaComboBox` does, and offers to add the text only where no option holds that name | Fixed |
 | A disabled control's reason | A disabled control left the tab order and the pointer's reach, so a reason attached to it was never met. [The tooltip design](tooltip-design.md) adds `FormaTooltip`, and `IDisableable`, which the buttons, the inputs, the menus, the toolbars, the sortable list and the composer implement, each showing its `DisabledReason` as its tooltip; the frame, the chrome, the window and the explorer's catalog items wait on where a region's reason shows | Under way |
 | A path per culture | The culture router gives a page one path in every culture. A route of one identity with a path in each culture, `/es/noticias` and `/en/news`, which links, alternate addresses and the switch all read, with a page to lead to where a culture has no counterpart, is planned; a host routes such pages itself until then, as it does today | Planned, not under way |
+| The data view on a phone | At a phone's width a grid keeps every column its priority holds, its check box and actions columns among them, so a cell is left a few letters wide and its text wraps a letter or two a line. Planned, in [the data view design](data-view-design.md) before it is built: a cell keeps its content's least width and the grid gives way by priority, then by scrolling sideways or reflowing its rows; under a coarse pointer at a narrow width a row's actions come from a swipe toward its start and checked selection from a long press, each with a command a keyboard and a screen reader reach; the list and the cards alike | Planned |
 
 <a id="a-security-check"></a>
 
