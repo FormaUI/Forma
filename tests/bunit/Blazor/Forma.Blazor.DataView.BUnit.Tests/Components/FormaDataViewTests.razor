@@ -1736,12 +1736,14 @@
             var source = new Source(Shown("a", "b", "c", "d", "e"));
             var cut = Render(ctx, source);
             cut.WaitForState(() => GetNames(cut).Count == 2);
+            var isButtonDrawn = cut.Find(".forma-data-view-more button").ClassList.Contains("forma-button-secondary");
 
             // Act
             await cut.Find(".forma-data-view-more button").ClickAsync(new MouseEventArgs());
 
-            // Assert
+            // Assert — the action drawn as a button, its border and fill, rather than a ghost reading as text
             Assert.Multiple(
+                () => Assert.True(isButtonDrawn),
                 () => Assert.Equal(["a", "b", "c", "d"], GetNames(cut)),
                 () => Assert.Equal([(0, 2), (2, 2)], source.Requests),
                 () => Assert.Equal("Showing 4 of 5", cut.Find(".forma-data-view-status").TextContent.Trim()),
