@@ -130,6 +130,93 @@
     text-align: end;
 }
 
+/* ---------- a narrow row ---------- */
+
+/* A narrow grid is as wide as its box whatever its rows hold, so a long name is cut short rather than widening it. */
+.forma-data-grid-narrow {
+    table-layout: fixed;
+}
+
+/* A narrow grid's head holds the view's menu at its end, in place of the actions column. */
+.forma-data-grid-narrow-head {
+    padding-block: var(--space-1);
+    padding-inline: var(--space-2);
+    text-align: end;
+}
+
+/* A narrow row is one cell stacking the item: its thumbnail at the start spanning the lines, its name on one line and its
+   detail beneath on two at most, each cut short with an ellipsis. */
+.forma-data-grid-narrow-cell {
+    position: relative;
+    padding-block: var(--space-2);
+    padding-inline: var(--space-3);
+    border-block-end: 1px solid var(--border-color);
+    text-align: start;
+}
+
+/* A horizontal travel across a narrow row is the row's own swipe, so the page scrolls up and down alone under a finger. */
+.forma-data-grid-narrow-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    touch-action: pan-y;
+}
+
+/* A narrow row's own actions stand at its end while a swipe has shown them or the keyboard's focus is on the row. */
+.forma-data-grid-narrow-actions {
+    display: none;
+    flex: none;
+    align-items: center;
+}
+
+[data-swiped] .forma-data-grid-narrow-actions,
+.forma-data-grid-row:focus-visible .forma-data-grid-narrow-actions,
+.forma-data-grid-row:has(:focus-visible) .forma-data-grid-narrow-actions {
+    display: flex;
+}
+
+.forma-data-grid-narrow-lead,
+.forma-data-grid-narrow-thumbnail {
+    display: flex;
+    flex: none;
+    align-items: center;
+}
+
+/* A narrow row's box stands at its start while the reader is selecting, pushing its content toward its end; until then it stands
+   out of sight, where the keyboard still reaches it and draws it. */
+.forma-data-view:not(.forma-data-view-selecting) .forma-data-grid-narrow-lead:has(.forma-data-view-box-target):not(:focus-within) {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+/* Sized from nothing, so the lines take the room the row leaves them and never more. */
+.forma-data-grid-narrow-text {
+    display: flex;
+    flex: 1 1 0;
+    flex-direction: column;
+    min-inline-size: 0;
+}
+
+.forma-data-grid-narrow-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.forma-data-grid-narrow-detail {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    overflow: hidden;
+    color: var(--text-secondary-color);
+    font-size: var(--font-size-sm);
+}
+
 /* ---------- states ---------- */
 
 

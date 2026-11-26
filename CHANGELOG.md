@@ -5,6 +5,23 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.18`
+
+*Unreleased*
+
+- [`FormaDataGrid`](docs/data-view-design.md#at-a-narrow-width) takes `ThumbnailTemplate`, `ItemTemplate` and
+  `ActionsTemplate`, and given them, a grid too narrow for its columns draws each item as its thumbnail, its name and
+  its detail, on two lines or three, each cut short rather than wrapped, drawing its columns again once its width
+  holds them. `FormaExplorer`'s details do. At a narrow width `FormaDataList` stacks an item's name above its detail,
+  in one column, and it takes `ActionsTemplate`.
+- At a narrow width a data view draws no standing boxes and no actions column. It draws its boxes while the reader is
+  selecting, `Selecting` with `SelectingChanged`, which a long press on an item starts, checking it, as does an item a
+  box checks; a menu of three dots at the view's head offers Select, Stop Selecting and Select All, and the host's
+  `SelectionCommands`, `DataViewCommand<TItem>` records each enabled where it can act on every selected item and
+  saying why where it can't, which `OnSelectionCommand` runs on the selected items. A swipe toward a row's inline
+  start shows the row's own actions, which the keyboard's focus on the row shows too. `FormaExplorer`'s selection
+  mode starts selecting.
+
 ## `1.0.0-preview.17`
 
 *November 26, 2026*

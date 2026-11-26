@@ -11,7 +11,14 @@
     "Try Again": "Intentar de Nuevo",
     "More items could not be loaded.": "No se pudieron cargar más elementos.",
     "Showing {Shown} of {Total}": "Mostrando {Shown} de {Total}",
-    "[$ plural; one: Showing # item; other: Showing # items; $]": "[$ plural; one: Mostrando # elemento; other: Mostrando # elementos; $]"
+    "[$ plural; one: Showing # item; other: Showing # items; $]": "[$ plural; one: Mostrando # elemento; other: Mostrando # elementos; $]",
+    "View Actions": "Acciones de la Vista",
+    "Select": "Seleccionar",
+    "Stop Selecting": "Dejar de Seleccionar",
+    "Select All": "Seleccionar Todo",
+    "Select an item first.": "Primero selecciona un elemento.",
+    "{Title} acts on one item at a time.": "{Title} actúa sobre un elemento a la vez.",
+    "{Title} can't act on some of the selected items.": "{Title} no puede actuar sobre algunos de los elementos seleccionados."
   },
   "FormaDataGrid": {
     "Select All": "Seleccionar Todo",

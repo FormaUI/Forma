@@ -1,0 +1,37 @@
+@namespace Forma.Blazor.Components.DataView
+@inherits FormaComponentBase
+@typeparam TItem where TItem : notnull
+@using Forma.Blazor.Components.Menus
+
+@* Select, or Stop Selecting and Select All while the reader selects, then the host's commands, each enabled where it can act on the
+   selected items and saying why where it can't. *@
+<FormaOverflowMenu Label="@L["View Actions"]" Alignment="PopoverAlignment.End" class="forma-data-view-menu">
+    @if (View.EnableCheckedSelection)
+    {
+        @if (View.IsSelecting)
+        {
+            <FormaDropDownMenuItem OnClick="() => Interaction.SetSelectingAsync(false)">@L["Stop Selecting"]</FormaDropDownMenuItem>
+            @if (View.HasMasterControl)
+            {
+                <FormaDropDownMenuItem Disabled="@(View.IsAllSelected || View.IsMasterControlDisabled)" OnClick="Interaction.SelectAllAsync">@L["Select All"]</FormaDropDownMenuItem>
+            }
+        }
+        else
+        {
+            <FormaDropDownMenuItem OnClick="() => Interaction.SetSelectingAsync(true)">@L["Select"]</FormaDropDownMenuItem>
+        }
+    }
+    @foreach (var command in View.SelectionCommands)
+    {
+        <FormaDropDownMenuItem Disabled="@(!View.CanRunCommand(command))"
+                               DisabledReason="@View.GetCommandDisabledReason(command)"
+                               OnClick="() => Interaction.RunSelectionCommandAsync(command)"
+                               @key="command.Id">
+            @if (command.Icon is { } icon)
+            {
+                <FormaIcon Icon="icon" Size="IconSize.Small" />
+            }
+            <span>@command.Title</span>
+        </FormaDropDownMenuItem>
+    }
+</FormaOverflowMenu>

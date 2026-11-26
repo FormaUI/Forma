@@ -159,6 +159,23 @@ public interface IDataView<TItem> : INotifyStateChanged
     /// <summary>How many items are selected, on screen or not.</summary>
     int SelectedCount { get; }
 
+    /// <summary>Whether the reader is selecting: a command started it, or an item is checked.</summary>
+    bool IsSelecting { get; }
+
+    /// <summary>The commands a narrow view's menu offers on the selected items.</summary>
+    IReadOnlyList<DataViewCommand<TItem>> SelectionCommands { get; }
+
+    /// <summary>Whether a narrow view draws its menu: checked selection is on, or the host gives it commands.</summary>
+    bool HasViewMenu { get; }
+
+    /// <summary>Whether <paramref name="command"/> can act on the selected items now.</summary>
+    /// <param name="command">The command to judge.</param>
+    bool CanRunCommand(DataViewCommand<TItem> command);
+
+    /// <summary>Why <paramref name="command"/> can't act on the selected items now, where it can't and a reason is known; otherwise null.</summary>
+    /// <param name="command">The command to judge.</param>
+    string? GetCommandDisabledReason(DataViewCommand<TItem> command);
+
     /// <summary>Whether the data view holds the whole set.</summary>
     bool HoldsSet { get; }
 

@@ -52,5 +52,9 @@
             <span class="forma-data-list-item-detail">@detail(Item)</span>
         }
     </span>
+    @if (List.ActionsTemplate is { } actions)
+    {
+        <span class="forma-data-list-item-actions" data-item-control>@actions(Item)</span>
+    }
     @View.RenderDisabledReasonTooltip(Item)
 </div>

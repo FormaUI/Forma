@@ -4,39 +4,83 @@
 
 @* A row being edited carries no token, which takes it out of every press and selection gesture. *@
 <tr @attributes="View.ItemAttributes?.Invoke(Item)" class="@RowClass" aria-selected="@AriaSelected" aria-disabled="@(View.FocusesItems && View.CanFocus(Item) && View.IsDisabled(Item) ? "true" : null)" aria-describedby="@View.GetItemDescribedBy(Item)" aria-rowindex="@(Position + 1)" data-item="@(Grid.IsEditing(Item) ? null : Token)" data-row-key="@(View.FocusesItems && !Grid.IsEditing(Item) && View.CanFocus(Item) ? Token : null)" data-item-root="@(!Grid.IsEditing(Item))" data-item-position="@Position" @onfocusin="@(View.FocusesItems ? Grid.GetRowFocusHandler(Item) : default)">
-    @if (Grid.HasSelectionColumn)
+    @if (Grid.IsNarrow)
     {
-        <td class="@Grid.SelectionCellClass" data-item-control>
-            @* The editing row and a row that cannot take the focus draw no marker; the selection behavior acts only on rows that carry one. *@
-            @if (!Grid.IsEditing(Item) && View.CanFocus(Item))
-            {
-                <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
-                    <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-grid-row-marker")"
-                                   data-row-key="@Token"
-                                   aria-label="@BoxLabel"
-                                   aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
-                                   aria-describedby="@View.GetDisabledReasonId(Item)"
-                                   Value="@View.IsSelected(Item)"
-                                   PreventDefault="true"
-                                   OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
-                                   @onfocusin="Grid.GetRowFocusHandler(Item)"
-                                   ValueExpression="() => RowSelection" />
-                </label>
-            }
+        @* A narrow row is one cell, the item's thumbnail at its start, its name on one line and its detail beneath on a line or two. *@
+        <td colspan="@Grid.ColumnCount" class="forma-data-grid-narrow-cell">
+            <div class="forma-data-grid-narrow-row">
+                @if (Grid.HasSelectionColumn && !Grid.IsEditing(Item) && View.CanFocus(Item))
+                {
+                    <span class="forma-data-grid-narrow-lead" data-item-control>
+                        <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
+                            <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-grid-row-marker")"
+                                           data-row-key="@Token"
+                                           aria-label="@BoxLabel"
+                                           aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
+                                           aria-describedby="@View.GetDisabledReasonId(Item)"
+                                           Value="@View.IsSelected(Item)"
+                                           PreventDefault="true"
+                                           OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
+                                           @onfocusin="Grid.GetRowFocusHandler(Item)"
+                                           ValueExpression="() => RowSelection" />
+                        </label>
+                    </span>
+                }
+                @if (Grid.ThumbnailTemplate is { } thumbnail)
+                {
+                    <span class="forma-data-grid-narrow-thumbnail">@thumbnail(Item)</span>
+                }
+                <span class="forma-data-grid-narrow-text">
+                    <span class="forma-data-grid-narrow-name">@View.ItemName(Item)</span>
+                    @if (Grid.ItemTemplate is { } detail)
+                    {
+                        <span class="forma-data-grid-narrow-detail">@detail(Item)</span>
+                    }
+                </span>
+                @if (Grid.ActionsTemplate is { } actions)
+                {
+                    <span class="forma-data-grid-narrow-actions" data-item-control>@actions(Item)</span>
+                }
+            </div>
+            @View.RenderDisabledReasonTooltip(Item)
         </td>
     }
-    @foreach (var column in Grid.ShownColumns)
+    else
     {
-        <td class="@Grid.GetCellClass(column)" style="@Grid.GetCellStyle(column)" @key="column">
-            @((RenderFragment)(builder => column.CellContent(builder, Item)))
-            @if (HoldsDisabledReason(column))
-            {
-                @View.RenderDisabledReasonTooltip(Item)
-            }
-        </td>
-    }
-    @if (Grid.HasColumnsMenu)
-    {
-        <td class="forma-data-grid-menu-column"></td>
+        @if (Grid.HasSelectionColumn)
+        {
+            <td class="@Grid.SelectionCellClass" data-item-control>
+                @* The editing row and a row that cannot take the focus draw no marker; the selection behavior acts only on rows that carry one. *@
+                @if (!Grid.IsEditing(Item) && View.CanFocus(Item))
+                {
+                    <label class="@(View.EnableCheckedSelection ? "forma-data-view-box-target" : null)">
+                        <FormaCheckBox class="@(View.EnableCheckedSelection ? null : "forma-data-grid-row-marker")"
+                                       data-row-key="@Token"
+                                       aria-label="@BoxLabel"
+                                       aria-disabled="@(!View.CanInteractWith(Item) ? "true" : null)"
+                                       aria-describedby="@View.GetDisabledReasonId(Item)"
+                                       Value="@View.IsSelected(Item)"
+                                       PreventDefault="true"
+                                       OnClick="() => Interaction.ToggleSelectionAsync(Item, !View.IsSelected(Item))"
+                                       @onfocusin="Grid.GetRowFocusHandler(Item)"
+                                       ValueExpression="() => RowSelection" />
+                    </label>
+                }
+            </td>
+        }
+        @foreach (var column in Grid.ShownColumns)
+        {
+            <td class="@Grid.GetCellClass(column)" style="@Grid.GetCellStyle(column)" @key="column">
+                @((RenderFragment)(builder => column.CellContent(builder, Item)))
+                @if (HoldsDisabledReason(column))
+                {
+                    @View.RenderDisabledReasonTooltip(Item)
+                }
+            </td>
+        }
+        @if (Grid.HasColumnsMenu)
+        {
+            <td class="forma-data-grid-menu-column"></td>
+        }
     }
 </tr>

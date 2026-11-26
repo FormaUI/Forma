@@ -94,6 +94,26 @@ a culture such as `en` that names no country. `Width` sets a column's width, `Fr
 it in place while the others scroll sideways, and `Priority` decides which columns give way when the
 width runs out.
 
+Given the parts of a narrow row, a grid too narrow for its columns, on a phone or in a sidebar, draws
+each item on two lines instead, or three where its detail needs them: `ThumbnailTemplate` at the row's
+start, the data view's `ItemName` on the first line, and `ItemTemplate` beneath, each cut short rather
+than wrapped. `ActionsTemplate` holds the row's own actions. It draws its columns again once its width
+holds them:
+
+```razor
+<FormaDataView Items="_files" ItemName="@(file => file.Name)">
+    <FormaDataGrid>
+        <ThumbnailTemplate Context="file"><img src="@file.ThumbnailUrl" alt="" /></ThumbnailTemplate>
+        <ItemTemplate Context="file">@file.Modified.ToString("d") · @file.Size</ItemTemplate>
+        <Columns>
+            <FormaPropertyColumn Property="@(file => file.Name)" />
+            <FormaPropertyColumn Property="@(file => file.Modified)" />
+            <FormaPropertyColumn Property="@(file => file.Size)" />
+        </Columns>
+    </FormaDataGrid>
+</FormaDataView>
+```
+
 ## Several views
 
 The views are declared inside the data view, and `FormaDataViewSwitch` and `FormaDataSortMenu`

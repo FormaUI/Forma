@@ -1218,6 +1218,213 @@
         private sealed record Entry(int Id, int? ParentId, string Name, string Kind);
     }
 
+    public sealed class Selecting
+    {
+        private static readonly Entry[] Entries =
+        [
+            new(1, "Archive", "folder"),
+            new(2, "Notes", "file"),
+            new(3, "Plans", "file"),
+        ];
+
+        private IRenderedComponent<IComponent> Render(FormaDataViewTests ctx, List<bool> reports, bool isChecked = true, bool selecting = false)
+            => ctx.Render(
+                @<FormaDataView Items="Entries.AsQueryable()" EnablePagination="false" EnableItemSelection="@(!isChecked)" EnableCheckedSelection="isChecked"
+                                ItemKey="@(entry => entry.Id)" ItemName="@(entry => entry.Name)" CanSelectItem="@(entry => entry.Kind != "folder")"
+                                Selecting="selecting" SelectingChanged="@((bool isSelecting) => reports.Add(isSelecting))">
+                    <FormaDataList TItem="Entry" />
+                </FormaDataView>);
+
+        private static int GetToken(IRenderedComponent<IComponent> cut, string name)
+            => int.Parse(cut.FindAll("[role=listitem]").Single(item => item.QuerySelector(".forma-data-list-item-name")!.TextContent == name).GetAttribute("data-item")!, CultureInfo.InvariantCulture);
+
+        [Fact]
+        public async Task Should_check_the_item_a_hold_lands_on_and_be_selecting_until_nothing_is_checked()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            List<bool> reports = [];
+            var cut = Render(ctx, reports);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            var notes = GetToken(cut, "Notes");
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.HandleHoldAsync(notes));
+            var isSelectingHeld = engine.Instance.IsSelecting && cut.Find(".forma-data-view").ClassList.Contains("forma-data-view-selecting");
+            await engine.InvokeAsync(() => engine.Instance.HandleCheckAsync(notes));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isSelectingHeld),
+                () => Assert.False(engine.Instance.IsSelecting),
+                () => Assert.DoesNotContain("forma-data-view-selecting", cut.Find(".forma-data-view").ClassList),
+                () => Assert.Equal([true, false], reports));
+        }
+
+        [Fact]
+        public async Task Should_take_a_hold_for_nothing_without_checked_selection_or_on_an_item_that_cannot_be_selected()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var uncheckedView = Render(ctx, [], isChecked: false);
+            var checkedView = Render(ctx, []);
+            uncheckedView.WaitForState(() => uncheckedView.FindAll("[role=listitem]").Count == 3);
+            checkedView.WaitForState(() => checkedView.FindAll("[role=listitem]").Count == 3);
+            var uncheckedEngine = uncheckedView.FindComponent<FormaDataView<Entry>>();
+            var checkedEngine = checkedView.FindComponent<FormaDataView<Entry>>();
+
+            // Act — a hold on a file where nothing is checked by a box, and one on a folder that can't be chosen
+            await uncheckedEngine.InvokeAsync(() => uncheckedEngine.Instance.HandleHoldAsync(GetToken(uncheckedView, "Notes")));
+            await checkedEngine.InvokeAsync(() => checkedEngine.Instance.HandleHoldAsync(GetToken(checkedView, "Archive")));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(0, uncheckedEngine.Instance.SelectedCount),
+                () => Assert.Equal(0, checkedEngine.Instance.SelectedCount),
+                () => Assert.False(checkedEngine.Instance.IsSelecting));
+        }
+
+        [Fact]
+        public async Task Should_keep_selecting_a_command_started_once_nothing_is_checked_until_a_command_stops_it_clearing_the_selection()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            List<bool> reports = [];
+            var cut = Render(ctx, reports);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            var notes = GetToken(cut, "Notes");
+            var plans = GetToken(cut, "Plans");
+
+            // Act — started, a check and its uncheck, a second check, then stopped
+            await engine.InvokeAsync(() => engine.Instance.SetSelectingAsync(true));
+            await engine.InvokeAsync(() => engine.Instance.HandleCheckAsync(notes));
+            await engine.InvokeAsync(() => engine.Instance.HandleCheckAsync(notes));
+            var isSelectingEmpty = engine.Instance.IsSelecting;
+            await engine.InvokeAsync(() => engine.Instance.HandleCheckAsync(plans));
+            await engine.InvokeAsync(() => engine.Instance.SetSelectingAsync(false));
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.True(isSelectingEmpty),
+                () => Assert.False(engine.Instance.IsSelecting),
+                () => Assert.Equal(0, engine.Instance.SelectedCount),
+                () => Assert.Equal([true, false], reports));
+        }
+
+        [Fact]
+        public void Should_be_selecting_as_its_host_starts_it()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+
+            // Act
+            var cut = Render(ctx, [], selecting: true);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.Contains("forma-data-view-selecting", cut.Find(".forma-data-view").ClassList);
+        }
+
+        internal sealed record Entry(int Id, string Name, string Kind);
+    }
+
+    public sealed class SelectionCommands
+    {
+        private static readonly Entry[] Entries =
+        [
+            new(1, "Notes", true),
+            new(2, "Plans", true),
+            new(3, "Ledger", false),
+        ];
+
+        // Edit acts on one item that can be edited, and Delete on any number.
+        private static readonly DataViewCommand<Entry> Edit = new() { Id = "edit", Title = "Edit", AppliesTo = entry => entry.IsEditable };
+
+        private static readonly DataViewCommand<Entry> Delete = new() { Id = "delete", Title = "Delete", TakesMany = true };
+
+        private IRenderedComponent<IComponent> Render(FormaDataViewTests ctx, List<DataViewCommandInvocation<Entry>> invocations, params DataViewCommand<Entry>[] commands)
+            => ctx.Render(
+                @<FormaDataView Items="Entries.AsQueryable()" EnablePagination="false" EnableCheckedSelection="true" ItemKey="@(entry => entry.Id)" ItemName="@(entry => entry.Name)"
+                                SelectionCommands="commands" OnSelectionCommand="@((DataViewCommandInvocation<Entry> invocation) => invocations.Add(invocation))">
+                    <FormaDataList TItem="Entry" />
+                </FormaDataView>);
+
+        [Fact]
+        public async Task Should_enable_a_command_where_it_can_act_on_every_selected_item_and_say_why_where_it_cannot()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            var cut = Render(ctx, [], Edit, Delete);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            var view = (IDataView<Entry>)engine.Instance;
+            (bool Edit, bool Delete, string? EditReason) Read()
+                => (view.CanRunCommand(Edit), view.CanRunCommand(Delete), view.GetCommandDisabledReason(Edit));
+
+            // Act — nothing selected, one item that can be edited, two, then one that can't be edited
+            var none = Read();
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(Entries[0], true));
+            var one = Read();
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(Entries[1], true));
+            var two = Read();
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(Entries[1], false));
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(Entries[0], false));
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(Entries[2], true));
+            var ledger = Read();
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal((false, false, "Select an item first."), none),
+                () => Assert.Equal((true, true, null), one),
+                () => Assert.Equal((false, true, "Edit acts on one item at a time."), two),
+                () => Assert.Equal((false, true, "Edit can't act on some of the selected items."), ledger));
+        }
+
+        [Fact]
+        public async Task Should_run_a_command_on_the_selected_items_and_a_disabled_one_on_nothing()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+            List<DataViewCommandInvocation<Entry>> invocations = [];
+            var hostDisabled = new DataViewCommand<Entry> { Id = "share", Title = "Share", TakesMany = true, IsDisabled = true, DisabledReason = "Sharing is off for this workspace" };
+            var cut = Render(ctx, invocations, Edit, Delete, hostDisabled);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+            var engine = cut.FindComponent<FormaDataView<Entry>>();
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(Entries[0], true));
+            await engine.InvokeAsync(() => engine.Instance.ToggleSelectionAsync(Entries[1], true));
+
+            // Act
+            await engine.InvokeAsync(() => engine.Instance.RunSelectionCommandAsync(Edit));
+            await engine.InvokeAsync(() => engine.Instance.RunSelectionCommandAsync(hostDisabled));
+            await engine.InvokeAsync(() => engine.Instance.RunSelectionCommandAsync(Delete));
+
+            // Assert — Delete alone ran, on both items; the host's reason is the disabled command's
+            var invocation = Assert.Single(invocations);
+            Assert.Multiple(
+                () => Assert.Same(Delete, invocation.Command),
+                () => Assert.Equal(["Notes", "Plans"], invocation.Items.Select(entry => entry.Name).Order()),
+                () => Assert.Equal("Sharing is off for this workspace", ((IDataView<Entry>)engine.Instance).GetCommandDisabledReason(hostDisabled)));
+        }
+
+        [Fact]
+        public void Should_draw_the_view_s_menu_at_the_list_s_head_where_it_has_something_to_offer()
+        {
+            // Arrange
+            using var ctx = new FormaDataViewTests();
+
+            // Act
+            var cut = Render(ctx, [], Delete);
+            cut.WaitForState(() => cut.FindAll("[role=listitem]").Count == 3);
+
+            // Assert
+            Assert.NotNull(cut.Find(".forma-data-list-head").QuerySelector("button[aria-label='View Actions']"));
+        }
+
+        internal sealed record Entry(int Id, string Name, bool IsEditable);
+    }
+
     public sealed class ItemAttributes
     {
         private static readonly Entry[] Entries = [new(1, null, "Covers", true), new(2, 1, "Cover.png", false)];

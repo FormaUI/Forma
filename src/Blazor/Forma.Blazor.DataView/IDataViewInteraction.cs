@@ -78,6 +78,14 @@ public interface IDataViewInteraction<TItem>
     /// <summary>Clears the selection.</summary>
     Task ClearSelectionAsync();
 
+    /// <summary>Runs <paramref name="command"/> on the selected items, where it can act on them.</summary>
+    /// <param name="command">The command the reader ran from a narrow view's menu.</param>
+    Task RunSelectionCommandAsync(DataViewCommand<TItem> command);
+
+    /// <summary>Starts selecting with nothing checked, or stops, clearing the selection.</summary>
+    /// <param name="isSelecting">Whether the reader is selecting.</param>
+    Task SetSelectingAsync(bool isSelecting);
+
     /// <summary>Reports that the reader activated <paramref name="item"/>.</summary>
     /// <param name="item">The item activated.</param>
     Task ActivateAsync(TItem item);

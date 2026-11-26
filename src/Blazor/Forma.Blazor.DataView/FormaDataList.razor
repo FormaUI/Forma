@@ -19,6 +19,11 @@
          style="@RootStyle"
          @attributes="_collectionName.RootAttributes"
          @ref="RootElement">
+        @* The view's menu stands at the head of a narrow view, in place of the actions it would draw beside each item. *@
+        @if (View.HasViewMenu)
+        {
+            <div class="forma-data-list-head"><FormaDataViewMenu TItem="TItem" /></div>
+        }
         @if (!View.HasLoaded)
         {
             <div class="forma-data-list-state">@View.LoadingContent</div>

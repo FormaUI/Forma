@@ -26,7 +26,9 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
     /// <param name="gathersControls">Whether Tab reaches the active item's controls alone, every other item's standing out of the Tab sequence.</param>
     /// <param name="checksOnPress">Whether a press checks the box of the item it lands on, where the list does not select, rather than activate the item.</param>
     /// <param name="emptyStateSelector">The selector naming what the list shows once it holds no items, whose first control takes a focus the last item lost.</param>
-    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, bool moves = true, string? positionAttribute = null, bool seeks = false, string? itemRootSelector = null, string? actionsSelector = null, bool gathersControls = false, bool checksOnPress = false, string? emptyStateSelector = null)
+    /// <param name="checksOnHold">Whether a finger or a pen resting on an item for the platform's hold checks it.</param>
+    /// <param name="swipedAttribute">The attribute a finger's or a pen's swipe across an item toward its inline start marks the item with as showing its actions, where null takes no swipe.</param>
+    public ValueTask<bool> AttachAsync<TOwner>(ElementReference container, DotNetObjectReference<TOwner> owner, string itemSelector, string? itemKeyAttribute = null, string? controlSelector = null, bool selects = true, bool moves = true, string? positionAttribute = null, bool seeks = false, string? itemRootSelector = null, string? actionsSelector = null, bool gathersControls = false, bool checksOnPress = false, string? emptyStateSelector = null, bool checksOnHold = false, string? swipedAttribute = null)
         where TOwner : class
     {
         ArgumentNullException.ThrowIfNull(owner);
@@ -47,6 +49,8 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
             GathersControls = gathersControls,
             ChecksOnPress = checksOnPress,
             EmptyStateSelector = emptyStateSelector,
+            ChecksOnHold = checksOnHold,
+            SwipedAttribute = swipedAttribute,
         });
     }
 
@@ -64,6 +68,11 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
     /// <param name="checksOnPress">Whether a press checks.</param>
     public ValueTask<bool> SetChecksOnPressAsync(bool checksOnPress)
         => InvokeAsync("setChecksOnPress", checksOnPress);
+
+    /// <summary>Has a finger or a pen resting on an item check it where <paramref name="checksOnHold"/>, the focus left where it is.</summary>
+    /// <param name="checksOnHold">Whether a hold checks.</param>
+    public ValueTask<bool> SetChecksOnHoldAsync(bool checksOnHold)
+        => InvokeAsync("setChecksOnHold", checksOnHold);
 
     /// <summary>The options the script attaches with.</summary>
     [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
@@ -96,5 +105,11 @@ internal sealed class SelectionInteraction(IJSEnvironment js)
         public required bool ChecksOnPress { get; init; }
 
         public required string? EmptyStateSelector { get; init; }
+
+        /// <summary>Whether a finger or a pen resting on an item checks it.</summary>
+        public required bool ChecksOnHold { get; init; }
+
+        /// <summary>The attribute a swipe marks an item with as showing its actions.</summary>
+        public required string? SwipedAttribute { get; init; }
     }
 }

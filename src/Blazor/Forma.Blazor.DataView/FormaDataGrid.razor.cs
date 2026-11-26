@@ -43,6 +43,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     private bool _isColumnFitAttached;
     private double _availableWidth;
     private double? _frozenExtent;
+    private bool _isNarrow;
+    private double _narrowWidth;
 
     private bool _isCollectingColumns;
     private bool _isInitialSortApplied;
@@ -76,6 +78,15 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     /// <summary>Raised with the untouched row when an edit is abandoned.</summary>
     [Parameter] public EventCallback<TItem> OnRowCancel { get; set; }
 
+    /// <summary>The item's thumbnail, which a narrow row draws at its start.</summary>
+    [Parameter] public RenderFragment<TItem>? ThumbnailTemplate { get; set; }
+
+    /// <summary>The item's detail, which a narrow row draws beneath its name, on a line or two.</summary>
+    [Parameter] public RenderFragment<TItem>? ItemTemplate { get; set; }
+
+    /// <summary>The item's own actions, which a narrow row shows at its end.</summary>
+    [Parameter] public RenderFragment<TItem>? ActionsTemplate { get; set; }
+
     [CascadingParameter] private IDataView<TItem> View { get; set; } = default!;
 
     [CascadingParameter] private IDataViewInteraction<TItem> Interaction { get; set; } = default!;
@@ -106,6 +117,14 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     /// <summary>Whether the grid is the view showing.</summary>
     internal bool IsActive
         => View.ActiveViewKey == ViewKey;
+
+    /// <summary>Whether the grid holds the parts a narrow row is drawn from.</summary>
+    internal bool HasNarrowParts
+        => ThumbnailTemplate is not null || ItemTemplate is not null || ActionsTemplate is not null;
+
+    /// <summary>Whether the grid draws its items as narrow rows: it holds their parts, and its columns no longer fit its width.</summary>
+    internal bool IsNarrow
+        => _isNarrow && HasNarrowParts;
 
     /// <summary>The columns collected in the current render, in the order written.</summary>
     internal IReadOnlyList<FormaColumnBase<TItem>> CollectedColumns
@@ -208,10 +227,14 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
         var widthsChanged = false;
 
-        foreach (var column in report.Columns)
+        // A narrow grid draws no columns to measure, so it keeps the widths they wanted when it turned narrow.
+        if (!IsNarrow)
         {
-            widthsChanged |= !_wantedWidths.TryGetValue(column.Key, out var wantedWidth) || wantedWidth != column.Width;
-            _wantedWidths[column.Key] = column.Width;
+            foreach (var column in report.Columns)
+            {
+                widthsChanged |= !_wantedWidths.TryGetValue(column.Key, out var wantedWidth) || wantedWidth != column.Width;
+                _wantedWidths[column.Key] = column.Width;
+            }
         }
 
         // A reader's choice holds until the grid is given a different width.
@@ -224,8 +247,34 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         // The frozen columns are placed by the widths, so a change of width moves them even where the fit stands.
         var frozenColumnsMoved = widthsChanged && HasFrozenColumns;
 
-        return FitColumns() || frozenColumnsMoved ? InvokeAsync(StateHasChanged) : Task.CompletedTask;
+        var narrowRowsChanged = FitNarrowRows();
+        var columnsChanged = FitColumns();
+
+        return narrowRowsChanged || columnsChanged || frozenColumnsMoved ? InvokeAsync(StateHasChanged) : Task.CompletedTask;
     }
+
+    // A grid holding the parts of a narrow row turns narrow where a grid without them would drop a column, and draws its columns again
+    // once its width holds the widths they wanted when it turned narrow.
+    private bool FitNarrowRows()
+    {
+        var wasNarrow = _isNarrow;
+
+        if (_isNarrow)
+        {
+            _isNarrow = _availableWidth < _narrowWidth;
+        }
+        else if (_availableWidth > 0 && GetColumnsWidth() is var columnsWidth && columnsWidth > _availableWidth)
+        {
+            _isNarrow = true;
+            _narrowWidth = columnsWidth;
+        }
+
+        return _isNarrow != wasNarrow && HasNarrowParts;
+    }
+
+    // The width every visible column wants, with the selection and menu columns beside them.
+    private double GetColumnsWidth()
+        => GetWantedWidth(SelectionColumnKey) + GetWantedWidth(MenuColumnKey) + _columns.Where(column => column.Visible).Sum(column => GetWantedWidth(column.ColumnKey));
 
     /// <summary>Shows a column the width dropped, or drops one it shows.</summary>
     /// <remarks>The reader's choice holds until the grid is given a different width.</remarks>
@@ -400,7 +449,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     internal int GetRowRevision()
     {
         var shownColumnSignatures = ShownColumns.Select(column => $"{column.ColumnKey}:{column.Revision}:{GetCellClass(column)}:{GetCellStyle(column)}");
-        var signature = string.Join('|', [View.Revision, _parameterRevision.Value, HasSelectionColumn, HasColumnsMenu, SelectionCellClass, .. shownColumnSignatures]);
+        var signature = string.Join('|', [View.Revision, _parameterRevision.Value, HasSelectionColumn, HasColumnsMenu, SelectionCellClass, IsNarrow, .. shownColumnSignatures]);
 
         if (signature != _rowSignature)
         {
@@ -793,7 +842,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         builder
             .Add("forma-data-grid")
             .Add("forma-data-grid-dense", Dense)
-            .Add("forma-data-grid-headerless", !ShowHeader);
+            .Add("forma-data-grid-headerless", !ShowHeader || (IsNarrow && !View.HasViewMenu))
+            .Add("forma-data-grid-narrow", IsNarrow);
     }
 
     /// <inheritdoc />

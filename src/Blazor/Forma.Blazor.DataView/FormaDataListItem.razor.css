@@ -110,3 +110,53 @@
     overflow: hidden;
     text-overflow: ellipsis;
 }
+
+.forma-data-list-item-actions {
+    display: flex;
+    flex: none;
+    align-items: center;
+}
+
+/* At a narrow width an item stacks its name above its detail, the detail on two lines at most, each cut short with an ellipsis.
+   The width is the list's own: a thumbnail of 3rem, a name of twenty characters, about 12rem, a detail of twelve, about 8rem,
+   and the selection and actions targets of 2.75rem each, with their gutters, come to 33rem, and the rest keeps a name from
+   meeting its detail. */
+@container forma-data-list (inline-size < 36rem) {
+    .forma-data-list-item {
+        padding-block: var(--space-1);
+    }
+
+    .forma-data-list-item-text {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+    }
+
+    .forma-data-list-item-detail {
+        display: -webkit-box;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        white-space: normal;
+    }
+
+    /* An item's own actions stand at its end while a swipe has shown them or the keyboard's focus is on the item. */
+    .forma-data-list-item {
+        touch-action: pan-y;
+    }
+
+    .forma-data-list-item:not([data-swiped], :focus-visible, :has(:focus-visible)) .forma-data-list-item-actions {
+        display: none;
+    }
+
+    /* An item's box stands while the reader is selecting; until then it stands out of sight, where the keyboard still reaches and
+       draws it. */
+    .forma-data-view:not(.forma-data-view-selecting) .forma-data-list-item-lead:has(.forma-data-view-box-target):not(:focus-within) {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}

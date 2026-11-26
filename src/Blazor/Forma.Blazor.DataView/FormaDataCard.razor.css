@@ -64,6 +64,19 @@
     align-items: center;
 }
 
+/* At a narrow width a card's box stands on its thumbnail while the reader is selecting; until then it stands out of sight, where
+   the keyboard still reaches and draws it. The width is the list's, below which a row holds a name and its detail. */
+@container forma-data-cards (inline-size < 36rem) {
+    .forma-data-view:not(.forma-data-view-selecting) .forma-data-card-lead:has(.forma-data-view-box-target):not(:focus-within) {
+        position: absolute;
+        inline-size: 1px;
+        block-size: 1px;
+        overflow: hidden;
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
+}
+
 /* The marker is collapsed yet focusable, so focusing it scrolls to its card; the box is FormaCheckBox's, reached with ::deep and named
    by its element as well, so the rule outweighs the box's own size. */
 ::deep input.forma-data-card-marker {

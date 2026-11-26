@@ -633,8 +633,8 @@ its columns are drawn as columns while it is wide. A grid given no parts keeps i
 every width, giving way by priority as it does today.
 
 **When a view turns narrow.** A grid holding its parts draws its narrow rows once its visible
-columns no longer fit side by side, each at its content's least width, which is where a grid
-with no parts drops a column by its priority; the width is the grid's own, measured as it fits
+columns no longer fit side by side, each at the width its content takes on one line, which is
+where a grid with no parts drops a column by its priority; the width is the grid's own, measured as it fits
 its columns, so a grid in a sidebar turns narrow as one on a phone does. It draws its columns
 again once its width holds the columns it measured when it turned narrow. The list and the
 cards turn narrow below `36rem` of their own width, which their own container query decides:
@@ -644,8 +644,10 @@ a thumbnail of `3rem`, a name of twenty characters, about `12rem`, a detail of t
 
 **One menu in place of the actions column.** A narrow view draws no actions column. Its head
 holds one button of three horizontal dots, which opens the view's menu: Select, which starts
-selecting as a long press does, and the commands the host gives in `SelectionCommands`, Edit and
-Delete among them, each acting on the selected items and enabled only where it can act on them:
+selecting as a long press does, or, while the reader selects, Stop Selecting and Select All, in
+place of the master box a narrow view draws no header for; and the commands the host gives in
+`SelectionCommands`, Edit and Delete among them, each acting on the selected items and enabled
+only where it can act on them:
 
 - nothing selected leaves every command disabled;
 - a command that takes one item, as Edit does, is enabled with one item selected, and one that
@@ -672,10 +674,13 @@ reaches, so a keyboard and a screen reader meet the same command a swipe shows.
 **Selection on demand.** A narrow view draws no standing boxes. A long press on an item starts
 selecting with that item checked, and while the view is selecting each item draws its box: a
 row's at its start, pushing the row's content toward its end, and a card's on its thumbnail, as
-a gallery marks a picture. The view stops selecting once nothing is checked, or on Escape.
+a gallery marks a picture. Until then a box stands out of sight, where Tab still reaches it and
+draws it, so Space checks it from the keyboard. Selecting a check started ends once nothing is
+checked; selecting a command started, the view's menu or the host's, lasts until a command stops
+it, as a file manager's selection mode lasts until Done.
 `Selecting`, with `SelectingChanged`, is that state, which the view's menu's Select starts, and
-so does a host's own command, as the explorer's selection mode does; Space on a focused item
-starts it from the keyboard, checking that item. A long press waits for the platform's hold, and a press that
+so does a host's own command, as the explorer's selection mode does; an item checked starts it
+too, from a long press, from Space on its box or from the host. A long press waits for the platform's hold, and a press that
 travels first is the page's scroll, never a selection.
 
 **Wide again.** Given its width back, a view draws its columns, its standing boxes while checked

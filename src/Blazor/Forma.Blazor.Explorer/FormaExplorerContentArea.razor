@@ -50,6 +50,16 @@
                 @* The details are the data view's grid, which draws its groups and its next page: the actions and the name stay at the
                    start as the other columns scroll, and a column's header sorts by the field the store sorts by. *@
                 <FormaDataGrid TItem="ICatalogItem" ShowHeader="View.ShowsDetailsHeader" class="forma-explorer-details" aria-label="@L["Media"]">
+                    @* A narrow row is the item's thumbnail, its name, and the details its columns show, on a line beneath. *@
+                    <ThumbnailTemplate Context="item">
+                        <FormaExplorerThumbnail Item="item" Size="ExplorerThumbnailSize.Cell" />
+                    </ThumbnailTemplate>
+                    <ItemTemplate Context="item">
+                        <span dir="auto">@FormatDetails(item)</span>
+                    </ItemTemplate>
+                    <ActionsTemplate Context="item">
+                        <span data-item-control><FormaExplorerActionBar Item="item" /></span>
+                    </ActionsTemplate>
                     <Columns>
                         <FormaTemplateColumn TItem="ICatalogItem" Title="@L["Actions"]" Frozen="true" Visible="!Selection.IsSelectionModeActive" Class="forma-explorer-column-actions">
                             <HeaderTemplate Context="column"><span class="forma-explorer-visually-hidden">@L["Actions"]</span></HeaderTemplate>

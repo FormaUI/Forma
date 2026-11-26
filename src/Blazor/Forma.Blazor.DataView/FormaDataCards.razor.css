@@ -6,9 +6,22 @@
    ============================================================ */
 
 .forma-data-cards {
+    container: forma-data-cards / inline-size;
     flex: 1 1 auto;
     min-block-size: 0;
     padding: var(--space-3);
+}
+
+/* The view's menu shows at a narrow width alone, at the cards' head; the width the card's stylesheet derives. */
+.forma-data-cards-head {
+    display: none;
+    justify-content: flex-end;
+}
+
+@container forma-data-cards (inline-size < 36rem) {
+    .forma-data-cards-head {
+        display: flex;
+    }
 }
 
 /* As many cards across as the width holds at the card size, packing before they stack. */

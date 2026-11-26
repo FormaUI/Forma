@@ -204,6 +204,33 @@
 </div>
 
 <div class="demo-section">
+    <h2>@L["Narrow Rows"]</h2>
+    <p class="description">@L["Given the parts of a narrow row, a grid too narrow for its columns draws each item as its name with its details beneath, each cut short rather than wrapped, and draws its columns again once its width holds them."]</p>
+    <div class="demo-box demo-box-narrow">
+        <FormaDataView TItem="Shipment" Items="_shipments" PageSize="5" ItemName="@(shipment => shipment.Customer)" AddressOptions='@(new DataViewAddressOptions("narrow"))'
+                       EnableCheckedSelection="true" SelectionCommands="NarrowCommands" OnSelectionCommand="RunNarrowCommand">
+            <FormaDataGrid>
+                <ItemTemplate Context="shipment">@shipment.Product · @shipment.City · @shipment.FormatAmount(CultureState.Culture)</ItemTemplate>
+                <ActionsTemplate Context="shipment">
+                    <FormaOverflowMenu Label="@L["Actions for {Name}", shipment.Customer]" data-item-actions>
+                        <FormaDropDownMenuItem OnClick="@(() => _narrowRan = L["Opened {Name}", shipment.Customer].Value)">@L["Open"]</FormaDropDownMenuItem>
+                    </FormaOverflowMenu>
+                </ActionsTemplate>
+                <Columns>
+                    <FormaPropertyColumn Property="@(s => s.Id)" Priority="4" />
+                    <FormaPropertyColumn Property="@(s => s.Customer)" Priority="4" />
+                    <FormaPropertyColumn Property="@(s => s.Product)" Priority="3" />
+                    <FormaPropertyColumn Property="@(s => s.City)" Priority="1" />
+                    <FormaPropertyColumn Property="@(s => s.Country)" Priority="0" />
+                    <FormaTemplateColumn TItem="Shipment" Title="@L["Amount"]" SortName="Amount" SortBy="AmountSort" Priority="2">@context.FormatAmount(CultureState.Culture)</FormaTemplateColumn>
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+    <p class="demo-status" role="status">@_narrowRan</p>
+</div>
+
+<div class="demo-section">
     <h2>@L["Frozen Columns"]</h2>
     <p class="description">@L["Every column shares the highest priority, so none leaves and the table scrolls sideways instead; the id and the customer are frozen and stay put while the rest slide beneath them, moved by the pane's arrows, and the edge of the frozen region can be dragged."]</p>
     <div class="demo-box demo-box-narrow">
@@ -825,6 +852,18 @@
     private sealed record GridItem(int Id, string Title);
 
     private static readonly DataViewSort<Shipment> AmountSort = DataViewSort<Shipment>.ByAscending(shipment => shipment.Amount);
+
+    private string _narrowRan = string.Empty;
+
+    // Edit acts on one shipment not yet shipped, and Cancel on any number.
+    private IReadOnlyList<DataViewCommand<Shipment>> NarrowCommands
+        => [
+            new() { Id = "edit", Title = L["Edit"].Value, AppliesTo = shipment => shipment.ShipDate > DateOnly.FromDateTime(DateTime.Today) },
+            new() { Id = "cancel", Title = L["Cancel Shipment"].Value, TakesMany = true },
+        ];
+
+    private void RunNarrowCommand(DataViewCommandInvocation<Shipment> invocation)
+        => _narrowRan = L["{Command} ran on {Count} shipment(s).", invocation.Command.Title, invocation.Items.Count].Value;
 
     private sealed record Shipment(int Id, string Customer, string Product, string City, string Country, decimal Amount, DateOnly ShipDate)
     {

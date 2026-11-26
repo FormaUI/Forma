@@ -43,6 +43,13 @@
  * inside an item is the control's, as is one on a part of the item a caller names as its own
  * controls, a box's cell or a card's actions.
  *
+ * Where the list checks on a hold, a finger or a pen resting on an item for the platform's hold, without travelling
+ * farther than a tap may, checks the item, which starts a selection on a phone; the press it rests in still scrolls,
+ * and the click its release raises is the hold's, never an activation. Where the list swipes to its items' actions, a
+ * finger or a pen travelling across an item toward its inline start marks the item as showing its actions, and one
+ * travelling back, a press elsewhere or Escape takes the mark away; a press that travels up or down first is the page's
+ * scroll.
+ *
  * An item that draws no marker of its own can be its own marker, so a list with no selection still
  * stands as one tab stop the keys move through. Where the marker holding the focus stops being one
  * while its item stays, as an item does when the box drawn inside it takes over, the focus moves to
@@ -67,6 +74,15 @@ const Moves = [
 
 /** How long a move asked of the owner waits for its item to be drawn before it gives up the focus it would have taken. */
 const SeekPatience = 3000;
+
+/** How long, in milliseconds, a finger rests on an item before it checks the item: the platforms' long press. */
+const HoldDelay = 500;
+
+/** How far, in pixels, a resting finger may travel before its press is a scroll rather than a hold. */
+const HoldTravel = 10;
+
+/** How far, in pixels, a finger travels across an item before its press is a swipe. */
+const SwipeTravel = 24;
 
 /**
  * @param {HTMLElement} target
@@ -214,8 +230,18 @@ class SelectionInteraction {
     #suppressesContextMenu = false;
     #emptyStateSelector;
     #heirRegistration;
+    #checksOnHold;
+    /** The press resting on an item until it is a hold: its pointer, where it began, the item and the timer. */
+    #pendingHold = null;
+    #suppressesGestureClick = false;
+    #swipedAttribute;
+    /** The press travelling across an item until it is a swipe: its pointer, where it began and the item. */
+    #pendingSwipe = null;
+    #swipedItem = null;
+    /** The registration an item showing its actions holds on the input router, which takes Escape and a press away for it. */
+    #swipedRegistration = null;
 
-    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, moves = selects, checksOnPress = false, positionAttribute = null, seeks = false, itemRootSelector = null, actionsSelector = null, gathersControls = false, emptyStateSelector = null }) {
+    constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, moves = selects, checksOnPress = false, positionAttribute = null, seeks = false, itemRootSelector = null, actionsSelector = null, gathersControls = false, emptyStateSelector = null, checksOnHold = false, swipedAttribute = null }) {
         this.#target = target;
         this.#owner = owner;
         this.#keyAttribute = keyAttribute;
@@ -231,6 +257,8 @@ class SelectionInteraction {
         this.#actionsSelector = itemRootSelector === null ? null : actionsSelector;
         this.#gathersControls = gathersControls && itemRootSelector !== null;
         this.#emptyStateSelector = emptyStateSelector;
+        this.#checksOnHold = checksOnHold;
+        this.#swipedAttribute = swipedAttribute;
 
         // Each key moves plain, with Shift extending the range, or with the primary modifier moving alone; one that
         // would move nothing matches nothing, so a press at the end of the list keeps its default.
@@ -285,7 +313,24 @@ class SelectionInteraction {
             }]
             : [];
 
-        this.#registration = register(target, { routes: [...routes, ...selection, activation, ...actions] });
+        // A finger or a pen pressing an item starts its hold where the list checks on one, and its swipe where the list swipes to
+        // its items' actions, the press keeping its default, so it still scrolls the page.
+        const holding = [{
+            action: 'selection.touch',
+            bindings: [{ type: 'pointerdown', button: 0, when: event => (this.#checksOnHold || this.#swipedAttribute !== null) && (event.pointerType === 'touch' || event.pointerType === 'pen') && this.#pressedItem(event) !== null }],
+            handle: event => {
+                if (this.#checksOnHold) {
+                    this.#beginHold(event);
+                }
+
+                if (this.#swipedAttribute !== null) {
+                    this.#beginSwipe(event);
+                }
+            },
+        }];
+
+
+        this.#registration = register(target, { routes: [...routes, ...selection, activation, ...actions, ...holding] });
 
         // A render may draw the focused item's element afresh, which drops the focus to nothing; with neither a press nor Tab to
         // explain the loss, the focus goes back to the item's marker once the render has drawn it again. Both are observed rather
@@ -364,6 +409,37 @@ class SelectionInteraction {
         });
         removal.observe(target, { childList: true, subtree: true });
         signal.addEventListener('abort', () => removal.disconnect());
+
+        // A hold or a swipe ends as its finger travels, lifts or is taken by the browser, and the click its release raises and the
+        // platform's own menu are the gesture's.
+        ownerDocument.addEventListener('pointermove', event => {
+            this.#followHold(event);
+            this.#followSwipe(event);
+        }, { capture: true, passive: true, signal });
+        ownerDocument.addEventListener('pointerup', () => this.#endGestures(), { capture: true, signal });
+        ownerDocument.addEventListener('pointercancel', () => this.#endGestures(), { capture: true, signal });
+        ownerDocument.addEventListener('scroll', () => this.#cancelHold(), { capture: true, passive: true, signal });
+        ownerDocument.addEventListener('click', event => {
+            if (this.#suppressesGestureClick) {
+                this.#suppressesGestureClick = false;
+                event.preventDefault();
+                event.stopImmediatePropagation();
+            }
+        }, { capture: true, signal });
+        ownerDocument.addEventListener('pointerdown', event => {
+            if (event.isPrimary) {
+                this.#suppressesGestureClick = false;
+            }
+        }, { capture: true, signal });
+        target.addEventListener('contextmenu', event => {
+            if (this.#pendingHold !== null || this.#suppressesGestureClick) {
+                event.preventDefault();
+            }
+        }, { signal });
+        signal.addEventListener('abort', () => {
+            this.#endGestures();
+            this.#hideActions();
+        });
 
         // A dialog or a popover a control inside an item opened hands the focus back to that control as it closes, which a command
         // confirmed there may have taken away with its item while the focus was outside the list.
@@ -516,6 +592,126 @@ class SelectionInteraction {
 
         this.#focusMarker(box, this.#markers());
         tell(this.#owner, 'HandleCheckAsync', this.#tokenOfItem(item));
+    }
+
+    /**
+     * Has a finger or a pen resting on an item check it, or not, the focus and the tab stop left as they are.
+     * @param {boolean} checks
+     */
+    setChecksOnHold(checks) {
+        this.#checksOnHold = checks;
+
+        if (!checks) {
+            this.#cancelHold();
+        }
+    }
+
+    // A finger or a pen resting on an item checks it once the hold elapses.
+    #beginHold(event) {
+        this.#cancelHold();
+
+        const item = this.#pressedItem(event);
+        const timer = setTimeout(() => this.#completeHold(), HoldDelay);
+        this.#pendingHold = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, item, timer };
+    }
+
+    // A press travelling farther than a tap may is a scroll or a swipe, never a hold.
+    #followHold(event) {
+        const hold = this.#pendingHold;
+
+        if (hold !== null && event.pointerId === hold.pointerId && Math.hypot(event.clientX - hold.x, event.clientY - hold.y) > HoldTravel) {
+            this.#cancelHold();
+        }
+    }
+
+    #cancelHold() {
+        if (this.#pendingHold !== null) {
+            clearTimeout(this.#pendingHold.timer);
+            this.#pendingHold = null;
+        }
+    }
+
+    // The owner checks the held item, starting a selection where none was; the click the finger's release raises is the hold's.
+    #completeHold() {
+        const { item } = this.#pendingHold;
+        this.#pendingHold = null;
+
+        const token = item.isConnected ? this.#tokenOfItem(item) : null;
+
+        if (token !== null) {
+            this.#suppressesGestureClick = true;
+            tell(this.#owner, 'HandleHoldAsync', token);
+        }
+    }
+
+    #endGestures() {
+        this.#cancelHold();
+        this.#pendingSwipe = null;
+    }
+
+    #beginSwipe(event) {
+        this.#pendingSwipe = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, item: this.#pressedItem(event) };
+    }
+
+    // A press travelling across its item farther than a tap may is a swipe, toward the item's inline start showing its actions and
+    // back taking them away; one travelling up or down first is the page's scroll, and decides nothing.
+    #followSwipe(event) {
+        const swipe = this.#pendingSwipe;
+
+        if (swipe === null || event.pointerId !== swipe.pointerId) {
+            return;
+        }
+
+        const across = event.clientX - swipe.x;
+        const along = event.clientY - swipe.y;
+
+        if (Math.abs(along) > HoldTravel && Math.abs(along) >= Math.abs(across)) {
+            this.#pendingSwipe = null;
+            return;
+        }
+
+        if (Math.abs(across) < SwipeTravel) {
+            return;
+        }
+
+        this.#pendingSwipe = null;
+        this.#cancelHold();
+        this.#suppressesGestureClick = true;
+
+        const towardStart = getComputedStyle(swipe.item).direction === 'rtl' ? across > 0 : across < 0;
+
+        if (towardStart) {
+            this.#showActions(swipe.item);
+        } else if (swipe.item === this.#swipedItem) {
+            this.#hideActions();
+        }
+    }
+
+    // One item at a time shows its actions, the root an item is drawn as carrying the mark; while it does, it stands foremost on the
+    // input router, so Escape and a press away from it take them away wherever the focus is, ahead of any surface around the list.
+    #showActions(item) {
+        this.#hideActions();
+
+        const root = this.#itemRootSelector ? item.closest(this.#itemRootSelector) ?? item : item;
+        root.setAttribute(this.#swipedAttribute, '');
+        this.#swipedItem = root;
+        // Standing foremost, it takes the presses on the item too, so a finger swiping it back begins its swipe here.
+        const swipingBack = {
+            action: 'selection.swipe-back',
+            bindings: [{ type: 'pointerdown', button: 0, when: event => (event.pointerType === 'touch' || event.pointerType === 'pen') && this.#pressedItem(event) !== null }],
+            handle: event => this.#beginSwipe(event),
+        };
+        this.#swipedRegistration = register(root, { routes: [swipingBack], escape: 'dismiss', pressAway: 'pass-through', onDismiss: () => this.#hideActions() });
+        this.#swipedRegistration?.activate();
+    }
+
+    #hideActions() {
+        const item = this.#swipedItem;
+        const registration = this.#swipedRegistration;
+        this.#swipedItem = null;
+        this.#swipedRegistration = null;
+        item?.removeAttribute(this.#swipedAttribute);
+        registration?.dispose();
     }
 
     // The marker holding the focus can stop being one while its item stays; the focus moves to the marker the item draws now.

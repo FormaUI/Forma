@@ -97,6 +97,138 @@ public sealed class DataViewTests
         }
     }
 
+    public sealed class DataViewNarrow(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_stack_each_item_into_its_thumbnail_its_name_on_one_line_and_its_detail_on_two_inside_its_box_in_each_direction(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-narrow");
+            await using var _ = context;
+
+            // Act — the width the grid's script reports, which turns each grid narrow
+            await Assertions.Expect(page.Locator("#ltr-box td.forma-data-grid-narrow-cell, #rtl-box td.forma-data-grid-narrow-cell")).ToHaveCountAsync(6, new() { Timeout = 30_000 });
+
+            // Assert — in each direction, measured in the page
+            foreach (var direction in new[] { "ltr", "rtl" })
+            {
+                var problems = await page.EvaluateAsync<string[]>("""
+                    direction => {
+                        const box = document.getElementById(`${direction}-box`);
+                        const problems = [];
+                        if (box.querySelector('table').getBoundingClientRect().width > box.clientWidth + 1) {
+                            problems.push('the table is wider than its box');
+                        }
+                        for (const cell of box.querySelectorAll('td.forma-data-grid-narrow-cell')) {
+                            const thumbnail = cell.querySelector('.forma-data-grid-narrow-thumbnail').getBoundingClientRect();
+                            const name = cell.querySelector('.forma-data-grid-narrow-name');
+                            const detail = cell.querySelector('.forma-data-grid-narrow-detail');
+                            const lineHeight = parseFloat(getComputedStyle(name).lineHeight);
+                            const detailLineHeight = parseFloat(getComputedStyle(detail).lineHeight);
+                            const nameBox = name.getBoundingClientRect();
+                            const leads = direction === 'ltr' ? thumbnail.right <= nameBox.left : thumbnail.left >= nameBox.right;
+                            if (!leads) problems.push('the thumbnail stands after the name');
+                            if (nameBox.height > lineHeight + 1) problems.push(`the name takes ${nameBox.height}px for a line of ${lineHeight}px`);
+                            if (name.scrollWidth <= name.clientWidth) problems.push('the name is not cut short');
+                            if (detail.getBoundingClientRect().height > 2 * detailLineHeight + 1) problems.push('the detail takes more than two lines');
+                        }
+                        return problems;
+                    }
+                    """, direction);
+
+                Assert.True(problems.Length == 0, $"{direction}: {string.Join("; ", problems)}");
+            }
+        }
+
+        // A finger's press at the middle of an element, and its travel by the pixels given.
+        private static async Task TouchAsync(ILocator element, string type, double across = 0)
+        {
+            var box = (await element.BoundingBoxAsync())!;
+            await element.DispatchEventAsync(type, new { pointerType = "touch", isPrimary = true, pointerId = 7, button = 0, bubbles = true, composed = true, cancelable = true, clientX = (double)box.X + (box.Width / 2) + across, clientY = (double)box.Y + (box.Height / 2) });
+        }
+
+        private static async Task<ILocator> OpenSelectingAsync(IPage page)
+        {
+            var rows = page.Locator("#selecting-grid td.forma-data-grid-narrow-cell");
+            await Assertions.Expect(rows).ToHaveCountAsync(3, new() { Timeout = 30_000 });
+            await WaitForInputScopeAsync(page, "#selecting-grid .forma-data-view-region");
+
+            return rows;
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_check_the_row_a_finger_holds_and_draw_every_row_s_box_while_selecting(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-narrow");
+            await using var _ = context;
+            var rows = await OpenSelectingAsync(page);
+            var name = rows.First.Locator(".forma-data-grid-narrow-name");
+
+            // Act — the finger rests until the view reads as selecting, then lifts
+            await TouchAsync(name, "pointerdown");
+            await Assertions.Expect(page.Locator("#selecting-grid.forma-data-view-selecting")).ToHaveCountAsync(1);
+            await TouchAsync(name, "pointerup");
+
+            // Assert — the held row checked, and every row's box drawn at its start
+            await Assertions.Expect(rows.First.Locator("input[type=checkbox]")).ToBeCheckedAsync();
+            var widths = await rows.Locator("input[type=checkbox]").EvaluateAllAsync<double[]>("boxes => boxes.map(box => box.getBoundingClientRect().width)");
+            Assert.All(widths, width => Assert.True(width > 4, $"a box stands {width}px wide"));
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_show_a_row_s_own_actions_once_a_finger_swipes_it_toward_its_start_and_take_them_away_on_escape(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-narrow");
+            await using var _ = context;
+            var rows = await OpenSelectingAsync(page);
+            var row = page.Locator("#selecting-grid tbody tr").Nth(1);
+            var name = rows.Nth(1).Locator(".forma-data-grid-narrow-name");
+            var actions = page.GetByRole(AriaRole.Button, new() { Name = "Actions for document 2", Exact = true });
+            await Assertions.Expect(actions).ToBeHiddenAsync();
+
+            // Act — a swipe leftward, toward the start of a left-to-right row
+            await TouchAsync(name, "pointerdown");
+            await TouchAsync(name, "pointermove", across: -60);
+            await TouchAsync(name, "pointerup", across: -60);
+            await Assertions.Expect(row).ToHaveAttributeAsync("data-swiped", string.Empty);
+            await Assertions.Expect(actions).ToBeVisibleAsync();
+            await page.Keyboard.PressAsync("Escape");
+
+            // Assert
+            await Assertions.Expect(row).Not.ToHaveAttributeAsync("data-swiped", string.Empty);
+            await Assertions.Expect(actions).ToBeHiddenAsync();
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_start_selecting_from_the_view_s_menu_and_run_a_command_on_the_rows_checked(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-narrow");
+            await using var _ = context;
+            var rows = await OpenSelectingAsync(page);
+            var menuButton = page.Locator("#selecting-grid").GetByRole(AriaRole.Button, new() { Name = "View Actions", Exact = true });
+
+            // Act — Select from the menu, the first two rows' boxes checked, then Delete from the menu
+            await menuButton.ClickAsync();
+            await page.GetByRole(AriaRole.Menuitem, new() { Name = "Select", Exact = true }).ClickAsync();
+            await Assertions.Expect(page.Locator("#selecting-grid.forma-data-view-selecting")).ToHaveCountAsync(1);
+            await rows.Nth(0).Locator("input[type=checkbox]").ClickAsync();
+            await rows.Nth(1).Locator("input[type=checkbox]").ClickAsync();
+            await Assertions.Expect(rows.Nth(1).Locator("input[type=checkbox]")).ToBeCheckedAsync();
+            await menuButton.ClickAsync();
+            await page.GetByRole(AriaRole.Menuitem, new() { Name = "Delete", Exact = true }).ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#ran")).ToHaveTextAsync("Delete 1,2");
+        }
+    }
+
     public sealed class DataList(BrowserHost host)
     {
         [Theory]

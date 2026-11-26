@@ -1,0 +1,68 @@
+@page "/{Runtime}/data-view-narrow"
+@using Forma.Blazor.Components.DataView
+@using Forma.Blazor.Components.Menus
+
+@* A grid holding the parts of a narrow row, in a box as wide as a phone's column, in each direction: its four columns don't fit,
+   so each item stands as its thumbnail, its name and its detail, the name too long for its line and the detail for two. *@
+@foreach (var direction in new[] { "ltr", "rtl" })
+{
+    <div id="@($"{direction}-box")" dir="@direction" style="inline-size: 22rem">
+        <FormaDataView Id="@($"{direction}-grid")" TItem="Document" Items="_documents" ItemKey="@(document => document.Id)" ItemName="@(document => document.Name)" EnablePagination="false">
+            <FormaDataGrid TItem="Document">
+                <ThumbnailTemplate Context="document"><span class="thumbnail" style="display: block; inline-size: 2rem; block-size: 2rem; background: gray" aria-hidden="true"></span></ThumbnailTemplate>
+                <ItemTemplate Context="document">@document.Detail</ItemTemplate>
+                <Columns>
+                    <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Name)" Title="Name" Priority="3" />
+                    <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Owner)" Title="Owner" Priority="2" />
+                    <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Size)" Title="Size" Priority="1" />
+                    <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Updated)" Title="Updated" Priority="0" />
+                </Columns>
+            </FormaDataGrid>
+        </FormaDataView>
+    </div>
+}
+
+@* The same grid checking its items on demand: a hold or the menu's Select starts selecting, a row's actions come from a swipe, and
+   the menu runs Delete on the selected items, which is written where the check reads it. *@
+<div id="selecting-box" style="inline-size: 22rem">
+    <FormaDataView Id="selecting-grid" TItem="Document" Items="_documents" ItemKey="@(document => document.Id)" ItemName="@(document => document.Name)" EnablePagination="false"
+                   EnableCheckedSelection="true" SelectionCommands="_commands" OnSelectionCommand="Run">
+        <FormaDataGrid TItem="Document">
+            <ItemTemplate Context="document">@document.Owner</ItemTemplate>
+            <ActionsTemplate Context="document">
+                <FormaOverflowMenu Label="@($"Actions for document {document.Id}")" data-item-actions>
+                    <FormaDropDownMenuItem>Rename</FormaDropDownMenuItem>
+                </FormaOverflowMenu>
+            </ActionsTemplate>
+            <Columns>
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Name)" Title="Name" Priority="3" />
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Owner)" Title="Owner" Priority="2" />
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Size)" Title="Size" Priority="1" />
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Updated)" Title="Updated" Priority="0" />
+            </Columns>
+        </FormaDataGrid>
+    </FormaDataView>
+</div>
+<output id="ran">@_ran</output>
+
+@code {
+    private readonly IQueryable<Document> _documents = Enumerable.Range(1, 3)
+        .Select(id => new Document(
+            id,
+            $"The quarterly report of the regional office, revision {id}.pdf",
+            "Ada Quill",
+            $"{id * 120} KB",
+            "November 12, 2026",
+            $"Updated November 12, 2026 by Ada Quill · {id * 120} KB · shared with the regional office and the board of directors"))
+        .ToArray()
+        .AsQueryable();
+
+    private readonly IReadOnlyList<DataViewCommand<Document>> _commands = [new() { Id = "delete", Title = "Delete", TakesMany = true }];
+
+    private string _ran = string.Empty;
+
+    private void Run(DataViewCommandInvocation<Document> invocation)
+        => _ran = $"{invocation.Command.Title} {string.Join(",", invocation.Items.Select(document => document.Id).Order())}";
+
+    internal sealed record Document(int Id, string Name, string Owner, string Size, string Updated, string Detail);
+}

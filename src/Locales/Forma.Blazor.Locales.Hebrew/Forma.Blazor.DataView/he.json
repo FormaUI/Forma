@@ -11,7 +11,14 @@
     "Try Again": "נסה שוב",
     "More items could not be loaded.": "לא ניתן היה לטעון פריטים נוספים.",
     "Showing {Shown} of {Total}": "מוצגים {Shown} מתוך {Total}",
-    "[$ plural; one: Showing # item; other: Showing # items; $]": "[$ plural; one: מוצג פריט אחד; two: מוצגים שני פריטים; other: מוצגים # פריטים; $]"
+    "[$ plural; one: Showing # item; other: Showing # items; $]": "[$ plural; one: מוצג פריט אחד; two: מוצגים שני פריטים; other: מוצגים # פריטים; $]",
+    "View Actions": "פעולות התצוגה",
+    "Select": "בחר",
+    "Stop Selecting": "סיים בחירה",
+    "Select All": "בחר הכל",
+    "Select an item first.": "בחר תחילה פריט.",
+    "{Title} acts on one item at a time.": "{Title} פועל על פריט אחד בכל פעם.",
+    "{Title} can't act on some of the selected items.": "{Title} אינו יכול לפעול על חלק מהפריטים שנבחרו."
   },
   "FormaDataGrid": {
     "Select All": "בחר הכל",

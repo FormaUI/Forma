@@ -25,6 +25,9 @@ public sealed partial class FormaDataList<TItem> : FormaElementBase, IDataViewVi
     /// <summary>The item's depiction drawn before its name, given the item.</summary>
     [Parameter] public RenderFragment<TItem>? ThumbnailTemplate { get; set; }
 
+    /// <summary>The item's own actions, drawn at its end.</summary>
+    [Parameter] public RenderFragment<TItem>? ActionsTemplate { get; set; }
+
     /// <summary>Whether the rows tighten to the line of an item's name.</summary>
     [Parameter] public bool Dense { get; set; }
 

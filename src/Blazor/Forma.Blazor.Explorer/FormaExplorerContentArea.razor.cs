@@ -9,6 +9,7 @@ using Forma.Framework.Explorer.Selection;
 using Forma.Framework.Explorer.Content;
 using Forma.Framework.Explorer.Content.Queries;
 using Forma.Framework.Explorer.Navigation;
+using Forma.Framework.Resources.Extensions;
 
 using Microsoft.AspNetCore.Components;
 
@@ -43,6 +44,34 @@ public sealed partial class FormaExplorerContentArea : FormaComponentBase
 
     private string FormatDate(DateTimeOffset? value)
         => value?.LocalDateTime.ToString("g", Context.CultureState.Culture) ?? Placeholder;
+
+    // The details a narrow row shows beneath an item's name, the values of the columns shown that the item has, in their order.
+    private string FormatDetails(ICatalogItem item)
+    {
+        List<string> details = [];
+
+        if (Shows(ExplorerDetailsColumns.Kind))
+        {
+            details.Add(item.GetLocalizedLabels(L).KindLabel);
+        }
+
+        if (Shows(ExplorerDetailsColumns.Size) && item.Resource?.FormatSize(Context.CultureState.Culture) is { } size)
+        {
+            details.Add(size);
+        }
+
+        if (Shows(ExplorerDetailsColumns.Modified) && item.ModifiedAt is { } modifiedAt)
+        {
+            details.Add(FormatDate(modifiedAt));
+        }
+
+        if (Shows(ExplorerDetailsColumns.Added) && item.CreatedAt is { } createdAt)
+        {
+            details.Add(FormatDate(createdAt));
+        }
+
+        return string.Join(" · ", details);
+    }
 
     /// <inheritdoc />
     protected override Type LocaleSourceType

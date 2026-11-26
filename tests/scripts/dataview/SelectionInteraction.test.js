@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach } from '#dataview/SelectionInteraction.js';
 import { FocusHeirs } from '#browser/focus/FocusHeirs.js';
 import { configure, register, resolve } from '#input/InputRouter.js';
@@ -618,6 +618,150 @@ describe('SelectionInteraction', () => {
             click(itemOf(3).querySelector('.name'));
 
             expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 1], ['HandleCheckAsync', 2], ['HandleActivateAsync', 3]]);
+        });
+    });
+
+    describe('holding an item', () => {
+        /** @type {HTMLElement} */
+        let list;
+        const itemOf = key => document.querySelector(`[data-item="${key}"]`);
+        const options = extra => ({ owner, itemSelector: '[data-item]', itemKeyAttribute: 'data-item', selects: false, moves: true, checksOnHold: true, ...extra });
+        const pointer = (element, type, init = {}) => element.dispatchEvent(new PointerEvent(type, { bubbles: true, cancelable: true, button: 0, pointerId: 1, isPrimary: true, clientX: 10, clientY: 10, ...init }));
+
+        beforeEach(() => {
+            vi.useFakeTimers();
+            document.body.insertAdjacentHTML('beforeend', `
+                <div id="list">
+                    <div data-item="1"><input type="checkbox" data-row-key="1" /><span class="name">One</span></div>
+                    <div data-item="2"><input type="checkbox" data-row-key="2" /><span class="name">Two</span></div>
+                </div>`);
+            list = document.querySelector('#list');
+        });
+
+        afterEach(() => vi.useRealTimers());
+
+        it('asks the owner to check the item a finger rests on for the hold, the click its release raises activating nothing', () => {
+            attachSelection(list, options());
+            const name = itemOf(2).querySelector('.name');
+
+            pointer(name, 'pointerdown', { pointerType: 'touch' });
+            vi.advanceTimersByTime(500);
+            pointer(name, 'pointerup', { pointerType: 'touch' });
+            const click = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 });
+            name.dispatchEvent(click);
+
+            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleHoldAsync', 2]]);
+            expect(click.defaultPrevented).toBe(true);
+        });
+
+        it('takes a finger travelling farther than a tap may for a scroll, and one lifted before the hold for a press', () => {
+            attachSelection(list, options());
+            const first = itemOf(1).querySelector('.name');
+            const second = itemOf(2).querySelector('.name');
+
+            pointer(first, 'pointerdown', { pointerType: 'touch' });
+            pointer(first, 'pointermove', { pointerType: 'touch', clientY: 30 });
+            vi.advanceTimersByTime(600);
+            pointer(second, 'pointerdown', { pointerType: 'touch' });
+            vi.advanceTimersByTime(200);
+            pointer(second, 'pointerup', { pointerType: 'touch' });
+            second.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 }));
+            vi.advanceTimersByTime(600);
+
+            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleActivateAsync', 2]]);
+        });
+
+        it('takes a mouse resting on an item for no hold', () => {
+            attachSelection(list, options());
+
+            pointer(itemOf(2).querySelector('.name'), 'pointerdown', { pointerType: 'mouse' });
+            vi.advanceTimersByTime(600);
+
+            expect(owner.invokeMethodAsync).not.toHaveBeenCalled();
+        });
+
+        it('turns a hold from checking nothing to checking without attaching again', () => {
+            const handle = attachSelection(list, options({ checksOnHold: false }));
+            const name = itemOf(2).querySelector('.name');
+            const hold = () => {
+                pointer(name, 'pointerdown', { pointerType: 'touch' });
+                vi.advanceTimersByTime(500);
+                pointer(name, 'pointerup', { pointerType: 'touch' });
+            };
+
+            hold();
+            handle.setChecksOnHold(true);
+            hold();
+
+            expect(owner.invokeMethodAsync.mock.calls).toEqual([['HandleHoldAsync', 2]]);
+        });
+
+        describe('swiping to its actions', () => {
+            const swipe = (element, across, along = 0, pointerType = 'touch') => {
+                pointer(element, 'pointerdown', { pointerType });
+                pointer(element, 'pointermove', { pointerType, clientX: 10 + across, clientY: 10 + along });
+                pointer(element, 'pointerup', { pointerType, clientX: 10 + across, clientY: 10 + along });
+            };
+
+            it('marks the item a finger swipes toward its inline start, and takes the mark away as it swipes back', () => {
+                attachSelection(list, options({ swipedAttribute: 'data-swiped' }));
+                const name = itemOf(2).querySelector('.name');
+
+                swipe(name, -40);
+                const marked = itemOf(2).hasAttribute('data-swiped');
+                swipe(name, 40);
+
+                expect(marked).toBe(true);
+                expect(itemOf(2).hasAttribute('data-swiped')).toBe(false);
+                expect(owner.invokeMethodAsync).not.toHaveBeenCalled();
+            });
+
+            it('takes the mark away on a press elsewhere and on Escape, one item showing its actions at a time', () => {
+                attachSelection(list, options({ swipedAttribute: 'data-swiped' }));
+
+                swipe(itemOf(1).querySelector('.name'), -40);
+                swipe(itemOf(2).querySelector('.name'), -40);
+                const marks = [1, 2].map(key => itemOf(key).hasAttribute('data-swiped'));
+                pointer(document.body, 'pointerdown', { pointerType: 'touch' });
+                const afterPress = itemOf(2).hasAttribute('data-swiped');
+                swipe(itemOf(2).querySelector('.name'), -40);
+                press(itemOf(2).querySelector('.name'), 'Escape');
+
+                expect(marks).toEqual([false, true]);
+                expect(afterPress).toBe(false);
+                expect(itemOf(2).hasAttribute('data-swiped')).toBe(false);
+            });
+
+            it('takes a press travelling up or down first for the page\'s scroll, and one in a right-to-left list toward its start the other way', () => {
+                attachSelection(list, options({ swipedAttribute: 'data-swiped' }));
+                const name = itemOf(2).querySelector('.name');
+
+                pointer(name, 'pointerdown', { pointerType: 'touch' });
+                pointer(name, 'pointermove', { pointerType: 'touch', clientX: 10, clientY: 30 });
+                pointer(name, 'pointermove', { pointerType: 'touch', clientX: -30, clientY: 40 });
+                pointer(name, 'pointerup', { pointerType: 'touch', clientX: -30, clientY: 40 });
+                const scrolled = itemOf(2).hasAttribute('data-swiped');
+                list.setAttribute('dir', 'rtl');
+                list.style.direction = 'rtl';
+                swipe(name, -40);
+                const leftward = itemOf(2).hasAttribute('data-swiped');
+                swipe(name, 40);
+
+                expect(scrolled).toBe(false);
+                expect(leftward).toBe(false);
+                expect(itemOf(2).hasAttribute('data-swiped')).toBe(true);
+            });
+        });
+
+        it('keeps the platform\'s own menu from a finger resting on an item', () => {
+            attachSelection(list, options());
+            const name = itemOf(2).querySelector('.name');
+
+            pointer(name, 'pointerdown', { pointerType: 'touch' });
+            const menu = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
+            name.dispatchEvent(menu);
+
+            expect(menu.defaultPrevented).toBe(true);
         });
     });
 

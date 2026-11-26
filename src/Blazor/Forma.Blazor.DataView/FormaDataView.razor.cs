@@ -99,6 +99,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     private bool _isAttachedToSeek;
     private bool _isAttachedToGather;
     private bool _isAttachedToCheckOnPress;
+    private bool _isAttachedToCheckOnHold;
+    private bool _isSelecting;
+    private bool _selectingParameter;
 
     // Which markers the views drew the items with last: either selection's, or the items' own where they take the focus.
     private (bool Checked, bool Pointer, bool Focus)? _drawnMarkers;
@@ -265,6 +268,19 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     /// <summary>Raised with the items selected whenever the selection changes.</summary>
     [Parameter] public EventCallback<IReadOnlyList<TItem>> SelectedItemsChanged { get; set; }
+
+    /// <summary>Whether the reader is selecting, which a narrow view draws its items' boxes for.</summary>
+    /// <remarks>The view's Select and a host's own command start it until a command stops it; an item checked, as a hold on it checks it, does while any is.</remarks>
+    [Parameter] public bool Selecting { get; set; }
+
+    /// <summary>Raised as the reader starts or stops selecting.</summary>
+    [Parameter] public EventCallback<bool> SelectingChanged { get; set; }
+
+    /// <summary>The commands a narrow view's menu offers on the selected items, beside Select, each enabled where it can act on them.</summary>
+    [Parameter] public IReadOnlyList<DataViewCommand<TItem>> SelectionCommands { get; set; } = [];
+
+    /// <summary>Raised with a command the reader ran from a narrow view's menu and the selected items it acts on.</summary>
+    [Parameter] public EventCallback<DataViewCommandInvocation<TItem>> OnSelectionCommand { get; set; }
 
     /// <summary>The checked selection's bounds and the caption of its master control.</summary>
     [Parameter] public CheckedSelectionOptions CheckedSelectionOptions { get; set; } = CheckedSelectionOptions.Default;
@@ -452,6 +468,50 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         => _selectedSet.Count;
 
     /// <inheritdoc />
+    public bool IsSelecting
+        => _isSelecting || _selectedSet.Count > 0;
+
+    /// <inheritdoc />
+    public bool HasViewMenu
+        => EnableCheckedSelection || SelectionCommands.Count > 0;
+
+    /// <inheritdoc />
+    public bool CanRunCommand(DataViewCommand<TItem> command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        return !command.IsDisabled
+            && _selectedSet.Count > 0
+            && (command.TakesMany || _selectedSet.Count == 1)
+            && (command.AppliesTo is not { } appliesTo || _selectedSet.All(appliesTo));
+    }
+
+    /// <inheritdoc />
+    public string? GetCommandDisabledReason(DataViewCommand<TItem> command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        if (command.IsDisabled)
+        {
+            return command.DisabledReason;
+        }
+
+        if (_selectedSet.Count == 0)
+        {
+            return L["Select an item first."].Value;
+        }
+
+        if (!command.TakesMany && _selectedSet.Count > 1)
+        {
+            return L["{Title} acts on one item at a time.", command.Title].Value;
+        }
+
+        return command.AppliesTo is { } appliesTo && !_selectedSet.All(appliesTo)
+            ? L["{Title} can't act on some of the selected items.", command.Title].Value
+            : null;
+    }
+
+    /// <inheritdoc />
     public bool HoldsSet
         => Items is not null;
 
@@ -616,9 +676,17 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
         ArgumentNullException.ThrowIfNull(ItemKey);
         ArgumentNullException.ThrowIfNull(PaginationOptions);
         ArgumentNullException.ThrowIfNull(CheckedSelectionOptions);
+        ArgumentNullException.ThrowIfNull(SelectionCommands);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(ItemHeight);
         ArgumentOutOfRangeException.ThrowIfNegative(OverscanCount);
         ArgumentOutOfRangeException.ThrowIfNegative(InitialItemIndex);
+
+        // The host's start or stop holds until the reader's own changes it, as the selection emptying does.
+        if (Selecting != _selectingParameter)
+        {
+            _selectingParameter = Selecting;
+            _isSelecting = Selecting;
+        }
 
         // Every group opens again under a new grouping, whose keys mean something else.
         if (_groupByParameter.Update(GroupBy))
@@ -763,11 +831,20 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             await _selectionInteraction.DetachAsync();
             _isSelectionAttached = false;
         }
-        else if (_selectionInteraction.IsAttached && _isAttachedToCheckOnPress != ChecksOnPress)
+        else
         {
-            // A press checking or activating changes nothing else, so the behavior keeps the focus and the tab stop it holds.
-            _isAttachedToCheckOnPress = ChecksOnPress;
-            await _selectionInteraction.SetChecksOnPressAsync(ChecksOnPress);
+            // A press or a hold checking or activating changes nothing else, so the behavior keeps the focus and the tab stop it holds.
+            if (_selectionInteraction.IsAttached && _isAttachedToCheckOnPress != ChecksOnPress)
+            {
+                _isAttachedToCheckOnPress = ChecksOnPress;
+                await _selectionInteraction.SetChecksOnPressAsync(ChecksOnPress);
+            }
+
+            if (_selectionInteraction.IsAttached && _isAttachedToCheckOnHold != EnableCheckedSelection)
+            {
+                _isAttachedToCheckOnHold = EnableCheckedSelection;
+                await _selectionInteraction.SetChecksOnHoldAsync(EnableCheckedSelection);
+            }
         }
 
         if (!_isSelectionAttached)
@@ -779,11 +856,12 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             _isAttachedToSeek = ActivePositions is not null;
             _isAttachedToGather = GathersControls;
             _isAttachedToCheckOnPress = ChecksOnPress;
+            _isAttachedToCheckOnHold = EnableCheckedSelection;
             _selfReference ??= DotNetObjectReference.Create(this);
 
             // The keys are routes the script declares itself, so the host's policy reaches the router before they do.
             await InputRouter.ConfigureAsync();
-            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, _isAttachedToMove, PositionAttribute, _isAttachedToSeek, ItemRootSelector, ItemActionsSelector, _isAttachedToGather, _isAttachedToCheckOnPress, EmptyStateSelector);
+            _isSelectionAttached = await _selectionInteraction.AttachAsync(_regionElement, _selfReference, ItemSelector, ItemAttribute, ControlSelector, _isAttachedToSelect, _isAttachedToMove, PositionAttribute, _isAttachedToSeek, ItemRootSelector, ItemActionsSelector, _isAttachedToGather, _isAttachedToCheckOnPress, EmptyStateSelector, _isAttachedToCheckOnHold, SwipedAttribute);
         }
 
         if (HoldsPageHeight)
@@ -1048,6 +1126,37 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     /// <inheritdoc />
     public Task ClearSelectionAsync()
         => _selectedSet.Count == 0 ? Task.CompletedTask : ReplaceSelectionAsync(CreateSelection([]));
+
+    /// <inheritdoc />
+    public Task RunSelectionCommandAsync(DataViewCommand<TItem> command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        // A command the menu shows disabled, or one that stopped being able to act since the menu opened, runs on nothing.
+        return CanRunCommand(command)
+            ? OnSelectionCommand.InvokeAsync(new DataViewCommandInvocation<TItem> { Command = command, Items = [.. _selectedSet] })
+            : Task.CompletedTask;
+    }
+
+    /// <inheritdoc />
+    public async Task SetSelectingAsync(bool isSelecting)
+    {
+        var wasSelecting = IsSelecting;
+        _isSelecting = isSelecting;
+
+        // Stopping clears the selection, whose emptying reports the end of selecting.
+        if (!isSelecting && _selectedSet.Count > 0)
+        {
+            await ReplaceSelectionAsync(CreateSelection([]));
+            return;
+        }
+
+        if (wasSelecting != IsSelecting)
+        {
+            await SelectingChanged.InvokeAsync(IsSelecting);
+            await NotifyStateAsync(isItemStateOnly: true);
+        }
+    }
 
     /// <summary>Clears the items on screen from the selection.</summary>
     /// <remarks>Clearing the page passes the selection's minimum, as clearing the whole selection does.</remarks>
@@ -1585,6 +1694,15 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
             : ActivateAsync(item);
     }
 
+    /// <summary>Checks the item a finger or a pen held, which starts selecting where nothing was checked.</summary>
+    /// <param name="itemToken">The token of the item held.</param>
+    /// <remarks>A token naming no item the view holds, or an item that can't be selected or is checked already, changes nothing.</remarks>
+    [JSInvokable]
+    public Task HandleHoldAsync(int itemToken)
+        => EnableCheckedSelection && _itemTokens.TryGetItem(itemToken, out var item) && IsSelectable(item) && !IsSelected(item)
+            ? ToggleSelectionAsync(item, true)
+            : Task.CompletedTask;
+
     /// <summary>Replaces or extends the selection with a contiguous range of items.</summary>
     /// <param name="itemTokens">The tokens of the items in the range, as the transfer carries them.</param>
     /// <param name="isAdditive">Whether the range extends the selection rather than replacing it.</param>
@@ -1760,7 +1878,8 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
         builder
             .Add("forma-data-view")
-            .Add("forma-data-view-busy", _isBusy);
+            .Add("forma-data-view-busy", _isBusy)
+            .Add("forma-data-view-selecting", IsSelecting);
     }
 
     /// <inheritdoc />
@@ -1941,6 +2060,9 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
     // The attribute a host gives the control inside an item that opens the item's actions.
     private const string ItemActionsSelector = "[data-item-actions]";
 
+    // The attribute an item a swipe has shown the actions of carries, which a narrow view's stylesheet draws them for.
+    private const string SwipedAttribute = "data-swiped";
+
     // The attribute the element a view draws its empty state in carries, whose first control takes a focus the last item lost.
     private const string EmptyStateAttribute = "data-empty-state";
 
@@ -2001,9 +2123,17 @@ public sealed partial class FormaDataView<TItem> : FormaElementBase, IDataView<T
 
     private async Task ReplaceSelectionAsync(HashSet<TItem> updatedSelection)
     {
+        // Selecting a check started ends once nothing is checked; selecting a command started lasts until a command stops it.
+        var wasSelecting = IsSelecting;
         _selectedSet = updatedSelection;
         IReadOnlyList<TItem> reportedItems = [.. updatedSelection];
         await SelectedItemsChanged.InvokeAsync(reportedItems);
+
+        if (wasSelecting != IsSelecting)
+        {
+            await SelectingChanged.InvokeAsync(IsSelecting);
+        }
+
         await NotifyStateAsync(isItemStateOnly: true);
     }
 
