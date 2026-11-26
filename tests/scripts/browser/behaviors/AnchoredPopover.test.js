@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { attach } from '#browser/behaviors/AnchoredPopover.js';
+import { FocusHeirs } from '#browser/focus/FocusHeirs.mjs';
 import { stubAnimationFrames, stubMutationObserver, stubResizeObserver } from '#support/platform.js';
 
 describe('AnchoredPopover', () => {
@@ -218,6 +219,28 @@ describe('AnchoredPopover', () => {
         handle.close(true);
 
         expect(document.activeElement).toBe(anchor);
+    });
+
+    it('hands the focus to the heir the surface that took the trigger away names on a close that asks for it', () => {
+        document.body.insertAdjacentHTML('beforeend', '<button id="next">Next</button>');
+        popover.innerHTML = '<button id="inside">Inside</button>';
+        const handle = attach(popover, { anchor });
+        handle.open(anchor);
+        popover.querySelector('#inside').focus();
+        const registration = FocusHeirs.register(element => {
+            if (element !== anchor) {
+                return false;
+            }
+
+            document.querySelector('#next').focus();
+            return true;
+        });
+        anchor.remove();
+
+        handle.close(true);
+        registration.dispose();
+
+        expect(document.activeElement.id).toBe('next');
     });
 
     it('leaves focus alone on a close that asks for it while focus is elsewhere', () => {

@@ -700,7 +700,10 @@ pass over such a node as they do over one the tree no longer shows. An item take
 it, or a control inside it, holds the focus, as a command run from a row's menu deleting the
 row takes it, hands the focus to the item that stood after it, else the one before it, else
 the first control the empty state draws, wherever the focus has fallen to nothing rather than
-gone where the reader sent it.
+gone where the reader sent it. A dialog or a popover opened from a control inside the item
+hands the focus back to the same heir as it closes, where a command confirmed in it took the
+item away while the focus stood outside the view, as a row's menu asking before it deletes the
+row does.
 
 `TabOrder` says which items' own controls Tab reaches. Every item's do by default,
 `EveryItem`, which a grid whose rows hold editors, links or controls its callers reach

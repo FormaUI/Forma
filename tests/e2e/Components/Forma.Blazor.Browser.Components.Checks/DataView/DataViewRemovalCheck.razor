@@ -1,0 +1,39 @@
+@page "/{Runtime}/data-view-removal"
+@using Forma.Blazor.Components.DataView
+@using Forma.Framework.Feedback
+@inject IConfirmDialogService ConfirmService
+
+@* Five items in a grid, each with a menu of its actions: Delete asks for a confirmation in a dialog before it removes the item, and
+   Delete Now removes it at once. How many items are left is written where the check reads it. *@
+<FormaDataView Id="grid" TItem="Row" Items="_items" ItemKey="@(row => row.Id)" ItemName="@(row => row.Name)" EnablePagination="false" EnableItemSelection="true" TabOrder="DataViewTabOrder.ActiveItem">
+    <FormaDataGrid TItem="Row">
+        <Columns>
+            <FormaPropertyColumn TItem="Row" TValue="string" Property="@(row => row.Name)" Title="Name" />
+            <FormaTemplateColumn TItem="Row" Title="Commands" Context="row">
+                <FormaOverflowMenu Label="@($"Actions for {row.Name}")" data-item-actions>
+                    <FormaDropDownMenuItem OnClick="@(() => ConfirmRemovalAsync(row))">Delete</FormaDropDownMenuItem>
+                    <FormaDropDownMenuItem OnClick="@(() => Remove(row))">Delete Now</FormaDropDownMenuItem>
+                </FormaOverflowMenu>
+            </FormaTemplateColumn>
+        </Columns>
+    </FormaDataGrid>
+</FormaDataView>
+<FormaConfirmDialog />
+<output id="count">@_items.Count()</output>
+
+@code {
+    private IQueryable<Row> _items = Enumerable.Range(1, 5).Select(id => new Row(id, $"Item {id}")).ToArray().AsQueryable();
+
+    private async Task ConfirmRemovalAsync(Row row)
+    {
+        if (await ConfirmService.ConfirmAsync($"Delete {row.Name}?", "Delete", "Keep"))
+        {
+            Remove(row);
+        }
+    }
+
+    private void Remove(Row row)
+        => _items = _items.Where(item => item != row).ToArray().AsQueryable();
+
+    internal sealed record Row(int Id, string Name);
+}

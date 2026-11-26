@@ -143,6 +143,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   text as typed, ignoring case alone. It offers to add the text only where no option holds that name, accents aside.
 - `FormaPasswordBox` stands outside a form, as the other inputs do, where it threw an `ArgumentNullException` for
   `editContext` as it was drawn.
+- A data view hands the focus to the item after one a command took away, else the one before, else the empty state's
+  first control, where the command was confirmed in a dialog first, as [the data view design](docs/data-view-design.md)
+  sets out: the dialog handed the focus back to the control that opened it, which had gone with its item, and left it
+  on the page's body. A popover whose trigger went the same way hands the focus on as well.
 
 ## `1.0.0-preview.16`
 

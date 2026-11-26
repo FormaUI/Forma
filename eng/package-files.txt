@@ -248,6 +248,7 @@ formaui-net.Framework.Browser.Interop
     staticwebassets/scripts/DomSessionRegistry.mjs
     staticwebassets/scripts/DomWatcher.js
     staticwebassets/scripts/DomWatcher.mjs
+    staticwebassets/scripts/focus/FocusHeirs.mjs
     staticwebassets/scripts/focus/FocusInteraction.mjs
     staticwebassets/scripts/focus/FocusRecovery.mjs
     staticwebassets/scripts/focus/FocusStateObserver.mjs

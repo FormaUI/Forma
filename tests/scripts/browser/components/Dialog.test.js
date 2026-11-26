@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { attach } from '#browser/components/Dialog.js';
+import { FocusHeirs } from '#browser/focus/FocusHeirs.mjs';
 
 describe('Dialog', () => {
     /** @type {HTMLDialogElement} */
@@ -177,6 +178,28 @@ describe('Dialog', () => {
             await nextFrame();
 
             expect(document.activeElement).toBe(document.querySelector('#item'));
+        });
+
+        it('hands the focus to the heir the surface that took the opener away names', async () => {
+            document.body.insertAdjacentHTML('afterbegin', '<div id="list"><div id="item" tabindex="-1"><button id="delete">Delete</button></div><button id="next">Next</button></div>');
+            const item = document.querySelector('#item');
+            const registration = FocusHeirs.register(element => {
+                if (item.isConnected || !item.contains(element)) {
+                    return false;
+                }
+
+                document.querySelector('#next').focus();
+                return true;
+            });
+            document.querySelector('#delete').focus();
+            const handle = attach(dialog);
+            handle.open();
+            item.remove();
+
+            await closeOnto(handle);
+            registration.dispose();
+
+            expect(document.activeElement).toBe(document.querySelector('#next'));
         });
 
         it('leaves a focus that has gone somewhere where it went', async () => {

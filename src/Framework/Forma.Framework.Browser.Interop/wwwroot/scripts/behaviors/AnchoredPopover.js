@@ -6,6 +6,7 @@
  * popover as --forma-popover-anchor-inline-size.
  */
 
+import { FocusHeirs } from '../focus/FocusHeirs.mjs';
 import { FocusSurface } from '../focus/FocusSurface.mjs';
 import { TabOrder } from '../focus/TabOrder.mjs';
 import { Direction } from '../../../core/scripts/Direction.js';
@@ -85,8 +86,13 @@ class AnchoredPopover {
         const focused = document.activeElement;
 
         if (returnsFocus && this.#trigger && (focused === null || focused === document.body || this.#popover.contains(focused))) {
-            // Focused where it stands, so a trigger in a sticky part leaves its scroller in place.
-            this.#trigger.focus({ preventScroll: true });
+            // Focused where it stands, so a trigger in a sticky part leaves its scroller in place; a trigger a surface took away
+            // meanwhile, as a list removing the item a command in the popover ran on, hands it to the heir that surface names.
+            if (this.#trigger.isConnected) {
+                this.#trigger.focus({ preventScroll: true });
+            } else {
+                FocusHeirs.handOn(this.#trigger);
+            }
         }
 
         this.#scheduler.cancel();

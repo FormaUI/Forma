@@ -4,9 +4,11 @@
  * The scrim is part of the dialog element itself, so a click landing on the dialog rather
  * than on its content is a scrim click. A dialog closing hands the focus back to what held it as
  * the dialog opened, as the browser does, and where that has gone with a menu that closed, to its
- * nearest ancestor that can take the focus.
+ * nearest ancestor that can take the focus; where both have gone with what a surface took away, as
+ * a list removing the item a command confirmed in the dialog, to the heir that surface names.
  */
 
+import { FocusHeirs } from '../focus/FocusHeirs.mjs';
 import { FocusSurface } from '../focus/FocusSurface.mjs';
 
 /**
@@ -92,7 +94,7 @@ class Dialog {
     }
 
     // The browser hands the focus back to the opener itself; where the opener went, the focus falls to nothing, or stays in the closed
-    // dialog until its owner takes it away, as in WebKit, and goes to the opener's focusable ancestor.
+    // dialog until its owner takes it away, as in WebKit, and goes to the opener's focusable ancestor, else to the opener's heir.
     #returnFocus({ opener, focusableAncestor }) {
         const document = this.#dialog.ownerDocument;
         const activeElement = document.activeElement;
@@ -102,7 +104,12 @@ class Dialog {
         }
 
         const target = opener?.isConnected ? opener : focusableAncestor?.isConnected ? focusableAncestor : null;
-        target?.focus();
+
+        if (target) {
+            target.focus();
+        } else {
+            FocusHeirs.handOn(opener);
+        }
     }
 
     // The nearest ancestor of the opener that can take the focus and stays when a popover holding the opener closes.

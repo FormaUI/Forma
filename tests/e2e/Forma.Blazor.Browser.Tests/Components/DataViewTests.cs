@@ -5,6 +5,22 @@ using static Forma.Blazor.Browser.Tests.ComponentChecks;
 /// <summary>The data view's interactions through each of its views, in every runtime.</summary>
 public sealed class DataViewTests
 {
+    // The name of the item the focus stands on, by its marker or itself, where the focus stands on neither an item's control nor outside.
+    private const string FocusedItem = """
+        () => {
+            const focused = document.activeElement;
+            const root = focused?.closest('[data-item-root]');
+            const isStop = focused === root || focused?.matches('[data-row-key]');
+            return root && isStop ? root.querySelector('.forma-data-list-item-name, .forma-data-card-name, .forma-data-tree-node-name, td:nth-child(2)')?.textContent?.trim() ?? null : null;
+        }
+        """;
+
+    private static Task<string?> FocusedItemAsync(IPage page)
+        => page.EvaluateAsync<string?>(FocusedItem);
+
+    private static async Task WaitForFocusedItemAsync(IPage page, string name)
+        => await page.WaitForFunctionAsync($"name => ({FocusedItem})() === name", name);
+
     public sealed class DataGrid(BrowserHost host)
     {
         private static readonly string[] SortedNames = ["Alpha", "Beta", "Gamma"];
@@ -551,19 +567,6 @@ public sealed class DataViewTests
             await WaitForFocusedItemAsync(page, "Item 2");
         }
 
-        // The name of the item the focus stands on, by its marker or itself, where the focus stands on neither an item's control nor outside.
-        private const string FocusedItem = """
-            () => {
-                const focused = document.activeElement;
-                const root = focused?.closest('[data-item-root]');
-                const isStop = focused === root || focused?.matches('[data-row-key]');
-                return root && isStop ? root.querySelector('.forma-data-list-item-name, .forma-data-card-name, .forma-data-tree-node-name, td:nth-child(2)')?.textContent?.trim() ?? null : null;
-            }
-            """;
-
-        private static Task<string?> FocusedItemAsync(IPage page)
-            => page.EvaluateAsync<string?>(FocusedItem);
-
         // Presses Tab until the focus stands on an item, a view drawing a few controls of its own before them.
         private static async Task<string?> TabIntoItemsAsync(IPage page)
         {
@@ -580,12 +583,48 @@ public sealed class DataViewTests
             return null;
         }
 
-        private static async Task WaitForFocusedItemAsync(IPage page, string name)
-            => await page.WaitForFunctionAsync($"name => ({FocusedItem})() === name", name);
-
         // Read in the page, since an assertion that finds another text describes the whole page, eight hundred items here, and holds it from drawing the answer it waits for.
         private static async Task WaitForCommandAsync(IPage page, string command)
             => await page.WaitForFunctionAsync("command => document.getElementById('result')?.textContent === command", command);
+    }
+
+    public sealed class DataViewRemoval(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_hand_the_focus_to_the_item_after_one_a_command_in_its_menu_removed(string runtime)
+            => CheckAsync(runtime, "Delete Now", confirms: false);
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public Task Should_hand_the_focus_to_the_item_after_one_a_command_in_its_menu_removed_once_a_dialog_confirmed_it(string runtime)
+            => CheckAsync(runtime, "Delete", confirms: true);
+
+        // The third item's actions opened from the keyboard and the command run from them, the dialog's Delete confirming it where it asks.
+        private async Task CheckAsync(string runtime, string command, bool confirms)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-removal");
+            await using var _ = context;
+            await WaitForInputScopeAsync(page, "#grid .forma-data-view-region");
+            var actions = page.GetByRole(AriaRole.Button, new() { Name = "Actions for Item 3", Exact = true });
+            await actions.FocusAsync();
+            await actions.PressAsync("Enter");
+            var menu = page.GetByRole(AriaRole.Menu);
+            await WaitForLayerAsync(page.Locator("[popover]").Filter(new() { Has = menu }));
+
+            // Act
+            await menu.GetByRole(AriaRole.Menuitem, new() { Name = command, Exact = true }).PressAsync("Enter");
+
+            if (confirms)
+            {
+                await page.GetByRole(AriaRole.Dialog).GetByRole(AriaRole.Button, new() { Name = "Delete", Exact = true }).PressAsync("Enter");
+            }
+
+            // Assert — four items left, the focus on the item after the one removed
+            await page.WaitForFunctionAsync("() => document.getElementById('count')?.textContent === '4'");
+            await WaitForFocusedItemAsync(page, "Item 4");
+        }
     }
 
     public sealed class DataViewItemFocus(BrowserHost host)

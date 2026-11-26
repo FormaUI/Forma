@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { attach } from '#dataview/SelectionInteraction.js';
+import { FocusHeirs } from '#browser/focus/FocusHeirs.mjs';
 import { configure, register, resolve } from '#input/InputRouter.js';
 import { fakeOwner } from '#support/owner.js';
 
@@ -703,6 +704,84 @@ describe('SelectionInteraction', () => {
             await nextFrame();
 
             expect(document.activeElement).toBe(outside);
+        });
+
+        // A dialog a control inside an item opened holds the focus while a command takes the item away, then closes and hands the
+        // focus back to that control, which has gone.
+        const confirmTakingAway = async (key, control) => {
+            const dialogControl = document.createElement('button');
+            document.body.append(dialogControl);
+            control.focus();
+            dialogControl.focus();
+
+            cellOf(key).closest('tr').remove();
+            await nextFrame();
+            dialogControl.remove();
+            document.body.focus();
+
+            return FocusHeirs.handOn(control);
+        };
+
+        it('hands the focus a dialog hands back to a control of an item taken away to the item after it', async () => {
+            gather();
+
+            const isHandedOn = await confirmTakingAway(2, controlsOf(2)[1]);
+
+            expect(isHandedOn).toBe(true);
+            expect(document.activeElement).toBe(cellOf(3));
+            expect(cellOf(3).tabIndex).toBe(0);
+        });
+
+        it('hands the focus a dialog hands back to a control of the last item taken away to the item before it', async () => {
+            gather();
+
+            const isHandedOn = await confirmTakingAway(4, controlsOf(4)[1]);
+
+            expect(isHandedOn).toBe(true);
+            expect(document.activeElement).toBe(cellOf(3));
+        });
+
+        it('hands the focus a dialog hands back to a control of the only item taken away to the first control of the empty state', async () => {
+            grid.querySelector('tbody').innerHTML = item(1);
+            gather({ emptyStateSelector: '[data-empty-state]' });
+            const control = controlsOf(1)[1];
+            const dialogControl = document.createElement('button');
+            document.body.append(dialogControl);
+            control.focus();
+            dialogControl.focus();
+
+            grid.querySelector('tbody').innerHTML = '<tr><td data-empty-state><p>No files</p><button class="add">Add Files</button></td></tr>';
+            await nextFrame();
+            dialogControl.remove();
+            document.body.focus();
+            const isHandedOn = FocusHeirs.handOn(control);
+
+            expect(isHandedOn).toBe(true);
+            expect(document.activeElement).toBe(grid.querySelector('.add'));
+        });
+
+        it('hands on nothing for a control of an item still drawn', async () => {
+            gather();
+            const control = controlsOf(2)[1];
+            control.focus();
+            control.remove();
+
+            const isHandedOn = FocusHeirs.handOn(control);
+
+            expect(isHandedOn).toBe(false);
+        });
+
+        it('hands on nothing once disposed', async () => {
+            const selection = gather();
+            const control = controlsOf(2)[1];
+            control.focus();
+            cellOf(2).closest('tr').remove();
+            handles.splice(handles.indexOf(selection), 1);
+            selection.dispose();
+
+            const isHandedOn = FocusHeirs.handOn(control);
+
+            expect(isHandedOn).toBe(false);
         });
 
         it('makes the item whose control takes the focus the one, its marker the tab stop', () => {

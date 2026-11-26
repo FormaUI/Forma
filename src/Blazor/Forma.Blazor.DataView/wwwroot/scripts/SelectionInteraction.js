@@ -49,6 +49,7 @@
  * the marker the item draws now.
  */
 
+import { FocusHeirs } from '../../forma/browser/scripts/focus/FocusHeirs.mjs';
 import { Controls } from '../../forma/core/scripts/Controls.js';
 import { tell } from '../../forma/core/scripts/Owner.js';
 import { Transfer } from '../../forma/core/scripts/Transfer.js';
@@ -212,6 +213,7 @@ class SelectionInteraction {
     #actionsReturn = null;
     #suppressesContextMenu = false;
     #emptyStateSelector;
+    #heirRegistration;
 
     constructor(target, { owner, keyAttribute = 'data-row-key', itemSelector = 'tr', itemKeyAttribute = null, controlSelector = null, selects = true, moves = selects, checksOnPress = false, positionAttribute = null, seeks = false, itemRootSelector = null, actionsSelector = null, gathersControls = false, emptyStateSelector = null }) {
         this.#target = target;
@@ -363,6 +365,10 @@ class SelectionInteraction {
         removal.observe(target, { childList: true, subtree: true });
         signal.addEventListener('abort', () => removal.disconnect());
 
+        // A dialog or a popover a control inside an item opened hands the focus back to that control as it closes, which a command
+        // confirmed there may have taken away with its item while the focus was outside the list.
+        this.#heirRegistration = FocusHeirs.register(element => this.#handOn(element));
+
         if (this.#actionsSelector) {
             target.addEventListener('focusin', event => this.#returnFromActions(event), { signal });
 
@@ -402,6 +408,7 @@ class SelectionInteraction {
     dispose() {
         this.#cancelSeek();
         this.#listenerAbort.abort();
+        this.#heirRegistration.dispose();
         this.#registration.dispose();
         this.#releaseControls();
         this.#releaseMarkers([]);
@@ -804,7 +811,8 @@ class SelectionInteraction {
         tell(this.#owner, 'HandleSeekAsync', request, edge > 0, effectiveMode, effectiveMode === 'extend' ? this.#anchorPosition : null);
     }
 
-    // The held item keeps the markers drawn either side of it, which stand in for it once it is gone.
+    // The held item keeps the markers drawn either side of it, which stand in for it once it is gone, and the element it is drawn as,
+    // which holds every control inside it.
     #hold(marker) {
         if (marker) {
             const markers = this.#markers();
@@ -816,6 +824,7 @@ class SelectionInteraction {
                 token: this.#tokenOf(marker),
                 position: this.#positionOf(marker),
                 item: this.#itemOf(marker),
+                root: marker.closest(this.#itemRootSelector ?? this.#itemSelector),
                 nextToken: next ? this.#tokenOf(next) : null,
                 previousToken: previous ? this.#tokenOf(previous) : null,
             };
@@ -886,29 +895,56 @@ class SelectionInteraction {
         }
     }
 
-    // Only a focus that fell to nothing is taken back, onto the held item's marker once the render has drawn it again, by token or by
-    // position; an item taken away hands it to the item after it, else the one before, else the first control of the empty state.
+    // Only a focus that fell to nothing is taken back, onto the held item's heir once the render has drawn it.
     #restore(heldMarker) {
         if (this.#heldMarker !== heldMarker || this.#readerMoved || !this.#isFocusLost() || this.#stopWaiting) {
             return;
         }
 
-        const find = () => this.#markerWithToken(heldMarker.token)
+        this.#whenDrawn(() => this.#findHeir(heldMarker), heir => {
+            if (this.#heldMarker === heldMarker && !this.#readerMoved && this.#isFocusLost()) {
+                this.#focusHeir(heir);
+            }
+        });
+    }
+
+    // The focus a closing dialog or popover hands back to a control of the held item, taken away with it, goes to the item's heir.
+    #handOn(element) {
+        const heldMarker = this.#heldMarker;
+
+        if (!heldMarker?.root || heldMarker.root.isConnected || !heldMarker.root.contains(element)) {
+            return false;
+        }
+
+        const heir = this.#findHeir(heldMarker);
+
+        if (!heir) {
+            return false;
+        }
+
+        this.#focusHeir(heir);
+        return true;
+    }
+
+    /**
+     * What takes the held item's focus: its marker drawn again, by token or by position, or the marker nearest it where it is drawn
+     * without one; an item taken away hands it to the item after it, else the one before, else the first control of the empty state.
+     */
+    #findHeir(heldMarker) {
+        return this.#markerWithToken(heldMarker.token)
             ?? (heldMarker.position === null ? null : this.#markerAt(heldMarker.position))
             ?? this.#nearestMarker(heldMarker.item)
             ?? this.#markerWithToken(heldMarker.nextToken)
             ?? this.#markerWithToken(heldMarker.previousToken)
             ?? this.#emptyStateControl();
+    }
 
-        this.#whenDrawn(find, element => {
-            if (this.#heldMarker === heldMarker && !this.#readerMoved && this.#isFocusLost()) {
-                if (element.matches(this.#markerSelector)) {
-                    this.#focusMarker(element, this.#markers());
-                } else {
-                    element.focus();
-                }
-            }
-        });
+    #focusHeir(heir) {
+        if (heir.matches(this.#markerSelector)) {
+            this.#focusMarker(heir, this.#markers());
+        } else {
+            heir.focus();
+        }
     }
 
     /** The marker nearest an item still drawn that no longer carries one, the next before the previous. */
