@@ -70,6 +70,31 @@ public sealed partial class InputsTests
             await Assertions.Expect(result).ToHaveTextAsync("False");
             await Assertions.Expect(toggleSwitch).Not.ToBeCheckedAsync();
         }
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_stand_at_its_row_s_end_under_a_coarse_pointer_and_beside_its_label_under_a_fine_one(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "toggle-switch");
+            await using var _ = context;
+
+            // Act — where the track stands in its field's box, measured in the page
+            var placement = await page.Locator(".forma-toggle-switch-track").First.EvaluateAsync<string>("""
+                track => {
+                    const box = track.closest('.forma-field-box').getBoundingClientRect();
+                    const label = track.closest('.forma-field-box').querySelector('.forma-field-label').getBoundingClientRect();
+                    const own = track.getBoundingClientRect();
+                    const pointer = matchMedia('(pointer: coarse)').matches ? 'coarse' : 'fine';
+                    const atEnd = Math.abs(own.right - box.right) <= 1;
+                    const besideLabel = own.left - label.right <= 16;
+                    return `${pointer} ${atEnd ? 'at its end' : besideLabel ? 'beside its label' : 'elsewhere'}`;
+                }
+                """);
+
+            // Assert — a finger's settings line up at the row's end; a pointer's switch follows its label
+            Assert.True(placement is "coarse at its end" or "fine beside its label", placement);
+        }
     }
 
     public sealed class TextBox(BrowserHost host)
@@ -154,6 +179,21 @@ public sealed partial class InputsTests
 
     public sealed class TextArea(BrowserHost host)
     {
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_draw_its_resize_grip_under_a_fine_pointer_alone(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "text-area");
+            await using var _ = context;
+
+            // Act
+            var drawn = await page.Locator("#check").EvaluateAsync<string>("area => `${matchMedia('(pointer: coarse)').matches ? 'coarse' : 'fine'} ${getComputedStyle(area).resize}`");
+
+            // Assert — a finger can't drag the grip, so a coarse pointer draws none
+            Assert.True(drawn is "fine vertical" or "coarse none", drawn);
+        }
+
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_bind_lines_as_they_are_typed_and_count_their_characters(string runtime)

@@ -19,6 +19,13 @@
     padding-block: var(--space-1);
 }
 
+/* A finger can't drag the resize grip, so a coarse pointer draws none, a longer text scrolling within the area's rows. */
+@media (pointer: coarse) {
+    .forma-field-input.forma-textarea {
+        resize: none;
+    }
+}
+
 /* Reserves the counter strip below the text, clear of the caret's line; the minimum grows by the strip, less the padding it replaces. */
 .forma-field-input.forma-textarea-counting {
     padding-block-end: var(--forma-textarea-count-strip);
@@ -39,6 +46,13 @@
     font-size: var(--font-size-xs);
     line-height: var(--forma-textarea-count-block-size);
     pointer-events: none;
+}
+
+/* With no grip to clear under a coarse pointer, the count stands at the corner's own gutter. */
+@media (pointer: coarse) {
+    .forma-textarea-count {
+        margin-inline-end: var(--space-2);
+    }
 }
 
 /* Opaque, because a scrolled value passes behind it. */
