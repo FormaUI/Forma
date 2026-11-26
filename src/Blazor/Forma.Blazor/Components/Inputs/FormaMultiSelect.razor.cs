@@ -1,9 +1,9 @@
 namespace Forma.Blazor.Components.Inputs;
 
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 
 using Forma.Blazor.Components.Feedback;
+using Forma.Blazor.Components.Interaction;
 using Forma.Framework.Css;
 
 using Microsoft.AspNetCore.Components;
@@ -59,16 +59,14 @@ public sealed partial class FormaMultiSelect<TValue> : FormaInputBase<List<TValu
     private List<TValue> SelectedValues
         => Value ?? [];
 
+    // The options every word typed matches, ignoring case and accents, in the order a reader looks for them, as the combo box ranks its own.
     private IReadOnlyList<SelectOption<TValue>> FilteredOptions
-        => string.IsNullOrWhiteSpace(_searchText)
-            ? Options
-            : [.. Options.Where(o => Context.CultureState.Culture.CompareInfo.IndexOf(o.Label, _searchText, CompareOptions.IgnoreCase) >= 0)];
+        => QueryRanking.Rank(Options, option => option.Label, null, _searchText, Context.CultureState.UICulture);
 
     private bool CanAddSearchText
         => AllowAdd
         && !string.IsNullOrWhiteSpace(_searchText)
-        && !Options.Any(o => Context.CultureState.Culture.CompareInfo
-            .Compare(o.Label, _searchText.Trim(), CompareOptions.IgnoreCase) == 0);
+        && !Options.Any(option => QueryRanking.IsSameName(option.Label, _searchText, Context.CultureState.UICulture));
 
     private string TriggerText
     {

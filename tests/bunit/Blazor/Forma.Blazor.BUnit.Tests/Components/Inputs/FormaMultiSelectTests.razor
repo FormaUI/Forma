@@ -232,6 +232,50 @@
             Assert.Contains("Running", remaining[0].TextContent, StringComparison.Ordinal);
         }
 
+        [Theory]
+        [InlineData("martinez")]
+        [InlineData("MARTÍNEZ")]
+        [InlineData("lucia martinez")]
+        [InlineData("martinez ana")]
+        public async Task Should_find_an_option_by_every_word_typed_whatever_its_case_and_accents(string typed)
+        {
+            // Arrange
+            using var ctx = new FormaMultiSelectTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel();
+            var members = new List<SelectOption<int>> { new(1, "Ana Lucía Martínez"), new(2, "Tomás Ibáñez"), new(3, "Clara Núñez") };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="members" Label="Members" />
+            </FakeFormHost>);
+            cut.Find(".forma-multi-select-trigger").Click();
+
+            // Act
+            await fields.TypeAsync(cut.Find(".forma-multi-select-search"), typed);
+
+            // Assert
+            Assert.Equal("Ana Lucía Martínez", Assert.Single(cut.FindAll(".forma-multi-select-options .forma-checkbox-label")).TextContent.Trim());
+        }
+
+        [Fact]
+        public async Task Should_offer_no_new_value_for_a_name_an_option_holds_without_its_accents()
+        {
+            // Arrange
+            using var ctx = new FormaMultiSelectTests();
+            var fields = new TextFieldProbe(ctx);
+            var model = new FakeModel();
+            var members = new List<SelectOption<int>> { new(1, "Tomás Ibáñez") };
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaMultiSelect TValue="int" @bind-Value="model.Categories" Options="members" Label="Members" AllowAdd="true" OnAddNew="@(_ => { })" />
+            </FakeFormHost>);
+            cut.Find(".forma-multi-select-trigger").Click();
+
+            // Act
+            await fields.TypeAsync(cut.Find(".forma-multi-select-search"), "tomas ibanez");
+
+            // Assert
+            Assert.Empty(cut.FindAll(".forma-multi-select-add"));
+        }
+
         [Fact]
         public async Task Should_show_no_results_message_when_search_matches_nothing()
         {

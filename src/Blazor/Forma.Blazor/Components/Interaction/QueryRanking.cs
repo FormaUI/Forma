@@ -73,6 +73,19 @@ internal static class QueryRanking
         return [.. ranked.OrderBy(entry => entry.IsNamePrefix).ThenBy(entry => entry.Score).ThenBy(entry => entry.Index).Select(entry => entry.Item)];
     }
 
+    /// <summary>Whether <paramref name="text"/> names the item <paramref name="name"/> names, compared in the culture as a typed word is, and ignoring the spaces around each.</summary>
+    /// <param name="name">The item's name.</param>
+    /// <param name="text">What the reader typed.</param>
+    /// <param name="culture">The culture the two are compared in.</param>
+    public static bool IsSameName(string name, string text, CultureInfo culture)
+    {
+        ArgumentNullException.ThrowIfNull(name);
+        ArgumentNullException.ThrowIfNull(text);
+        ArgumentNullException.ThrowIfNull(culture);
+
+        return culture.CompareInfo.Compare(name.Trim(), text.Trim(), Loose) == 0;
+    }
+
     private static int Match(CompareInfo compareInfo, string name, string? place, string word)
     {
         if (compareInfo.IsPrefix(name, word, Loose))

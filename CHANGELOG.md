@@ -138,6 +138,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - `FormaPasswordBox`'s toggle is a compact button, as every other button at a field's end is.
 - `FormaColorPicker`'s swatch stands in a target of 24 pixels, or 44 under a coarse pointer, and its alpha row stands
   inside the field's box, as `FormaMultiSelect`'s tags do.
+- `FormaMultiSelect`'s search finds an option by every word typed, in any order and whatever its case, accents or
+  width, and lists the options in the order `FormaComboBox` ranks its own, where it found only an option holding the
+  text as typed, ignoring case alone. It offers to add the text only where no option holds that name, accents aside.
 - `FormaPasswordBox` stands outside a form, as the other inputs do, where it threw an `ArgumentNullException` for
   `editContext` as it was drawn.
 
