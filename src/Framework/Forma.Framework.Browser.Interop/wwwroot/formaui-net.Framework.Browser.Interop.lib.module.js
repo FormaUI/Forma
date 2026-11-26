@@ -14,7 +14,10 @@ export function afterStarted() {
     installTooltips();
 }
 
-// Loaded apart, so a host that can't serve a module the tooltip's script reaches still starts Blazor, the failure reported.
+// Loaded apart, so a host that can't serve a module the tooltip's script reaches still starts Blazor, the failure reported;
+// and as the initializer loads, while Blazor starts, so the script is installed as Blazor starts, ready for a first tap.
+const tooltips = import('./scripts/components/Tooltip.js');
+
 function installTooltips() {
-    import('./scripts/components/Tooltip.js').then(tooltips => tooltips.install());
+    tooltips.then(module => module.install());
 }
