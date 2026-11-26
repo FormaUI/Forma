@@ -106,7 +106,8 @@ failed, so a fix to a host's startup reaches both.
   Android's checks run in that environment alone, its JDK and its emulator, on every machine and in CI alike. A full
   run in CI passes only once every required platform job has passed for the same SHA: Linux's, Windows' with
   WebView2, and Android's E2E. The MAUI example's builds for iOS and Mac Catalyst, on a hosted Mac, are reported
-  beside them and hold nothing. The nightly run on `dev` holds the same coverage as a candidate's.
+  beside them and hold nothing. A local full run leaves each required platform it names as one it couldn't run to CI's
+  full run of the same SHA, which promotion waits for. The nightly run on `dev` holds the same coverage as a candidate's.
 
 ### What a change runs
 
@@ -124,9 +125,11 @@ chose each check.
 
 **The checks run in stages the work chooses and orders, and stop at the first failure.** Each stage runs only once the
 one before it passes; a stage that fails short-circuits the cycle, the failure is fixed, the fix passes that stage, and
-the cycle goes on from there. The stages run by priority, the cheapest and nearest to the work first: unit tests before
-integration tests, integration tests before a host, and the host, engine or platform the work is about before any other,
-the one a bug was found in or a feature is built for. A stage runs only where the work reaches it, so the context decides
+the cycle goes on from there. The stages run by priority, the cheapest and nearest to the work first: unit tests, a component's
+bUnit tests among them, before integration tests, integration tests before a host, and the host, engine or platform the
+work is about before any other, the one a bug was found in or a feature is built for. A bug found in one host alone runs
+its focused reproduction there as soon as the cheapest relevant checks pass, ahead of a broader integration run, so the
+original failure is answered first. A stage runs only where the work reaches it, so the context decides
 how far the cycle goes: a fix to a service is proven in the one host it runs in and the cycle stops there, while a change
 to how a page behaves goes on, one host, render mode, engine or platform at a time, as far as the change applies.
 
@@ -144,10 +147,12 @@ A change with no UI, a service's or a script's that nothing renders, runs no bro
   minutes. They may run in the working tree where that's safe, nothing else editing or building what they read.
 - **A coherent change is committed once its checks pass.** Each commit is one change, made as it's completed, never
   accumulated with unrelated changes and split from one working tree afterward.
-- **The development gate** closes a change set. It runs the cumulative affected set of every commit in the set, not the
-  last commit's alone: their tests, the browser coverage above, the format check where C# changed and the locale lint
-  where strings changed. A change set isn't finished until it passes, and a check whose inputs nothing has changed
-  since it passed doesn't run again. The fast gate runs on every push in CI besides.
+- **The development gate** closes a change set. It runs the cumulative affected checks of every commit in the set, not
+  the last commit's alone, against the exact commit being closed: their tests, the browser coverage above, the format
+  check where C# changed and the locale lint where strings changed. A change set isn't finished until it passes. An
+  earlier pass counts only where it can be tied to the same inputs, the built artifacts and the relevant configuration
+  among them; where that can't be established, the check runs again, since a check whose own code is unchanged still
+  reads a coordinator, a published host or a shared build property that may have moved beneath it. The fast gate runs on every push in CI besides.
 - **An authoritative gate runs on an immutable snapshot,** an export or a worktree of the commit, with its own build
   output and its own resources where they'd collide, never on the tree being edited, so the next change is made while
   it runs. The machine's one Android emulator is never shared by two runs.

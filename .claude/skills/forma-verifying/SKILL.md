@@ -5,7 +5,7 @@ description: The build and verification gate — the build, tests, format check,
 
 # Build and verification
 
-The gate is every check the repository's verification design sets out, each platform's where the machine can run it, all passing, and the showcase for anything that renders. The repository's build documentation lists the commands.
+Verification answers three questions, each at its own point. While implementing, targeted checks show the fix works where the bug occurred. The **development gate** closes a change set: the checks of everything its commits affect, run against the exact commit being closed. The **full gate**, every check the repository's verification design sets out on every platform it requires, holds the merge of `dev` into `candidate` and a release. The showcase is checked for anything that renders, and the repository's build documentation lists the commands. What to do when the machine gets in the way, a locked file, a rewritten solution, a stale showcase or a filling disk, is in [troubleshooting.md](troubleshooting.md).
 
 Every warning, the compiler's or MSBuild's, is a build failure: warnings are errors for source, tests and the examples alike, the `.editorconfig` severity table decides what the compiler reports, and the answer to an unwanted diagnostic is that table, never a local suppression.
 
@@ -14,12 +14,11 @@ No project generates a documentation file, so nothing reports an undocumented pu
 - Do require build, tests, and the format check to pass before offering a component for review.
 - Do run the `CS1591` sweep after adding or changing public API, and ignore the hits under the test projects, which are test method names.
 - Do run the format check rather than trusting the build: it catches using-directive ordering and line endings that compilation ignores, and it does not read `.razor` files at all, so a misordered `@using` has to be caught by eye.
-- Do reopen the solution file after adding a project; the C# extension rewrites it with a duplicate `<Folder>` entry and drops `<Configurations>`, which then fails the build with `MSB4025`.
-- Do start the showcase through the repository's showcase script, which builds first and listens on the port it is given; a running one holds its `bin` DLLs open so the copy fails with `MSB3027`, so have the script stop the one already listening rather than finding it by hand. It refuses a port held by anything but this repository's showcase rather than stopping it.
-- Do stop MSBuild's worker nodes, through the repository's script for them, when a build fails to copy a file nothing appears to be using: MSBuild keeps them alive between builds and they keep a handle on what they last built. The broader script beside it also stops whatever is running out of this repository, such as the showcase. The language server an editor runs for C# stays running under both, unless the broader one is asked to stop every .NET process on the machine.
-- Do confirm the rebuild actually reached the app before drawing any conclusion from the browser: the showcase runs a compiled binary with no hot reload, so verify the build succeeded and that the library's DLL in the showcase's output is newer than the sources you changed. A stale process silently serves the old code and every experiment against it is void.
+- Do start the showcase through the repository's showcase script, which builds first and listens on the port it is given, stopping the one already listening there.
+- Do confirm the running showcase contains the change before interpreting anything in the browser: it runs a compiled binary with no hot reload, so a stale process silently serves the old code and every experiment against it is void.
 - Do inspect the component in every culture the library ships through the showcase.
-- Do drive end-to-end browser checks in a **visible** browser window rather than a headless one, so the maintainer can watch what is actually being exercised; a headless run reports only what its script thought to assert, so a mis-scoped page and a genuine pass look alike. The gate's browser check is the exception, since the gate runs on machines without a display: it runs headless, and the browser step opens it in a window to watch when asked to.
+- Do drive interactive browser verification in a **visible** browser window, so whoever watches notices a check exercising the wrong page, which a headless run's assertions alone can't tell from a genuine pass. The gate's browser check runs headless, since the gate runs on machines without a display, and the browser step opens it in a window to watch when asked to.
+- Do make a browser check assert the route it landed on and an element that identifies the page, beside the renderer it waits for, so the headless gate catches a check exercising the wrong page on every later run.
 - Do delay a circuit's inbound events on the server to check a slow connection; Chrome's emulated latency doesn't reach a circuit's WebSocket.
 - Do slow such a run enough to be followed, and hold the final state on screen before closing.
 - Don't pipe the showcase's output into `Select-String`, `Select-Object`, or another filter; closing the pipeline terminates the server.
@@ -35,24 +34,31 @@ beside it, as the repository's build documentation sets out with every command a
   it; widen the set wherever its reach can't be determined reliably.
 - Do run a change's checks in stages the work chooses and orders, each only once the one before it passes, and
   short-circuit at the first failure: fix it, pass that stage, and go on from there.
-- Do order the stages by priority, the cheapest and nearest to the work first: unit tests, then integration tests,
-  then the host, engine or platform the work is about, the one a bug was found in or a feature is built for, before
-  any other.
+- Do order the stages by priority, the cheapest and nearest to the work first: unit tests, a component's bUnit
+  tests among them for a component change, then integration tests, then the host, engine or platform the work is
+  about, the one a bug was found in or a feature is built for, before any other.
+- Do run a bug found in one host alone as its focused reproduction there as soon as the cheapest relevant checks
+  pass, ahead of a broader integration run, so the original failure is answered first.
 - Do let the context decide how far the cycle goes: a fix to a service is proven in the one host it runs in and stops
   there; a change to how a page behaves goes on, one at a time, to what its reach calls for, the render modes for
   culture routing, navigation, hydration or render-mode-specific behavior, the other engines for browser interop, the
   platform for mobile-specific behavior.
 - Do run targeted checks while implementing, in the working tree where nothing else edits or builds what they read,
   and commit each coherent change once its checks pass; never accumulate unrelated changes to split afterward.
-- Do close a change set with its development gate, the cumulative affected set of every commit in it, on an
-  immutable snapshot, an export or a worktree with its own build output, while work goes on in the tree; a set isn't
-  finished until it passes, and a check whose inputs haven't changed since it passed isn't run again.
+- Do close a change set with its development gate: the cumulative affected checks of every commit in it, run
+  against the exact commit being closed, on an immutable snapshot, an export or a worktree with its own build
+  output, while work goes on in the tree; a set isn't finished until it passes.
+- Do count an earlier pass only where it can be tied to the same inputs, the built artifacts and the relevant
+  configuration among them, and rerun the check wherever that can't be established: a check whose own code is
+  unchanged still reads a coordinator, a published host or a shared build property that may have moved beneath it.
 - Do record a failure outside the change and have it investigated independently, by another agent in a worktree of
   its own, blocking the work only where it invalidates the change's verification; never run two checks on the one
   Android emulator at once.
-- Do leave the full gate, which runs every platform check the machine can and names each one it couldn't, to
-  merging `dev` into `candidate` and to a release, where it's mandatory; a wrapper beside the module runs one part
-  of either gate.
+- Do leave the full gate to merging `dev` into `candidate` and to a release, where it's mandatory; a wrapper
+  beside the module runs one part of either gate.
+- Do leave a platform a local full run couldn't run, which it names, to CI's full run of the same commit: that run
+  passes only once every required platform's job has passed, and promotion waits for it; a platform the
+  verification design marks as reported rather than required holds nothing.
 - Do narrow a test run to one project, a filter or the build already on disk, and hunt a test that fails
   sometimes by repeating the run past its failures, so the failure shows as a rate; run other test projects
   beside it to load the machine, so a race a busy machine exposes shows here too, and record the waits made
@@ -60,9 +66,6 @@ beside it, as the repository's build documentation sets out with every command a
 - Do hunt a browser check that fails sometimes the same way, filtered, repeated and under load, on hosts
   published once, so the run ends with each failing check's rate, and run the check with the others it runs
   beside in the gate, since some checks fail only after their neighbors have run.
-- Do clean the task programs' build output too, with the clean step's widest sweep, when the disk is filling:
-  a program run from a single .cs file is built into the system temp directory and left there on every edit
-  and rename.
 - Do name a build script for its action in lowercase, since it is a command someone types; the functions
   in the module take `Verb-Noun` with an approved verb, as PowerShell requires of anything a module
   exports.
