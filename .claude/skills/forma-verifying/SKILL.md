@@ -33,14 +33,15 @@ beside it, as the repository's build documentation sets out with every command a
 - Do verify a change by its affected set, as the repository's verification design sets out: the checks of what it
   changed and of everything depending on it, transitively, a shared foundation reaching every component resting on
   it; widen the set wherever its reach can't be determined reliably.
-- Do run a change's checks in stages, each only once the one before it passes: its unit tests, then its integration
-  tests, then its browser checks in the one host the work is about, the WebAssembly host first for a bug found there
-  and the Server's otherwise, then the other hosts the change applies to, one at a time; fix a failure where it
-  stops the cycle, pass that stage, and go on from there.
-- Do end the cycle where the change's reach ends: a fix to a service runs up to the one host it runs in and stops.
-  A UI change adds what its reach calls for after the first host: the render modes for culture routing, navigation,
-  hydration or render-mode-specific behavior, the other engines for browser interop, the platform for
-  mobile-specific behavior.
+- Do run a change's checks in stages the work chooses and orders, each only once the one before it passes, and
+  short-circuit at the first failure: fix it, pass that stage, and go on from there.
+- Do order the stages by priority, the cheapest and nearest to the work first: unit tests, then integration tests,
+  then the host, engine or platform the work is about, the one a bug was found in or a feature is built for, before
+  any other.
+- Do let the context decide how far the cycle goes: a fix to a service is proven in the one host it runs in and stops
+  there; a change to how a page behaves goes on, one at a time, to what its reach calls for, the render modes for
+  culture routing, navigation, hydration or render-mode-specific behavior, the other engines for browser interop, the
+  platform for mobile-specific behavior.
 - Do run targeted checks while implementing, in the working tree where nothing else edits or builds what they read,
   and commit each coherent change once its checks pass; never accumulate unrelated changes to split afterward.
 - Do close a change set with its development gate, the cumulative affected set of every commit in it, on an

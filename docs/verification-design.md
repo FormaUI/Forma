@@ -122,12 +122,13 @@ every component resting on it; one to the bases, the hosts or the build reaches 
 reaches can't be determined reliably, the set widens until it can be trusted. The command that computes it names why it
 chose each check.
 
-**The checks run in stages, each only once the one before it passes.** The affected set's unit tests run first, then its
-integration tests, then its browser checks in one host, the one the work is about: the WebAssembly host first for a bug
-found there, the Server's otherwise. Only then do the other hosts the change applies to run, one at a time. A stage that
-fails stops the cycle; the failure is fixed, the fix passes that stage, and the cycle goes on from there. The cycle ends
-where the change's reach does: a fix to a service runs up to the one host it runs in and stops, never through every host
-or the mobile apps.
+**The checks run in stages the work chooses and orders, and stop at the first failure.** Each stage runs only once the
+one before it passes; a stage that fails short-circuits the cycle, the failure is fixed, the fix passes that stage, and
+the cycle goes on from there. The stages run by priority, the cheapest and nearest to the work first: unit tests before
+integration tests, integration tests before a host, and the host, engine or platform the work is about before any other,
+the one a bug was found in or a feature is built for. A stage runs only where the work reaches it, so the context decides
+how far the cycle goes: a fix to a service is proven in the one host it runs in and the cycle stops there, while a change
+to how a page behaves goes on, one host, render mode, engine or platform at a time, as far as the change applies.
 
 **The browser coverage follows what the change affects.** A change to how a component behaves or looks runs its browser
 checks, `scripts/build/browser.ps1 -Filter`, in the one host the work is about first. Its reach adds the others:
