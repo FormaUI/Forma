@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.18`
 
-*Unreleased*
+*November 26, 2026*
 
 - [`FormaDataGrid`](docs/data-view-design.md#at-a-narrow-width) takes `ThumbnailTemplate`, `ItemTemplate` and
   `ActionsTemplate`, and given them, a grid too narrow for its columns draws each item as its thumbnail, its name and
