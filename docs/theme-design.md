@@ -4,7 +4,8 @@ A Forma host offers its readers one or more themes, each drawn in a light and a 
 reader chooses which; every component follows the choice, in every runtime on the page, from the first paint
 on. This design states what a theme is and how it is written, how light, dark and high contrast relate to
 it, how the choice is made, kept and applied, how a part of a page stands in a theme of its own, and how a
-theme's contrast is held to its targets.
+theme's contrast is held to its targets. [The implementation plan](theme-implementation-plan.md) holds the steps
+that carry it out.
 
 ## Purpose
 
@@ -31,7 +32,7 @@ The theme system is that machinery, in Forma, so a host writes its themes' value
 | **Color scheme** | Light or dark, the two ways a theme is drawn, named as CSS names them. Every theme has a light scheme; a dark one is its own choice. |
 | **Theme choice** | What the reader chose: a theme, and a scheme preference of System, Light or Dark. System follows the device. |
 | **Theme scope** | An element whose subtree draws in a theme or a scheme of its own, whatever its surroundings'. |
-| **Theme coordinator** | The service of a document, or of a Blazor Hybrid application, that orders every switch and keeps every runtime and every document on the accepted choice. |
+| **Theme coordinator** | The service of a document, or of a Blazor Hybrid application, that orders every switch and keeps every runtime and every document on the accepted choice, built on the switch coordinator it shares with the culture coordinator. |
 
 A choice is resolved where it's drawn: the theme by the attribute the document or a scope carries, and a
 System preference by the browser itself, from the device's setting, so no server and no script needs to know
@@ -178,6 +179,11 @@ so a scheme boundary needs no rule of its own:
 A page with no theme system registered carries neither attribute, and draws Forma's theme in its light
 scheme, as every page draws today.
 
+The tokens and the two attributes stand on their own. A host that writes `data-forma-theme` and
+`data-forma-scheme` itself, on `<html>` or on any element, draws any theme whose stylesheet it links, in either
+scheme, with nothing registered and no script. What the rest of this design adds above them is the reader's
+choice: keeping it, resolving it for a request, painting it first, switching it in place, and the picker.
+
 ## The choice and where it's kept
 
 A choice is a theme's name and a scheme preference:
@@ -202,13 +208,17 @@ public sealed record ThemePreference(ThemeChoice Choice, long Revision);
 public interface IThemePreferenceStore
 {
     ValueTask<ThemePreference?> ReadAsync(CancellationToken cancellationToken);
-    ValueTask<long> WriteAsync(ThemeChoice choice, CancellationToken cancellationToken);
+    ValueTask WriteAsync(ThemePreference preference, CancellationToken cancellationToken);
 }
 ```
 
-The store numbers what it keeps: each write it completes keeps the choice under a revision greater than any
-it returned before for that reader, and returns it, as a row version or an entity tag does. The revision is
-how a browser knows whether the store changed since it last agreed with it, so no clock is compared.
+The store keeps the preference it's given and returns it as it was kept; Forma numbers the preferences
+itself. A write's revision is one more than the latest its document knows of: the store's, as the page
+loaded, or the document's own last write. The revision is how a browser knows whether the store changed
+since it last agreed with it, so no clock is compared.
+
+Two devices switching close together can write the same revision. The store keeps the last write, and the
+other device keeps the choice it made until a later switch on either.
 
 ### The browser's record
 
@@ -337,8 +347,9 @@ every render mode.
 
 ### The coordinator
 
-The theme coordinator takes the culture coordinator's ordering whole, as
-[the culture design](culture-design.md#the-coordinator) states it:
+The theme coordinator and the culture coordinator are built on one core, the **switch coordinator**, which
+orders the switches of a setting the whole page shares. So the two keep one set of rules, the ones
+[the culture design](culture-design.md#the-coordinator) states:
 
 - it accepts requests one at a time, each runtime's in the order the runtime made them, and one that reaches
   it after a later one from the same runtime completes as canceled;
@@ -351,6 +362,9 @@ The theme coordinator takes the culture coordinator's ordering whole, as
 - registering, reconnecting and starting are never switches: a runtime receives the accepted choice and never
   replaces it with the one its own startup chose;
 - the accepted choice outlives every registration, and a runtime registering later adopts it.
+
+Each coordinator adds what its own setting needs: the culture's its addresses and its cookie's format, the
+theme's its record, its stylesheets and the store's writes.
 
 A switch is accepted once the browser's record holds it: the coordinator writes the cookie, or local storage,
 and reads it back, in one step, as the culture's cookie policy does. It then sets the document's attributes
@@ -415,7 +429,8 @@ newer switch took the place of completes once the newer write does.
 
 ### Blazor Hybrid
 
-A Blazor Hybrid application has one theme coordinator, the application's, as it has one culture coordinator:
+A Blazor Hybrid application has one theme coordinator, the application's, as it has one culture coordinator,
+and the two order their switches by the switch coordinator's rules:
 
 - it orders every switch, from any web view or the application's native code, numbers each in the
   application's sequence, applies it to the one state and delivers it to every web view;
@@ -433,10 +448,10 @@ registered one theme.
 
 - **Interactive,** it calls the switch, and the page changes in place.
 - **Statically rendered,** it is a plain form that posts the choice to an endpoint the server maps,
-  `MapFormaThemes()`. The endpoint writes the store first, then the cookie with the store's revision, and
-  redirects back to the page, so a reader with no script running still switches. A store that fails leaves
-  the cookie holding the choice beside the earlier revision, so the browser draws the new choice and the
-  store keeps its earlier one.
+  `MapFormaThemes()`. The endpoint writes the store first, one revision past the latest it knows of, then the
+  cookie with that revision, and redirects back to the page, so a reader with no script running still
+  switches. A store that fails leaves the cookie holding the choice beside the earlier revision, so the
+  browser draws the new choice and the store keeps its earlier one.
 
 ## A part in a theme of its own
 
@@ -507,6 +522,9 @@ shows which values miss a target.
 
 The theme system's assemblies follow the culture's, a contract assembly and a half for each place it runs:
 
+- **The switch coordinator,** the ordering the culture's and the theme's coordinators share, in the browser
+  and in the .NET registration each runtime makes, is an interop assembly of its own,
+  `Forma.Framework.Coordination.Browser.Interop`.
 - **The theme contracts,** `ThemeDefinition`, `ThemeChoice`, `ThemePreference`, `IThemeState`,
   `IThemeSwitch`, `IThemePreferenceStore` and the registrar, `AddFormaThemes`, live in a Framework assembly
   of their own, `Forma.Framework.Themes`.

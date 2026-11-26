@@ -29,6 +29,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Four components implemented, twenty-six changes fixed, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
+| [Themes](#themes) | Planned, thirteen steps open, the switch coordinator and the themes first |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -77,7 +78,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | The component bases and the component context | [Component foundations design](component-foundations-design.md) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | Design tokens, backdrops and theming | [Styling and theming](../README.md#styling-and-theming) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
-| Themes: named themes in a light and a dark scheme, the reader's choice kept and switched in place | [Theme design](theme-design.md) | Designed, every decision taken; the implementation plan next | — |
+| Themes: named themes in a light and a dark scheme, the reader's choice kept and switched in place | [Theme design](theme-design.md) | [Planned](#themes) | — |
 | The culture state and the switch | [Culture design](culture-design.md) | Implemented, coordinated across a page's circuits and WebAssembly runtimes, in an application's own cultures where it provides them | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Culture addresses | [Culture addresses](culture-design.md#culture-addresses) | Implemented, in coordination, in every runtime | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Localization and locale packs | [Localization design](localization-design.md) | Implemented: every locale file, in whatever layout its project chose, read into one entry, a culture, an assembly, a type and a key with its text, and embedded by the build from its entry; the text chosen by culture, then source; a conflict within a source logged by the runtime and reported by the locale lint as an error; a WebAssembly client and a Web App's server reading the host's strings; code written against Microsoft's `IStringLocalizer` reading the same strings through `Forma.Framework.Localization.StringLocalizerAdapter` | [March 2026](../FEATURE-HISTORY.md#2026-03) |
@@ -266,6 +267,20 @@ carries it out in seven steps:
 5. ✅ A job of the full gate failing on a known vulnerability in any NuGet or npm package.
 6. ✅ An OWASP ZAP scan of the running Showcase, rerun from a script.
 7. ✅ Forma under a strict Content Security Policy.
+
+<a id="themes"></a>
+
+## Themes
+
+[The theme implementation plan](theme-implementation-plan.md) carries out [the theme design](theme-design.md) in
+thirteen steps and four parts:
+
+- the switch coordinator, taken out of the culture coordinator;
+- the themes, which a host draws by writing the two attributes itself;
+- the reader's choice, kept, resolved, painted first and switched in place, with the picker;
+- Blazor Hybrid, once each platform's document-start script is proven.
+
+The first two parts are independent of each other. None of the steps has landed.
 
 <a id="deferred"></a>
 
