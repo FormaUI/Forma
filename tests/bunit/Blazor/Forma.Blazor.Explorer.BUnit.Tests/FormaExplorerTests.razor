@@ -2225,7 +2225,8 @@
             var fit = new ColumnFitReport
             {
                 AvailableWidth = 1000,
-                Columns = [.. cut.FindAll("table.forma-explorer-details thead th[data-column]").Select(cell => new ColumnWidth { Key = cell.GetAttribute("data-column")!, Width = 40 })]
+                Columns = [.. cut.FindAll("table.forma-explorer-details thead th[data-column]").Select(cell => new ColumnWidth { Key = cell.GetAttribute("data-column")!, Width = 40 })],
+                RootFontSize = 16,
             };
             await cut.InvokeAsync(() => grid.Instance.HandleColumnFitAsync(fit));
 

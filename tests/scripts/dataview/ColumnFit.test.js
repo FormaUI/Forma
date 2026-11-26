@@ -36,12 +36,16 @@ describe('ColumnFit', () => {
         resizes.restore();
     });
 
-    it('reports the width the container gives and the width each named column wants on attach', () => {
+    it('reports the width the container gives, the width each named column wants and the root font size on attach', () => {
+        document.documentElement.style.fontSize = '20px';
+
         attach(table, options());
+        document.documentElement.style.fontSize = '';
 
         expect(owner.invokeMethodAsync).toHaveBeenCalledWith('HandleColumnFitAsync', {
             availableWidth: 400,
             columns: [{ key: 'name', width: 120 }, { key: 'size', width: 80 }],
+            rootFontSize: 20,
         });
     });
 

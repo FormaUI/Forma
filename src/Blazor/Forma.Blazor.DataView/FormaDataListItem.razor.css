@@ -126,6 +126,13 @@
         padding-block: var(--space-1);
     }
 
+    /* An item is a target a finger presses, so under a coarse pointer it stands at least a touch target tall. */
+    @media (pointer: coarse) {
+        .forma-data-list-item {
+            min-block-size: var(--target-size-touch);
+        }
+    }
+
     .forma-data-list-item-text {
         flex-direction: column;
         align-items: stretch;

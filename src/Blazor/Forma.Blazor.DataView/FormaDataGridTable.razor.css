@@ -137,8 +137,9 @@
     table-layout: fixed;
 }
 
-/* A narrow grid's head holds the view's menu at its end, in place of the actions column. */
-.forma-data-grid-narrow-head {
+/* A narrow grid's head holds the view's menu at its end, in place of the actions column, named as a header cell so it outranks the
+   header's own alignment and padding. */
+.forma-data-grid thead th.forma-data-grid-narrow-head {
     padding-block: var(--space-1);
     padding-inline: var(--space-2);
     text-align: end;
@@ -152,6 +153,14 @@
     padding-inline: var(--space-3);
     border-block-end: 1px solid var(--border-color);
     text-align: start;
+}
+
+/* A narrow row is a target a finger presses, so under a coarse pointer it stands at least a touch target tall, a cell's height
+   being the least its row takes. */
+@media (pointer: coarse) {
+    .forma-data-grid-narrow-cell {
+        block-size: var(--target-size-touch);
+    }
 }
 
 /* A horizontal travel across a narrow row is the row's own swipe, so the page scrolls up and down alone under a finger. */

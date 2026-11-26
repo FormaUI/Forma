@@ -22,6 +22,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   or under 40rem tall beneath a coarse pointer, so its items are the page's own list, its header staying at the top of
   what scrolls them, `--forma-explorer-header-inset-block-start` below a host's own bar. A height the host gives it,
   `--forma-explorer-block-size`, keeps it a box.
+- [`FormaDataGrid`](docs/data-view-design.md#at-a-narrow-width) holding a narrow row's parts gives way by priority, as
+  one holding none does, and turns narrow below `36rem` of its own width, as the list and the cards do, or where the
+  columns it never drops no longer fit, where it turned narrow wherever a column would drop, a desktop's pane among
+  them, and kept its columns and its actions column on a phone where they fit. A narrow row of the grid or the list
+  stands a touch target tall under a coarse pointer, and the grid's narrow head holds its menu at its end.
 - [`FormaVirtualize`](docs/virtualization-design.md#sizes-and-measurement) follows the nearest ancestor that scrolls its
   list now, or the page where none does, chosen again as it measures, where it took the nearest ancestor that could
   scroll and, in a container that grew with its content, drew every item.

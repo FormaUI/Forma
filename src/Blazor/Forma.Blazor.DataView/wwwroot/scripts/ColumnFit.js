@@ -1,5 +1,5 @@
 /**
- * ColumnFit — telling its owner the width a table has and the widths its columns want
+ * ColumnFit — telling its owner the width a table has, the widths its columns want and the page's root font size
  *
  * The table's container is watched for the width it gives, and the table itself for content that
  * changes what its columns need. On either, the table is laid out at its content's own width for one
@@ -53,6 +53,7 @@ class ColumnFit {
         const report = {
             availableWidth: this.#target.parentElement.clientWidth,
             columns: this.#measure(),
+            rootFontSize: parseFloat(getComputedStyle(document.documentElement).fontSize),
         };
         const key = JSON.stringify(report);
 

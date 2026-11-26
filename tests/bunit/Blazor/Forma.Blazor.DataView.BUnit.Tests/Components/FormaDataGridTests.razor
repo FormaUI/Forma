@@ -61,9 +61,10 @@
 
     private sealed record Product(int Id, string Title, string Category);
 
-    // Reports every header cell that names a column as wanting one width, and the container as giving the width asked for.
+    // Reports every header cell that names a column as wanting one width, the container as giving the width asked for, and a root font
+    // of 16 pixels, so 36rem is 576.
     private static ColumnFitReport CreateFitReport(IRenderedComponent<IComponent> cut, double availableWidth, double columnWidth = 100)
-        => new() { AvailableWidth = availableWidth, Columns = [.. cut.FindAll("thead th[data-column]").Select(cell => new ColumnWidth { Key = cell.GetAttribute("data-column")!, Width = columnWidth })] };
+        => new() { AvailableWidth = availableWidth, Columns = [.. cut.FindAll("thead th[data-column]").Select(cell => new ColumnWidth { Key = cell.GetAttribute("data-column")!, Width = columnWidth })], RootFontSize = 16 };
 
     private static Task FitAsync(IRenderedComponent<IComponent> cut, double availableWidth, double columnWidth = 100)
     {
@@ -183,7 +184,7 @@
 
     public sealed class NarrowRows
     {
-        // Three columns and the columns menu wanting 100 pixels each, and the parts a narrow row is drawn from.
+        // Three columns, the title kept at every width, and the parts a narrow row is drawn from.
         private static IRenderedComponent<IComponent> RenderWithParts(FormaDataGridTests ctx)
             => ctx.Render(
                 @<FormaDataView Items="CreateItems(3)" PageSize="10" ItemName="@(item => item.Title)">
@@ -199,7 +200,7 @@
                 </FormaDataView>);
 
         [Fact]
-        public async Task Should_draw_an_item_as_a_narrow_row_once_its_columns_no_longer_fit_holding_its_thumbnail_name_and_detail()
+        public async Task Should_draw_an_item_as_a_narrow_row_below_36rem_of_its_width_holding_its_thumbnail_name_and_detail()
         {
             // Arrange
             using var ctx = new FormaDataGridTests();
@@ -207,7 +208,7 @@
             cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3);
             await FitAsync(cut, availableWidth: 1000);
 
-            // Act — a width below the 400 pixels the columns and the columns menu want
+            // Act — a width below 36rem
             await FitAsync(cut, availableWidth: 200);
 
             // Assert — each row one cell, the item's thumbnail, name and detail, the header holding no column
@@ -223,19 +224,72 @@
         }
 
         [Fact]
-        public async Task Should_draw_its_columns_again_once_its_width_holds_the_columns_it_measured_as_it_turned_narrow()
+        public async Task Should_draw_narrow_rows_below_36rem_of_its_width_though_its_columns_fit()
         {
-            // Arrange — narrow below the 400 pixels the columns and the columns menu want
+            // Arrange
+            using var ctx = new FormaDataGridTests();
+            var cut = RenderWithParts(ctx);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3);
+            await FitAsync(cut, availableWidth: 1000);
+
+            // Act — 500 pixels, more than the 400 the columns and the columns menu want, short of 36rem's 576
+            await FitAsync(cut, availableWidth: 500);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(3, cut.FindAll("td.forma-data-grid-narrow-cell").Count),
+                () => Assert.Empty(cut.FindAll("thead th[data-column]")));
+        }
+
+        [Fact]
+        public async Task Should_give_way_by_priority_from_36rem_while_it_holds_the_columns_it_never_drops()
+        {
+            // Arrange — each column and the columns menu wanting 200 pixels
+            using var ctx = new FormaDataGridTests();
+            var cut = RenderWithParts(ctx);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3);
+            await FitAsync(cut, availableWidth: 1000, columnWidth: 200);
+
+            // Act — 700 pixels, short of the 800 every column wants, past the 600 the title, the number and the menu do
+            await FitAsync(cut, availableWidth: 700, columnWidth: 200);
+
+            // Assert — the note left, the title and the number kept as columns
+            Assert.Multiple(
+                () => Assert.Empty(cut.FindAll("td.forma-data-grid-narrow-cell")),
+                () => Assert.DoesNotContain("forma-data-grid-narrow", cut.Find("table").ClassList),
+                () => Assert.Equal(2, cut.FindAll("tbody tr.forma-data-grid-row")[0].QuerySelectorAll("td:not(.forma-data-grid-menu-column)").Length));
+        }
+
+        [Fact]
+        public async Task Should_draw_narrow_rows_where_the_columns_it_never_drops_no_longer_fit()
+        {
+            // Arrange — each column and the columns menu wanting 400 pixels
+            using var ctx = new FormaDataGridTests();
+            var cut = RenderWithParts(ctx);
+            cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3);
+            await FitAsync(cut, availableWidth: 2000, columnWidth: 400);
+
+            // Act — 700 pixels, past 36rem, short of the 800 the title and the menu want
+            await FitAsync(cut, availableWidth: 700, columnWidth: 400);
+
+            // Assert
+            Assert.Equal(3, cut.FindAll("td.forma-data-grid-narrow-cell").Count);
+        }
+
+        [Fact]
+        public async Task Should_draw_its_columns_again_once_its_width_reaches_36rem_and_holds_the_columns_it_never_drops()
+        {
+            // Arrange — narrow below 36rem
             using var ctx = new FormaDataGridTests();
             var cut = RenderWithParts(ctx);
             cut.WaitForState(() => cut.FindAll("tbody tr.forma-data-grid-row").Count == 3);
             await FitAsync(cut, availableWidth: 1000);
             await FitAsync(cut, availableWidth: 200);
 
-            // Act — wider, though still short of the columns, then as wide as they want
-            await FitAsync(cut, availableWidth: 390);
+            // Act — wider, though still short of 36rem, then 36rem wide
+            await FitAsync(cut, availableWidth: 575);
             var isNarrowShort = cut.FindAll("td.forma-data-grid-narrow-cell").Count == 3;
-            await FitAsync(cut, availableWidth: 400);
+            await FitAsync(cut, availableWidth: 576);
 
             // Assert — the three columns and the columns menu, drawn as cells again
             Assert.Multiple(
@@ -2922,6 +2976,8 @@
                 "a width that is no number" => CreateFitReport(cut, 50, double.NaN),
                 "a table past any width" => CreateFitReport(cut, double.PositiveInfinity),
                 "a table below no width" => CreateFitReport(cut, -320),
+                "a root font of no size" => CreateFitReport(cut, 50) with { RootFontSize = 0 },
+                "a root font size that is no number" => CreateFitReport(cut, 50) with { RootFontSize = double.NaN },
                 _ => throw new ArgumentOutOfRangeException(nameof(malformation), malformation, null),
             };
 
@@ -2935,6 +2991,8 @@
         [InlineData("a width that is no number")]
         [InlineData("a table past any width")]
         [InlineData("a table below no width")]
+        [InlineData("a root font of no size")]
+        [InlineData("a root font size that is no number")]
         public async Task Should_refuse_and_log_a_fit_naming_no_column_or_carrying_a_width_no_column_can_take(string malformation)
         {
             // Arrange — frozen columns, whose places the widths set

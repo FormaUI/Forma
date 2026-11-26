@@ -505,8 +505,8 @@ scrolls, through the freeze pane the grid composes; the pane's arrows and its dr
 frozen edge come with it. The rows scroll in that one box both ways, since a header stuck
 inside a box that scrolled sideways alone would stick to nothing. The grid never sizes against the viewport; its fit is measured by
 script, since a stylesheet cannot tell what a column wants, and the only media queries are
-for the reader. A grid holding the parts a narrow row is drawn from turns narrow where it would
-drop a column, as [a narrow width](#at-a-narrow-width) sets out.
+for the reader. A grid holding the parts a narrow row is drawn from gives way by priority too,
+and turns narrow as [a narrow width](#at-a-narrow-width) sets out.
 
 **Header and rows.** The header row sticks to the top of the scroll region and paints over
 the rows in the header tone, its cells on the same gutters as the cells beneath them; the
@@ -632,15 +632,17 @@ gains `ActionsTemplate` beside the cards' own. The grid takes them too, `Thumbna
 its columns are drawn as columns while it is wide. A grid given no parts keeps its columns at
 every width, giving way by priority as it does today.
 
-**When a view turns narrow.** A grid holding its parts draws its narrow rows once its visible
-columns no longer fit side by side, each at the width its content takes on one line, which is
-where a grid with no parts drops a column by its priority; the width is the grid's own, measured as it fits
-its columns, so a grid in a sidebar turns narrow as one on a phone does. It draws its columns
-again once its width holds the columns it measured when it turned narrow. The list and the
-cards turn narrow below `36rem` of their own width, which their own container query decides:
-a thumbnail of `3rem`, a name of twenty characters, about `12rem`, a detail of twelve, about
+**When a view turns narrow.** Every view turns narrow below `36rem` of its own width: a
+thumbnail of `3rem`, a name of twenty characters, about `12rem`, a detail of twelve, about
 `8rem`, and the selection and actions targets of `2.75rem` each, with their gutters, come to
-`33rem`, and the rest keeps a name from meeting its detail.
+`33rem`, and the rest keeps a name from meeting its detail. The list and the cards decide it by
+their own container query; the grid measures its width as it fits its columns, so a grid in a
+sidebar turns narrow as one on a phone does. Past `36rem` a grid holding its parts gives way by
+priority as a grid with none does, and turns narrow only where the columns it never drops, those
+of its highest priority with its selection and menu columns, no longer fit side by side, each at
+the width its content takes on one line. It draws its columns again once its width reaches
+`36rem` and holds those columns, at the widths it measured while it drew them. A narrow row
+stands at least a touch target tall under a coarse pointer, as a finger presses it.
 
 **One menu in place of the actions column.** A narrow view draws no actions column. Its head
 holds one button of three horizontal dots, which opens the view's menu: Select, which starts

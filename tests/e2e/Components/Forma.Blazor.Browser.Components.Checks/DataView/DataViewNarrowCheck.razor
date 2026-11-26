@@ -36,6 +36,42 @@
     </FormaDataView>
 </div>
 
+@* The same grid at a desktop pane's width, past 36rem, too narrow for its four columns and wide enough for its name: it gives way by
+   priority, keeping its table. *@
+<div id="desktop-box" style="inline-size: 40rem">
+    <FormaDataView Id="desktop-grid" TItem="Document" Items="_documents" ItemKey="@(document => document.Id)" ItemName="@(document => document.Name)" EnablePagination="false">
+        <FormaDataGrid TItem="Document">
+            <ThumbnailTemplate Context="document"><span class="thumbnail" style="display: block; inline-size: 2rem; block-size: 2rem; background: gray" aria-hidden="true"></span></ThumbnailTemplate>
+            <ItemTemplate Context="document">@document.Detail</ItemTemplate>
+            <Columns>
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Name)" Title="Name" Priority="3" />
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Owner)" Title="Owner" Priority="2" />
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Size)" Title="Size" Priority="1" />
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Detail)" Title="Detail" Priority="0" />
+            </Columns>
+        </FormaDataGrid>
+    </FormaDataView>
+</div>
+
+@* A grid of short columns at a phone's width, which they fit, holding a row's actions alone, right to left and checking its items:
+   under 36rem it draws its items as rows of a name each, no actions column, and its menu at its head's end. *@
+<div id="short-box" dir="rtl" style="inline-size: 22rem">
+    <FormaDataView Id="short-grid" TItem="Document" Items="_documents" ItemKey="@(document => document.Id)" ItemName="@(document => document.Owner)" EnablePagination="false"
+                   EnableCheckedSelection="true">
+        <FormaDataGrid TItem="Document">
+            <ActionsTemplate Context="document">
+                <FormaOverflowMenu Label="@($"Actions for link {document.Id}")">
+                    <FormaDropDownMenuItem>Remove</FormaDropDownMenuItem>
+                </FormaOverflowMenu>
+            </ActionsTemplate>
+            <Columns>
+                <FormaPropertyColumn TItem="Document" TValue="int" Property="@(document => document.Id)" Title="Order" Priority="1" />
+                <FormaPropertyColumn TItem="Document" TValue="string" Property="@(document => document.Size)" Title="Size" Priority="0" />
+            </Columns>
+        </FormaDataGrid>
+    </FormaDataView>
+</div>
+
 @* The same grid checking its items on demand: a hold or the menu's Select starts selecting, a row's actions come from a swipe, and
    the menu runs Delete on the selected items, which is written where the check reads it. *@
 <div id="selecting-box" style="inline-size: 22rem">

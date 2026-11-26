@@ -21,6 +21,10 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 {
     private const string ViewKey = "grid";
 
+    // The width below which a grid holding the parts of a narrow row draws them, in rems, the list's and the cards' own: a thumbnail,
+    // a name and a detail beside the selection and actions targets come to 33rem, and the rest keeps a name from meeting its detail.
+    private const double NarrowWidthRems = 36;
+
     // What the grid is given that never changes how a row is drawn: the columns, which are judged by themselves, the header, the
     // callbacks of an edit, and the host's own attributes.
     private static readonly string[] _parametersLeftOut =
@@ -44,7 +48,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     private double _availableWidth;
     private double? _frozenExtent;
     private bool _isNarrow;
-    private double _narrowWidth;
+    private double _rootFontSize;
 
     private bool _isCollectingColumns;
     private bool _isInitialSortApplied;
@@ -122,7 +126,7 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
     internal bool HasNarrowParts
         => ThumbnailTemplate is not null || ItemTemplate is not null || ActionsTemplate is not null;
 
-    /// <summary>Whether the grid draws its items as narrow rows: it holds their parts, and its columns no longer fit its width.</summary>
+    /// <summary>Whether the grid draws its items as narrow rows: it holds their parts, and its width is under 36rem or too narrow for the columns it never drops.</summary>
     internal bool IsNarrow
         => _isNarrow && HasNarrowParts;
 
@@ -237,6 +241,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
             }
         }
 
+        _rootFontSize = report.RootFontSize;
+
         // A reader's choice holds until the grid is given a different width.
         if (Math.Abs(report.AvailableWidth - _availableWidth) >= 1)
         {
@@ -253,28 +259,21 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
         return narrowRowsChanged || columnsChanged || frozenColumnsMoved ? InvokeAsync(StateHasChanged) : Task.CompletedTask;
     }
 
-    // A grid holding the parts of a narrow row turns narrow where a grid without them would drop a column, and draws its columns again
-    // once its width holds the widths they wanted when it turned narrow.
+    // A grid holding the parts of a narrow row gives way by priority as a grid without them does, and draws its narrow rows below
+    // 36rem of its own width, as the list and the cards do, or where the columns it never drops no longer fit beside one another;
+    // a narrow grid draws no columns, so it keeps the widths they wanted while it drew them.
     private bool FitNarrowRows()
     {
         var wasNarrow = _isNarrow;
-
-        if (_isNarrow)
-        {
-            _isNarrow = _availableWidth < _narrowWidth;
-        }
-        else if (_availableWidth > 0 && GetColumnsWidth() is var columnsWidth && columnsWidth > _availableWidth)
-        {
-            _isNarrow = true;
-            _narrowWidth = columnsWidth;
-        }
+        _isNarrow = _availableWidth > 0 && (_availableWidth < NarrowWidthRems * _rootFontSize || GetKeptColumnsWidth() > _availableWidth);
 
         return _isNarrow != wasNarrow && HasNarrowParts;
     }
 
-    // The width every visible column wants, with the selection and menu columns beside them.
-    private double GetColumnsWidth()
-        => GetWantedWidth(SelectionColumnKey) + GetWantedWidth(MenuColumnKey) + _columns.Where(column => column.Visible).Sum(column => GetWantedWidth(column.ColumnKey));
+    // The width the columns the grid never drops want, with the selection and menu columns beside them.
+    private double GetKeptColumnsWidth()
+        => GetWantedWidth(SelectionColumnKey) + GetWantedWidth(MenuColumnKey)
+            + _columns.Where(column => column.Visible && !IsDroppable(column)).Sum(column => GetWantedWidth(column.ColumnKey));
 
     /// <summary>Shows a column the width dropped, or drops one it shows.</summary>
     /// <remarks>The reader's choice holds until the grid is given a different width.</remarks>
@@ -291,7 +290,8 @@ public sealed partial class FormaDataGrid<TItem> : FormaElementBase, IDataViewVi
 
     // A fit the table can be laid out by: a width it has, and every column named with a width it wants.
     private static bool IsFit(ColumnFitReport report)
-        => report.Columns is { } columns && IsWidth(report.AvailableWidth) && columns.All(column => column is { Key: not null } && IsWidth(column.Width));
+        => report.Columns is { } columns && IsWidth(report.AvailableWidth) && columns.All(column => column is { Key: not null } && IsWidth(column.Width))
+            && double.IsFinite(report.RootFontSize) && report.RootFontSize > 0;
 
     private static bool IsWidth(double width)
         => double.IsFinite(width) && width >= 0;

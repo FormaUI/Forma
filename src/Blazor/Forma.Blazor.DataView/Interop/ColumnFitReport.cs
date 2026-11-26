@@ -2,7 +2,7 @@ namespace Forma.Blazor.Components.DataView.Interop;
 
 using System.Diagnostics.CodeAnalysis;
 
-/// <summary>What a column fit reports about its table: the width it has and the width each of its columns wants.</summary>
+/// <summary>What a column fit reports about its table: the width it has, the width each of its columns wants, and the page's root font size.</summary>
 [DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicProperties)]
 public sealed record ColumnFitReport
 {
@@ -11,4 +11,7 @@ public sealed record ColumnFitReport
 
     /// <summary>The width each header cell that names a column wants, in the order the cells stand in.</summary>
     public IReadOnlyList<ColumnWidth> Columns { get; init; } = [];
+
+    /// <summary>The page's root font size, in pixels, which a rem stands for.</summary>
+    public double RootFontSize { get; init; }
 }

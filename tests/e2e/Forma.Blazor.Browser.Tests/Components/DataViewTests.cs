@@ -157,6 +157,69 @@ public sealed class DataViewTests
             await Assertions.Expect(page.Locator("#tablet-grid").GetByRole(AriaRole.Columnheader, new() { Name = "Updated", Exact = true })).ToBeVisibleAsync();
         }
 
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_give_way_by_priority_in_a_desktop_pane_too_narrow_for_its_columns_keeping_its_table(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-narrow");
+            await using var _ = context;
+            var grid = page.Locator("#desktop-grid");
+
+            // Act — the phone-width grids turned narrow, so the widths have been reported
+            await Assertions.Expect(page.Locator("#ltr-box td.forma-data-grid-narrow-cell")).ToHaveCountAsync(3, new() { Timeout = 30_000 });
+
+            // Assert — the detail left by its priority, the name kept as a column
+            await Assertions.Expect(grid.Locator("td.forma-data-grid-narrow-cell")).ToHaveCountAsync(0);
+            await Assertions.Expect(grid.GetByRole(AriaRole.Columnheader, new() { Name = "Name", Exact = true })).ToBeVisibleAsync();
+            await Assertions.Expect(grid.GetByRole(AriaRole.Columnheader, new() { Name = "Detail", Exact = true })).ToHaveCountAsync(0);
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_draw_narrow_rows_at_a_phone_s_width_its_short_columns_fit_with_no_actions_column_each_a_target_tall(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-narrow");
+            await using var _ = context;
+            var rows = page.Locator("#short-grid td.forma-data-grid-narrow-cell");
+
+            // Act
+            await Assertions.Expect(rows).ToHaveCountAsync(3, new() { Timeout = 30_000 });
+            var heights = await page.EvaluateAsync<double[]>(
+                "() => [matchMedia('(pointer: coarse)').matches ? 1 : 0, Math.min(...[...document.querySelectorAll('#short-grid td.forma-data-grid-narrow-cell')].map(cell => cell.getBoundingClientRect().height))]");
+            var (isCoarse, shortest) = (heights[0] == 1, heights[1]);
+
+            // Assert — a touch target's 44 pixels under a coarse pointer, the 24 of a fine one's floor otherwise
+            await Assertions.Expect(page.Locator("#short-grid").GetByRole(AriaRole.Columnheader, new() { Name = "Order", Exact = true })).ToHaveCountAsync(0);
+            Assert.True(shortest >= (isCoarse ? 44 : 24) - 0.5, $"A row stands {shortest}px tall under a {(isCoarse ? "coarse" : "fine")} pointer.");
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_stand_its_head_s_menu_at_the_head_s_end_in_each_direction(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "data-view-narrow");
+            await using var _ = context;
+
+            // Act
+            await Assertions.Expect(page.Locator("#selecting-box th.forma-data-grid-narrow-head button, #short-box th.forma-data-grid-narrow-head button")).ToHaveCountAsync(2, new() { Timeout = 30_000 });
+            var ends = await page.EvaluateAsync<string[]>(
+                """
+                () => [['ltr', 'selecting-box'], ['rtl', 'short-box']].map(([direction, box]) => {
+                    const head = document.querySelector(`#${box} th.forma-data-grid-narrow-head`).getBoundingClientRect();
+                    const menu = document.querySelector(`#${box} th.forma-data-grid-narrow-head button`).getBoundingClientRect();
+                    const fromEnd = direction === 'ltr' ? head.right - menu.right : menu.left - head.left;
+                    const fromStart = direction === 'ltr' ? menu.left - head.left : head.right - menu.right;
+                    return fromEnd < fromStart ? '' : `${direction}: the menu stands ${Math.round(fromStart)}px from the head's start and ${Math.round(fromEnd)}px from its end`;
+                }).filter(problem => problem !== '')
+                """);
+
+            // Assert
+            Assert.Empty(ends);
+        }
+
         // A finger's press at the middle of an element, and its travel by the pixels given.
         private static async Task TouchAsync(ILocator element, string type, double across = 0)
         {
