@@ -20,12 +20,14 @@
     --forma-field-value-block-size: calc(var(--target-size-xl) - var(--forma-field-label-room-block-size) - 2px);
     /* A button standing at the value's end, as a password's toggle does. */
     --forma-field-end-target-size: var(--target-size-sm);
+    /* The room a floated label keeps clear at its end. */
+    --forma-field-floated-label-end-room: 0px;
 }
 
-/* The value's row is a touch target under a coarse pointer, as an input is, so what stands at its end fits it. */
+/* A button at the value's end grows to a touch target under a coarse pointer, centered on the value's row and reaching
+   past it, while the field keeps its height. */
 @media (pointer: coarse) {
     .forma-field {
-        --forma-field-value-block-size: var(--target-size-touch);
         --forma-field-end-target-size: var(--target-size-touch);
     }
 }
@@ -65,7 +67,7 @@
 .forma-field-label-room {
     display: block;
     padding-block-start: var(--forma-field-label-offset);
-    padding-inline: var(--space-3);
+    padding-inline: var(--space-3) calc(var(--space-3) + var(--forma-field-floated-label-end-room));
     font-size: var(--font-size-xs);
     line-height: var(--line-height-target);
     visibility: hidden;
@@ -193,9 +195,17 @@
     transition: font-size 0.1s ease-in-out, color 0.1s ease-in-out;
 }
 
-/* A button besides the element stands at the value's end, as a password's toggle does. */
-.forma-field-box-floating-label:has(button:not(.forma-field-input)) {
+/* A button following the element stands at the value's end, as a password's toggle does. */
+.forma-field-box-floating-label:has(.forma-field-input ~ button, .forma-field-input ~ * button) {
     --forma-field-label-end-room: calc(var(--space-1) + var(--forma-field-end-target-size));
+}
+
+/* A touch target at the value's end reaches above the value's row into the label's room, so a floated label and its
+   room keep clear of it too. */
+@media (pointer: coarse) {
+    .forma-field-box-floating-label:has(.forma-field-input ~ button, .forma-field-input ~ * button) {
+        --forma-field-floated-label-end-room: var(--forma-field-label-end-room);
+    }
 }
 
 .forma-field-box-floating-label > .forma-field-label::before,
@@ -231,7 +241,7 @@
 /* Floated: the element focused, holding a value (its placeholder not shown, or has-value), or the label pinned. */
 .forma-field-box-floating-label:has(.forma-field-input:focus, .forma-field-input:not(:placeholder-shown), .forma-field-input.has-value) > .forma-field-label,
 .forma-field-label-pinned > .forma-field-box-floating-label > .forma-field-label {
-    padding-inline-end: 0;
+    padding-inline-end: var(--forma-field-floated-label-end-room);
     font-size: var(--font-size-xs);
     color: var(--forma-label-color, var(--text-primary-color));
 }

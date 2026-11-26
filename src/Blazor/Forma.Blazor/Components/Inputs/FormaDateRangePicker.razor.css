@@ -111,7 +111,6 @@
 /* The clear button grows to a touch target, and the range keeps clear of it. */
 @media (pointer: coarse) {
     .forma-date-range-picker-trigger {
-        min-block-size: var(--target-size-touch);
         padding-inline-end: calc(var(--space-2) + var(--target-size-touch));
     }
 }

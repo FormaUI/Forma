@@ -97,6 +97,20 @@
         --forma-color-picker-target-size: var(--target-size-touch);
     }
 
+    /* The touch target reaches down from the value's row rather than up into the label's room, the swatch staying
+       centered on the row. */
+    .forma-color-picker-swatch-wrapper {
+        inset-block-start: 0;
+        align-items: flex-start;
+        padding-block-start: calc((var(--forma-field-value-block-size) - 1.25rem) / 2);
+        transform: none;
+    }
+
+    /* The alpha row starts beneath the swatch's target. */
+    .forma-color-picker-alpha-row {
+        padding-block-start: calc(var(--target-size-touch) - var(--forma-field-value-block-size));
+    }
+
     .forma-color-picker-alpha {
         block-size: var(--target-size-touch);
     }

@@ -1,15 +1,23 @@
 @page "/{Runtime}/field-label"
 
 @* A number input in each direction, each labeled at more length than a phone's width holds on one line, its label resting
-   until the input takes the focus. *@
+   until the input takes the focus, and a password box in each direction labeled in one line, its toggle at the value's end. *@
 <div dir="ltr">
     <FormaNumberInput TValue="decimal?" Id="ltr" Label="Selling price to the public, value added tax, delivery and every other charge the store collects included" @bind-Value="_ltrPrice" />
 </div>
 <div dir="rtl">
     <FormaNumberInput TValue="decimal?" Id="rtl" Label="מחיר המכירה לציבור, כולל מס ערך מוסף, דמי משלוח וכל תשלום אחר שהחנות גובה מן הקונה" @bind-Value="_rtlPrice" />
 </div>
+<div dir="ltr">
+    <FormaPasswordBox Id="ltr-password" Label="Password" @bind-Value="_ltrPassword" />
+</div>
+<div dir="rtl">
+    <FormaPasswordBox Id="rtl-password" Label="סיסמה" @bind-Value="_rtlPassword" />
+</div>
 
 @code {
     private decimal? _ltrPrice;
     private decimal? _rtlPrice;
+    private string? _ltrPassword;
+    private string? _rtlPassword;
 }

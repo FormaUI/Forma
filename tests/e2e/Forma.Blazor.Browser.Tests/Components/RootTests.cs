@@ -41,6 +41,28 @@ public sealed class RootTests
 
     private const string ReadBoxHeight = "id => document.getElementById(id).closest('.forma-field-box').getBoundingClientRect().height";
 
+    // What keeps the password box id names from standing at the field's step with its toggle at the value's end: its box's height,
+    // its toggle's target smaller than a target takes under the page's pointer, a finger's where the pointer is coarse, or a line of
+    // its label over that target.
+    private const string ReadEndButtonProblems = """
+        id => {
+            const box = document.getElementById(id).closest('.forma-field-box');
+            const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+            const step = parseFloat(getComputedStyle(box).getPropertyValue('--target-size-xl')) * rem;
+            const least = matchMedia('(pointer: coarse)').matches ? 44 : 24;
+            const height = box.getBoundingClientRect().height;
+            const target = box.querySelector('.forma-password-box-toggle button').getBoundingClientRect();
+            const range = document.createRange();
+            range.selectNodeContents(box.querySelector(':scope > .forma-field-label .forma-field-label-text'));
+            const isOverTarget = line => line.left < target.right - 0.5 && target.left < line.right - 0.5 && line.top < target.bottom - 0.5 && target.top < line.bottom - 0.5;
+            return [
+                ...(Math.abs(height - step) > 0.5 ? [`the box stands ${height}px where the field's step is ${step}px`] : []),
+                ...(target.width < least - 0.5 || target.height < least - 0.5 ? [`the toggle's target is ${target.width} by ${target.height}, less than ${least}`] : []),
+                ...([...range.getClientRects()].some(isOverTarget) ? ["a line of the label lies over the toggle's target"] : []),
+            ];
+        }
+        """;
+
     public sealed class Field(BrowserHost host)
     {
         [Theory]
@@ -78,6 +100,28 @@ public sealed class RootTests
                 () => Assert.Empty(floatedProblems),
                 () => Assert.Equal(restingHeights["ltr"], floatedHeights["ltr"], 0.5),
                 () => Assert.Equal(restingHeights["rtl"], floatedHeights["rtl"], 0.5));
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_stand_at_its_step_with_a_button_at_its_value_s_end_its_label_clear_of_the_button_under_any_pointer(string runtime)
+        {
+            // Arrange — a password box in each direction, labeled in one line, its toggle at the value's end
+            var (context, page) = await OpenAsync(host, runtime, "field-label");
+            await using var _ = context;
+            var problems = new List<string>();
+
+            // Act — each read resting, then focused once its label has floated over its room
+            foreach (var id in (string[])["ltr-password", "rtl-password"])
+            {
+                problems.AddRange((await page.EvaluateAsync<string[]>(ReadEndButtonProblems, id)).Select(problem => $"{id} resting: {problem}"));
+                await page.Locator($"#{id}").FocusAsync();
+                await page.WaitForFunctionAsync(IsLabelOverItsRoom, id);
+                problems.AddRange((await page.EvaluateAsync<string[]>(ReadEndButtonProblems, id)).Select(problem => $"{id} floated: {problem}"));
+            }
+
+            // Assert
+            Assert.Empty(problems);
         }
 
         [Theory]

@@ -126,7 +126,6 @@
 }
 
 @media (pointer: coarse) {
-    .forma-multi-select-trigger,
     .forma-multi-select-search,
     .forma-multi-select-options ::deep .forma-checkbox-label {
         min-block-size: var(--target-size-touch);
