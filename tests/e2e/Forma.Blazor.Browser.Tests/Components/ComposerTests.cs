@@ -17,6 +17,28 @@ public sealed class ComposerTests
 
         [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_stand_its_bars_in_one_row_a_finger_swipes_under_a_coarse_pointer(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "composer");
+            await using var _ = context;
+            await Assertions.Expect(page.Locator("#check .forma-composer-toolbar [role=toolbar]").First).ToBeVisibleAsync();
+
+            // Act — where each shown bar stands, measured in the page
+            var drawn = await page.Locator("#check .forma-composer-toolbar").EvaluateAsync<string>("""
+                toolbar => {
+                    const pointer = matchMedia('(pointer: coarse)').matches ? 'coarse' : 'fine';
+                    const tops = [...toolbar.children].filter(bar => bar.offsetParent !== null).map(bar => Math.round(bar.getBoundingClientRect().top));
+                    return `${pointer} ${new Set(tops).size === 1 ? 'one row' : `${new Set(tops).size} rows`}`;
+                }
+                """);
+
+            // Assert — a phone's toolbar is one strip, where a pointer's bars may stand a row each
+            Assert.True(drawn is "coarse one row" || drawn.StartsWith("fine", StringComparison.Ordinal), drawn);
+        }
+
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_write_the_text_typed_and_made_bold_into_the_bound_document(string runtime)
         {
             // Arrange

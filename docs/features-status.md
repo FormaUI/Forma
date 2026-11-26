@@ -27,7 +27,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests, a faster gate, builds in processes of their own and the examples' locale lint; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Four components implemented, twenty-three changes fixed; three more changes for a phone planned, and a path per culture open |
+| [A host's requests](#a-hosts-requests) | Four components implemented, twenty-four changes fixed; two more changes for a phone planned, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -241,7 +241,7 @@ here in the order they are taken, each with what the code does and its state.
 | Tabs on a phone | `FormaTabs` and `FormaLinkTabs` scrolled sideways behind arrows at every pointer, so at a phone's width a title was cut mid-word under an arrow. Now, under a coarse pointer, the freeze pane's arrow form they scroll in scrolls by a swipe, a title cut at an edge fading out, and the arrows stay with a fine pointer | Fixed |
 | One mark on a field that opens a list | `FormaSelect`, `FormaMultiSelect`, `FormaDateBox` and `FormaDateRangePicker` drew a `▾` character at the extra-small type size, where `FormaComboBox` draws the chevron icon in a button, so two fields side by side carried two marks. Now every field that opens a list draws the combo box's chevron icon | Fixed |
 | A picker's prompt under touch | `FormaFilePicker` and `FormaImagePicker` took one `Prompt`, "Drop files here or click to browse" unless a host gives another, so a phone was told to drop where nothing can be dropped. Now both take `TouchPrompt`, which a coarse pointer reads, speaking of choosing alone, the library's own or a host's | Fixed |
-| The composer's toolbar on a phone | At a phone's width the composer's bars wrap into rows, each with an overflow of its own. Planned: one row, the commands that don't fit gathered behind one menu | Planned |
+| The composer's toolbar on a phone | At a phone's width the composer's bars stood a row each, each scrolling with an overflow of its own. Now, under a coarse pointer, the bars stand in one row a finger swipes | Fixed |
 | A text area's grip under touch | `FormaTextArea` kept `resize: vertical` under a coarse pointer, whose grip a finger can't drag. Now it draws no grip under a coarse pointer, a longer text scrolling within the area's rows | Fixed |
 | Switches in a column | `FormaToggleSwitch` stood right after its label, so a column of switches was ragged. Now, under a coarse pointer, the switch stands at its row's end, its label at the start | Fixed |
 | The explorer on a phone | `FormaExplorer` is a box of `40rem` at most that scrolls inside the page. Planned: at a phone's width the explorer's items are the page's own list, scrolled with the page | Planned |

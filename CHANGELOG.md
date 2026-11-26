@@ -32,6 +32,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Under a coarse pointer `FormaToggleSwitch` stands at its row's end, its label at the start, so a column of switches
   lines up.
 - `FormaDataView`'s Load More is a secondary button, drawn as one, where a ghost button read as text.
+- Under a coarse pointer `FormaComposer`'s bars stand in one row a finger swipes, where each stood a row of its own.
 
 ## `1.0.0-preview.17`
 

@@ -60,6 +60,26 @@
     gap: var(--space-1);
 }
 
+/* Under a coarse pointer the bars stand in one row a finger swipes, each at its commands' own width, where a row of their own
+   each would stack two strips on a phone, each scrolling apart. */
+@media (pointer: coarse) {
+    /* Both of its classes, so the rule outranks the command area's own column in any bundle order. */
+    ::deep .forma-command-area.forma-composer-toolbar {
+        flex-direction: row;
+        align-items: center;
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    ::deep .forma-command-area.forma-composer-toolbar::-webkit-scrollbar {
+        display: none;
+    }
+
+    ::deep .forma-command-area.forma-composer-toolbar > * {
+        flex: none;
+    }
+}
+
 ::deep .forma-tabs {
     flex: 1;
     min-block-size: 0;
