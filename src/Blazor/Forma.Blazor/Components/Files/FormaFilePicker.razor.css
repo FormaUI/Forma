@@ -69,6 +69,21 @@
     font-size: var(--font-size-sm);
 }
 
+/* A finger drops nothing, so a coarse pointer reads the prompt that speaks of choosing alone. */
+.forma-file-picker-prompt-coarse {
+    display: none;
+}
+
+@media (pointer: coarse) {
+    .forma-file-picker-prompt-fine {
+        display: none;
+    }
+
+    .forma-file-picker-prompt-coarse {
+        display: block;
+    }
+}
+
 .forma-file-picker-rejections {
     list-style: none;
     margin: 0;

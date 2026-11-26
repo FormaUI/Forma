@@ -11,7 +11,10 @@
     <label @ref="_dropZoneElement" class="forma-file-picker-drop-zone @(_isBusy ? "forma-file-picker-busy" : "")">
         <InputFile class="forma-file-picker-input" accept="@Options.Accept" multiple="@Options.AllowMultipleFiles" disabled="@_isBusy" OnChange="HandleChangeAsync" />
         <span class="forma-file-picker-icon" aria-hidden="true"><FormaIcon Icon="Glyph.CloudUpload" Size="IconSize.Display" /></span>
-        <p class="forma-file-picker-prompt">@EffectivePrompt</p>
+        @* One prompt for a pointer that can drop and one for a finger that can't, the stylesheet showing the one that fits, which is
+           the input's accessible name. *@
+        <p class="forma-file-picker-prompt forma-file-picker-prompt-fine">@EffectivePrompt</p>
+        <p class="forma-file-picker-prompt forma-file-picker-prompt-coarse">@EffectiveTouchPrompt</p>
     </label>
 
     <ul class="forma-file-picker-rejections" role="alert">

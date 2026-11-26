@@ -26,6 +26,9 @@ public sealed partial class FormaImagePicker : FormaElementBase
     /// <summary>The text of the drop zone, which is also the input's accessible name.</summary>
     [Parameter] public string? Prompt { get; set; }
 
+    /// <summary>The text of the drop zone under a coarse pointer, where nothing can be dropped, which is also the input's accessible name there.</summary>
+    [Parameter] public string? TouchPrompt { get; set; }
+
     private FilePreview _preview = default!;
 
     private bool _isPreviewPending;
@@ -38,6 +41,9 @@ public sealed partial class FormaImagePicker : FormaElementBase
 
     private string EffectivePrompt
         => Prompt ?? L["Drop images here or click to browse"];
+
+    private string EffectiveTouchPrompt
+        => TouchPrompt ?? L["Tap to choose images"];
 
     private FilePickerOptions PickerOptions
         => string.IsNullOrWhiteSpace(Options.Accept) ? Options with { Accept = ImageAccept } : Options;

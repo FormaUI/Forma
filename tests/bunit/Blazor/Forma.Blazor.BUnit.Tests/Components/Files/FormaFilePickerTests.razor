@@ -52,6 +52,23 @@
         }
 
         [Fact]
+        public void Should_offer_a_prompt_of_choosing_alone_for_a_coarse_pointer_its_own_or_the_caller_s()
+        {
+            // Arrange
+            using var ctx = new FormaFilePickerTests();
+
+            // Act
+            var own = ctx.Render(@<FormaFilePicker OnFilesSelected="@(_ => Task.CompletedTask)" />);
+            var callers = ctx.Render(@<FormaFilePicker TouchPrompt="Choose a picture" OnFilesSelected="@(_ => Task.CompletedTask)" />);
+
+            // Assert — beside the prompt for a pointer that can drop
+            Assert.Multiple(
+                () => Assert.Equal("Tap to choose files", own.Find(".forma-file-picker-prompt-coarse").TextContent),
+                () => Assert.Equal("Drop files here or click to browse", own.Find(".forma-file-picker-prompt-fine").TextContent),
+                () => Assert.Equal("Choose a picture", callers.Find(".forma-file-picker-prompt-coarse").TextContent));
+        }
+
+        [Fact]
         public void Should_report_a_file_that_passes_validation()
         {
             // Arrange

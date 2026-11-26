@@ -4,7 +4,8 @@
     "Drop files here or click to browse": "Suelta los archivos aquí o haz clic para buscarlos",
     "\"{Name}\" isn't an accepted file type.": "\"{Name}\" no es un tipo de archivo aceptado.",
     "\"{Name}\" is larger than {Size}.": "\"{Name}\" ocupa más de {Size}.",
-    "\"{Name}\" wasn't included — too many files at once.": "\"{Name}\" no se incluyó: demasiados archivos a la vez."
+    "\"{Name}\" wasn't included — too many files at once.": "\"{Name}\" no se incluyó: demasiados archivos a la vez.",
+    "Tap to choose files": "Toca para elegir archivos"
   },
   "FormaFileUploader": {
     "All Files": "Todos los Archivos",
@@ -41,6 +42,7 @@
     "Next": "Siguiente"
   },
   "FormaImagePicker": {
-    "Drop images here or click to browse": "Suelta las imágenes aquí o haz clic para buscarlas"
+    "Drop images here or click to browse": "Suelta las imágenes aquí o haz clic para buscarlas",
+    "Tap to choose images": "Toca para elegir imágenes"
   }
 }

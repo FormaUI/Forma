@@ -27,6 +27,9 @@ public sealed partial class FormaFilePicker : FormaElementBase
     /// <summary>The text of the drop zone, which is also the input's accessible name.</summary>
     [Parameter] public string? Prompt { get; set; }
 
+    /// <summary>The text of the drop zone under a coarse pointer, where nothing can be dropped, which is also the input's accessible name there.</summary>
+    [Parameter] public string? TouchPrompt { get; set; }
+
     [Inject] private InputRouter InputRouter { get; set; } = default!;
 
     private bool _isAttached;
@@ -46,6 +49,9 @@ public sealed partial class FormaFilePicker : FormaElementBase
 
     private string EffectivePrompt
         => Prompt ?? L["Drop files here or click to browse"];
+
+    private string EffectiveTouchPrompt
+        => TouchPrompt ?? L["Tap to choose files"];
 
     /// <inheritdoc />
     protected override void OnInitialized()

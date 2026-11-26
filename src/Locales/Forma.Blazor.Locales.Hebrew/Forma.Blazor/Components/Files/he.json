@@ -2,6 +2,7 @@
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
   "FormaFilePicker": {
     "Drop files here or click to browse": "גררו קבצים לכאן או לחצו כדי לבחור",
+    "Tap to choose files": "הקישו כדי לבחור קבצים",
     "\"{Name}\" isn't an accepted file type.": "\"{Name}\" אינו סוג קובץ מותר.",
     "\"{Name}\" is larger than {Size}.": "\"{Name}\" גדול מ-\u2068{Size}\u2069.",
     "\"{Name}\" wasn't included — too many files at once.": "\"{Name}\" לא נכלל — יותר מדי קבצים בבת אחת."
@@ -41,6 +42,7 @@
     "Next": "הבא"
   },
   "FormaImagePicker": {
-    "Drop images here or click to browse": "גררו תמונות לכאן או לחצו כדי לבחור"
+    "Drop images here or click to browse": "גררו תמונות לכאן או לחצו כדי לבחור",
+    "Tap to choose images": "הקישו כדי לבחור תמונות"
   }
 }
