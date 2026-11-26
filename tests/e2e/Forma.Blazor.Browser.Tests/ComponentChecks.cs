@@ -493,7 +493,9 @@ public static partial class ComponentChecks
             var problems = WatchProblems(page);
             await page.SetViewportSizeAsync(1280, 720).ConfigureAwait(false);
 
-            // The last check's page moves in-app to the root, which no check page renders, so its renderer is quiet as the next page loads.
+            // The last check's page moves in-app to the root, which no check page renders, so its renderer is quiet as the next page loads;
+            // the first check of a run meets an application just started, whose web view may not have loaded Blazor yet.
+            await page.WaitForFunctionAsync("() => typeof globalThis.Blazor?.navigateTo === 'function'").ConfigureAwait(false);
             await page.EvaluateAsync("() => Blazor.navigateTo('/')").ConfigureAwait(false);
             await page.WaitForFunctionAsync("() => location.pathname === '/'").ConfigureAwait(false);
             await MakeRoundTripAsync(page).ConfigureAwait(false);
