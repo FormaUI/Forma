@@ -7,7 +7,7 @@ set out. What Forma gained before its first release, month by month, is in [the 
 
 ## `1.0.0-preview.20`
 
-*Unreleased*
+*November 26, 2026*
 
 - [`FormaExplorer`](docs/explorer-design.md#the-parts)'s items pass beneath its header on a phone, where a card's
   actions stood over the header as the card scrolled under it.
