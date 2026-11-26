@@ -243,13 +243,13 @@ public sealed class TransferTests
             await page.Locator("#forma-body").GetByRole(AriaRole.Tab, new() { Name = "Preview", Exact = true }).ClickAsync();
             var export = page.Locator("#forma-body .forma-composer-toolbar").GetByRole(AriaRole.Button, new() { Name = "Export HTML", Exact = true });
 
+            await KeepOfferedFilesAsync(page);
+
             // Act
             var download = await page.RunAndWaitForDownloadAsync(() => export.ClickAsync());
 
             // Assert — the page the browser composed, the document whole within it
-            await using var exportedStream = await download.CreateReadStreamAsync();
-            using var exportedReader = new StreamReader(exportedStream);
-            var exported = (await exportedReader.ReadToEndAsync(TestContext.Current.CancellationToken)).Split("zzzzzzzzz").Length - 1;
+            var exported = (await ReadOfferedTextAsync(page, download)).Split("zzzzzzzzz").Length - 1;
             Assert.Equal(Paragraphs * ParagraphWords, exported);
         }
 

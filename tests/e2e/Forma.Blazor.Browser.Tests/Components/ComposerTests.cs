@@ -286,12 +286,13 @@ public sealed class ComposerTests
 
             // Act
             await GetCommand(page, "Print").ClickAsync();
+            await KeepOfferedFilesAsync(page);
             var download = await page.RunAndWaitForDownloadAsync(() => GetCommand(page, "Export HTML").ClickAsync());
 
             // Assert
             await page.WaitForFunctionAsync("() => window.formaPrinted?.html.includes('<b>Hello</b>') === true && window.formaPrinted.title === 'Document Preview'");
             Assert.Equal("document.html", download.SuggestedFilename);
-            Assert.Contains("<b>Hello</b>", await ReadAsync(download), StringComparison.Ordinal);
+            Assert.Contains("<b>Hello</b>", await ReadOfferedTextAsync(page, download), StringComparison.Ordinal);
         }
 
         [Theory]
@@ -309,12 +310,13 @@ public sealed class ComposerTests
 
             // Act
             await GetCommand(page, "Copy Source").ClickAsync();
+            await KeepOfferedFilesAsync(page);
             var download = await page.RunAndWaitForDownloadAsync(() => GetCommand(page, "Download Source").ClickAsync());
 
             // Assert
             await page.WaitForFunctionAsync("() => (window.formaCopied ?? []).some(text => text.includes('<b>Hello</b>'))");
             Assert.Equal("document.html", download.SuggestedFilename);
-            Assert.Contains("<b>Hello</b>", await ReadAsync(download), StringComparison.Ordinal);
+            Assert.Contains("<b>Hello</b>", await ReadOfferedTextAsync(page, download), StringComparison.Ordinal);
         }
 
         [Theory]
@@ -675,14 +677,4 @@ public sealed class ComposerTests
 
     private static ILocator GetOption(IPage page, string name)
         => page.Locator("[role=menuitem], [role=menuitemradio], [role=menuitemcheckbox]").Filter(new() { HasText = name });
-
-    // The text a page offered for download, read from the file the browser saved, since a page under its Content Security Policy
-    // fetches nothing from a blob address.
-    private static async Task<string> ReadAsync(IDownload download)
-    {
-        await using var stream = await download.CreateReadStreamAsync();
-        using var reader = new StreamReader(stream);
-
-        return await reader.ReadToEndAsync(TestContext.Current.CancellationToken);
-    }
 }

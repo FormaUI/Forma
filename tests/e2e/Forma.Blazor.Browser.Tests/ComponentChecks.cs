@@ -83,6 +83,47 @@ public static partial class ComponentChecks
         return (context, page);
     }
 
+    // Keeps each file the page offers for download, by the address the page offers it at, as the page makes it.
+    private const string KeepOfferedFiles = """
+        () => {
+            if (window.formaOfferedFiles) {
+                return;
+            }
+
+            window.formaOfferedFiles = new Map();
+            const createObjectURL = URL.createObjectURL.bind(URL);
+            URL.createObjectURL = file => {
+                const address = createObjectURL(file);
+                window.formaOfferedFiles.set(address, file);
+                return address;
+            };
+        }
+        """;
+
+    /// <summary>Keeps every file the page offers for download from now on, which <see cref="ReadOfferedTextAsync"/> reads.</summary>
+    /// <remarks>A check reads what the page offered from the page itself, since a browser's saving of a download is the browser's own, which a web view
+    /// can leave waiting on a reader, and a page under its Content Security Policy fetches nothing from the blob address it offers.</remarks>
+    /// <param name="page">The page.</param>
+    /// <returns>A task that completes once the page keeps what it offers.</returns>
+    public static Task KeepOfferedFilesAsync(IPage page)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        return page.EvaluateAsync(KeepOfferedFiles);
+    }
+
+    /// <summary>The text of the file the page offered for <paramref name="download"/>, as the page made it.</summary>
+    /// <param name="page">The page, keeping the files it offers since <see cref="KeepOfferedFilesAsync"/>.</param>
+    /// <param name="download">The download the page started.</param>
+    /// <returns>The file's text.</returns>
+    public static Task<string> ReadOfferedTextAsync(IPage page, IDownload download)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+        ArgumentNullException.ThrowIfNull(download);
+
+        return page.EvaluateAsync<string>("address => window.formaOfferedFiles.get(address).text()", download.Url);
+    }
+
     /// <summary>Lets the page write to the clipboard in <paramref name="runtime"/>, as a press asking for a copy may: Chromium's engine asks for the permission, and WebKit lets the press that asks write.</summary>
     /// <param name="context">The page's context.</param>
     /// <param name="runtime">The runtime the page runs in.</param>
