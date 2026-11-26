@@ -49,10 +49,10 @@
     cursor: default;
 }
 
-.forma-date-box-arrow {
+/* The chevron every field that opens a list draws, as the combo box's button does. */
+::deep .forma-date-box-arrow {
     flex-shrink: 0;
-    font-size: var(--font-size-xs);
-    opacity: 0.55;
+    color: var(--button-quiet-text-color);
 }
 
 .forma-date-box-value {

@@ -45,6 +45,25 @@
         }
 
         [Fact]
+        public void Should_mark_its_trigger_with_the_chevron_every_field_opening_a_list_draws()
+        {
+            // Arrange
+            using var ctx = new FormaSelectTests();
+            var model = new FakeModel();
+
+            // Act
+            var cut = ctx.Render(@<FakeFormHost EditContext="@(new EditContext(model))">
+                <FormaSelect TValue="int?" @bind-Value="model.Status" Options="Options" Placeholder="Pick one" Label="Status" />
+            </FakeFormHost>);
+
+            // Assert — the chevron icon, hidden from assistive technology as the field's own mark
+            var mark = cut.Find(".forma-select-arrow");
+            Assert.Multiple(
+                () => Assert.Equal("svg", mark.LocalName),
+                () => Assert.Equal("true", mark.GetAttribute("aria-hidden")));
+        }
+
+        [Fact]
         public void Should_show_the_selected_option_s_label_in_the_trigger()
         {
             // Arrange

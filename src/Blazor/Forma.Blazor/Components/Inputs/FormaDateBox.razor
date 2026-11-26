@@ -39,7 +39,7 @@
                     disabled="@(IsTriggerDisabled && !ShowsDisabledReason)"
                     aria-disabled="@(ShowsDisabledReason ? "true" : TriggerAttributes?.GetValueOrDefault("aria-disabled"))"
                     @onclick="ToggleAsync">
-                <span class="forma-date-box-arrow" aria-hidden="true">&#9662;</span>
+                <FormaIcon Icon="Glyph.ChevronDown" Size="IconSize.Small" Class="forma-date-box-arrow" />
                 <span id="@ValueId" class="forma-date-box-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : L["Select Date"])</span>
             </button>
         }

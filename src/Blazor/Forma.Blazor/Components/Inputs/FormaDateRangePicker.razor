@@ -19,7 +19,7 @@
                         disabled="@((Disabled || !RendererInfo.IsInteractive) && !ShowsDisabledReason)"
                         aria-disabled="@AriaDisabled"
                         @onclick="ToggleAsync">
-                    <span class="forma-date-range-picker-arrow">&#9662;</span>
+                    <FormaIcon Icon="Glyph.ChevronDown" Size="IconSize.Small" Class="forma-date-range-picker-arrow" />
                     <span class="forma-date-range-picker-value@(HasValue ? "" : " placeholder")">@(HasValue ? DisplayText : L["Select Range"])</span>
                 </button>
                 @if (HasValue && !Disabled)

@@ -33,10 +33,10 @@
     color: var(--text-secondary-color);
 }
 
-.forma-select-arrow {
+/* The chevron every field that opens a list draws, as the combo box's button does. */
+::deep .forma-select-arrow {
     flex-shrink: 0;
-    font-size: var(--font-size-xs);
-    opacity: 0.55;
+    color: var(--button-quiet-text-color);
 }
 
 /* ---------- popover ---------- */

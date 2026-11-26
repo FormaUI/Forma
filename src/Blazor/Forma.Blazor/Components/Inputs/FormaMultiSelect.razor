@@ -49,7 +49,7 @@
                             aria-required="@(Required ? "true" : null)"
                             @onclick="ToggleAsync">
                         <span class="forma-multi-select-trigger-text@(SelectedValues.Count == 0 ? " placeholder" : "")">@TriggerText</span>
-                        <span class="forma-multi-select-arrow" aria-hidden="true">&#9662;</span>
+                        <FormaIcon Icon="Glyph.ChevronDown" Size="IconSize.Small" Class="forma-multi-select-arrow" />
                     </button>
                 </div>
                 <FormaPopover @ref="Popover" Alignment="PopoverAlignment.Start"
