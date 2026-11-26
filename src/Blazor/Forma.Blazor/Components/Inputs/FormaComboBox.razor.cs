@@ -32,9 +32,6 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
     private const string ChooseAction = "combobox.choose";
     private const string RestoreAction = "combobox.restore";
 
-    // An exact match ignores case, accents and width, as the ranking does.
-    private const CompareOptions Loose = CompareOptions.IgnoreCase | CompareOptions.IgnoreNonSpace | CompareOptions.IgnoreWidth | CompareOptions.IgnoreKanaType;
-
     // The vertical arrows open the list and move through it; Enter takes the active option only while the list is open, leaving it to
     // the form otherwise. The first Escape is the popover's, which closes the list; one on the closed list restores the committed text.
     private static readonly InputProfile ClosedProfile = new()
@@ -281,12 +278,7 @@ public sealed partial class FormaComboBox<TValue> : FormaInputBase<TValue>
 
     // The options whose label is the text, ignoring case, accents and width and the spaces around it; the ranking's order plays no part.
     private List<SelectOption<TValue>> FindExactOptions(string text)
-    {
-        var trimmed = text.Trim();
-        var compareInfo = Context.CultureState.UICulture.CompareInfo;
-
-        return [.. Options.Where(option => compareInfo.Compare(option.Label.Trim(), trimmed, Loose) == 0)];
-    }
+        => [.. Options.Where(option => QueryRanking.IsSameName(option.Label, text, Context.CultureState.UICulture))];
 
     // The options the text ranks, all of them where nothing is typed, then the offer to add the text where no option is named by it exactly.
     private List<ListEntry> CreateEntries(string text)
