@@ -86,8 +86,15 @@ public sealed class StaticRenderingTests(BrowserHost host)
             }
         };
 
-        // Act
+        // Act — a machine out of socket buffers fails a resource's request, which says nothing of the page, so the page loads once
+        // more, and what it raises then is what the check judges
         var response = await page.GotoAsync($"static/{path}");
+
+        if (errors.Count > 0 && errors.TrueForAll(error => error.Contains("ERR_NO_BUFFER_SPACE", StringComparison.Ordinal)))
+        {
+            errors.Clear();
+            response = await page.ReloadAsync();
+        }
 
         // Assert
         Assert.Equal(200, response!.Status);
