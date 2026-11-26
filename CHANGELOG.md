@@ -18,6 +18,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - [`FormaLineChart` and `FormaBarChart`](docs/charts-design.md) label their values in a gutter at the plot's inline
   start, as wide as the longest label, their marks and time axis standing past it, where the labels stood over the
   marks and covered a line's start on a phone.
+- [`FormaExplorer`](docs/explorer-design.md#the-parts) has no height of its own on a phone, a viewport under 40rem wide,
+  or under 40rem tall beneath a coarse pointer, so its items are the page's own list, its header staying at the top of
+  what scrolls them, `--forma-explorer-header-inset-block-start` below a host's own bar. A height the host gives it,
+  `--forma-explorer-block-size`, keeps it a box.
 - [`FormaVirtualize`](docs/virtualization-design.md#sizes-and-measurement) follows the nearest ancestor that scrolls its
   list now, or the page where none does, chosen again as it measures, where it took the nearest ancestor that could
   scroll and, in a container that grew with its content, drew every item.

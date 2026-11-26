@@ -500,4 +500,56 @@ public sealed class ExplorerTests
             await Assertions.Expect(page.Locator("#check .forma-data-card-name")).ToHaveCountAsync(12);
         }
     }
+
+    public sealed class ExplorerPage(BrowserHost host)
+    {
+        // How the explorer stands in the page: how far its media overflow the list inside it, how far the page scrolls past its
+        // viewport, and where its header stands in the viewport.
+        private const string ReadPlacement = """
+            () => {
+                const explorer = document.getElementById('check');
+                const scroll = explorer.querySelector('.forma-explorer-scroll');
+                return [
+                    scroll.scrollHeight - scroll.clientHeight,
+                    document.scrollingElement.scrollHeight - window.innerHeight,
+                    explorer.querySelector('.forma-explorer-header-backdrop').getBoundingClientRect().top,
+                ];
+            }
+            """;
+
+        [Theory]
+        [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_list_its_items_in_the_page_on_a_phone_appending_each_page_as_the_page_nears_its_end_beneath_a_header_kept_in_view(string runtime)
+        {
+            // Arrange
+            var (context, page) = await ComponentChecks.OpenAsync(host, runtime, "explorer-page");
+            await using var _ = context;
+            await page.SetViewportSizeAsync(360, 640);
+            var status = page.Locator("#check .forma-data-view-status");
+
+            // The explorer loads its next page while its end lies within 200px of the viewport's, so the list is read once its end
+            // lies beyond that, no page loading
+            await page.WaitForFunctionAsync(
+                "() => { const more = document.querySelector('#check .forma-data-view-more'); return more !== null && more.querySelector('[role=status], .forma-spinner') === null && more.getBoundingClientRect().top - window.innerHeight > 200; }",
+                null,
+                new() { PollingInterval = 100 });
+            await Assertions.Expect(status).Not.ToHaveTextAsync("Showing 200 of 200");
+            var before = await page.EvaluateAsync<double[]>(ReadPlacement);
+
+            // Act — the page scrolled to its end each time a page arrives, until the last has
+            await page.WaitForFunctionAsync(
+                "() => { window.scrollTo({ top: document.scrollingElement.scrollHeight, behavior: 'instant' }); return document.querySelector('#check .forma-data-view-status')?.textContent.trim() === 'Showing 200 of 200'; }",
+                null,
+                new() { PollingInterval = 200 });
+            var after = await page.EvaluateAsync<double[]>(ReadPlacement);
+
+            // Assert — the page scrolls the items, not the explorer, and the header stands at the viewport's top once the page has
+            // scrolled past it
+            Assert.Multiple(
+                () => Assert.True(before[0] <= 1 && after[0] <= 1, $"The explorer's media scroll {before[0]}px and then {after[0]}px inside it."),
+                () => Assert.True(before[1] > 640, $"The page scrolls {before[1]}px past its viewport on its first page."),
+                () => Assert.True(Math.Abs(after[2]) <= 1, $"The explorer's header stands {after[2]}px from the viewport's top."));
+            await Assertions.Expect(page.Locator("#check .forma-data-card-name")).ToHaveCountAsync(200);
+        }
+    }
 }

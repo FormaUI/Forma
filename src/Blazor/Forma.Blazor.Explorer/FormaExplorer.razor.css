@@ -9,6 +9,7 @@
     --forma-explorer-check-glyph-size: var(--font-size-xs);
     --forma-explorer-check-fg-color: var(--primary-fg-color);
     --forma-explorer-block-size: 40rem;
+    --forma-explorer-header-inset-block-start: 0;
     --forma-explorer-radius: var(--radius-md);
     display: flex;
     flex-direction: column;
@@ -30,6 +31,32 @@
 ::deep .forma-explorer-header {
     --forma-command-area-padding: var(--space-3);
     --forma-command-area-bg-color: var(--forma-explorer-header-bg-color, var(--backdrop-flat-bg-color));
+}
+
+/* On a phone, held either way, the explorer flows in the page rather than standing as a box that scrolls inside it: its items
+   are the page's own list, scrolled with the page, its header standing at the top of what scrolls them as they pass beneath
+   it, `--forma-explorer-header-inset-block-start` below it where a host's own bar stands there. A height the host gives the
+   explorer still holds it to a box. A phone is a viewport under 40rem wide, narrower than the explorer's folders beside its
+   items, or one under 40rem tall under a coarse pointer, a phone on its side, either too short to show a box of 40rem whole
+   beside the page around it. */
+@media (max-width: 40rem), (pointer: coarse) and (max-height: 40rem) {
+    .forma-explorer {
+        --forma-explorer-block-size: none;
+    }
+
+    /* What fills the explorer starts from its content's height and shrinks to a height the host gives, rather than starting from
+       none of it, which WebKit goes on resolving against the box the explorer was once a page narrows to a phone's. */
+    .forma-explorer > ::deep .forma-explorer-canvas,
+    .forma-explorer ::deep .forma-backdrop.forma-explorer-content-backdrop,
+    .forma-explorer ::deep .forma-explorer-scroll {
+        flex-basis: auto;
+    }
+
+    .forma-explorer ::deep .forma-explorer-header-backdrop {
+        position: sticky;
+        inset-block-start: var(--forma-explorer-header-inset-block-start);
+        z-index: 1;
+    }
 }
 
 .forma-explorer.is-resizable {

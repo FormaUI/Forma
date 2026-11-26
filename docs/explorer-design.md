@@ -147,6 +147,14 @@ folder entered and a file previewed, or handed to the host where it asks for the
 activated, and in the selection mode a press or Space checks its box while Enter still
 opens it, the focus staying on its item as the mode changes.
 
+On a phone the explorer has no height of its own, so its items are the page's own list rather
+than a box that scrolls inside the page. A phone is a viewport under 40rem wide, or under
+40rem tall beneath a coarse pointer, too short for a box of 40rem beside the page around it.
+An infinite scroll appends each page as the page nears the list's end, and its header stays at
+the top of what scrolls them, `--forma-explorer-header-inset-block-start` below a host's own
+bar, so its commands stay in reach. A height the host gives it, `--forma-explorer-block-size`,
+keeps it a box at every width.
+
 Three surfaces stay on `FormaExplorer` rather than on the region they appear over, because
 each is reached from more than one of them: the preview lightbox, which activation, the
 action menu and `FormaFileViewer`'s sibling stepping all drive through the explorer; the

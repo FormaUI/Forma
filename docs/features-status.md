@@ -27,7 +27,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [The build](#the-build) | Faster tests, a faster gate, builds in processes of their own and the examples' locale lint; the affected-checks command next |
 | [The input router's host routes](#the-input-routers-host-routes) | Installed on every interactive page with a Forma component |
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
-| [A host's requests](#a-hosts-requests) | Four components implemented, twenty-five changes fixed; one more change for a phone planned, and a path per culture open |
+| [A host's requests](#a-hosts-requests) | Four components implemented, twenty-six changes fixed, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -244,7 +244,7 @@ here in the order they are taken, each with what the code does and its state.
 | The composer's toolbar on a phone | At a phone's width the composer's bars stood a row each, each scrolling with an overflow of its own. Now, under a coarse pointer, the bars stand in one row a finger swipes | Fixed |
 | A text area's grip under touch | `FormaTextArea` kept `resize: vertical` under a coarse pointer, whose grip a finger can't drag. Now it draws no grip under a coarse pointer, a longer text scrolling within the area's rows | Fixed |
 | Switches in a column | `FormaToggleSwitch` stood right after its label, so a column of switches was ragged. Now, under a coarse pointer, the switch stands at its row's end, its label at the start | Fixed |
-| The explorer on a phone | `FormaExplorer` is a box of `40rem` at most that scrolls inside the page. Planned: at a phone's width the explorer's items are the page's own list, scrolled with the page | Planned |
+| The explorer on a phone | `FormaExplorer` was a box of `40rem` at most that scrolled inside the page. On a phone, a viewport under 40rem wide or under 40rem tall beneath a coarse pointer, it now has no height of its own, so its items are the page's own list, an infinite scroll appending each page as the page nears their end, its header staying at the top; a height the host gives it keeps it a box. The virtualizer follows what scrolls a list now, so a container that grows with its content leaves its list to the page | Fixed |
 | A line chart's axis on a phone | At a phone's width `FormaLineChart` drew its value axis's labels over the series they measure. Now both charts label their values in a gutter at the plot's inline start, as wide as the longest label, the marks and the time axis standing past it at every width | Fixed |
 | The data view's Load More | `FormaDataViewMore`'s Load More was a ghost button, which read as text. Now it is a secondary button, drawn as one | Fixed |
 
