@@ -523,6 +523,9 @@ component's check page.
 - It registers through the product's WebView half, and is listed in a solution of its own beside it, since it builds
   against the `maui-android` workload.
 - The browser step builds it where `-Android` asks for it. Without it, the Android checks report themselves skipped.
+  A filtered run builds it untrimmed, with no ReadyToRun images, compressed assemblies or app bundle, as a plain
+  package, which takes a third of the time and changes nothing a component check reads; an unfiltered run builds it
+  as it ships.
 - Each component check connects to its web view afresh through the DevTools socket adb forwards and loads its page
   there, one at a time. It closes the connection as it ends, which takes back what the check added to the page.
 

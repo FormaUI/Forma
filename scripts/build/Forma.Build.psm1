@@ -1732,7 +1732,7 @@ function Test-BrowserCheck {
     }
 
     if ($isAndroid) {
-        $description += ', dotnet build the Android check host'
+        $description += if ($Filter) { ', dotnet build the Android check host untrimmed, with no ReadyToRun images, as a plain package' } else { ', dotnet build the Android check host' }
     }
 
     $description += ', dotnet pack the solution, check each package''s files against eng/package-files.txt and publish the example hosts from it'
@@ -1876,7 +1876,10 @@ function Test-BrowserCheck {
         $androidBuild = $null
 
         if ($isAndroid) {
-            dotnet build $androidProject -c Release --nologo -v:q "-p:JavaSdkDirectory=$($androidEnvironment.JavaHome)" "-p:AndroidSdkDirectory=$($androidEnvironment.Sdk)"
+            # A filtered run builds the check host without trimming, ReadyToRun images, compressed assemblies or an app bundle,
+            # which take most of its build and change nothing a component check reads; the gate builds it as it ships.
+            $quickAndroid = @(if ($Filter) { '-p:PublishTrimmed=false', '-p:PublishReadyToRun=false', '-p:AndroidEnableAssemblyCompression=false', '-p:AndroidPackageFormat=apk' })
+            dotnet build $androidProject -c Release --nologo -v:q "-p:JavaSdkDirectory=$($androidEnvironment.JavaHome)" "-p:AndroidSdkDirectory=$($androidEnvironment.Sdk)" @quickAndroid
 
             if ($LASTEXITCODE -ne 0) {
                 return
