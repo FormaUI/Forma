@@ -33,9 +33,14 @@ beside it, as the repository's build documentation sets out with every command a
 - Do verify a change by its affected set, as the repository's verification design sets out: the checks of what it
   changed and of everything depending on it, transitively, a shared foundation reaching every component resting on
   it; widen the set wherever its reach can't be determined reliably.
-- Do run a UI change's browser checks in the Server and WebAssembly runtimes, and add what its reach calls for: the
-  render modes for culture routing, navigation, hydration or render-mode-specific behavior, the other engines for
-  browser interop, the platform for mobile-specific behavior; a change with no UI runs none.
+- Do run a change's checks in stages, each only once the one before it passes: its unit tests, then its integration
+  tests, then its browser checks in the one host the work is about, the WebAssembly host first for a bug found there
+  and the Server's otherwise, then the other hosts the change applies to, one at a time; fix a failure where it
+  stops the cycle, pass that stage, and go on from there.
+- Do end the cycle where the change's reach ends: a fix to a service runs up to the one host it runs in and stops.
+  A UI change adds what its reach calls for after the first host: the render modes for culture routing, navigation,
+  hydration or render-mode-specific behavior, the other engines for browser interop, the platform for
+  mobile-specific behavior.
 - Do run targeted checks while implementing, in the working tree where nothing else edits or builds what they read,
   and commit each coherent change once its checks pass; never accumulate unrelated changes to split afterward.
 - Do close a change set with its development gate, the cumulative affected set of every commit in it, on an

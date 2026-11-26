@@ -122,8 +122,15 @@ every component resting on it; one to the bases, the hosts or the build reaches 
 reaches can't be determined reliably, the set widens until it can be trusted. The command that computes it names why it
 chose each check.
 
+**The checks run in stages, each only once the one before it passes.** The affected set's unit tests run first, then its
+integration tests, then its browser checks in one host, the one the work is about: the WebAssembly host first for a bug
+found there, the Server's otherwise. Only then do the other hosts the change applies to run, one at a time. A stage that
+fails stops the cycle; the failure is fixed, the fix passes that stage, and the cycle goes on from there. The cycle ends
+where the change's reach does: a fix to a service runs up to the one host it runs in and stops, never through every host
+or the mobile apps.
+
 **The browser coverage follows what the change affects.** A change to how a component behaves or looks runs its browser
-checks, `scripts/build/browser.ps1 -Filter`, in the Server and WebAssembly runtimes by default. Its reach widens that:
+checks, `scripts/build/browser.ps1 -Filter`, in the one host the work is about first. Its reach adds the others:
 
 - culture routing, navigation, hydration and render-mode-specific behavior add the render modes they differ in, the
   static render, both Auto runtimes and the web view;
