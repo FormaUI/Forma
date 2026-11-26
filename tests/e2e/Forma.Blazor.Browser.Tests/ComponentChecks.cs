@@ -519,12 +519,19 @@ public static partial class ComponentChecks
     }
 
     // A page that never becomes interactive fails with what it reported, its errors and the requests that failed, and in a web view with what
-    // the check host last wrote, beside the wait's own message.
-    private static async Task WaitForRendererAsync(IPage page, string renderer, System.Collections.Concurrent.ConcurrentQueue<string> problems, Func<string>? readHostOutput = null)
+    // the check host last wrote, beside the wait's own message. A machine out of socket buffers fails a script's request before Blazor can
+    // start, which no wait recovers, so a page that reported it loads once more, and what it reports then is what the check fails with.
+    private static async Task WaitForRendererAsync(IPage page, string renderer, System.Collections.Concurrent.ConcurrentQueue<string> problems, Func<string>? readHostOutput = null, bool canReload = true)
     {
         try
         {
             await Assertions.Expect(page.Locator("#runtime")).ToHaveTextAsync(new System.Text.RegularExpressions.Regex($"^{renderer} True$"), new() { Timeout = 60000 }).ConfigureAwait(false);
+        }
+        catch (PlaywrightException) when (canReload && problems.Any(problem => problem.Contains("ERR_NO_BUFFER_SPACE", StringComparison.Ordinal)))
+        {
+            problems.Clear();
+            await page.ReloadAsync().ConfigureAwait(false);
+            await WaitForRendererAsync(page, renderer, problems, readHostOutput, canReload: false).ConfigureAwait(false);
         }
         catch (PlaywrightException ex) when (!problems.IsEmpty || readHostOutput is not null)
         {
