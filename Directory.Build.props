@@ -30,6 +30,12 @@
         <VersionSuffix>preview.19</VersionSuffix>
     </PropertyGroup>
 
+    <!-- Outside CI, which makes every package, a build stamps no commit into its assemblies or the source map of their symbols, so a build after a commit finds every project it didn't change up to date rather than compiling the whole solution again for a commit id. -->
+    <PropertyGroup Condition="'$(GITHUB_ACTIONS)' != 'true'">
+        <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+        <EnableSourceLink>false</EnableSourceLink>
+    </PropertyGroup>
+
     <!-- Reports the .editorconfig IDE* code-style severities from the compiler, not just the IDE, and fails the build on any warning, the compiler's or MSBuild's. -->
     <PropertyGroup>
         <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
