@@ -5,6 +5,17 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.19`
+
+*Unreleased*
+
+- `FormaPopover` opens with the focus on the first or the last of its controls, `OpenAsync(trigger, PopoverFocus)` and
+  `ToggleAsync(trigger, PopoverFocus)`, `FocusSelector` naming which, landed by the browser as the popover shows, so no
+  key the reader presses next comes before it. `PopoverFocus` is in `Forma.Framework.Browser`.
+- `FormaDropDownMenu` and `FormaExplorer`'s review of the selection open that way, where the focus came a round trip after
+  the menu showed and could move away from an item a press had just focused; the menu's keys move on from the item a
+  press focused, where they moved on from the one the menu last focused.
+
 ## `1.0.0-preview.18`
 
 *November 26, 2026*

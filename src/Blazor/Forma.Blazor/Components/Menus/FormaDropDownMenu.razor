@@ -25,7 +25,7 @@
                 KeepsFocus="true"
                 Alignment="Alignment"
                 OnOpenChanged="_ => { }"
-                OnOpened="HandleOpenedAsync"
+                FocusSelector="@ItemSelector"
                 InputRoutes="MenuRoutes"
                 OnInputAction="HandleMenuActionAsync">
         <div class="forma-dropdown-menu" id="@PopoverId" role="menu">

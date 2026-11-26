@@ -23,6 +23,9 @@ public sealed partial class FormaDropDownMenu : FormaElementBase, IDisableable
     private const string LastAction = "menu.last";
     private const string FindAction = "menu.find";
 
+    // The items an opening's focus lands on: each the keys reach, which a disabled item showing its reason is too.
+    private const string ItemSelector = "[role^=\"menuitem\"]:not(:disabled):not([tabindex=\"-1\"])";
+
     private static readonly InputProfile TriggerProfile = new()
     {
         InputRoutes =
@@ -70,7 +73,6 @@ public sealed partial class FormaDropDownMenu : FormaElementBase, IDisableable
     private ElementLabels _elementLabels = default!;
     private readonly TypeAhead _typeAhead = new();
 
-    private bool _openAtLastItem;
     private ElementReference _anchorElement;
     private FormaButton TriggerButton { get; set; } = default!;
 
@@ -115,7 +117,19 @@ public sealed partial class FormaDropDownMenu : FormaElementBase, IDisableable
         => _items.Add(item);
 
     internal void UnregisterItem(FormaDropDownMenuItem item)
-        => _items.Remove(item);
+    {
+        _items.Remove(item);
+
+        if (_focusedItem == item)
+        {
+            _focusedItem = null;
+        }
+    }
+
+    // The item holding the focus, whatever moved it there, a press or the browser landing it as the menu opened, so the keys move on
+    // from where the reader is.
+    internal void SetFocusedItem(FormaDropDownMenuItem item)
+        => _focusedItem = item;
 
     /// <summary>Closes the menu and returns focus to the trigger.</summary>
     internal Task RequestActivateAsync()
@@ -146,25 +160,12 @@ public sealed partial class FormaDropDownMenu : FormaElementBase, IDisableable
             return Task.CompletedTask;
         }
 
-        _openAtLastItem = false;
-
-        return Popover.ToggleAsync(TriggerButton.RootElement);
+        return Popover.ToggleAsync(TriggerButton.RootElement, PopoverFocus.First);
     }
 
-    // Items register while the popover renders, so the item to focus is found once it has opened.
-    private async Task OpenAsync(bool atLastItem)
-    {
-        if (Disabled)
-        {
-            return;
-        }
-
-        _openAtLastItem = atLastItem;
-        await Popover.OpenAsync(TriggerButton.RootElement);
-    }
-
-    private Task HandleOpenedAsync()
-        => FocusEndAsync(_openAtLastItem);
+    // The browser lands the focus on the first or the last enabled item as the menu shows, so no key comes before it.
+    private Task OpenAsync(bool atLastItem)
+        => Disabled ? Task.CompletedTask : Popover.OpenAsync(TriggerButton.RootElement, atLastItem ? PopoverFocus.Last : PopoverFocus.First);
 
     private async Task FocusEndAsync(bool atLastItem)
     {

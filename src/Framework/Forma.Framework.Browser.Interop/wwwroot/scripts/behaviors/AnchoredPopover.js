@@ -21,12 +21,14 @@ const Gap = 4;
  *   anchor: HTMLElement,
  *   keepsFocus?: boolean,
  *   side?: 'below' | 'above',
- *   align?: 'auto' | 'start' | 'end' | 'center'
+ *   align?: 'auto' | 'start' | 'end' | 'center',
+ *   focusSelector?: string | null
  * }} options
  *   The element the popover hangs from, whether Tab moves between the popover's own controls, the side of the
- *   anchor the popover takes where there is room, flipping to the other where there isn't, and which inline edge
+ *   anchor the popover takes where there is room, flipping to the other where there isn't, which inline edge
  *   of the anchor the popover lines up with: its reading-start edge, its reading-end edge, the edge away from the
- *   nearer side of the viewport, or the anchor's middle.
+ *   nearer side of the viewport, or the anchor's middle, and the controls an opening's focus lands on, every
+ *   focusable control of the popover's where none are named.
  */
 export function attach(target, options) {
     return new AnchoredPopover(target, options);
@@ -38,22 +40,29 @@ class AnchoredPopover {
     #keepsFocus;
     #side;
     #align;
+    #focusSelector;
     #trigger = null;
     #placement = null;
     #resizeObserver = null;
     #directionObserver = null;
     #scheduler = new FrameScheduler();
 
-    constructor(popover, { anchor, keepsFocus = false, side = 'below', align = 'auto' }) {
+    constructor(popover, { anchor, keepsFocus = false, side = 'below', align = 'auto', focusSelector = null }) {
         this.#popover = popover;
         this.#anchor = anchor;
         this.#keepsFocus = keepsFocus;
         this.#side = side;
         this.#align = align;
+        this.#focusSelector = focusSelector;
     }
 
-    /** Shows the popover and keeps it positioned against its anchor until closed, holding the trigger focus returns to. */
-    open(trigger = null) {
+    /**
+     * Shows the popover and keeps it positioned against its anchor until closed, holding the trigger focus returns to, and
+     * lands the focus on the first or the last of the controls it lands on where `focus` names one.
+     * @param {Element | null} trigger
+     * @param {'first' | 'last' | null} focus
+     */
+    open(trigger = null, focus = null) {
         this.close();
         this.#trigger = trigger;
 
@@ -82,6 +91,12 @@ class AnchoredPopover {
         }
 
         this.#position();
+
+        // In the same task as the popover shows, so no key the reader presses next can come before the focus lands.
+        if (focus !== null) {
+            const controls = new FocusSurface(this.#popover).controls(this.#focusSelector ?? undefined);
+            (focus === 'last' ? controls.at(-1) : controls[0])?.focus({ preventScroll: true });
+        }
     }
 
     /** Hides the popover and releases the listeners held for it, first returning to the trigger, when asked, a focus inside it or one fallen to the page. */

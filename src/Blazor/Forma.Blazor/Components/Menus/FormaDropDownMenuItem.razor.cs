@@ -80,6 +80,9 @@ public sealed partial class FormaDropDownMenuItem : FormaElementBase, IDisableab
     internal ValueTask FocusAsync()
         => RootElement.FocusAsync();
 
+    private void HandleFocusIn()
+        => Menu.SetFocusedItem(this);
+
     private async Task HandleActivateAsync()
     {
         if (Disabled)

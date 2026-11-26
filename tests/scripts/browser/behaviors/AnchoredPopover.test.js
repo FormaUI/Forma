@@ -47,6 +47,43 @@ describe('AnchoredPopover', () => {
         frames.restore();
     });
 
+    describe('landing the focus as it opens', () => {
+        const fill = () => {
+            popover.innerHTML = `
+                <input id="search" />
+                <button role="menuitem" id="first">First</button>
+                <button role="menuitem" id="off" disabled>Off</button>
+                <button role="menuitem" id="last">Last</button>`;
+        };
+
+        it('focuses the first or the last of the controls it names as it shows, in the same task', () => {
+            fill();
+            const handle = attach(popover, { anchor, focusSelector: '[role="menuitem"]:not(:disabled)' });
+
+            handle.open(anchor, 'first');
+            const first = document.activeElement?.id;
+            handle.close();
+            handle.open(anchor, 'last');
+
+            expect(first).toBe('first');
+            expect(document.activeElement?.id).toBe('last');
+        });
+
+        it('focuses the first focusable control where it names none, and leaves the focus where it stands where no end is asked', () => {
+            fill();
+            anchor.focus();
+            const handle = attach(popover, { anchor });
+
+            handle.open(anchor);
+            const unmoved = document.activeElement?.id;
+            handle.close();
+            handle.open(anchor, 'first');
+
+            expect(unmoved).toBe('anchor');
+            expect(document.activeElement?.id).toBe('search');
+        });
+    });
+
     it('places the popover below the anchor when it fits', () => {
         const handle = attach(popover, { anchor });
 

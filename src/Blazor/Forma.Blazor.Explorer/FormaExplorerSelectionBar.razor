@@ -44,7 +44,7 @@
                               Anchor="@(ReviewButton?.RootElement ?? default)"
                               Alignment="PopoverAlignment.End"
                               KeepsFocus="true"
-                              OnOpened="FocusFirstRemoveAsync">
+                              FocusSelector=".forma-explorer-review-remove">
                     <div id="@ReviewId" class="forma-explorer-review">
                         @if (View.Selection.Count == 0)
                         {

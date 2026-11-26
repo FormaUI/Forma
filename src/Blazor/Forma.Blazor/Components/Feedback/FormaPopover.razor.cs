@@ -41,6 +41,9 @@ public sealed partial class FormaPopover : FormaElementBase
     /// <summary>The callback invoked once the popover is open and positioned.</summary>
     [Parameter] public EventCallback OnOpened { get; set; }
 
+    /// <summary>The selector naming the controls an opening's focus lands on, where null names every focusable control the popover holds.</summary>
+    [Parameter] public string? FocusSelector { get; set; }
+
     /// <summary>The routes the popover's content answers while it is open.</summary>
     [Parameter] public IReadOnlyList<InputRoute> InputRoutes { get; set; } = [];
 
@@ -53,6 +56,7 @@ public sealed partial class FormaPopover : FormaElementBase
     private InputRegistration _inputRegistration = default!;
     private InputProfile _inputProfile = default!;
     private ElementReference _trigger;
+    private PopoverFocus _openingFocus;
     private bool _isClosing;
 
     /// <summary>Whether the popover is open.</summary>
@@ -83,7 +87,15 @@ public sealed partial class FormaPopover : FormaElementBase
     }
 
     /// <summary>Opens the popover from the trigger.</summary>
-    public async Task OpenAsync(ElementReference trigger)
+    /// <param name="trigger">The element focus returns to on close.</param>
+    public Task OpenAsync(ElementReference trigger)
+        => OpenAsync(trigger, PopoverFocus.None);
+
+    /// <summary>Opens the popover from the trigger, the focus landing where <paramref name="focus"/> says as it shows.</summary>
+    /// <param name="trigger">The element focus returns to on close.</param>
+    /// <param name="focus">Where the focus lands, among the controls <see cref="FocusSelector"/> names.</param>
+    /// <remarks>The browser lands the focus as the popover shows, so no key the reader presses next comes before it.</remarks>
+    public async Task OpenAsync(ElementReference trigger, PopoverFocus focus)
     {
         if (IsOpen)
         {
@@ -91,6 +103,7 @@ public sealed partial class FormaPopover : FormaElementBase
         }
 
         _trigger = trigger;
+        _openingFocus = focus;
         await SetOpenAsync(true);
     }
 
@@ -99,8 +112,15 @@ public sealed partial class FormaPopover : FormaElementBase
         => CloseAsync(ReturnsFocus);
 
     /// <summary>Opens the popover from the trigger, or closes it when it is open.</summary>
+    /// <param name="trigger">The element focus returns to on close.</param>
     public Task ToggleAsync(ElementReference trigger)
-        => IsOpen ? CloseAsync() : OpenAsync(trigger);
+        => ToggleAsync(trigger, PopoverFocus.None);
+
+    /// <summary>Opens the popover from the trigger, the focus landing where <paramref name="focus"/> says, or closes it when it is open.</summary>
+    /// <param name="trigger">The element focus returns to on close.</param>
+    /// <param name="focus">Where the focus lands as the popover opens.</param>
+    public Task ToggleAsync(ElementReference trigger, PopoverFocus focus)
+        => IsOpen ? CloseAsync() : OpenAsync(trigger, focus);
 
     private Task HandleInputActionAsync(string action, InputInfo input)
         => OnInputAction.InvokeAsync(new InputAction(action, input));
@@ -151,7 +171,7 @@ public sealed partial class FormaPopover : FormaElementBase
 
         if (!_isClosing)
         {
-            await _popup.SyncAsync(IsOpen, RootElement, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment);
+            await _popup.SyncAsync(IsOpen, RootElement, Anchor, _trigger, async () => await OnOpened.InvokeAsync(), KeepsFocus, Alignment, _openingFocus, FocusSelector);
         }
     }
 

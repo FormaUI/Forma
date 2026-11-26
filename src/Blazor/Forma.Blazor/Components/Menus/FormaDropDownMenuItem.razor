@@ -15,6 +15,7 @@
        aria-disabled="@(Disabled ? "true" : null)"
        aria-describedby="@AriaDescribedBy"
        @onclick="HandleActivateAsync"
+       @onfocusin="HandleFocusIn"
        @onclick:preventDefault="Disabled">
         @ChildContent
         @if (IsSelected is true)
@@ -37,7 +38,8 @@ else
             disabled="@(Disabled && !ShowsDisabledReason)"
             aria-disabled="@(ShowsDisabledReason ? "true" : AdditionalAttributes?.GetValueOrDefault("aria-disabled"))"
             aria-describedby="@AriaDescribedBy"
-            @onclick="HandleActivateAsync">
+            @onclick="HandleActivateAsync"
+            @onfocusin="HandleFocusIn">
         @ChildContent
         @if (IsSelected is true)
         {

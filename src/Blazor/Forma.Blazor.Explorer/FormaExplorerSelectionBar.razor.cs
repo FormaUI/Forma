@@ -2,6 +2,7 @@ namespace Forma.Blazor.Components.Explorer;
 
 using Forma.Blazor.Components.Buttons;
 using Forma.Blazor.Components.Feedback;
+using Forma.Framework.Browser;
 using Forma.Framework.Catalog;
 using Forma.Framework.Explorer;
 using Forma.Framework.Explorer.Items;
@@ -84,16 +85,9 @@ public sealed partial class FormaExplorerSelectionBar : FormaComponentBase
             var path => string.Join(" › ", path.Select(folder => folder.Name)),
         };
 
+    // The browser lands the focus on the first item's remove button as the review shows, so no key comes before it.
     private Task ToggleReviewAsync()
-        => ReviewPopover is { } popover && ReviewButton?.RootElement is { } trigger ? popover.ToggleAsync(trigger) : Task.CompletedTask;
-
-    private async Task FocusFirstRemoveAsync()
-    {
-        if (View.Selection.Items is [var firstItem, ..] && RemoveButtons.TryGetValue(firstItem.Key, out var button) && button.RootElement is { } element)
-        {
-            await element.FocusAsync();
-        }
-    }
+        => ReviewPopover is { } popover && ReviewButton?.RootElement is { } trigger ? popover.ToggleAsync(trigger, PopoverFocus.First) : Task.CompletedTask;
 
     private async Task RemoveAsync(ICatalogItem item)
     {

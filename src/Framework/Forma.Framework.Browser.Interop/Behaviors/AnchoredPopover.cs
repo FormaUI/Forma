@@ -22,7 +22,9 @@ public sealed class AnchoredPopover(IJSEnvironment js)
     /// <param name="onOpened">The callback run once the popover is positioned.</param>
     /// <param name="keepsFocus">Whether Tab moves between the popover's own controls.</param>
     /// <param name="alignment">The inline edge of the anchor the popover lines up with.</param>
-    public async ValueTask SyncAsync(bool isOpen, ElementReference popover, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened = null, bool keepsFocus = false, PopoverAlignment alignment = PopoverAlignment.Auto)
+    /// <param name="focus">Where the focus lands as the popover opens, in the browser as it shows, so no key comes before it.</param>
+    /// <param name="focusSelector">The selector naming the controls an opening's focus lands on, where null names every focusable control the popover holds.</param>
+    public async ValueTask SyncAsync(bool isOpen, ElementReference popover, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened = null, bool keepsFocus = false, PopoverAlignment alignment = PopoverAlignment.Auto, PopoverFocus focus = PopoverFocus.None, string? focusSelector = null)
     {
         // Waiting for a sync still attaching keeps one open from attaching twice.
         if (_transition is { } transition)
@@ -37,7 +39,7 @@ public sealed class AnchoredPopover(IJSEnvironment js)
 
         // Set before the transition starts, so an open that fails, at once or later, has the last word.
         _isOpen = isOpen;
-        var nextTransition = isOpen ? OpenAsync(popover, anchor, trigger, onOpened, keepsFocus, alignment) : DetachAsync().AsTask();
+        var nextTransition = isOpen ? OpenAsync(popover, anchor, trigger, onOpened, keepsFocus, alignment, focus, focusSelector) : DetachAsync().AsTask();
         _transition = nextTransition;
 
         try
@@ -55,10 +57,10 @@ public sealed class AnchoredPopover(IJSEnvironment js)
     public ValueTask<bool> CloseAsync(bool returnsFocus)
         => InvokeAsync("close", returnsFocus);
 
-    private async Task OpenAsync(ElementReference popover, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened, bool keepsFocus, PopoverAlignment alignment)
+    private async Task OpenAsync(ElementReference popover, ElementReference anchor, ElementReference trigger, Func<ValueTask>? onOpened, bool keepsFocus, PopoverAlignment alignment, PopoverFocus focus, string? focusSelector)
     {
         // A failed attach leaves the popover closed, so the next sync attaches again.
-        _isOpen = await AttachCoreAsync(popover, new AttachOptions { Anchor = anchor, KeepsFocus = keepsFocus, Align = alignment switch { PopoverAlignment.Start => "start", PopoverAlignment.End => "end", _ => "auto" } });
+        _isOpen = await AttachCoreAsync(popover, new AttachOptions { Anchor = anchor, KeepsFocus = keepsFocus, Align = alignment switch { PopoverAlignment.Start => "start", PopoverAlignment.End => "end", _ => "auto" }, FocusSelector = focusSelector });
 
         if (!_isOpen)
         {
@@ -66,7 +68,7 @@ public sealed class AnchoredPopover(IJSEnvironment js)
         }
 
         // An open that didn't run leaves the popover closed, as a failed attach does, so the next sync opens it again.
-        if (!await InvokeAsync("open", trigger))
+        if (!await InvokeAsync("open", trigger, focus switch { PopoverFocus.First => "first", PopoverFocus.Last => "last", _ => null }))
         {
             _isOpen = false;
             await DetachAsync();
@@ -89,5 +91,7 @@ public sealed class AnchoredPopover(IJSEnvironment js)
         public required bool KeepsFocus { get; init; }
 
         public required string Align { get; init; }
+
+        public required string? FocusSelector { get; init; }
     }
 }

@@ -315,7 +315,7 @@
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
             var router = new InputRouterProbe(ctx);
-            var popover = OpenLabeledMenu(ctx);
+            var (popover, _) = OpenLabeledMenu(ctx);
 
             // Act
             await router.RouteAsync(popover.RootElement, "menu.find", "n");
@@ -332,7 +332,7 @@
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
             var router = new InputRouterProbe(ctx);
-            var popover = OpenLabeledMenu(ctx);
+            var (popover, _) = OpenLabeledMenu(ctx);
             var opened = GetFocused(ctx.JSInterop).Count;
 
             // Act
@@ -348,8 +348,7 @@
             // Arrange
             using var ctx = new FormaDropDownMenuTests();
             var router = new InputRouterProbe(ctx);
-            var popover = OpenLabeledMenu(ctx);
-            var print = GetFocused(ctx.JSInterop).Last();
+            var (popover, print) = OpenLabeledMenu(ctx);
 
             // Act
             await router.RouteAsync(popover.RootElement, "menu.find", "p");
@@ -362,8 +361,38 @@
                 () => Assert.Equal(print, GetFocused(ctx.JSInterop).Last()));
         }
 
-        // A menu of Print, Pin, a disabled Archive and Notes, opened on Print, its labels read as the page shows them.
-        private static FormaPopover OpenLabeledMenu(FormaDropDownMenuTests ctx)
+        [Fact]
+        public async Task Should_move_on_from_the_item_a_press_focused_rather_than_the_one_it_opened_on()
+        {
+            // Arrange — opened on Print, then Pin focused by a press
+            using var ctx = new FormaDropDownMenuTests();
+            var router = new InputRouterProbe(ctx);
+            ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/DocumentOrder.js").Setup<JSTransfer>("sort", _ => true).SetResult(InlineTransfer.Of<int[]>([0, 1, 2]));
+            var cut = ctx.Render(
+                @<FormaDropDownMenu>
+                    <Trigger>Options</Trigger>
+                    <ChildContent>
+                        <FormaDropDownMenuItem>Print</FormaDropDownMenuItem>
+                        <FormaDropDownMenuItem>Pin</FormaDropDownMenuItem>
+                        <FormaDropDownMenuItem>Notes</FormaDropDownMenuItem>
+                    </ChildContent>
+                </FormaDropDownMenu>);
+            cut.Find(".forma-dropdown-menu-trigger").Click();
+            var popover = cut.FindComponent<FormaPopover>().Instance;
+            var items = cut.FindComponents<FormaDropDownMenuItem>().Select(item => item.Instance.RootElement.Id).ToList();
+            cut.FindAll("[role=menuitem]")[0].FocusIn();
+            cut.FindAll("[role=menuitem]")[1].FocusIn();
+
+            // Act
+            await router.RouteAsync(popover.RootElement, "menu.next", "ArrowDown");
+
+            // Assert — on from Pin, where the press left the focus, to Notes
+            Assert.Equal([items[2]], GetFocused(ctx.JSInterop));
+        }
+
+        // A menu of Print, Pin, a disabled Archive and Notes, opened on Print, its labels read as the page shows them; the browser lands
+        // the opening's focus on Print, whose focus the menu learns of as the page tells it.
+        private static (FormaPopover Popover, string PrintId) OpenLabeledMenu(FormaDropDownMenuTests ctx)
         {
             ctx.JSInterop.SetupModule("./_content/forma/browser/scripts/operations/ElementLabels.js").Setup<JSTransfer>("read", _ => true).SetResult(InlineTransfer.Of<string[]>(["Print", "Pin", "Archive", "Notes"]));
             var cut = ctx.Render(
@@ -377,8 +406,9 @@
                     </ChildContent>
                 </FormaDropDownMenu>);
             cut.Find(".forma-dropdown-menu-trigger").Click();
+            cut.FindAll("[role=menuitem]")[0].FocusIn();
 
-            return cut.FindComponent<FormaPopover>().Instance;
+            return (cut.FindComponent<FormaPopover>().Instance, cut.FindComponents<FormaDropDownMenuItem>()[0].Instance.RootElement.Id);
         }
 
         [Fact]
@@ -403,14 +433,17 @@
             cut.Find(".forma-dropdown-menu-trigger").Click();
             var popover = cut.FindComponent<FormaPopover>().Instance;
             var items = cut.FindComponents<FormaDropDownMenuItem>().Select(item => item.Instance.RootElement.Id).ToList();
-            var opened = GetFocused(ctx.JSInterop);
+            var opensOnFirst = ctx.JSInterop.Invocations.Any(invocation => invocation.Identifier == "open" && Equals(invocation.Arguments[^1], "first"));
+            cut.FindAll("[role=menuitem]")[0].FocusIn();
 
             // Act
             await router.RouteAsync(popover.RootElement, "menu.next", "ArrowDown");
             await router.RouteAsync(popover.RootElement, "menu.next", "ArrowDown");
 
-            // Assert — the menu opened on Rename and moved to Duplicate, then Delete
-            Assert.Equal([items[0], items[1], items[2]], [opened[^1], .. GetFocused(ctx.JSInterop).Skip(opened.Count)]);
+            // Assert — the menu opened asking the browser for its first item, Rename, and moved to Duplicate, then Delete
+            Assert.Multiple(
+                () => Assert.True(opensOnFirst),
+                () => Assert.Equal([items[1], items[2]], GetFocused(ctx.JSInterop)));
         }
 
         [Fact]
