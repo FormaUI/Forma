@@ -70,8 +70,15 @@ $builtProcesses = @(Get-Process -ErrorAction SilentlyContinue | Where-Object {
 # Compared without regard to case, because a path is not case-sensitive where this runs and the drive
 # letter alone is written both ways by different tools. Matching ordinally would spare a running Showcase
 # for no better reason than which case its launcher happened to use, which is the one thing this is for.
+# A command line is asked of the system at each read, and a process that has ended has none, so it is
+# read once; a process that ended while it was read runs nothing to stop.
 $launchers = @($runningProcesses | Where-Object {
-        $All -or ($_.CommandLine -and $_.CommandLine.Contains($repositoryRoot, [StringComparison]::OrdinalIgnoreCase))
+        if ($All) {
+            return $true
+        }
+
+        $commandLine = try { $_.CommandLine } catch { $null }
+        $commandLine -and $commandLine.Contains($repositoryRoot, [StringComparison]::OrdinalIgnoreCase)
     })
 
 $hostedProcesses = @($builtProcesses) + @($launchers)
