@@ -303,10 +303,24 @@
             var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
             var hrefs = cut.FindAll("link[rel=stylesheet]").Select(link => link.GetAttribute("href") ?? "").ToArray();
 
-            // Assert
+            // Assert — Forma's own, then every registered theme's but Forma's, which the tokens hold
             Assert.Equal(
-                ["_content/Forma.Blazor/forma-tokens.css", "_content/Forma.Blazor/forma-reset.css", "_content/Forma.Blazor/forma-base.css", "_content/Forma.Blazor/forma-input.css", "_content/Forma.Blazor/forma-prose.css"],
+                ["_content/Forma.Blazor/forma-tokens.css", "_content/Forma.Blazor/forma-reset.css", "_content/Forma.Blazor/forma-base.css", "_content/Forma.Blazor/forma-input.css", "_content/Forma.Blazor/forma-prose.css", "_content/Forma.Blazor/forma-high-contrast.css"],
                 hrefs);
+        }
+
+        [Fact]
+        public void Should_publish_the_theme_choice_the_page_draws_in_its_marker()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+            var marker = cut.Find("meta[name=forma-theme]");
+
+            // Assert
+            Assert.Equal(("forma", "system", "0"), (marker.GetAttribute("data-theme"), marker.GetAttribute("data-scheme"), marker.GetAttribute("data-revision")));
         }
 
         [Fact]

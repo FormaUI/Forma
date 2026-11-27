@@ -71,7 +71,8 @@ public sealed partial class SinkInventoryTests
     {
         ["src/Blazor/Forma.Blazor.Server/Components/Page/FormaPageHead.razor | href=@DocumentBase"] = "The page's base address, which the host configures",
         ["src/Blazor/Forma.Blazor.Server/Components/Page/FormaPageHead.razor | href=@IconHref"] = "The page's icon, which the host configures",
-        ["src/Blazor/Forma.Blazor.Server/Components/Page/FormaPageHead.razor | href=@Assets[\"_content/Forma.Blazor/forma-tokens.css\"]"] = "The library's own stylesheet",
+        ["src/Blazor/Forma.Blazor.Server/Components/Page/FormaPageHead.razor | href=@Assets[TokensStylesheet]"] = "The library's own stylesheet",
+        ["src/Blazor/Forma.Blazor.Server/Components/Page/FormaPageHead.razor | href=@Assets[theme.Stylesheet]"] = "A registered theme's stylesheet, which the host's registration names",
         ["src/Blazor/Forma.Blazor.Server/Components/Page/FormaPageHead.razor | href=@Assets[\"_content/Forma.Blazor/forma-reset.css\"]"] = "The library's own stylesheet",
         ["src/Blazor/Forma.Blazor.Server/Components/Page/FormaPageHead.razor | href=@Assets[\"_content/Forma.Blazor/forma-base.css\"]"] = "The library's own stylesheet",
         ["src/Blazor/Forma.Blazor.Server/Components/Page/FormaPageHead.razor | href=@Assets[\"_content/Forma.Blazor/forma-input.css\"]"] = "The library's own stylesheet",
