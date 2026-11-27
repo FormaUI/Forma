@@ -65,7 +65,7 @@ whose defaults a theme most often replaces:
 | Tokens | Default |
 | --- | --- |
 | A role's `-fg-color`, its text and marks on the solid | White; a dark constant for warning, whose solid is light |
-| A role's `-ink-color`, its text on the paper and on its subtle tint | The role's `-emphasis-color` |
+| A role's `-ink-color`, its text on the paper and on its subtle tint | The role's `-emphasis-color`; for warning, whose solid is light, the solid 53% toward black |
 | A role's `-emphasis-color`, the fill hover and pressed are cut from | The solid mixed toward black |
 | A role's `-subtle-color`, the tint behind a selected row, an active tab or a badge | The solid at 10% over what's behind it |
 | `--focus-color`, the band of the focus ring | The primary solid, opaque |
@@ -123,13 +123,8 @@ A host sets another default: a theme of its own, or Light where its pages aren't
 Forma ships two themes, each with both schemes:
 
 - **Forma**, the library's look, in `forma-tokens.css`, with a dark side for each base token, the chart series
-  among them, which the charts' README already lists for a dark surface. Its light scheme is held to the
-  [targets](#contrast), and where a current light value misses one, the theme's value is raised to meet it:
-  - white on the success and info solids;
-  - the success and warning inks on the paper;
-  - secondary text on the inset and the canvas, and quiet text on the canvas;
-  - a field's border;
-  - the focus ring.
+  among them, which the charts' README already lists for a dark surface. Each of its schemes meets the
+  [targets](#contrast).
 - **Forma High Contrast**, for readers who need more contrast than the defaults give: every text and each
   role's ink and fg past 7:1, every border and the focus ring past 3:1, and state shown by solid fills, which
   it sets in place of the translucent tints.

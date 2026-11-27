@@ -17,6 +17,15 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Every token but the base tokens is declared under `:where(:root, [data-forma-theme])`, so a host's own value for a
   token wins whichever stylesheet loads first.
 - The shadows, `--shadow-color` and `--shadow-small` to `--shadow-large`, are cut from black in a dark scheme.
+- Forma's light scheme meets [the theme design's contrast targets](docs/theme-design.md#contrast), which changes how every
+  page draws:
+  - `--gray-500` is `#677077` and `--gray-600` is `#495361`, so secondary and quiet text read on the canvas;
+  - `--success-color` is `#208738` and `--info-color` is `#2d76cd`, so white reads on them;
+  - `--warning-ink-color` is the warning solid 53% toward black, where it was the warning emphasis;
+  - `--border-emphasis-color`, a field's border, is `--gray-500`, where it was a translucent tint of `--gray-600`;
+  - `--focus-color` is the opaque `--primary-color`, where it was the primary at 35%.
+
+  A host that set any of these keeps its own value.
 - `formaui-net.Framework.Themes.Testing` holds a theme to [the theme design's contrast targets](docs/theme-design.md#contrast)
   in a host's tests: `ThemeContrast.MeasureAsync` measures every pair of tokens they name in each color scheme, on a
   Playwright page, as the browser draws them, and reports each with its ratio and its target. `ColorSchemes`, the schemes

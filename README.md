@@ -383,7 +383,7 @@ A role's color does two jobs on a page, and a dark scheme gives each its own sha
 a hover or an active state is cut from, under the role's `-fg-color` text, and its `-ink-color` is the role's color
 as text and marks on the paper or on its subtle tint, such as a link, a current tab, a selected option's check or a
 field's error and its border. In a light scheme the ink is the emphasis, the solid mixed toward black, which reads well
-both ways. On dark paper text wants a lighter shade than a fill does, so a dark scheme sets the ink of each role it
+both ways; warning's light solid takes an ink of its own, mixed much further toward black. On dark paper text wants a lighter shade than a fill does, so a dark scheme sets the ink of each role it
 uses, and the fg of each solid it lightens.
 
 A chart's series colors are validated as a set against the paper, so a theme with a dark scheme writes the four

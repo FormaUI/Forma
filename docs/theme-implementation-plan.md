@@ -65,12 +65,26 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
      | White on the info solid | 4.03 | 4.5 |
      | The field's border on each backdrop | 1.61 to 1.64 | 3 |
      | The focus ring on each backdrop | 1.69 to 1.72 | 3 |
-4. **Forma's light values raised to the targets.** Every value the check reported is raised to meet its
+4. **Forma's light values raised to the targets.** ✅ Every value the check reported is raised to meet its
    target. A field's boundary is settled by comparing a solid border with a fill set apart from its backdrop,
    both drawn in the Showcase, and where the fill is chosen, the design's table of defaults changes with it.
    The changelog's entry names each token that changed, since every host's pages change with it.
    - Gate: before it lands, the maintainer reviews the changed values in the Showcase beside the current ones;
      the contrast check passes on Forma's light scheme; every component's browser checks pass.
+   - Landed: each value moved by the least that meets its target, with a margin of about 0.08, and the
+     maintainer reviewed them beside today's in a Showcase page on `feature/forma-light-contrast`. The field
+     keeps a solid border, at `--gray-500`; a fill with one line beneath it was drawn beside it and not taken,
+     so the design's table of defaults stands. A browser check now holds Forma's light scheme to every target.
+
+     | Token | Was | Now | Pair, before and after |
+     | --- | --- | --- | --- |
+     | `--gray-600` | `#4b5563` | `#495361` | Quiet text on the canvas, 6.87 to 7.09 |
+     | `--gray-500` | `#6c757d` | `#677077` | Secondary text on the canvas, 4.26 to 4.59 |
+     | `--success-color` | `#28a745` | `#208738` | White on the solid, 3.13 to 4.58 |
+     | `--info-color` | `#307fdd` | `#2d76cd` | White on the solid, 4.03 to 4.58 |
+     | `--warning-ink-color` | the emphasis | the solid 53% toward black | Ink on its tint, 2.12 to 4.58 |
+     | `--border-emphasis-color` | `--gray-600` at 31% | `--gray-500` | A field's border, 1.61 to 4.59 |
+     | `--focus-color` | the primary at 35% | the primary | The focus ring, 1.69 to 5.22 |
 5. **Forma's dark scheme and Forma High Contrast.** Forma's theme rule gains its dark side, the chart series
    among them, and Forma High Contrast ships as a stylesheet of the component library, setting solid fills in
    place of the translucent tints.

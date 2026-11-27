@@ -146,6 +146,21 @@ public sealed class ThemesTests
 
         [Theory]
         [MemberData(nameof(EngineRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_hold_forma_s_theme_to_every_target_in_its_light_scheme(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "themes");
+            await using var _ = context;
+
+            // Act
+            var report = await ThemeContrast.MeasureAsync(page, "forma", ColorSchemes.Light);
+
+            // Assert
+            Assert.True(report.MeetsEveryTarget, report.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(EngineRuntimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_find_every_target_met_by_a_theme_that_meets_them_in_both_schemes(string runtime)
         {
             // Arrange

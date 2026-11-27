@@ -37,8 +37,8 @@
     --gray-200: #e5e7eb;
     --gray-300: #d1d5db;
     --gray-400: #9ca3af;
-    --gray-500: #6c757d;
-    --gray-600: #4b5563;
+    --gray-500: #677077;
+    --gray-600: #495361;
     --gray-700: #374151;
     --gray-800: #1f2937;
 
@@ -46,10 +46,10 @@
        the other four are status. */
     --primary-color: #0066bf;
     --secondary-color: var(--gray-600);
-    --success-color: #28a745;
+    --success-color: #208738;
     --danger-color: #c4314b;
     --warning-color: #ffc107;
-    --info-color: #307fdd;
+    --info-color: #2d76cd;
 
     /* The canvas: the backdrop other backdrops are laid on, below the paper, which a scale running
        from dark paper to light ink holds no step for. */
@@ -141,8 +141,9 @@
          -subtle-color    the tint behind a selected row, an active tab, a badge
          -fg-color        text and marks drawn on the solid
          -ink-color       text and marks drawn in the role's color on the paper or on its subtle tint
-       A light scheme's ink is its emphasis; a dark scheme sets the two apart, since text on dark
-       paper wants a lighter shade than a fill under white text does.
+       A light scheme's ink is its emphasis, but for warning, whose light solid takes a darker ink to
+       read on the paper; a dark scheme sets the two apart, since text on dark paper wants a lighter
+       shade than a fill under white text does.
        ============================================================ */
     --primary-emphasis-color: color-mix(in srgb, var(--primary-color) 82%, black);
     --primary-subtle-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
@@ -167,7 +168,7 @@
     --warning-emphasis-color: color-mix(in srgb, var(--warning-color) 82%, black);
     --warning-subtle-color: color-mix(in srgb, var(--warning-color) 10%, transparent);
     --warning-fg-color: var(--gray-800);  /* dark on yellow */
-    --warning-ink-color: var(--warning-emphasis-color);
+    --warning-ink-color: color-mix(in srgb, var(--warning-color) 53%, black);
 
     --info-emphasis-color: color-mix(in srgb, var(--info-color) 82%, black);
     --info-subtle-color: color-mix(in srgb, var(--info-color) 10%, transparent);
@@ -241,7 +242,7 @@
 
     /* Focus ring — a gap in the backdrop color, then a band of the accent, drawn as shadows so it follows the
        corner; --focus-ring-inset is the same ring turned inward, for a target that clips its own box. */
-    --focus-color: color-mix(in srgb, var(--primary-color) 35%, transparent);
+    --focus-color: var(--primary-color);
     --focus-ring-gap: 2px;
     --focus-ring-width: 2px;
     --focus-ring: 0 0 0 var(--focus-ring-gap) var(--input-bg-color), 0 0 0 calc(var(--focus-ring-gap) + var(--focus-ring-width)) var(--focus-color);
@@ -254,7 +255,7 @@
     /* Borders — cut from the scale, so they follow the theme. */
     --border-color: color-mix(in srgb, var(--gray-600) 16%, transparent);
     --border-subtle-color: var(--gray-300);
-    --border-emphasis-color: color-mix(in srgb, var(--gray-600) 31%, transparent);
+    --border-emphasis-color: var(--gray-500);  /* the border that marks a field, 3:1 or more on every backdrop */
 
     /* ============================================================
        Media — the chrome for viewing a photo, a video or a document, fixed to a dark viewer in
