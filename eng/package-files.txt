@@ -94,6 +94,7 @@ formaui-net.Blazor
     NOTICE
     README.md
     staticwebassets/forma-base.css
+    staticwebassets/forma-high-contrast.css
     staticwebassets/forma-input.css
     staticwebassets/forma-prose.css
     staticwebassets/forma-reset.css

@@ -127,17 +127,18 @@ Each series takes the color of its place in `Series`, so a host keeps a series i
 color. A line also draws its own dash and marker, and each period's bars stand in the series' order, so a
 series is told apart without color; forced colors and print give each series' bars but the first's a texture.
 
-The colors are tokens a theme sets, a theme with a dark scheme writing each as `light-dark(light, dark)`:
+The colors are tokens a theme sets, a theme with a dark scheme writing each as `light-dark(light, dark)`, and Forma's
+theme draws them in each of its schemes as:
 
-| Token | Light default | A dark scheme's value |
+| Token | Light | Dark |
 | --- | --- | --- |
 | `--chart-series-1-color` | `#2a78d6` | `#3987e5` |
 | `--chart-series-2-color` | `#eb6834` | `#d95926` |
 | `--chart-series-3-color` | `#1baf7a` | `#199e70` |
 | `--chart-series-4-color` | `#eda100` | `#c98500` |
 
-The light defaults are validated as a set against the paper, and the dark values against a dark surface,
-so adjacent series stay apart for color-blind readers. The grid, the baseline and the threshold follow the
+Each scheme's four are validated as a set against its paper, so adjacent series stay apart for color-blind
+readers. The grid, the baseline and the threshold follow the
 gray scale and the ink, `--chart-grid-color`, `--chart-baseline-color` and `--chart-threshold-color`, and
 `--chart-surface-color` is the backdrop a chart stands on, which rings a marker. `--chart-plot-block-size`
 sets the plot's height.

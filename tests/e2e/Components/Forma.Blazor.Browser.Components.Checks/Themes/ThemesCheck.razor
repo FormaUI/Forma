@@ -1,11 +1,13 @@
 @page "/{Runtime}/themes"
 
 @* Elements naming a theme, a scheme or both, nested as a page nests scopes, and a reference for each theme in each scheme: each
-   a span whose tokens a check reads where it stands. The contrast themes are measured on the page. *@
+   a span whose tokens a check reads where it stands. The contrast themes and Forma High Contrast are measured on the page. *@
 <link rel="stylesheet" href="_content/Forma.Blazor.Browser.Components.Checks/check-theme.css" />
 <link rel="stylesheet" href="_content/Forma.Blazor.Browser.Components.Checks/contrast-themes.css" />
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-high-contrast.css" />
 
 <span id="unthemed"></span>
+<div data-forma-theme="forma"><span id="forma-in-root"></span></div>
 
 <div data-forma-theme="forma" data-forma-scheme="light"><span id="forma-light"></span></div>
 <div data-forma-theme="forma" data-forma-scheme="dark"><span id="forma-dark"></span></div>

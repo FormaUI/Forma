@@ -26,6 +26,15 @@ set out. What Forma gained before its first release, month by month, is in [the 
   - `--focus-color` is the opaque `--primary-color`, where it was the primary at 35%.
 
   A host that set any of these keeps its own value.
+- Forma's theme draws a dark scheme, wherever an element names `data-forma-scheme="dark"`, or `system` on a device
+  preferring dark, [held to the same targets](docs/theme-design.md#contrast): its gray scale runs from the paper,
+  `#16191e`, to the ink, `#e6eaef`, over a canvas of `#0f1115`; `--primary-color` is `#1f6fd1`; the secondary solid is a
+  mid gray under white; each role's ink is its solid 60% toward white; and the chart series take the dark values
+  [the charts' README](src/Blazor/Forma.Blazor.Charts/README.md#colors-and-themes) lists.
+- `--warning-fg-color`, the text on the warning solid, is `--black-color` in both schemes, where it was `--gray-800`.
+- Forma High Contrast, `forma-high-contrast.css` beside the tokens, is a theme of its own, `forma-high-contrast`, in a
+  light and a dark scheme: every text, each role's ink and each role's fg past 7:1, every border and the focus ring
+  past 3:1, and every state shown by a solid fill.
 - A popover draws `--popover-bg-color`, outlined all round by `--popover-border-color`: the raised backdrop and
   `--border-color` in a light scheme, and a step toward the ink in a dark one. Every popover a component opens takes
   them: the drop-down and share menus, the lists of `FormaSelect`, `FormaMultiSelect`, `FormaComboBox` and

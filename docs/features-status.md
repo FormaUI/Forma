@@ -29,7 +29,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Four components implemented, twenty-six changes fixed, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
-| [Themes](#themes) | Steps 1 to 4 landed, nine steps open, Forma's dark scheme and the theme scope next |
+| [Themes](#themes) | Steps 1 to 5 landed, eight steps open, the theme scope next |
 | [The Showcase's review modes](#the-showcases-review-modes) | Planned, nine steps open, the pointer emulation's prototype and the preview first |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -79,7 +79,7 @@ Each feature, the document that states it, its state, and the month it first lan
 | --- | --- | --- | --- |
 | The component bases and the component context | [Component foundations design](component-foundations-design.md) | Implemented | [September 2026](../FEATURE-HISTORY.md#2026-09) |
 | Design tokens, backdrops and theming | [Styling and theming](../README.md#styling-and-theming) | Implemented | [August 2026](../FEATURE-HISTORY.md#2026-08) |
-| Themes: named themes in a light and a dark scheme, the reader's choice kept and switched in place | [Theme design](theme-design.md) | [In progress](#themes): a theme and a scheme drawn wherever an element names them | — |
+| Themes: named themes in a light and a dark scheme, the reader's choice kept and switched in place | [Theme design](theme-design.md) | [In progress](#themes): a theme and a scheme drawn wherever an element names them, Forma's in both schemes and Forma High Contrast beside it | — |
 | The culture state and the switch | [Culture design](culture-design.md) | Implemented, coordinated across a page's circuits and WebAssembly runtimes, in an application's own cultures where it provides them | [October 2026](../FEATURE-HISTORY.md#2026-10) |
 | Culture addresses | [Culture addresses](culture-design.md#culture-addresses) | Implemented, in coordination, in every runtime | [March 2026](../FEATURE-HISTORY.md#2026-03) |
 | Localization and locale packs | [Localization design](localization-design.md) | Implemented: every locale file, in whatever layout its project chose, read into one entry, a culture, an assembly, a type and a key with its text, and embedded by the build from its entry; the text chosen by culture, then source; a conflict within a source logged by the runtime and reported by the locale lint as an error; a WebAssembly client and a Web App's server reading the host's strings; code written against Microsoft's `IStringLocalizer` reading the same strings through `Forma.Framework.Localization.StringLocalizerAdapter` | [March 2026](../FEATURE-HISTORY.md#2026-03) |
@@ -281,10 +281,11 @@ thirteen steps and four parts:
 - the reader's choice, kept, resolved, painted first and switched in place, with the picker;
 - Blazor Hybrid, once each platform's document-start script is proven.
 
-The first two parts are independent of each other. Steps 1 to 4 have landed: the culture coordinator runs on the
+The first two parts are independent of each other. Steps 1 to 5 have landed: the culture coordinator runs on the
 switch coordinator the theme's is to be built on, the tokens draw the theme and the scheme the nearest element naming
 them carries, so a host draws a theme of its own by writing the two attributes, `Forma.Framework.Themes.Testing` holds a
-theme to the contrast targets, and Forma's light scheme meets them.
+theme to the contrast targets, and Forma's theme meets them in both its schemes, as Forma High Contrast, a stylesheet
+beside the tokens, meets its own in both of its.
 
 <a id="the-showcases-review-modes"></a>
 

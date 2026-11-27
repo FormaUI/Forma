@@ -90,11 +90,39 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
      | `--warning-ink-color` | the emphasis | the solid 53% toward black | Ink on its tint, 2.12 to 4.58 |
      | `--border-emphasis-color` | `--gray-600` at 31% | `--gray-500` | A field's border, 1.61 to 4.59 |
      | `--focus-color` | the primary at 35% | the primary | The focus ring, 1.69 to 5.22 |
-5. **Forma's dark scheme and Forma High Contrast.** Forma's theme rule gains its dark side, the chart series
+5. **Forma's dark scheme and Forma High Contrast.** ✅ Forma's theme rule gains its dark side, the chart series
    among them, and Forma High Contrast ships as a stylesheet of the component library, setting solid fills in
    place of the translucent tints.
    - Gate: the contrast check passes on both themes in both schemes; every component's Showcase page is
      reviewed in each, through the attributes.
+   - Landed: Forma's base tokens write their dark side, and a rule after the defaults sets the tokens Forma's look
+     takes apart from them: each role's ink, its solid 60% toward white in the dark scheme, and the secondary
+     family, whose dark solid is a mid gray under white that steps toward the paper under the pointer, with quiet
+     text and the secondary ink on light steps of their own. That rule names Forma's theme, or a root naming none,
+     so a host's theme on the root draws the defaults. `--warning-fg-color` is `--black-color`, the dark constant
+     the design's table names, where it was the scale's ink, which a dark scheme turns light. Forma High Contrast is
+     `forma-high-contrast.css`: deep solids under white in its light scheme and light solids under black in its dark
+     one, opaque tints, solid hover and loading fills and borders, and an emphasis deep enough that each ink holds
+     7:1 on a quiet button's hover fill. Every Showcase page was drawn in each theme and scheme through a bar setting
+     the attributes, on `feature/forma-dark-scheme`, and each of its texts measured against what lies beneath it,
+     which found the Showcase's current link and tab drawn in the primary solid, read in the ink now, and its literal
+     badge tints, opaque now; the maintainer approved the values beside a page drawing both themes in both schemes.
+
+     | Token | Light | Dark | Its tightest pair in the dark scheme |
+     | --- | --- | --- | --- |
+     | `--gray-0` to `--gray-800` | `#fff` to `#1f2937` | `#16191e` to `#e6eaef` | Quiet text on the inset, 7.62 |
+     | `--backdrop-canvas-bg-color` | `--gray-100` | `#0f1115` | |
+     | `--primary-color` | `#0066bf` | `#1f6fd1` | The focus ring on the inset and the popover, 3.31 |
+     | `--secondary-color` | `--gray-600` | `--gray-400` | White on it, 6.0 |
+     | Each role's ink | Its emphasis | Its solid 60% toward white | Danger ink on its tint over the inset, 5.63 |
+     | The chart series | `#2a78d6`, `#eb6834`, `#1baf7a`, `#eda100` | `#3987e5`, `#d95926`, `#199e70`, `#c98500` | The charts' validation |
+
+   - Departure: the review gave popovers a surface of their own, `--popover-bg-color`, the raised backdrop in a
+     light scheme and a step toward the ink in a dark one, outlined by `--popover-border-color` all round; every
+     popover a component opens draws them, the grid's column options and the explorer's selection review among
+     them, which drew no surface before. The contrast check measures each pair on the popover's surface beside the
+     four backdrops, and holds a pressed toggle's label, the primary ink on a quiet button's hover fill, to a role
+     ink's target; the browser checks draw a host's theme named on the root, and Forma's in a part naming it there.
 6. **`FormaThemeScope`.** The component, which writes either attribute or both on an element with
    `display: contents`, its tests and its Showcase page.
    - Gate: the four gates the checking standard sets; the scope cases of the design's verification.

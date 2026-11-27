@@ -297,6 +297,7 @@ Shared stylesheets live in `src/Blazor/Forma.Blazor/wwwroot/`:
 | `forma-base.css` | The opt-in look of HTML elements |
 | `forma-input.css` | The one input box every field draws |
 | `forma-prose.css` | The look of a document the composer authored |
+| `forma-high-contrast.css` | Forma High Contrast, a theme of its own |
 
 Component-specific rules belong in each component's isolated stylesheet.
 

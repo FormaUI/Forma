@@ -46,8 +46,8 @@ public sealed class ThemesTests
         }
         """;
 
-    // Whether both check themes' stylesheets have reached the page.
-    private const string AreThemesLoaded = "() => ['check-theme.css', 'contrast-themes.css'].every(name => [...document.styleSheets].some(sheet => sheet.href?.endsWith(name)))";
+    // Whether the check themes' stylesheets and Forma High Contrast's have reached the page.
+    private const string AreThemesLoaded = "() => ['check-theme.css', 'contrast-themes.css', 'forma-high-contrast.css'].every(name => [...document.styleSheets].some(sheet => sheet.href?.endsWith(name)))";
 
     public sealed class Scopes(BrowserHost host)
     {
@@ -112,6 +112,28 @@ public sealed class ThemesTests
             Assert.Empty(problems);
         }
 
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_draw_a_host_theme_named_on_the_root_and_forma_s_in_a_part_naming_forma_inside_it(string runtime)
+        {
+            // Arrange — the references, then the root naming the check theme in its dark scheme
+            var (context, page) = await OpenAsync(host, runtime, "themes");
+            await using var _ = context;
+            await page.WaitForFunctionAsync(AreThemesLoaded);
+            var formaDark = await ReadTokensAsync(page, "forma-dark");
+            var checkDark = await ReadTokensAsync(page, "check-dark");
+            await page.EvaluateAsync("() => { document.documentElement.dataset.formaTheme = 'check'; document.documentElement.dataset.formaScheme = 'dark'; }");
+            var problems = new List<string>();
+
+            // Act
+            problems.AddRange(Compare("unthemed", await ReadTokensAsync(page, "unthemed"), "check-dark", checkDark));
+            problems.AddRange(Compare("forma-in-root", await ReadTokensAsync(page, "forma-in-root"), "forma-dark", formaDark));
+
+            // Assert — the root draws the check theme's every token, none of the ones Forma's theme sets past its base tokens
+            Assert.NotEqual(formaDark["--primary-ink-color"], checkDark["--primary-ink-color"]);
+            Assert.Empty(problems);
+        }
+
         private static Task<Dictionary<string, string>> ReadTokensAsync(IPage page, string id)
             => page.EvaluateAsync<Dictionary<string, string>>(ReadTokens, id);
 
@@ -146,14 +168,31 @@ public sealed class ThemesTests
 
         [Theory]
         [MemberData(nameof(EngineRuntimes), MemberType = typeof(ComponentChecks))]
-        public async Task Should_hold_forma_s_theme_to_every_target_in_its_light_scheme(string runtime)
+        public async Task Should_hold_forma_s_theme_to_every_target_in_both_schemes(string runtime)
         {
             // Arrange
             var (context, page) = await OpenAsync(host, runtime, "themes");
             await using var _ = context;
 
             // Act
-            var report = await ThemeContrast.MeasureAsync(page, "forma", ColorSchemes.Light);
+            var report = await ThemeContrast.MeasureAsync(page, "forma", ColorSchemes.Light | ColorSchemes.Dark);
+
+            // Assert
+            Assert.True(report.MeetsEveryTarget, report.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(EngineRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_hold_forma_high_contrast_to_7_to_1_for_every_text_ink_and_fg_in_both_schemes(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "themes");
+            await using var _ = context;
+            await page.WaitForFunctionAsync(AreThemesLoaded);
+            var targets = ThemeContrastTargets.Default with { SecondaryText = 7, RoleInk = 7, RoleForeground = 7 };
+
+            // Act
+            var report = await ThemeContrast.MeasureAsync(page, "forma-high-contrast", ColorSchemes.Light | ColorSchemes.Dark, targets);
 
             // Assert
             Assert.True(report.MeetsEveryTarget, report.ToString());

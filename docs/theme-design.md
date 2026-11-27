@@ -126,9 +126,9 @@ Forma ships two themes, each with both schemes:
 - **Forma**, the library's look, in `forma-tokens.css`, with a dark side for each base token, the chart series
   among them, which the charts' README already lists for a dark surface. Each of its schemes meets the
   [targets](#contrast).
-- **Forma High Contrast**, for readers who need more contrast than the defaults give: every text and each
-  role's ink and fg past 7:1, every border and the focus ring past 3:1, and state shown by solid fills, which
-  it sets in place of the translucent tints.
+- **Forma High Contrast**, for readers who need more contrast than the defaults give, in
+  `forma-high-contrast.css`: every text and each role's ink and fg past 7:1, every border and the focus ring past
+  3:1, and state shown by solid fills, which it sets in place of the translucent tints.
 
 A host keeps Forma's themes, adds to them, or replaces them with its own.
 

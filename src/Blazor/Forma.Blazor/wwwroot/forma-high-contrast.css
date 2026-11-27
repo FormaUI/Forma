@@ -1,0 +1,71 @@
+/*
+    forma-high-contrast.css — Forma High Contrast, a theme for readers who need more contrast than
+    Forma's own gives, in a light and a dark scheme: every text, each role's ink and each role's fg
+    past 7:1, and every border and the focus ring past 3:1. A state is shown by a solid fill, which
+    the theme sets in place of each translucent tint.
+
+    A page draws it where an element carries data-forma-theme="forma-high-contrast", beside
+    forma-tokens.css, whose defaults derive every token the theme leaves unset.
+*/
+
+[data-forma-theme="forma-high-contrast"] {
+    /* Scale — white paper to black ink, and near-black paper to white ink, each step keeping the
+       job forma-tokens.css gives it. */
+    --gray-0: light-dark(#fff, #0a0a0a);
+    --gray-50: light-dark(#f4f4f4, #141414);
+    --gray-100: light-dark(#e8e8e8, #1f1f1f);
+    --gray-200: light-dark(#d0d0d0, #2e2e2e);
+    --gray-300: light-dark(#bdbdbd, #424242);
+    --gray-400: light-dark(#6b6b6b, #9a9a9a);
+    --gray-500: light-dark(#3d3d3d, #cfcfcf);
+    --gray-600: light-dark(#2b2b2b, #e0e0e0);
+    --gray-700: light-dark(#1a1a1a, #f0f0f0);
+    --gray-800: light-dark(#000, #fff);
+
+    /* The solids: deep under white in the light scheme, light under black in the dark one. */
+    --primary-color: light-dark(#00509e, #6cb6ff);
+    --secondary-color: var(--gray-600);
+    --success-color: light-dark(#0f5f27, #4ade80);
+    --danger-color: light-dark(#9e1c35, #ff8f8f);
+    --warning-color: light-dark(#ffc107, #ffd33d);
+    --info-color: light-dark(#0a4f96, #79c0ff);
+
+    --backdrop-canvas-bg-color: light-dark(var(--gray-100), #000);
+
+    --chart-series-1-color: light-dark(#2a78d6, #3987e5);
+    --chart-series-2-color: light-dark(#eb6834, #d95926);
+    --chart-series-3-color: light-dark(#1baf7a, #199e70);
+    --chart-series-4-color: light-dark(#eda100, #c98500);
+
+    /* Each role: its emphasis a step toward the ink, deep enough on light paper that its ink, the
+       emphasis, holds 7:1 on a quiet button's hover fill; its subtle tint an opaque fill on the
+       paper; and its fg white on a deep solid and black on a light one. Warning keeps a light solid
+       under black in both schemes, and an ink of its own. */
+    --primary-emphasis-color: light-dark(color-mix(in srgb, var(--primary-color) 72%, black), color-mix(in srgb, var(--primary-color) 80%, white));
+    --primary-subtle-color: light-dark(color-mix(in srgb, var(--primary-color) 12%, var(--gray-0)), color-mix(in srgb, var(--primary-color) 16%, var(--gray-0)));
+    --primary-fg-color: light-dark(var(--white-color), var(--black-color));
+
+    --secondary-fg-color: light-dark(var(--white-color), var(--black-color));
+
+    --success-emphasis-color: light-dark(color-mix(in srgb, var(--success-color) 72%, black), color-mix(in srgb, var(--success-color) 80%, white));
+    --success-subtle-color: light-dark(color-mix(in srgb, var(--success-color) 12%, var(--gray-0)), color-mix(in srgb, var(--success-color) 16%, var(--gray-0)));
+    --success-fg-color: light-dark(var(--white-color), var(--black-color));
+
+    --danger-emphasis-color: light-dark(color-mix(in srgb, var(--danger-color) 72%, black), color-mix(in srgb, var(--danger-color) 80%, white));
+    --danger-subtle-color: light-dark(color-mix(in srgb, var(--danger-color) 12%, var(--gray-0)), color-mix(in srgb, var(--danger-color) 16%, var(--gray-0)));
+    --danger-fg-color: light-dark(var(--white-color), var(--black-color));
+
+    --warning-emphasis-color: light-dark(color-mix(in srgb, var(--warning-color) 82%, black), color-mix(in srgb, var(--warning-color) 80%, white));
+    --warning-subtle-color: light-dark(color-mix(in srgb, var(--warning-color) 12%, var(--gray-0)), color-mix(in srgb, var(--warning-color) 16%, var(--gray-0)));
+    --warning-ink-color: light-dark(color-mix(in srgb, var(--warning-color) 35%, black), var(--warning-color));
+
+    --info-emphasis-color: light-dark(color-mix(in srgb, var(--info-color) 72%, black), color-mix(in srgb, var(--info-color) 80%, white));
+    --info-subtle-color: light-dark(color-mix(in srgb, var(--info-color) 12%, var(--gray-0)), color-mix(in srgb, var(--info-color) 16%, var(--gray-0)));
+    --info-fg-color: light-dark(var(--white-color), var(--black-color));
+
+    /* Solid fills for a state, and a border on every edge past 3:1. */
+    --hover-bg-color: var(--gray-200);
+    --loading-bg-color: var(--gray-200);
+    --border-color: var(--gray-400);
+    --border-subtle-color: var(--gray-400);
+}

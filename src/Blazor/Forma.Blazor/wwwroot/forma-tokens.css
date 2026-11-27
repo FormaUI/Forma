@@ -7,7 +7,8 @@
     A theme is a rule, [data-forma-theme="its-name"], that sets the base tokens: the gray scale, the
     six role solids, the canvas and the four chart series. It may set any other token as well. A
     value that differs by color scheme is a color, written as light-dark(light, dark). Forma's theme
-    is the first rule below, and a page that names no theme draws it.
+    is the first rule below, which sets its base tokens, and the last, which sets the tokens its look
+    takes apart from the defaults; a page that names no theme draws it.
 
     Every other token is declared under :where(:root, [data-forma-theme]), so it derives again from
     the base tokens wherever a theme applies, and a theme's own value for it wins. Every token is an
@@ -19,33 +20,33 @@
    Forma's theme — the base tokens, which nothing else derives.
    ============================================================ */
 :where(:root, [data-forma-theme="forma"]) {
-    /* Scale — the one gray ramp, paper to ink. Every gray-ish token points at a step by name and
-       follows. Each step has one job:
+    /* Scale — the one gray ramp, paper to ink, light paper in the light scheme and dark paper in the
+       dark one. Every gray-ish token points at a step by name and follows. Each step has one job:
          0    paper: a flat or raised backdrop, an input
          50   an inset backdrop, a surface gone inactive
-         100  the canvas, muted content, a disabled fill, a quiet button at rest
+         100  the light canvas, muted content, a disabled fill, a quiet button at rest
          200  a quiet button under the pointer
-         300  a quiet button pressed, a subtle border
-         400  disabled text
-         500  secondary text
-         600  the secondary solid, quiet text, the hue a border and a hover tint are cut from
-         700  the secondary solid under the pointer
+         300  a quiet button pressed, a subtle border; the dark secondary solid under the pointer
+         400  disabled text; the dark secondary solid
+         500  secondary text, a field's border
+         600  the light secondary solid, quiet text, the hue a border and a hover tint are cut from
+         700  the light secondary solid under the pointer, the secondary ink
          800  ink: primary text */
-    --gray-0: #fff;
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
-    --gray-500: #677077;
-    --gray-600: #495361;
-    --gray-700: #374151;
-    --gray-800: #1f2937;
+    --gray-0: light-dark(#fff, #16191e);
+    --gray-50: light-dark(#f9fafb, #1c2026);
+    --gray-100: light-dark(#f3f4f6, #22272e);
+    --gray-200: light-dark(#e5e7eb, #2c323a);
+    --gray-300: light-dark(#d1d5db, #373e47);
+    --gray-400: light-dark(#9ca3af, #5c6570);
+    --gray-500: light-dark(#677077, #8a939e);
+    --gray-600: light-dark(#495361, #a9b2bc);
+    --gray-700: light-dark(#374151, #c5ccd4);
+    --gray-800: light-dark(#1f2937, #e6eaef);
 
-    /* The solid of each role. Primary is the brand accent; Secondary is the neutral solid beside it;
-       the other four are status. */
-    --primary-color: #0066bf;
-    --secondary-color: var(--gray-600);
+    /* The solid of each role. Primary is the brand accent; Secondary is the neutral solid beside it,
+       a dark gray under white in both schemes; the other four are status, the same in both. */
+    --primary-color: light-dark(#0066bf, #1f6fd1);
+    --secondary-color: light-dark(var(--gray-600), var(--gray-400));
     --success-color: #208738;
     --danger-color: #c4314b;
     --warning-color: #ffc107;
@@ -53,14 +54,14 @@
 
     /* The canvas: the backdrop other backdrops are laid on, below the paper, which a scale running
        from dark paper to light ink holds no step for. */
-    --backdrop-canvas-bg-color: var(--gray-100);
+    --backdrop-canvas-bg-color: light-dark(var(--gray-100), #0f1115);
 
-    /* A chart's series in the order a chart takes them, validated as a set against the paper so
-       adjacent series stay apart for color-blind readers. */
-    --chart-series-1-color: #2a78d6;
-    --chart-series-2-color: #eb6834;
-    --chart-series-3-color: #1baf7a;
-    --chart-series-4-color: #eda100;
+    /* A chart's series in the order a chart takes them, validated as a set against each scheme's
+       paper so adjacent series stay apart for color-blind readers. */
+    --chart-series-1-color: light-dark(#2a78d6, #3987e5);
+    --chart-series-2-color: light-dark(#eb6834, #d95926);
+    --chart-series-3-color: light-dark(#1baf7a, #199e70);
+    --chart-series-4-color: light-dark(#eda100, #c98500);
 }
 
 /* The color scheme an element and everything inside it draws in; system follows the device's. */
@@ -143,7 +144,7 @@
          -ink-color       text and marks drawn in the role's color on the paper or on its subtle tint
        A light scheme's ink is its emphasis, but for warning, whose light solid takes a darker ink to
        read on the paper; a dark scheme sets the two apart, since text on dark paper wants a lighter
-       shade than a fill under white text does.
+       shade than a fill under white text does, as Forma's theme does in its last rule.
        ============================================================ */
     --primary-emphasis-color: color-mix(in srgb, var(--primary-color) 82%, black);
     --primary-subtle-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
@@ -167,7 +168,7 @@
 
     --warning-emphasis-color: color-mix(in srgb, var(--warning-color) 82%, black);
     --warning-subtle-color: color-mix(in srgb, var(--warning-color) 10%, transparent);
-    --warning-fg-color: var(--gray-800);  /* dark on yellow */
+    --warning-fg-color: var(--black-color);  /* dark on yellow, in both schemes */
     --warning-ink-color: color-mix(in srgb, var(--warning-color) 53%, black);
 
     --info-emphasis-color: color-mix(in srgb, var(--info-color) 82%, black);
@@ -320,4 +321,22 @@
     --shadow-small: light-dark(color-mix(in srgb, var(--gray-800) 4%, transparent), color-mix(in srgb, var(--black-color) 24%, transparent)) 0 2px 4px 0;
     --shadow-medium: 0 4px 16px light-dark(color-mix(in srgb, var(--black-color) 12%, transparent), color-mix(in srgb, var(--black-color) 40%, transparent));
     --shadow-large: 0 8px 30px light-dark(color-mix(in srgb, var(--black-color) 18%, transparent), color-mix(in srgb, var(--black-color) 48%, transparent));
+}
+
+/* ============================================================
+   Forma's theme — the tokens its look takes apart from the defaults, after them so it wins, on an
+   element naming it or on a document's root naming no theme. In the dark scheme each role's ink is
+   its solid 60% toward white, and the secondary solid, a dark gray, steps toward the paper under
+   the pointer, so quiet text and the secondary ink take light steps of their own.
+   ============================================================ */
+:where(:root:not([data-forma-theme]), [data-forma-theme="forma"]) {
+    --primary-ink-color: light-dark(var(--primary-emphasis-color), color-mix(in srgb, var(--primary-color) 60%, white));
+    --success-ink-color: light-dark(var(--success-emphasis-color), color-mix(in srgb, var(--success-color) 60%, white));
+    --danger-ink-color: light-dark(var(--danger-emphasis-color), color-mix(in srgb, var(--danger-color) 60%, white));
+    --warning-ink-color: light-dark(color-mix(in srgb, var(--warning-color) 53%, black), color-mix(in srgb, var(--warning-color) 60%, white));
+    --info-ink-color: light-dark(var(--info-emphasis-color), color-mix(in srgb, var(--info-color) 60%, white));
+
+    --secondary-emphasis-color: light-dark(var(--gray-700), var(--gray-300));
+    --secondary-ink-color: var(--gray-700);
+    --quiet-text-color: var(--gray-600);
 }
