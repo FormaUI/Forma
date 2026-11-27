@@ -4,6 +4,7 @@ using System.Diagnostics.CodeAnalysis;
 
 using Forma.Blazor.Components;
 using Forma.Blazor.Components.Page;
+using Forma.Blazor.Components.Themes;
 using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Browser.Interop;
 using Forma.Framework.Culture;
@@ -14,6 +15,7 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Interop;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Sanitization;
+using Forma.Framework.Themes;
 using Forma.Framework.Windows;
 
 using Microsoft.AspNetCore.Components;
@@ -48,6 +50,7 @@ public static class ServiceCollectionExtensions
         services.AddFormaWindowServices();
         services.AddFormaFeedbackServices();
         services.AddFormaSanitizationServices();
+        services.AddFormaThemeDefaults(FormaThemes.Register);
 
         // Scoped to the user scope, whose culture state and JS runtime every context it makes holds.
         services.TryAddScoped<IComponentContextFactory, ComponentContextFactory>();

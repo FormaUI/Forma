@@ -21,6 +21,7 @@
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization.Json\Forma.Framework.Localization.Json.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
         <ProjectReference Include="..\..\..\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
     </ItemGroup>
 

@@ -137,10 +137,20 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
 
 ## The reader's choice
 
-7. **The contracts and the registration.** `Forma.Framework.Themes`: `ThemeDefinition`, `ThemeChoice`,
+7. **The contracts and the registration.** ✅ `Forma.Framework.Themes`: `ThemeDefinition`, `ThemeChoice`,
    `ThemePreference`, `IThemeState`, `IThemeSwitch`, `IThemePreferenceStore`, `AddFormaThemes` and the default
    choice, Forma's theme in the System preference.
    - Gate: unit tests of the registration and of resolving a choice naming a theme that isn't registered.
+   - Landed: `AddFormaThemes` configures `ThemeOptions`, the themes and the default, and every call's configuration
+     applies in the order of the calls after the component library's own themes, so a host removes or replaces Forma's
+     whichever registers first. `ThemeRegistry`, made once from the result, refuses a default naming a theme that
+     isn't registered, resolves a choice naming one to the default theme in the choice's scheme preference, and
+     draws a theme with a light scheme alone light. The state each user scope holds starts in the default choice and
+     applies an accepted choice, `AcceptedTheme`, through `IThemeStateIntegration` by its `ThemeVersion`, as the
+     culture state does.
+   - Departure: Forma's two themes are `FormaThemes`, in the component library, which owns their stylesheets and
+     their names' strings, and its registrar, `AddFormaUIServices`, registers them; `IThemeSwitch` is registered by
+     each half as it lands, from step 8.
 8. **The server's half.** `Forma.Framework.Themes.Blazor.Server`:
    - a request's choice resolved from the store, the cookie and the default, by the store's revision;
    - the cookie written with the store's choice where that choice wins;

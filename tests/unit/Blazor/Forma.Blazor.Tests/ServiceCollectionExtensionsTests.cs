@@ -1,6 +1,7 @@
 namespace Forma.Blazor.Tests;
 
 using Forma.Blazor.Components;
+using Forma.Blazor.Components.Themes;
 using Forma.Blazor.Features.Emojis;
 using Forma.Framework.Culture;
 using Forma.Framework.Emojis;
@@ -10,6 +11,7 @@ using Forma.Framework.Input;
 using Forma.Framework.Input.Keyboard;
 using Forma.Framework.JavaScript.Interop;
 using Forma.Framework.Localization.Json;
+using Forma.Framework.Themes;
 using Forma.Tests.Interop;
 using Forma.Tests.Localization;
 using Forma.Tests.Shared;
@@ -19,6 +21,36 @@ using Microsoft.Extensions.Logging;
 
 public sealed class ServiceCollectionExtensionsTests
 {
+    [Fact]
+    public void Should_offer_forma_s_two_themes_and_start_a_reader_in_forma_s_in_the_system_preference()
+    {
+        // Arrange
+        using var provider = new ServiceCollection().AddFormaUIServices().BuildServiceProvider();
+
+        // Act
+        var registry = provider.GetRequiredService<ThemeRegistry>();
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal([FormaThemes.Forma, FormaThemes.HighContrast], registry.Themes),
+            () => Assert.Equal(new ThemeChoice("forma", ColorSchemePreference.System), registry.Default));
+    }
+
+    [Fact]
+    public void Should_let_a_host_remove_one_of_forma_s_themes_registering_before_the_library()
+    {
+        // Arrange
+        var services = new ServiceCollection().AddFormaThemes(themes => themes.Remove(FormaThemes.HighContrast.Name));
+        services.AddFormaUIServices();
+        using var provider = services.BuildServiceProvider();
+
+        // Act
+        var registry = provider.GetRequiredService<ThemeRegistry>();
+
+        // Assert
+        Assert.Equal([FormaThemes.Forma], registry.Themes);
+    }
+
     [Fact]
     public void Should_register_the_sprite_loader_once_per_circuit()
     {

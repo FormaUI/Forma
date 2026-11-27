@@ -392,6 +392,10 @@ theme draws it in its surroundings' scheme, and one naming only a scheme draws i
 naming neither draws Forma's own theme in its light scheme, with each token a stylesheet of its own sets on `:root` in
 place of Forma's.
 
+A host registers each theme it offers with `AddFormaThemes`, beside Forma's own two, as [the themes package's
+README](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Themes/README.md#registering-themes)
+sets out.
+
 A theme sets every base token, since a part of the page in the theme takes what the theme leaves unset from the theme
 around it. The canvas stands below the paper in every scheme: a light scale holds it as `--gray-100`, and a dark one,
 running from dark paper to light ink, has no step below its paper, so it sets the canvas apart. A popover, such as a
