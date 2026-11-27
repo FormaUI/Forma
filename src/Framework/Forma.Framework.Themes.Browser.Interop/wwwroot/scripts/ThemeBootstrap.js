@@ -11,7 +11,7 @@
     const defaultScheme = readScheme(script?.getAttribute('data-default-scheme')) ?? 'system';
     const themes = new Map([...document.querySelectorAll('link[data-forma-theme-stylesheet]')].map(link => [
         link.getAttribute('data-forma-theme-stylesheet'),
-        { schemes: (link.getAttribute('data-forma-theme-schemes') ?? 'light dark').split(' '), isLoaded: link.sheet !== null },
+        { schemes: (link.getAttribute('data-forma-theme-schemes') ?? 'light dark').split(' '), isLoaded: hasLoaded(link) },
     ]));
 
     // A record naming a loaded theme is applied; one naming a theme the head doesn't link, or one whose stylesheet failed,
@@ -35,6 +35,17 @@
     marker.setAttribute('data-default-theme', defaultTheme);
     marker.setAttribute('data-default-scheme', defaultScheme);
     document.head.append(marker);
+
+    // Whether the browser holds the rules of the stylesheet `link` loads. A stylesheet that failed leaves a sheet without
+    // rules, and one the browser refused a sheet whose rules script can't read; so does a stylesheet of another origin read
+    // without CORS, which can't be told from a refused one and is taken as loaded.
+    function hasLoaded(link) {
+        try {
+            return link.sheet !== null && link.sheet.cssRules.length > 0;
+        } catch {
+            return new URL(link.href, document.baseURI).origin !== location.origin;
+        }
+    }
 
     function readRecord() {
         let value;

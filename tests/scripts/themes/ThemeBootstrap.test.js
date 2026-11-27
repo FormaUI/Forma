@@ -1,21 +1,18 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 
+import { linkThemeStylesheet } from '#support/stylesheets.js';
+
 const root = document.documentElement;
 
 // The bootstrap runs once as it loads, reading the host page's stylesheets and its own element, so each test lays out the
 // head a standalone app's host page links, sets the record, and loads the script afresh.
-async function run({ record = null, themes = { forma: 'light dark', harbor: 'light dark', paper: 'light' }, unloaded = [], defaultTheme = 'harbor', defaultScheme = 'system' } = {}) {
+async function run({ record = null, themes = { forma: 'light dark', harbor: 'light dark', paper: 'light' }, sheets = {}, defaultTheme = 'harbor', defaultScheme = 'system' } = {}) {
     root.removeAttribute('data-forma-theme');
     root.removeAttribute('data-forma-scheme');
     document.head.innerHTML = '';
 
     for (const [name, schemes] of Object.entries(themes)) {
-        const link = document.createElement('link');
-        link.setAttribute('rel', 'stylesheet');
-        link.setAttribute('data-forma-theme-stylesheet', name);
-        link.setAttribute('data-forma-theme-schemes', schemes);
-        Object.defineProperty(link, 'sheet', { value: unloaded.includes(name) ? null : {} });
-        document.head.append(link);
+        document.head.append(linkThemeStylesheet(name, schemes, sheets[name]));
     }
 
     const script = document.createElement('script');
@@ -78,7 +75,13 @@ describe('ThemeBootstrap', () => {
     });
 
     it('draws the default theme in the record\'s scheme for a record naming a theme whose stylesheet failed', async () => {
-        await run({ record: 'theme=forma&scheme=dark&revision=1', unloaded: ['forma'] });
+        await run({ record: 'theme=forma&scheme=dark&revision=1', sheets: { forma: 'failed' } });
+
+        expect(readDocument()).toBe('harbor/dark');
+    });
+
+    it("draws the default theme in the record's scheme for a record naming a theme whose stylesheet the browser refused", async () => {
+        await run({ record: 'theme=forma&scheme=dark&revision=1', sheets: { forma: 'refused' } });
 
         expect(readDocument()).toBe('harbor/dark');
     });

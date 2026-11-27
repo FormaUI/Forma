@@ -279,19 +279,29 @@ function readMarker(head) {
         : null;
 }
 
-// Each registered theme's stylesheet names its theme and its schemes; a stylesheet the browser holds no sheet for didn't
-// load, and its theme isn't selectable.
+// Each registered theme's stylesheet names its theme and its schemes; a theme whose stylesheet didn't load isn't selectable.
 function readThemes(head) {
     const themes = new Map();
 
     for (const link of head.querySelectorAll('link[data-forma-theme-stylesheet]')) {
         themes.set(link.getAttribute('data-forma-theme-stylesheet'), {
             schemes: (link.getAttribute('data-forma-theme-schemes') ?? 'light dark').split(' '),
-            isLoaded: link.sheet !== null,
+            isLoaded: hasLoaded(link),
         });
     }
 
     return themes;
+}
+
+// Whether the browser holds the rules of the stylesheet `link` loads. A stylesheet that failed leaves a sheet without
+// rules, and one the browser refused a sheet whose rules script can't read; so does a stylesheet of another origin read
+// without CORS, which can't be told from a refused one and is taken as loaded.
+function hasLoaded(link) {
+    try {
+        return link.sheet !== null && link.sheet.cssRules.length > 0;
+    } catch {
+        return new URL(link.href, document.baseURI).origin !== location.origin;
+    }
 }
 
 // The document draws the accepted choice: its theme, and its scheme preference, or its light scheme where its theme draws

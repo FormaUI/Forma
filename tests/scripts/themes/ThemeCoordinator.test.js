@@ -1,10 +1,12 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 
+import { linkThemeStylesheet } from '#support/stylesheets.js';
+
 const root = document.documentElement;
 
 // The module keeps the document's coordinator at module level and reads the marker and the stylesheets as it loads, so each
 // test loads it afresh over a page the server rendered with the marker, the record and the stylesheets it names.
-async function load({ theme = 'forma', scheme = 'system', revision = 0, keepsNothing = false, inStorage = false, themes = { forma: 'light dark', harbor: 'light dark', paper: 'light' }, unloaded = [] } = {}) {
+async function load({ theme = 'forma', scheme = 'system', revision = 0, keepsNothing = false, inStorage = false, themes = { forma: 'light dark', harbor: 'light dark', paper: 'light' }, sheets = {} } = {}) {
     document.cookie = 'forma-theme=; max-age=0; path=/';
     root.setAttribute('data-forma-theme', theme);
     root.setAttribute('data-forma-scheme', scheme);
@@ -29,12 +31,7 @@ async function load({ theme = 'forma', scheme = 'system', revision = 0, keepsNot
     document.head.append(marker);
 
     for (const [name, schemes] of Object.entries(themes)) {
-        const link = document.createElement('link');
-        link.setAttribute('rel', 'stylesheet');
-        link.setAttribute('data-forma-theme-stylesheet', name);
-        link.setAttribute('data-forma-theme-schemes', schemes);
-        Object.defineProperty(link, 'sheet', { value: unloaded.includes(name) ? null : {} });
-        document.head.append(link);
+        document.head.append(linkThemeStylesheet(name, schemes, sheets[name]));
     }
 
     vi.resetModules();
@@ -141,7 +138,7 @@ describe('ThemeCoordinator', () => {
     });
 
     it('refuses a switch to a theme whose stylesheet didn\'t load, or one not registered, changing nothing', async () => {
-        const coordinator = await load({ unloaded: ['harbor'] });
+        const coordinator = await load({ sheets: { harbor: 'failed' } });
         const registration = await coordinator.register('scope', fakeReceiver());
 
         const unloaded = await registration.request('harbor', 'dark', 1);
@@ -296,6 +293,12 @@ describe('ThemeCoordinator', () => {
 
         expect(described).toEqual({ themes: ['forma', 'harbor', 'paper'], defaultTheme: 'forma', defaultScheme: 'system' });
         expect(served.describePage()).toBeNull();
+    });
+
+    it("counts a theme whose stylesheet the browser refused as unselectable, and one of another origin read without CORS as selectable", async () => {
+        const coordinator = await load({ themes: { forma: 'light dark', harbor: 'light dark', dusk: 'light dark' }, sheets: { harbor: 'refused', dusk: 'foreign' } });
+
+        expect([coordinator.isSelectable('forma'), coordinator.isSelectable('harbor'), coordinator.isSelectable('dusk')]).toEqual([true, false, true]);
     });
 
     it('refuses a registration on a page without a theme marker', async () => {

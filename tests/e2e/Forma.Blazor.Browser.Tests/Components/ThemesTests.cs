@@ -452,9 +452,9 @@ public sealed class ThemesTests
         [MemberData(nameof(RoutedRuntimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_refuse_a_switch_to_a_theme_whose_stylesheet_didn_t_load_changing_nothing(string runtime)
         {
-            // Arrange — the check theme's stylesheet refused
+            // Arrange — the check theme's stylesheet refused, as the head links it fingerprinted and as the page links it itself
             var isRefused = false;
-            var (context, page) = await OpenAsync(host, runtime, "themes", page => page.RouteAsync("**/check-theme.css*", route =>
+            var (context, page) = await OpenAsync(host, runtime, "themes", page => page.RouteAsync("**/check-theme*.css*", route =>
             {
                 isRefused = true;
                 return route.AbortAsync();
