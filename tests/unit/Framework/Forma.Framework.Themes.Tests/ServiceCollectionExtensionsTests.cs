@@ -22,7 +22,7 @@ public sealed class ServiceCollectionExtensionsTests
     }
 
     [Fact]
-    public void Should_register_the_registry_once_and_the_state_and_its_integration_scoped()
+    public void Should_register_the_registry_once_and_leave_the_theme_state_to_the_runtime()
     {
         // Act
         var services = new ServiceCollection().AddFormaThemes().AddFormaThemes();
@@ -30,8 +30,30 @@ public sealed class ServiceCollectionExtensionsTests
         // Assert
         Assert.Multiple(
             () => Assert.Equal(ServiceLifetime.Singleton, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ThemeRegistry)).Lifetime),
-            () => Assert.Equal(ServiceLifetime.Scoped, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IThemeState)).Lifetime),
-            () => Assert.Equal(ServiceLifetime.Scoped, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IThemeStateIntegration)).Lifetime));
+            () => Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == typeof(IThemeState)),
+            () => Assert.DoesNotContain(services, descriptor => descriptor.ServiceType == typeof(IThemeStateIntegration)));
+    }
+
+    [Theory]
+    [InlineData(ServiceLifetime.Scoped)]
+    [InlineData(ServiceLifetime.Singleton)]
+    public void Should_keep_the_runtime_s_theme_state_and_its_integration_whatever_the_library_registers_after_it(ServiceLifetime lifetime)
+    {
+        // Arrange — a host's themes first, then the runtime's state, then the library's themes
+        var services = new ServiceCollection().AddFormaThemes(options => options.Add(Harbor));
+        services.AddFormaThemeState(lifetime);
+        services.AddFormaThemeDefaults(options => options.Add(Forma));
+        using var provider = services.BuildServiceProvider();
+        using var scope = provider.CreateScope();
+
+        // Act
+        var state = scope.ServiceProvider.GetRequiredService<IThemeState>();
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(lifetime, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IThemeState)).Lifetime),
+            () => Assert.Equal(lifetime, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IThemeStateIntegration)).Lifetime),
+            () => Assert.Same(state, scope.ServiceProvider.GetRequiredService<IThemeStateIntegration>()));
     }
 
     [Fact]

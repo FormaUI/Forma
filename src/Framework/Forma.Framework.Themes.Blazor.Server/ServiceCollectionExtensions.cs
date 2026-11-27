@@ -21,9 +21,7 @@ public static class ServiceCollectionExtensions
 
         services.AddHttpContextAccessor();
         services.TryAddSingleton(new ThemeServerOptions { GivenChoice = givenChoice });
-        services.TryAddScoped<IThemeState>(provider => new DefaultThemeState(
-            provider.GetRequiredService<ThemeRegistry>(),
-            provider.GetRequiredService<IHttpContextAccessor>().HttpContext?.GetFormaTheme()?.Choice));
+        services.AddFormaThemeState(ServiceLifetime.Scoped, provider => provider.GetRequiredService<IHttpContextAccessor>().HttpContext?.GetFormaTheme()?.Choice);
 
         services.AddFormaThemeCoordination();
         services.TryAddEnumerable(ServiceDescriptor.Scoped<CircuitHandler, ThemeCircuitHandler>(provider => new ThemeCircuitHandler(provider.GetRequiredService<ThemeCoordinatorRegistration>())));

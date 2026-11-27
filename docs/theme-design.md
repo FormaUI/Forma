@@ -573,4 +573,6 @@ The theme system's assemblies follow the culture's, a contract assembly and a ha
 - **Forma's themes** are static assets of the component library, Forma's own in the token stylesheet.
 
 Each half is registered by the aggregate registrar of its render-mode half, so a host makes the one call on
-each side it makes today, and adds its themes with `AddFormaThemes`.
+each side it makes today, and adds its themes with `AddFormaThemes`, before or after that call alike:
+`AddFormaThemes` registers the themes alone, and each half the theme state its runtime holds, one for each request or
+circuit on the server and one for the whole runtime in WebAssembly.

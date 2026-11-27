@@ -17,9 +17,8 @@ public static class ServiceCollectionExtensions
     {
         ArgumentNullException.ThrowIfNull(services);
 
-        // Ahead of the neutral registrations, which then keep these.
-        services.TryAddSingleton<IThemeState>(provider => new DefaultThemeState(provider.GetRequiredService<ThemeRegistry>()));
-        services.TryAddSingleton(provider => (IThemeStateIntegration)provider.GetRequiredService<IThemeState>());
+        // Ahead of the component library's registrations, which then keep these.
+        services.AddFormaThemeState(ServiceLifetime.Singleton);
         services.TryAddSingleton(ThemeCoordinatorRegistration.Create);
         services.TryAddSingleton<IThemeSwitch>(provider => new CoordinatedThemeSwitch(provider.GetRequiredService<ThemeCoordinatorRegistration>()));
         services.AddFormaThemeCoordination();

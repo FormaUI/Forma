@@ -165,11 +165,13 @@ public sealed class RequestThemeResolutionTests
             () => Assert.Contains("path=/", cookie, StringComparison.OrdinalIgnoreCase));
     }
 
-    [Fact]
-    public async Task Should_start_a_request_s_theme_state_in_the_request_s_choice()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Should_start_a_request_s_theme_state_in_the_request_s_choice_whichever_registers_the_host_s_themes_first(bool registersThemesFirst)
     {
         // Arrange
-        using var fixture = new ThemeServerFixture();
+        using var fixture = new ThemeServerFixture(registersThemesFirst: registersThemesFirst);
         var context = fixture.CreateContext("theme=harbor&scheme=dark&revision=1");
         await RequestThemeResolution.ResolveAsync(context);
         context.RequestServices.GetRequiredService<Microsoft.AspNetCore.Http.IHttpContextAccessor>().HttpContext = context;

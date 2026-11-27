@@ -6,21 +6,31 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
-/// <summary>Requests to a server registering Forma's theme and Harbor, with the store, the record and the given choice each check sets.</summary>
+/// <summary>Requests to a server registering Forma's theme and Harbor, before or after its half, with the store, the record and the given choice each check sets.</summary>
 internal sealed class ThemeServerFixture : IDisposable
 {
     private readonly ServiceProvider _provider;
     private readonly List<IServiceScope> _scopes = [];
 
-    public ThemeServerFixture(FakeThemePreferenceStore? store = null, Func<HttpContext, ThemeChoice?>? givenChoice = null)
+    public ThemeServerFixture(FakeThemePreferenceStore? store = null, Func<HttpContext, ThemeChoice?>? givenChoice = null, bool registersThemesFirst = false)
     {
         var services = new ServiceCollection().AddLogging();
-        services.AddFormaThemeServerIntegration(givenChoice);
+
+        if (!registersThemesFirst)
+        {
+            services.AddFormaThemeServerIntegration(givenChoice);
+        }
+
         services.AddFormaThemes(themes =>
         {
             themes.Add(Define("forma"));
             themes.Add(Define("harbor"));
         });
+
+        if (registersThemesFirst)
+        {
+            services.AddFormaThemeServerIntegration(givenChoice);
+        }
 
         if (store is not null)
         {

@@ -2,6 +2,7 @@ namespace Forma.Blazor.WebAssembly.Tests;
 
 using Forma.Framework.Culture;
 using Forma.Framework.Input;
+using Forma.Framework.Themes;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +18,18 @@ public sealed class WebAssemblyServiceCollectionExtensionsTests
 
         // Assert
         Assert.Equal(ServiceLifetime.Singleton, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(ICultureState)).Lifetime);
+    }
+
+    [Fact]
+    public void Should_register_one_theme_state_per_runtime_whichever_registers_the_host_s_themes_first()
+    {
+        // Act
+        var services = new ServiceCollection().AddFormaThemes().AddFormaWebAssemblyIntegration();
+
+        // Assert
+        Assert.Multiple(
+            () => Assert.Equal(ServiceLifetime.Singleton, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IThemeState)).Lifetime),
+            () => Assert.Equal(ServiceLifetime.Singleton, Assert.Single(services, descriptor => descriptor.ServiceType == typeof(IThemeStateIntegration)).Lifetime));
     }
 
     [Fact]

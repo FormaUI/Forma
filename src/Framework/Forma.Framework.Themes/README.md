@@ -14,7 +14,8 @@ dotnet add package formaui-net.Framework.Themes --prerelease
 
 Forma's component library registers its own two themes, Forma and Forma High Contrast, and a reader starts in Forma's
 theme in the System preference. A host adds its themes, removes or replaces Forma's, or sets another starting choice,
-in any order beside the component library's registration:
+in any order beside `AddFormaServerIntegration()`, `AddFormaWebAssemblyIntegration()` or the component library's own
+registration:
 
 ```csharp
 builder.Services.AddFormaThemes(themes =>
