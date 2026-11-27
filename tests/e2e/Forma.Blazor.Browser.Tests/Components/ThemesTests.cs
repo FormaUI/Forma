@@ -407,4 +407,70 @@ public sealed class ThemesTests
             return (drawn["theme"], drawn["scheme"], drawn.Where(entry => entry.Key.StartsWith("marker-", StringComparison.Ordinal)).ToDictionary(entry => entry.Key["marker-".Length..], entry => entry.Value));
         }
     }
+
+    public sealed class Switching(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(RoutedRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_switch_the_document_and_the_runtime_in_place_keeping_the_choice_in_the_browser_s_record(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "themes");
+            await using var _ = context;
+
+            // Act
+            await page.Locator("#switch-check-dark").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#theme-outcome")).ToHaveTextAsync("accepted");
+            await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("data-forma-theme", "check");
+            await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("data-forma-scheme", "dark");
+            await Assertions.Expect(page.Locator("#theme-choice")).ToHaveTextAsync("check dark");
+            var cookies = await context.CookiesAsync();
+            Assert.Equal("theme=check&scheme=dark&revision=0", Uri.UnescapeDataString(Assert.Single(cookies, cookie => cookie.Name == "forma-theme").Value));
+        }
+
+        [Theory]
+        [MemberData(nameof(RoutedRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_accept_a_switch_at_once_on_a_page_given_its_choice_keeping_nothing(string runtime)
+        {
+            // Arrange — a page the host gives Forma's theme in its dark scheme
+            var (context, page) = await OpenAsync(host, runtime, "themes?given-theme=forma");
+            await using var _ = context;
+
+            // Act
+            await page.Locator("#switch-check-dark").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#theme-outcome")).ToHaveTextAsync("accepted");
+            await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("data-forma-theme", "check");
+            var cookies = await context.CookiesAsync();
+            Assert.DoesNotContain(cookies, cookie => cookie.Name == "forma-theme");
+        }
+
+        [Theory]
+        [MemberData(nameof(RoutedRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_refuse_a_switch_to_a_theme_whose_stylesheet_didn_t_load_changing_nothing(string runtime)
+        {
+            // Arrange — the check theme's stylesheet refused
+            var isRefused = false;
+            var (context, page) = await OpenAsync(host, runtime, "themes", page => page.RouteAsync("**/check-theme.css*", route =>
+            {
+                isRefused = true;
+                return route.AbortAsync();
+            }));
+            await using var _ = context;
+
+            // Act
+            await page.Locator("#switch-check-dark").ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("#theme-outcome")).ToHaveTextAsync(nameof(InvalidOperationException));
+            Assert.True(isRefused);
+            await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("data-forma-theme", "forma");
+            var cookies = await context.CookiesAsync();
+            Assert.DoesNotContain(cookies, cookie => cookie.Name == "forma-theme");
+        }
+    }
 }
+

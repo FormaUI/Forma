@@ -2,6 +2,7 @@ namespace Forma.Blazor.Server.Tests;
 
 using Forma.Framework.Culture;
 using Forma.Framework.Input;
+using Forma.Framework.Themes;
 
 using Microsoft.AspNetCore.Components.Server.Circuits;
 using Microsoft.Extensions.Configuration;
@@ -20,8 +21,9 @@ public sealed class HostApplicationBuilderExtensionsTests
 
         // Assert
         Assert.Multiple(
-            () => Assert.Equal(2, builder.Services.Count(descriptor => descriptor.ServiceType == typeof(CircuitHandler))),
-            () => Assert.Equal(ServiceLifetime.Scoped, Assert.Single(builder.Services, descriptor => descriptor.ServiceType == typeof(ICultureState)).Lifetime));
+            () => Assert.Equal(3, builder.Services.Count(descriptor => descriptor.ServiceType == typeof(CircuitHandler))),
+            () => Assert.Equal(ServiceLifetime.Scoped, Assert.Single(builder.Services, descriptor => descriptor.ServiceType == typeof(ICultureState)).Lifetime),
+            () => Assert.Equal(ServiceLifetime.Scoped, Assert.Single(builder.Services, descriptor => descriptor.ServiceType == typeof(IThemeState)).Lifetime));
     }
 
     [Fact]

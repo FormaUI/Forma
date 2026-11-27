@@ -82,7 +82,7 @@ public sealed partial class FormaPageHead : FormaComponentBase
     // The token stylesheet names the theme it holds, where a registered theme's stylesheet is the token stylesheet.
     private IReadOnlyDictionary<string, object>? TokensAttributes
         => Themes.Themes.FirstOrDefault(IsTokens) is { } theme
-            ? new Dictionary<string, object> { [ThemePublication.StylesheetAttribute] = theme.Name }
+            ? new Dictionary<string, object> { [ThemePublication.StylesheetAttribute] = theme.Name, [ThemePublication.SchemesAttribute] = ThemePublication.GetSchemes(theme) }
             : null;
 
     private IEnumerable<ThemeDefinition> ThemeStylesheets

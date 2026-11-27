@@ -22,7 +22,7 @@
 @* Every registered theme's stylesheet, after Forma's own, so a theme's rule follows the tokens it sets. *@
 @foreach (var theme in ThemeStylesheets)
 {
-    <link rel="stylesheet" href="@Assets[theme.Stylesheet]" data-forma-theme-stylesheet="@theme.Name" />
+    <link rel="stylesheet" href="@Assets[theme.Stylesheet]" data-forma-theme-stylesheet="@theme.Name" data-forma-theme-schemes="@ThemePublication.GetSchemes(theme)" />
 }
 @ChildContent
 @if (PreloadAssets)

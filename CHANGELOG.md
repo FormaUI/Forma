@@ -35,6 +35,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Forma High Contrast, `forma-high-contrast.css` beside the tokens, is a theme of its own, `forma-high-contrast`, in a
   light and a dark scheme: every text, each role's ink and each role's fg past 7:1, every border and the focus ring
   past 3:1, and every state shown by a solid fill.
+- A switch changes the page's theme in place, in every runtime on it: `IThemeSwitch.SwitchAsync`, which
+  `AddFormaServerIntegration()` and `AddFormaWebAssemblyIntegration()` register, requests it through the page's theme
+  coordinator, `formaui-net.Framework.Themes.Browser.Interop`, which keeps the choice in the browser's record and a
+  host's store in order and delivers it to each runtime's `IThemeState`, as [the theme design](docs/theme-design.md#switching-in-place)
+  sets out. `formaui-net.Framework.Themes.Blazor.WebAssembly` registers a WebAssembly runtime with it.
 - `formaui-net.Framework.Themes.Blazor.Server`, which `AddFormaServerIntegration()` registers, draws a server-rendered
   page in the reader's theme choice from its first paint, as [the theme design](docs/theme-design.md#the-choice-a-request-starts-in)
   sets out: `UseFormaThemes()` resolves each request's choice from a host's `IThemePreferenceStore`, the browser's

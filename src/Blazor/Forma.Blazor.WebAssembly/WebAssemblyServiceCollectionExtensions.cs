@@ -1,6 +1,7 @@
 namespace Forma.Blazor;
 
 using Forma.Framework.Culture.Blazor.WebAssembly;
+using Forma.Framework.Themes.Blazor.WebAssembly;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -8,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 public static class WebAssemblyServiceCollectionExtensions
 {
     /// <summary>Registers Forma UI services and integrates them with the WebAssembly host.</summary>
-    /// <remarks>Whatever the client registered first stays in place. It registers the culture's WebAssembly half.</remarks>
+    /// <remarks>Whatever the client registered first stays in place. It registers the culture's WebAssembly half and the theme's.</remarks>
     /// <param name="services">The collection to register into.</param>
     /// <param name="configure">Sets the WebAssembly integration's options.</param>
     /// <returns>The same collection, for chaining.</returns>
@@ -21,6 +22,7 @@ public static class WebAssemblyServiceCollectionExtensions
 
         // Ahead of the neutral registration, so the runtime's switch is the arrangement's.
         services.AddFormaCultureWebAssemblyIntegration(options.CultureArrangement, options.CultureSwitchPolicy);
+        services.AddFormaThemeWebAssemblyIntegration();
 
         return services.AddFormaUIServices(options.InputRouting);
     }

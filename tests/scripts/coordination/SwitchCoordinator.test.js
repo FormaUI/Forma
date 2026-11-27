@@ -33,6 +33,22 @@ describe('SwitchCoordinator', () => {
         ({ coordinator, written } = createCoordinator());
     });
 
+    describe('finding', () => {
+        it('should find the first registration a test accepts, and none where it accepts none', () => {
+            // Arrange
+            createRegistration(coordinator, 'circuit', 'server');
+            const { registration } = createRegistration(coordinator, 'client', 'webassembly');
+
+            // Act
+            const found = coordinator.findRegistration(candidate => candidate.runtime === 'webassembly');
+            const missing = coordinator.findRegistration(candidate => candidate.runtime === 'webview');
+
+            // Assert
+            expect(found).toBe(registration);
+            expect(missing).toBeUndefined();
+        });
+    });
+
     describe('accepting', () => {
         it('should number each accepted value after the page own, number zero', () => {
             // Act

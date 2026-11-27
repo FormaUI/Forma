@@ -397,6 +397,8 @@ README](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework
 sets out. A server host draws the reader's choice from the first paint: its pipeline adds `UseFormaThemes()` and
 `MapFormaThemes()`, and its `App` writes the choice on `<html>`, as [the server half's
 README](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Themes.Blazor.Server/README.md#setting-it-up)
+shows. A component switches the theme in place, in any runtime, through `IThemeSwitch`, as [the coordinator's
+README](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Themes.Browser.Interop/README.md#switching)
 shows.
 
 A theme sets every base token, since a part of the page in the theme takes what the theme leaves unset from the theme

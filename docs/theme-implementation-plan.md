@@ -172,13 +172,26 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
    - Departure: over plain HTTP the record is `forma-theme`, without the `__Host-` prefix a browser refuses there,
      which the design now states. A store that fails to read leaves the request in the record or the default with a
      warning. A circuit's `IThemeSwitch` comes with the coordinator, in step 9.
-9. **The theme coordinator.** `Forma.Framework.Themes.Browser.Interop`, on the switch coordinator: a switch
+9. **The theme coordinator.** ✅ `Forma.Framework.Themes.Browser.Interop`, on the switch coordinator: a switch
    accepted through the browser's record, the store's writes in version order, landings and other page
    updates, a page that keeps nothing accepting each switch at once, and every registered theme's stylesheet
    confirmed as the coordinator starts. The WebAssembly half, `Forma.Framework.Themes.Blazor.WebAssembly`,
    registers its runtime.
    - Gate: script tests; the design's persistence, given-choice and stylesheet cases on the Server first,
      then under WebAssembly and Auto, in Chromium and WebKit.
+   - Landed: the coordinator reads the marker and every registered theme's stylesheet as the document loads,
+     each stylesheet naming its theme and its schemes, and accepts a switch once the browser's record reads back,
+     drawing a theme with a light scheme alone light. The store is written in the order of the choices, one write at a
+     time, the latest waiting, by the requester or another runtime with a store, each write's revision going into the
+     record; a page that keeps nothing accepts each switch at once. A circuit registers from each connection and a
+     WebAssembly runtime at startup, each with `CoordinatedThemeSwitch`. Script tests cover the order of the writes, a
+     newer switch replacing a waiting write, a failing store, a landing and a page update; browser checks in every
+     runtime but a web view's switch the document and the runtime in place with the record written, accept at once on
+     a page given its choice, and refuse a theme whose stylesheet a route refused.
+   - Departure: the design's persistence cases that need a store, two runtimes switching at once, a failing write and
+     a store changed on another device, are held in the script tests and the server's unit tests, since the checks'
+     hosts register no store. A web view's page publishes no marker, so its runtime has no switch until step 13, and a
+     standalone app's page starts from the marker the bootstrap publishes, in step 10.
 10. **The bootstrap.** `ThemeBootstrap.js`, a classic script, and a standalone WebAssembly app's record in
     local storage, with the start that fails on a host page differing from the registration.
     - Gate: the design's first-paint cases for a standalone app, a removed theme and storage the browser

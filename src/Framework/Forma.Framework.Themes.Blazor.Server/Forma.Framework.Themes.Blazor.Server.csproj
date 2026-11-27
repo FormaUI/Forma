@@ -15,6 +15,7 @@
 
     <ItemGroup>
         <ProjectReference Include="..\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Themes.Browser.Interop\Forma.Framework.Themes.Browser.Interop.csproj" />
     </ItemGroup>
 
 </Project>

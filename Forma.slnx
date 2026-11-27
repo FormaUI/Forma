@@ -36,6 +36,8 @@
     <Project Path="src\Framework\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
     <Project Path="src\Framework\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
     <Project Path="src\Framework\Forma.Framework.Themes.Blazor.Server\Forma.Framework.Themes.Blazor.Server.csproj" />
+    <Project Path="src\Framework\Forma.Framework.Themes.Blazor.WebAssembly\Forma.Framework.Themes.Blazor.WebAssembly.csproj" />
+    <Project Path="src\Framework\Forma.Framework.Themes.Browser.Interop\Forma.Framework.Themes.Browser.Interop.csproj" />
     <Project Path="src\Framework\Forma.Framework.Themes.Testing\Forma.Framework.Themes.Testing.csproj" />
     <Project Path="src\Framework\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />
     <Project Path="src\Framework\Forma.Framework.Composer.Extensibility\Forma.Framework.Composer.Extensibility.csproj" />

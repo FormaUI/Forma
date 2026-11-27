@@ -534,6 +534,25 @@ formaui-net.Framework.Themes.Blazor.Server
     NOTICE
     README.md
 
+formaui-net.Framework.Themes.Blazor.WebAssembly
+    lib/net11.0/Forma.Framework.Themes.Blazor.WebAssembly.dll
+    LICENSE
+    NOTICE
+    README.md
+
+formaui-net.Framework.Themes.Browser.Interop
+    build/formaui-net.Framework.Themes.Browser.Interop.PackageAssets.json
+    build/formaui-net.Framework.Themes.Browser.Interop.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Framework.Themes.Browser.Interop.targets
+    buildTransitive/formaui-net.Framework.Themes.Browser.Interop.targets
+    lib/net11.0/Forma.Framework.Themes.Browser.Interop.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/formaui-net.Framework.Themes.Browser.Interop.{fingerprint}.lib.module.js
+    staticwebassets/scripts/ThemeCoordinator.js
+
 formaui-net.Framework.Themes.Testing
     lib/net11.0/Forma.Framework.Themes.Testing.dll
     LICENSE

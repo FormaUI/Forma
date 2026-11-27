@@ -54,6 +54,17 @@ export class SwitchCoordinator {
         return registration;
     }
 
+    /** The first registration `test` accepts, or undefined where it accepts none. */
+    findRegistration(test) {
+        for (const registration of this.#registrations.values()) {
+            if (test(registration)) {
+                return registration;
+            }
+        }
+
+        return undefined;
+    }
+
     /** Whether `registration` is the live registration of the state named `identity`. */
     isLive(identity, registration) {
         return this.#registrations.get(identity) === registration;

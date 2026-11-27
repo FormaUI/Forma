@@ -1,6 +1,10 @@
 @page "/{Runtime}/themes"
+@implements IDisposable
 @using Forma.Blazor.Components.Themes
 @using Forma.Framework.Themes
+@inject IThemeState ThemeState
+@using Microsoft.Extensions.DependencyInjection
+@inject IServiceProvider Services
 
 @* Scopes naming a theme, a scheme or both, nested as a page nests them, and a reference for each theme in each scheme, an element
    naming both: each a span whose tokens a check reads where it stands. A button switches one scope's scheme. The contrast themes
@@ -44,6 +48,11 @@
 <FormaThemeScope Theme="check" Scheme="_switchedScheme"><span id="switched"></span></FormaThemeScope>
 <button id="switch-scheme" type="button" data-check-scaffold @onclick="() => _switchedScheme = ColorSchemePreference.Dark">Switch to Dark</button>
 
+@* The choice the page's runtime holds, and switches it requests through the page's theme coordinator, where its runtime has one. *@
+<output id="theme-choice">@ThemeState.Choice.Theme @ThemeAttributes.GetSchemeValue(ThemeState.Choice.Scheme)</output>
+<output id="theme-outcome">@_outcome</output>
+<button id="switch-check-dark" type="button" data-check-scaffold @onclick="@(() => SwitchAsync(new ThemeChoice("check", ColorSchemePreference.Dark)))">Switch to Check, Dark</button>
+
 @* A switch a statically rendered page posts, as a picker rendered statically does, back to this page. *@
 <form id="switch-theme" method="post" action="_forma/themes">
     <AntiforgeryToken />
@@ -55,4 +64,27 @@
 
 @code {
     private ColorSchemePreference _switchedScheme = ColorSchemePreference.Light;
+    private string? _outcome;
+
+    protected override void OnInitialized()
+        => ThemeState.Subscribe(RenderAgainAsync);
+
+    public void Dispose()
+        => ThemeState.Unsubscribe(RenderAgainAsync);
+
+    private Task RenderAgainAsync()
+        => InvokeAsync(StateHasChanged);
+
+    private async Task SwitchAsync(ThemeChoice choice)
+    {
+        try
+        {
+            await (Services.GetService<IThemeSwitch>() ?? throw new InvalidOperationException("The runtime registers no theme switch.")).SwitchAsync(choice);
+            _outcome = "accepted";
+        }
+        catch (Exception exception)
+        {
+            _outcome = exception.GetType().Name;
+        }
+    }
 }

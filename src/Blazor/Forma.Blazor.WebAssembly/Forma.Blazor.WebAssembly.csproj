@@ -13,6 +13,7 @@
         <ProjectReference Include="..\..\Framework\Forma.Framework.Culture.Blazor.WebAssembly\Forma.Framework.Culture.Blazor.WebAssembly.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Culture.Browser.Interop\Forma.Framework.Culture.Browser.Interop.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Themes.Blazor.WebAssembly\Forma.Framework.Themes.Blazor.WebAssembly.csproj" />
     </ItemGroup>
 
 </Project>

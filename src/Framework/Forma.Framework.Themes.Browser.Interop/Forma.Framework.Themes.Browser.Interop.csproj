@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <Description>The page's theme coordinator: one per document, it orders every theme switch on the page, keeps the accepted choice in the browser's record and the host's store in order, and delivers it to the theme state of every runtime registered with it, each Interactive Server circuit and WebAssembly runtime on the page, so they converge on one choice.</Description>
+        <IsPackable>true</IsPackable>
+        <StaticWebAssetBasePath>_content/forma/themes</StaticWebAssetBasePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.JSInterop" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Coordination.Browser.Interop\Forma.Framework.Coordination.Browser.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Events\Forma.Framework.Events.csproj" />
+        <ProjectReference Include="..\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
+    </ItemGroup>
+
+</Project>

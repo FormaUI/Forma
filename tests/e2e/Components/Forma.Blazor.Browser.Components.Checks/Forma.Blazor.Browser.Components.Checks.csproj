@@ -29,6 +29,7 @@
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Composer.Extensibility\Forma.Framework.Composer.Extensibility.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Media\Forma.Framework.Media.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
     </ItemGroup>
 

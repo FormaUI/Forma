@@ -11,6 +11,19 @@ public static class ThemePublication
     /// <summary>The attribute naming the theme a stylesheet's <c>link</c> holds, by which the page's coordinator confirms each registered theme.</summary>
     public const string StylesheetAttribute = "data-forma-theme-stylesheet";
 
+    /// <summary>The attribute naming the schemes the theme a stylesheet's <c>link</c> holds draws, <c>light</c> or <c>light dark</c>.</summary>
+    public const string SchemesAttribute = "data-forma-theme-schemes";
+
+    /// <summary>The value <see cref="SchemesAttribute"/> takes for <paramref name="theme"/>: <c>light</c>, or <c>light dark</c> where it draws a dark scheme.</summary>
+    /// <param name="theme">A registered theme.</param>
+    /// <returns>The schemes the theme draws, space-separated.</returns>
+    public static string GetSchemes(ThemeDefinition theme)
+    {
+        ArgumentNullException.ThrowIfNull(theme);
+
+        return theme.Schemes.HasFlag(ColorSchemes.Dark) ? "light dark" : "light";
+    }
+
     /// <summary>The theme marker's attributes: the choice the server resolved, the store's revision it rests on, and, for a page given its choice, that the page keeps nothing.</summary>
     /// <param name="theme">The request's theme.</param>
     /// <returns>The marker's attributes by name, a present attribute that has no value holding the empty string.</returns>

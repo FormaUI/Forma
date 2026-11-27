@@ -8,6 +8,7 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Forma.Blazor" />
         <InternalsVisibleTo Include="Forma.Framework.Themes.Blazor.Server" />
+        <InternalsVisibleTo Include="Forma.Framework.Themes.Blazor.WebAssembly" />
         <InternalsVisibleTo Include="Forma.Framework.Themes.Tests" />
     </ItemGroup>
 

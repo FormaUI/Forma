@@ -310,6 +310,24 @@
         }
 
         [Fact]
+        public void Should_name_the_theme_and_the_schemes_each_registered_theme_s_stylesheet_holds()
+        {
+            // Arrange
+            using var ctx = new FormaPageHeadTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaPageHead PreloadAssets="false" Title="Admin Console" />);
+            var themes = cut.FindAll("link[data-forma-theme-stylesheet]")
+                .Select(link => (link.GetAttribute("data-forma-theme-stylesheet"), link.GetAttribute("data-forma-theme-schemes"), link.GetAttribute("href")))
+                .ToArray();
+
+            // Assert
+            Assert.Equal(
+                [("forma", "light dark", "_content/Forma.Blazor/forma-tokens.css"), ("forma-high-contrast", "light dark", "_content/Forma.Blazor/forma-high-contrast.css")],
+                themes);
+        }
+
+        [Fact]
         public void Should_publish_the_theme_choice_the_page_draws_in_its_marker()
         {
             // Arrange
