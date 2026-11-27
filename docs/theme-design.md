@@ -230,10 +230,12 @@ WebAssembly app keeps it in local storage, since no server reads a cookie.
 
 A request starts in the first of these that names a registered theme:
 
-1. the store's choice, where its revision is greater than the one the browser's record agreed with, or the
+1. the choice the host gives the request, as [a choice given to a request](#a-choice-given-to-a-request)
+   sets out;
+2. the store's choice, where its revision is greater than the one the browser's record agreed with, or the
    browser has no record: the reader changed it on another device, or signed in on this one;
-2. the browser's record;
-3. the host's default.
+3. the browser's record;
+4. the host's default.
 
 A choice naming a theme that isn't registered, or whose stylesheet didn't load, starts in the default theme
 and keeps its scheme preference. A response that starts in the store's choice writes it into the cookie with
@@ -241,6 +243,21 @@ the store's revision.
 
 A page a host caches for readers who aren't signed in is cached once per resolved choice, since the choice is
 written into the page: the theme system gives the host's output cache policy that variation to add.
+
+### A choice given to a request
+
+A host can give a request its choice, for a page drawn in a choice that isn't the reader's, such as a
+preview of a page in another theme. The host gives it from the request itself, where it registers the
+server's half. The request starts in that choice, ahead of the store and the browser's record, and its page
+**keeps nothing**:
+
+- its response writes no cookie and no store;
+- its theme marker says the page keeps nothing, so the coordinator knows from the document's start;
+- its coordinator accepts each switch, a landing's among them, at once, as the culture's
+  [state alone](culture-design.md#switch-policies) does, writing neither the browser's record nor the store.
+
+A page that keeps nothing still switches in place, and every other rule of switching holds in it. So two
+such pages open side by side draw two themes at once, and neither changes the reader's choice.
 
 ### A Blazor Hybrid application's choice
 
@@ -367,8 +384,9 @@ Each coordinator adds what its own setting needs: the culture's its addresses an
 theme's its record, its stylesheets and the store's writes.
 
 A switch is accepted once the browser's record holds it: the coordinator writes the cookie, or local storage,
-and reads it back, in one step, as the culture's cookie policy does. It then sets the document's attributes
-and sends the choice with its version to every registration.
+and reads it back, in one step, as the culture's cookie policy does. In a page that keeps nothing, it's
+accepted at once. The coordinator then sets the document's attributes and sends the choice with its version
+to every registration.
 
 ### The store's writes
 
@@ -408,9 +426,9 @@ culture switch does, so a landing never undoes it either.
 A switch's task completes successfully once all of these hold:
 
 - the switch was accepted;
-- the browser's record holds it;
+- the browser's record holds it, where the page keeps its choice;
 - the runtime that requested it has applied it or a newer one;
-- the store holds it or a newer choice, where a store is registered.
+- the store holds it or a newer choice, where a store is registered and the page keeps its choice.
 
 The other registrations receive the choice and converge on it, and one that is unavailable adopts the current
 choice when it registers again.
@@ -496,6 +514,8 @@ run:
   where it's drawn with its scheme's value.
 - **Persistence:** a navigation started before a store's write completes, two runtimes switching at once, a
   store's write that fails, a store changed on another device, and a sign-in on a browser without a record.
+- **A choice given to a request:** a page drawn in it from its first paint, and its landings and switches
+  leaving the browser's record and the store as they were, beside a page that keeps the reader's choice.
 - **First paint:** a server-rendered page; a standalone app's bootstrap with a record, without one, with a
   removed theme and without storage; and a Blazor Hybrid web view opened after a switch.
 - **Stylesheets:** a theme whose stylesheet is missing or fails, left out of the picker and refused by the
@@ -530,8 +550,8 @@ The theme system's assemblies follow the culture's, a contract assembly and a ha
   of their own, `Forma.Framework.Themes`.
 - **The coordinator and the bootstrap** are scripts in an interop assembly of their own,
   `Forma.Framework.Themes.Browser.Interop`.
-- **The server's half,** resolving a request's choice, the cookie, the marker, the endpoint and the output
-  cache variation, is `Forma.Framework.Themes.Blazor.Server`.
+- **The server's half,** resolving a request's choice, a choice given to a request among them, the cookie,
+  the marker, the endpoint and the output cache variation, is `Forma.Framework.Themes.Blazor.Server`.
 - **The WebAssembly half,** registering the runtime's state and its store's writes with the coordinator, is
   `Forma.Framework.Themes.Blazor.WebAssembly`.
 - **The Blazor Hybrid half,** the application's coordinator, its startup read of the store and the

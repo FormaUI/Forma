@@ -65,16 +65,19 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
 8. **The server's half.** `Forma.Framework.Themes.Blazor.Server`:
    - a request's choice resolved from the store, the cookie and the default, by the store's revision;
    - the cookie written with the store's choice where that choice wins;
+   - a choice the host gives a request, which the request starts in and keeps nothing of;
    - `FormaPageHead` linking every registered theme's stylesheet and publishing the theme marker;
    - the attributes on `<html>`, for the host's `App` to write as it writes `lang` and `dir`;
    - `MapFormaThemes()`, and the output cache variation.
-   - Gate: unit and integration tests; a server-rendered page's first paint in a browser, statically rendered.
+   - Gate: unit and integration tests, a request given its choice writing no cookie among them; a
+     server-rendered page's first paint in a browser, statically rendered.
 9. **The theme coordinator.** `Forma.Framework.Themes.Browser.Interop`, on the switch coordinator: a switch
    accepted through the browser's record, the store's writes in version order, landings and other page
-   updates, and every registered theme's stylesheet confirmed as the coordinator starts. The WebAssembly half,
-   `Forma.Framework.Themes.Blazor.WebAssembly`, registers its runtime.
-   - Gate: script tests; the design's persistence and stylesheet cases on the Server first, then under
-     WebAssembly and Auto, in Chromium and WebKit.
+   updates, a page that keeps nothing accepting each switch at once, and every registered theme's stylesheet
+   confirmed as the coordinator starts. The WebAssembly half, `Forma.Framework.Themes.Blazor.WebAssembly`,
+   registers its runtime.
+   - Gate: script tests; the design's persistence, given-choice and stylesheet cases on the Server first,
+     then under WebAssembly and Auto, in Chromium and WebKit.
 10. **The bootstrap.** `ThemeBootstrap.js`, a classic script, and a standalone WebAssembly app's record in
     local storage, with the start that fails on a host page differing from the registration.
     - Gate: the design's first-paint cases for a standalone app, a removed theme and storage the browser
