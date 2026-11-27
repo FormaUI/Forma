@@ -216,8 +216,11 @@ public sealed class ExplorerTests
             }
             """;
 
-        // Whether every freeze pane among the content has been measured, which draws a details view's frozen edge, a tab stop after the items.
+        // Whether every freeze pane among the content has been measured, which tells whether it freezes columns.
         private const string IsMeasured = "() => [...document.querySelectorAll('#check .forma-explorer-content-backdrop .forma-freeze-pane')].every(pane => pane.classList.contains('is-measured'))";
+
+        // Whether every freeze pane among the content that freezes columns has drawn its frozen edge, a tab stop after the items.
+        private const string IsEdgeDrawn = "() => [...document.querySelectorAll('#check .forma-explorer-content-backdrop .forma-freeze-pane.has-frozen')].every(pane => pane.querySelector(':scope > .forma-freeze-pane-edge') !== null)";
 
         [Theory]
         [MemberData(nameof(ComponentChecks.Runtimes), MemberType = typeof(ComponentChecks))]
@@ -249,6 +252,7 @@ public sealed class ExplorerTests
             await Assertions.Expect(viewButton).ToHaveAttributeAsync("aria-pressed", "true");
             await page.WaitForFunctionAsync(IsGathered);
             await page.WaitForFunctionAsync(IsMeasured);
+            await page.WaitForFunctionAsync(IsEdgeDrawn);
             await page.Locator("#check .forma-explorer-splitter").FocusAsync();
 
             // Act — into the items past what the view draws before them, through the first item's actions and out
