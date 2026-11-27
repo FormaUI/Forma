@@ -1,0 +1,36 @@
+@page "/{Runtime}/theme-scopes"
+
+@* Elements naming a theme, a scheme or both, nested as a page nests scopes, and a reference for each theme in each scheme: each
+   a span whose tokens a check reads where it stands. *@
+<link rel="stylesheet" href="_content/Forma.Blazor.Browser.Components.Checks/check-theme.css" />
+
+<span id="unthemed"></span>
+
+<div data-forma-theme="forma" data-forma-scheme="light"><span id="forma-light"></span></div>
+<div data-forma-theme="forma" data-forma-scheme="dark"><span id="forma-dark"></span></div>
+<div data-forma-theme="check" data-forma-scheme="light"><span id="check-light"></span></div>
+<div data-forma-theme="check" data-forma-scheme="dark"><span id="check-dark"></span></div>
+
+<div data-forma-theme="check" data-forma-scheme="light">
+    <span id="outer-light"></span>
+    <div data-forma-scheme="dark">
+        <span id="middle-dark"></span>
+        <div data-forma-scheme="light"><span id="inner-light"></span></div>
+    </div>
+</div>
+
+<div data-forma-theme="check" data-forma-scheme="dark">
+    <div data-forma-scheme="system"><span id="system-in-dark"></span></div>
+</div>
+
+<div data-forma-theme="check" data-forma-scheme="light">
+    <div data-forma-scheme="dark"><span id="scheme-only"></span></div>
+    <div data-forma-theme="forma"><span id="theme-only"></span></div>
+</div>
+
+<div data-forma-theme="check" data-forma-scheme="dark">
+    <div data-forma-theme="forma">
+        <span id="forma-in-check"></span>
+        <div data-forma-theme="check"><span id="check-in-forma"></span></div>
+    </div>
+</div>

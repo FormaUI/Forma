@@ -1,0 +1,35 @@
+/*
+    check-theme.css — The theme the theme checks draw, setting every base token apart from Forma's in
+    each color scheme, and two tokens beyond them.
+*/
+
+[data-forma-theme="check"] {
+    --gray-0: light-dark(#fffdf7, #15171b);
+    --gray-50: light-dark(#fbf8ee, #1b1e23);
+    --gray-100: light-dark(#f4efe1, #22262c);
+    --gray-200: light-dark(#e8e0cc, #2c3139);
+    --gray-300: light-dark(#d6cbb1, #3a414b);
+    --gray-400: light-dark(#a8997a, #5b6573);
+    --gray-500: light-dark(#776a50, #8a95a3);
+    --gray-600: light-dark(#5a4f39, #a9b3bf);
+    --gray-700: light-dark(#433a29, #c9d0d8);
+    --gray-800: light-dark(#2b241a, #eef1f4);
+
+    --primary-color: light-dark(#7a2e8e, #d49be3);
+    --secondary-color: var(--gray-600);
+    --success-color: light-dark(#2f7d32, #7fd383);
+    --danger-color: light-dark(#b3261e, #f2a7a1);
+    --warning-color: light-dark(#e0a100, #f5cf63);
+    --info-color: light-dark(#00639b, #8fcdf5);
+
+    --backdrop-canvas-bg-color: light-dark(var(--gray-100), #0e1013);
+
+    --chart-series-1-color: light-dark(#6a3d9a, #c4a3e6);
+    --chart-series-2-color: light-dark(#b15928, #f0a978);
+    --chart-series-3-color: light-dark(#1f7a5c, #7fd6b5);
+    --chart-series-4-color: light-dark(#a6761d, #e8c46a);
+
+    /* Beyond the base tokens: a scope in another theme draws these at their defaults. */
+    --primary-fg-color: light-dark(#ffffff, #2a0d33);
+    --radius-sm: 0;
+}

@@ -1,19 +1,82 @@
 /*
-    forma-tokens.css — The design tokens every Forma component reads.
+    forma-tokens.css — The design tokens every Forma component reads, and Forma's theme.
 
     A background ends in -bg-color, a foreground in -fg-color, and the readable content of a
     control in -text-color.
 
-    The theme contract: a theme is a selector that redefines the gray scale and the solid of each
-    role. Every other token derives from those by name. A token that points at a scale step or a
-    role changes with the theme; a token that points at --white-color or --black-color is the same
-    in every theme. The canvas stands below the paper, --gray-0, in every theme, which a scale
-    running from dark paper to light ink holds no step for, so such a theme sets
-    --backdrop-canvas-bg-color too, and the -emphasis-color of each role it uses whose emphasis
-    mixes toward black.
+    A theme is a rule, [data-forma-theme="its-name"], that sets the base tokens: the gray scale, the
+    six role solids, the canvas and the four chart series. It may set any other token as well. A
+    value that differs by color scheme is a color, written as light-dark(light, dark). Forma's theme
+    is the first rule below, and a page that names no theme draws it.
+
+    Every other token is declared under :where(:root, [data-forma-theme]), so it derives again from
+    the base tokens wherever a theme applies, and a theme's own value for it wins. Every token is an
+    unregistered custom property, so a color resolves light-dark() where it is drawn, by the
+    color-scheme there, which data-forma-scheme sets.
 */
 
-:root {
+/* ============================================================
+   Forma's theme — the base tokens, which nothing else derives.
+   ============================================================ */
+:where(:root, [data-forma-theme="forma"]) {
+    /* Scale — the one gray ramp, paper to ink. Every gray-ish token points at a step by name and
+       follows. Each step has one job:
+         0    paper: a flat or raised backdrop, an input
+         50   an inset backdrop, a surface gone inactive
+         100  the canvas, muted content, a disabled fill, a quiet button at rest
+         200  a quiet button under the pointer
+         300  a quiet button pressed, a subtle border
+         400  disabled text
+         500  secondary text
+         600  the secondary solid, quiet text, the hue a border and a hover tint are cut from
+         700  the secondary solid under the pointer
+         800  ink: primary text */
+    --gray-0: #fff;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6c757d;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+
+    /* The solid of each role. Primary is the brand accent; Secondary is the neutral solid beside it;
+       the other four are status. */
+    --primary-color: #0066bf;
+    --secondary-color: var(--gray-600);
+    --success-color: #28a745;
+    --danger-color: #c4314b;
+    --warning-color: #ffc107;
+    --info-color: #307fdd;
+
+    /* The canvas: the backdrop other backdrops are laid on, below the paper, which a scale running
+       from dark paper to light ink holds no step for. */
+    --backdrop-canvas-bg-color: var(--gray-100);
+
+    /* A chart's series in the order a chart takes them, validated as a set against the paper so
+       adjacent series stay apart for color-blind readers. */
+    --chart-series-1-color: #2a78d6;
+    --chart-series-2-color: #eb6834;
+    --chart-series-3-color: #1baf7a;
+    --chart-series-4-color: #eda100;
+}
+
+/* The color scheme an element and everything inside it draws in; system follows the device's. */
+[data-forma-scheme="light"] {
+    color-scheme: light;
+}
+
+[data-forma-scheme="dark"] {
+    color-scheme: dark;
+}
+
+[data-forma-scheme="system"] {
+    color-scheme: light dark;
+}
+
+:where(:root, [data-forma-theme]) {
     /* Typography */
     --font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
         'Noto Sans Hebrew', sans-serif;
@@ -71,73 +134,41 @@
     --black-color: #000;
 
     /* ============================================================
-       Scale — the one gray ramp, paper to ink. A theme redefines these values; every gray-ish
-       token below points at a step by name and follows. Each step has one job:
-         0    paper: a flat or raised backdrop, an input
-         50   an inset backdrop, a surface gone inactive
-         100  the canvas, muted content, a disabled fill, a quiet button at rest
-         200  a quiet button under the pointer
-         300  a quiet button pressed, a subtle border
-         400  disabled text
-         500  secondary text
-         600  the secondary solid, quiet text, the hue a border and a hover tint are cut from
-         700  the secondary solid under the pointer
-         800  ink: primary text
-       ============================================================ */
-    --gray-0: #fff;
-    --gray-50: #f9fafb;
-    --gray-100: #f3f4f6;
-    --gray-200: #e5e7eb;
-    --gray-300: #d1d5db;
-    --gray-400: #9ca3af;
-    --gray-500: #6c757d;
-    --gray-600: #4b5563;
-    --gray-700: #374151;
-    --gray-800: #1f2937;
-
-    /* ============================================================
-       Roles — the six colors a component reaches for by name. A theme redefines each solid; the
-       rest of the family derives. Every role has the same five members:
+       Roles — the six colors a component reaches for by name. A theme sets each solid; the rest of
+       the family derives. Every role has the same five members:
          -color           the solid
          -emphasis-color  stronger than the solid: the fill hover and active are cut from
          -subtle-color    the tint behind a selected row, an active tab, a badge
          -fg-color        text and marks drawn on the solid
          -ink-color       text and marks drawn in the role's color on the paper or on its subtle tint
-       A light theme's ink is its emphasis; a dark theme sets the two apart, since text on dark paper
-       wants a lighter shade than a fill under white text does.
-       Primary is the brand accent; Secondary is the neutral solid beside it; the other four are status.
+       A light scheme's ink is its emphasis; a dark scheme sets the two apart, since text on dark
+       paper wants a lighter shade than a fill under white text does.
        ============================================================ */
-    --primary-color: #0066bf;
     --primary-emphasis-color: color-mix(in srgb, var(--primary-color) 82%, black);
     --primary-subtle-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
     --primary-fg-color: var(--white-color);
     --primary-ink-color: var(--primary-emphasis-color);
 
-    --secondary-color: var(--gray-600);
     --secondary-emphasis-color: var(--gray-700);
     --secondary-subtle-color: var(--gray-100);
     --secondary-fg-color: var(--white-color);
     --secondary-ink-color: var(--secondary-emphasis-color);
 
-    --success-color: #28a745;
     --success-emphasis-color: color-mix(in srgb, var(--success-color) 82%, black);
     --success-subtle-color: color-mix(in srgb, var(--success-color) 10%, transparent);
     --success-fg-color: var(--white-color);
     --success-ink-color: var(--success-emphasis-color);
 
-    --danger-color: #c4314b;
     --danger-emphasis-color: color-mix(in srgb, var(--danger-color) 82%, black);
     --danger-subtle-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
     --danger-fg-color: var(--white-color);
     --danger-ink-color: var(--danger-emphasis-color);
 
-    --warning-color: #ffc107;
     --warning-emphasis-color: color-mix(in srgb, var(--warning-color) 82%, black);
     --warning-subtle-color: color-mix(in srgb, var(--warning-color) 10%, transparent);
     --warning-fg-color: var(--gray-800);  /* dark on yellow */
     --warning-ink-color: var(--warning-emphasis-color);
 
-    --info-color: #307fdd;
     --info-emphasis-color: color-mix(in srgb, var(--info-color) 82%, black);
     --info-subtle-color: color-mix(in srgb, var(--info-color) 10%, transparent);
     --info-fg-color: var(--white-color);
@@ -164,11 +195,10 @@
     --disabled-text-color: var(--gray-400);
 
     /* ============================================================
-       Backdrops — the canvas a page paints, the backdrops laid on it, and the tone a region takes
-       inside a backdrop, one token per BackdropVariant. Regions are told apart by tone and by a
-       backdrop's own edge.
+       Backdrops — the backdrops laid on the canvas, and the tone a region takes inside a backdrop,
+       one token per BackdropVariant, the canvas's among the base tokens. Regions are told apart by
+       tone and by a backdrop's own edge.
        ============================================================ */
-    --backdrop-canvas-bg-color: var(--gray-100);  /* the canvas: the backdrop other backdrops are laid on, below the paper */
     --backdrop-flat-bg-color: var(--gray-0);      /* a flat backdrop: a panel, a sheet, a content area */
     --backdrop-inset-bg-color: var(--gray-50);    /* an inset backdrop: a header strip, a toolbar band, a table header */
     --backdrop-raised-bg-color: var(--gray-0);    /* a raised backdrop: a card on the canvas, a popover, a dialog */
@@ -238,14 +268,9 @@
     --media-shade-color: color-mix(in srgb, var(--black-color) 70%, transparent);
 
     /* ============================================================
-       Charts — a chart's series in the order a chart takes them, validated as a set against the paper so
-       adjacent series stay apart for color-blind readers; a dark theme sets its own four, stepped for its
-       surface. The grid, the baseline and a threshold are cut from the scale and the ink.
+       Charts — what a chart draws beside its series, which are among the base tokens. The grid, the
+       baseline and a threshold are cut from the scale and the ink.
        ============================================================ */
-    --chart-series-1-color: #2a78d6;
-    --chart-series-2-color: #eb6834;
-    --chart-series-3-color: #1baf7a;
-    --chart-series-4-color: #eda100;
     --chart-grid-color: var(--gray-200);
     --chart-baseline-color: var(--gray-400);
     --chart-threshold-color: var(--text-secondary-color);
@@ -281,9 +306,9 @@
     --z-index-floating-bar: 1060;  /* a bar floating over a popover, such as the selection bar */
     --z-index-toast: 1080;    /* a toast, over everything in flow */
 
-    /* Shadows — cut from the ink, so they follow the theme. */
-    --shadow-color: color-mix(in srgb, var(--gray-800) 12%, transparent);  /* what a raised backdrop casts onto what slides beneath it, drawn as a fade */
-    --shadow-small: color-mix(in srgb, var(--gray-800) 4%, transparent) 0 2px 4px 0;
-    --shadow-medium: 0 4px 16px color-mix(in srgb, var(--black-color) 12%, transparent);
-    --shadow-large: 0 8px 30px color-mix(in srgb, var(--black-color) 18%, transparent);
+    /* Shadows — cut from the ink on light paper and from black on dark paper, where the ink is light. */
+    --shadow-color: light-dark(color-mix(in srgb, var(--gray-800) 12%, transparent), color-mix(in srgb, var(--black-color) 40%, transparent));  /* what a raised backdrop casts onto what slides beneath it, drawn as a fade */
+    --shadow-small: light-dark(color-mix(in srgb, var(--gray-800) 4%, transparent), color-mix(in srgb, var(--black-color) 24%, transparent)) 0 2px 4px 0;
+    --shadow-medium: 0 4px 16px light-dark(color-mix(in srgb, var(--black-color) 12%, transparent), color-mix(in srgb, var(--black-color) 40%, transparent));
+    --shadow-large: 0 8px 30px light-dark(color-mix(in srgb, var(--black-color) 18%, transparent), color-mix(in srgb, var(--black-color) 48%, transparent));
 }

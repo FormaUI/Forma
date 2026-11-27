@@ -31,11 +31,16 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
 
 ## The themes
 
-2. **The tokens, scoped by theme and scheme.** `forma-tokens.css` declares every token but the base tokens
+2. **The tokens, scoped by theme and scheme.** ✅ `forma-tokens.css` declares every token but the base tokens
    under `:where(:root, [data-forma-theme])`, the two attributes set `color-scheme`, every shadow writes its
    color for both schemes, and no token is registered as a color.
    - Gate: every component's browser checks pass unchanged on a page with neither attribute; the scope cases
      of [the design's verification](theme-design.md#verification) pass in Chromium and WebKit.
+   - Landed: Forma's base tokens stand in its theme's rule, `:where(:root, [data-forma-theme="forma"])`, which a
+     page naming no theme draws, beside the three scheme rules, and each shadow's dark side is cut from black.
+     The scope cases are a check page every runtime renders, over a check theme setting each base token apart
+     from Forma's in both schemes and two tokens beyond them. Every token a scope draws is compared with a
+     reference of the theme and scheme it should draw, under each device preference for a System scope.
 3. **The contrast check.** `Forma.Framework.Themes.Testing` computes the design's
    [targets](theme-design.md#contrast) for a theme in each of its schemes, in a browser, and reports each pair.
    It is run against Forma's theme as it stands, and the report records each light value that misses a

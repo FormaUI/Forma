@@ -5,6 +5,19 @@ release is cut, and reads *Unreleased* until then. It lists every change a consu
 breaks what the release before it allowed says how to migrate, as [Versioning's rules](https://github.com/FormaUI/Versioning/blob/v1.0.0-preview.5/docs/releases.md#the-release-record)
 set out. What Forma gained before its first release, month by month, is in [the feature history](FEATURE-HISTORY.md).
 
+## `1.0.0-preview.21`
+
+*Unreleased*
+
+- A theme is a rule, `[data-forma-theme="its-name"]`, setting [the base tokens](docs/theme-design.md#the-base-tokens)
+  and any token beside them, a color that differs by scheme written as `light-dark(light, dark)`. An element naming a
+  theme in `data-forma-theme`, and a scheme in `data-forma-scheme`, `light`, `dark` or `system`, draws them in everything
+  inside it, as [the theme design](docs/theme-design.md#how-the-tokens-are-scoped) sets out, and a page naming neither
+  draws Forma's theme in its light scheme.
+- Every token but the base tokens is declared under `:where(:root, [data-forma-theme])`, so a host's own value for a
+  token wins whichever stylesheet loads first.
+- The shadows, `--shadow-color` and `--shadow-small` to `--shadow-large`, are cut from black in a dark scheme.
+
 ## `1.0.0-preview.20`
 
 *November 26, 2026*

@@ -127,9 +127,9 @@ Each series takes the color of its place in `Series`, so a host keeps a series i
 color. A line also draws its own dash and marker, and each period's bars stand in the series' order, so a
 series is told apart without color; forced colors and print give each series' bars but the first's a texture.
 
-The colors are tokens a theme sets:
+The colors are tokens a theme sets, a theme with a dark scheme writing each as `light-dark(light, dark)`:
 
-| Token | Light default | A dark theme's value |
+| Token | Light default | A dark scheme's value |
 | --- | --- | --- |
 | `--chart-series-1-color` | `#2a78d6` | `#3987e5` |
 | `--chart-series-2-color` | `#eb6834` | `#d95926` |

@@ -338,42 +338,57 @@ builder.AddFormaServerIntegration();
 
 Each lives under `_content/Forma.Blazor/`.
 
-A theme redefines the gray scale and the six role solids in a stylesheet loaded after Forma's. Every other token
-follows from them, hover, focus, links, backdrops and borders among them:
+A theme is a rule naming it, `[data-forma-theme="its-name"]`, in a stylesheet loaded after Forma's. It sets the base
+tokens, the values nothing else derives:
+
+- the gray scale, from the paper, `--gray-0`, to the ink, `--gray-800`;
+- the six role solids, `--primary-color` to `--info-color`;
+- the canvas, `--backdrop-canvas-bg-color`, the backdrop every other backdrop is laid on;
+- the four chart series, `--chart-series-1-color` to `--chart-series-4-color`.
+
+Every other token follows from them, hover, focus, links, backdrops and borders among them, and a theme may set any of
+those too. A value that differs between the light and the dark scheme is a color, written once as
+`light-dark(light, dark)`:
 
 ```css
-:root {
-    --primary-color: #6f42c1;
-    --gray-50: #fafaf9;
-    --gray-800: #292524;
+[data-forma-theme="harbor"] {
+    --gray-0: light-dark(#ffffff, #1e1f22);
+    --gray-100: light-dark(#f3f4f6, #2b2d31);
+    --gray-800: light-dark(#1f2937, #f2f3f5);
+    --primary-color: light-dark(#6f42c1, #b794f4);
+    --primary-fg-color: light-dark(#ffffff, #1a1033);
+    --primary-ink-color: light-dark(var(--primary-emphasis-color), color-mix(in srgb, var(--primary-color) 70%, white));
+    --backdrop-canvas-bg-color: light-dark(var(--gray-100), #141517);
+    /* … the rest of the scale, the other solids and the four series */
 }
 ```
 
-The canvas, the backdrop every other backdrop is laid on, stands below the paper, `--gray-0`, in every theme. A
-light scale holds it as `--gray-100`. A dark theme, whose scale runs from dark paper at `--gray-0` to light ink at
-`--gray-800`, has no step below its paper, so it sets the canvas too.
+An element draws the theme and the scheme it names, and so does everything inside it, so the page names them on
+`<html>` and a part of the page can name others:
 
-A role's color does two jobs on a page, and a dark theme gives each its own shade. Its `-emphasis-color` is the fill
+```html
+<html lang="en" data-forma-theme="harbor" data-forma-scheme="system">
+```
+
+`data-forma-scheme` is `light`, `dark` or `system`, which draws the scheme the device prefers. An element naming only a
+theme draws it in its surroundings' scheme, and one naming only a scheme draws its surroundings' theme in it. A page
+naming neither draws Forma's own theme in its light scheme, with each token a stylesheet of its own sets on `:root` in
+place of Forma's.
+
+A theme sets every base token, since a part of the page in the theme takes what the theme leaves unset from the theme
+around it. The canvas stands below the paper in every scheme: a light scale holds it as `--gray-100`, and a dark one,
+running from dark paper to light ink, has no step below its paper, so it sets the canvas apart.
+
+A role's color does two jobs on a page, and a dark scheme gives each its own shade. Its `-emphasis-color` is the fill
 a hover or an active state is cut from, under the role's `-fg-color` text, and its `-ink-color` is the role's color
 as text and marks on the paper or on its subtle tint, such as a link, a current tab, a selected option's check or a
-field's error and its border. In a light theme the ink is the emphasis, the
-solid mixed toward black, which reads well both ways. On dark paper text wants a lighter shade than a fill under
-white text does, so a dark theme sets the ink of each role it uses, and keeps the emphasis a fill dark enough for its
-text:
+field's error and its border. In a light scheme the ink is the emphasis, the solid mixed toward black, which reads well
+both ways. On dark paper text wants a lighter shade than a fill does, so a dark scheme sets the ink of each role it
+uses, and the fg of each solid it lightens.
 
-```css
-:root {
-    --gray-0: #1e1f22;
-    --gray-100: #2b2d31;
-    --gray-800: #f2f3f5;
-    --backdrop-canvas-bg-color: #141517;
-    --primary-ink-color: color-mix(in srgb, var(--primary-color) 70%, white);
-}
-```
-
-A chart's series colors are validated as a set against light paper, so a dark theme that draws charts sets the four
+A chart's series colors are validated as a set against the paper, so a theme with a dark scheme writes the four
 [the charts' README](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.Charts/README.md#colors-and-themes)
-lists for a dark surface, `--chart-series-1-color` to `--chart-series-4-color`.
+lists for a dark surface as each series' dark side.
 
 A component's own hooks are named `--forma-{component}-{part}-{property}` and fall back to the theme's tokens, so a host
 sets one where it differs. A page with a sticky header moves the toasts below it:
