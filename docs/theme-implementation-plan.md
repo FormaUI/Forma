@@ -16,7 +16,7 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
 
 ## The switch coordinator
 
-1. **The culture coordinator's ordering, made a core of its own.** What the culture coordinator holds that any
+1. **The culture coordinator's ordering, made a core of its own.** ✅ What the culture coordinator holds that any
    page-wide setting needs moves into the switch coordinator, `Forma.Framework.Coordination.Browser.Interop`, in
    the browser and in the .NET registration each runtime makes, and the culture coordinator runs on it:
    - requests accepted one at a time, in each runtime's order, and a version for each;
@@ -28,6 +28,11 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
    - Gate: the culture's script tests and browser checks pass unchanged, in every runtime and in Chromium and
      WebKit, since the culture's behavior doesn't change; the culture design's coordinator section names the
      core.
+   - Landed: in the browser, `SwitchCoordinator` holds a setting's accepted value and sequence, its registrations,
+     the one-at-a-time queue, the hold and the page updates, and `SwitchRegistration` each registration's runtime,
+     receiver and order; the culture coordinator makes one of each. In .NET, `SwitchCoordinatorRegistration` holds
+     each runtime's attempts, availability, disposal and module, and `CultureCoordinatorRegistration` derives from
+     it. The switch coordinator's own script tests pin its rules beside the culture's, which pass unchanged.
 
 ## The themes
 

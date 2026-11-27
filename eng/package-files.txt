@@ -309,6 +309,18 @@ formaui-net.Framework.Composer.Extensibility
     NOTICE
     README.md
 
+formaui-net.Framework.Coordination.Browser.Interop
+    build/formaui-net.Framework.Coordination.Browser.Interop.PackageAssets.json
+    build/formaui-net.Framework.Coordination.Browser.Interop.targets
+    build/Microsoft.AspNetCore.StaticWebAssets.targets
+    buildMultiTargeting/formaui-net.Framework.Coordination.Browser.Interop.targets
+    buildTransitive/formaui-net.Framework.Coordination.Browser.Interop.targets
+    lib/net11.0/Forma.Framework.Coordination.Browser.Interop.dll
+    LICENSE
+    NOTICE
+    README.md
+    staticwebassets/scripts/SwitchCoordinator.js
+
 formaui-net.Framework.Css
     lib/net11.0/Forma.Framework.Css.dll
     LICENSE

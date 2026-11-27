@@ -1,32 +1,23 @@
-// The document's culture coordinator: the pair the page accepted last with its version, every runtime's registration,
-// which receives each pair accepted, and the document's language and direction, which follow the accepted pair.
+// The document's culture coordinator, on the switch coordinator: the pair the page accepted last with its version, every
+// runtime's registration, which receives each pair accepted, and the document's language and direction, which follow the
+// accepted pair.
+
+import { SwitchCoordinator, SwitchRegistration } from '../../coordination/scripts/SwitchCoordinator.js';
 
 const root = document.documentElement;
 
 // A year, in seconds: how long the browser keeps the cookie naming the culture route last chosen.
 const routeCookieMaxAge = 31536000;
 
-// What the coordinator read as the document loaded: the document's key and the switch's policy, or why it can't start.
+// What the coordinator read as the document loaded: the switch's policy, or why it can't start.
 let initialization = null;
 
-// The pair accepted last, with its number in the document's sequence: the marker's pair, number zero, until a switch.
-let acceptedPair = null;
+// The pairs the page accepts, in the order of its sequence, the marker's pair number zero until a switch, and every runtime's
+// registration.
+const coordinator = new SwitchCoordinator({ write: writePair, toArguments: pair => [pair.culture, pair.uiCulture] });
 
 // What the server last served to the document's attributes.
 let servedPair = readPair();
-
-const registrations = new Map();
-
-// Requests are accepted one at a time, in the order they reach the coordinator.
-let queue = Promise.resolve();
-
-// The hold an enhanced navigation places on the document, from its start until its landing or its end.
-let hold = null;
-let isTracking = false;
-let isNavigationPending = false;
-
-// Blazor's API, which an in-place switch navigates through.
-let blazorApi = null;
 
 // The switch by address waiting for its navigation's landing, and the pairs earlier switches navigated to that haven't
 // landed: one of their late landings is the page's culture, never the waiting switch's.
@@ -64,8 +55,8 @@ export function initialize(head = document.head) {
         return;
     }
 
-    initialization = { documentKey: crypto.randomUUID(), policy: readPolicy(head) };
-    acceptedPair = { ...marker, direction: servedPair.direction, number: 0 };
+    initialization = { policy: readPolicy(head) };
+    coordinator.start({ ...marker, direction: servedPair.direction });
 
     // A traversal is told by the document's own history, since the location's change reports one as any other; a landing
     // is the traversal's only where it lands at the address the traversal arrived at, which a refused one never leaves.
@@ -87,89 +78,39 @@ export async function register(identity, receiver, runtime = 'server', start = n
         throw error;
     }
 
-    let registration = registrations.get(identity);
-
-    if (registration === undefined) {
-        registration = new CultureCoordinatorRegistration(identity, runtime);
-        registrations.set(identity, registration);
-    }
-
+    const registration = coordinator.register(identity, () => new CultureCoordinatorRegistration(identity, runtime));
     registration.receiver = receiver;
     registration.resolvesDestinations = resolvesDestinations;
-    await registration.deliver(acceptedPair);
+    await registration.deliver(coordinator.accepted);
 
     return registration;
 }
 
 /** Releases the registrations of the circuit the client closed, leaving the document on the accepted pair. */
 export function releaseCircuit() {
-    for (const [identity, registration] of registrations) {
-        if (registration.runtime === 'server') {
-            registrations.delete(identity);
-        }
-    }
+    coordinator.releaseRuntime('server');
 }
 
 /** Follows the document's enhanced page updates: each navigation holds the document until it lands, its landing is accepted from its response's marker, and the accepted pair is set again after each update. */
 export function track(blazor) {
-    if (isTracking) {
-        return;
-    }
-
-    isTracking = true;
-    blazorApi = blazor;
-
-    blazor.addEventListener('enhancednavigationstart', () => {
-        isNavigationPending = true;
-        hold ??= new DocumentHold();
-    });
-
-    // A navigation's response patches the whole document, its head and `<html>` among it, before its first update is
-    // announced; a streaming update patches a component's region alone, so only the first update after a start is read.
-    blazor.addEventListener('enhancedload', () => {
-        if (isNavigationPending) {
-            isNavigationPending = false;
+    // A landing is read from its response's marker; a navigation that ends without landing leaves the accepted pair, and
+    // leaves a switch waiting on it canceled.
+    coordinator.track(blazor, {
+        land: () => {
             servedPair = readPair();
             land(readMarker(document.head));
-        }
-
-        if (hold === null && acceptedPair !== null) {
-            writePair(acceptedPair);
-        }
-    });
-
-    // A navigation that ends without landing ends the hold, leaving the accepted pair, and leaves a switch waiting on it
-    // canceled.
-    blazor.addEventListener('enhancednavigationend', () => {
-        if (isNavigationPending) {
-            isNavigationPending = false;
-            endHold();
-            cancelPendingSwitch();
-        }
+        },
+        end: cancelPendingSwitch,
     });
 }
 
 // A culture state's registration with the coordinator.
-class CultureCoordinatorRegistration {
-    #identity;
-    #runtime;
-    #lastRequest = 0;
-    #lastLanding = 0;
+class CultureCoordinatorRegistration extends SwitchRegistration {
     #lastFollow = 0;
-    receiver = null;
     resolvesDestinations = false;
 
     constructor(identity, runtime) {
-        this.#identity = identity;
-        this.#runtime = runtime;
-    }
-
-    get runtime() {
-        return this.#runtime;
-    }
-
-    get #isLive() {
-        return registrations.get(this.#identity) === this;
+        super(coordinator, identity, runtime);
     }
 
     /**
@@ -179,11 +120,10 @@ class CultureCoordinatorRegistration {
      * one already received, by its place `order` among them, is obsolete: it completes with `canceled`, changing nothing.
      */
     request(culture, uiCulture, direction, order) {
-        if (order <= this.#lastRequest) {
+        if (!this.takeRequest(order)) {
             return Promise.resolve('canceled');
         }
 
-        this.#lastRequest = order;
         const policy = getInitialization().policy;
         const route = policy?.kind === 'address' ? findRouteByPair(policy, culture, uiCulture) : null;
 
@@ -191,10 +131,8 @@ class CultureCoordinatorRegistration {
             return Promise.reject(new Error(`No configured culture route represents the culture ${culture} with the UI culture ${uiCulture}, so the switch can't be made by address.`));
         }
 
-        const pendingWork = queue.then(async () => {
-            await hold?.promise;
-
-            if (!this.#isLive) {
+        const pendingWork = coordinator.enqueue(async () => {
+            if (!this.isLive) {
                 throw new Error('The culture state requesting the switch is no longer registered with the page.');
             }
 
@@ -207,15 +145,13 @@ class CultureCoordinatorRegistration {
             }
 
             persist(culture, uiCulture);
-            await this.deliver(accept({ culture, uiCulture, direction }, [this]));
+            await this.deliver(coordinator.accept({ culture, uiCulture, direction }, [this]));
 
             return { landing: Promise.resolve('accepted') };
         });
 
-        // The next request waits for this one to settle, whatever its outcome, which reaches its own requester; a switch by
-        // address settles once its navigation is under way, so a newer one supersedes it rather than waiting for its landing.
-        queue = pendingWork.then(() => {}, () => {});
-
+        // A switch by address settles once its navigation is under way, so a newer one supersedes it rather than waiting for
+        // its landing.
         return pendingWork.then(({ landing }) => landing);
     }
 
@@ -226,11 +162,10 @@ class CultureCoordinatorRegistration {
      * nothing.
      */
     async reportLanding(token, order) {
-        if (order <= this.#lastLanding) {
+        if (!this.takeLanding(order)) {
             return;
         }
 
-        this.#lastLanding = order;
         const policy = getInitialization().policy;
         const route = policy?.kind === 'address' ? findRouteByToken(policy, token) : null;
 
@@ -266,12 +201,12 @@ class CultureCoordinatorRegistration {
         hasLanded = true;
         unmarkHistoryEntry();
 
-        if (replacementIndex >= 0 || isSamePair(acceptedPair, pair)) {
+        if (replacementIndex >= 0 || isSamePair(coordinator.accepted, pair)) {
             return;
         }
 
         if (isAdopting) {
-            readdress(policy, acceptedPair, this);
+            readdress(policy, coordinator.accepted, this);
 
             return;
         }
@@ -294,8 +229,8 @@ class CultureCoordinatorRegistration {
         const policy = getInitialization().policy;
         const pair = { culture, uiCulture, direction };
 
-        if (!isSamePair(acceptedPair, pair)) {
-            accept(pair, [this]);
+        if (!isSamePair(coordinator.accepted, pair)) {
+            coordinator.accept(pair, [this]);
         }
 
         if (policy?.kind === 'address') {
@@ -323,32 +258,6 @@ class CultureCoordinatorRegistration {
         }
 
         return buildDestination(policy, route, href);
-    }
-
-    /** Delivers an accepted pair to this registration's state, completing once the state has applied it. */
-    deliver(pair) {
-        return this.receiver.invokeMethodAsync('ApplyAsync', pair.culture, pair.uiCulture, initialization.documentKey, pair.number);
-    }
-
-    /** Releases the registration, leaving the document on the accepted pair. */
-    dispose() {
-        if (this.#isLive) {
-            registrations.delete(this.#identity);
-        }
-    }
-}
-
-// The document held through one enhanced navigation, and what waits for the hold to end.
-class DocumentHold {
-    promise;
-    #resolve;
-
-    constructor() {
-        this.promise = new Promise(resolve => this.#resolve = resolve);
-    }
-
-    end() {
-        this.#resolve();
     }
 }
 
@@ -397,13 +306,11 @@ function createMeta(name, attributes) {
 // A server-rendered landing takes its pair from its own response's marker; a response without a valid marker leaves the
 // accepted pair.
 function land(marker) {
-    if (marker !== null && acceptedPair !== null) {
+    if (marker !== null && coordinator.accepted !== null) {
         acceptLanding({ ...marker, direction: servedPair.direction }).then(() => {}, () => {});
     } else {
         cancelPendingSwitch();
     }
-
-    endHold();
 }
 
 // A landing is accepted as the next switch, without waiting for any registration, unless it is the accepted pair
@@ -426,8 +333,8 @@ async function acceptLanding(pair, reporter = null) {
     }
 
     const awaitedRegistrations = [reporter, waitingSwitch?.requester].filter(registration => registration != null);
-    const isNew = pair.culture !== acceptedPair.culture || pair.uiCulture !== acceptedPair.uiCulture;
-    const currentPair = isNew ? accept(pair, awaitedRegistrations) : acceptedPair;
+    const isNew = pair.culture !== coordinator.accepted.culture || pair.uiCulture !== coordinator.accepted.uiCulture;
+    const currentPair = isNew ? coordinator.accept(pair, awaitedRegistrations) : coordinator.accepted;
     const deliveries = isNew ? new Map([...new Set(awaitedRegistrations)].map(registration => [registration, registration.deliver(currentPair)])) : new Map();
 
     if (waitingSwitch !== null) {
@@ -443,30 +350,12 @@ async function acceptLanding(pair, reporter = null) {
     }
 }
 
-// The accepted pair is delivered to every registration but those that await their own; a delivery that fails is
-// recovered as its runtime registers again, which adopts the accepted pair.
-function accept(pair, excludedRegistrations = []) {
-    acceptedPair = { ...pair, number: acceptedPair.number + 1 };
-
-    if (hold === null) {
-        writePair(acceptedPair);
-    }
-
-    for (const registration of registrations.values()) {
-        if (!excludedRegistrations.includes(registration)) {
-            registration.deliver(acceptedPair).then(() => {}, () => {});
-        }
-    }
-
-    return acceptedPair;
-}
-
 // A switch by address navigates to `destination`, the page the current one leads to in its route: a full load leaves the
 // document, and an in-place navigation completes once its landing is accepted, or as timed out where none arrives within
 // the policy's timeout, as one a navigation handler refused doesn't; a newer switch supersedes it, which completes it as
 // canceled.
 function navigate(policy, route, requester, destination) {
-    if (isSamePair(acceptedPair, route) && isSameAddress(destination, location.href)) {
+    if (isSamePair(coordinator.accepted, route) && isSameAddress(destination, location.href)) {
         return Promise.resolve('accepted');
     }
 
@@ -487,7 +376,7 @@ function navigate(policy, route, requester, destination) {
         const attempt = { route, requester, resolve, reject, timeout: 0 };
         attempt.timeout = setTimeout(() => timeOut(attempt), policy.switchTimeout);
         pendingSwitch = attempt;
-        (blazorApi ?? window.Blazor).navigateTo(destination);
+        (coordinator.blazor ?? window.Blazor).navigateTo(destination);
     });
 }
 
@@ -546,7 +435,7 @@ function replaceAddress(destination) {
     }
 
     replacements.push(destination);
-    (blazorApi ?? window.Blazor).navigateTo(`${destination}${location.hash}`, { replaceHistoryEntry: true, historyEntryState: FollowMark });
+    (coordinator.blazor ?? window.Blazor).navigateTo(`${destination}${location.hash}`, { replaceHistoryEntry: true, historyEntryState: FollowMark });
 }
 
 // The entry a replacement landed at keeps its page, so a traversal back to it is an ordinary one, which a navigation
@@ -566,17 +455,6 @@ function withoutHash(href) {
 
 function cancelPendingSwitch() {
     takePendingSwitch()?.resolve('canceled');
-}
-
-function endHold() {
-    const endedHold = hold;
-    hold = null;
-
-    if (acceptedPair !== null) {
-        writePair(acceptedPair);
-    }
-
-    endedHold?.end();
 }
 
 // Under the cookie policy, the cookie is written in request localization's serialization and read back before the

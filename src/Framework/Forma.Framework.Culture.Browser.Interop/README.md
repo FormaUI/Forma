@@ -7,6 +7,9 @@ converge on one pair. It
 keeps the page's `<html lang dir>` on the accepted pair, so a page switched to Hebrew in place is laid out
 right to left and read as Hebrew by browsers and screen readers.
 
+The coordinator runs on the switch coordinator of `formaui-net.Framework.Coordination.Browser.Interop`, which comes with
+this package and orders every setting the whole page shares.
+
 ## Use it
 
 The package comes with `formaui-net.Blazor`, whose `AddFormaUIServices()` registers it through

@@ -269,7 +269,7 @@ Scripts ship with the project that owns them:
   `scripts/InputRouter.js` beside `InputRouter.cs`.
 
 The interop assemblies are served side by side as `_content/forma/core`, `_content/forma/browser`,
-`_content/forma/input` and `_content/forma/culture`. A script reaches another
+`_content/forma/input`, `_content/forma/coordination` and `_content/forma/culture`. A script reaches another
 assembly's script by climbing to the content root, so the import survives a host path base:
 
 | From | Import |

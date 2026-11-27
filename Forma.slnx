@@ -7,6 +7,7 @@
     <Project Path="src\Framework\Forma.Framework.Browser.Blazor.Server\Forma.Framework.Browser.Blazor.Server.csproj" />
     <Project Path="src\Framework\Forma.Framework.Browser.Maui\Forma.Framework.Browser.Maui.csproj" />
     <Project Path="src\Framework\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+    <Project Path="src\Framework\Forma.Framework.Coordination.Browser.Interop\Forma.Framework.Coordination.Browser.Interop.csproj" />
     <Project Path="src\Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
     <Project Path="src\Framework\Forma.Framework.Emojis.Unicode\Forma.Framework.Emojis.Unicode.csproj" />
     <Project Path="src\Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />

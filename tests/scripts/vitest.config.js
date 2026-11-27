@@ -14,6 +14,7 @@ const scripts = {
     browser: getInteropScriptsPath('Browser'),
     input: getInteropScriptsPath('Input'),
     culture: getInteropScriptsPath('Culture.Browser'),
+    coordination: getInteropScriptsPath('Coordination.Browser'),
     composer: getProductScriptsPath('Composer'),
     dataview: getProductScriptsPath('DataView'),
     explorer: getProductScriptsPath('Explorer'),

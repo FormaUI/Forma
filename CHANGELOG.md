@@ -32,6 +32,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   it takes, is in the new `formaui-net.Framework.Themes`.
 - [The charts design](docs/charts-design.md#decision-summary) states the distance its series are validated apart by: 8 in
   protanopia and deuteranopia, and 15 in full color vision.
+- [The culture coordinator](docs/culture-design.md#the-coordinator) runs on the switch coordinator,
+  `formaui-net.Framework.Coordination.Browser.Interop`, the core every setting the whole page shares is ordered by, which
+  comes with `formaui-net.Framework.Culture.Browser.Interop`. `CultureCoordinatorRegistration` derives from its
+  `SwitchCoordinatorRegistration`, and a culture's switches keep every rule they follow.
 
 ## `1.0.0-preview.20`
 

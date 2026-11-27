@@ -29,7 +29,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Four components implemented, twenty-six changes fixed, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
-| [Themes](#themes) | Steps 2 to 4 landed, ten steps open, the switch coordinator and Forma's dark scheme next |
+| [Themes](#themes) | Steps 1 to 4 landed, nine steps open, Forma's dark scheme and the theme scope next |
 | [The Showcase's review modes](#the-showcases-review-modes) | Planned, nine steps open, the pointer emulation's prototype and the preview first |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -281,9 +281,10 @@ thirteen steps and four parts:
 - the reader's choice, kept, resolved, painted first and switched in place, with the picker;
 - Blazor Hybrid, once each platform's document-start script is proven.
 
-The first two parts are independent of each other. Steps 2 to 4 have landed: the tokens draw the theme and the
-scheme the nearest element naming them carries, so a host draws a theme of its own by writing the two attributes,
-`Forma.Framework.Themes.Testing` holds a theme to the contrast targets, and Forma's light scheme meets them.
+The first two parts are independent of each other. Steps 1 to 4 have landed: the culture coordinator runs on the
+switch coordinator the theme's is to be built on, the tokens draw the theme and the scheme the nearest element naming
+them carries, so a host draws a theme of its own by writing the two attributes, `Forma.Framework.Themes.Testing` holds a
+theme to the contrast targets, and Forma's light scheme meets them.
 
 <a id="the-showcases-review-modes"></a>
 

@@ -178,7 +178,12 @@ application never loops back into a request, and applying never navigates, write
 ### The coordinator
 
 The document's culture coordinator orders every switch on the page. It is a service of the document, one
-per page, as the input router is, and each runtime's culture state registers with it. A runtime requests a
+per page, as the input router is, and each runtime's culture state registers with it. It runs on the **switch
+coordinator**, `Forma.Framework.Coordination.Browser.Interop`, the core every setting the whole page shares is
+ordered by, which holds the rules this section and [landings](#landings) set out for any such setting: the
+requests, the versions, the registrations, the hold through an enhanced navigation, a landing's acceptance and the
+accepted value set again after any other page update. The culture adds its addresses, its cookie and its
+marker's format. A runtime requests a
 switch from it; the coordinator accepts requests one at a time, each runtime's in the order the runtime made
 them, gives each accepted switch the next number in the document's sequence, and sends the pair with its
 version to every registration. Each request carries its place among its registration's requests, taken as

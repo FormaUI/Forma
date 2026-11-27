@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+    <PropertyGroup>
+        <Description>The switch coordinator: the core every coordinator of a setting the whole page shares is built on, which orders the setting's switches across every runtime on the page, numbers each in the document's sequence, and delivers the accepted value to every runtime registered with it.</Description>
+        <IsPackable>true</IsPackable>
+        <StaticWebAssetBasePath>_content/forma/coordination</StaticWebAssetBasePath>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.JSInterop" />
+        <PackageReference Include="Microsoft.Extensions.Logging" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.JavaScript.Interop\Forma.Framework.JavaScript.Interop.csproj" />
+    </ItemGroup>
+
+</Project>

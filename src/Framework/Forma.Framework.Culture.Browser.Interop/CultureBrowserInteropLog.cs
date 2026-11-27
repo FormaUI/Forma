@@ -5,15 +5,6 @@ using Microsoft.Extensions.Logging;
 /// <summary>The messages a culture coordinator registration writes for the failures it absorbs.</summary>
 internal static partial class CultureBrowserInteropLog
 {
-    [LoggerMessage(Level = LogLevel.Debug, Message = "The circuit dropped while calling {Identifier} on the culture coordinator registration of {RuntimeId}.")]
-    public static partial void CircuitDroppedWhileCalling(ILogger logger, string identifier, Guid runtimeId);
-
-    [LoggerMessage(Level = LogLevel.Debug, Message = "The call to {Identifier} on the culture coordinator registration of {RuntimeId} was canceled.")]
-    public static partial void CallCanceled(ILogger logger, string identifier, Guid runtimeId);
-
-    [LoggerMessage(Level = LogLevel.Debug, Message = "{Identifier} on the culture coordinator registration of {RuntimeId} threw.")]
-    public static partial void ScriptThrewWhileCalling(ILogger logger, Exception exception, string identifier, Guid runtimeId);
-
     [LoggerMessage(Level = LogLevel.Error, Message = "A subscriber of the culture state of {RuntimeId} failed as it was notified of a change of its cultures.")]
     public static partial void NotificationFailed(ILogger logger, Exception exception, Guid runtimeId);
 
@@ -22,9 +13,6 @@ internal static partial class CultureBrowserInteropLog
 
     [LoggerMessage(Level = LogLevel.Error, Message = "The destinations of {RuntimeId} couldn't name where the page leads in the culture route a switch goes to, so the switch goes to the page's own address there.")]
     public static partial void DestinationNotResolved(ILogger logger, Exception exception, Guid runtimeId);
-
-    [LoggerMessage(Level = LogLevel.Warning, Message = "The culture state of {RuntimeId} couldn't register with the page's culture coordinator.")]
-    public static partial void RegistrationFailed(ILogger logger, Exception exception, Guid runtimeId);
 
     [LoggerMessage(Level = LogLevel.Debug, Message = "A pair the browser delivered to the culture state of {RuntimeId} names no culture or no place in its document's sequence, and was refused.")]
     public static partial void PairRefused(ILogger logger, Guid runtimeId);
