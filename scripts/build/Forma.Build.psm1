@@ -1628,7 +1628,8 @@ an earlier publish's files would be counted beside the new ones. The example hos
 packages rather than its projects, as a host outside the repository builds: the solution is packed at the version
 the root properties file declares, the examples restore into a packages folder of their own, which their build
 properties name, and that version is cleared from it first, so a package an earlier run restored never stands
-in for the one just packed. Once every example has published, and so restored, an unfiltered run on Windows lints
+in for the one just packed. Each example resolves its dependencies again as it publishes, since a package packed again
+at the same version can depend on a package it didn't, which a restore that finds its packages in place leaves out. Once every example has published, and so restored, an unfiltered run on Windows lints
 the examples' solution under the linting configuration the examples' folder keeps, as the locale step lints the
 solution. Elsewhere the Blazor Hybrid examples don't publish, so the lint is left out, and the gate names it among
 the checks the machine couldn't run. The examples' smoke checks run first, each starting
@@ -1920,7 +1921,7 @@ function Test-BrowserCheck {
             }
 
             foreach ($example in $exampleNames) {
-                dotnet publish (Join-Path $examples "Forma.Examples.$example") -c Release -o (Join-Path $examplesOutput $example) "-p:FormaVersion=$version" --nologo -v:q
+                dotnet publish (Join-Path $examples "Forma.Examples.$example") -c Release -o (Join-Path $examplesOutput $example) "-p:FormaVersion=$version" --force --nologo -v:q
 
                 if ($LASTEXITCODE -ne 0) {
                     return
@@ -2168,7 +2169,7 @@ function Test-MobileExample {
 
         & $clearExamplePackage -Examples $examples -Version $version
 
-        $arguments = @($example, '-c', 'Release', "-p:FormaVersion=$version", "-p:FormaExamplePlatform=$platformName", '--nologo', '-v:q')
+        $arguments = @($example, '-c', 'Release', "-p:FormaVersion=$version", "-p:FormaExamplePlatform=$platformName", '--force', '--nologo', '-v:q')
 
         if ($isSimulator) {
             $arguments += '-p:RuntimeIdentifier=iossimulator-arm64'
