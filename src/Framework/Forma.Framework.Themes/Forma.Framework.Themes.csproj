@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>The theme system's contracts: the color schemes a theme is drawn in.</Description>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+</Project>

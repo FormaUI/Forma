@@ -15,6 +15,9 @@ public static partial class ComponentChecks
     /// <remarks>Each row carries its runtime as the <c>Runtime</c> trait, which a run that enumerates theories selects or leaves out by the runner's trait filters.</remarks>
     public static TheoryData<string> Runtimes { get; } = [.. ((string[])["server", "webassembly", "auto-server", "auto-webassembly", "webkit", "webview", "android"]).Select(runtime => new TheoryDataRow<string>(runtime).WithTrait("Runtime", runtime))];
 
+    /// <summary>The runtimes a check of what the browser's engine alone decides runs in: the Server in Chromium and in WebKit.</summary>
+    public static TheoryData<string> EngineRuntimes { get; } = [.. ((string[])["server", "webkit"]).Select(runtime => new TheoryDataRow<string>(runtime).WithTrait("Runtime", runtime))];
+
     /// <summary>The runtimes <see cref="TypeAsync"/> types into with each key stamped as it was pressed, however late the page takes it: every runtime but WebKit.</summary>
     public static TheoryData<string> StampedTypingRuntimes { get; } = [.. ((string[])["server", "webassembly", "auto-server", "auto-webassembly", "webview", "android"]).Select(runtime => new TheoryDataRow<string>(runtime).WithTrait("Runtime", runtime))];
 

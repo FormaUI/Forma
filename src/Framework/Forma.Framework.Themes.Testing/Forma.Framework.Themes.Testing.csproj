@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>The contrast check a host's tests hold its themes to, each token measured in a browser as it draws.</Description>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Playwright" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
+    </ItemGroup>
+
+</Project>

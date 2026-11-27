@@ -1,0 +1,78 @@
+/*
+    contrast-themes.css — Two themes the contrast checks measure: meets, which meets every target of the theme design in
+    both color schemes, and misses, which misses a pair of each kind in one scheme or the other.
+*/
+
+[data-forma-theme="meets"],
+[data-forma-theme="misses"] {
+    --backdrop-canvas-bg-color: light-dark(#ffffff, #000000);
+    --backdrop-flat-bg-color: light-dark(#ffffff, #121212);
+    --backdrop-inset-bg-color: light-dark(#ffffff, #1a1a1a);
+    --backdrop-raised-bg-color: light-dark(#ffffff, #121212);
+
+    --text-primary-color: light-dark(#000000, #ffffff);
+    --quiet-text-color: light-dark(#000000, #ffffff);
+    --text-secondary-color: light-dark(#595959, #a6a6a6);
+
+    --primary-color: light-dark(#003a70, #9ccaff);
+    --primary-emphasis-color: light-dark(#002a52, #80a5d1);
+    --primary-subtle-color: color-mix(in srgb, var(--primary-color) 10%, transparent);
+    --primary-fg-color: light-dark(#ffffff, #000000);
+    --primary-ink-color: light-dark(#002a52, #9ccaff);
+
+    --secondary-color: light-dark(#3a3a3a, #c8c8c8);
+    --secondary-emphasis-color: light-dark(#2a2a2a, #a8a8a8);
+    --secondary-subtle-color: color-mix(in srgb, var(--secondary-color) 10%, transparent);
+    --secondary-fg-color: light-dark(#ffffff, #000000);
+    --secondary-ink-color: light-dark(#2a2a2a, #c8c8c8);
+
+    --success-color: light-dark(#2e7d32, #7fd383);
+    --success-emphasis-color: light-dark(#1b5e20, #66b86a);
+    --success-subtle-color: color-mix(in srgb, var(--success-color) 10%, transparent);
+    --success-fg-color: light-dark(#ffffff, #000000);
+    --success-ink-color: light-dark(#1b5e20, #7fd383);
+
+    --danger-color: light-dark(#8b1a1a, #f2a7a1);
+    --danger-emphasis-color: light-dark(#6b1414, #d68e88);
+    --danger-subtle-color: color-mix(in srgb, var(--danger-color) 10%, transparent);
+    --danger-fg-color: light-dark(#ffffff, #000000);
+    --danger-ink-color: light-dark(#6b1414, #f2a7a1);
+
+    --warning-color: light-dark(#ffd54f, #ffd54f);
+    --warning-emphasis-color: light-dark(#e6b800, #e6b800);
+    --warning-subtle-color: color-mix(in srgb, var(--warning-color) 10%, transparent);
+    --warning-fg-color: light-dark(#000000, #000000);
+    --warning-ink-color: light-dark(#5c4400, #ffd54f);
+
+    --info-color: light-dark(#00487a, #8fcdf5);
+    --info-emphasis-color: light-dark(#00365c, #74b0d6);
+    --info-subtle-color: color-mix(in srgb, var(--info-color) 10%, transparent);
+    --info-fg-color: light-dark(#ffffff, #000000);
+    --info-ink-color: light-dark(#00365c, #8fcdf5);
+
+    --button-primary-hover-color: var(--primary-emphasis-color);
+    --button-primary-active-color: light-dark(#001a33, #6f8fb5);
+    --button-secondary-hover-color: var(--secondary-emphasis-color);
+    --button-secondary-active-color: light-dark(#1a1a1a, #8f8f8f);
+    --button-danger-hover-color: var(--danger-emphasis-color);
+    --button-danger-active-color: light-dark(#4b0d0d, #b87772);
+
+    --border-emphasis-color: light-dark(#767676, #8a8a8a);
+    --focus-color: var(--primary-color);
+
+    --chart-series-1-color: light-dark(#2a78d6, #3987e5);
+    --chart-series-2-color: light-dark(#eb6834, #d95926);
+    --chart-series-3-color: light-dark(#1baf7a, #199e70);
+    --chart-series-4-color: light-dark(#eda100, #c98500);
+}
+
+/* Each miss in one scheme alone, the other scheme keeping the meets theme's value. */
+[data-forma-theme="misses"] {
+    --text-primary-color: light-dark(#777777, #ffffff);
+    --text-secondary-color: light-dark(#595959, #555555);
+    --success-ink-color: light-dark(#7fd383, #7fd383);
+    --danger-fg-color: light-dark(#ffffff, #e0a0a0);
+    --border-emphasis-color: light-dark(#dddddd, #8a8a8a);
+    --focus-color: light-dark(#003a70, #222222);
+    --chart-series-4-color: light-dark(#1baf7a, #c98500);
+}

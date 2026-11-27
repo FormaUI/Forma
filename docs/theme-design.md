@@ -494,7 +494,13 @@ a minimum ratio, each measured on every backdrop, the canvas, flat, inset and ra
 | Each role's ink on each backdrop and on its subtle tint | 4.5:1 |
 | Each role's fg on its solid, its hover fill and its pressed fill | 4.5:1 |
 | A field's border, and the focus ring, on each backdrop | 3:1 |
-| Adjacent chart series, as the charts' validation reads them | The charts design's |
+| Adjacent chart series, as the charts' validation reads them | [The charts design's](charts-design.md#decision-summary) |
+
+Each pair is measured as it's drawn:
+
+- a translucent token is laid over what it stands on, a tint over its backdrop and each backdrop over the canvas;
+- a role's hover and pressed fills are its button's, where the role has one, primary, secondary and danger, and
+  another role's hover fill is its emphasis, beside which it has no pressed fill.
 
 Forma's checks hold each of its themes to these in both schemes, by computing every pair's colors in a
 browser, where `color-mix()` and `light-dark()` resolve as they draw. A host holds its own themes to the same

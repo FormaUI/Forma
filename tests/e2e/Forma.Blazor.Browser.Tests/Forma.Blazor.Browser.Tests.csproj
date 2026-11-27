@@ -19,6 +19,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Css\Forma.Framework.Css.csproj" />
+        <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
+        <ProjectReference Include="..\..\..\src\Framework\Forma.Framework.Themes.Testing\Forma.Framework.Themes.Testing.csproj" />
         <ProjectReference Include="..\..\support\Forma.Tests.Support\Forma.Tests.Support.csproj" />
         <ProjectReference Include="..\..\support\Forma.Tests.Support.Hosts\Forma.Tests.Support.Hosts.csproj" />
     </ItemGroup>

@@ -1,5 +1,8 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
+using Forma.Framework.Themes;
+using Forma.Framework.Themes.Testing;
+
 using static Forma.Blazor.Browser.Tests.ComponentChecks;
 
 /// <summary>The design tokens drawn in each theme and color scheme a page or a scope inside it names, in every runtime.</summary>
@@ -43,8 +46,8 @@ public sealed class ThemesTests
         }
         """;
 
-    // Whether the check theme's stylesheet has reached the page, which draws its radius at zero.
-    private const string IsCheckThemeLoaded = "() => getComputedStyle(document.getElementById('check-light')).getPropertyValue('--radius-sm').trim() === '0'";
+    // Whether both check themes' stylesheets have reached the page.
+    private const string AreThemesLoaded = "() => ['check-theme.css', 'contrast-themes.css'].every(name => [...document.styleSheets].some(sheet => sheet.href?.endsWith(name)))";
 
     public sealed class Scopes(BrowserHost host)
     {
@@ -53,9 +56,9 @@ public sealed class ThemesTests
         public async Task Should_draw_every_token_in_the_theme_and_the_scheme_its_nearest_scope_names(string runtime)
         {
             // Arrange — a reference for each theme in each scheme, each drawn apart from the others
-            var (context, page) = await OpenAsync(host, runtime, "theme-scopes");
+            var (context, page) = await OpenAsync(host, runtime, "themes");
             await using var _ = context;
-            await page.WaitForFunctionAsync(IsCheckThemeLoaded);
+            await page.WaitForFunctionAsync(AreThemesLoaded);
             var formaLight = await ReadTokensAsync(page, "forma-light");
             var formaDark = await ReadTokensAsync(page, "forma-dark");
             var checkLight = await ReadTokensAsync(page, "check-light");
@@ -91,9 +94,9 @@ public sealed class ThemesTests
         public async Task Should_draw_a_system_scope_in_the_scheme_the_device_prefers_and_a_page_naming_no_scheme_light(string runtime)
         {
             // Arrange
-            var (context, page) = await OpenAsync(host, runtime, "theme-scopes");
+            var (context, page) = await OpenAsync(host, runtime, "themes");
             await using var _ = context;
-            await page.WaitForFunctionAsync(IsCheckThemeLoaded);
+            await page.WaitForFunctionAsync(AreThemesLoaded);
             var problems = new List<string>();
 
             // Act — the device preferring each scheme in turn
@@ -115,5 +118,83 @@ public sealed class ThemesTests
         private static IEnumerable<string> Compare(string id, IReadOnlyDictionary<string, string> drawn, string reference, IReadOnlyDictionary<string, string> expected)
             => expected.Where(token => !string.Equals(drawn.GetValueOrDefault(token.Key), token.Value, StringComparison.Ordinal))
                 .Select(token => $"#{id} draws {token.Key} as {drawn.GetValueOrDefault(token.Key)}, where #{reference} draws {token.Value}");
+    }
+
+    public sealed class Contrast(BrowserHost host)
+    {
+        [Theory]
+        [MemberData(nameof(EngineRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_read_each_token_as_the_theme_draws_it_in_each_scheme(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "themes");
+            await using var _ = context;
+            await page.WaitForFunctionAsync(AreThemesLoaded);
+
+            // Act
+            var light = await ThemeContrast.ReadColorsAsync(page, "check", ColorSchemes.Light);
+            var dark = await ThemeContrast.ReadColorsAsync(page, "check", ColorSchemes.Dark);
+
+            // Assert — a value written for each scheme, one derived by name, and one cut from the solid by color-mix()
+            Assert.Equal("#fffdf7", light.Tokens["--backdrop-flat-bg-color"].ToHexString());
+            Assert.Equal("#15171b", dark.Tokens["--backdrop-flat-bg-color"].ToHexString());
+            Assert.Equal("#0e1013", dark.Tokens["--backdrop-canvas-bg-color"].ToHexString());
+            Assert.Equal(light.Tokens["--primary-color"].ToHexString(), light.Tokens["--primary-subtle-color"].ToHexString());
+            Assert.Equal(0.1, light.Tokens["--primary-subtle-color"].Alpha, 3);
+            Assert.Equal("#d49be3", dark.Tokens["--primary-color"].ToHexString());
+        }
+
+        [Theory]
+        [MemberData(nameof(EngineRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_find_every_target_met_by_a_theme_that_meets_them_in_both_schemes(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "themes");
+            await using var _ = context;
+            await page.WaitForFunctionAsync(AreThemesLoaded);
+
+            // Act
+            var report = await ThemeContrast.MeasureAsync(page, "meets", ColorSchemes.Light | ColorSchemes.Dark);
+
+            // Assert
+            Assert.Equal(166, report.Pairs.Count);
+            Assert.True(report.MeetsEveryTarget, report.ToString());
+        }
+
+        [Theory]
+        [MemberData(nameof(EngineRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_refuse_each_pair_a_theme_misses_in_the_scheme_it_misses_it_in(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "themes");
+            await using var _ = context;
+            await page.WaitForFunctionAsync(AreThemesLoaded);
+            string[] backdrops = ["--backdrop-canvas-bg-color", "--backdrop-flat-bg-color", "--backdrop-inset-bg-color", "--backdrop-raised-bg-color"];
+            (ColorSchemes, string, string, string?)[] expected =
+            [
+                .. backdrops.Select(backdrop => (ColorSchemes.Light, "--text-primary-color", backdrop, (string?)null)),
+                .. backdrops.SelectMany(backdrop => ((ColorSchemes, string, string, string?)[])
+                [
+                    (ColorSchemes.Light, "--success-ink-color", backdrop, null),
+                    (ColorSchemes.Light, "--success-ink-color", "--success-subtle-color", backdrop),
+                ]),
+                .. backdrops.Select(backdrop => (ColorSchemes.Light, "--border-emphasis-color", backdrop, (string?)null)),
+                .. backdrops.Select(backdrop => (ColorSchemes.Dark, "--text-secondary-color", backdrop, (string?)null)),
+                .. ((string[])["--danger-color", "--button-danger-hover-color", "--button-danger-active-color"]).Select(fill => (ColorSchemes.Dark, "--danger-fg-color", fill, (string?)"--backdrop-flat-bg-color")),
+                .. backdrops.Select(backdrop => (ColorSchemes.Dark, "--focus-color", backdrop, (string?)null)),
+            ];
+
+            // Act
+            var report = await ThemeContrast.MeasureAsync(page, "misses", ColorSchemes.Light | ColorSchemes.Dark);
+
+            // Assert
+            Assert.Equal(
+                expected.Order(),
+                report.MissedPairs.Select(pair => (pair.Scheme, pair.Foreground, pair.Background, pair.Backdrop)).Order());
+            Assert.Equal(
+                [(ColorSchemes.Light, ColorVision.Protanopia), (ColorSchemes.Light, ColorVision.Deuteranopia), (ColorSchemes.Light, ColorVision.Full)],
+                report.MissedSeparations.Select(separation => (separation.Scheme, separation.Vision)));
+            Assert.All(report.MissedSeparations, separation => Assert.Equal("--chart-series-4-color", separation.Second));
+        }
     }
 }

@@ -29,7 +29,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Four components implemented, twenty-six changes fixed, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
-| [Themes](#themes) | Step 2 landed, twelve steps open, the switch coordinator and the contrast check next |
+| [Themes](#themes) | Steps 2 and 3 landed, eleven steps open, the switch coordinator and Forma's light values next |
 | [The Showcase's review modes](#the-showcases-review-modes) | Planned, nine steps open, the pointer emulation's prototype and the preview first |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -281,8 +281,10 @@ thirteen steps and four parts:
 - the reader's choice, kept, resolved, painted first and switched in place, with the picker;
 - Blazor Hybrid, once each platform's document-start script is proven.
 
-The first two parts are independent of each other. Step 2 has landed: the tokens draw the theme and the scheme
-the nearest element naming them carries, so a host draws a theme of its own by writing the two attributes.
+The first two parts are independent of each other. Steps 2 and 3 have landed: the tokens draw the theme and the
+scheme the nearest element naming them carries, so a host draws a theme of its own by writing the two attributes, and
+`Forma.Framework.Themes.Testing` holds a theme to the contrast targets, its report on Forma's light scheme recorded in
+the plan for step 4.
 
 <a id="the-showcases-review-modes"></a>
 

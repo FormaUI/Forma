@@ -41,11 +41,30 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
      The scope cases are a check page every runtime renders, over a check theme setting each base token apart
      from Forma's in both schemes and two tokens beyond them. Every token a scope draws is compared with a
      reference of the theme and scheme it should draw, under each device preference for a System scope.
-3. **The contrast check.** `Forma.Framework.Themes.Testing` computes the design's
+3. **The contrast check.** ✅ `Forma.Framework.Themes.Testing` computes the design's
    [targets](theme-design.md#contrast) for a theme in each of its schemes, in a browser, and reports each pair.
    It is run against Forma's theme as it stands, and the report records each light value that misses a
    target.
    - Gate: its own tests, a theme built to miss each target among them, refused pair by pair.
+   - Landed: the browser resolves each token and the check measures each pair, so the measurement is tested without
+     a browser too. Its unit tests and the browser checks in Chromium and WebKit refuse a theme built to miss pair by
+     pair, find nothing to refuse in one built to meet every target, and measure Forma's series apart as the charts'
+     validation does. The charts design now states that validation's distances, which the theme design's table defers
+     to.
+   - Departure: `ColorSchemes`, which the check takes, lands here in `Forma.Framework.Themes`, ahead of the rest of the
+     contracts in step 7.
+   - The report on Forma's light scheme, the same in Chromium and WebKit, misses 30 pairs, each a value step 4 raises:
+
+     | Pair | Ratio | Target |
+     | --- | --- | --- |
+     | Quiet text on the canvas | 6.87 | 7 |
+     | Secondary text on the canvas, on the inset | 4.26, 4.49 | 4.5 |
+     | Success ink on each backdrop and on its tint | 3.68 to 4.47 | 4.5 |
+     | Warning ink on each backdrop and on its tint | 2.12 to 2.44 | 4.5 |
+     | White on the success solid, on its emphasis | 3.13, 4.47 | 4.5 |
+     | White on the info solid | 4.03 | 4.5 |
+     | The field's border on each backdrop | 1.61 to 1.64 | 3 |
+     | The focus ring on each backdrop | 1.69 to 1.72 | 3 |
 4. **Forma's light values raised to the targets.** Every value the check reported is raised to meet its
    target. A field's boundary is settled by comparing a solid border with a fill set apart from its backdrop,
    both drawn in the Showcase, and where the fill is chosen, the design's table of defaults changes with it.

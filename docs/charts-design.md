@@ -67,9 +67,10 @@ question for a reader who can't see it.
 - **Direction.** The time axis runs from the inline start, so in a right-to-left culture time runs right to left.
   The text is laid out by logical properties, and the drawing of lines and bands is mirrored as a whole.
 - **Drawn from tokens.** Each series' color is a token, `--chart-series-1-color` to `--chart-series-4-color`,
-  validated as a set against the paper in light and against a dark surface for the dark values a theme sets; the
-  grid, the baseline and the threshold take tokens beside them, and every text takes the text tokens, never a
-  series' color.
+  validated as a set in each scheme: each series and the one after it stand at least 8 apart in protanopia and in
+  deuteranopia, and at least 15 in full color vision, as the distance in OKLab times 100, each vision simulated by
+  Machado, Oliveira and Fernandes' model at full severity. The grid, the baseline and the threshold take tokens beside
+  them, and every text takes the text tokens, never a series' color.
 - **Static rendering.** A statically rendered chart draws the same figure, its hover readouts and its table; only the
   keyboard's range control, which needs a renderer to move the readout, is left out.
 

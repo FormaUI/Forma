@@ -17,6 +17,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Every token but the base tokens is declared under `:where(:root, [data-forma-theme])`, so a host's own value for a
   token wins whichever stylesheet loads first.
 - The shadows, `--shadow-color` and `--shadow-small` to `--shadow-large`, are cut from black in a dark scheme.
+- `formaui-net.Framework.Themes.Testing` holds a theme to [the theme design's contrast targets](docs/theme-design.md#contrast)
+  in a host's tests: `ThemeContrast.MeasureAsync` measures every pair of tokens they name in each color scheme, on a
+  Playwright page, as the browser draws them, and reports each with its ratio and its target. `ColorSchemes`, the schemes
+  it takes, is in the new `formaui-net.Framework.Themes`.
+- [The charts design](docs/charts-design.md#decision-summary) states the distance its series are validated apart by: 8 in
+  protanopia and deuteranopia, and 15 in full color vision.
 
 ## `1.0.0-preview.20`
 
