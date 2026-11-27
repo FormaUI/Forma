@@ -57,14 +57,14 @@ builder.Services.AddScoped<IShareTarget>(services => services.GetRequiredService
 builder.Services.AddScoped<ICatalogProvider>(_ => new ShowcaseImageLibrary());
 builder.Services.AddScoped<IFileStore, DefaultFileStore>();
 
-// The statuses the Showcase defines.
+// The statuses the Showcase defines, each on an opaque tint so it reads on the paper of every scheme.
 builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
 [
-    new("draft", CssColor.FromRgba(98, 105, 118, 0.12), CssColor.FromHex(0x2c384a)) { Marker = Glyph.Pen },
-    new("scheduled", CssColor.FromRgba(48, 127, 221, 0.14), CssColor.FromHex(0x1c5fa8)) { Marker = Glyph.Clock },
-    new("published", CssColor.FromRgba(40, 167, 69, 0.14), CssColor.FromHex(0x1c7430)) { Marker = Glyph.CircleCheck },
-    new("pending", CssColor.FromRgba(255, 193, 7, 0.20), CssColor.FromHex(0x8a6100)) { Marker = Glyph.Hourglass },
-    new("rejected", CssColor.FromRgba(214, 57, 57, 0.14), CssColor.FromHex(0xa32222)) { Marker = Glyph.CircleCross }
+    new("draft", CssColor.FromHex(0xecedef), CssColor.FromHex(0x2c384a)) { Marker = Glyph.Pen },
+    new("scheduled", CssColor.FromHex(0xe2edfa), CssColor.FromHex(0x1c5fa8)) { Marker = Glyph.Clock },
+    new("published", CssColor.FromHex(0xe1f3e5), CssColor.FromHex(0x1c7430)) { Marker = Glyph.CircleCheck },
+    new("pending", CssColor.FromHex(0xfff3cd), CssColor.FromHex(0x8a6100)) { Marker = Glyph.Hourglass },
+    new("rejected", CssColor.FromHex(0xf9e3e3), CssColor.FromHex(0xa32222)) { Marker = Glyph.CircleCross }
 ]));
 
 // French comes from the .locales folder, as a language a host adds.
