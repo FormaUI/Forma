@@ -36,6 +36,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `formaui-net.Framework.Coordination.Browser.Interop`, the core every setting the whole page shares is ordered by, which
   comes with `formaui-net.Framework.Culture.Browser.Interop`. `CultureCoordinatorRegistration` derives from its
   `SwitchCoordinatorRegistration`, and a culture's switches keep every rule they follow.
+- [`FormaTooltip`](docs/tooltip-design.md) shows the tooltip of a control the pointer already rests on when the
+  tooltip's script arrives, after the same short delay, where it showed nothing until the pointer left the control and
+  came back.
 
 ## `1.0.0-preview.20`
 

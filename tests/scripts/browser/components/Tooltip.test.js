@@ -180,7 +180,7 @@ describe('Tooltip', () => {
         expect(tooltip.style.left).toBe('80px');
     });
 
-    // Last, since the script it loads afresh keeps its listeners on the document for any test after it.
+    // The last two, since the script each loads afresh keeps its listeners on the document for any test after it.
     it('shows the tooltip of a control the keyboard reached before the script arrived', async () => {
         control.focus();
         vi.resetModules();
@@ -189,6 +189,21 @@ describe('Tooltip', () => {
         arriving.install();
 
         expect(control.matches(':focus-visible')).toBe(true);
+        expect(isShown()).toBe(true);
+        arriving.hide();
+    });
+
+    it('shows the tooltip of a control the pointer rests on as the script arrives, once the delay passes', async () => {
+        const matches = control.matches.bind(control);
+        control.matches = selector => selector === ':hover' || matches(selector);
+        vi.resetModules();
+        const arriving = await import('#browser/components/Tooltip.js');
+
+        arriving.install();
+
+        vi.advanceTimersByTime(499);
+        expect(isShown()).toBe(false);
+        vi.advanceTimersByTime(1);
         expect(isShown()).toBe(true);
         arriving.hide();
     });

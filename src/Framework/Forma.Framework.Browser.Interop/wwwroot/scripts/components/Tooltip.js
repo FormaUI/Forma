@@ -44,12 +44,19 @@ export function install() {
     document.addEventListener('click', handleClick, { capture: true });
     document.addEventListener('keydown', handleKeyDown, { capture: true });
 
-    // A control the keyboard reached before the script arrived, as on a page still loading, shows its tooltip as it arrives.
+    // A control the keyboard reached before the script arrived, as on a page still loading, shows its tooltip as it arrives, and
+    // one the pointer already rests on shows it once the delay passes, as one the pointer arrives on does.
     const focused = document.activeElement;
     const found = findTooltip(focused);
 
     if (found !== null && found.control === focused && focused.matches(':focus-visible')) {
         show(found);
+    }
+
+    const rested = [...document.querySelectorAll('[aria-describedby]')].findLast(control => control.matches(':hover'));
+
+    if (rested !== undefined) {
+        showOnceRested(rested);
     }
 }
 
@@ -77,11 +84,18 @@ export function findTooltip(target) {
 }
 
 function handlePointerOver(event) {
-    if (event.pointerType === 'touch' || isOverShown(event.target)) {
+    if (event.pointerType !== 'touch') {
+        showOnceRested(event.target);
+    }
+}
+
+/** Shows the tooltip of the control the pointer rests over once the delay passes, unless the pointer is over what shows already. */
+function showOnceRested(target) {
+    if (isOverShown(target)) {
         return;
     }
 
-    const found = findTooltip(event.target);
+    const found = findTooltip(target);
 
     if (found === null || pending?.control === found.control) {
         return;
