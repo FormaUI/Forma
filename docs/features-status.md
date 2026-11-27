@@ -30,7 +30,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [A host's requests](#a-hosts-requests) | Four components implemented, twenty-six changes fixed, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
 | [Themes](#themes) | Planned, thirteen steps open, the switch coordinator and the themes first |
-| [The Showcase's review modes](#the-showcases-review-modes) | Planned, seven steps open, the last three waiting on themes |
+| [The Showcase's review modes](#the-showcases-review-modes) | Planned, nine steps open, the pointer emulation's prototype and the preview first |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
 - **A change is a commit,** each passing its own checks, and the full gate runs at integration and release, as [the verification design](verification-design.md#gates) sets out.
@@ -288,9 +288,10 @@ The first two parts are independent of each other. None of the steps has landed.
 ## The Showcase's review modes
 
 [The Showcase implementation plan](showcase-implementation-plan.md) carries out [the Showcase design](showcase-design.md)
-in seven steps: the review bar, the device view, touch emulation, and direction and comparison first, then the
-themes in a view, the window's theme picker and the Themes page, each waiting on the theme plan's steps it
-names. None of the steps has landed.
+in nine steps. A prototype proving the pointer emulation and a preview that keeps nothing come first, then the
+review bar, the device view, the pointer emulation, and direction and comparison. The themes in a view, the
+window's theme picker and the Themes page follow, each waiting on the theme plan's steps it names. None of the
+steps has landed.
 
 <a id="deferred"></a>
 
