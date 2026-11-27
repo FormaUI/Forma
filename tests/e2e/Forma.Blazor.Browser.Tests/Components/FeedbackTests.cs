@@ -333,6 +333,28 @@ public sealed class FeedbackTests
         }
 
         [Theory]
+        [MemberData(nameof(RoutedRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_start_a_page_whose_host_refuses_the_tooltip_s_script_its_controls_still_described(string runtime)
+        {
+            // Arrange — a file server refusing the tooltip's script, which Blazor's start waits for
+            var isRefused = false;
+
+            // Act — the page opens once it is interactive
+            var (context, page) = await OpenAsync(host, runtime, "tooltip", page => page.RouteAsync("**/scripts/components/Tooltip*.js", route =>
+            {
+                isRefused = true;
+
+                return route.AbortAsync();
+            }));
+            await using var _ = context;
+
+            // Assert
+            Assert.True(isRefused);
+            await Assertions.Expect(page.Locator("#save")).ToHaveAccessibleDescriptionAsync("Saved drafts are kept for thirty days.");
+            await Assertions.Expect(page.Locator("#save-tip")).ToBeHiddenAsync();
+        }
+
+        [Theory]
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_hang_a_tooltip_centered_on_its_control_reading_right_to_left_in_a_right_to_left_region(string runtime)
         {

@@ -3,6 +3,10 @@
 import { install as installShareMenus } from './scripts/components/ShareMenu.js';
 import { install as installSteppers } from './scripts/components/Stepper.js';
 
+export function beforeWebStart() {
+    return tooltipsSettled;
+}
+
 export function afterWebStarted(blazor) {
     installShareMenus(blazor);
     installSteppers(blazor);
@@ -10,13 +14,19 @@ export function afterWebStarted(blazor) {
 }
 
 // A web view starts Blazor through the initializers that came before the Web App's, and renders every page interactively.
+export function beforeStart() {
+    return tooltipsSettled;
+}
+
 export function afterStarted() {
     installTooltips();
 }
 
 // Loaded apart, so a host that can't serve a module the tooltip's script reaches still starts Blazor, the failure reported;
-// and as the initializer loads, while Blazor starts, so the script is installed as Blazor starts, ready for a first tap.
+// and as the initializer loads, Blazor starting once the import settles, so the script is installed as Blazor starts, ready
+// for a first tap.
 const tooltips = import('./scripts/components/Tooltip.js');
+const tooltipsSettled = Promise.allSettled([tooltips]);
 
 function installTooltips() {
     tooltips.then(module => module.install());

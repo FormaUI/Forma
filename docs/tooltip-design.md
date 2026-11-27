@@ -28,9 +28,10 @@ keeps, give every control the same way to say why.
   and mirrored right to left.
 - **On every page.** Its showing is a script behavior the interop package's initializer attaches on a statically
   rendered page too, as the share menu's commands come alive there; with no script, the description still reaches
-  assistive technology through `aria-describedby`. The initializer begins importing the script as it loads, while Blazor
-  starts, and installs it once Blazor has started, in a Web App and in a web view, so the first tap finds it and a host
-  whose file server refuses a module still starts Blazor.
+  assistive technology through `aria-describedby`. The initializer begins importing the script as it loads, Blazor
+  starts once the import has settled, loaded or failed, and the initializer installs the script once Blazor has started,
+  in a Web App and in a web view, so the first tap on a started page finds it and a host whose file server refuses a
+  module still starts Blazor.
 - **Drawn from the tokens.** An inverse surface, the small type, the small radius and the spacing scale, wrapping at a
   readable width, with a border of its own in forced colors.
 
