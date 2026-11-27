@@ -37,7 +37,7 @@ export function initialize(head = document.head) {
         return;
     }
 
-    initialization = { keepsNothing: marker.keepsNothing, revision: marker.revision, themes: readThemes(head) };
+    initialization = { keepsNothing: marker.keepsNothing, revision: marker.revision, record: marker.record, defaults: marker.defaults, themes: readThemes(head) };
     coordinator.start({ theme: marker.theme, scheme: marker.scheme });
 }
 
@@ -69,6 +69,16 @@ export function releaseCircuit() {
 /** Follows the document's enhanced page updates: each navigation holds the document until it lands, its landing is accepted from its response's marker, and the accepted choice is set again after each update. */
 export function track(blazor) {
     coordinator.track(blazor, { land: () => land(readMarker(document.head)), end: () => {} });
+}
+
+/**
+ * What the page's head declares of its themes, where the bootstrap drew it, as a standalone app's host page does: each
+ * theme its stylesheets name, and the default choice; null on a page a server rendered, which declares the registration's.
+ */
+export function describePage() {
+    const { error, record, defaults, themes } = getInitialization();
+
+    return error || record !== 'storage' ? null : { themes: [...themes.keys()], defaultTheme: defaults.theme, defaultScheme: defaults.scheme };
 }
 
 /** Whether the theme `name` names can be switched to: a registered theme whose stylesheet the page loaded. */
@@ -195,10 +205,19 @@ function findWriter(requester) {
     return coordinator.findRegistration(registration => registration.isLive && registration.hasStore) ?? null;
 }
 
-// The browser's record is written and read back before the switch is accepted, so it holds the last choice accepted.
+// The browser's record is written and read back before the switch is accepted, so it holds the last choice accepted: the
+// choice cookie on a page a server rendered, local storage on a standalone app's, where storage the browser refuses to
+// open leaves the choice for the document's life.
 function persist(choice, revision) {
-    const name = getRecordName();
     const value = `theme=${encodeURIComponent(choice.theme)}&scheme=${choice.scheme}&revision=${revision}`;
+
+    if (initialization.record === 'storage') {
+        persistInStorage(value);
+
+        return;
+    }
+
+    const name = getRecordName();
     const attributes = [`${name}=${encodeURIComponent(value)}`, 'path=/', `max-age=${recordMaxAge}`, 'samesite=lax'];
 
     if (location.protocol === 'https:') {
@@ -209,6 +228,18 @@ function persist(choice, revision) {
 
     if (readRecord(name) !== value) {
         throw new Error(`The theme record ${name} couldn't be read back, so the switch wasn't accepted.`);
+    }
+}
+
+function persistInStorage(value) {
+    try {
+        localStorage.setItem('forma-theme', value);
+    } catch {
+        return;
+    }
+
+    if (localStorage.getItem('forma-theme') !== value) {
+        throw new Error(`The theme record in local storage couldn't be read back, so the switch wasn't accepted.`);
     }
 }
 
@@ -237,7 +268,14 @@ function readMarker(head) {
     const revision = Number(marker.getAttribute('data-revision'));
 
     return theme && ['system', 'light', 'dark'].includes(scheme) && Number.isSafeInteger(revision) && revision >= 0
-        ? { theme, scheme, revision, keepsNothing: marker.hasAttribute('data-keeps-nothing') }
+        ? {
+            theme,
+            scheme,
+            revision,
+            keepsNothing: marker.hasAttribute('data-keeps-nothing'),
+            record: marker.getAttribute('data-record') === 'storage' ? 'storage' : 'cookie',
+            defaults: { theme: marker.getAttribute('data-default-theme'), scheme: marker.getAttribute('data-default-scheme') },
+        }
         : null;
 }
 

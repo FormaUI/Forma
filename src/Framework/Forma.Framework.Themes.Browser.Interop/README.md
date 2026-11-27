@@ -59,6 +59,24 @@ The store is written after a switch is accepted, so the page changes at once:
 A page given its choice by the host keeps nothing: each switch is accepted at once, writing neither the record nor the
 store.
 
+## A standalone app
+
+A standalone WebAssembly app's host page links each registered theme's stylesheet, naming its theme, then loads the
+theme bootstrap, which names the registration's default choice. The bootstrap draws the page in the reader's choice
+before any of the body is parsed, from the record the app keeps in local storage:
+
+```html
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-tokens.css" data-forma-theme-stylesheet="forma" />
+<link rel="stylesheet" href="_content/Forma.Blazor/forma-high-contrast.css" data-forma-theme-stylesheet="forma-high-contrast" />
+<link rel="stylesheet" href="css/harbor-theme.css" data-forma-theme-stylesheet="harbor" />
+<script src="_content/forma/themes/scripts/ThemeBootstrap.js" data-default-theme="harbor" data-default-scheme="system"></script>
+```
+
+A theme with a light scheme alone says so on its link, `data-forma-theme-schemes="light"`. A record naming a theme the
+page doesn't link, or one whose stylesheet failed, draws the default theme in the record's scheme preference; no record,
+an unreadable one, or storage the browser refuses to open draws the default choice. A host page whose themes or default
+differ from the registration fails the runtime's start with `InvalidOperationException` naming each difference.
+
 ## License
 
 Apache License 2.0, under the repository's [`LICENSE`](https://github.com/FormaUI/Forma/blob/main/LICENSE).

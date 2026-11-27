@@ -4,7 +4,7 @@ const root = document.documentElement;
 
 // The module keeps the document's coordinator at module level and reads the marker and the stylesheets as it loads, so each
 // test loads it afresh over a page the server rendered with the marker, the record and the stylesheets it names.
-async function load({ theme = 'forma', scheme = 'system', revision = 0, keepsNothing = false, themes = { forma: 'light dark', harbor: 'light dark', paper: 'light' }, unloaded = [] } = {}) {
+async function load({ theme = 'forma', scheme = 'system', revision = 0, keepsNothing = false, inStorage = false, themes = { forma: 'light dark', harbor: 'light dark', paper: 'light' }, unloaded = [] } = {}) {
     document.cookie = 'forma-theme=; max-age=0; path=/';
     root.setAttribute('data-forma-theme', theme);
     root.setAttribute('data-forma-scheme', scheme);
@@ -18,6 +18,12 @@ async function load({ theme = 'forma', scheme = 'system', revision = 0, keepsNot
 
     if (keepsNothing) {
         marker.setAttribute('data-keeps-nothing', '');
+    }
+
+    if (inStorage) {
+        marker.setAttribute('data-record', 'storage');
+        marker.setAttribute('data-default-theme', 'forma');
+        marker.setAttribute('data-default-scheme', 'system');
     }
 
     document.head.append(marker);
@@ -256,6 +262,40 @@ describe('ThemeCoordinator', () => {
         blazor.raise('enhancedload');
 
         expect(readDocument()).toBe('harbor/dark');
+    });
+
+    it("keeps a standalone app's record in local storage, the cookie unwritten", async () => {
+        const coordinator = await load({ inStorage: true });
+        const registration = await coordinator.register('scope', fakeReceiver(), 'webassembly');
+
+        await registration.request('harbor', 'dark', 1);
+
+        expect(localStorage.getItem('forma-theme')).toBe('theme=harbor&scheme=dark&revision=0');
+        expect(readRecord()).toBeNull();
+        localStorage.clear();
+    });
+
+    it("accepts a standalone app's switch for the document's life where the browser refuses storage", async () => {
+        const coordinator = await load({ inStorage: true });
+        const registration = await coordinator.register('scope', fakeReceiver(), 'webassembly');
+        const setItem = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+            throw new DOMException('The storage is refused.', 'SecurityError');
+        });
+
+        const outcome = await registration.request('harbor', 'dark', 1);
+        setItem.mockRestore();
+
+        expect(outcome).toBe('accepted');
+        expect(readDocument()).toBe('harbor/dark');
+    });
+
+    it("describes the themes and the default a standalone app's page declares, and nothing of a page a server rendered", async () => {
+        const standalone = await load({ inStorage: true });
+        const described = standalone.describePage();
+        const served = await load();
+
+        expect(described).toEqual({ themes: ['forma', 'harbor', 'paper'], defaultTheme: 'forma', defaultScheme: 'system' });
+        expect(served.describePage()).toBeNull();
     });
 
     it('refuses a registration on a page without a theme marker', async () => {

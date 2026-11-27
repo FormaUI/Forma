@@ -71,6 +71,23 @@ public sealed class ThemeCoordinatorRegistration : SwitchCoordinatorRegistration
             return module.InvokeAsync<IJSObjectReference>("register", _identity, _receiverReference, runtime, _store is not null);
         });
 
+    /// <summary>Checks that a standalone app's host page declares the themes and the default choice the registration names, as its bootstrap draws the page before .NET starts; a page a server rendered declares the registration's.</summary>
+    /// <returns>A task that completes once the page is checked.</returns>
+    /// <exception cref="InvalidOperationException">The host page's themes or default differ from the registration's, each difference named.</exception>
+    public async Task EnsureHostPageMatchesAsync()
+    {
+        var module = new JSModule(JS, ModulePath);
+
+        await using (module.ConfigureAwait(false))
+        {
+            if (await module.TryInvokeAsync("describePage", ThemesJsonContext.Default.HostPageThemes).ConfigureAwait(false) is { } page
+                && page.FindDifferences(_registry) is { Count: > 0 } differences)
+            {
+                throw new InvalidOperationException($"The host page's themes differ from the registration: {string.Join("; ", differences)}. A standalone app's host page links each registered theme's stylesheet and names the registration's default choice on its bootstrap.");
+            }
+        }
+    }
+
     /// <summary>Requests a switch to <paramref name="choice"/> from the coordinator, completing once it was accepted, the browser's record holds it, this registration's state applied it, and the store holds it or a newer choice.</summary>
     /// <remarks>Each request carries its place among this registration's requests, taken as the request is made, before it waits for the registration, so a request reaching the coordinator after a later one completes as canceled, changing nothing.</remarks>
     /// <exception cref="InvalidOperationException">The choice names a theme that isn't selectable, or the registration is unavailable.</exception>

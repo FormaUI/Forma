@@ -35,6 +35,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Forma High Contrast, `forma-high-contrast.css` beside the tokens, is a theme of its own, `forma-high-contrast`, in a
   light and a dark scheme: every text, each role's ink and each role's fg past 7:1, every border and the focus ring
   past 3:1, and every state shown by a solid fill.
+- A standalone WebAssembly app's page draws the reader's theme choice from its first paint: `ThemeBootstrap.js`, at
+  `_content/forma/themes/scripts/ThemeBootstrap.js`, a classic script the host page loads after its themes' stylesheets,
+  draws the choice its record in local storage names, or the default it names, as
+  [the theme design](docs/theme-design.md#a-standalone-webassembly-app) sets out, and a runtime whose host page declares
+  other themes or another default than its registration fails to start, naming each difference.
 - A switch changes the page's theme in place, in every runtime on it: `IThemeSwitch.SwitchAsync`, which
   `AddFormaServerIntegration()` and `AddFormaWebAssemblyIntegration()` register, requests it through the page's theme
   coordinator, `formaui-net.Framework.Themes.Browser.Interop`, which keeps the choice in the browser's record and a

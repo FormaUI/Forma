@@ -192,10 +192,21 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
      a store changed on another device, are held in the script tests and the server's unit tests, since the checks'
      hosts register no store. A web view's page publishes no marker, so its runtime has no switch until step 13, and a
      standalone app's page starts from the marker the bootstrap publishes, in step 10.
-10. **The bootstrap.** `ThemeBootstrap.js`, a classic script, and a standalone WebAssembly app's record in
+10. **The bootstrap.** ✅ `ThemeBootstrap.js`, a classic script, and a standalone WebAssembly app's record in
     local storage, with the start that fails on a host page differing from the registration.
     - Gate: the design's first-paint cases for a standalone app, a removed theme and storage the browser
       refuses among them.
+    - Landed: the bootstrap draws the record's choice, the default theme in the record's scheme for a theme the head
+      doesn't link or whose stylesheet failed, and the default choice for no record, an unreadable one or refused
+      storage, and publishes the marker the coordinator starts from, marked as kept in local storage. The coordinator
+      keeps such a page's record in local storage, where refused storage leaves a switch for the document's life, and a
+      WebAssembly runtime's start compares the page's themes and default with the registration's, failing with
+      `InvalidOperationException` that names each difference. Script tests cover each case of the bootstrap; browser
+      checks draw a static host page from its first paint in each record's choice and in the default with storage
+      refused.
+    - Departure: the script is served at `_content/forma/themes/scripts/ThemeBootstrap.js`, under the interop
+      assembly's static asset base path, which the design now names, and a theme with a light scheme alone says so on
+      its link. The bootstrap's marker takes the place of a start the runtime would supply, which the plan foresaw.
 11. **`FormaThemePicker`.** The picker, a plain form posting to the endpoint when rendered statically and the
     switch when interactive, its tests and its Showcase page.
     - Gate: the four gates the checking standard sets, every render mode among them.

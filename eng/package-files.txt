@@ -551,6 +551,7 @@ formaui-net.Framework.Themes.Browser.Interop
     NOTICE
     README.md
     staticwebassets/formaui-net.Framework.Themes.Browser.Interop.{fingerprint}.lib.module.js
+    staticwebassets/scripts/ThemeBootstrap.js
     staticwebassets/scripts/ThemeCoordinator.js
 
 formaui-net.Framework.Themes.Testing

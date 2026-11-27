@@ -728,7 +728,10 @@ builder.Services.AddFormaWebAssemblyIntegration(options => options.CultureArrang
 A standalone WebAssembly app has no server. Its runtime starts the page's coordinator itself, from the culture it
 starts in, as
 [`Forma.Blazor.WebAssembly`](https://github.com/FormaUI/Forma/blob/main/src/Blazor/Forma.Blazor.WebAssembly/README.md)
-sets out.
+sets out. Its host page draws the reader's theme from the first paint through the theme bootstrap, which it loads after
+its themes' stylesheets, as [the coordinator's
+README](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Themes.Browser.Interop/README.md#a-standalone-app)
+shows.
 
 ## Blazor Hybrid
 

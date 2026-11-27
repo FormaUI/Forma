@@ -472,5 +472,55 @@ public sealed class ThemesTests
             Assert.DoesNotContain(cookies, cookie => cookie.Name == "forma-theme");
         }
     }
+
+    public sealed class StandaloneFirstPaint(BrowserHost host)
+    {
+        // The two attributes the bootstrap set on <html> before the body was parsed.
+        private const string ReadDocument = "() => `${document.documentElement.dataset.formaTheme}/${document.documentElement.dataset.formaScheme}`";
+
+        // A record naming a loaded theme, none, one naming a theme the page doesn't link, and one naming a theme whose stylesheet failed.
+        public static TheoryData<string?, string> Records { get; } = new()
+        {
+            { "theme=check&scheme=dark&revision=2", "check/dark" },
+            { null, "forma/system" },
+            { "theme=removed&scheme=light&revision=1", "forma/light" },
+            { "theme=missing&scheme=dark&revision=1", "forma/dark" },
+        };
+
+        [Theory]
+        [MemberData(nameof(Records))]
+        public async Task Should_draw_a_standalone_app_s_page_in_the_choice_its_record_in_local_storage_names_from_its_first_paint(string? value, string drawn)
+        {
+            // Arrange — the record set before the page's own scripts run
+            var (context, page) = await host.OpenPageAsync(await host.GetComponentsAddressAsync());
+            await using var _ = context;
+
+            if (value is not null)
+            {
+                await page.AddInitScriptAsync($"localStorage.setItem('forma-theme', '{value}')");
+            }
+
+            // Act
+            await page.GotoAsync("_content/Forma.Blazor.Browser.Components.Checks/standalone-themes.html");
+
+            // Assert
+            Assert.Equal(drawn, await page.EvaluateAsync<string>(ReadDocument));
+        }
+
+        [Fact]
+        public async Task Should_draw_a_standalone_app_s_page_in_the_default_where_the_browser_refuses_to_open_storage()
+        {
+            // Arrange — storage the browser refuses, as a private window's can
+            var (context, page) = await host.OpenPageAsync(await host.GetComponentsAddressAsync());
+            await using var _ = context;
+            await page.AddInitScriptAsync("Object.defineProperty(window, 'localStorage', { get() { throw new DOMException('The storage is refused.', 'SecurityError'); } })");
+
+            // Act
+            await page.GotoAsync("_content/Forma.Blazor.Browser.Components.Checks/standalone-themes.html");
+
+            // Assert
+            Assert.Equal("forma/system", await page.EvaluateAsync<string>(ReadDocument));
+        }
+    }
 }
 

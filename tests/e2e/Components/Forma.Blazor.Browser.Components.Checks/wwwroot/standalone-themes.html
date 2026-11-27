@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Standalone Themes</title>
+    <!-- A standalone app's host page: its themes' stylesheets, a third naming a theme whose stylesheet fails, then the
+         bootstrap, which draws the page in the reader's choice before the body is parsed. -->
+    <link rel="stylesheet" href="/_content/Forma.Blazor/forma-tokens.css" data-forma-theme-stylesheet="forma" />
+    <link rel="stylesheet" href="/_content/Forma.Blazor.Browser.Components.Checks/check-theme.css" data-forma-theme-stylesheet="check" />
+    <link rel="stylesheet" href="/_content/Forma.Blazor.Browser.Components.Checks/missing-theme.css" data-forma-theme-stylesheet="missing" />
+    <script src="/_content/forma/themes/scripts/ThemeBootstrap.js" data-default-theme="forma" data-default-scheme="system"></script>
+</head>
+<body>
+    <span id="unthemed"></span>
+</body>
+</html>

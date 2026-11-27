@@ -310,9 +310,12 @@ which the host page loads in its head after the theme stylesheets:
 ```html
 <link rel="stylesheet" href="_content/Forma.Blazor/forma-tokens.css" data-forma-theme-stylesheet="forma" />
 <link rel="stylesheet" href="css/harbor-theme.css" data-forma-theme-stylesheet="harbor" />
-<script src="_content/Forma.Framework.Themes.Browser.Interop/scripts/ThemeBootstrap.js"
+<script src="_content/forma/themes/scripts/ThemeBootstrap.js"
         data-default-theme="harbor" data-default-scheme="system"></script>
 ```
+
+A theme with a light scheme alone says so on its link, `data-forma-theme-schemes="light"`, as a server's page does, so the
+bootstrap draws it light.
 
 Everything it needs is in the host page, with nothing started: the themes are the stylesheets the head links,
 and the default choice is on its own element. A browser runs a script in the head only once the stylesheets
@@ -324,6 +327,9 @@ before it have loaded, so the bootstrap knows which loaded. It applies the brows
 - an empty or unreadable record applies the default choice, and so does storage the browser refuses to open,
   as a private window's can, where the choice then lasts the document's life;
 - the bootstrap never writes the record, which the next accepted switch replaces.
+
+It publishes the theme marker the coordinator starts from, as a server does, marked as the app's whose record is in local
+storage.
 
 When .NET starts, the coordinator starts from the choice the bootstrap applied. The store's choice replaces it
 where the store's revision is greater than the record's, a change the reader sees once, after start.
