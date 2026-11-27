@@ -349,6 +349,24 @@ public sealed class CultureRouterTests
     }
 
     [Theory]
+    [InlineData(CulturePrefix.ExceptDefault, "he", "he", "/app/he/file-viewer?tab=2")]
+    [InlineData(CulturePrefix.ExceptDefault, "de-DE", "he", "/app/he-de/file-viewer?tab=2")]
+    [InlineData(CulturePrefix.ExceptDefault, "en", "en", "/app/file-viewer?tab=2")]
+    [InlineData(CulturePrefix.ExceptDefault, "fr", "fr", "/app/file-viewer?tab=2")]
+    [InlineData(CulturePrefix.Always, "en", "en", "/app/en/file-viewer?tab=2")]
+    public void Should_address_a_page_under_the_root_in_the_route_carrying_a_pair_or_the_default_route(CulturePrefix prefix, string culture, string uiCulture, string expected)
+    {
+        // Arrange
+        var router = CreateRouter(prefix);
+
+        // Act
+        var address = router.GetAddress("/app/", "file-viewer?tab=2", new CultureInfo(culture), new CultureInfo(uiCulture));
+
+        // Assert
+        Assert.Equal(expected, address);
+    }
+
+    [Theory]
     [InlineData("he", "he", "he")]
     [InlineData("HE", "HE", "he")]
     [InlineData("es-419", "es-419", "es")]

@@ -186,6 +186,16 @@ public sealed partial class CultureRouter : ICultureAddressing
     }
 
     /// <inheritdoc />
+    /// <remarks>A pair no route carries is addressed in the default route, as a page naming no culture is served.</remarks>
+    public string GetAddress(string root, string relativeAddress, CultureInfo culture, CultureInfo uiCulture)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(root);
+        ArgumentNullException.ThrowIfNull(relativeAddress);
+
+        return root.TrimEnd('/') + GetUrl(FindRoute(culture, uiCulture) ?? DefaultRoute, relativeAddress);
+    }
+
+    /// <inheritdoc />
     public CultureRouteMap GetMap(string root)
     {
         ArgumentException.ThrowIfNullOrEmpty(root);

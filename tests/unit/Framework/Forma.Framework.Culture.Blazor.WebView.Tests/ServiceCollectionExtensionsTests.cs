@@ -691,6 +691,9 @@ public sealed class ServiceCollectionExtensionsTests
         public string GetDocumentBase(string root, CultureInfo culture, CultureInfo uiCulture)
             => router.GetDocumentBase(root, culture, uiCulture);
 
+        public string GetAddress(string root, string relativeAddress, CultureInfo culture, CultureInfo uiCulture)
+            => router.GetAddress(root, relativeAddress, culture, uiCulture);
+
         public CultureRouteMap GetMap(string root)
         {
             if (IsArmed)

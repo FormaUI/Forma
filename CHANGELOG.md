@@ -40,6 +40,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
   draws the choice its record in local storage names, or the default it names, as
   [the theme design](docs/theme-design.md#a-standalone-webassembly-app) sets out, and a runtime whose host page declares
   other themes or another default than its registration fails to start, naming each difference.
+- `ICultureAddressing.GetAddress` gives a page's address in a culture pair under the application's root, which
+  `CultureRouter` answers in the route carrying the pair, so a component writes the page's own address in the reader's
+  culture where switching in place leaves the document's base at the root. An `ICultureAddressing` of a host's own
+  implements it; one wrapping `CultureRouter` forwards it.
 - A switch changes the page's theme in place, in every runtime on it: `IThemeSwitch.SwitchAsync`, which
   `AddFormaServerIntegration()` and `AddFormaWebAssemblyIntegration()` register, requests it through the page's theme
   coordinator, `formaui-net.Framework.Themes.Browser.Interop`, which keeps the choice in the browser's record and a

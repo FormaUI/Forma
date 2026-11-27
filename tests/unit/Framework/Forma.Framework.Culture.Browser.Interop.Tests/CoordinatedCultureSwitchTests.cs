@@ -322,6 +322,9 @@ public sealed class CoordinatedCultureSwitchTests
         public string GetDocumentBase(string root, CultureInfo culture, CultureInfo uiCulture)
             => root;
 
+        public string GetAddress(string root, string relativeAddress, CultureInfo culture, CultureInfo uiCulture)
+            => root + relativeAddress;
+
         public CultureRouteMap GetMap(string root)
             => throw new NotSupportedException();
     }

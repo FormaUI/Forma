@@ -2,7 +2,7 @@ namespace Forma.Framework.Culture.Browser.Interop;
 
 using System.Globalization;
 
-/// <summary>The culture addresses a page's culture follows: the pairs an address carries, the document's base and the mapping the page publishes for its coordinator.</summary>
+/// <summary>The culture addresses a page's culture follows: the pairs an address carries, the document's base, a page's address in a pair and the mapping the page publishes for its coordinator.</summary>
 public interface ICultureAddressing
 {
     /// <summary>Whether a culture address carries the pair of <paramref name="culture"/> and <paramref name="uiCulture"/>.</summary>
@@ -13,6 +13,13 @@ public interface ICultureAddressing
     /// <param name="culture">The culture the page formats in.</param>
     /// <param name="uiCulture">The culture the page's strings and direction are in.</param>
     string GetDocumentBase(string root, CultureInfo culture, CultureInfo uiCulture);
+
+    /// <summary>The address, under the application's root <paramref name="root"/>, of the page <paramref name="relativeAddress"/> names, in the pair of <paramref name="culture"/> and <paramref name="uiCulture"/>.</summary>
+    /// <param name="root">The application's root, an escaped absolute path ending in a slash, such as <c>/app/</c>.</param>
+    /// <param name="relativeAddress">The page's address, escaped and relative to the root, its query among it.</param>
+    /// <param name="culture">The culture the page formats in.</param>
+    /// <param name="uiCulture">The culture the page's strings and direction are in.</param>
+    string GetAddress(string root, string relativeAddress, CultureInfo culture, CultureInfo uiCulture);
 
     /// <summary>The mapping between addresses and pairs under the application's root <paramref name="root"/>, as the page publishes it.</summary>
     /// <param name="root">The application's root, an escaped absolute path ending in a slash, such as <c>/app/</c>.</param>
