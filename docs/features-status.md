@@ -29,7 +29,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Four components implemented, twenty-six changes fixed, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
-| [Themes](#themes) | Steps 1 to 7 landed, six steps open, the server's half next |
+| [Themes](#themes) | Steps 1 to 8 landed, five steps open, the theme coordinator next |
 | [The Showcase's review modes](#the-showcases-review-modes) | Planned, nine steps open, the pointer emulation's prototype and the preview first |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -281,12 +281,13 @@ thirteen steps and four parts:
 - the reader's choice, kept, resolved, painted first and switched in place, with the picker;
 - Blazor Hybrid, once each platform's document-start script is proven.
 
-The first two parts are independent of each other. Steps 1 to 7 have landed: the culture coordinator runs on the
+The first two parts are independent of each other. Steps 1 to 8 have landed: the culture coordinator runs on the
 switch coordinator the theme's is to be built on, the tokens draw the theme and the scheme the nearest element naming
 them carries, so a host draws a theme of its own by writing the two attributes, `Forma.Framework.Themes.Testing` holds a
 theme to the contrast targets, Forma's theme meets them in both its schemes, as Forma High Contrast, a stylesheet
 beside the tokens, meets its own in both of its, `FormaThemeScope` draws a part of a page in a theme or a scheme of its
-own, and a host registers its themes with `AddFormaThemes`, beside Forma's two.
+own, a host registers its themes with `AddFormaThemes`, beside Forma's two, and a server-rendered page draws the
+reader's choice from its first paint.
 
 <a id="the-showcases-review-modes"></a>
 

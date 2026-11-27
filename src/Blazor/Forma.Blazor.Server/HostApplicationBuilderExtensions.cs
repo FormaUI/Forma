@@ -3,6 +3,7 @@ namespace Forma.Blazor;
 using Forma.Framework.Browser.Blazor.Server;
 using Forma.Framework.Culture;
 using Forma.Framework.Culture.Blazor.Server;
+using Forma.Framework.Themes.Blazor.Server;
 
 using Microsoft.AspNetCore.Components.Endpoints.Infrastructure;
 using Microsoft.Extensions.Configuration;
@@ -32,6 +33,7 @@ public static class HostApplicationBuilderExtensions
 
         // Ahead of the neutral registration, so the circuit's switch requests through the page's coordinator.
         builder.Services.AddFormaCultureServerIntegration(options.CultureSwitchPolicy);
+        builder.Services.AddFormaThemeServerIntegration(options.GivenThemeChoice);
         builder.Services.AddFormaUIServices(options.InputRouting);
         builder.Services.AddFormaBrowserServerIntegration();
 

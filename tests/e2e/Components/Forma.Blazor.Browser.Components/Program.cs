@@ -4,6 +4,9 @@ using Forma.Blazor;
 using Forma.Blazor.Browser.Components;
 using Forma.Blazor.Browser.Components.Checks;
 using Forma.Blazor.Browser.Components.Components;
+using Forma.Framework.Localization;
+using Forma.Framework.Themes;
+using Forma.Framework.Themes.Blazor.Server;
 
 using Microsoft.AspNetCore.Localization;
 
@@ -21,7 +24,16 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 builder.Services.AddCheckedComponents();
-builder.AddFormaServerIntegration(options => options.InputRouting = CheckServices.InputRouting);
+builder.AddFormaServerIntegration(options =>
+{
+    options.InputRouting = CheckServices.InputRouting;
+
+    // A request whose address names a theme in its given-theme query is given that theme in its dark scheme, keeping nothing.
+    options.GivenThemeChoice = context => context.Request.Query["given-theme"] is { Count: > 0 } given ? new ThemeChoice(given.ToString(), ColorSchemePreference.Dark) : null;
+});
+
+// The check theme the theme checks draw pages and parts of pages in, beside Forma's two.
+builder.Services.AddFormaThemes(themes => themes.Add(new ThemeDefinition("check", LocalizableText.For<App>("Check"), ColorSchemes.Light | ColorSchemes.Dark, "_content/Forma.Blazor.Browser.Components.Checks/check-theme.css")));
 
 var app = builder.Build();
 
@@ -38,8 +50,10 @@ app.UseRequestLocalization(new RequestLocalizationOptions
     SupportedUICultures = checkCultures,
     RequestCultureProviders = [new QueryStringRequestCultureProvider()],
 });
+app.UseFormaThemes();
 app.UseAntiforgery();
 app.MapStaticAssets();
+app.MapFormaThemes();
 app.MapGet("/_check/ready", () => "ready");
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode()

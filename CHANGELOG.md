@@ -35,6 +35,13 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Forma High Contrast, `forma-high-contrast.css` beside the tokens, is a theme of its own, `forma-high-contrast`, in a
   light and a dark scheme: every text, each role's ink and each role's fg past 7:1, every border and the focus ring
   past 3:1, and every state shown by a solid fill.
+- `formaui-net.Framework.Themes.Blazor.Server`, which `AddFormaServerIntegration()` registers, draws a server-rendered
+  page in the reader's theme choice from its first paint, as [the theme design](docs/theme-design.md#the-choice-a-request-starts-in)
+  sets out: `UseFormaThemes()` resolves each request's choice from a host's `IThemePreferenceStore`, the browser's
+  record and the default, `FormaPageHead` links every registered theme's stylesheet and publishes the theme marker, a
+  host's `App` writes the choice on `<html>` through `ThemeAttributes`, `MapFormaThemes()` takes a switch a statically
+  rendered page posts, `ServerIntegrationOptions.GivenThemeChoice` gives a request a choice its page keeps nothing of,
+  and `VaryByFormaTheme()` varies a host's output cache.
 - `AddFormaThemes`, in `formaui-net.Framework.Themes`, registers the themes a host offers its readers, each a
   `ThemeDefinition`, and the `ThemeChoice` a reader starts in, as [the theme design](docs/theme-design.md#the-registration)
   sets out; `AddFormaUIServices` registers Forma's own two, `FormaThemes.Forma` and `FormaThemes.HighContrast`, and

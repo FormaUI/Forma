@@ -219,7 +219,8 @@ other device keeps the choice it made until a later switch on either.
 ### The browser's record
 
 The browser keeps a record of the choice and the store's revision it last agreed with. A Web App keeps it
-in the choice cookie, a `__Host-` cookie, so only the page's own origin over HTTPS sets it. A standalone
+in the choice cookie, a `__Host-` cookie, so only the page's own origin over HTTPS sets it; over plain HTTP, as a
+development host serves, a browser refuses a secure cookie, and the record is a cookie without the prefix. A standalone
 WebAssembly app keeps it in local storage, since no server reads a cookie.
 
 ### The choice a request starts in

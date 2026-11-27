@@ -2,15 +2,16 @@ namespace Forma.Framework.Themes;
 
 using Forma.Framework.Events;
 
-/// <summary>The <see cref="IThemeState"/> a user scope holds, starting from the registry's default choice.</summary>
+/// <summary>The <see cref="IThemeState"/> a user scope holds, starting from the choice its scope starts in.</summary>
 /// <param name="registry">The themes registered, which every choice the state holds is resolved against.</param>
-internal sealed class DefaultThemeState(ThemeRegistry registry) : IThemeState, IThemeStateIntegration
+/// <param name="startingChoice">The choice the scope starts in; the registry's default where the scope has none of its own.</param>
+internal sealed class DefaultThemeState(ThemeRegistry registry, ThemeChoice? startingChoice = null) : IThemeState, IThemeStateIntegration
 {
     private readonly StateNotifier _notifier = new();
     private int _revision;
 
     /// <inheritdoc />
-    public ThemeChoice Choice { get; private set; } = registry.Default;
+    public ThemeChoice Choice { get; private set; } = registry.Resolve(startingChoice ?? registry.Default);
 
     /// <inheritdoc />
     public int Revision

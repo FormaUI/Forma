@@ -151,7 +151,7 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
    - Departure: Forma's two themes are `FormaThemes`, in the component library, which owns their stylesheets and
      their names' strings, and its registrar, `AddFormaUIServices`, registers them; `IThemeSwitch` is registered by
      each half as it lands, from step 8.
-8. **The server's half.** `Forma.Framework.Themes.Blazor.Server`:
+8. **The server's half.** ✅ `Forma.Framework.Themes.Blazor.Server`:
    - a request's choice resolved from the store, the cookie and the default, by the store's revision;
    - the cookie written with the store's choice where that choice wins;
    - a choice the host gives a request, which the request starts in and keeps nothing of;
@@ -160,6 +160,18 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
    - `MapFormaThemes()`, and the output cache variation.
    - Gate: unit and integration tests, a request given its choice writing no cookie among them; a
      server-rendered page's first paint in a browser, statically rendered.
+   - Landed: `UseFormaThemes()` resolves each request's choice into its `RequestTheme`, writing the record where the
+     store's revision is newer and reading no store for a request given its choice, which
+     `ServerIntegrationOptions.GivenThemeChoice` gives; the request's scope starts its state in that choice.
+     `ThemeAttributes` writes the choice on `<html>`, and `FormaPageHead` links every registered theme's stylesheet,
+     each naming its theme, and publishes the marker. `MapFormaThemes()` takes a switch at `/_forma/themes`, store
+     first, then record, then back to an address of the application's own, and `VaryByFormaTheme()` varies a cached
+     page. Unit tests cover each order, the record's format and the endpoint's refusals; browser checks in Chromium and
+     WebKit draw a statically rendered page from its first byte in its record's choice, a removed theme's in the
+     default theme, and a request given its choice with no record written, and keep a choice a static form posts.
+   - Departure: over plain HTTP the record is `forma-theme`, without the `__Host-` prefix a browser refuses there,
+     which the design now states. A store that fails to read leaves the request in the record or the default with a
+     warning. A circuit's `IThemeSwitch` comes with the coordinator, in step 9.
 9. **The theme coordinator.** `Forma.Framework.Themes.Browser.Interop`, on the switch coordinator: a switch
    accepted through the browser's record, the store's writes in version order, landings and other page
    updates, a page that keeps nothing accepting each switch at once, and every registered theme's stylesheet

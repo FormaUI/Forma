@@ -1,6 +1,6 @@
 @* The page's runtime is its address's first segment, server, webassembly or auto, which the interactive router renders every check in, or static, which renders it statically. *@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en" dir="ltr" @attributes="ThemeAttributes.Of(Themes, ThemeState.Choice)">
 <head>
     <FormaPageHead Title="Forma Component Checks" IconHref="data:," PageRenderMode="PageRenderMode" Nonce="@CheckContentSecurityPolicy.GetNonce(HttpContext)">
         <link rel="stylesheet" href="@Assets["Forma.Blazor.Browser.Components.styles.css"]" />
@@ -16,6 +16,10 @@
 
 @code {
     [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
+    [Inject] private ThemeRegistry Themes { get; set; } = default!;
+
+    [Inject] private IThemeState ThemeState { get; set; } = default!;
 
     private IComponentRenderMode? PageRenderMode
         => RenderModeOf(HttpContext?.Request.Path.Value);

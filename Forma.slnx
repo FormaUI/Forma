@@ -35,6 +35,7 @@
     <Project Path="src\Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
     <Project Path="src\Framework\Forma.Framework.Toolbar\Forma.Framework.Toolbar.csproj" />
     <Project Path="src\Framework\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
+    <Project Path="src\Framework\Forma.Framework.Themes.Blazor.Server\Forma.Framework.Themes.Blazor.Server.csproj" />
     <Project Path="src\Framework\Forma.Framework.Themes.Testing\Forma.Framework.Themes.Testing.csproj" />
     <Project Path="src\Framework\Forma.Framework.Windows\Forma.Framework.Windows.csproj" />
     <Project Path="src\Framework\Forma.Framework.Composer.Extensibility\Forma.Framework.Composer.Extensibility.csproj" />
@@ -89,6 +90,7 @@
     <Project Path="tests\unit\Framework\Forma.Framework.Css.Tests\Forma.Framework.Css.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Windows.Tests\Forma.Framework.Windows.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Themes.Testing.Tests\Forma.Framework.Themes.Testing.Tests.csproj" />
+    <Project Path="tests\unit\Framework\Forma.Framework.Themes.Blazor.Server.Tests\Forma.Framework.Themes.Blazor.Server.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Themes.Tests\Forma.Framework.Themes.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Currencies.Tests\Forma.Framework.Currencies.Tests.csproj" />
     <Project Path="tests\unit\Framework\Forma.Framework.Events.Tests\Forma.Framework.Events.Tests.csproj" />

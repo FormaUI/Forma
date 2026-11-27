@@ -1,5 +1,6 @@
 @namespace Forma.Blazor.Components.Page
 @using Forma.Blazor.Components
+@using Forma.Framework.Themes.Blazor.Server
 @inherits FormaComponentBase
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,15 +8,22 @@
 @* The cultures the server rendered the page in, and how a switch persists, which the page's culture coordinator reads. *@
 <meta name="forma-culture" @attributes="MarkerAttributes" />
 <meta name="forma-culture-policy" @attributes="PolicyAttributes" />
+@* The theme choice the server resolved for the request, which the page's theme coordinator reads. *@
+<meta name="@ThemePublication.MarkerName" @attributes="ThemeMarkerAttributes" />
 @if (!string.IsNullOrWhiteSpace(IconHref))
 {
     <link rel="icon" href="@IconHref" />
 }
-<link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-tokens.css"]" />
+<link rel="stylesheet" href="@Assets[TokensStylesheet]" @attributes="TokensAttributes" />
 <link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-reset.css"]" />
 <link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-base.css"]" />
 <link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-input.css"]" />
 <link rel="stylesheet" href="@Assets["_content/Forma.Blazor/forma-prose.css"]" />
+@* Every registered theme's stylesheet, after Forma's own, so a theme's rule follows the tokens it sets. *@
+@foreach (var theme in ThemeStylesheets)
+{
+    <link rel="stylesheet" href="@Assets[theme.Stylesheet]" data-forma-theme-stylesheet="@theme.Name" />
+}
 @ChildContent
 @if (PreloadAssets)
 {

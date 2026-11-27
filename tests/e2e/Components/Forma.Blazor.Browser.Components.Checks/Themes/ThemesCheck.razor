@@ -44,6 +44,15 @@
 <FormaThemeScope Theme="check" Scheme="_switchedScheme"><span id="switched"></span></FormaThemeScope>
 <button id="switch-scheme" type="button" data-check-scaffold @onclick="() => _switchedScheme = ColorSchemePreference.Dark">Switch to Dark</button>
 
+@* A switch a statically rendered page posts, as a picker rendered statically does, back to this page. *@
+<form id="switch-theme" method="post" action="_forma/themes">
+    <AntiforgeryToken />
+    <input type="hidden" name="theme" value="check" />
+    <input type="hidden" name="scheme" value="light" />
+    <input type="hidden" name="returnUrl" value="/static/themes" />
+    <button type="submit">Switch to Check, Light</button>
+</form>
+
 @code {
     private ColorSchemePreference _switchedScheme = ColorSchemePreference.Light;
 }

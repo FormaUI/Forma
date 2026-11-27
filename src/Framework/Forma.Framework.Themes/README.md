@@ -35,6 +35,7 @@ theme of a registered name as it's added.
 | `ThemeOptions` | What `AddFormaThemes` configures: the themes registered, in the order a reader is offered them, and the `Default` choice. |
 | `ThemeRegistry` | The themes registered and the default, resolving a choice naming a theme that isn't registered to the default theme in the choice's scheme preference, and a theme with a light scheme alone to its light scheme. |
 | `ThemeChoice` | What a reader chose: a theme's name and a `ColorSchemePreference`. |
+| `ThemeAttributes` | The two attributes an element names its theme and its scheme in, `data-forma-theme` and `data-forma-scheme`, each scheme preference's value, and the attributes an element carries to draw a choice. |
 | `ThemePreference` | A choice as a host's store keeps it, with the revision Forma numbered it by. |
 | `IThemeState` | The choice a user scope draws, announced to its subscribers as it changes. |
 | `IThemeSwitch` | Requests a choice for every runtime on the page. |

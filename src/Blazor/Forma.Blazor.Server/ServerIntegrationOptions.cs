@@ -3,6 +3,9 @@ namespace Forma.Blazor;
 using Forma.Framework.Culture;
 using Forma.Framework.Culture.Browser.Interop;
 using Forma.Framework.Input;
+using Forma.Framework.Themes;
+
+using Microsoft.AspNetCore.Http;
 
 /// <summary>The settings a host gives Forma's server integration.</summary>
 public sealed class ServerIntegrationOptions
@@ -15,4 +18,7 @@ public sealed class ServerIntegrationOptions
 
     /// <summary>How the pages treat the culture of the WebAssembly components the server renders: following the page's culture coordinator, the default, or each client's own.</summary>
     public CultureArrangement CultureArrangement { get; set; } = CultureArrangement.Coordinated;
+
+    /// <summary>The theme choice the host gives a request, which the request starts in ahead of the reader's own and of which its page keeps nothing, as a preview drawn in another theme is; <see langword="null"/> from it gives the request none.</summary>
+    public Func<HttpContext, ThemeChoice?>? GivenThemeChoice { get; set; }
 }

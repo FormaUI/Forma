@@ -2,6 +2,7 @@ using Forma.Blazor;
 using Forma.Blazor.Components.DataView;
 using Forma.Blazor.Showcase;
 using Forma.Blazor.Showcase.Components.Pages.Menus;
+using Forma.Blazor.Showcase.Components.Pages.Themes;
 using Forma.Blazor.Showcase.Features.Media;
 using Forma.Blazor.Showcase.Features.Upload;
 using Forma.Framework.Catalog.Queries;
@@ -18,6 +19,8 @@ using Forma.Framework.Localization;
 using Forma.Framework.Localization.Json;
 using Forma.Framework.Media;
 using Forma.Framework.Resources;
+using Forma.Framework.Themes;
+using Forma.Framework.Themes.Blazor.Server;
 using Forma.Framework.Resources.Markdown;
 using Forma.Framework.Resources.Office;
 using Forma.Framework.Share;
@@ -57,6 +60,14 @@ builder.Services.AddScoped<IShareTarget>(services => services.GetRequiredService
 builder.Services.AddScoped<ICatalogProvider>(_ => new ShowcaseImageLibrary());
 builder.Services.AddScoped<IFileStore, DefaultFileStore>();
 
+// Harbor, a theme of the Showcase's own beside Forma's two, and a reader starting in Forma's light scheme, since the Showcase's
+// wordmark draws in one scheme alone.
+builder.Services.AddFormaThemes(themes =>
+{
+    themes.Add(new ThemeDefinition("harbor", LocalizableText.For<FormaThemeScopePage>("Harbor"), ColorSchemes.Light | ColorSchemes.Dark, "themes/harbor.css"));
+    themes.Default = new ThemeChoice("forma", ColorSchemePreference.Light);
+});
+
 // The statuses the Showcase defines, each on an opaque tint so it reads on the paper of every scheme.
 builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
 [
@@ -89,10 +100,13 @@ var app = builder.Build();
 app.UseMiddleware<HostAddressMiddleware>();
 app.UseFormaCultureRouting();
 
+app.UseFormaThemes();
+
 app.UseRouting();
 app.UseAntiforgery();
 
 app.MapStaticAssets();
+app.MapFormaThemes();
 app.MapRazorComponents<Forma.Blazor.Showcase.Components.App>()
     .AddInteractiveServerRenderMode()
     .AddAdditionalAssemblies(

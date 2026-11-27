@@ -18,6 +18,8 @@
         <ProjectReference Include="..\..\Framework\Forma.Framework.Culture.Blazor.Server\Forma.Framework.Culture.Blazor.Server.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Culture.Browser.Interop\Forma.Framework.Culture.Browser.Interop.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Input\Forma.Framework.Input.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Themes.Blazor.Server\Forma.Framework.Themes.Blazor.Server.csproj" />
     </ItemGroup>
 
     <Import Project="$(ComponentAnalyzersTargets)" />

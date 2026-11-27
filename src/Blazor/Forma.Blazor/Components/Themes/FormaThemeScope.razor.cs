@@ -17,14 +17,8 @@ public sealed partial class FormaThemeScope : FormaElementBase
     /// <summary>The content drawn in the scope's theme and scheme.</summary>
     [Parameter] public RenderFragment? ChildContent { get; set; }
 
-    private string? SchemeName
-        => Scheme switch
-        {
-            ColorSchemePreference.System => "system",
-            ColorSchemePreference.Light => "light",
-            ColorSchemePreference.Dark => "dark",
-            _ => null,
-        };
+    private string? SchemeValue
+        => Scheme is { } scheme ? ThemeAttributes.GetSchemeValue(scheme) : null;
 
     /// <inheritdoc />
     protected override void OnParametersSet()

@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <Description>The theme system's server half: each request's theme choice, resolved from a host's store, the browser's record and the default, the record kept beside the store, a choice a host gives a request, the theme marker a page publishes, the endpoint a statically rendered picker posts to, and the variation a host's output cache adds.</Description>
+        <IsPackable>true</IsPackable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Forma.Framework.Themes.Blazor.Server.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
+    </ItemGroup>
+
+</Project>

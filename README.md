@@ -394,7 +394,10 @@ place of Forma's.
 
 A host registers each theme it offers with `AddFormaThemes`, beside Forma's own two, as [the themes package's
 README](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Themes/README.md#registering-themes)
-sets out.
+sets out. A server host draws the reader's choice from the first paint: its pipeline adds `UseFormaThemes()` and
+`MapFormaThemes()`, and its `App` writes the choice on `<html>`, as [the server half's
+README](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Themes.Blazor.Server/README.md#setting-it-up)
+shows.
 
 A theme sets every base token, since a part of the page in the theme takes what the theme leaves unset from the theme
 around it. The canvas stands below the paper in every scheme: a light scale holds it as `--gray-100`, and a dark one,

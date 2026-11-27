@@ -528,6 +528,12 @@ formaui-net.Framework.Themes
     NOTICE
     README.md
 
+formaui-net.Framework.Themes.Blazor.Server
+    lib/net11.0/Forma.Framework.Themes.Blazor.Server.dll
+    LICENSE
+    NOTICE
+    README.md
+
 formaui-net.Framework.Themes.Testing
     lib/net11.0/Forma.Framework.Themes.Testing.dll
     LICENSE

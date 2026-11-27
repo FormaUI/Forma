@@ -1,5 +1,7 @@
 namespace Forma.Blazor.Browser.Tests.Components;
 
+using System.Text.RegularExpressions;
+
 using Forma.Framework.Themes;
 using Forma.Framework.Themes.Testing;
 
@@ -46,6 +48,9 @@ public sealed class ThemesTests
         }
         """;
 
+    // Takes the theme and the scheme the host's page names off its root, so the page names neither.
+    private const string NameNeitherOnTheRoot = "() => { delete document.documentElement.dataset.formaTheme; delete document.documentElement.dataset.formaScheme; }";
+
     // Whether the check themes' stylesheets and Forma High Contrast's have reached the page.
     private const string AreThemesLoaded = "() => ['check-theme.css', 'contrast-themes.css', 'forma-high-contrast.css'].every(name => [...document.styleSheets].some(sheet => sheet.href?.endsWith(name)))";
 
@@ -55,10 +60,11 @@ public sealed class ThemesTests
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_draw_every_token_in_the_theme_and_the_scheme_its_nearest_scope_names(string runtime)
         {
-            // Arrange — a reference for each theme in each scheme, each drawn apart from the others
+            // Arrange — a reference for each theme in each scheme, each drawn apart from the others, on a page whose root names neither
             var (context, page) = await OpenAsync(host, runtime, "themes");
             await using var _ = context;
             await page.WaitForFunctionAsync(AreThemesLoaded);
+            await page.EvaluateAsync(NameNeitherOnTheRoot);
             var formaLight = await ReadTokensAsync(page, "forma-light");
             var formaDark = await ReadTokensAsync(page, "forma-dark");
             var checkLight = await ReadTokensAsync(page, "check-light");
@@ -93,10 +99,11 @@ public sealed class ThemesTests
         [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_draw_a_system_scope_in_the_scheme_the_device_prefers_and_a_page_naming_no_scheme_light(string runtime)
         {
-            // Arrange
+            // Arrange — a page whose root names neither a theme nor a scheme
             var (context, page) = await OpenAsync(host, runtime, "themes");
             await using var _ = context;
             await page.WaitForFunctionAsync(AreThemesLoaded);
+            await page.EvaluateAsync(NameNeitherOnTheRoot);
             var problems = new List<string>();
 
             // Act — the device preferring each scheme in turn
@@ -271,6 +278,133 @@ public sealed class ThemesTests
                 [(ColorSchemes.Light, ColorVision.Protanopia), (ColorSchemes.Light, ColorVision.Deuteranopia), (ColorSchemes.Light, ColorVision.Full)],
                 report.MissedSeparations.Select(separation => (separation.Scheme, separation.Vision)));
             Assert.All(report.MissedSeparations, separation => Assert.Equal("--chart-series-4-color", separation.Second));
+        }
+    }
+
+    public sealed partial class FirstPaint(BrowserHost host)
+    {
+        // The two attributes on <html>, and the theme marker's attributes beside them, in the document as the browser parsed it.
+        private const string ReadDocument = """
+            () => ({
+                ...Object.fromEntries([...document.querySelector('meta[name="forma-theme"]').attributes].map(attribute => [`marker-${attribute.name}`, attribute.value])),
+                theme: document.documentElement.dataset.formaTheme ?? '',
+                scheme: document.documentElement.dataset.formaScheme ?? '',
+            })
+            """;
+
+        public static TheoryData<string> Engines { get; } = ["chromium", "webkit"];
+
+        [Theory]
+        [MemberData(nameof(Engines))]
+        public async Task Should_draw_a_statically_rendered_page_in_the_choice_its_record_names_from_its_first_paint(string engine)
+        {
+            // Arrange
+            var (context, page, address) = await OpenAsync(engine);
+            await using var _ = context;
+            await context.AddCookiesAsync([new() { Name = "forma-theme", Value = "theme=check&scheme=dark&revision=4", Url = address.ToString() }]);
+
+            // Act
+            var response = await page.GotoAsync("static/themes");
+            var served = await response!.TextAsync();
+            var (theme, scheme, marker) = await ReadDocumentAsync(page);
+            var unthemed = await ReadTokensAsync(page, "unthemed");
+            var checkDark = await ReadTokensAsync(page, "check-dark");
+
+            // Assert — written by the server, so drawn from the first paint, and the page's tokens the check theme's dark ones
+            Assert.Multiple(
+                () => Assert.Matches(DocumentElement("check", "dark"), served),
+                () => Assert.Equal(("check", "dark"), (theme, scheme)),
+                () => Assert.Equal(("check", "dark", "4"), (marker["data-theme"], marker["data-scheme"], marker["data-revision"])),
+                () => Assert.False(marker.ContainsKey("data-keeps-nothing")),
+                () => Assert.Equal(checkDark["--backdrop-flat-bg-color"], unthemed["--backdrop-flat-bg-color"]),
+                () => Assert.Equal(checkDark["--primary-ink-color"], unthemed["--primary-ink-color"]));
+        }
+
+        [Theory]
+        [MemberData(nameof(Engines))]
+        public async Task Should_draw_a_page_without_a_record_in_the_default_and_one_naming_a_removed_theme_in_the_default_theme_in_its_scheme(string engine)
+        {
+            // Arrange
+            var (context, page, address) = await OpenAsync(engine);
+            await using var _ = context;
+            await page.GotoAsync("static/themes");
+            var (unrecordedTheme, unrecordedScheme, unrecordedMarker) = await ReadDocumentAsync(page);
+            await context.AddCookiesAsync([new() { Name = "forma-theme", Value = "theme=removed&scheme=dark&revision=2", Url = address.ToString() }]);
+
+            // Act
+            await page.GotoAsync("static/themes");
+            var (removedTheme, removedScheme, _) = await ReadDocumentAsync(page);
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(("forma", "system", "0"), (unrecordedTheme, unrecordedScheme, unrecordedMarker["data-revision"])),
+                () => Assert.Equal(("forma", "dark"), (removedTheme, removedScheme)));
+        }
+
+        [Theory]
+        [MemberData(nameof(Engines))]
+        public async Task Should_draw_a_request_given_its_choice_in_it_writing_no_record_and_marking_its_page_as_keeping_nothing(string engine)
+        {
+            // Arrange — the reader's own choice in the record
+            var (context, page, address) = await OpenAsync(engine);
+            await using var _ = context;
+            await context.AddCookiesAsync([new() { Name = "forma-theme", Value = "theme=forma&scheme=light&revision=1", Url = address.ToString() }]);
+
+            // Act
+            var response = await page.GotoAsync("static/themes?given-theme=check");
+            var (theme, scheme, marker) = await ReadDocumentAsync(page);
+            var cookies = await context.CookiesAsync([address.ToString()]);
+            var recorded = await response!.HeaderValueAsync("set-cookie");
+
+            // Assert
+            Assert.Multiple(
+                () => Assert.Equal(("check", "dark"), (theme, scheme)),
+                () => Assert.True(marker.ContainsKey("data-keeps-nothing")),
+                () => Assert.DoesNotContain("forma-theme=", recorded ?? string.Empty, StringComparison.Ordinal),
+                () => Assert.Equal("theme=forma&scheme=light&revision=1", Uri.UnescapeDataString(Assert.Single(cookies, cookie => cookie.Name == "forma-theme").Value)));
+        }
+
+        [Theory]
+        [MemberData(nameof(Engines))]
+        public async Task Should_keep_a_choice_a_statically_rendered_page_posts_and_draw_the_page_it_returns_to_in_it(string engine)
+        {
+            // Arrange
+            var (context, page, address) = await OpenAsync(engine);
+            await using var _ = context;
+            await page.GotoAsync("static/themes");
+
+            // Act
+            await page.Locator("#switch-theme button").ClickAsync();
+            await page.WaitForFunctionAsync("() => document.documentElement.dataset.formaTheme === 'check'");
+            var (theme, scheme, marker) = await ReadDocumentAsync(page);
+            var cookies = await context.CookiesAsync([address.ToString()]);
+
+            // Assert — no store is registered, so the record's revision advances past the one before it
+            Assert.Multiple(
+                () => Assert.EndsWith("/static/themes", page.Url, StringComparison.Ordinal),
+                () => Assert.Equal(("check", "light", "1"), (theme, scheme, marker["data-revision"])),
+                () => Assert.Equal("theme=check&scheme=light&revision=1", Uri.UnescapeDataString(Assert.Single(cookies, cookie => cookie.Name == "forma-theme").Value)));
+        }
+
+        private async Task<(IBrowserContext Context, IPage Page, Uri Address)> OpenAsync(string engine)
+        {
+            var address = await host.GetComponentsAddressAsync();
+            var (context, page) = engine == "webkit" ? await host.OpenWebKitPageAsync(address) : await host.OpenPageAsync(address);
+
+            return (context, page, address);
+        }
+
+        private static Regex DocumentElement(string theme, string scheme)
+            => new($"""<html[^>]*\sdata-forma-theme="{theme}"[^>]*\sdata-forma-scheme="{scheme}" """.TrimEnd());
+
+        private static Task<Dictionary<string, string>> ReadTokensAsync(IPage page, string id)
+            => page.EvaluateAsync<Dictionary<string, string>>(ReadTokens, id);
+
+        private static async Task<(string Theme, string Scheme, Dictionary<string, string> Marker)> ReadDocumentAsync(IPage page)
+        {
+            var drawn = await page.EvaluateAsync<Dictionary<string, string>>(ReadDocument);
+
+            return (drawn["theme"], drawn["scheme"], drawn.Where(entry => entry.Key.StartsWith("marker-", StringComparison.Ordinal)).ToDictionary(entry => entry.Key["marker-".Length..], entry => entry.Value));
         }
     }
 }

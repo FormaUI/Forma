@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="xunit.v3" />
+        <PackageReference Include="xunit.runner.visualstudio" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Themes.Blazor.Server\Forma.Framework.Themes.Blazor.Server.csproj" />
+    </ItemGroup>
+
+</Project>

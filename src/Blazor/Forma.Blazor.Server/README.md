@@ -28,7 +28,8 @@ coordinator, whose switch reaches every circuit on the page and the document, an
 observations measured again when a circuit reconnects. Each is registered only where nothing is
 registered for it yet. `ServerIntegrationOptions.InputRouting` sets the application's input policy, and
 `ServerIntegrationOptions.CultureSwitchPolicy` how a switch persists, in the states alone by default, or also in
-request localization's culture cookie:
+request localization's culture cookie, and `ServerIntegrationOptions.GivenThemeChoice` the theme choice the host gives
+a request:
 
 ```csharp
 builder.AddFormaServerIntegration(options =>
@@ -81,8 +82,11 @@ builder.AddFormaServerIntegration(options => options.CultureArrangement = Cultur
 
 `FormaPageHead`, in `Forma.Blazor.Components.Page`, renders the head a host's `App.razor` needs: the
 character set, viewport, title, base address and icon, the culture marker and switch policy the page's
-culture coordinator starts from, Forma's stylesheets in their cascade order, and the framework's
-`ResourcePreloader`, `ImportMap` and `HeadOutlet`.
+culture coordinator starts from, the theme marker, Forma's stylesheets in their cascade order and every registered
+theme's after them, and the framework's `ResourcePreloader`, `ImportMap` and `HeadOutlet`. A server host draws the
+reader's theme from the first paint as the
+[server half's README](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Themes.Blazor.Server/README.md)
+sets out.
 
 A page served under a Content Security Policy gives `FormaPageHead` the request's nonce as `Nonce`, which the import
 map Blazor renders inline carries, so the policy allows no other inline script; the

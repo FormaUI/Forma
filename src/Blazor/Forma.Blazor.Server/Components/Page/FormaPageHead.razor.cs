@@ -1,11 +1,15 @@
 namespace Forma.Blazor.Components.Page;
 
 using Forma.Framework.Culture.Browser.Interop;
+using Forma.Framework.Themes;
+using Forma.Framework.Themes.Blazor.Server;
+
+using Microsoft.AspNetCore.Http;
 
 using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 
-/// <summary>The document head a Forma host needs: its character set, viewport, title, base address, the culture marker and switch policy the page's culture coordinator reads, Forma's own stylesheets, and the framework's asset and head outlets.</summary>
+/// <summary>The document head a Forma host needs: its character set, viewport, title, base address, the culture marker and switch policy the page's culture coordinator reads, the theme marker, Forma's own stylesheets and every registered theme's, and the framework's asset and head outlets.</summary>
 /// <remarks>
 /// <para>
 /// The head outlet writes the document's one title, the one a page sets or <see cref="Title"/> where it sets none, and runs
@@ -19,6 +23,9 @@ using Microsoft.Extensions.DependencyInjection;
 /// </remarks>
 public sealed partial class FormaPageHead : FormaComponentBase
 {
+    // The token stylesheet, which holds Forma's own theme.
+    private const string TokensStylesheet = "_content/Forma.Blazor/forma-tokens.css";
+
     private ICultureAddressing? _addressing;
     private CultureRouteMap? _map;
 
@@ -43,7 +50,13 @@ public sealed partial class FormaPageHead : FormaComponentBase
     /// <summary>The nonce the page's Content Security Policy allows the page's inline scripts by, which the import map Blazor renders inline carries.</summary>
     [Parameter] public string? Nonce { get; set; }
 
+    [CascadingParameter] private HttpContext? HttpContext { get; set; }
+
     [Inject] private CultureSwitchPolicy Policy { get; set; } = default!;
+
+    [Inject] private ThemeRegistry Themes { get; set; } = default!;
+
+    [Inject] private IThemeState ThemeState { get; set; } = default!;
 
     [Inject] private NavigationManager Navigation { get; set; } = default!;
 
@@ -61,6 +74,19 @@ public sealed partial class FormaPageHead : FormaComponentBase
 
     private IReadOnlyDictionary<string, object> PolicyAttributes
         => ToAttributes(CulturePublication.GetPolicyAttributes(Policy, _map));
+
+    // The request's theme where the pipeline resolved one, and otherwise the choice the page's state holds, which keeps the reader's.
+    private IReadOnlyDictionary<string, object> ThemeMarkerAttributes
+        => ToAttributes(ThemePublication.GetMarkerAttributes(HttpContext?.GetFormaTheme() ?? new RequestTheme(ThemeState.Choice, 0, keepsChoice: true)));
+
+    // The token stylesheet names the theme it holds, where a registered theme's stylesheet is the token stylesheet.
+    private IReadOnlyDictionary<string, object>? TokensAttributes
+        => Themes.Themes.FirstOrDefault(IsTokens) is { } theme
+            ? new Dictionary<string, object> { [ThemePublication.StylesheetAttribute] = theme.Name }
+            : null;
+
+    private IEnumerable<ThemeDefinition> ThemeStylesheets
+        => Themes.Themes.Where(theme => !IsTokens(theme));
 
     /// <inheritdoc />
     protected override void OnInitialized()
@@ -93,6 +119,9 @@ public sealed partial class FormaPageHead : FormaComponentBase
         builder.AddComponentRenderMode(PageRenderMode);
         builder.CloseComponent();
     };
+
+    private static bool IsTokens(ThemeDefinition theme)
+        => string.Equals(theme.Stylesheet, TokensStylesheet, StringComparison.Ordinal);
 
     private static Dictionary<string, object> ToAttributes(IReadOnlyDictionary<string, string> attributes)
         => attributes.ToDictionary(attribute => attribute.Key, attribute => (object)attribute.Value);
