@@ -6,7 +6,7 @@
 
 | Measure | Now |
 | --- | --- |
-| Components | 81 implemented, as [the catalog](component-catalog.md) lists them, and 20 planned, as [the roadmap](component-roadmap.md) orders them |
+| Components | 82 implemented, as [the catalog](component-catalog.md) lists them, and 20 planned, as [the roadmap](component-roadmap.md) orders them |
 | Packages | Every project under `src/` but the Showcase, released from `main` by `release.yml` to nuget.org and the organization's GitHub feed, the latest published release `1.0.0-preview.20` |
 | Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, and on the Server in WebKit, the engine of Safari and of Apple's web views, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid implemented on WPF, Windows Forms and MAUI on Windows, every component checked in a web view and each host's application set up as the README says; an inventory holds every component to a check page in every render mode |
 
@@ -29,7 +29,7 @@ The gate runs every check [the verification design](verification-design.md#gates
 | [A host's integration](#a-hosts-integration) | Fifteen findings, all fixed |
 | [A host's requests](#a-hosts-requests) | Four components implemented, twenty-six changes fixed, and a path per culture open |
 | [A security check](#a-security-check) | Every step in place; the CI failures #61, #62 and #64 open |
-| [Themes](#themes) | Steps 1 to 5 landed, eight steps open, the theme scope next |
+| [Themes](#themes) | Steps 1 to 6 landed, seven steps open, the contracts and the registration next |
 | [The Showcase's review modes](#the-showcases-review-modes) | Planned, nine steps open, the pointer emulation's prototype and the preview first |
 
 - **One component at a time,** built, reviewed and approved before the next starts, as the working rules in `CLAUDE.md` set out.
@@ -281,11 +281,12 @@ thirteen steps and four parts:
 - the reader's choice, kept, resolved, painted first and switched in place, with the picker;
 - Blazor Hybrid, once each platform's document-start script is proven.
 
-The first two parts are independent of each other. Steps 1 to 5 have landed: the culture coordinator runs on the
+The first two parts are independent of each other. Steps 1 to 6 have landed: the culture coordinator runs on the
 switch coordinator the theme's is to be built on, the tokens draw the theme and the scheme the nearest element naming
 them carries, so a host draws a theme of its own by writing the two attributes, `Forma.Framework.Themes.Testing` holds a
-theme to the contrast targets, and Forma's theme meets them in both its schemes, as Forma High Contrast, a stylesheet
-beside the tokens, meets its own in both of its.
+theme to the contrast targets, Forma's theme meets them in both its schemes, as Forma High Contrast, a stylesheet
+beside the tokens, meets its own in both of its, and `FormaThemeScope` draws a part of a page in a theme or a scheme of
+its own.
 
 <a id="the-showcases-review-modes"></a>
 

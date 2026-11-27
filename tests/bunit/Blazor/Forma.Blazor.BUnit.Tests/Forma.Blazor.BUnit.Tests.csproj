@@ -35,6 +35,7 @@
         <ProjectReference Include="..\..\..\support\Forma.Tests.Support.Blazor\Forma.Tests.Support.Blazor.csproj" />
         <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Share.Targets\Forma.AddOns.Share.Targets.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Share\Forma.Framework.Share.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
     </ItemGroup>
 
 </Project>

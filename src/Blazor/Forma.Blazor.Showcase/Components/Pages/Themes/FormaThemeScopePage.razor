@@ -1,0 +1,96 @@
+@page "/theme-scope"
+@attribute [ShowcasePage("FormaThemeScope")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Inputs
+@using Forma.Blazor.Components.Layout
+@using Forma.Blazor.Components.Themes
+@using Forma.Framework.Css
+@using Forma.Framework.Themes
+
+<h1>FormaThemeScope</h1>
+<p class="description">@L["A part of the page drawn in a theme, a scheme or both of its own, whatever the page around it draws. Its element lays out as though it weren't there, and what it leaves unnamed it takes from its surroundings."]</p>
+
+<div class="demo-section">
+    <h2>@L["A Part in Another Scheme"]</h2>
+    <p class="description">@L["A scope naming only a scheme draws its surroundings' theme in it, so this part stays dark whichever scheme the page draws."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaThemeScope Scheme="ColorSchemePreference.Dark">
+            @Part
+        </FormaThemeScope>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["A Part in Another Theme"]</h2>
+    <p class="description">@L["A footer standing in a brand's navy in both of the page's schemes: Harbor's dark scheme, a theme the Showcase writes as a host writes its own."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaThemeScope Theme="harbor" Scheme="ColorSchemePreference.Dark">
+            @Part
+        </FormaThemeScope>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Forma High Contrast"]</h2>
+    <p class="description">@L["A scope naming only a theme draws it in its surroundings' scheme: Forma High Contrast in the page's own."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaThemeScope Theme="forma-high-contrast">
+            @Part
+        </FormaThemeScope>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Following the Device"]</h2>
+    <p class="description">@L["A scope in the System scheme draws the scheme the device prefers, which the browser resolves."]</p>
+    <div class="demo-box demo-box-flush">
+        <FormaThemeScope Scheme="ColorSchemePreference.System">
+            @Part
+        </FormaThemeScope>
+    </div>
+</div>
+
+<div class="demo-section">
+    <h2>@L["Choosing the Scheme"]</h2>
+    <p class="description">@L["A scope follows its parameters as they change, with nothing reloaded."]</p>
+    <div class="demo-box">
+        <div class="demo-row" role="group" aria-label="@L["Scheme"]">
+            @foreach (var (scheme, label) in Schemes)
+            {
+                <FormaToggleButton Label="@label" ShowLabel="true" Pressed="_scheme == scheme" OnClick="() => _scheme = scheme" />
+            }
+        </div>
+        <div class="demo-box-flush">
+            <FormaThemeScope Theme="harbor" Scheme="_scheme">
+                @Part
+            </FormaThemeScope>
+        </div>
+    </div>
+</div>
+
+@code {
+    private ColorSchemePreference _scheme = ColorSchemePreference.Light;
+    private string? _name = "Harbor";
+    private bool _isChecked = true;
+
+    private (ColorSchemePreference Scheme, string Label)[] Schemes =>
+    [
+        (ColorSchemePreference.Light, L["Light"]),
+        (ColorSchemePreference.Dark, L["Dark"]),
+        (ColorSchemePreference.System, L["System"]),
+    ];
+
+    private RenderFragment Part => @<FormaBackdrop Variant="BackdropVariant.Canvas" class="demo-theme-scope-part">
+        <FormaBackdrop Variant="BackdropVariant.Raised" class="demo-theme-scope-card">
+            <p>@L["Primary text, and supporting text beside it."] <span class="demo-theme-scope-secondary">@L["A caption, a count, a hint."]</span></p>
+            <p><a href="theme-scope">@L["Read More"]</a></p>
+            <div class="demo-row">
+                <FormaButton Variant="ButtonVariant.Primary">@L["Save"]</FormaButton>
+                <FormaButton Variant="ButtonVariant.Secondary">@L["Cancel"]</FormaButton>
+                <FormaStatusBadge Text="@L["Booked"]" Background="@(CssColorValue.FromProperty("--success-subtle-color"))" Foreground="@(CssColorValue.FromProperty("--success-ink-color"))" />
+            </div>
+            <FormaTextBox @bind-Value="_name" Label="@L["Name"]" />
+            <FormaCheckBox @bind-Value="_isChecked">@L["Keep Me Signed In"]</FormaCheckBox>
+        </FormaBackdrop>
+    </FormaBackdrop>;
+}

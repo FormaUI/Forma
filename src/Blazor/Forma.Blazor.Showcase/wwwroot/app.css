@@ -1067,3 +1067,22 @@ body {
 .demo-window-arena-short {
     min-block-size: 12rem;
 }
+
+/* A part of the page in a theme scope: its own canvas, and a card on it. */
+.demo-theme-scope-part {
+    padding: var(--space-4);
+    color: var(--text-primary-color);
+}
+
+.demo-theme-scope-card {
+    gap: var(--space-3);
+    padding: var(--space-4);
+}
+
+.demo-theme-scope-card > p {
+    margin: 0;
+}
+
+.demo-theme-scope-secondary {
+    color: var(--text-secondary-color);
+}

@@ -375,6 +375,18 @@ An element draws the theme and the scheme it names, and so does everything insid
 <html lang="en" data-forma-theme="harbor" data-forma-scheme="system">
 ```
 
+A part of a page names its own through `FormaThemeScope`, which writes the attributes it is given on an element laid
+out as though it weren't there:
+
+```razor
+@using Forma.Blazor.Components.Themes
+@using Forma.Framework.Themes
+
+<FormaThemeScope Theme="harbor" Scheme="ColorSchemePreference.Dark">
+    <SiteFooter />
+</FormaThemeScope>
+```
+
 `data-forma-scheme` is `light`, `dark` or `system`, which draws the scheme the device prefers. An element naming only a
 theme draws it in its surroundings' scheme, and one naming only a scheme draws its surroundings' theme in it. A page
 naming neither draws Forma's own theme in its light scheme, with each token a stylesheet of its own sets on `:root` in

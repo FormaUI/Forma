@@ -35,6 +35,10 @@ set out. What Forma gained before its first release, month by month, is in [the 
 - Forma High Contrast, `forma-high-contrast.css` beside the tokens, is a theme of its own, `forma-high-contrast`, in a
   light and a dark scheme: every text, each role's ink and each role's fg past 7:1, every border and the focus ring
   past 3:1, and every state shown by a solid fill.
+- [`FormaThemeScope`](docs/theme-design.md#a-part-in-a-theme-of-its-own) draws its content in a `Theme`, a `Scheme` or
+  both of its own, whatever its surroundings', through an element laid out as though it weren't there. `Scheme` is a
+  `ColorSchemePreference`, `System`, `Light` or `Dark`, new in `formaui-net.Framework.Themes`, which
+  `formaui-net.Blazor` now references.
 - A popover draws `--popover-bg-color`, outlined all round by `--popover-border-color`: the raised backdrop and
   `--border-color` in a light scheme, and a step toward the ink in a dark one. Every popover a component opens takes
   them: the drop-down and share menus, the lists of `FormaSelect`, `FormaMultiSelect`, `FormaComboBox` and

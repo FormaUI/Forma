@@ -1,0 +1,41 @@
+/*
+    harbor.css — Harbor, a theme the Showcase draws parts of its pages in: a brand's navy, whose dark scheme stands on navy
+    paper, written as a host writes a theme of its own.
+*/
+
+[data-forma-theme="harbor"] {
+    --gray-0: light-dark(#ffffff, #10223d);
+    --gray-50: light-dark(#f9fafb, #142a4a);
+    --gray-100: light-dark(#f3f4f6, #193257);
+    --gray-200: light-dark(#e5e7eb, #213c66);
+    --gray-300: light-dark(#d1d5db, #2b4876);
+    --gray-400: light-dark(#9ca3af, #4f6a93);
+    --gray-500: light-dark(#677077, #8fa3c2);
+    --gray-600: light-dark(#495361, #b4c3da);
+    --gray-700: light-dark(#374151, #d2dcea);
+    --gray-800: light-dark(#1f2937, #eef3fa);
+
+    --primary-color: light-dark(#0b5cad, #2876d0);
+    --secondary-color: light-dark(var(--gray-600), var(--gray-400));
+    --success-color: #208738;
+    --danger-color: #c4314b;
+    --warning-color: #ffc107;
+    --info-color: #2d76cd;
+
+    --backdrop-canvas-bg-color: light-dark(var(--gray-100), #0b182c);
+
+    --chart-series-1-color: light-dark(#2a78d6, #3987e5);
+    --chart-series-2-color: light-dark(#eb6834, #d95926);
+    --chart-series-3-color: light-dark(#1baf7a, #199e70);
+    --chart-series-4-color: light-dark(#eda100, #c98500);
+
+    /* On navy paper each role's ink is its solid 60% toward white, and the secondary solid is a mid navy under white. */
+    --primary-ink-color: light-dark(var(--primary-emphasis-color), color-mix(in srgb, var(--primary-color) 60%, white));
+    --success-ink-color: light-dark(var(--success-emphasis-color), color-mix(in srgb, var(--success-color) 60%, white));
+    --danger-ink-color: light-dark(var(--danger-emphasis-color), color-mix(in srgb, var(--danger-color) 60%, white));
+    --warning-ink-color: light-dark(color-mix(in srgb, var(--warning-color) 53%, black), color-mix(in srgb, var(--warning-color) 60%, white));
+    --info-ink-color: light-dark(var(--info-emphasis-color), color-mix(in srgb, var(--info-color) 60%, white));
+    --secondary-emphasis-color: light-dark(var(--gray-700), var(--gray-300));
+    --secondary-ink-color: var(--gray-700);
+    --quiet-text-color: var(--gray-600);
+}

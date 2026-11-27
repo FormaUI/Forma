@@ -1,0 +1,28 @@
+{
+  "$localization": "SchemaVersion: 1.0.0; Culture: es;",
+  "FormaThemeScopePage": {
+    "A part of the page drawn in a theme, a scheme or both of its own, whatever the page around it draws. Its element lays out as though it weren't there, and what it leaves unnamed it takes from its surroundings.": "Una parte de la página dibujada en un tema, un esquema o ambos propios, dibuje lo que dibuje la página que la rodea. Su elemento se dispone como si no estuviera, y lo que deja sin nombrar lo toma de su entorno.",
+    "A Part in Another Scheme": "Una Parte en Otro Esquema",
+    "A scope naming only a scheme draws its surroundings' theme in it, so this part stays dark whichever scheme the page draws.": "Un ámbito que solo nombra un esquema dibuja en él el tema de su entorno, así que esta parte sigue oscura sea cual sea el esquema que dibuja la página.",
+    "A Part in Another Theme": "Una Parte en Otro Tema",
+    "A footer standing in a brand's navy in both of the page's schemes: Harbor's dark scheme, a theme the Showcase writes as a host writes its own.": "Un pie de página en el azul marino de una marca en los dos esquemas de la página: el esquema oscuro de Harbor, un tema que el Showcase escribe como un anfitrión escribe el suyo.",
+    "Forma High Contrast": "Forma High Contrast",
+    "A scope naming only a theme draws it in its surroundings' scheme: Forma High Contrast in the page's own.": "Un ámbito que solo nombra un tema lo dibuja en el esquema de su entorno: Forma High Contrast en el de la página.",
+    "Following the Device": "Según el Dispositivo",
+    "A scope in the System scheme draws the scheme the device prefers, which the browser resolves.": "Un ámbito en el esquema System dibuja el esquema que prefiere el dispositivo, que resuelve el navegador.",
+    "Choosing the Scheme": "Elegir el Esquema",
+    "A scope follows its parameters as they change, with nothing reloaded.": "Un ámbito sigue a sus parámetros a medida que cambian, sin recargar nada.",
+    "Scheme": "Esquema",
+    "Light": "Claro",
+    "Dark": "Oscuro",
+    "System": "Sistema",
+    "Primary text, and supporting text beside it.": "Texto principal, y texto de apoyo a su lado.",
+    "A caption, a count, a hint.": "Un pie, un recuento, una pista.",
+    "Read More": "Leer Más",
+    "Save": "Guardar",
+    "Cancel": "Cancelar",
+    "Booked": "Reservado",
+    "Name": "Nombre",
+    "Keep Me Signed In": "Mantener la Sesión Iniciada"
+  }
+}

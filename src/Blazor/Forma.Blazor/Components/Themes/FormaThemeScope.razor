@@ -1,0 +1,11 @@
+@namespace Forma.Blazor.Components.Themes
+@inherits FormaElementBase
+
+<div id="@Id"
+     data-rid="@Context.RuntimeId"
+     class="@RootClass"
+     style="@RootStyle"
+     @attributes="AdditionalAttributes"
+     @ref="RootElement"
+     data-forma-theme="@Theme"
+     data-forma-scheme="@SchemeName">@ChildContent</div>

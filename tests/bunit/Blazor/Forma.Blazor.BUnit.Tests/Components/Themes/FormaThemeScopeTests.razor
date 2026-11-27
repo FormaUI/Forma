@@ -1,0 +1,122 @@
+@inherits FormaBunitContext
+
+@code {
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_name_the_theme_and_the_scheme_its_content_draws_in()
+        {
+            // Arrange
+            using var ctx = new FormaThemeScopeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaThemeScope Theme="harbor" Scheme="ColorSchemePreference.Dark"><span>Inside</span></FormaThemeScope>);
+            var scope = cut.Find(".forma-theme-scope");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal("harbor", scope.GetAttribute("data-forma-theme"));
+                Assert.Equal("dark", scope.GetAttribute("data-forma-scheme"));
+                Assert.Equal("Inside", scope.TextContent);
+            });
+        }
+
+        [Theory]
+        [InlineData(ColorSchemePreference.System, "system")]
+        [InlineData(ColorSchemePreference.Light, "light")]
+        [InlineData(ColorSchemePreference.Dark, "dark")]
+        public void Should_name_each_scheme_as_the_tokens_read_it(ColorSchemePreference scheme, string expected)
+        {
+            // Arrange
+            using var ctx = new FormaThemeScopeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaThemeScope Scheme="scheme" />);
+
+            // Assert
+            Assert.Equal(expected, cut.Find(".forma-theme-scope").GetAttribute("data-forma-scheme"));
+        }
+
+        [Fact]
+        public void Should_leave_out_what_it_takes_from_its_surroundings()
+        {
+            // Arrange
+            using var ctx = new FormaThemeScopeTests();
+
+            // Act
+            var themeOnly = ctx.Render(@<FormaThemeScope Theme="harbor" />).Find(".forma-theme-scope");
+            var schemeOnly = ctx.Render(@<FormaThemeScope Scheme="ColorSchemePreference.Light" />).Find(".forma-theme-scope");
+            var neither = ctx.Render(@<FormaThemeScope />).Find(".forma-theme-scope");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.False(themeOnly.HasAttribute("data-forma-scheme"));
+                Assert.False(schemeOnly.HasAttribute("data-forma-theme"));
+                Assert.False(neither.HasAttribute("data-forma-theme"));
+                Assert.False(neither.HasAttribute("data-forma-scheme"));
+            });
+        }
+
+        [Fact]
+        public void Should_follow_a_scheme_changed_after_it_renders()
+        {
+            // Arrange
+            using var ctx = new FormaThemeScopeTests();
+            var cut = ctx.Render<FormaThemeScope>(parameters => parameters.Add(scope => scope.Scheme, ColorSchemePreference.Light));
+
+            // Act
+            cut.Render(parameters => parameters.Add(scope => scope.Scheme, ColorSchemePreference.Dark));
+
+            // Assert
+            Assert.Equal("dark", cut.Find(".forma-theme-scope").GetAttribute("data-forma-scheme"));
+        }
+
+        [Fact]
+        public void Should_merge_the_host_class_and_pass_attributes_through()
+        {
+            // Arrange
+            using var ctx = new FormaThemeScopeTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaThemeScope Theme="harbor" class="site-footer" data-region="footer" />);
+            var scope = cut.Find(".forma-theme-scope");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("site-footer", scope.ClassList);
+                Assert.Equal("footer", scope.GetAttribute("data-region"));
+            });
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Should_refuse_a_theme_with_no_name(string theme)
+        {
+            // Arrange
+            using var ctx = new FormaThemeScopeTests();
+
+            // Act
+            var exception = Assert.Throws<ArgumentException>(() => ctx.Render<FormaThemeScope>(parameters => parameters.Add(scope => scope.Theme, theme)));
+
+            // Assert
+            Assert.Equal("Theme", exception.ParamName);
+        }
+
+        [Fact]
+        public void Should_refuse_a_scheme_that_is_none_of_the_three()
+        {
+            // Arrange
+            using var ctx = new FormaThemeScopeTests();
+
+            // Act
+            var exception = Assert.Throws<ArgumentOutOfRangeException>(() => ctx.Render<FormaThemeScope>(parameters => parameters.Add(scope => scope.Scheme, (ColorSchemePreference)7)));
+
+            // Assert
+            Assert.Equal("Scheme", exception.ParamName);
+        }
+    }
+}

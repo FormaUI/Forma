@@ -123,9 +123,17 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
      them, which drew no surface before. The contrast check measures each pair on the popover's surface beside the
      four backdrops, and holds a pressed toggle's label, the primary ink on a quiet button's hover fill, to a role
      ink's target; the browser checks draw a host's theme named on the root, and Forma's in a part naming it there.
-6. **`FormaThemeScope`.** The component, which writes either attribute or both on an element with
+6. **`FormaThemeScope`.** ✅ The component, which writes either attribute or both on an element with
    `display: contents`, its tests and its Showcase page.
    - Gate: the four gates the checking standard sets; the scope cases of the design's verification.
+   - Landed: the scope takes `Theme`, a theme's name, and `Scheme`, writing each it is given and leaving out the one
+     it isn't, so a scope naming neither draws its surroundings' theme and scheme. The design's scope cases run
+     through it, its check page nesting scopes where it nested elements, with elements naming both as the
+     references, and a scope whose scheme a press changes draws the new scheme in every runtime. Its Showcase page
+     draws a part of the page dark, in a theme the Showcase writes as a host does, in Forma High Contrast, in the
+     device's scheme, and in the scheme the reader picks.
+   - Departure: `ColorSchemePreference`, the scope's `Scheme`, lands here in `Forma.Framework.Themes`, ahead of the
+     rest of the contracts in step 7.
 
 ## The reader's choice
 

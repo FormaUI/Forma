@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**81 components implemented, one in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**82 components implemented, one in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -86,6 +86,8 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaEmoji
 │   ├── ✅ FormaEmojiPicker
 │   └── ✅ FormaIcon
+├── (1 / 1) Themes/
+│   └── ✅ FormaThemeScope
 ├── (1 / 1) Virtualization/
 │   └── ✅ FormaVirtualize
 └── (2 / 2) Windows/
@@ -756,6 +758,15 @@ A single-line text input, bare or in a field with a floating label.
 |---|---|
 | **Old pattern** | `<input type="text" class="form-control">` without floating labels or dedicated label wrappers |
 | **Used in** | Every text field: labeled form fields, compact inline forms, inline grid filters, dialog fields, toolbars and filter rows |
+
+### `FormaThemeScope`
+
+A part of the page drawn in a theme, a color scheme or both of its own, whatever its surroundings', as [the theme design](theme-design.md#a-part-in-a-theme-of-its-own) sets out.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | A footer in a brand's colors in both of the page's schemes, a preview of another theme beside the one in force, and the Showcase's theme scope page |
 
 ### `FormaTimePicker`
 

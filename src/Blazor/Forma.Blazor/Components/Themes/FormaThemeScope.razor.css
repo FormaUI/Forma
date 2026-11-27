@@ -1,0 +1,9 @@
+/* ============================================================
+   FormaThemeScope — CSS isolation
+   An element carrying data-forma-theme, data-forma-scheme or both,
+   laid out as though it weren't there.
+   ============================================================ */
+
+.forma-theme-scope {
+    display: contents;
+}

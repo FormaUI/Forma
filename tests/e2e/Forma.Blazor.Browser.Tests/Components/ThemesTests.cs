@@ -134,6 +134,27 @@ public sealed class ThemesTests
             Assert.Empty(problems);
         }
 
+        [Theory]
+        [MemberData(nameof(Runtimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_draw_a_scope_in_the_scheme_its_parameter_changes_to(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "themes");
+            await using var _ = context;
+            await page.WaitForFunctionAsync(AreThemesLoaded);
+            var checkLight = await ReadTokensAsync(page, "check-light");
+            var checkDark = await ReadTokensAsync(page, "check-dark");
+            var problems = Compare("switched", await ReadTokensAsync(page, "switched"), "check-light", checkLight).ToList();
+
+            // Act
+            await page.Locator("#switch-scheme").ClickAsync();
+            await page.WaitForFunctionAsync("() => document.getElementById('switched').parentElement.dataset.formaScheme === 'dark'");
+            problems.AddRange(Compare("switched", await ReadTokensAsync(page, "switched"), "check-dark", checkDark));
+
+            // Assert
+            Assert.Empty(problems);
+        }
+
         private static Task<Dictionary<string, string>> ReadTokensAsync(IPage page, string id)
             => page.EvaluateAsync<Dictionary<string, string>>(ReadTokens, id);
 

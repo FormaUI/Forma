@@ -15,11 +15,13 @@ Every type is used directly; there is nothing to register.
 | Type | What it is |
 | --- | --- |
 | `ColorSchemes` | The color schemes a theme is drawn in, `Light` and `Dark`, combined as flags. |
+| `ColorSchemePreference` | The color scheme a reader prefers a theme drawn in: `System`, the device's, `Light` or `Dark`. |
 
 ```csharp
 using Forma.Framework.Themes;
 
 var schemes = ColorSchemes.Light | ColorSchemes.Dark;
+var preference = ColorSchemePreference.System;
 ```
 
 ## License
