@@ -19,5 +19,7 @@
 </span>
 
 <FormaPopover @ref="Popover" Anchor="_anchorElement" OnOpenChanged="_ => { }" id="@PopoverId">
-    <FormaEmojiPicker OnSelect="HandleSelectAsync" @bind-RecentEmojis="_recentEmojis" Options="PickerOptions" />
+    <div class="forma-composer-emoji-surface">
+        <FormaEmojiPicker OnSelect="HandleSelectAsync" @bind-RecentEmojis="_recentEmojis" Options="PickerOptions" />
+    </div>
 </FormaPopover>

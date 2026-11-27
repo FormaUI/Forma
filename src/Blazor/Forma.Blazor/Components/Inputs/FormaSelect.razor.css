@@ -51,8 +51,9 @@
     max-inline-size: 20rem;
     max-block-size: 16rem;
     overflow-y: auto;
+    border: 1px solid var(--popover-border-color);
     border-radius: var(--radius-md);
-    background: var(--input-bg-color);
+    background: var(--popover-bg-color);
     box-shadow: var(--shadow-medium);
 }
 

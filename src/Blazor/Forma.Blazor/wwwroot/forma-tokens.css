@@ -202,7 +202,7 @@
        ============================================================ */
     --backdrop-flat-bg-color: var(--gray-0);      /* a flat backdrop: a panel, a sheet, a content area */
     --backdrop-inset-bg-color: var(--gray-50);    /* an inset backdrop: a header strip, a toolbar band, a table header */
-    --backdrop-raised-bg-color: var(--gray-0);    /* a raised backdrop: a card on the canvas, a popover, a dialog */
+    --backdrop-raised-bg-color: var(--gray-0);    /* a raised backdrop: a card or a frame on the canvas */
 
     /* Backgrounds */
     --input-bg-color: var(--gray-0);
@@ -211,6 +211,14 @@
     --muted-bg-color: var(--gray-100);    /* content decoration: inline code, a quote, a placeholder box */
     --hover-bg-color: color-mix(in srgb, var(--gray-600) 6%, transparent);
     --loading-bg-color: color-mix(in srgb, var(--gray-600) 12%, transparent);  /* the shape standing for content still loading: a row, a card, a value */
+
+    /* ============================================================
+       Popovers — the surface a menu, a list, a picker or a readout floats on over the page, and the
+       edge that outlines it all round. In a dark scheme, where a shadow barely shows, the surface
+       is a step toward the ink, so it stands apart from what it opens over.
+       ============================================================ */
+    --popover-bg-color: light-dark(var(--backdrop-raised-bg-color), var(--gray-50));
+    --popover-border-color: var(--border-color);
 
     /* ============================================================
        Buttons — one family per variant, each the same four members: the fill at rest, under the

@@ -70,6 +70,7 @@ whose defaults a theme most often replaces:
 | A role's `-subtle-color`, the tint behind a selected row, an active tab or a badge | The solid at 10% over what's behind it |
 | `--focus-color`, the band of the focus ring | The primary solid, opaque |
 | `--border-emphasis-color`, the border that marks a field | An opaque step of the gray scale |
+| `--popover-bg-color`, the surface a menu, a list or a picker floats on | The raised backdrop in a light scheme, and a step toward the ink in a dark one, where a shadow barely shows |
 | The state fills: `--hover-bg-color`, `--loading-bg-color` and the quiet button's hover and pressed fills | Translucent tints of the scale |
 
 A default cut from the scale serves both schemes, since the scale runs the other way in a dark one. A role's

@@ -346,8 +346,8 @@ tokens, the values nothing else derives:
 - the canvas, `--backdrop-canvas-bg-color`, the backdrop every other backdrop is laid on;
 - the four chart series, `--chart-series-1-color` to `--chart-series-4-color`.
 
-Every other token follows from them, hover, focus, links, backdrops and borders among them, and a theme may set any of
-those too. A value that differs between the light and the dark scheme is a color, written once as
+Every other token follows from them, hover, focus, links, backdrops, popovers and borders among them, and a theme may
+set any of those too. A value that differs between the light and the dark scheme is a color, written once as
 `light-dark(light, dark)`:
 
 ```css
@@ -377,7 +377,9 @@ place of Forma's.
 
 A theme sets every base token, since a part of the page in the theme takes what the theme leaves unset from the theme
 around it. The canvas stands below the paper in every scheme: a light scale holds it as `--gray-100`, and a dark one,
-running from dark paper to light ink, has no step below its paper, so it sets the canvas apart.
+running from dark paper to light ink, has no step below its paper, so it sets the canvas apart. A popover, such as a
+menu or a list, floats on `--popover-bg-color`, outlined by `--popover-border-color`: the raised backdrop in a light
+scheme, and a step toward the ink in a dark one, where a shadow barely shows.
 
 A role's color does two jobs on a page, and a dark scheme gives each its own shade. Its `-emphasis-color` is the fill
 a hover or an active state is cut from, under the role's `-fg-color` text, and its `-ink-color` is the role's color

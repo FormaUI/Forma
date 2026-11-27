@@ -26,6 +26,12 @@ set out. What Forma gained before its first release, month by month, is in [the 
   - `--focus-color` is the opaque `--primary-color`, where it was the primary at 35%.
 
   A host that set any of these keeps its own value.
+- A popover draws `--popover-bg-color`, outlined all round by `--popover-border-color`: the raised backdrop and
+  `--border-color` in a light scheme, and a step toward the ink in a dark one. Every popover a component opens takes
+  them: the drop-down and share menus, the lists of `FormaSelect`, `FormaMultiSelect`, `FormaComboBox` and
+  `FormaTimeBox`, the calendars of `FormaDateBox` and `FormaDateRangePicker`, the data grid's column options, the
+  explorer's selection review, the composer's emoji picker and selection bar, and a chart's readout. The lists and
+  calendars gain the edge, and the column options and the selection review, which drew no surface, gain both.
 - `formaui-net.Framework.Themes.Testing` holds a theme to [the theme design's contrast targets](docs/theme-design.md#contrast)
   in a host's tests: `ThemeContrast.MeasureAsync` measures every pair of tokens they name in each color scheme, on a
   Playwright page, as the browser draws them, and reports each with its ratio and its target. `ColorSchemes`, the schemes

@@ -30,7 +30,8 @@
     max-inline-size: calc(100vw - var(--space-4));
     overflow-y: auto;
     padding-block: var(--space-1);
-    background: var(--input-bg-color);
+    background: var(--popover-bg-color);
+    border: 1px solid var(--popover-border-color);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-medium);
 }

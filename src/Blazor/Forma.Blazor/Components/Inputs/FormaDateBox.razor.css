@@ -81,7 +81,8 @@
 .forma-date-box-popover {
     display: flex;
     overflow: visible;
-    background: var(--input-bg-color);
+    background: var(--popover-bg-color);
+    border: 1px solid var(--popover-border-color);
     border-radius: var(--forma-date-box-radius);
     box-shadow: var(--shadow-medium);
 }

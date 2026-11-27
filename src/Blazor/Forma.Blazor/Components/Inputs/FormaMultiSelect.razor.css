@@ -83,8 +83,9 @@
     min-inline-size: max(12rem, min(var(--forma-popover-anchor-inline-size), calc(100vw - var(--space-4))));
     max-inline-size: 20rem;
     max-block-size: 16rem;
+    border: 1px solid var(--popover-border-color);
     border-radius: var(--radius-md);
-    background: var(--input-bg-color);
+    background: var(--popover-bg-color);
     box-shadow: var(--shadow-medium);
 }
 
