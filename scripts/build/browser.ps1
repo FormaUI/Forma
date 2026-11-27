@@ -30,7 +30,8 @@ many of the runs that ran it failed it.
 
 .PARAMETER LoadWith
 Test projects run over and over while the checks run, so a check that fails only on a busy machine fails here too.
-They run from the output already on disk, so they are built first, as compile.ps1 builds them.
+They run from the output already on disk, so they are built first, as compile.ps1 builds them, and a project
+that isn't built is refused before anything is built for the checks.
 
 .EXAMPLE
 ./scripts/build/browser.ps1

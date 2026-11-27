@@ -600,7 +600,8 @@ Repeats the run, continuing past a failure so that a flake shows as a rate.
 
 .PARAMETER LoadWith
 Test projects run over and over from the output on disk while the runs last, so a test that fails only on a
-busy machine fails here. They run without FORMA_WAIT_LOG, so what they wait for is never recorded.
+busy machine fails here. They run without FORMA_WAIT_LOG, so what they wait for is never recorded, and a project
+that isn't built is refused before any run.
 
 .PARAMETER WaitLog
 The folder the waits a test makes with diagnostics record themselves in, through FORMA_WAIT_LOG. The
@@ -639,6 +640,7 @@ function Test-Solution {
     $summarizeWaitLog = ${function:Get-WaitLogSummary}
     $writeTestProgress = ${function:Write-TestProgress}
     $countExecutedTests = ${function:Get-TestExecutionCount}
+    $confirmTestLoad = ${function:Confirm-TestLoad}
     $startTestLoad = ${function:Start-TestLoad}
     $stopTestLoad = ${function:Stop-TestLoad}
     $temporaryFolder = $Context.TemporaryFolder
@@ -698,6 +700,8 @@ function Test-Solution {
     $runEstimate = if ($lastTime) { [timespan]::FromTicks([long]($lastTime.Ticks / $runs)) } else { $null }
 
     Invoke-BuildStep -Name 'test' -Target $target -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+        & $confirmTestLoad -Project $load
+
         if ($selection) {
             if ($projectCount -eq 0) {
                 throw 'No unit or bUnit suite was found to run.'
@@ -1026,6 +1030,32 @@ function Start-TestLoad {
         }
 
         [pscustomobject]@{ Name = [System.IO.Path]::GetFileNameWithoutExtension($path); Job = $job }
+    }
+}
+
+<#
+.SYNOPSIS
+Refuses a load whose test projects aren't built.
+
+.DESCRIPTION
+A load runs each project from its build on disk, so a project that isn't built would fail every run at once and
+leave the machine without the load asked for, while the runs it loads would report as loaded.
+
+.PARAMETER Project
+The test projects that load the machine.
+#>
+function Confirm-TestLoad {
+    [CmdletBinding()]
+    param(
+        [AllowEmptyCollection()] [string[]] $Project = @()
+    )
+
+    foreach ($path in $Project) {
+        $assembly = "$(dotnet msbuild $path -getProperty:TargetPath -nologo)".Trim()
+
+        if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $assembly)) {
+            throw "$([System.IO.Path]::GetFileNameWithoutExtension($path)) isn't built, and a load runs each project from its build on disk: build it first, as ./scripts/build/compile.ps1 does."
+        }
     }
 }
 
@@ -1673,7 +1703,7 @@ Repeats the checks on the hosts published once, continuing past a failure.
 
 .PARAMETER LoadWith
 Test projects run over and over while the checks run, from the output already on disk, so a check that fails only
-on a busy machine fails here too.
+on a busy machine fails here too. A project that isn't built is refused before anything is built for the checks.
 
 .OUTPUTS
 The step's result.
@@ -1720,6 +1750,7 @@ function Test-BrowserCheck {
     $isVisible = $Visible.IsPresent
     $resultsOutput = Join-Path $Context.BrowserOutput 'results'
     $load = @(foreach ($name in $LoadWith) { Resolve-TestProject -Context $Context -Name $name })
+    $confirmTestLoad = ${function:Confirm-TestLoad}
     $startTestLoad = ${function:Start-TestLoad}
     $stopTestLoad = ${function:Stop-TestLoad}
     $temporaryFolder = $Context.TemporaryFolder
@@ -1769,6 +1800,8 @@ function Test-BrowserCheck {
     }
 
     Invoke-BuildStep -Name 'browser' -Target $checks -Description $description -Timings $Context.Timings -WhatIf:$WhatIfPreference -Command {
+        & $confirmTestLoad -Project $load
+
         if ($isAndroid) {
             if (-not (dotnet workload list | Select-String -Pattern '^\s*maui-android\s' -Quiet)) {
                 throw 'The Android check host needs the maui-android workload: dotnet workload install maui-android'

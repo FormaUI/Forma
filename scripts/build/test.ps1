@@ -35,7 +35,8 @@ Repeats the run, continuing past a failure, so that a test failing sometimes sho
 
 .PARAMETER LoadWith
 Test projects run over and over while the runs last, so a test that fails only on a busy machine fails
-here too. They run from the output already on disk, so this takes -NoBuild after a build.
+here too. They run from the output already on disk, so this takes -NoBuild after a build, and a project that
+isn't built is refused before any run.
 
 .PARAMETER WaitLog
 A folder for the waits a test makes with diagnostics to record themselves in. What a run before left there
