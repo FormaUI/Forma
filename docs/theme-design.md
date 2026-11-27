@@ -348,6 +348,10 @@ host page's own content:
 - a `WKUserScript` injected at document start, on iOS and Mac Catalyst;
 - `addDocumentStartJavaScript`, on Android, where the system's web view supports it.
 
+The script names the theme and the scheme on `<html>`, at once where the document has its root, and as the
+parser creates it where it doesn't yet, as WebView2 runs the script. Either way the attributes stand before the
+host page's first script runs and before its first paint.
+
 The integration replaces the script with each accepted choice, so a document created later, a reload or a
 web view opened afterwards, starts in the choice in force. An Android web view without document-start scripts
 starts in the host page's default and takes the application's choice as its document's coordinator starts,

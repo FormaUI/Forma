@@ -236,6 +236,21 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
 
     Each platform's result is recorded under this step. A platform where the probe fails changes the design's
     [first paint](theme-design.md#a-blazor-hybrid-web-view) before step 13 starts.
+    - Probe: a `BlazorWebView` on each host adds a document-start script naming a theme and a scheme on `<html>`.
+      The host page's first script reads both attributes, and its first animation frame reads the color they draw,
+      which comes before the first paint. The script is then replaced and the page reloaded, and the new document is
+      read the same way.
+    - Landed: WebView2 158, under WPF, Windows Forms and MAUI on Windows. The host page's first script finds both
+      attributes, the first frame draws their color, and a replaced script reaches the reloaded document. WebView2 runs
+      the script before the document has its root, so the script names the attributes on `<html>` as the parser
+      creates it, which the design now states.
+    - Landed: Android's emulator, API 37 with its system web view, 145. The web view reports document-start scripts as
+      supported, and the first script, the first frame and the reloaded document read as on WebView2. There the
+      document has its root as the script runs, and the same script names it at once.
+    - Open: a system web view without document-start scripts. The emulator's only image is API 37, whose web view has
+      them. Proposal: an API 24 image with its stock web view, whose start the coordinator's own path then covers.
+    - Open: WKWebView in the iOS simulator needs the hosted Mac, which this machine isn't. Proposal: the same probe as
+      a run on the hosted macOS runner.
 13. **The Blazor Hybrid half.** `Forma.Framework.Themes.Blazor.WebView`:
     - the application's coordinator, ordering its switches by the switch coordinator's rules, with the
       application's culture coordinator moved onto the same ordering;

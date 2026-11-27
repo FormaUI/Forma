@@ -289,6 +289,9 @@ beside the tokens, meets its own in both of its, `FormaThemeScope` draws a part 
 own, a host registers its themes with `AddFormaThemes`, beside Forma's two, a server-rendered page draws the reader's
 choice from its first paint, as a standalone app's does through the bootstrap, a switch changes it in place in
 every runtime on the page, and `FormaThemePicker` offers the reader the choice, interactive or posted from a static page.
+Step 12's probes show a document-start script drawing the choice before the first paint on WebView2, under WPF, Windows
+Forms and MAUI on Windows, and on Android's web view; a web view without such scripts and WKWebView on iOS are still to
+probe.
 
 <a id="the-showcases-review-modes"></a>
 
