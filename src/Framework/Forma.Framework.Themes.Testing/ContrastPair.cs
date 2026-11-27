@@ -11,10 +11,10 @@ public sealed record ContrastPair
     /// <summary>The token drawn on the background: a text, a role's ink or fg, a field's border or the focus ring.</summary>
     public required string Foreground { get; init; }
 
-    /// <summary>The token the foreground is drawn on: a backdrop, a role's subtle tint or one of its fills.</summary>
+    /// <summary>The token the foreground is drawn on: a backdrop, the popover's surface, a role's subtle tint or one of its fills, or a quiet button's hover fill.</summary>
     public required string Background { get; init; }
 
-    /// <summary>The backdrop the background is laid on, where the background isn't a backdrop itself.</summary>
+    /// <summary>The backdrop or the popover's surface the background is laid on, where the background isn't one itself.</summary>
     public string? Backdrop { get; init; }
 
     /// <summary>The contrast ratio between the foreground and the background as drawn, from 1 to 21.</summary>

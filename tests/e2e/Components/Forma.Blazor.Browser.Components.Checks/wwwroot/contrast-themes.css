@@ -9,6 +9,7 @@
     --backdrop-flat-bg-color: light-dark(#ffffff, #121212);
     --backdrop-inset-bg-color: light-dark(#ffffff, #1a1a1a);
     --backdrop-raised-bg-color: light-dark(#ffffff, #121212);
+    --popover-bg-color: light-dark(#ffffff, #1a1a1a);
 
     --text-primary-color: light-dark(#000000, #ffffff);
     --quiet-text-color: light-dark(#000000, #ffffff);
@@ -57,6 +58,8 @@
     --button-danger-hover-color: var(--danger-emphasis-color);
     --button-danger-active-color: light-dark(#4b0d0d, #b87772);
 
+    --button-quiet-hover-color: light-dark(#e5e5e5, #2a2a2a);
+
     --border-emphasis-color: light-dark(#767676, #8a8a8a);
     --focus-color: var(--primary-color);
 
@@ -74,5 +77,6 @@
     --danger-fg-color: light-dark(#ffffff, #e0a0a0);
     --border-emphasis-color: light-dark(#dddddd, #8a8a8a);
     --focus-color: light-dark(#003a70, #222222);
+    --button-quiet-hover-color: light-dark(#e5e5e5, #7a9cc6);
     --chart-series-4-color: light-dark(#1baf7a, #c98500);
 }

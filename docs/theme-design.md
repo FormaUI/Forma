@@ -481,20 +481,23 @@ scheme. Every registered theme's stylesheet is loaded, so a scope can name any t
 ## Contrast
 
 A theme is held to one set of contrast targets in each of its schemes. The targets are pairs of tokens with
-a minimum ratio, each measured on every backdrop, the canvas, flat, inset and raised:
+a minimum ratio, each measured on every surface text stands on: the four backdrops, the canvas, flat, inset and
+raised, and the popover's surface:
 
 | Pair | Target |
 | --- | --- |
-| Primary text and quiet text on each backdrop | 7:1 |
-| Secondary text on each backdrop | 4.5:1 |
-| Each role's ink on each backdrop and on its subtle tint | 4.5:1 |
+| Primary text and quiet text on each surface | 7:1 |
+| Secondary text on each surface | 4.5:1 |
+| Each role's ink on each surface and on its subtle tint | 4.5:1 |
+| The primary ink on a quiet button's hover fill, a pressed toggle's label | 4.5:1 |
 | Each role's fg on its solid, its hover fill and its pressed fill | 4.5:1 |
-| A field's border, and the focus ring, on each backdrop | 3:1 |
+| A field's border, and the focus ring, on each surface | 3:1 |
 | Adjacent chart series, as the charts' validation reads them | [The charts design's](charts-design.md#decision-summary) |
 
 Each pair is measured as it's drawn:
 
-- a translucent token is laid over what it stands on, a tint over its backdrop and each backdrop over the canvas;
+- a translucent token is laid over what it stands on, a tint or a fill over its surface and each surface over the
+  canvas;
 - a role's hover and pressed fills are its button's, where the role has one, primary, secondary and danger, and
   another role's hover fill is its emphasis, beside which it has no pressed fill.
 

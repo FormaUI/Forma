@@ -34,8 +34,9 @@ set out. What Forma gained before its first release, month by month, is in [the 
   calendars gain the edge, and the column options and the selection review, which drew no surface, gain both.
 - `formaui-net.Framework.Themes.Testing` holds a theme to [the theme design's contrast targets](docs/theme-design.md#contrast)
   in a host's tests: `ThemeContrast.MeasureAsync` measures every pair of tokens they name in each color scheme, on a
-  Playwright page, as the browser draws them, and reports each with its ratio and its target. `ColorSchemes`, the schemes
-  it takes, is in the new `formaui-net.Framework.Themes`.
+  Playwright page, as the browser draws them, on each backdrop and the popover's surface, a pressed toggle's label among
+  them, and reports each with its ratio and its target. `ColorSchemes`, the schemes it takes, is in the new
+  `formaui-net.Framework.Themes`.
 - [The charts design](docs/charts-design.md#decision-summary) states the distance its series are validated apart by: 8 in
   protanopia and deuteranopia, and 15 in full color vision.
 - [The culture coordinator](docs/culture-design.md#the-coordinator) runs on the switch coordinator,

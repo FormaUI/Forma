@@ -41,13 +41,17 @@ name, because it links neither Forma's tokens nor the theme, throws `InvalidOper
 
 ## What the check measures
 
+Each pair is measured on every surface text stands on: the four backdrops, the canvas, flat, inset and raised, and the
+popover's surface.
+
 | Pair | Target |
 | --- | --- |
-| Primary text and quiet text on each backdrop | 7:1 |
-| Secondary text on each backdrop | 4.5:1 |
-| Each role's ink on each backdrop and on its subtle tint | 4.5:1 |
+| Primary text and quiet text on each surface | 7:1 |
+| Secondary text on each surface | 4.5:1 |
+| Each role's ink on each surface and on its subtle tint | 4.5:1 |
+| The primary ink on a quiet button's hover fill, a pressed toggle's label | 4.5:1 |
 | Each role's fg on its solid, its hover fill and its pressed fill | 4.5:1 |
-| A field's border, and the focus ring, on each backdrop | 3:1 |
+| A field's border, and the focus ring, on each surface | 3:1 |
 | Adjacent chart series in protanopia and deuteranopia | 8 apart |
 | Adjacent chart series in full color vision | 15 apart |
 

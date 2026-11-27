@@ -8,15 +8,17 @@ using Microsoft.Playwright;
 /// <remarks>
 /// The browser draws each token inside an element naming the theme and the scheme, through <c>color-mix(in srgb, …)</c>, so
 /// <c>light-dark()</c>, <c>color-mix()</c> and every color space resolve as they draw, and reports it in sRGB. Each pair is then
-/// composited as the browser composites: a foreground over its background, a background over the backdrop it is laid on, every
-/// backdrop over the canvas, and the canvas over white. A role's fills are its solid, its hover fill and its pressed fill: a
-/// button's where the role has a button of its own, and otherwise its emphasis. Chart series are seen in protanopia and
-/// deuteranopia through Machado, Oliveira and Fernandes' simulations at full severity.
+/// composited as the browser composites: a foreground over its background, a background over the surface it is laid on, every
+/// backdrop and the popover's surface over the canvas, and the canvas over white. A role's fills are its solid, its hover fill
+/// and its pressed fill: a button's where the role has a button of its own, and otherwise its emphasis. A pressed toggle's label
+/// is the primary ink on a quiet button's hover fill. Chart series are seen in protanopia and deuteranopia through Machado,
+/// Oliveira and Fernandes' simulations at full severity.
 /// </remarks>
 public static class ThemeContrast
 {
     private const string Canvas = "--backdrop-canvas-bg-color";
     private const string Flat = "--backdrop-flat-bg-color";
+    private const string QuietHover = "--button-quiet-hover-color";
 
     // The color an element inherits where a token draws no color, which no token drawn through color-mix() serializes as.
     private const string Unresolved = "rgb(1, 2, 3)";
@@ -43,7 +45,8 @@ public static class ThemeContrast
         }
         """;
 
-    private static readonly string[] Backdrops = [Canvas, Flat, "--backdrop-inset-bg-color", "--backdrop-raised-bg-color"];
+    // The surfaces every text, ink and boundary is measured on: the four backdrops and the popover's surface.
+    private static readonly string[] Surfaces = [Canvas, Flat, "--backdrop-inset-bg-color", "--backdrop-raised-bg-color", "--popover-bg-color"];
 
     private static readonly string[] Roles = ["primary", "secondary", "success", "danger", "warning", "info"];
 
@@ -54,12 +57,13 @@ public static class ThemeContrast
     /// <summary>Every token the targets name.</summary>
     public static IReadOnlyList<string> Tokens { get; } =
     [
-        .. Backdrops,
+        .. Surfaces,
         "--text-primary-color",
         "--quiet-text-color",
         "--text-secondary-color",
         .. Roles.SelectMany(role => (string[])[$"--{role}-color", $"--{role}-emphasis-color", $"--{role}-subtle-color", $"--{role}-fg-color", $"--{role}-ink-color"]),
         .. ButtonRoles.SelectMany(role => (string[])[$"--button-{role}-hover-color", $"--button-{role}-active-color"]),
+        QuietHover,
         "--border-emphasis-color",
         "--focus-color",
         .. Series,
@@ -163,14 +167,14 @@ public static class ThemeContrast
 
         var canvas = Read(Canvas).Over(DrawnColor.White);
 
-        DrawnColor DrawBackdrop(string token)
+        DrawnColor DrawSurface(string token)
         {
             return token == Canvas ? canvas : Read(token).Over(canvas);
         }
 
-        ContrastPair Pair(string foreground, string background, string? backdrop, double target)
+        ContrastPair Pair(string foreground, string background, string? surface, double target)
         {
-            var drawnBackground = backdrop is null ? DrawBackdrop(background) : Read(background).Over(DrawBackdrop(backdrop));
+            var drawnBackground = surface is null ? DrawSurface(background) : Read(background).Over(DrawSurface(surface));
             var drawnForeground = Read(foreground).Over(drawnBackground);
 
             return new ContrastPair
@@ -178,7 +182,7 @@ public static class ThemeContrast
                 Scheme = colors.Scheme,
                 Foreground = foreground,
                 Background = background,
-                Backdrop = backdrop,
+                Backdrop = surface,
                 Ratio = DrawnColor.Contrast(drawnForeground, drawnBackground),
                 Target = target,
             };
@@ -186,24 +190,29 @@ public static class ThemeContrast
 
         foreach (var text in (string[])["--text-primary-color", "--quiet-text-color"])
         {
-            foreach (var backdrop in Backdrops)
+            foreach (var surface in Surfaces)
             {
-                yield return Pair(text, backdrop, null, targets.Text);
+                yield return Pair(text, surface, null, targets.Text);
             }
         }
 
-        foreach (var backdrop in Backdrops)
+        foreach (var surface in Surfaces)
         {
-            yield return Pair("--text-secondary-color", backdrop, null, targets.SecondaryText);
+            yield return Pair("--text-secondary-color", surface, null, targets.SecondaryText);
         }
 
         foreach (var role in Roles)
         {
-            foreach (var backdrop in Backdrops)
+            foreach (var surface in Surfaces)
             {
-                yield return Pair($"--{role}-ink-color", backdrop, null, targets.RoleInk);
-                yield return Pair($"--{role}-ink-color", $"--{role}-subtle-color", backdrop, targets.RoleInk);
+                yield return Pair($"--{role}-ink-color", surface, null, targets.RoleInk);
+                yield return Pair($"--{role}-ink-color", $"--{role}-subtle-color", surface, targets.RoleInk);
             }
+        }
+
+        foreach (var surface in Surfaces)
+        {
+            yield return Pair("--primary-ink-color", QuietHover, surface, targets.RoleInk);
         }
 
         foreach (var role in Roles)
@@ -220,9 +229,9 @@ public static class ThemeContrast
 
         foreach (var boundary in (string[])["--border-emphasis-color", "--focus-color"])
         {
-            foreach (var backdrop in Backdrops)
+            foreach (var surface in Surfaces)
             {
-                yield return Pair(boundary, backdrop, null, targets.Boundary);
+                yield return Pair(boundary, surface, null, targets.Boundary);
             }
         }
     }

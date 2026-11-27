@@ -172,7 +172,7 @@ public sealed class ThemesTests
             var report = await ThemeContrast.MeasureAsync(page, "meets", ColorSchemes.Light | ColorSchemes.Dark);
 
             // Assert
-            Assert.Equal(166, report.Pairs.Count);
+            Assert.Equal(210, report.Pairs.Count);
             Assert.True(report.MeetsEveryTarget, report.ToString());
         }
 
@@ -184,19 +184,20 @@ public sealed class ThemesTests
             var (context, page) = await OpenAsync(host, runtime, "themes");
             await using var _ = context;
             await page.WaitForFunctionAsync(AreThemesLoaded);
-            string[] backdrops = ["--backdrop-canvas-bg-color", "--backdrop-flat-bg-color", "--backdrop-inset-bg-color", "--backdrop-raised-bg-color"];
+            string[] surfaces = ["--backdrop-canvas-bg-color", "--backdrop-flat-bg-color", "--backdrop-inset-bg-color", "--backdrop-raised-bg-color", "--popover-bg-color"];
             (ColorSchemes, string, string, string?)[] expected =
             [
-                .. backdrops.Select(backdrop => (ColorSchemes.Light, "--text-primary-color", backdrop, (string?)null)),
-                .. backdrops.SelectMany(backdrop => ((ColorSchemes, string, string, string?)[])
+                .. surfaces.Select(surface => (ColorSchemes.Light, "--text-primary-color", surface, (string?)null)),
+                .. surfaces.SelectMany(surface => ((ColorSchemes, string, string, string?)[])
                 [
-                    (ColorSchemes.Light, "--success-ink-color", backdrop, null),
-                    (ColorSchemes.Light, "--success-ink-color", "--success-subtle-color", backdrop),
+                    (ColorSchemes.Light, "--success-ink-color", surface, null),
+                    (ColorSchemes.Light, "--success-ink-color", "--success-subtle-color", surface),
                 ]),
-                .. backdrops.Select(backdrop => (ColorSchemes.Light, "--border-emphasis-color", backdrop, (string?)null)),
-                .. backdrops.Select(backdrop => (ColorSchemes.Dark, "--text-secondary-color", backdrop, (string?)null)),
+                .. surfaces.Select(surface => (ColorSchemes.Light, "--border-emphasis-color", surface, (string?)null)),
+                .. surfaces.Select(surface => (ColorSchemes.Dark, "--text-secondary-color", surface, (string?)null)),
+                .. surfaces.Select(surface => (ColorSchemes.Dark, "--primary-ink-color", "--button-quiet-hover-color", (string?)surface)),
                 .. ((string[])["--danger-color", "--button-danger-hover-color", "--button-danger-active-color"]).Select(fill => (ColorSchemes.Dark, "--danger-fg-color", fill, (string?)"--backdrop-flat-bg-color")),
-                .. backdrops.Select(backdrop => (ColorSchemes.Dark, "--focus-color", backdrop, (string?)null)),
+                .. surfaces.Select(surface => (ColorSchemes.Dark, "--focus-color", surface, (string?)null)),
             ];
 
             // Act

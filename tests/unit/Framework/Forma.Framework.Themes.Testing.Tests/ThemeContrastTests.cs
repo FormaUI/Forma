@@ -8,8 +8,9 @@ using Xunit;
 
 public sealed class ThemeContrastTests
 {
-    // A light scheme meeting every target of the theme design: black text on white backdrops, dark solids under white text
-    // and a light warning solid under black, each ink a darker step, and Forma's own chart series.
+    // A light scheme meeting every target of the theme design: black text on white backdrops and a white popover, dark solids
+    // under white text and a light warning solid under black, each ink a darker step, a light gray quiet hover fill, and
+    // Forma's own chart series.
     private static Dictionary<string, CssColor> CreateMeetingColors()
     {
         var colors = new Dictionary<string, CssColor>(StringComparer.Ordinal)
@@ -18,6 +19,8 @@ public sealed class ThemeContrastTests
             ["--backdrop-flat-bg-color"] = CssColor.FromHex(0xffffff),
             ["--backdrop-inset-bg-color"] = CssColor.FromHex(0xffffff),
             ["--backdrop-raised-bg-color"] = CssColor.FromHex(0xffffff),
+            ["--popover-bg-color"] = CssColor.FromHex(0xffffff),
+            ["--button-quiet-hover-color"] = CssColor.FromHex(0xe5e7eb),
             ["--text-primary-color"] = CssColor.FromHex(0x000000),
             ["--quiet-text-color"] = CssColor.FromHex(0x000000),
             ["--text-secondary-color"] = CssColor.FromHex(0x595959),
@@ -66,8 +69,9 @@ public sealed class ThemeContrastTests
             // Act
             var report = ThemeContrast.Measure(CreateLightColors(CreateMeetingColors()));
 
-            // Assert — eight texts, four secondary texts, 48 inks, 15 fills, eight boundaries; three adjacent series in three visions
-            Assert.Equal(83, report.Pairs.Count);
+            // Assert — on five surfaces, ten texts, five secondary texts, 60 inks, five pressed toggles and ten boundaries, with
+            // 15 fills; three adjacent series in three visions
+            Assert.Equal(105, report.Pairs.Count);
             Assert.Equal(9, report.Separations.Count);
             Assert.True(report.MeetsEveryTarget, report.ToString());
         }
@@ -110,14 +114,14 @@ public sealed class ThemeContrastTests
             colors["--text-primary-color"] = CssColor.FromHex(0x777777);
             colors["--border-emphasis-color"] = CssColor.FromHex(0xdddddd);
             colors["--chart-series-4-color"] = CssColor.FromHex(0x1baf7a);
-            string[] backdrops = ["--backdrop-canvas-bg-color", "--backdrop-flat-bg-color", "--backdrop-inset-bg-color", "--backdrop-raised-bg-color"];
+            string[] surfaces = ["--backdrop-canvas-bg-color", "--backdrop-flat-bg-color", "--backdrop-inset-bg-color", "--backdrop-raised-bg-color", "--popover-bg-color"];
 
             // Act
             var report = ThemeContrast.Measure(CreateLightColors(colors));
 
             // Assert
             Assert.Equal(
-                [.. backdrops.Select(backdrop => ("--text-primary-color", backdrop)), .. backdrops.Select(backdrop => ("--border-emphasis-color", backdrop))],
+                [.. surfaces.Select(surface => ("--text-primary-color", surface)), .. surfaces.Select(surface => ("--border-emphasis-color", surface))],
                 report.MissedPairs.Select(pair => (pair.Foreground, pair.Background)));
             Assert.All(report.MissedPairs, pair => Assert.Null(pair.Backdrop));
             Assert.Equal(
@@ -125,6 +129,23 @@ public sealed class ThemeContrastTests
                 report.MissedSeparations.Select(separation => separation.Vision));
             Assert.All(report.MissedSeparations, separation => Assert.Equal(("--chart-series-3-color", "--chart-series-4-color"), (separation.First, separation.Second)));
             Assert.False(report.MeetsEveryTarget);
+        }
+
+        [Fact]
+        public void Should_refuse_a_pressed_toggle_s_label_on_a_quiet_hover_fill_it_can_t_be_read_on()
+        {
+            // Arrange — a dark gray quiet hover fill under the primary ink, which reads on every surface
+            var colors = CreateMeetingColors();
+            colors["--button-quiet-hover-color"] = CssColor.FromHex(0x555555);
+
+            // Act
+            var report = ThemeContrast.Measure(CreateLightColors(colors));
+
+            // Assert
+            Assert.Equal(
+                ["--backdrop-canvas-bg-color", "--backdrop-flat-bg-color", "--backdrop-inset-bg-color", "--backdrop-raised-bg-color", "--popover-bg-color"],
+                report.MissedPairs.Select(pair => pair.Backdrop));
+            Assert.All(report.MissedPairs, pair => Assert.Equal(("--primary-ink-color", "--button-quiet-hover-color", 4.5), (pair.Foreground, pair.Background, pair.Target)));
         }
 
         [Fact]
