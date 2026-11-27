@@ -1,0 +1,17 @@
+/* ============================================================
+   FormaThemePicker — CSS isolation
+   The theme and the scheme side by side, wrapping to a stack where
+   the width it is given holds one.
+   ============================================================ */
+
+.forma-theme-picker {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-3);
+    margin: 0;
+}
+
+.forma-theme-picker > ::deep * {
+    min-inline-size: 0;
+}

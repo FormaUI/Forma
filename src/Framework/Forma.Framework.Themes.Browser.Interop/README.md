@@ -28,6 +28,9 @@ A component switches the page's theme through `IThemeSwitch`, in any runtime, an
 </button>
 ```
 
+`FormaThemePicker`, in the component library, is the reader's choice made through this switch, listing only the themes
+whose stylesheets loaded on the page.
+
 The switch changes the page in place, in every runtime, with no load. Its task completes once these hold:
 
 - the switch was accepted;

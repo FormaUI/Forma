@@ -401,6 +401,16 @@ shows. A component switches the theme in place, in any runtime, through `IThemeS
 README](https://github.com/FormaUI/Forma/blob/main/src/Framework/Forma.Framework.Themes.Browser.Interop/README.md#switching)
 shows.
 
+`FormaThemePicker` gives the reader that choice: the registered themes and the System, Light and Dark preferences.
+Interactive, it switches the page at each change; rendered statically, it is a form whose Apply button posts the choice
+to `MapFormaThemes()`, so a reader with no script running still switches.
+
+```razor
+@using Forma.Blazor.Components.Themes
+
+<FormaThemePicker />
+```
+
 A theme sets every base token, since a part of the page in the theme takes what the theme leaves unset from the theme
 around it. The canvas stands below the paper in every scheme: a light scale holds it as `--gray-100`, and a dark one,
 running from dark paper to light ink, has no step below its paper, so it sets the canvas apart. A popover, such as a

@@ -207,9 +207,22 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
     - Departure: the script is served at `_content/forma/themes/scripts/ThemeBootstrap.js`, under the interop
       assembly's static asset base path, which the design now names, and a theme with a light scheme alone says so on
       its link. The bootstrap's marker takes the place of a start the runtime would supply, which the plan foresaw.
-11. **`FormaThemePicker`.** The picker, a plain form posting to the endpoint when rendered statically and the
+11. **`FormaThemePicker`.** ✅ The picker, a plain form posting to the endpoint when rendered statically and the
     switch when interactive, its tests and its Showcase page.
     - Gate: the four gates the checking standard sets, every render mode among them.
+    - Landed: the picker is two selects, the theme and the scheme preference, each named in the reader's culture, the
+      theme's left out where one theme is offered. Interactive, it switches at each change through `IThemeSwitch`, and a
+      switch the page refuses leaves the choice in force showing; rendered statically, it is a form posting `theme`,
+      `scheme` and the page's own address in the reader's culture, which `ICultureAddressing.GetAddress` gives, to
+      `MapFormaThemes()`, with an Apply button. The coordinator answers which
+      themes the page can switch to, `getSelectableThemes`, and the interactive picker lists only those. Forma's two
+      themes' names are the picker's strings. bUnit tests cover the static form, a single theme, a switch at each change,
+      a refused switch and the names in Spanish; browser checks switch the page through the picker in every runtime but
+      a web view's, leave out a theme whose stylesheet a route refused, and keep the choice a statically rendered
+      picker posts in Chromium and WebKit.
+    - Departure: rendered statically, the picker lists every registered theme, since only the browser knows which
+      stylesheets loaded; a choice naming one that failed starts in the default theme, as the design says. In a web
+      view the picker has no switch until step 13, and a change leaves the page as it was.
 
 ## Blazor Hybrid
 

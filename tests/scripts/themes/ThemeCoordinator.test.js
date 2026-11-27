@@ -301,6 +301,18 @@ describe('ThemeCoordinator', () => {
         expect([coordinator.isSelectable('forma'), coordinator.isSelectable('harbor'), coordinator.isSelectable('dusk')]).toEqual([true, false, true]);
     });
 
+    it("lists the themes whose stylesheets loaded, in the head's order, and none on a page without a theme marker", async () => {
+        const coordinator = await load({ sheets: { harbor: 'failed' } });
+        const selectable = coordinator.getSelectableThemes();
+        document.head.innerHTML = '';
+        vi.resetModules();
+        const unmarked = await import('#themes/ThemeCoordinator.js');
+        unmarked.initialize();
+
+        expect(selectable).toEqual(['forma', 'paper']);
+        expect(unmarked.getSelectableThemes()).toEqual([]);
+    });
+
     it('refuses a registration on a page without a theme marker', async () => {
         document.head.innerHTML = '';
         vi.resetModules();

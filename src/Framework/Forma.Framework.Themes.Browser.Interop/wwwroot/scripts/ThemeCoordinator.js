@@ -81,6 +81,13 @@ export function describePage() {
     return error || record !== 'storage' ? null : { themes: [...themes.keys()], defaultTheme: defaults.theme, defaultScheme: defaults.scheme };
 }
 
+/** The themes the page can switch to, in the order its stylesheets name them; none on a page the coordinator can't start on. */
+export function getSelectableThemes() {
+    const { themes } = getInitialization();
+
+    return themes === undefined ? [] : [...themes].filter(([, theme]) => theme.isLoaded).map(([name]) => name);
+}
+
 /** Whether the theme `name` names can be switched to: a registered theme whose stylesheet the page loaded. */
 export function isSelectable(name) {
     return getInitialization().themes?.get(name)?.isLoaded === true;

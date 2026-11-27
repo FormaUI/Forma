@@ -88,6 +88,18 @@ public sealed class ThemeCoordinatorRegistration : SwitchCoordinatorRegistration
         }
     }
 
+    /// <summary>The themes the page can switch to: those registered whose stylesheet the page loaded.</summary>
+    /// <returns>The selectable themes' names, or <see langword="null"/> where the page couldn't be asked, as a dropped connection leaves it.</returns>
+    public async Task<IReadOnlyList<string>?> GetSelectableThemesAsync()
+    {
+        var module = new JSModule(JS, ModulePath);
+
+        await using (module.ConfigureAwait(false))
+        {
+            return await module.TryInvokeAsync("getSelectableThemes", ThemesJsonContext.Default.IReadOnlyListString).ConfigureAwait(false);
+        }
+    }
+
     /// <summary>Requests a switch to <paramref name="choice"/> from the coordinator, completing once it was accepted, the browser's record holds it, this registration's state applied it, and the store holds it or a newer choice.</summary>
     /// <remarks>Each request carries its place among this registration's requests, taken as the request is made, before it waits for the registration, so a request reaching the coordinator after a later one completes as canceled, changing nothing.</remarks>
     /// <exception cref="InvalidOperationException">The choice names a theme that isn't selectable, or the registration is unavailable.</exception>

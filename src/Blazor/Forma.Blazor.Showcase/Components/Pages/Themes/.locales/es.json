@@ -6,8 +6,8 @@
     "A scope naming only a scheme draws its surroundings' theme in it, so this part stays dark whichever scheme the page draws.": "Un ámbito que solo nombra un esquema dibuja en él el tema de su entorno, así que esta parte sigue oscura sea cual sea el esquema que dibuja la página.",
     "A Part in Another Theme": "Una Parte en Otro Tema",
     "A footer standing in a brand's navy in both of the page's schemes: Harbor's dark scheme, a theme the Showcase writes as a host writes its own.": "Un pie de página en el azul marino de una marca en los dos esquemas de la página: el esquema oscuro de Harbor, un tema que el Showcase escribe como un anfitrión escribe el suyo.",
-    "Forma High Contrast": "Forma High Contrast",
-    "A scope naming only a theme draws it in its surroundings' scheme: Forma High Contrast in the page's own.": "Un ámbito que solo nombra un tema lo dibuja en el esquema de su entorno: Forma High Contrast en el de la página.",
+    "Forma High Contrast": "Forma Alto Contraste",
+    "A scope naming only a theme draws it in its surroundings' scheme: Forma High Contrast in the page's own.": "Un ámbito que solo nombra un tema lo dibuja en el esquema de su entorno: Forma Alto Contraste en el de la página.",
     "Following the Device": "Según el Dispositivo",
     "A scope in the System scheme draws the scheme the device prefers, which the browser resolves.": "Un ámbito en el esquema System dibuja el esquema que prefiere el dispositivo, que resuelve el navegador.",
     "Choosing the Scheme": "Elegir el Esquema",
@@ -25,5 +25,12 @@
     "Name": "Nombre",
     "Keep Me Signed In": "Mantener la Sesión Iniciada",
     "Harbor": "Harbor"
+  },
+  "FormaThemePickerPage": {
+    "The reader's choice of theme and color scheme: each theme the host registered whose stylesheet the page loaded, and the System, Light and Dark schemes. The choice is kept for the reader's next visit.": "La elección del lector de tema y esquema de color: cada tema que registró el anfitrión cuya hoja de estilos cargó la página, y los esquemas Sistema, Claro y Oscuro. La elección se guarda para la próxima visita del lector.",
+    "Choosing the Page's Theme": "Elegir el Tema de la Página",
+    "On an interactive page each change redraws the whole page in place, with nothing reloaded. The Showcase offers Forma, Forma High Contrast and Harbor, a theme of its own.": "En una página interactiva cada cambio vuelve a dibujar toda la página en su sitio, sin recargar nada. El Showcase ofrece Forma, Forma Alto Contraste y Harbor, un tema propio.",
+    "On a Statically Rendered Page": "En una Página Renderizada Estáticamente",
+    "Rendered statically, the picker is a form: the reader chooses in the browser's own lists and applies the choice, which the server keeps and draws this page in again.": "Renderizado estáticamente, el selector es un formulario: el lector elige en las listas del propio navegador y aplica la elección, que el servidor guarda y en la que vuelve a dibujar esta página."
   }
 }

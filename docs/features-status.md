@@ -2,11 +2,11 @@
 
 ## Current state
 
-**Forma has 81 implemented components. It runs statically, under Interactive Server, WebAssembly and Auto, and in Blazor Hybrid on WPF, Windows Forms and MAUI on Windows. Every component is checked statically, under each interactive render mode and in a WPF web view, every call it makes to a script and every call back among it; each Blazor Hybrid host's setup is checked from its example; and an inventory holds every component to every render mode.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build).
+**Forma has 83 implemented components. It runs statically, under Interactive Server, WebAssembly and Auto, and in Blazor Hybrid on WPF, Windows Forms and MAUI on Windows. Every component is checked statically, under each interactive render mode and in a WPF web view, every call it makes to a script and every call back among it; each Blazor Hybrid host's setup is checked from its example; and an inventory holds every component to every render mode.** The product, infrastructure and release work that remains is tracked below, beside the [components still to build](#components-to-build).
 
 | Measure | Now |
 | --- | --- |
-| Components | 82 implemented, as [the catalog](component-catalog.md) lists them, and 20 planned, as [the roadmap](component-roadmap.md) orders them |
+| Components | 83 implemented, as [the catalog](component-catalog.md) lists them, and 20 planned, as [the roadmap](component-roadmap.md) orders them |
 | Packages | Every project under `src/` but the Showcase, released from `main` by `release.yml` to nuget.org and the organization's GitHub feed, the latest published release `1.0.0-preview.20` |
 | Render modes | Interactive Server, WebAssembly and Auto implemented: every call a component makes to a script and every call back checked in each, and on the Server in WebKit, the engine of Safari and of Apple's web views, every runtime on a page following its culture coordinator, a client reading its host's own strings, and a host setting either arrangement up as the README says; static rendering implemented, every check page rendered statically with no enabled control that needs interactivity; Blazor Hybrid implemented on WPF, Windows Forms and MAUI on Windows, every component checked in a web view and each host's application set up as the README says; an inventory holds every component to a check page in every render mode |
 
@@ -281,14 +281,14 @@ thirteen steps and four parts:
 - the reader's choice, kept, resolved, painted first and switched in place, with the picker;
 - Blazor Hybrid, once each platform's document-start script is proven.
 
-The first two parts are independent of each other. Steps 1 to 10 have landed: the culture coordinator runs on the
+The first two parts are independent of each other. Steps 1 to 11 have landed: the culture coordinator runs on the
 switch coordinator the theme's is to be built on, the tokens draw the theme and the scheme the nearest element naming
 them carries, so a host draws a theme of its own by writing the two attributes, `Forma.Framework.Themes.Testing` holds a
 theme to the contrast targets, Forma's theme meets them in both its schemes, as Forma High Contrast, a stylesheet
 beside the tokens, meets its own in both of its, `FormaThemeScope` draws a part of a page in a theme or a scheme of its
 own, a host registers its themes with `AddFormaThemes`, beside Forma's two, a server-rendered page draws the reader's
-choice from its first paint, as a standalone app's does through the bootstrap, and a switch changes it in place in
-every runtime on the page.
+choice from its first paint, as a standalone app's does through the bootstrap, a switch changes it in place in
+every runtime on the page, and `FormaThemePicker` offers the reader the choice, interactive or posted from a static page.
 
 <a id="the-showcases-review-modes"></a>
 

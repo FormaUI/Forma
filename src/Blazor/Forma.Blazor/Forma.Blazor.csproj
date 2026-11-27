@@ -54,6 +54,7 @@
         <ProjectReference Include="..\..\Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Sanitization\Forma.Framework.Sanitization.csproj" />
         <ProjectReference Include="..\..\Framework\Forma.Framework.Themes\Forma.Framework.Themes.csproj" />
+        <ProjectReference Include="..\..\Framework\Forma.Framework.Themes.Browser.Interop\Forma.Framework.Themes.Browser.Interop.csproj" />
     </ItemGroup>
 
     <Import Project="$(ComponentAnalyzersTargets)" />

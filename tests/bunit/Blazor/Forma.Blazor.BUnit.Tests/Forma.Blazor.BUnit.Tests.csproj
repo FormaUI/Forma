@@ -27,6 +27,7 @@
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Icons.Glyphs\Forma.Framework.Icons.Glyphs.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Emojis\Forma.Framework.Emojis.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Culture\Forma.Framework.Culture.csproj" />
+        <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Culture.Router\Forma.Framework.Culture.Router.csproj" />
         <ProjectReference Include="..\..\..\..\src\AddOns\Forma.AddOns.Emojis.Twemoji\Forma.AddOns.Emojis.Twemoji.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Resources\Forma.Framework.Resources.csproj" />
         <ProjectReference Include="..\..\..\..\src\Framework\Forma.Framework.Localization\Forma.Framework.Localization.csproj" />

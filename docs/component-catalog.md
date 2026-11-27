@@ -2,7 +2,7 @@
 
 The components Forma ships and those in progress, each with what it is, the pattern it replaces in the legacy application, and where it is used. The components still to build, and the order they are built in, are in [the component roadmap](component-roadmap.md).
 
-**82 components implemented, one in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
+**83 components implemented, one in progress.** In the structure, ✅ marks an implemented component and ◐ one in progress.
 
 ## Components Structure
 
@@ -86,7 +86,8 @@ Forma.Blazor/Components/
 │   ├── ✅ FormaEmoji
 │   ├── ✅ FormaEmojiPicker
 │   └── ✅ FormaIcon
-├── (1 / 1) Themes/
+├── (2 / 2) Themes/
+│   ├── ✅ FormaThemePicker
 │   └── ✅ FormaThemeScope
 ├── (1 / 1) Virtualization/
 │   └── ✅ FormaVirtualize
@@ -758,6 +759,15 @@ A single-line text input, bare or in a field with a floating label.
 |---|---|
 | **Old pattern** | `<input type="text" class="form-control">` without floating labels or dedicated label wrappers |
 | **Used in** | Every text field: labeled form fields, compact inline forms, inline grid filters, dialog fields, toolbars and filter rows |
+
+### `FormaThemePicker`
+
+The reader's choice of theme and color scheme, switching the page in place or posted from a static page, as [the theme design](theme-design.md#the-picker) sets out.
+
+| | |
+|---|---|
+| **Old pattern** | None |
+| **Used in** | A site's settings or footer, where a reader chooses the theme and the scheme the site draws, and the Showcase's theme picker page |
 
 ### `FormaThemeScope`
 

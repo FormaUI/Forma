@@ -85,6 +85,7 @@ public sealed partial class SinkInventoryTests
         [$"{BrowserScripts}/operations/Print.js | printedDocument.write(`<!DOCTYPE html><html lang=\"${{document.documentElement.lang}}\" dir=\"${{document.documentElement.dir}}\"><head><meta charset=\"utf-8\"><title></title></head><body><article></article></body></html>`)"] = "The library's own document, in the page's own language and direction",
         [$"{BrowserScripts}/operations/Print.js | link.href = href"] = "The page's own stylesheets",
         ["src/Framework/Forma.Framework.Culture.Browser.Interop/wwwroot/scripts/CultureCoordinator.js | location.assign(destination)"] = "The page's own address in another culture",
+        [$"{Components}/Themes/FormaThemePicker.razor | action=@SwitchAddress"] = "The theme system's own endpoint, relative to the document's base",
         ["src/Blazor/Forma.Blazor/Components/FormaElementBase.cs | builder.AddDeclarations(Style);"] = "The host's own style, which is the host's as its Class is",
         ["src/Blazor/Forma.Blazor/Components/FormaInputBase`1.cs | builder.AddDeclarations(Style);"] = "The host's own style, which is the host's as its Class is",
         [$"{BrowserScripts}/operations/Asset.js | host.style.cssText = 'position:absolute;inline-size:0;block-size:0;overflow:hidden'"] = "The library's own declarations for the element holding the sprites it loads",

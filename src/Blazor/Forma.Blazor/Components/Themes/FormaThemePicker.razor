@@ -1,0 +1,33 @@
+@namespace Forma.Blazor.Components.Themes
+@using Forma.Blazor.Components.Buttons
+@using Forma.Blazor.Components.Inputs
+@inherits FormaElementBase
+
+@* Rendered statically, a plain form posting the choice to the theme system's endpoint; interactive, a switch at each change. *@
+<form id="@Id"
+      data-rid="@Context.RuntimeId"
+      class="@RootClass"
+      style="@RootStyle"
+      @attributes="AdditionalAttributes"
+      @ref="RootElement"
+      method="post"
+      action="@SwitchAddress">
+    @if (!RendererInfo.IsInteractive)
+    {
+        <AntiforgeryToken />
+        <input type="hidden" name="returnUrl" value="@ReturnAddress" />
+    }
+    @if (ThemeOptions.Count > 1)
+    {
+        <FormaSelect TValue="string" Label="@L["Theme"]" Options="ThemeOptions" Value="@Choice.Theme" ValueChanged="ChangeThemeAsync" ValueExpression="() => Choice.Theme" name="theme" />
+    }
+    else if (!RendererInfo.IsInteractive)
+    {
+        <input type="hidden" name="theme" value="@Choice.Theme" />
+    }
+    <FormaSelect TValue="string" Label="@L["Color Scheme"]" Options="SchemeOptions" Value="@SchemeValue" ValueChanged="ChangeSchemeAsync" ValueExpression="() => SchemeValue" name="scheme" />
+    @if (!RendererInfo.IsInteractive)
+    {
+        <FormaButton Type="ButtonType.Submit" Variant="ButtonVariant.Secondary">@L["Apply"]</FormaButton>
+    }
+</form>

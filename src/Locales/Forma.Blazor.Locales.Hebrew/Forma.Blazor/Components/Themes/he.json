@@ -1,6 +1,12 @@
 {
   "$localization": "SchemaVersion: 1.0.0; Culture: he;",
-  "FormaThemeScope": {
+  "FormaThemePicker": {
+    "Theme": "ערכת נושא",
+    "Color Scheme": "סכמת צבעים",
+    "System": "מערכת",
+    "Light": "בהירה",
+    "Dark": "כהה",
+    "Apply": "החלה",
     "Forma": "Forma",
     "Forma High Contrast": "Forma ניגודיות גבוהה"
   }

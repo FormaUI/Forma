@@ -1,0 +1,19 @@
+@page "/theme-picker/static"
+@using Forma.Blazor.Components.Themes
+
+<h1>FormaThemePicker</h1>
+<p class="description">@L["The reader's choice of theme and color scheme: each theme the host registered whose stylesheet the page loaded, and the System, Light and Dark schemes. The choice is kept for the reader's next visit."]</p>
+
+<div class="demo-section">
+    <h2>@L["On a Statically Rendered Page"]</h2>
+    <p class="description">@L["Rendered statically, the picker is a form: the reader chooses in the browser's own lists and applies the choice, which the server keeps and draws this page in again."]</p>
+    <div class="demo-box">
+        <FormaThemePicker />
+    </div>
+</div>
+
+@code {
+    /// <inheritdoc />
+    protected override Type LocaleSourceType
+        => typeof(FormaThemePickerPage);
+}

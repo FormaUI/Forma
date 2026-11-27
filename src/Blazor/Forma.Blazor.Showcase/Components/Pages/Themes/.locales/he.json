@@ -6,8 +6,8 @@
     "A scope naming only a scheme draws its surroundings' theme in it, so this part stays dark whichever scheme the page draws.": "תחום שנוקב רק בסכמה מצייר בה את ערכת הנושא של סביבתו, ולכן חלק זה נשאר כהה בכל סכמה שהעמוד מצייר.",
     "A Part in Another Theme": "חלק בערכת נושא אחרת",
     "A footer standing in a brand's navy in both of the page's schemes: Harbor's dark scheme, a theme the Showcase writes as a host writes its own.": "כותרת תחתונה בכחול הימי של מותג בשתי הסכמות של העמוד: הסכמה הכהה של Harbor, ערכת נושא שה-Showcase כותב כפי שמארח כותב את שלו.",
-    "Forma High Contrast": "Forma High Contrast",
-    "A scope naming only a theme draws it in its surroundings' scheme: Forma High Contrast in the page's own.": "תחום שנוקב רק בערכת נושא מצייר אותה בסכמה של סביבתו: Forma High Contrast בסכמה של העמוד.",
+    "Forma High Contrast": "Forma ניגודיות גבוהה",
+    "A scope naming only a theme draws it in its surroundings' scheme: Forma High Contrast in the page's own.": "תחום שנוקב רק בערכת נושא מצייר אותה בסכמה של סביבתו: Forma ניגודיות גבוהה בסכמה של העמוד.",
     "Following the Device": "לפי המכשיר",
     "A scope in the System scheme draws the scheme the device prefers, which the browser resolves.": "תחום בסכמת System מצייר את הסכמה שהמכשיר מעדיף, שהדפדפן מכריע.",
     "Choosing the Scheme": "בחירת הסכמה",
@@ -25,5 +25,12 @@
     "Name": "שם",
     "Keep Me Signed In": "השאר אותי מחובר",
     "Harbor": "Harbor"
+  },
+  "FormaThemePickerPage": {
+    "The reader's choice of theme and color scheme: each theme the host registered whose stylesheet the page loaded, and the System, Light and Dark schemes. The choice is kept for the reader's next visit.": "הבחירה של הקורא בערכת נושא ובסכמת צבעים: כל ערכת נושא שהמארח רשם וגיליון הסגנונות שלה נטען בעמוד, והסכמות מערכת, בהירה וכהה. הבחירה נשמרת לביקור הבא של הקורא.",
+    "Choosing the Page's Theme": "בחירת ערכת הנושא של העמוד",
+    "On an interactive page each change redraws the whole page in place, with nothing reloaded. The Showcase offers Forma, Forma High Contrast and Harbor, a theme of its own.": "בעמוד אינטראקטיבי כל שינוי מצייר מחדש את כל העמוד במקומו, בלי לטעון דבר מחדש. ה-Showcase מציע את Forma, את Forma ניגודיות גבוהה ואת Harbor, ערכת נושא משלו.",
+    "On a Statically Rendered Page": "בעמוד שמעובד באופן סטטי",
+    "Rendered statically, the picker is a form: the reader chooses in the browser's own lists and applies the choice, which the server keeps and draws this page in again.": "כשהוא מעובד באופן סטטי, הבורר הוא טופס: הקורא בוחר ברשימות של הדפדפן עצמו ומחיל את הבחירה, שהשרת שומר ומצייר בה את העמוד הזה מחדש."
   }
 }

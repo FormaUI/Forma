@@ -366,16 +366,20 @@ public sealed class ThemesTests
 
         [Theory]
         [MemberData(nameof(Engines))]
-        public async Task Should_keep_a_choice_a_statically_rendered_page_posts_and_draw_the_page_it_returns_to_in_it(string engine)
+        public async Task Should_keep_a_choice_a_statically_rendered_picker_posts_and_draw_the_page_it_returns_to_in_it(string engine)
         {
             // Arrange
             var (context, page, address) = await OpenAsync(engine);
             await using var _ = context;
             await page.GotoAsync("static/themes");
+            var picker = page.Locator("#theme-picker");
 
             // Act
-            await page.Locator("#switch-theme button").ClickAsync();
-            await page.WaitForFunctionAsync("() => document.documentElement.dataset.formaTheme === 'check'");
+            await picker.Locator("select[name=theme]").SelectOptionAsync("check");
+            await picker.Locator("select[name=scheme]").SelectOptionAsync("light");
+            await picker.Locator("button[type=submit]").ClickAsync();
+            // The poll can run between the posted page and the one it's sent back to, which has no root yet.
+            await page.WaitForFunctionAsync("() => document.documentElement?.dataset.formaTheme === 'check'");
             var (theme, scheme, marker) = await ReadDocumentAsync(page);
             var cookies = await context.CookiesAsync([address.ToString()]);
 
@@ -410,6 +414,52 @@ public sealed class ThemesTests
 
     public sealed class Switching(BrowserHost host)
     {
+        [Theory]
+        [MemberData(nameof(RoutedRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_switch_the_page_to_each_theme_and_scheme_the_picker_takes(string runtime)
+        {
+            // Arrange
+            var (context, page) = await OpenAsync(host, runtime, "themes");
+            await using var _ = context;
+            var picker = page.Locator("#theme-picker");
+            await WaitForInputScopeAsync(page, "#theme-picker button[aria-haspopup=listbox]");
+
+            var theme = picker.GetByRole(AriaRole.Button, new() { Name = "Theme", Exact = true });
+            var scheme = picker.GetByRole(AriaRole.Button, new() { Name = "Color Scheme", Exact = true });
+
+            // Act
+            await theme.ClickAsync();
+            await page.GetByRole(AriaRole.Option, new() { Name = "Check", Exact = true }).ClickAsync();
+            await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("data-forma-theme", "check");
+            await scheme.ClickAsync();
+            await page.GetByRole(AriaRole.Option, new() { Name = "Dark", Exact = true }).ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.Locator("html")).ToHaveAttributeAsync("data-forma-scheme", "dark");
+            await Assertions.Expect(page.Locator("#theme-choice")).ToHaveTextAsync("check dark");
+            await Assertions.Expect(theme).ToHaveTextAsync("Check");
+            await Assertions.Expect(scheme).ToHaveTextAsync("Dark");
+        }
+
+        [Theory]
+        [MemberData(nameof(RoutedRuntimes), MemberType = typeof(ComponentChecks))]
+        public async Task Should_leave_a_theme_whose_stylesheet_didn_t_load_out_of_the_picker(string runtime)
+        {
+            // Arrange — the check theme's stylesheet refused, as the head links it fingerprinted and as the page links it itself
+            var (context, page) = await OpenAsync(host, runtime, "themes", page => page.RouteAsync("**/check-theme*.css*", route => route.AbortAsync()));
+            await using var _ = context;
+            var picker = page.Locator("#theme-picker");
+            await WaitForInputScopeAsync(page, "#theme-picker button[aria-haspopup=listbox]");
+
+            // Act
+            await picker.GetByRole(AriaRole.Button, new() { Name = "Theme", Exact = true }).ClickAsync();
+
+            // Assert
+            await Assertions.Expect(page.GetByRole(AriaRole.Option)).ToHaveCountAsync(2);
+            await Assertions.Expect(page.GetByRole(AriaRole.Option, new() { Name = "Forma High Contrast", Exact = true })).ToBeVisibleAsync();
+            await Assertions.Expect(page.GetByRole(AriaRole.Option, new() { Name = "Check", Exact = true })).ToHaveCountAsync(0);
+        }
+
         [Theory]
         [MemberData(nameof(RoutedRuntimes), MemberType = typeof(ComponentChecks))]
         public async Task Should_switch_the_document_and_the_runtime_in_place_keeping_the_choice_in_the_browser_s_record(string runtime)

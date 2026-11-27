@@ -79,7 +79,8 @@ record and reads no store, and its theme marker says so.
 
 ## The switch endpoint
 
-`MapFormaThemes()` takes a switch at `/_forma/themes`. The form posts `theme`, a registered theme's name, `scheme`,
+`MapFormaThemes()` takes a switch at `/_forma/themes`, which `FormaThemePicker` posts where it is rendered statically,
+and any form of the application's own can post too. The form posts `theme`, a registered theme's name, `scheme`,
 `system`, `light` or `dark`, and `returnUrl`, an address of the application's own, with the antiforgery token the
 application validates. The endpoint keeps the choice in the store first, one revision past the latest it knows of, then
 in the record with that revision, and sends the reader back. A store that fails leaves the record holding the choice

@@ -44,6 +44,11 @@ set out. What Forma gained before its first release, month by month, is in [the 
   `CultureRouter` answers in the route carrying the pair, so a component writes the page's own address in the reader's
   culture where switching in place leaves the document's base at the root. An `ICultureAddressing` of a host's own
   implements it; one wrapping `CultureRouter` forwards it.
+- [`FormaThemePicker`](docs/theme-design.md#the-picker) offers the reader the registered themes and the System, Light
+  and Dark preferences, each named in the reader's culture. Interactive, it switches the page at each change, listing
+  only the themes whose stylesheets loaded; rendered statically, it is a form with an Apply button, posting the choice
+  to `MapFormaThemes()`. It leaves the theme list out where one theme is registered. `formaui-net.Blazor` now references
+  `formaui-net.Framework.Themes.Browser.Interop`.
 - A switch changes the page's theme in place, in every runtime on it: `IThemeSwitch.SwitchAsync`, which
   `AddFormaServerIntegration()` and `AddFormaWebAssemblyIntegration()` register, requests it through the page's theme
   coordinator, `formaui-net.Framework.Themes.Browser.Interop`, which keeps the choice in the browser's record and a

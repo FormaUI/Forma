@@ -1,0 +1,160 @@
+@inherits FormaBunitContext
+@using Forma.Framework.Culture.Router
+@using Microsoft.Extensions.DependencyInjection
+
+@code {
+    // A switch recording each choice it is asked for, refusing them all where it is set to.
+    private sealed class RecordingThemeSwitch : IThemeSwitch
+    {
+        public List<ThemeChoice> Choices { get; } = [];
+
+        public bool Refuses { get; init; }
+
+        public Task SwitchAsync(ThemeChoice choice)
+        {
+            Choices.Add(choice);
+
+            return Refuses ? Task.FromException(new InvalidOperationException("The theme isn't selectable.")) : Task.CompletedTask;
+        }
+    }
+
+    public sealed class Component
+    {
+        [Fact]
+        public void Should_post_a_plain_form_to_the_theme_system_s_endpoint_when_rendered_statically()
+        {
+            // Arrange
+            using var ctx = new FormaThemePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaThemePicker />);
+            var form = cut.Find("form.forma-theme-picker");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal(("post", "_forma/themes"), (form.GetAttribute("method"), form.GetAttribute("action")));
+                Assert.Equal(["forma", "forma-high-contrast"], form.QuerySelectorAll("select[name=theme] option").Select(option => option.GetAttribute("value")));
+                Assert.Equal(["system", "light", "dark"], form.QuerySelectorAll("select[name=scheme] option").Select(option => option.GetAttribute("value")));
+                Assert.Equal("system", form.QuerySelector("select[name=scheme] option[selected]")?.GetAttribute("value"));
+                Assert.Equal("/", form.QuerySelector("input[name=returnUrl]")?.GetAttribute("value"));
+                Assert.NotNull(form.QuerySelector("button[type=submit]"));
+            });
+        }
+
+        [Fact]
+        public async Task Should_send_the_reader_back_to_the_page_s_address_in_its_culture()
+        {
+            // Arrange — a page in Hebrew, which the culture router addresses under he/ beneath a document base at the root
+            using var ctx = new FormaThemePickerTests();
+            ctx.Services.AddFormaCultureRouting(new CultureRouterOptions
+            {
+                Prefix = CulturePrefix.ExceptDefault,
+                Switch = CultureSwitchMode.InPlace,
+                DefaultCulture = "en",
+                Routes = [new() { Token = "en", UICulture = new("en") }, new() { Token = "he", UICulture = new("he") }]
+            });
+            ctx.Services.GetRequiredService<NavigationManager>().NavigateTo("theme-picker/static?section=1");
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            await ctx.ChangeCultureAsync("he");
+
+            // Act
+            var cut = ctx.Render(@<FormaThemePicker />);
+
+            // Assert
+            Assert.Equal("/he/theme-picker/static?section=1", cut.Find("input[name=returnUrl]").GetAttribute("value"));
+        }
+
+        [Fact]
+        public void Should_leave_the_theme_list_out_where_the_host_registered_one_theme()
+        {
+            // Arrange
+            using var ctx = new FormaThemePickerTests();
+            ctx.Services.AddFormaThemes(themes => themes.Remove(FormaThemes.HighContrast.Name));
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+
+            // Act
+            var cut = ctx.Render(@<FormaThemePicker />);
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Empty(cut.FindAll("select[name=theme]"));
+                Assert.Equal("forma", cut.Find("input[type=hidden][name=theme]").GetAttribute("value"));
+            });
+        }
+
+        [Fact]
+        public async Task Should_switch_the_page_at_each_change_when_interactive()
+        {
+            // Arrange
+            using var ctx = new FormaThemePickerTests();
+            var themeSwitch = new RecordingThemeSwitch();
+            ctx.Services.AddSingleton<IThemeSwitch>(themeSwitch);
+            var cut = ctx.Render(@<FormaThemePicker />);
+            var (theme, scheme) = (cut.FindComponents<FormaSelect<string>>()[0], cut.FindComponents<FormaSelect<string>>()[1]);
+
+            // Act
+            await cut.InvokeAsync(() => scheme.Instance.ValueChanged.InvokeAsync("dark"));
+            await cut.InvokeAsync(() => theme.Instance.ValueChanged.InvokeAsync("forma-high-contrast"));
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Equal([new ThemeChoice("forma", ColorSchemePreference.Dark), new ThemeChoice("forma-high-contrast", ColorSchemePreference.System)], themeSwitch.Choices);
+                Assert.Empty(cut.FindAll("button[type=submit]"));
+                Assert.Empty(cut.FindAll("input[name=returnUrl]"));
+            });
+        }
+
+        [Fact]
+        public async Task Should_keep_the_choice_in_force_where_the_page_refuses_a_switch()
+        {
+            // Arrange
+            using var ctx = new FormaThemePickerTests();
+            ctx.Services.AddSingleton<IThemeSwitch>(new RecordingThemeSwitch { Refuses = true });
+            var cut = ctx.Render(@<FormaThemePicker />);
+            var scheme = cut.FindComponents<FormaSelect<string>>()[1];
+
+            // Act
+            await cut.InvokeAsync(() => scheme.Instance.ValueChanged.InvokeAsync("dark"));
+
+            // Assert
+            Assert.Equal("system", scheme.Instance.Value);
+        }
+
+        [Fact]
+        public async Task Should_name_forma_s_themes_in_the_reader_s_culture()
+        {
+            // Arrange
+            using var ctx = new FormaThemePickerTests();
+            ctx.SetRendererInfo(new RendererInfo("Static", isInteractive: false));
+            await ctx.ChangeCultureAsync("es");
+
+            // Act
+            var cut = ctx.Render(@<FormaThemePicker />);
+
+            // Assert
+            Assert.Equal(["Forma", "Forma Alto Contraste"], cut.FindAll("select[name=theme] option").Select(option => option.TextContent));
+        }
+
+        [Fact]
+        public void Should_merge_the_host_class_and_pass_attributes_through()
+        {
+            // Arrange
+            using var ctx = new FormaThemePickerTests();
+
+            // Act
+            var cut = ctx.Render(@<FormaThemePicker class="site-themes" data-region="footer" />);
+            var form = cut.Find("form.forma-theme-picker");
+
+            // Assert
+            Assert.Multiple(() =>
+            {
+                Assert.Contains("site-themes", form.ClassList);
+                Assert.Equal("footer", form.GetAttribute("data-region"));
+            });
+        }
+    }
+}

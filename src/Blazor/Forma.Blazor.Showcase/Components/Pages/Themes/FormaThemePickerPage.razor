@@ -1,0 +1,15 @@
+@page "/theme-picker"
+@attribute [ShowcasePage("FormaThemePicker")]
+@rendermode InteractiveServer
+@using Forma.Blazor.Components.Themes
+
+<h1>FormaThemePicker</h1>
+<p class="description">@L["The reader's choice of theme and color scheme: each theme the host registered whose stylesheet the page loaded, and the System, Light and Dark schemes. The choice is kept for the reader's next visit."]</p>
+
+<div class="demo-section">
+    <h2>@L["Choosing the Page's Theme"]</h2>
+    <p class="description">@L["On an interactive page each change redraws the whole page in place, with nothing reloaded. The Showcase offers Forma, Forma High Contrast and Harbor, a theme of its own."]</p>
+    <div class="demo-box">
+        <FormaThemePicker />
+    </div>
+</div>

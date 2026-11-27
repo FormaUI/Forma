@@ -53,14 +53,8 @@
 <output id="theme-outcome">@_outcome</output>
 <button id="switch-check-dark" type="button" data-check-scaffold @onclick="@(() => SwitchAsync(new ThemeChoice("check", ColorSchemePreference.Dark)))">Switch to Check, Dark</button>
 
-@* A switch a statically rendered page posts, as a picker rendered statically does, back to this page. *@
-<form id="switch-theme" method="post" action="_forma/themes">
-    <AntiforgeryToken />
-    <input type="hidden" name="theme" value="check" />
-    <input type="hidden" name="scheme" value="light" />
-    <input type="hidden" name="returnUrl" value="/static/themes" />
-    <button type="submit">Switch to Check, Light</button>
-</form>
+@* The reader's choice: a switch at each change where the page is interactive, a form posted back to this page where it is static. *@
+<FormaThemePicker id="theme-picker" />
 
 @code {
     private ColorSchemePreference _switchedScheme = ColorSchemePreference.Light;
