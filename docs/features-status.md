@@ -290,8 +290,8 @@ own, a host registers its themes with `AddFormaThemes`, beside Forma's two, a se
 choice from its first paint, as a standalone app's does through the bootstrap, a switch changes it in place in
 every runtime on the page, and `FormaThemePicker` offers the reader the choice, interactive or posted from a static page.
 Step 12's probes show a document-start script drawing the choice before the first paint on WebView2, under WPF, Windows
-Forms and MAUI on Windows, and on Android's web view; a web view without such scripts and WKWebView on iOS are still to
-probe.
+Forms and MAUI on Windows, and on Android's web view from 109 on; the older Android web views probed lack such scripts
+and can't run Blazor at all. WKWebView on iOS and Mac Catalyst is queued for a Mac.
 
 <a id="the-showcases-review-modes"></a>
 

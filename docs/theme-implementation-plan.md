@@ -247,10 +247,17 @@ make it, and adds each term it introduces to [the vocabulary](repository-vocabul
     - Landed: Android's emulator, API 37 with its system web view, 145. The web view reports document-start scripts as
       supported, and the first script, the first frame and the reloaded document read as on WebView2. There the
       document has its root as the script runs, and the same script names it at once.
-    - Open: a system web view without document-start scripts. The emulator's only image is API 37, whose web view has
-      them. Proposal: an API 24 image with its stock web view, whose start the coordinator's own path then covers.
-    - Open: WKWebView in the iOS simulator needs the hosted Mac, which this machine isn't. Proposal: the same probe as
-      a run on the hosted macOS runner.
+    - Landed: Android's older emulator images. Android 13's web view, 109, and Android 12L's, 120, report
+      document-start scripts as supported and read as API 37's does, Blazor rendering in the reloaded document.
+      Android 7.0's, 69, Android 11's, 83, and Android 12's, 91, report them as unsupported, and none runs Blazor at
+      all, since the framework's `blazor.webview.js` uses class static blocks, which a web view parses from 94 on.
+      Naming the choice on `<html>` once the page's own scripts run draws it there, as the coordinator does where the
+      scripts are missing. No emulator image ships a web view from 94 to 108, the only ones that could run Blazor
+      without document-start scripts.
+    - Open, queued for the maintainer's Mac: WKWebView in the iOS simulator and on Mac Catalyst. The probe for both is
+      written and compiles. It adds the script as a `WKUserScript` and replaces it by removing every user script and
+      adding back the ones it keeps, since a user content controller can't remove a single script, so the reloaded
+      document is also checked to run Blazor.
 13. **The Blazor Hybrid half.** `Forma.Framework.Themes.Blazor.WebView`:
     - the application's coordinator, ordering its switches by the switch coordinator's rules, with the
       application's culture coordinator moved onto the same ordering;
