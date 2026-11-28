@@ -17,13 +17,15 @@ public sealed class WebViewApplication : IAsyncDisposable
 {
     private readonly HostProcess _process;
     private readonly IPlaywright _playwright;
+    private readonly PageTracker _pageTracker;
     private readonly TempDirectory _dataFolder;
     private readonly int _port;
 
-    private WebViewApplication(HostProcess process, IPlaywright playwright, IBrowser browser, TempDirectory dataFolder, int port, string folder)
+    private WebViewApplication(HostProcess process, IPlaywright playwright, IBrowser browser, PageTracker pageTracker, TempDirectory dataFolder, int port, string folder)
     {
         _process = process;
         _playwright = playwright;
+        _pageTracker = pageTracker;
         _dataFolder = dataFolder;
         _port = port;
         Browser = browser;
@@ -100,8 +102,9 @@ public sealed class WebViewApplication : IAsyncDisposable
             await WaitForDevToolsAsync(process, endpoint, dataFolder.Root).ConfigureAwait(false);
             playwright = await Playwright.CreateAsync().ConfigureAwait(false);
             var browser = await playwright.Chromium.ConnectOverCDPAsync(endpoint.ToString()).ConfigureAwait(false);
+            var pageTracker = await PageTracker.StartAsync(browser).ConfigureAwait(false);
 
-            return new WebViewApplication(process, playwright, browser, dataFolder, port, folder);
+            return new WebViewApplication(process, playwright, browser, pageTracker, dataFolder, port, folder);
         }
         catch (Exception startFailure)
         {
@@ -132,8 +135,7 @@ public sealed class WebViewApplication : IAsyncDisposable
 
         while (DateTime.UtcNow < deadline)
         {
-            // A snapshot, since a web view opening meanwhile adds its page to these lists.
-            foreach (var page in Browser.Contexts.ToArray().SelectMany(context => context.Pages.ToArray()))
+            foreach (var page in _pageTracker.Pages)
             {
                 try
                 {

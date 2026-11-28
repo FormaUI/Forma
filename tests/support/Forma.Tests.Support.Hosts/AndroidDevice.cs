@@ -58,12 +58,23 @@ public static partial class AndroidDevice
         ArgumentNullException.ThrowIfNull(playwright);
 
         var browser = await playwright.Chromium.ConnectOverCDPAsync($"http://127.0.0.1:{port}/").ConfigureAwait(false);
+        PageTracker pageTracker;
+
+        try
+        {
+            pageTracker = await PageTracker.StartAsync(browser).ConfigureAwait(false);
+        }
+        catch
+        {
+            await browser.CloseAsync().ConfigureAwait(false);
+            throw;
+        }
+
         var stopwatch = Stopwatch.StartNew();
 
         while (stopwatch.Elapsed < timeout)
         {
-            // A snapshot, since the page opening meanwhile adds itself to these lists.
-            if (browser.Contexts.ToArray().SelectMany(context => context.Pages.ToArray()).FirstOrDefault(page => page.Url.StartsWith("https://0.0.0.", StringComparison.Ordinal)) is { } page)
+            if (pageTracker.Pages.FirstOrDefault(page => page.Url.StartsWith("https://0.0.0.", StringComparison.Ordinal)) is { } page)
             {
                 return (browser, page);
             }
