@@ -48,10 +48,11 @@ body {
     padding: 0;
 }
 
-.showcase-brand img {
+.showcase-brand svg {
     display: block;
     inline-size: 100%;
     block-size: auto;
+    fill: var(--text-primary-color);
 }
 
 .showcase-sidebar h3 {

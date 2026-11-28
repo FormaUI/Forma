@@ -15,7 +15,17 @@
 @* The header stays in view while the page list below it scrolls. *@
 <nav class="showcase-sidebar">
     <div class="showcase-sidebar-header">
-        <a class="showcase-brand" href="@Router.GetPath(CurrentRoute, "/")"><img src="/logo.svg" alt="Forma" /></a>
+        @* The wordmark: its lettering inline, so it takes the text color of every theme and scheme, and its O from the logo,
+           which shares the wordmark's coordinates and reads on any backdrop. *@
+        <a class="showcase-brand" href="@Router.GetPath(CurrentRoute, "/")">
+            <svg viewBox="-28.293 79.1857 2110 440" role="img" aria-label="Forma">
+                <path d="M0 0H78V18H21V46H72V65H21V106H0Z" transform="translate(1.3773584905660528 108) scale(3.5849056603773586)" fill-rule="evenodd" />
+                <path d="M0 0H49C73 0 90 13 90 36C90 53 82 64 68 70L94 106H68L46 73H22V106H0Z M22 18V54H48C60 54 68 48 68 36C68 25 60 18 48 18Z" transform="translate(50 0) translate(707 108) scale(3.5849056603773586)" fill-rule="evenodd" />
+                <path d="M0 0H24L60 68L95 0H119V106H98V34L67 96H53L21 34V106H0Z" transform="translate(50 0) translate(1083.9811320754716 108) scale(3.5849056603773586)" fill-rule="evenodd" />
+                <path d="M0 106L52 0H76L129 106H105L94 83H35L24 106Z M44 65H84L64 22Z" transform="translate(50 0) translate(1539.5849056603772 108) scale(3.5849056603773586)" fill-rule="evenodd" />
+                <image href="/logo.svg" x="297.727" y="91.186" width="416" height="416" />
+            </svg>
+        </a>
         <div class="culture-switcher">
             @foreach (var route in Router.Routes.Where(route => Labels.ContainsKey(route.Token)))
             {

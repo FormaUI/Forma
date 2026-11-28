@@ -60,13 +60,8 @@ builder.Services.AddScoped<IShareTarget>(services => services.GetRequiredService
 builder.Services.AddScoped<ICatalogProvider>(_ => new ShowcaseImageLibrary());
 builder.Services.AddScoped<IFileStore, DefaultFileStore>();
 
-// Harbor, a theme of the Showcase's own beside Forma's two, and a reader starting in Forma's light scheme, since the Showcase's
-// wordmark draws in one scheme alone.
-builder.Services.AddFormaThemes(themes =>
-{
-    themes.Add(new ThemeDefinition("harbor", LocalizableText.For<FormaThemeScopePage>("Harbor"), ColorSchemes.Light | ColorSchemes.Dark, "themes/harbor.css"));
-    themes.Default = new ThemeChoice("forma", ColorSchemePreference.Light);
-});
+// Harbor, a theme of the Showcase's own beside Forma's two.
+builder.Services.AddFormaThemes(themes => themes.Add(new ThemeDefinition("harbor", LocalizableText.For<FormaThemeScopePage>("Harbor"), ColorSchemes.Light | ColorSchemes.Dark, "themes/harbor.css")));
 
 // The statuses the Showcase defines, each on an opaque tint so it reads on the paper of every scheme.
 builder.Services.AddSingleton<IStatusBadgeCatalog>(new StatusBadgeCatalog(
